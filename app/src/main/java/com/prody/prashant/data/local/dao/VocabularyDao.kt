@@ -1,0 +1,81 @@
+package com.prody.prashant.data.local.dao
+
+import androidx.room.*
+import com.prody.prashant.data.local.entity.VocabularyEntity
+import kotlinx.coroutines.flow.Flow
+
+@Dao
+interface VocabularyDao {
+
+    @Query("SELECT * FROM vocabulary ORDER BY word ASC")
+    fun getAllVocabulary(): Flow<List<VocabularyEntity>>
+
+    @Query("SELECT * FROM vocabulary WHERE id = :id")
+    suspend fun getWordById(id: Long): VocabularyEntity?
+
+    @Query("SELECT * FROM vocabulary WHERE word = :word LIMIT 1")
+    suspend fun getWordByName(word: String): VocabularyEntity?
+
+    @Query("SELECT * FROM vocabulary WHERE isLearned = 0 ORDER BY RANDOM() LIMIT 1")
+    suspend fun getRandomUnlearnedWord(): VocabularyEntity?
+
+    @Query("SELECT * FROM vocabulary WHERE shownAsDaily = 0 ORDER BY RANDOM() LIMIT 1")
+    suspend fun getWordOfTheDay(): VocabularyEntity?
+
+    @Query("SELECT * FROM vocabulary WHERE isLearned = 1 ORDER BY learnedAt DESC")
+    fun getLearnedWords(): Flow<List<VocabularyEntity>>
+
+    @Query("SELECT * FROM vocabulary WHERE isFavorite = 1 ORDER BY word ASC")
+    fun getFavoriteWords(): Flow<List<VocabularyEntity>>
+
+    @Query("SELECT * FROM vocabulary WHERE category = :category ORDER BY word ASC")
+    fun getWordsByCategory(category: String): Flow<List<VocabularyEntity>>
+
+    @Query("SELECT * FROM vocabulary WHERE difficulty = :difficulty ORDER BY word ASC")
+    fun getWordsByDifficulty(difficulty: Int): Flow<List<VocabularyEntity>>
+
+    @Query("SELECT * FROM vocabulary WHERE nextReviewAt <= :currentTime AND isLearned = 1 ORDER BY nextReviewAt ASC LIMIT :limit")
+    suspend fun getWordsForReview(currentTime: Long, limit: Int = 10): List<VocabularyEntity>
+
+    @Query("SELECT * FROM vocabulary WHERE word LIKE '%' || :query || '%' OR definition LIKE '%' || :query || '%' ORDER BY word ASC")
+    fun searchVocabulary(query: String): Flow<List<VocabularyEntity>>
+
+    @Query("SELECT COUNT(*) FROM vocabulary WHERE isLearned = 1")
+    fun getLearnedCount(): Flow<Int>
+
+    @Query("SELECT COUNT(*) FROM vocabulary")
+    fun getTotalCount(): Flow<Int>
+
+    @Query("SELECT AVG(masteryLevel) FROM vocabulary WHERE isLearned = 1")
+    fun getAverageMastery(): Flow<Float?>
+
+    @Query("SELECT DISTINCT category FROM vocabulary")
+    fun getAllCategories(): Flow<List<String>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertWord(word: VocabularyEntity): Long
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertWords(words: List<VocabularyEntity>)
+
+    @Update
+    suspend fun updateWord(word: VocabularyEntity)
+
+    @Delete
+    suspend fun deleteWord(word: VocabularyEntity)
+
+    @Query("UPDATE vocabulary SET isLearned = 1, learnedAt = :learnedAt WHERE id = :id")
+    suspend fun markAsLearned(id: Long, learnedAt: Long = System.currentTimeMillis())
+
+    @Query("UPDATE vocabulary SET isFavorite = :isFavorite WHERE id = :id")
+    suspend fun updateFavoriteStatus(id: Long, isFavorite: Boolean)
+
+    @Query("UPDATE vocabulary SET shownAsDaily = 1, shownAt = :shownAt WHERE id = :id")
+    suspend fun markAsShownDaily(id: Long, shownAt: Long = System.currentTimeMillis())
+
+    @Query("UPDATE vocabulary SET reviewCount = reviewCount + 1, lastReviewedAt = :reviewedAt, nextReviewAt = :nextReview, masteryLevel = :mastery WHERE id = :id")
+    suspend fun updateReviewProgress(id: Long, reviewedAt: Long, nextReview: Long, mastery: Int)
+
+    @Query("SELECT * FROM vocabulary WHERE isLearned = 1 ORDER BY masteryLevel ASC LIMIT :limit")
+    suspend fun getWordsNeedingPractice(limit: Int = 5): List<VocabularyEntity>
+}

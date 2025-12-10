@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Abstract Prody Logo: A stylized "P" that transforms into an upward-growing sprout/leaf,
+         symbolizing personal growth, productivity, and flourishing.
+         The design represents the journey from potential (P) to growth (leaf). -->
+
+    <!-- Base circle - growth foundation -->
+    <path
+        android:fillColor="#4A7C59"
+        android:pathData="M54,54m-38,0a38,38 0,1 1,76 0a38,38 0,1 1,-76 0" />
+
+    <!-- Inner glow ring -->
+    <path
+        android:fillColor="#5E9970"
+        android:pathData="M54,54m-32,0a32,32 0,1 1,64 0a32,32 0,1 1,-64 0" />
+
+    <!-- Stylized P stem that curves into a sprout -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M42,72 L42,44 Q42,32 54,32 Q66,32 66,44 Q66,52 58,54 L58,54 Q50,56 50,52 L50,40 Q50,36 54,36 Q58,36 58,40 L58,48"
+        android:strokeWidth="0"
+        android:strokeColor="#00000000" />
+
+    <!-- P vertical stem -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M40,70 L40,38 C40,32 46,28 54,28 C66,28 70,36 70,44 C70,54 62,58 54,58 L52,58 L52,70 Z M52,50 L54,50 C58,50 62,48 62,44 C62,40 60,36 54,36 C50,36 52,38 52,42 Z" />
+
+    <!-- Growing leaf element emerging from P - symbolizing growth -->
+    <path
+        android:fillColor="#A8D5BA"
+        android:pathData="M56,44 Q62,38 68,42 Q72,48 66,52 Q60,50 58,48 Q60,44 56,44 Z" />
+
+    <!-- Small accent leaf - continuous growth -->
+    <path
+        android:fillColor="#E8DCC4"
+        android:pathData="M64,38 Q68,34 72,38 Q74,42 70,44 Q66,42 64,40 Z" />
+
+    <!-- Sparkle/star accent - inspiration -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M72,32 L73,35 L76,34 L74,36 L76,38 L73,37 L72,40 L71,37 L68,38 L70,36 L68,34 L71,35 Z" />
+
+</vector>
