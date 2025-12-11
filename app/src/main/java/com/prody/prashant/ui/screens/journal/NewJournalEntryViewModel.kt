@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.prody.prashant.data.local.dao.JournalDao
 import com.prody.prashant.data.local.dao.UserDao
 import com.prody.prashant.data.local.entity.JournalEntryEntity
+import com.prody.prashant.domain.model.JournalTemplate
 import com.prody.prashant.domain.model.Mood
 import com.prody.prashant.util.BuddhaWisdom
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,7 +20,10 @@ data class NewJournalEntryUiState(
     val wordCount: Int = 0,
     val isSaving: Boolean = false,
     val isSaved: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val selectedTemplate: JournalTemplate? = null,
+    val showTemplateSelector: Boolean = false,
+    val availableTemplates: List<JournalTemplate> = JournalTemplate.all()
 )
 
 @HiltViewModel
@@ -40,6 +44,32 @@ class NewJournalEntryViewModel @Inject constructor(
 
     fun updateMood(mood: Mood) {
         _uiState.update { it.copy(selectedMood = mood) }
+    }
+
+    fun toggleTemplateSelector() {
+        _uiState.update { it.copy(showTemplateSelector = !it.showTemplateSelector) }
+    }
+
+    fun selectTemplate(template: JournalTemplate) {
+        val templateContent = template.prompts.joinToString("\n")
+        _uiState.update {
+            it.copy(
+                selectedTemplate = template,
+                content = templateContent,
+                wordCount = templateContent.trim().split("\\s+".toRegex()).size,
+                showTemplateSelector = false
+            )
+        }
+    }
+
+    fun clearTemplate() {
+        _uiState.update {
+            it.copy(
+                selectedTemplate = null,
+                content = "",
+                wordCount = 0
+            )
+        }
     }
 
     fun saveEntry() {

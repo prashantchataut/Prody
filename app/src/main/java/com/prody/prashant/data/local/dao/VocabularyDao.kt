@@ -13,6 +13,9 @@ interface VocabularyDao {
     @Query("SELECT * FROM vocabulary WHERE id = :id")
     suspend fun getWordById(id: Long): VocabularyEntity?
 
+    @Query("SELECT * FROM vocabulary WHERE id = :id")
+    fun observeWordById(id: Long): Flow<VocabularyEntity?>
+
     @Query("SELECT * FROM vocabulary WHERE word = :word LIMIT 1")
     suspend fun getWordByName(word: String): VocabularyEntity?
 
@@ -78,4 +81,11 @@ interface VocabularyDao {
 
     @Query("SELECT * FROM vocabulary WHERE isLearned = 1 ORDER BY masteryLevel ASC LIMIT :limit")
     suspend fun getWordsNeedingPractice(limit: Int = 5): List<VocabularyEntity>
+
+    // Backup methods
+    @Query("SELECT * FROM vocabulary WHERE isLearned = 1 OR isFavorite = 1 OR reviewCount > 0 ORDER BY word ASC")
+    suspend fun getVocabularyProgressSync(): List<VocabularyEntity>
+
+    @Query("SELECT * FROM vocabulary ORDER BY word ASC")
+    suspend fun getAllVocabularySync(): List<VocabularyEntity>
 }

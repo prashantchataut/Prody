@@ -5,6 +5,8 @@ import androidx.room.Room
 import com.prody.prashant.data.local.dao.*
 import com.prody.prashant.data.local.database.ProdyDatabase
 import com.prody.prashant.data.local.preferences.PreferencesManager
+import com.prody.prashant.data.backup.BackupManager
+import com.prody.prashant.util.TextToSpeechManager
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -84,5 +86,33 @@ object AppModule {
         @ApplicationContext context: Context
     ): PreferencesManager {
         return PreferencesManager(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideTextToSpeechManager(
+        @ApplicationContext context: Context
+    ): TextToSpeechManager {
+        return TextToSpeechManager(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideBackupManager(
+        @ApplicationContext context: Context,
+        journalDao: JournalDao,
+        futureMessageDao: FutureMessageDao,
+        vocabularyDao: VocabularyDao,
+        userDao: UserDao,
+        preferencesManager: PreferencesManager
+    ): BackupManager {
+        return BackupManager(
+            context,
+            journalDao,
+            futureMessageDao,
+            vocabularyDao,
+            userDao,
+            preferencesManager
+        )
     }
 }
