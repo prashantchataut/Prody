@@ -5,6 +5,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -27,6 +28,8 @@ fun VocabularyDetailScreen(
     viewModel: VocabularyDetailViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val isTtsInitialized by viewModel.isTtsInitialized.collectAsStateWithLifecycle()
+    val isSpeaking by viewModel.isSpeaking.collectAsStateWithLifecycle()
 
     LaunchedEffect(wordId) {
         viewModel.loadWord(wordId)
@@ -45,6 +48,26 @@ fun VocabularyDetailScreen(
                     }
                 },
                 actions = {
+                    // Text-to-Speech button
+                    if (isTtsInitialized) {
+                        IconButton(
+                            onClick = {
+                                if (isSpeaking) {
+                                    viewModel.stopSpeaking()
+                                } else {
+                                    viewModel.speakAll()
+                                }
+                            }
+                        ) {
+                            Icon(
+                                imageVector = if (isSpeaking) Icons.Filled.Stop
+                                else Icons.AutoMirrored.Filled.VolumeUp,
+                                contentDescription = if (isSpeaking) "Stop speaking" else "Speak word",
+                                tint = if (isSpeaking) MaterialTheme.colorScheme.primary
+                                else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
                     IconButton(onClick = { viewModel.toggleFavorite() }) {
                         Icon(
                             imageVector = if (uiState.word?.isFavorite == true) Icons.Filled.Favorite
@@ -109,11 +132,29 @@ fun VocabularyDetailScreen(
                         }
 
                         if (word.pronunciation.isNotBlank()) {
-                            Text(
-                                text = "/${word.pronunciation}/",
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Text(
+                                    text = "/${word.pronunciation}/",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                if (isTtsInitialized) {
+                                    IconButton(
+                                        onClick = { viewModel.speakWord() },
+                                        modifier = Modifier.size(32.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.AutoMirrored.Filled.VolumeUp,
+                                            contentDescription = "Pronounce word",
+                                            tint = MaterialTheme.colorScheme.primary,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    }
+                                }
+                            }
                         }
 
                         if (word.partOfSpeech.isNotBlank()) {

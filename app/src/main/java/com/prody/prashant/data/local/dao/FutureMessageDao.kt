@@ -60,4 +60,14 @@ interface FutureMessageDao {
 
     @Query("SELECT MIN(deliveryDate) FROM future_messages WHERE isDelivered = 0")
     suspend fun getNextDeliveryTime(): Long?
+
+    // Backup methods
+    @Query("SELECT * FROM future_messages ORDER BY deliveryDate ASC")
+    suspend fun getAllMessagesSync(): List<FutureMessageEntity>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertMessages(messages: List<FutureMessageEntity>)
+
+    @Query("DELETE FROM future_messages")
+    suspend fun deleteAllMessages()
 }

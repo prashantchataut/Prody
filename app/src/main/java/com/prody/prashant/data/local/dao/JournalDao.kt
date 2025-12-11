@@ -63,6 +63,16 @@ interface JournalDao {
 
     @Query("SELECT DISTINCT mood FROM journal_entries")
     fun getAllMoods(): Flow<List<String>>
+
+    // Backup methods
+    @Query("SELECT * FROM journal_entries ORDER BY createdAt DESC")
+    suspend fun getAllEntriesSync(): List<JournalEntryEntity>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertEntries(entries: List<JournalEntryEntity>)
+
+    @Query("DELETE FROM journal_entries")
+    suspend fun deleteAllEntries()
 }
 
 data class MoodCount(

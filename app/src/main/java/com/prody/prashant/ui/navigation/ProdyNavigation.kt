@@ -22,6 +22,7 @@ import com.prody.prashant.ui.screens.stats.StatsScreen
 import com.prody.prashant.ui.screens.vocabulary.VocabularyDetailScreen
 import com.prody.prashant.ui.screens.vocabulary.VocabularyListScreen
 import com.prody.prashant.ui.screens.quotes.QuotesScreen
+import com.prody.prashant.ui.screens.meditation.MeditationTimerScreen
 
 sealed class Screen(val route: String) {
     data object Onboarding : Screen("onboarding")
@@ -41,6 +42,7 @@ sealed class Screen(val route: String) {
         fun createRoute(wordId: Long) = "vocabulary/$wordId"
     }
     data object Quotes : Screen("quotes")
+    data object Meditation : Screen("meditation")
 }
 
 @Composable
@@ -97,15 +99,18 @@ fun ProdyNavHost(
                     navController.navigate(Screen.Quotes.route)
                 },
                 onNavigateToJournal = {
-                    navController.navigate(Screen.Journal.route)
+                    navController.navigate(Screen.JournalList.route)
                 },
                 onNavigateToFutureMessage = {
-                    navController.navigate(Screen.FutureMessage.route)
+                    navController.navigate(Screen.FutureMessageList.route)
+                },
+                onNavigateToMeditation = {
+                    navController.navigate(Screen.Meditation.route)
                 }
             )
         }
 
-        composable(Screen.Journal.route) {
+        composable(Screen.JournalList.route) {
             JournalScreen(
                 onNavigateToNewEntry = {
                     navController.navigate(Screen.NewJournalEntry.route)
@@ -145,7 +150,7 @@ fun ProdyNavHost(
             )
         }
 
-        composable(Screen.FutureMessage.route) {
+        composable(Screen.FutureMessageList.route) {
             FutureMessageScreen(
                 onNavigateToWrite = {
                     navController.navigate(Screen.WriteMessage.route)
@@ -215,6 +220,14 @@ fun ProdyNavHost(
 
         composable(Screen.Quotes.route) {
             QuotesScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable(Screen.Meditation.route) {
+            MeditationTimerScreen(
                 onNavigateBack = {
                     navController.popBackStack()
                 }

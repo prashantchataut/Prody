@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.R
+import com.prody.prashant.domain.model.JournalTemplate
 import com.prody.prashant.domain.model.Mood
 import com.prody.prashant.ui.components.ProdyCard
 import com.prody.prashant.ui.theme.*
@@ -84,6 +85,18 @@ fun NewJournalEntryScreen(
                 .padding(padding)
                 .verticalScroll(rememberScrollState())
         ) {
+            // Template selector button
+            TemplateSelector(
+                selectedTemplate = uiState.selectedTemplate,
+                showTemplateSelector = uiState.showTemplateSelector,
+                availableTemplates = uiState.availableTemplates,
+                onToggleSelector = { viewModel.toggleTemplateSelector() },
+                onTemplateSelected = { viewModel.selectTemplate(it) },
+                onClearTemplate = { viewModel.clearTemplate() }
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
             // Mood selector
             MoodSelector(
                 selectedMood = uiState.selectedMood,
@@ -255,6 +268,165 @@ private fun BuddhaPromptCard(
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun TemplateSelector(
+    selectedTemplate: JournalTemplate?,
+    showTemplateSelector: Boolean,
+    availableTemplates: List<JournalTemplate>,
+    onToggleSelector: () -> Unit,
+    onTemplateSelected: (JournalTemplate) -> Unit,
+    onClearTemplate: () -> Unit
+) {
+    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+        // Header with toggle button
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Article,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(20.dp)
+                )
+                Text(
+                    text = "Use Template",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+
+            if (selectedTemplate != null) {
+                // Show selected template chip with clear button
+                Surface(
+                    shape = ChipShape,
+                    color = selectedTemplate.color.copy(alpha = 0.15f),
+                    modifier = Modifier.clickable(onClick = onClearTemplate)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Icon(
+                            imageVector = selectedTemplate.icon,
+                            contentDescription = null,
+                            tint = selectedTemplate.color,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Text(
+                            text = selectedTemplate.name,
+                            style = MaterialTheme.typography.labelMedium,
+                            color = selectedTemplate.color
+                        )
+                        Icon(
+                            imageVector = Icons.Filled.Close,
+                            contentDescription = "Clear template",
+                            tint = selectedTemplate.color,
+                            modifier = Modifier.size(14.dp)
+                        )
+                    }
+                }
+            } else {
+                // Toggle button
+                TextButton(onClick = onToggleSelector) {
+                    Icon(
+                        imageVector = if (showTemplateSelector) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(if (showTemplateSelector) "Hide" else "Browse")
+                }
+            }
+        }
+
+        // Expandable template list
+        AnimatedVisibility(
+            visible = showTemplateSelector && selectedTemplate == null,
+            enter = expandVertically() + fadeIn(),
+            exit = shrinkVertically() + fadeOut()
+        ) {
+            Column(modifier = Modifier.padding(top = 12.dp)) {
+                Text(
+                    text = "Choose a guided format for your entry",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(availableTemplates) { template ->
+                        TemplateCard(
+                            template = template,
+                            onClick = { onTemplateSelected(template) }
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun TemplateCard(
+    template: JournalTemplate,
+    onClick: () -> Unit
+) {
+    ProdyCard(
+        modifier = Modifier
+            .width(160.dp)
+            .clickable(onClick = onClick),
+        backgroundColor = template.color.copy(alpha = 0.08f)
+    ) {
+        Column(
+            modifier = Modifier.padding(12.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(template.color.copy(alpha = 0.2f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = template.icon,
+                    contentDescription = null,
+                    tint = template.color,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = template.name,
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Text(
+                text = template.description,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 2
+            )
         }
     }
 }

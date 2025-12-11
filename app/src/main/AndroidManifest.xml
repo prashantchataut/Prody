@@ -33,11 +33,11 @@
         </activity>
 
         <receiver
-            android:name=".service.notification.NotificationReceiver"
+            android:name=".notification.NotificationReceiver"
             android:exported="false" />
 
         <receiver
-            android:name=".service.notification.BootReceiver"
+            android:name=".notification.BootReceiver"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
@@ -48,6 +48,16 @@
             android:name="androidx.work.impl.foreground.SystemForegroundService"
             android:foregroundServiceType="dataSync"
             tools:node="merge" />
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
 
     </application>
 

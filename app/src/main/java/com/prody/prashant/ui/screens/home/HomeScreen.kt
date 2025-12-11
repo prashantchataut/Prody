@@ -40,6 +40,7 @@ fun HomeScreen(
     onNavigateToQuotes: () -> Unit,
     onNavigateToJournal: () -> Unit,
     onNavigateToFutureMessage: () -> Unit,
+    onNavigateToMeditation: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
