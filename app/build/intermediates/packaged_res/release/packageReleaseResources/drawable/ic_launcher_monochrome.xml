@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Monochrome version for themed icons (Android 13+) -->
+
+    <!-- P vertical stem -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M40,70 L40,38 C40,32 46,28 54,28 C66,28 70,36 70,44 C70,54 62,58 54,58 L52,58 L52,70 Z M52,50 L54,50 C58,50 62,48 62,44 C62,40 60,36 54,36 C50,36 52,38 52,42 Z" />
+
+    <!-- Growing leaf element -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M56,44 Q62,38 68,42 Q72,48 66,52 Q60,50 58,48 Q60,44 56,44 Z" />
+
+    <!-- Small accent leaf -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M64,38 Q68,34 72,38 Q74,42 70,44 Q66,42 64,40 Z" />
+
+    <!-- Sparkle accent -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M72,32 L73,35 L76,34 L74,36 L76,38 L73,37 L72,40 L71,37 L68,38 L70,36 L68,34 L71,35 Z" />
+
+</vector>

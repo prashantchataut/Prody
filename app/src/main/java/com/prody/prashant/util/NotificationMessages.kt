@@ -105,6 +105,46 @@ object NotificationMessages {
         Triple("PSA", "The fact that you're working on yourself puts you ahead of most. True story.", "Thanks Buddha")
     )
 
+    // Evening reflection notifications
+    val eveningReflection = listOf(
+        Triple("Evening reflection time", "How did today shape you? Buddha's ready to listen.", "Reflect now"),
+        Triple("Day's end wisdom", "Before you rest, let's process today's journey together.", "Start reflection"),
+        Triple("Sunset thoughts", "The day is winding down. What insights are emerging?", "Share thoughts"),
+        Triple("Evening check-in", "Time to pause and reflect on today's experiences.", "Begin reflection")
+    )
+
+    // Word of the day notifications
+    val wordOfDay = listOf(
+        Triple("Word of the day!", "Expand your vocabulary with today's featured word.", "Learn word"),
+        Triple("New word unlocked", "Your linguistic arsenal just got stronger.", "Discover word"),
+        Triple("Vocabulary boost", "Today's word will make you sound smarter instantly.", "See word"),
+        Triple("Word wisdom", "A new word awaits to enrich your conversations.", "Explore word")
+    )
+
+    // Future message received notifications
+    val futureMessageReceived = listOf(
+        Triple("Message from the past!", "Your past self sent you something important.", "Read message"),
+        Triple("Time capsule opened", "A message from yesterday's you has arrived.", "View message"),
+        Triple("Special delivery", "Your future message has been delivered right on time.", "Open message"),
+        Triple("Past-you says hello", "A thoughtful message from your earlier self awaits.", "Read now")
+    )
+
+    // Streak reminder notifications
+    val streakReminder = listOf(
+        Triple("Keep your streak alive!", "Don't let your progress streak end today.", "Continue streak"),
+        Triple("Streak check-in", "Your consistency is impressive. Keep it going!", "Maintain streak"),
+        Triple("Daily habit reminder", "Your streak depends on today's action.", "Take action"),
+        Triple("Consistency matters", "Every day counts toward your growing streak.", "Stay consistent")
+    )
+
+    // Journal prompt notifications
+    val journalPrompt = listOf(
+        Triple("Journal time!", "Your thoughts are waiting to be captured.", "Start journaling"),
+        Triple("Reflection moment", "What's on your mind today? Let's explore it.", "Open journal"),
+        Triple("Daily writing", "A few minutes of journaling can unlock insights.", "Begin writing"),
+        Triple("Thought capture", "Your journal is ready for today's reflections.", "Write now")
+    )
+
     // Vocabulary-specific engaging notifications
     val vocabularyNotifications = listOf(
         Triple("Word nerd alert", "New vocabulary incoming. Your conversations are about to level up.", "Teach me"),

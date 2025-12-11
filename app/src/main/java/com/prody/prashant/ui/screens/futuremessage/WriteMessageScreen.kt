@@ -294,10 +294,7 @@ fun WriteMessageScreen(
                 }
             ) {
                 DatePicker(
-                    state = datePickerState,
-                    dateValidator = { date ->
-                        date >= System.currentTimeMillis()
-                    }
+                    state = datePickerState
                 )
             }
         }
