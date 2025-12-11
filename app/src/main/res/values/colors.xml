@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Primary - Sage Green -->
+    <color name="prody_primary">#4A7C59</color>
+    <color name="prody_primary_variant">#2E5339</color>
+    <color name="prody_on_primary">#FFFFFF</color>
+
+    <!-- Secondary - Warm Cream -->
+    <color name="prody_secondary">#E8DCC4</color>
+    <color name="prody_secondary_variant">#D4C5A9</color>
+    <color name="prody_on_secondary">#3D3D3D</color>
+
+    <!-- Tertiary - Soft Mint -->
+    <color name="prody_tertiary">#A8D5BA</color>
+    <color name="prody_on_tertiary">#1E3A2F</color>
+
+    <!-- Background -->
+    <color name="prody_background">#FAFAF8</color>
+    <color name="prody_on_background">#1C1C1E</color>
+
+    <!-- Surface -->
+    <color name="prody_surface">#FFFFFF</color>
+    <color name="prody_surface_variant">#F5F2EB</color>
+    <color name="prody_on_surface">#1C1C1E</color>
+    <color name="prody_on_surface_variant">#6B6B6B</color>
+
+    <!-- Error -->
+    <color name="prody_error">#BA1A1A</color>
+    <color name="prody_on_error">#FFFFFF</color>
+
+    <!-- Dark Theme -->
+    <color name="prody_primary_dark">#8BC49B</color>
+    <color name="prody_primary_variant_dark">#5E9970</color>
+    <color name="prody_on_primary_dark">#1E3A2F</color>
+
+    <color name="prody_secondary_dark">#C4B89C</color>
+    <color name="prody_on_secondary_dark">#3D3D3D</color>
+
+    <color name="prody_tertiary_dark">#6BAB7D</color>
+    <color name="prody_on_tertiary_dark">#FFFFFF</color>
+
+    <color name="prody_background_dark">#121212</color>
+    <color name="prody_on_background_dark">#E6E6E6</color>
+
+    <color name="prody_surface_dark">#1E1E1E</color>
+    <color name="prody_surface_variant_dark">#2D2D2D</color>
+    <color name="prody_on_surface_dark">#E6E6E6</color>
+    <color name="prody_on_surface_variant_dark">#A0A0A0</color>
+
+    <color name="prody_error_dark">#FFB4AB</color>
+    <color name="prody_on_error_dark">#690005</color>
+
+    <!-- Splash Screen -->
+    <color name="splash_background">#4A7C59</color>
+</resources>
