@@ -51,7 +51,10 @@ import com.prody.prashant.ui.screens.vocabulary.VocabularyListScreen
 import com.prody.prashant.ui.theme.ProdyTheme
 import com.prody.prashant.ui.theme.ThemeMode
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
@@ -69,7 +72,7 @@ class MainActivity : ComponentActivity() {
     ) { isGranted: Boolean ->
         if (isGranted) {
             // Permission granted, schedule notifications
-            kotlinx.coroutines.GlobalScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            CoroutineScope(Dispatchers.IO).launch {
                 notificationScheduler.rescheduleAllNotifications()
             }
         }
@@ -88,20 +91,26 @@ class MainActivity : ComponentActivity() {
 
         // Check if onboarding is completed
         val isOnboardingCompleted = runBlocking {
-            preferencesManager.isOnboardingCompleted.first()
+            preferencesManager.onboardingCompleted.first()
         }
 
         // Get theme preference
-        val themeMode = runBlocking {
+        val themeModeString = runBlocking {
             preferencesManager.themeMode.first()
         }
 
         enableEdgeToEdge()
 
         setContent {
-            val themeModeState by preferencesManager.themeMode.collectAsStateWithLifecycle(
-                initialValue = ThemeMode.valueOf(themeMode)
+            val currentThemeModeString by preferencesManager.themeMode.collectAsStateWithLifecycle(
+                initialValue = themeModeString
             )
+
+            val themeModeState = when (currentThemeModeString.lowercase()) {
+                "light" -> ThemeMode.LIGHT
+                "dark" -> ThemeMode.DARK
+                else -> ThemeMode.SYSTEM
+            }
 
             ProdyTheme(
                 themeMode = themeModeState
@@ -121,7 +130,7 @@ class MainActivity : ComponentActivity() {
                     Manifest.permission.POST_NOTIFICATIONS
                 ) == PackageManager.PERMISSION_GRANTED -> {
                     // Permission already granted
-                    kotlinx.coroutines.GlobalScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+                    CoroutineScope(Dispatchers.IO).launch {
                         notificationScheduler.rescheduleAllNotifications()
                     }
                 }
@@ -131,7 +140,7 @@ class MainActivity : ComponentActivity() {
             }
         } else {
             // For older versions, schedule notifications directly
-            kotlinx.coroutines.GlobalScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            CoroutineScope(Dispatchers.IO).launch {
                 notificationScheduler.rescheduleAllNotifications()
             }
         }

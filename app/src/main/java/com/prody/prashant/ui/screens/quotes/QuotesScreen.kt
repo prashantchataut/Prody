@@ -10,7 +10,6 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.FormatQuote
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -83,7 +82,7 @@ fun QuotesScreen(
                         icon = {
                             Icon(
                                 imageVector = when (tab) {
-                                    WisdomTab.QUOTES -> Icons.AutoMirrored.Filled.FormatQuote
+                                    WisdomTab.QUOTES -> Icons.Filled.FormatQuote
                                     WisdomTab.PROVERBS -> Icons.Filled.AutoStories
                                     WisdomTab.IDIOMS -> Icons.Filled.Lightbulb
                                     WisdomTab.PHRASES -> Icons.Filled.Forum
@@ -157,7 +156,7 @@ private fun QuoteCard(
                 verticalAlignment = Alignment.Top
             ) {
                 Icon(
-                    imageVector = Icons.AutoMirrored.Filled.FormatQuote,
+                    imageVector = Icons.Filled.FormatQuote,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(24.dp)
