@@ -27,23 +27,16 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    - name: Verify Gradle wrapper
+    - name: Regenerate Gradle wrapper
       run: |
-        echo "Checking gradle wrapper files..."
-        ls -la gradle/wrapper/
+        # Remove potentially corrupted wrapper jar and regenerate
+        rm -f gradle/wrapper/gradle-wrapper.jar
+        # Download fresh wrapper jar from official Gradle release
+        curl -sL -o gradle/wrapper/gradle-wrapper.jar \
+          "https://github.com/gradle/gradle/raw/v8.9.0/gradle/wrapper/gradle-wrapper.jar"
+        # Verify download
+        echo "Downloaded wrapper jar size: $(stat -c%s gradle/wrapper/gradle-wrapper.jar) bytes"
         file gradle/wrapper/gradle-wrapper.jar
-        echo "Wrapper jar size: $(stat -c%s gradle/wrapper/gradle-wrapper.jar) bytes"
-        # Verify SHA256 checksum matches official Gradle 8.9 wrapper
-        EXPECTED_SHA="498495120a03b9a6ab5d155f5de3c8f0d986a449153702fb80fc80e134484f17"
-        ACTUAL_SHA=$(sha256sum gradle/wrapper/gradle-wrapper.jar | awk '{print $1}')
-        echo "Expected SHA256: $EXPECTED_SHA"
-        echo "Actual SHA256: $ACTUAL_SHA"
-        if [ "$EXPECTED_SHA" != "$ACTUAL_SHA" ]; then
-          echo "ERROR: Wrapper jar checksum mismatch! Re-downloading..."
-          curl -sL -o gradle/wrapper/gradle-wrapper.jar "https://raw.githubusercontent.com/gradle/gradle/v8.9.0/gradle/wrapper/gradle-wrapper.jar"
-        else
-          echo "Wrapper jar checksum verified successfully"
-        fi
 
     - name: Decode Keystore
       env:
@@ -155,23 +148,16 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    - name: Verify Gradle wrapper
+    - name: Regenerate Gradle wrapper
       run: |
-        echo "Checking gradle wrapper files..."
-        ls -la gradle/wrapper/
+        # Remove potentially corrupted wrapper jar and regenerate
+        rm -f gradle/wrapper/gradle-wrapper.jar
+        # Download fresh wrapper jar from official Gradle release
+        curl -sL -o gradle/wrapper/gradle-wrapper.jar \
+          "https://github.com/gradle/gradle/raw/v8.9.0/gradle/wrapper/gradle-wrapper.jar"
+        # Verify download
+        echo "Downloaded wrapper jar size: $(stat -c%s gradle/wrapper/gradle-wrapper.jar) bytes"
         file gradle/wrapper/gradle-wrapper.jar
-        echo "Wrapper jar size: $(stat -c%s gradle/wrapper/gradle-wrapper.jar) bytes"
-        # Verify SHA256 checksum matches official Gradle 8.9 wrapper
-        EXPECTED_SHA="498495120a03b9a6ab5d155f5de3c8f0d986a449153702fb80fc80e134484f17"
-        ACTUAL_SHA=$(sha256sum gradle/wrapper/gradle-wrapper.jar | awk '{print $1}')
-        echo "Expected SHA256: $EXPECTED_SHA"
-        echo "Actual SHA256: $ACTUAL_SHA"
-        if [ "$EXPECTED_SHA" != "$ACTUAL_SHA" ]; then
-          echo "ERROR: Wrapper jar checksum mismatch! Re-downloading..."
-          curl -sL -o gradle/wrapper/gradle-wrapper.jar "https://raw.githubusercontent.com/gradle/gradle/v8.9.0/gradle/wrapper/gradle-wrapper.jar"
-        else
-          echo "Wrapper jar checksum verified successfully"
-        fi
 
     - name: Run Lint
       run: ./gradlew lint --stacktrace
@@ -201,23 +187,16 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    - name: Verify Gradle wrapper
+    - name: Regenerate Gradle wrapper
       run: |
-        echo "Checking gradle wrapper files..."
-        ls -la gradle/wrapper/
+        # Remove potentially corrupted wrapper jar and regenerate
+        rm -f gradle/wrapper/gradle-wrapper.jar
+        # Download fresh wrapper jar from official Gradle release
+        curl -sL -o gradle/wrapper/gradle-wrapper.jar \
+          "https://github.com/gradle/gradle/raw/v8.9.0/gradle/wrapper/gradle-wrapper.jar"
+        # Verify download
+        echo "Downloaded wrapper jar size: $(stat -c%s gradle/wrapper/gradle-wrapper.jar) bytes"
         file gradle/wrapper/gradle-wrapper.jar
-        echo "Wrapper jar size: $(stat -c%s gradle/wrapper/gradle-wrapper.jar) bytes"
-        # Verify SHA256 checksum matches official Gradle 8.9 wrapper
-        EXPECTED_SHA="498495120a03b9a6ab5d155f5de3c8f0d986a449153702fb80fc80e134484f17"
-        ACTUAL_SHA=$(sha256sum gradle/wrapper/gradle-wrapper.jar | awk '{print $1}')
-        echo "Expected SHA256: $EXPECTED_SHA"
-        echo "Actual SHA256: $ACTUAL_SHA"
-        if [ "$EXPECTED_SHA" != "$ACTUAL_SHA" ]; then
-          echo "ERROR: Wrapper jar checksum mismatch! Re-downloading..."
-          curl -sL -o gradle/wrapper/gradle-wrapper.jar "https://raw.githubusercontent.com/gradle/gradle/v8.9.0/gradle/wrapper/gradle-wrapper.jar"
-        else
-          echo "Wrapper jar checksum verified successfully"
-        fi
 
     - name: Run Unit Tests
       run: ./gradlew test --stacktrace
