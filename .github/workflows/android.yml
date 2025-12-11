@@ -37,7 +37,16 @@ jobs:
         # Use the bundled keystore for open source builds if secrets are not set
         if [ -z "$ENCODED_STRING" ]; then
           echo "Using bundled open source keystore"
-          cp keystore/prody-release.jks app/prody-release.jks
+          # Generate keystore for open source builds
+          keytool -genkeypair -v \
+            -keystore app/prody-release.jks \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 10000 \
+            -alias prody \
+            -storepass prody2024 \
+            -keypass prody2024 \
+            -dname "CN=Prody App, OU=Prody, O=Prody, L=Unknown, ST=Unknown, C=IN"
         else
           echo "Using secret keystore"
           echo $ENCODED_STRING | base64 -di > app/prody-release.jks
