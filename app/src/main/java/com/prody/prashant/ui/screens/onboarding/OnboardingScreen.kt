@@ -2,6 +2,7 @@ package com.prody.prashant.ui.screens.onboarding
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -9,7 +10,7 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -73,7 +74,7 @@ fun OnboardingScreen(
             iconColor = MoodExcited
         ),
         OnboardingPage(
-            icon = Icons.Filled.TrendingUp,
+            icon = Icons.AutoMirrored.Filled.TrendingUp,
             titleResId = R.string.onboarding_growth_title,
             descriptionResId = R.string.onboarding_growth_desc,
             backgroundColor = ProdyPrimary,
@@ -182,7 +183,8 @@ fun OnboardingScreen(
                             colors = ButtonDefaults.outlinedButtonColors(
                                 contentColor = Color.White
                             ),
-                            border = ButtonDefaults.outlinedButtonBorder.copy(
+                            border = BorderStroke(
+                                width = 1.dp,
                                 brush = Brush.horizontalGradient(
                                     colors = listOf(Color.White.copy(alpha = 0.5f), Color.White.copy(alpha = 0.5f))
                                 )
