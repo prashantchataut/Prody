@@ -136,7 +136,7 @@ class NotificationScheduler @Inject constructor(
     }
 
     suspend fun scheduleFutureMessages() {
-        val pendingMessages = futureMessageDao.getPendingMessagesList()
+        val pendingMessages = futureMessageDao.getAllMessagesSync()
         val currentTime = System.currentTimeMillis()
 
         pendingMessages.forEachIndexed { index, message ->

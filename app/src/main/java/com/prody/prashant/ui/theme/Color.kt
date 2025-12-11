@@ -62,6 +62,8 @@ val MoodMotivated = Color(0xFFFFD54F)
 val MoodGrateful = Color(0xFFA5D6A7)
 val MoodConfused = Color(0xFFCE93D8)
 val MoodExcited = Color(0xFFFF8A65)
+val MoodEnergetic = Color(0xFFFF9800)
+val MoodInspired = Color(0xFF9C27B0)
 
 // Gamification Colors
 val GoldTier = Color(0xFFFFD700)
@@ -75,6 +77,12 @@ val AchievementLocked = Color(0xFF9E9E9E)
 val AchievementProgress = Color(0xFFFFC107)
 
 // Streak Colors
+val StreakColor = Color(0xFFFF5722)
 val StreakFire = Color(0xFFFF5722)
 val StreakIce = Color(0xFF2196F3)
 val StreakGlow = Color(0xFFFFEB3B)
+
+// Card Background Colors for Wisdom
+val ProverbBackground = Color(0xFFF3E5AB)
+val IdiomBackground = Color(0xFFC8E6C9)
+val PhraseBackground = Color(0xFFB3E5FC)

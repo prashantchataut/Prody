@@ -91,16 +91,11 @@ class MainActivity : ComponentActivity() {
             preferencesManager.isOnboardingCompleted.first()
         }
 
-        // Get theme preference
-        val themeMode = runBlocking {
-            preferencesManager.themeMode.first()
-        }
-
         enableEdgeToEdge()
 
         setContent {
             val themeModeState by preferencesManager.themeMode.collectAsStateWithLifecycle(
-                initialValue = ThemeMode.valueOf(themeMode)
+                initialValue = ThemeMode.LIGHT
             )
 
             ProdyTheme(

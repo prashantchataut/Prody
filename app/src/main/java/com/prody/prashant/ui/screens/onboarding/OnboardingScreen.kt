@@ -52,7 +52,7 @@ fun OnboardingScreen(
             iconColor = ProdyTertiary
         ),
         OnboardingPage(
-            icon = Icons.Filled.LightbulbOutline,
+            icon = Icons.Filled.Lightbulb,
             titleResId = R.string.onboarding_wisdom_title,
             descriptionResId = R.string.onboarding_wisdom_desc,
             backgroundColor = ProdyPrimaryVariant,

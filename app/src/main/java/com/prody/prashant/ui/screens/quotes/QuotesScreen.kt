@@ -180,7 +180,7 @@ private fun QuoteCard(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "\"${quote.text}\"",
+                text = "\"${quote.content}\"",
                 style = MaterialTheme.typography.bodyLarge,
                 fontStyle = FontStyle.Italic
             )
@@ -273,7 +273,7 @@ private fun ProverbCard(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = proverb.text,
+                text = proverb.content,
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Medium
             )
@@ -385,7 +385,7 @@ private fun IdiomCard(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = idiom.idiom,
+                text = idiom.phrase,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.tertiary
@@ -411,7 +411,7 @@ private fun IdiomCard(
                         style = MaterialTheme.typography.bodyMedium
                     )
 
-                    if (idiom.example.isNotBlank()) {
+                    if (idiom.exampleSentence.isNotBlank()) {
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
                             text = "Example",
@@ -421,7 +421,7 @@ private fun IdiomCard(
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "\"${idiom.example}\"",
+                            text = "\"${idiom.exampleSentence}\"",
                             style = MaterialTheme.typography.bodyMedium,
                             fontStyle = FontStyle.Italic,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -538,7 +538,7 @@ private fun PhraseCard(
                         style = MaterialTheme.typography.bodyMedium
                     )
 
-                    if (phrase.example.isNotBlank()) {
+                    if (phrase.exampleSentence.isNotBlank()) {
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
                             text = "Usage",
@@ -548,7 +548,7 @@ private fun PhraseCard(
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "\"${phrase.example}\"",
+                            text = "\"${phrase.exampleSentence}\"",
                             style = MaterialTheme.typography.bodyMedium,
                             fontStyle = FontStyle.Italic,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -575,7 +575,7 @@ private fun PhraseCard(
                             color = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.1f)
                         ) {
                             Text(
-                                text = phrase.usageContext,
+                                text = phrase.formality,
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.tertiary,
                                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)

@@ -1,6 +1,7 @@
 package com.prody.prashant.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.material3.MaterialTheme
@@ -20,13 +21,15 @@ fun ProdyCard(
     shape: Shape = CardShape,
     backgroundColor: Color = MaterialTheme.colorScheme.surface,
     elevation: Dp = 2.dp,
+    onClick: (() -> Unit)? = null,
     content: @Composable BoxScope.() -> Unit
 ) {
     Box(
         modifier = modifier
             .shadow(elevation = elevation, shape = shape, clip = false)
             .clip(shape)
-            .background(backgroundColor),
+            .background(backgroundColor)
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
         content = content
     )
 }

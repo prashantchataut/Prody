@@ -9,11 +9,11 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.prody.prashant.ui.screens.futuremessage.FutureMessageScreen
+import com.prody.prashant.ui.screens.futuremessage.FutureMessageListScreen
 import com.prody.prashant.ui.screens.futuremessage.WriteMessageScreen
 import com.prody.prashant.ui.screens.home.HomeScreen
 import com.prody.prashant.ui.screens.journal.JournalDetailScreen
-import com.prody.prashant.ui.screens.journal.JournalScreen
+import com.prody.prashant.ui.screens.journal.JournalListScreen
 import com.prody.prashant.ui.screens.journal.NewJournalEntryScreen
 import com.prody.prashant.ui.screens.onboarding.OnboardingScreen
 import com.prody.prashant.ui.screens.profile.ProfileScreen
@@ -111,15 +111,12 @@ fun ProdyNavHost(
         }
 
         composable(Screen.JournalList.route) {
-            JournalScreen(
+            JournalListScreen(
                 onNavigateToNewEntry = {
                     navController.navigate(Screen.NewJournalEntry.route)
                 },
                 onNavigateToDetail = { entryId ->
                     navController.navigate(Screen.JournalDetail.createRoute(entryId))
-                },
-                onNavigateBack = {
-                    navController.popBackStack()
                 }
             )
         }
@@ -151,7 +148,7 @@ fun ProdyNavHost(
         }
 
         composable(Screen.FutureMessageList.route) {
-            FutureMessageScreen(
+            FutureMessageListScreen(
                 onNavigateToWrite = {
                     navController.navigate(Screen.WriteMessage.route)
                 },

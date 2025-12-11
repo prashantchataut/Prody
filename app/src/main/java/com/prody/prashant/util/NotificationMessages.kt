@@ -21,6 +21,44 @@ object NotificationMessages {
         Triple("Your brain requested this", "A new word to flex those neural pathways. You're welcome.", "Let's see it")
     )
 
+    // Evening reflection notifications
+    val eveningReflection = listOf(
+        Triple("Reflect on your day", "As the sun sets, take a moment to journal your thoughts and feelings.", "Reflect now"),
+        Triple("Evening reflection time", "Buddha suggests a few moments of calm reflection before rest.", "Start reflecting"),
+        Triple("Your day deserves reflection", "What did you learn? What made you smile? Time to journal.", "Write it down"),
+        Triple("Unwind with reflection", "A quiet moment to review your day can transform your night.", "Begin reflection"),
+        Triple("Before you sleep", "Reflect on today's journey. Your journal is waiting.", "Open journal")
+    )
+
+    // Word of the day notifications
+    val wordOfDay = listOf(
+        Triple("Word of the day", "A new word to expand your vocabulary and impress your friends.", "Learn word"),
+        Triple("Daily vocabulary boost", "Today's word might just become your new favorite.", "Discover"),
+        Triple("Linguistic gem incoming", "A word that will make you sound remarkably eloquent.", "See word"),
+        Triple("Language adventure", "Your daily vocabulary challenge awaits.", "Accept challenge")
+    )
+
+    // Future message received notifications
+    val futureMessageReceived = listOf(
+        Triple("A message from past you!", "You scheduled this moment. It's time to read it.", "Open message"),
+        Triple("Time traveler alert!", "Your past self has a message waiting for today-you.", "Read now"),
+        Triple("Special delivery from yesterday", "A message you wrote to your future self just arrived.", "View message")
+    )
+
+    // Streak reminder notifications
+    val streakReminder = listOf(
+        Triple("Keep your streak alive", "One more journal entry to extend your awesome streak!", "Extend streak"),
+        Triple("Streak check", "Don't let your streak break today. One entry is all it takes.", "Write now"),
+        Triple("Your streak needs you", "Just one more journal entry to keep the momentum going.", "Complete today")
+    )
+
+    // Journal prompt notifications
+    val journalPrompt = listOf(
+        Triple("Time to journal", "Reflect on your day with a guided prompt.", "Start journaling"),
+        Triple("Journal inspiration", "A new prompt to guide your reflection.", "See prompt"),
+        Triple("Journaling moment", "Set aside 5 minutes to capture your thoughts.", "Begin")
+    )
+
     // Journal reminder notifications
     val journalReminders = listOf(
         Triple("Hey, how was your day?", "Buddha's been saving a spot for your thoughts. No judgment, just reflection.", "Open journal"),

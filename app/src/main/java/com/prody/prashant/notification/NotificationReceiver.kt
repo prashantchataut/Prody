@@ -110,7 +110,9 @@ class NotificationReceiver : BroadcastReceiver() {
     }
 
     private fun showEveningReflectionNotification(context: Context) {
-        val (title, body, _) = NotificationMessages.eveningReflection.random()
+        val notification = NotificationMessages.eveningReflection.random()
+        val title = notification.first
+        val body = notification.second
         showNotification(
             context = context,
             channelId = CHANNEL_ID_WISDOM,
@@ -122,7 +124,9 @@ class NotificationReceiver : BroadcastReceiver() {
     }
 
     private fun showWordOfDayNotification(context: Context) {
-        val (title, body, _) = NotificationMessages.wordOfDay.random()
+        val notification = NotificationMessages.wordOfDay.random()
+        val title = notification.first
+        val body = notification.second
         showNotification(
             context = context,
             channelId = CHANNEL_ID_WISDOM,
@@ -134,7 +138,8 @@ class NotificationReceiver : BroadcastReceiver() {
     }
 
     private fun showFutureMessageNotification(context: Context, title: String, body: String) {
-        val messageTitle = NotificationMessages.futureMessageReceived.random().first
+        val messageNotification = NotificationMessages.futureMessageReceived.random()
+        val messageTitle = messageNotification.first
         showNotification(
             context = context,
             channelId = CHANNEL_ID_FUTURE,
@@ -147,7 +152,9 @@ class NotificationReceiver : BroadcastReceiver() {
     }
 
     private fun showStreakReminderNotification(context: Context) {
-        val (title, body, _) = NotificationMessages.streakReminder.random()
+        val notification = NotificationMessages.streakReminder.random()
+        val title = notification.first
+        val body = notification.second
         showNotification(
             context = context,
             channelId = CHANNEL_ID_REMINDER,
@@ -159,7 +166,9 @@ class NotificationReceiver : BroadcastReceiver() {
     }
 
     private fun showJournalReminderNotification(context: Context) {
-        val (title, body, _) = NotificationMessages.journalPrompt.random()
+        val notification = NotificationMessages.journalPrompt.random()
+        val title = notification.first
+        val body = notification.second
         showNotification(
             context = context,
             channelId = CHANNEL_ID_REMINDER,

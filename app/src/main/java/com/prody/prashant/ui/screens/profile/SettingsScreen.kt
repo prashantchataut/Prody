@@ -97,7 +97,7 @@ fun SettingsScreen(
                 )
 
                 SettingsToggle(
-                    icon = Icons.Filled.LightbulbOutline,
+                    icon = Icons.Filled.Lightbulb,
                     title = "Daily Wisdom",
                     subtitle = "Get daily vocabulary and quotes",
                     checked = uiState.wisdomNotificationsEnabled,
