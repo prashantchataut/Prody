@@ -1,0 +1,50 @@
+# Handle line endings automatically for files detected as text
+# and leave all files detected as binary untouched
+* text=auto
+
+# Gradle wrapper jar must be binary
+gradle/wrapper/gradle-wrapper.jar binary
+
+# Java files
+*.java text
+
+# Kotlin files
+*.kt text
+*.kts text
+
+# Properties files
+*.properties text
+
+# XML files
+*.xml text
+
+# Gradle files
+*.gradle text
+
+# Shell scripts
+*.sh text eol=lf
+gradlew text eol=lf
+
+# Windows batch files
+*.bat text eol=crlf
+gradlew.bat text eol=crlf
+
+# Images
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+
+# Compiled files
+*.class binary
+*.jar binary
+*.war binary
+*.ear binary
+*.aar binary
+*.apk binary
+
+# Keystore files
+*.jks binary
+*.keystore binary

@@ -1,10 +1,10 @@
 # Prody Keystore
 
-This directory contains the signing keystore for release builds.
+This directory contains documentation for the signing keystore used in release builds.
 
 ## Open Source Keystore
 
-For open source contributions and testing, you can generate a keystore with these credentials:
+For open source contributions and testing, the GitHub Actions workflow automatically generates a keystore with the following credentials when no secrets are configured:
 
 ```bash
 keytool -genkeypair -v \
@@ -20,7 +20,7 @@ keytool -genkeypair -v \
 
 ## Keystore Credentials
 
-For open source builds:
+For open source builds (auto-generated):
 - **Keystore Password**: `prody2024`
 - **Key Alias**: `prody`
 - **Key Password**: `prody2024`
