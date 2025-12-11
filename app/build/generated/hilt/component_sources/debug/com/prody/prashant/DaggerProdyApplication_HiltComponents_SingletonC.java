@@ -451,45 +451,42 @@ public final class DaggerProdyApplication_HiltComponents_SingletonC {
 
     @IdentifierNameString
     private static final class LazyClassKeyProvider {
-      static String com_prody_prashant_ui_screens_profile_ProfileViewModel = "com.prody.prashant.ui.screens.profile.ProfileViewModel";
-
       static String com_prody_prashant_ui_screens_stats_StatsViewModel = "com.prody.prashant.ui.screens.stats.StatsViewModel";
 
-      static String com_prody_prashant_ui_screens_quotes_QuotesViewModel = "com.prody.prashant.ui.screens.quotes.QuotesViewModel";
+      static String com_prody_prashant_ui_screens_journal_JournalDetailViewModel = "com.prody.prashant.ui.screens.journal.JournalDetailViewModel";
 
-      static String com_prody_prashant_ui_screens_journal_JournalViewModel = "com.prody.prashant.ui.screens.journal.JournalViewModel";
+      static String com_prody_prashant_ui_screens_vocabulary_VocabularyDetailViewModel = "com.prody.prashant.ui.screens.vocabulary.VocabularyDetailViewModel";
 
       static String com_prody_prashant_ui_screens_vocabulary_VocabularyListViewModel = "com.prody.prashant.ui.screens.vocabulary.VocabularyListViewModel";
 
       static String com_prody_prashant_ui_screens_journal_NewJournalEntryViewModel = "com.prody.prashant.ui.screens.journal.NewJournalEntryViewModel";
 
-      static String com_prody_prashant_ui_screens_journal_JournalDetailViewModel = "com.prody.prashant.ui.screens.journal.JournalDetailViewModel";
+      static String com_prody_prashant_ui_screens_onboarding_OnboardingViewModel = "com.prody.prashant.ui.screens.onboarding.OnboardingViewModel";
 
-      static String com_prody_prashant_ui_screens_home_HomeViewModel = "com.prody.prashant.ui.screens.home.HomeViewModel";
-
-      static String com_prody_prashant_ui_screens_profile_SettingsViewModel = "com.prody.prashant.ui.screens.profile.SettingsViewModel";
+      static String com_prody_prashant_ui_screens_profile_ProfileViewModel = "com.prody.prashant.ui.screens.profile.ProfileViewModel";
 
       static String com_prody_prashant_ui_screens_meditation_MeditationTimerViewModel = "com.prody.prashant.ui.screens.meditation.MeditationTimerViewModel";
 
-      static String com_prody_prashant_ui_screens_vocabulary_VocabularyDetailViewModel = "com.prody.prashant.ui.screens.vocabulary.VocabularyDetailViewModel";
-
-      static String com_prody_prashant_ui_screens_futuremessage_FutureMessageViewModel = "com.prody.prashant.ui.screens.futuremessage.FutureMessageViewModel";
+      static String com_prody_prashant_ui_screens_profile_SettingsViewModel = "com.prody.prashant.ui.screens.profile.SettingsViewModel";
 
       static String com_prody_prashant_ui_screens_futuremessage_WriteMessageViewModel = "com.prody.prashant.ui.screens.futuremessage.WriteMessageViewModel";
 
-      static String com_prody_prashant_ui_screens_onboarding_OnboardingViewModel = "com.prody.prashant.ui.screens.onboarding.OnboardingViewModel";
+      static String com_prody_prashant_ui_screens_futuremessage_FutureMessageViewModel = "com.prody.prashant.ui.screens.futuremessage.FutureMessageViewModel";
 
-      @KeepFieldType
-      ProfileViewModel com_prody_prashant_ui_screens_profile_ProfileViewModel2;
+      static String com_prody_prashant_ui_screens_journal_JournalViewModel = "com.prody.prashant.ui.screens.journal.JournalViewModel";
+
+      static String com_prody_prashant_ui_screens_home_HomeViewModel = "com.prody.prashant.ui.screens.home.HomeViewModel";
+
+      static String com_prody_prashant_ui_screens_quotes_QuotesViewModel = "com.prody.prashant.ui.screens.quotes.QuotesViewModel";
 
       @KeepFieldType
       StatsViewModel com_prody_prashant_ui_screens_stats_StatsViewModel2;
 
       @KeepFieldType
-      QuotesViewModel com_prody_prashant_ui_screens_quotes_QuotesViewModel2;
+      JournalDetailViewModel com_prody_prashant_ui_screens_journal_JournalDetailViewModel2;
 
       @KeepFieldType
-      JournalViewModel com_prody_prashant_ui_screens_journal_JournalViewModel2;
+      VocabularyDetailViewModel com_prody_prashant_ui_screens_vocabulary_VocabularyDetailViewModel2;
 
       @KeepFieldType
       VocabularyListViewModel com_prody_prashant_ui_screens_vocabulary_VocabularyListViewModel2;
@@ -498,28 +495,31 @@ public final class DaggerProdyApplication_HiltComponents_SingletonC {
       NewJournalEntryViewModel com_prody_prashant_ui_screens_journal_NewJournalEntryViewModel2;
 
       @KeepFieldType
-      JournalDetailViewModel com_prody_prashant_ui_screens_journal_JournalDetailViewModel2;
+      OnboardingViewModel com_prody_prashant_ui_screens_onboarding_OnboardingViewModel2;
 
       @KeepFieldType
-      HomeViewModel com_prody_prashant_ui_screens_home_HomeViewModel2;
-
-      @KeepFieldType
-      SettingsViewModel com_prody_prashant_ui_screens_profile_SettingsViewModel2;
+      ProfileViewModel com_prody_prashant_ui_screens_profile_ProfileViewModel2;
 
       @KeepFieldType
       MeditationTimerViewModel com_prody_prashant_ui_screens_meditation_MeditationTimerViewModel2;
 
       @KeepFieldType
-      VocabularyDetailViewModel com_prody_prashant_ui_screens_vocabulary_VocabularyDetailViewModel2;
-
-      @KeepFieldType
-      FutureMessageViewModel com_prody_prashant_ui_screens_futuremessage_FutureMessageViewModel2;
+      SettingsViewModel com_prody_prashant_ui_screens_profile_SettingsViewModel2;
 
       @KeepFieldType
       WriteMessageViewModel com_prody_prashant_ui_screens_futuremessage_WriteMessageViewModel2;
 
       @KeepFieldType
-      OnboardingViewModel com_prody_prashant_ui_screens_onboarding_OnboardingViewModel2;
+      FutureMessageViewModel com_prody_prashant_ui_screens_futuremessage_FutureMessageViewModel2;
+
+      @KeepFieldType
+      JournalViewModel com_prody_prashant_ui_screens_journal_JournalViewModel2;
+
+      @KeepFieldType
+      HomeViewModel com_prody_prashant_ui_screens_home_HomeViewModel2;
+
+      @KeepFieldType
+      QuotesViewModel com_prody_prashant_ui_screens_quotes_QuotesViewModel2;
     }
   }
 
@@ -599,57 +599,45 @@ public final class DaggerProdyApplication_HiltComponents_SingletonC {
 
     @IdentifierNameString
     private static final class LazyClassKeyProvider {
-      static String com_prody_prashant_ui_screens_journal_JournalDetailViewModel = "com.prody.prashant.ui.screens.journal.JournalDetailViewModel";
+      static String com_prody_prashant_ui_screens_stats_StatsViewModel = "com.prody.prashant.ui.screens.stats.StatsViewModel";
 
       static String com_prody_prashant_ui_screens_vocabulary_VocabularyDetailViewModel = "com.prody.prashant.ui.screens.vocabulary.VocabularyDetailViewModel";
 
-      static String com_prody_prashant_ui_screens_journal_JournalViewModel = "com.prody.prashant.ui.screens.journal.JournalViewModel";
-
-      static String com_prody_prashant_ui_screens_stats_StatsViewModel = "com.prody.prashant.ui.screens.stats.StatsViewModel";
-
-      static String com_prody_prashant_ui_screens_quotes_QuotesViewModel = "com.prody.prashant.ui.screens.quotes.QuotesViewModel";
+      static String com_prody_prashant_ui_screens_profile_SettingsViewModel = "com.prody.prashant.ui.screens.profile.SettingsViewModel";
 
       static String com_prody_prashant_ui_screens_futuremessage_WriteMessageViewModel = "com.prody.prashant.ui.screens.futuremessage.WriteMessageViewModel";
-
-      static String com_prody_prashant_ui_screens_onboarding_OnboardingViewModel = "com.prody.prashant.ui.screens.onboarding.OnboardingViewModel";
-
-      static String com_prody_prashant_ui_screens_vocabulary_VocabularyListViewModel = "com.prody.prashant.ui.screens.vocabulary.VocabularyListViewModel";
 
       static String com_prody_prashant_ui_screens_journal_NewJournalEntryViewModel = "com.prody.prashant.ui.screens.journal.NewJournalEntryViewModel";
 
       static String com_prody_prashant_ui_screens_meditation_MeditationTimerViewModel = "com.prody.prashant.ui.screens.meditation.MeditationTimerViewModel";
 
-      static String com_prody_prashant_ui_screens_profile_SettingsViewModel = "com.prody.prashant.ui.screens.profile.SettingsViewModel";
+      static String com_prody_prashant_ui_screens_onboarding_OnboardingViewModel = "com.prody.prashant.ui.screens.onboarding.OnboardingViewModel";
+
+      static String com_prody_prashant_ui_screens_quotes_QuotesViewModel = "com.prody.prashant.ui.screens.quotes.QuotesViewModel";
 
       static String com_prody_prashant_ui_screens_futuremessage_FutureMessageViewModel = "com.prody.prashant.ui.screens.futuremessage.FutureMessageViewModel";
 
       static String com_prody_prashant_ui_screens_home_HomeViewModel = "com.prody.prashant.ui.screens.home.HomeViewModel";
 
+      static String com_prody_prashant_ui_screens_journal_JournalViewModel = "com.prody.prashant.ui.screens.journal.JournalViewModel";
+
+      static String com_prody_prashant_ui_screens_journal_JournalDetailViewModel = "com.prody.prashant.ui.screens.journal.JournalDetailViewModel";
+
+      static String com_prody_prashant_ui_screens_vocabulary_VocabularyListViewModel = "com.prody.prashant.ui.screens.vocabulary.VocabularyListViewModel";
+
       static String com_prody_prashant_ui_screens_profile_ProfileViewModel = "com.prody.prashant.ui.screens.profile.ProfileViewModel";
-
-      @KeepFieldType
-      JournalDetailViewModel com_prody_prashant_ui_screens_journal_JournalDetailViewModel2;
-
-      @KeepFieldType
-      VocabularyDetailViewModel com_prody_prashant_ui_screens_vocabulary_VocabularyDetailViewModel2;
-
-      @KeepFieldType
-      JournalViewModel com_prody_prashant_ui_screens_journal_JournalViewModel2;
 
       @KeepFieldType
       StatsViewModel com_prody_prashant_ui_screens_stats_StatsViewModel2;
 
       @KeepFieldType
-      QuotesViewModel com_prody_prashant_ui_screens_quotes_QuotesViewModel2;
+      VocabularyDetailViewModel com_prody_prashant_ui_screens_vocabulary_VocabularyDetailViewModel2;
+
+      @KeepFieldType
+      SettingsViewModel com_prody_prashant_ui_screens_profile_SettingsViewModel2;
 
       @KeepFieldType
       WriteMessageViewModel com_prody_prashant_ui_screens_futuremessage_WriteMessageViewModel2;
-
-      @KeepFieldType
-      OnboardingViewModel com_prody_prashant_ui_screens_onboarding_OnboardingViewModel2;
-
-      @KeepFieldType
-      VocabularyListViewModel com_prody_prashant_ui_screens_vocabulary_VocabularyListViewModel2;
 
       @KeepFieldType
       NewJournalEntryViewModel com_prody_prashant_ui_screens_journal_NewJournalEntryViewModel2;
@@ -658,13 +646,25 @@ public final class DaggerProdyApplication_HiltComponents_SingletonC {
       MeditationTimerViewModel com_prody_prashant_ui_screens_meditation_MeditationTimerViewModel2;
 
       @KeepFieldType
-      SettingsViewModel com_prody_prashant_ui_screens_profile_SettingsViewModel2;
+      OnboardingViewModel com_prody_prashant_ui_screens_onboarding_OnboardingViewModel2;
+
+      @KeepFieldType
+      QuotesViewModel com_prody_prashant_ui_screens_quotes_QuotesViewModel2;
 
       @KeepFieldType
       FutureMessageViewModel com_prody_prashant_ui_screens_futuremessage_FutureMessageViewModel2;
 
       @KeepFieldType
       HomeViewModel com_prody_prashant_ui_screens_home_HomeViewModel2;
+
+      @KeepFieldType
+      JournalViewModel com_prody_prashant_ui_screens_journal_JournalViewModel2;
+
+      @KeepFieldType
+      JournalDetailViewModel com_prody_prashant_ui_screens_journal_JournalDetailViewModel2;
+
+      @KeepFieldType
+      VocabularyListViewModel com_prody_prashant_ui_screens_vocabulary_VocabularyListViewModel2;
 
       @KeepFieldType
       ProfileViewModel com_prody_prashant_ui_screens_profile_ProfileViewModel2;

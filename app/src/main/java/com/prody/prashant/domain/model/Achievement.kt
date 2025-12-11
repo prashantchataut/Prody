@@ -1,6 +1,7 @@
 package com.prody.prashant.domain.model
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -94,7 +95,7 @@ object Achievements {
             id = "words_10",
             name = "Word Explorer",
             description = "Learn 10 new words",
-            icon = Icons.Filled.MenuBook,
+            icon = Icons.AutoMirrored.Filled.MenuBook,
             category = AchievementCategory.LEARNING,
             rarity = AchievementRarity.COMMON,
             requirement = 10,

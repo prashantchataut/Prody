@@ -1,0 +1,490 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<incidents format="6" by="lint 8.7.2" type="incidents">
+
+    <incident
+        id="OldTargetApi"
+        severity="warning"
+        message="Not targeting the latest versions of Android; compatibility modes apply. Consider testing and updating this version. Consult the `android.os.Build.VERSION_CODES` javadoc for details.">
+        <fix-replace
+            description="Update targetSdkVersion to 36"
+            oldString="35"
+            replacement="36"
+            priority="0"/>
+        <location
+            file="${:app*projectDir}/build.gradle.kts"
+            line="17"
+            column="9"
+            startOffset="398"
+            endLine="17"
+            endColumn="23"
+            endOffset="412"/>
+    </incident>
+
+    <incident
+        id="RemoveWorkManagerInitializer"
+        severity="fatal"
+        message="Remove androidx.work.WorkManagerInitializer from your AndroidManifest.xml when using on-demand initialization.">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*manifest*0}"
+            line="11"
+            column="5"
+            startOffset="542"
+            endLine="61"
+            endColumn="19"
+            endOffset="2462"/>
+    </incident>
+
+    <incident
+        id="VectorRaster"
+        severity="warning"
+        message="Limit vector icons sizes to 200×200 to keep icon drawing fast; see https://developer.android.com/studio/write/vector-asset-studio#when for more">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*resDir*0}/drawable/ic_splash_logo.xml"
+            line="3"
+            column="20"
+            startOffset="127"
+            endLine="3"
+            endColumn="25"
+            endOffset="132"/>
+    </incident>
+
+    <incident
+        id="AndroidGradlePluginVersion"
+        severity="warning"
+        message="A newer version of com.android.application than 8.7.2 is available: 8.13.2. (There is also a newer version of 8.7.𝑥 available, if upgrading to 8.13.2 is difficult: 8.7.3)">
+        <fix-alternatives>
+            <fix-replace
+                description="Change to 8.13.2"
+                family="Update versions"
+                oldString="8.7.2"
+                replacement="8.13.2"
+                priority="0"/>
+            <fix-replace
+                description="Change to 8.7.3"
+                family="Update versions"
+                robot="true"
+                independent="true"
+                oldString="8.7.2"
+                replacement="8.7.3"
+                priority="0"/>
+        </fix-alternatives>
+        <location
+            file="../gradle/libs.versions.toml"
+            line="2"
+            column="7"
+            startOffset="18"
+            endLine="2"
+            endColumn="14"
+            endOffset="25"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of com.android.tools:desugar_jdk_libs than 2.1.3 is available: 2.1.5">
+        <fix-replace
+            description="Change to 2.1.5"
+            family="Update versions"
+            oldString="2.1.3"
+            replacement="2.1.5"
+            priority="0"/>
+        <location
+            file="${:app*projectDir}/build.gradle.kts"
+            line="149"
+            column="27"
+            startOffset="4362"
+            endLine="149"
+            endColumn="69"
+            endOffset="4404"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.core:core-ktx than 1.15.0 is available: 1.17.0">
+        <fix-replace
+            description="Change to 1.17.0"
+            family="Update versions"
+            oldString="1.15.0"
+            replacement="1.17.0"
+            priority="0"/>
+        <location
+            file="../gradle/libs.versions.toml"
+            line="4"
+            column="11"
+            startOffset="56"
+            endLine="4"
+            endColumn="19"
+            endOffset="64"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.lifecycle:lifecycle-runtime-compose than 2.8.7 is available: 2.10.0">
+        <fix-replace
+            description="Change to 2.10.0"
+            family="Update versions"
+            oldString="2.8.7"
+            replacement="2.10.0"
+            priority="0"/>
+        <location
+            file="../gradle/libs.versions.toml"
+            line="5"
+            column="23"
+            startOffset="88"
+            endLine="5"
+            endColumn="30"
+            endOffset="95"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.lifecycle:lifecycle-runtime-ktx than 2.8.7 is available: 2.10.0">
+        <fix-replace
+            description="Change to 2.10.0"
+            family="Update versions"
+            oldString="2.8.7"
+            replacement="2.10.0"
+            priority="0"/>
+        <location
+            file="../gradle/libs.versions.toml"
+            line="5"
+            column="23"
+            startOffset="88"
+            endLine="5"
+            endColumn="30"
+            endOffset="95"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.lifecycle:lifecycle-viewmodel-compose than 2.8.7 is available: 2.10.0">
+        <fix-replace
+            description="Change to 2.10.0"
+            family="Update versions"
+            oldString="2.8.7"
+            replacement="2.10.0"
+            priority="0"/>
+        <location
+            file="../gradle/libs.versions.toml"
+            line="5"
+            column="23"
+            startOffset="88"
+            endLine="5"
+            endColumn="30"
+            endOffset="95"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.activity:activity-compose than 1.9.3 is available: 1.12.1">
+        <fix-replace
+            description="Change to 1.12.1"
+            family="Update versions"
+            oldString="1.9.3"
+            replacement="1.12.1"
+            priority="0"/>
+        <location
+            file="../gradle/libs.versions.toml"
+            line="6"
+            column="19"
+            startOffset="115"
+            endLine="6"
+            endColumn="26"
+            endOffset="122"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.compose:compose-bom than 2024.11.00 is available: 2025.12.00">
+        <fix-replace
+            description="Change to 2025.12.00"
+            family="Update versions"
+            oldString="2024.11.00"
+            replacement="2025.12.00"
+            priority="0"/>
+        <location
+            file="../gradle/libs.versions.toml"
+            line="7"
+            column="14"
+            startOffset="137"
+            endLine="7"
+            endColumn="26"
+            endOffset="149"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.navigation:navigation-compose than 2.8.4 is available: 2.9.6">
+        <fix-replace
+            description="Change to 2.9.6"
+            family="Update versions"
+            oldString="2.8.4"
+            replacement="2.9.6"
+            priority="0"/>
+        <location
+            file="../gradle/libs.versions.toml"
+            line="8"
+            column="21"
+            startOffset="171"
+            endLine="8"
+            endColumn="28"
+            endOffset="178"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.room:room-compiler than 2.6.1 is available: 2.8.4">
+        <fix-replace
+            description="Change to 2.8.4"
+            family="Update versions"
+            oldString="2.6.1"
+            replacement="2.8.4"
+            priority="0"/>
+        <location
+            file="../gradle/libs.versions.toml"
+            line="9"
+            column="8"
+            startOffset="187"
+            endLine="9"
+            endColumn="15"
+            endOffset="194"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.room:room-ktx than 2.6.1 is available: 2.8.4">
+        <fix-replace
+            description="Change to 2.8.4"
+            family="Update versions"
+            oldString="2.6.1"
+            replacement="2.8.4"
+            priority="0"/>
+        <location
+            file="../gradle/libs.versions.toml"
+            line="9"
+            column="8"
+            startOffset="187"
+            endLine="9"
+            endColumn="15"
+            endOffset="194"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.room:room-runtime than 2.6.1 is available: 2.8.4">
+        <fix-replace
+            description="Change to 2.8.4"
+            family="Update versions"
+            oldString="2.6.1"
+            replacement="2.8.4"
+            priority="0"/>
+        <location
+            file="../gradle/libs.versions.toml"
+            line="9"
+            column="8"
+            startOffset="187"
+            endLine="9"
+            endColumn="15"
+            endOffset="194"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.hilt:hilt-navigation-compose than 1.2.0 is available: 1.3.0">
+        <fix-replace
+            description="Change to 1.3.0"
+            family="Update versions"
+            oldString="1.2.0"
+            replacement="1.3.0"
+            priority="0"/>
+        <location
+            file="../gradle/libs.versions.toml"
+            line="11"
+            column="25"
+            startOffset="235"
+            endLine="11"
+            endColumn="32"
+            endOffset="242"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.datastore:datastore-preferences than 1.1.1 is available: 1.2.0">
+        <fix-replace
+            description="Change to 1.2.0"
+            family="Update versions"
+            oldString="1.1.1"
+            replacement="1.2.0"
+            priority="0"/>
+        <location
+            file="../gradle/libs.versions.toml"
+            line="12"
+            column="13"
+            startOffset="256"
+            endLine="12"
+            endColumn="20"
+            endOffset="263"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.core:core-splashscreen than 1.0.1 is available: 1.2.0">
+        <fix-replace
+            description="Change to 1.2.0"
+            family="Update versions"
+            oldString="1.0.1"
+            replacement="1.2.0"
+            priority="0"/>
+        <location
+            file="../gradle/libs.versions.toml"
+            line="16"
+            column="16"
+            startOffset="350"
+            endLine="16"
+            endColumn="23"
+            endOffset="357"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.work:work-runtime-ktx than 2.10.0 is available: 2.11.0">
+        <fix-replace
+            description="Change to 2.11.0"
+            family="Update versions"
+            oldString="2.10.0"
+            replacement="2.11.0"
+            priority="0"/>
+        <location
+            file="../gradle/libs.versions.toml"
+            line="19"
+            column="15"
+            startOffset="413"
+            endLine="19"
+            endColumn="23"
+            endOffset="421"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.hilt:hilt-compiler than 1.2.0 is available: 1.3.0">
+        <fix-replace
+            description="Change to 1.3.0"
+            family="Update versions"
+            oldString="1.2.0"
+            replacement="1.3.0"
+            priority="0"/>
+        <location
+            file="../gradle/libs.versions.toml"
+            line="20"
+            column="12"
+            startOffset="434"
+            endLine="20"
+            endColumn="19"
+            endOffset="441"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.hilt:hilt-work than 1.2.0 is available: 1.3.0">
+        <fix-replace
+            description="Change to 1.3.0"
+            family="Update versions"
+            oldString="1.2.0"
+            replacement="1.3.0"
+            priority="0"/>
+        <location
+            file="../gradle/libs.versions.toml"
+            line="20"
+            column="12"
+            startOffset="434"
+            endLine="20"
+            endColumn="19"
+            endOffset="441"/>
+    </incident>
+
+    <incident
+        id="TypographyEllipsis"
+        severity="warning"
+        message="Replace &quot;...&quot; with ellipsis character (…, &amp;#8230;) ?">
+        <fix-replace
+            description="Replace with …"
+            oldString="..."
+            replacement="…"
+            priority="0"/>
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*resDir*0}/values/strings.xml"
+            line="48"
+            column="40"
+            startOffset="2673"
+            endLine="48"
+            endColumn="83"
+            endOffset="2716"/>
+    </incident>
+
+    <incident
+        id="UseTomlInstead"
+        severity="warning"
+        message="Use version catalog instead">
+        <fix-composite
+            description="Replace with new library catalog declaration for desugar_jdk_libs"
+            robot="true">
+            <fix-replace
+                description="Replace with desugar_jdk_libs = &quot;2.1.3&quot;..."
+                robot="true"
+                oldString="_lint_insert_begin_"
+                replacement="desugar_jdk_libs = &quot;2.1.3&quot;&#xA;"
+                priority="0">
+                <range
+                    file="../gradle/libs.versions.toml"
+                    startOffset="27"
+                    endOffset="27"/>
+            </fix-replace>
+            <fix-replace
+                description="Replace with desugar_jdk_libs = { module = &quot;com.android.tools:desugar_jdk_libs&quot;, version.ref = &quot;desugar_jdk_libs&quot; }..."
+                robot="true"
+                oldString="_lint_insert_begin_"
+                replacement="desugar_jdk_libs = { module = &quot;com.android.tools:desugar_jdk_libs&quot;, version.ref = &quot;desugar_jdk_libs&quot; }&#xA;"
+                priority="0">
+                <range
+                    file="../gradle/libs.versions.toml"
+                    startOffset="2770"
+                    endOffset="2770"/>
+            </fix-replace>
+            <fix-replace
+                description="Replace with libs.desugar.jdk.libs"
+                robot="true"
+                replacement="libs.desugar.jdk.libs"
+                priority="0">
+                <range
+                    file="${:app*projectDir}/build.gradle.kts"
+                    startOffset="4362"
+                    endOffset="4404"/>
+            </fix-replace>
+        </fix-composite>
+        <location
+            file="${:app*projectDir}/build.gradle.kts"
+            line="149"
+            column="27"
+            startOffset="4362"
+            endLine="149"
+            endColumn="69"
+            endOffset="4404"/>
+    </incident>
+
+</incidents>

@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<incidents format="6" by="lint 8.7.2" type="conditional_incidents">
+
+    <incident
+        id="MissingPermission"
+        severity="warning"
+        message="">
+        <fix-data missing="android.permission.SCHEDULE_EXACT_ALARM" message="Missing permissions required by AlarmManager.setExactAndAllowWhileIdle: %1$s" lastApi="2147483647"/>
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/prody/prashant/notification/NotificationScheduler.kt"
+            line="232"
+            column="17"
+            startOffset="7851"
+            endLine="236"
+            endColumn="18"
+            endOffset="8020"/>
+        <map>
+            <condition targetGE="31"/>
+            <entry
+                name="message"
+                string="Setting Exact alarms with `setExactAndAllowWhileIdle` requires the `SCHEDULE_EXACT_ALARM` permission or power exemption from user; it is intended for applications where the user knowingly schedules actions to happen at a precise time such as alarms, clocks, calendars, etc. Check out the javadoc on this permission to make sure your use case is valid."/>
+            <entry
+                name="requirement"
+                string="?android.permission.SCHEDULE_EXACT_ALARM"/>
+        </map>
+    </incident>
+
+    <incident
+        id="MissingPermission"
+        severity="warning"
+        message="">
+        <fix-data missing="android.permission.SCHEDULE_EXACT_ALARM" message="Missing permissions required by AlarmManager.setExactAndAllowWhileIdle: %1$s" lastApi="2147483647"/>
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/prody/prashant/notification/NotificationScheduler.kt"
+            line="245"
+            column="13"
+            startOffset="8266"
+            endLine="249"
+            endColumn="14"
+            endOffset="8419"/>
+        <map>
+            <condition targetGE="31"/>
+            <entry
+                name="message"
+                string="Setting Exact alarms with `setExactAndAllowWhileIdle` requires the `SCHEDULE_EXACT_ALARM` permission or power exemption from user; it is intended for applications where the user knowingly schedules actions to happen at a precise time such as alarms, clocks, calendars, etc. Check out the javadoc on this permission to make sure your use case is valid."/>
+            <entry
+                name="requirement"
+                string="?android.permission.SCHEDULE_EXACT_ALARM"/>
+        </map>
+    </incident>
+
+    <incident
+        id="ExactAlarm"
+        severity="error"
+        message="`USE_EXACT_ALARM` can only be used when targeting API level 33 or higher">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*manifest*0}"
+            line="7"
+            column="36"
+            startOffset="360"
+            endLine="7"
+            endColumn="70"
+            endOffset="394"/>
+        <map>
+            <condition targetLT="33"/>
+        </map>
+    </incident>
+
+    <incident
+        id="NotificationPermission"
+        severity="error"
+        message="When targeting Android 13 or higher, posting a permission requires holding the `POST_NOTIFICATIONS` permission">
+        <fix-data missing="android.permission.POST_NOTIFICATIONS"/>
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/com/prody/prashant/notification/NotificationReceiver.kt"
+            line="213"
+            column="9"
+            startOffset="8363"
+            endLine="213"
+            endColumn="85"
+            endOffset="8439"/>
+    </incident>
+
+    <incident
+        id="ObsoleteSdkInt"
+        severity="warning"
+        message="Unnecessary; SDK_INT is always >= 35">
+        <fix-replace
+            description="Delete tools:targetApi"
+            replacement=""
+            priority="0">
+            <range
+                file="${:app*debug*MAIN*sourceProvider*0*manifest*0}"
+                startOffset="984"
+                endOffset="1004"/>
+        </fix-replace>
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*manifest*0}"
+            line="21"
+            column="9"
+            startOffset="984"
+            endLine="21"
+            endColumn="29"
+            endOffset="1004"/>
+        <map>
+            <condition minGE="fffffffc00000000"/>
+        </map>
+    </incident>
+
+</incidents>

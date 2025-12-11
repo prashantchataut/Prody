@@ -4,6 +4,25 @@
             "outputFile": "com.prody.prashant.app-mergeDebugResources-72:/values-v27/values-v27.xml",
             "map": [
                 {
+                    "source": "C:\\projects\\Prody\\Prody\\app\\src\\main\\res\\values-v27\\themes.xml",
+                    "from": {
+                        "startLines": "3,10",
+                        "startColumns": "4,4",
+                        "startOffsets": "59,449",
+                        "endLines": "8,15",
+                        "endColumns": "12,12",
+                        "endOffsets": "441,832"
+                    },
+                    "to": {
+                        "startLines": "10,16",
+                        "startColumns": "4,4",
+                        "startOffsets": "593,975",
+                        "endLines": "15,21",
+                        "endColumns": "12,12",
+                        "endOffsets": "970,1353"
+                    }
+                },
+                {
                     "source": "C:\\Users\\MMT\\.gradle\\caches\\8.9\\transforms\\0af6697cf8ea16062098e274b66d4f42\\transformed\\core-splashscreen-1.0.1\\res\\values-v27\\values-v27.xml",
                     "from": {
                         "startLines": "2,3,4,7",

@@ -183,7 +183,7 @@ fun OnboardingScreen(
                             colors = ButtonDefaults.outlinedButtonColors(
                                 contentColor = Color.White
                             ),
-                            border = BorderStroke(
+                            border = ButtonDefaults.outlinedButtonBorder(enabled = true).copy(
                                 width = 1.dp,
                                 brush = Brush.horizontalGradient(
                                     colors = listOf(Color.White.copy(alpha = 0.5f), Color.White.copy(alpha = 0.5f))
