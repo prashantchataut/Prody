@@ -6,150 +6,32 @@
     android:viewportHeight="108">
 
     <!--
-        PRODY MONOCHROME LOGO - "The Ascending Path"
+        PRODY MONOCHROME LOGO PLACEHOLDER
         For Android 13+ themed icon support.
         Single color version that adapts to system theme colors.
+
+        Replace this with your custom monochrome logo.
     -->
 
-    <!-- Base Arc - Foundation/Grounding (bottom) -->
-    <path
-        android:fillColor="#000000"
-        android:pathData="
-            M30,62
-            Q30,74 42,78
-            Q54,82 66,78
-            Q78,74 78,62
-            Q78,66 72,70
-            Q66,74 54,76
-            Q42,74 36,70
-            Q30,66 30,62
-            Z" />
+    <!-- Simple placeholder circle with "P" for Prody -->
+    <group
+        android:translateX="54"
+        android:translateY="54">
 
-    <!-- Middle Arc - Growth/Learning (rising) -->
-    <path
-        android:fillColor="#000000"
-        android:pathData="
-            M34,52
-            Q34,64 46,68
-            Q54,70 62,68
-            Q74,64 74,52
-            Q74,58 68,62
-            Q62,66 54,66
-            Q46,66 40,62
-            Q34,58 34,52
-            Z" />
+        <!-- Outer circle -->
+        <path
+            android:fillColor="#000000"
+            android:pathData="M0,0m-28,0a28,28 0,1 1,56 0a28,28 0,1 1,-56 0" />
 
-    <!-- Top Crescent - Aspiration/Enlightenment -->
-    <path
-        android:fillColor="#000000"
-        android:pathData="
-            M38,42
-            Q38,52 48,56
-            Q54,58 60,56
-            Q70,52 70,42
-            Q70,48 64,50
-            Q58,52 54,52
-            Q50,52 44,50
-            Q38,48 38,42
-            Z" />
+        <!-- Inner circle (cutout effect) -->
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M0,0m-24,0a24,24 0,1 1,48 0a24,24 0,1 1,-48 0" />
 
-    <!-- Central Focal Point - Core Self -->
-    <path
-        android:fillColor="#000000"
-        android:pathData="
-            M54,54
-            m-8,0
-            a8,8 0,1 1,16 0
-            a8,8 0,1 1,-16 0" />
-
-    <!-- Rising Line - Upward Journey (left) -->
-    <path
-        android:fillColor="#000000"
-        android:pathData="
-            M40,70
-            Q38,60 42,48
-            Q44,40 50,34
-            L52,36
-            Q46,42 44,50
-            Q42,60 44,68
-            Z" />
-
-    <!-- Rising Line - Upward Journey (right) -->
-    <path
-        android:fillColor="#000000"
-        android:pathData="
-            M68,70
-            Q70,60 66,48
-            Q64,40 58,34
-            L56,36
-            Q62,42 64,50
-            Q66,60 64,68
-            Z" />
-
-    <!-- Radiant Accent - Wisdom Star (top) -->
-    <path
-        android:fillColor="#000000"
-        android:pathData="
-            M54,26
-            L55,30
-            L59,28
-            L57,32
-            L61,33
-            L57,35
-            L59,39
-            L55,37
-            L54,41
-            L53,37
-            L49,39
-            L51,35
-            L47,33
-            L51,32
-            L49,28
-            L53,30
-            Z" />
-
-    <!-- Secondary Accent - Growth Spark (right) -->
-    <path
-        android:fillColor="#000000"
-        android:pathData="
-            M76,40
-            L77,43
-            L80,41
-            L78,44
-            L81,45
-            L78,47
-            L80,50
-            L77,48
-            L76,51
-            L75,48
-            L72,50
-            L74,47
-            L71,45
-            L74,44
-            L72,41
-            L75,43
-            Z" />
-
-    <!-- Tertiary Accent - Balance Spark (left) -->
-    <path
-        android:fillColor="#000000"
-        android:pathData="
-            M32,40
-            L33,42
-            L35,41
-            L34,43
-            L36,44
-            L34,45
-            L35,47
-            L33,46
-            L32,48
-            L31,46
-            L29,47
-            L30,45
-            L28,44
-            L30,43
-            L29,41
-            L31,42
-            Z" />
+        <!-- Letter P stylized -->
+        <path
+            android:fillColor="#000000"
+            android:pathData="M-8,-16 L-8,16 L-2,16 L-2,4 L4,4 C12,4 12,-8 4,-8 L-2,-8 L-2,-16 Z M-2,-2 L-2,-8 L3,-8 C6,-8 6,-2 3,-2 Z" />
+    </group>
 
 </vector>

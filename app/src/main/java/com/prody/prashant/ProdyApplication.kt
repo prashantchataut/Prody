@@ -23,7 +23,12 @@ class ProdyApplication : Application(), Configuration.Provider {
 
     override fun onCreate() {
         super.onCreate()
-        createNotificationChannels()
+        try {
+            createNotificationChannels()
+        } catch (e: Exception) {
+            // Log error but don't crash the app - notifications are not critical for launch
+            android.util.Log.e("ProdyApplication", "Failed to create notification channels", e)
+        }
     }
 
     private fun createNotificationChannels() {
