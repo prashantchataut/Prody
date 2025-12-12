@@ -1,7 +1,11 @@
 package com.prody.prashant.ui.screens.profile
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -13,11 +17,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.BuildConfig
 import com.prody.prashant.R
+import com.prody.prashant.data.ai.GeminiModel
 import com.prody.prashant.ui.components.ProdyCard
 
 @Composable
@@ -133,6 +141,20 @@ fun SettingsScreen(
                     onCheckedChange = { viewModel.setCompactView(it) }
                 )
             }
+
+            // Buddha AI (Gemini) section
+            GeminiAiSettingsSection(
+                apiKey = uiState.geminiApiKey,
+                selectedModel = uiState.geminiModel,
+                buddhaEnabled = uiState.buddhaAiEnabled,
+                isTestingConnection = uiState.isTestingConnection,
+                connectionTestResult = uiState.connectionTestResult,
+                onApiKeyChange = { viewModel.setGeminiApiKey(it) },
+                onModelChange = { viewModel.setGeminiModel(it) },
+                onBuddhaEnabledChange = { viewModel.setBuddhaAiEnabled(it) },
+                onTestConnection = { viewModel.testGeminiConnection() },
+                onClearTestResult = { viewModel.clearConnectionTestResult() }
+            )
 
             // About section
             SettingsSection(title = stringResource(R.string.about)) {
@@ -264,5 +286,278 @@ private fun SettingsToggle(
             onCheckedChange = onCheckedChange,
             enabled = enabled
         )
+    }
+}
+
+@Composable
+private fun GeminiAiSettingsSection(
+    apiKey: String,
+    selectedModel: String,
+    buddhaEnabled: Boolean,
+    isTestingConnection: Boolean,
+    connectionTestResult: String?,
+    onApiKeyChange: (String) -> Unit,
+    onModelChange: (String) -> Unit,
+    onBuddhaEnabledChange: (Boolean) -> Unit,
+    onTestConnection: () -> Unit,
+    onClearTestResult: () -> Unit
+) {
+    var showApiKey by remember { mutableStateOf(false) }
+    var apiKeyInput by remember(apiKey) { mutableStateOf(apiKey) }
+    var modelDropdownExpanded by remember { mutableStateOf(false) }
+
+    // Show snackbar for connection test result
+    LaunchedEffect(connectionTestResult) {
+        if (connectionTestResult != null) {
+            kotlinx.coroutines.delay(3000)
+            onClearTestResult()
+        }
+    }
+
+    Column(modifier = Modifier.padding(vertical = 8.dp)) {
+        Text(
+            text = "Buddha AI (Gemini)",
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.primary,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+        )
+
+        ProdyCard(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                // Enable Buddha AI Toggle
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.SelfImprovement,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Enable Buddha AI",
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                        Text(
+                            text = "AI-powered stoic wisdom in journals",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Switch(
+                        checked = buddhaEnabled,
+                        onCheckedChange = onBuddhaEnabledChange
+                    )
+                }
+
+                HorizontalDivider(
+                    modifier = Modifier.padding(vertical = 12.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant
+                )
+
+                // API Key Input
+                Text(
+                    text = "Gemini API Key",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+
+                OutlinedTextField(
+                    value = apiKeyInput,
+                    onValueChange = { apiKeyInput = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = buddhaEnabled,
+                    placeholder = { Text("Enter your Gemini API key") },
+                    visualTransformation = if (showApiKey) VisualTransformation.None
+                    else PasswordVisualTransformation(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                    singleLine = true,
+                    trailingIcon = {
+                        Row {
+                            IconButton(onClick = { showApiKey = !showApiKey }) {
+                                Icon(
+                                    imageVector = if (showApiKey) Icons.Filled.VisibilityOff
+                                    else Icons.Filled.Visibility,
+                                    contentDescription = if (showApiKey) "Hide" else "Show"
+                                )
+                            }
+                            if (apiKeyInput != apiKey && apiKeyInput.isNotBlank()) {
+                                IconButton(onClick = { onApiKeyChange(apiKeyInput) }) {
+                                    Icon(
+                                        imageVector = Icons.Filled.Check,
+                                        contentDescription = "Save",
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                            }
+                        }
+                    },
+                    shape = MaterialTheme.shapes.medium
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = "Get your free API key from Google AI Studio",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Model Selection
+                Text(
+                    text = "AI Model",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+
+                Box {
+                    OutlinedButton(
+                        onClick = { modelDropdownExpanded = true },
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = buddhaEnabled && apiKey.isNotBlank()
+                    ) {
+                        val currentModel = GeminiModel.entries.find { it.modelId == selectedModel }
+                            ?: GeminiModel.GEMINI_1_5_FLASH
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column {
+                                Text(
+                                    text = currentModel.displayName,
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                                Text(
+                                    text = currentModel.description,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            Icon(
+                                imageVector = Icons.Filled.ArrowDropDown,
+                                contentDescription = null
+                            )
+                        }
+                    }
+
+                    DropdownMenu(
+                        expanded = modelDropdownExpanded,
+                        onDismissRequest = { modelDropdownExpanded = false }
+                    ) {
+                        GeminiModel.entries.forEach { model ->
+                            DropdownMenuItem(
+                                text = {
+                                    Column {
+                                        Text(
+                                            text = model.displayName,
+                                            fontWeight = if (model.modelId == selectedModel)
+                                                FontWeight.Bold else FontWeight.Normal
+                                        )
+                                        Text(
+                                            text = model.description,
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                },
+                                onClick = {
+                                    onModelChange(model.modelId)
+                                    modelDropdownExpanded = false
+                                },
+                                leadingIcon = {
+                                    if (model.modelId == selectedModel) {
+                                        Icon(
+                                            imageVector = Icons.Filled.Check,
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.primary
+                                        )
+                                    }
+                                }
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Test Connection Button
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Button(
+                        onClick = onTestConnection,
+                        enabled = buddhaEnabled && apiKey.isNotBlank() && !isTestingConnection
+                    ) {
+                        if (isTestingConnection) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(16.dp),
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                strokeWidth = 2.dp
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                        }
+                        Text(if (isTestingConnection) "Testing..." else "Test Connection")
+                    }
+
+                    AnimatedVisibility(
+                        visible = connectionTestResult != null,
+                        enter = fadeIn(),
+                        exit = fadeOut()
+                    ) {
+                        val isSuccess = connectionTestResult?.contains("Connected") == true
+                        Surface(
+                            color = if (isSuccess) MaterialTheme.colorScheme.primaryContainer
+                            else MaterialTheme.colorScheme.errorContainer,
+                            shape = MaterialTheme.shapes.small
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Icon(
+                                    imageVector = if (isSuccess) Icons.Filled.CheckCircle
+                                    else Icons.Filled.Error,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp),
+                                    tint = if (isSuccess) MaterialTheme.colorScheme.primary
+                                    else MaterialTheme.colorScheme.error
+                                )
+                                Text(
+                                    text = if (isSuccess) "Connected" else "Failed",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = if (isSuccess) MaterialTheme.colorScheme.primary
+                                    else MaterialTheme.colorScheme.error
+                                )
+                            }
+                        }
+                    }
+                }
+
+                if (!apiKey.isNullOrBlank()) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "API key saved securely on device",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+        }
     }
 }

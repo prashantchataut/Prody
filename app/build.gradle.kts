@@ -142,6 +142,9 @@ dependencies {
     // Coil
     implementation(libs.coil.compose)
 
+    // Gemini AI
+    implementation(libs.generativeai)
+
     // WorkManager
     implementation(libs.androidx.work.runtime.ktx)
 
