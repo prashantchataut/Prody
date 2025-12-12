@@ -18,6 +18,9 @@ gradle/wrapper/gradle-wrapper.jar binary
 # XML files
 *.xml text
 
+# JSON files
+*.json text eol=lf
+
 # Gradle files
 *.gradle text
 

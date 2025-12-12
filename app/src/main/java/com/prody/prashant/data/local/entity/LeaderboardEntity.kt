@@ -3,7 +3,7 @@ package com.prody.prashant.data.local.entity
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "leaderboard_entries")
+@Entity(tableName = "leaderboard")
 data class LeaderboardEntryEntity(
     @PrimaryKey
     val odId: String, // Unique peer ID
