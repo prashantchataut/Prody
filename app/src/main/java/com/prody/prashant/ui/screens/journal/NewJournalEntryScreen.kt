@@ -37,13 +37,26 @@ fun NewJournalEntryScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+    val snackbarHostState = remember { SnackbarHostState() }
+
     LaunchedEffect(uiState.isSaved) {
         if (uiState.isSaved) {
             onEntrySaved()
         }
     }
 
+    LaunchedEffect(uiState.error) {
+        uiState.error?.let { error ->
+            snackbarHostState.showSnackbar(
+                message = error,
+                duration = SnackbarDuration.Short
+            )
+            viewModel.clearError()
+        }
+    }
+
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.new_entry)) },
@@ -61,10 +74,19 @@ fun NewJournalEntryScreen(
                         enabled = uiState.content.isNotBlank() && !uiState.isSaving
                     ) {
                         if (uiState.isSaving) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(16.dp),
-                                strokeWidth = 2.dp
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(16.dp),
+                                    strokeWidth = 2.dp
+                                )
+                                Text(
+                                    text = if (uiState.isGeneratingAiResponse) "Buddha thinking..." else "Saving...",
+                                    style = MaterialTheme.typography.labelMedium
+                                )
+                            }
                         } else {
                             Text(
                                 text = stringResource(R.string.save_entry),
@@ -100,7 +122,9 @@ fun NewJournalEntryScreen(
             // Mood selector
             MoodSelector(
                 selectedMood = uiState.selectedMood,
-                onMoodSelected = { viewModel.updateMood(it) }
+                moodIntensity = uiState.moodIntensity,
+                onMoodSelected = { viewModel.updateMood(it) },
+                onIntensityChanged = { viewModel.updateMoodIntensity(it) }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -152,7 +176,9 @@ fun NewJournalEntryScreen(
 @Composable
 private fun MoodSelector(
     selectedMood: Mood,
-    onMoodSelected: (Mood) -> Unit
+    moodIntensity: Int,
+    onMoodSelected: (Mood) -> Unit,
+    onIntensityChanged: (Int) -> Unit
 ) {
     Column(
         modifier = Modifier.padding(16.dp)
@@ -173,6 +199,73 @@ private fun MoodSelector(
                     mood = mood,
                     isSelected = mood == selectedMood,
                     onClick = { onMoodSelected(mood) }
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Mood intensity slider
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    selectedMood.color.copy(alpha = 0.08f),
+                    shape = CardShape
+                )
+                .padding(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Intensity",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Surface(
+                    color = selectedMood.color.copy(alpha = 0.2f),
+                    shape = ChipShape
+                ) {
+                    Text(
+                        text = "$moodIntensity/10",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = selectedMood.color,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Slider(
+                value = moodIntensity.toFloat(),
+                onValueChange = { onIntensityChanged(it.toInt()) },
+                valueRange = 1f..10f,
+                steps = 8,
+                colors = SliderDefaults.colors(
+                    thumbColor = selectedMood.color,
+                    activeTrackColor = selectedMood.color,
+                    inactiveTrackColor = selectedMood.color.copy(alpha = 0.2f)
+                )
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "Mild",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = "Intense",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }

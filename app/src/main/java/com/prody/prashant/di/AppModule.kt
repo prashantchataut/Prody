@@ -2,6 +2,7 @@ package com.prody.prashant.di
 
 import android.content.Context
 import androidx.room.Room
+import com.prody.prashant.data.ai.GeminiService
 import com.prody.prashant.data.local.dao.*
 import com.prody.prashant.data.local.database.ProdyDatabase
 import com.prody.prashant.data.local.preferences.PreferencesManager
@@ -114,5 +115,11 @@ object AppModule {
             userDao,
             preferencesManager
         )
+    }
+
+    @Provides
+    @Singleton
+    fun provideGeminiService(): GeminiService {
+        return GeminiService()
     }
 }

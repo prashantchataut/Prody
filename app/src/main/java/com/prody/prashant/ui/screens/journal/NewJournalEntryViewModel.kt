@@ -2,9 +2,12 @@ package com.prody.prashant.ui.screens.journal
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.prody.prashant.data.ai.GeminiResult
+import com.prody.prashant.data.ai.GeminiService
 import com.prody.prashant.data.local.dao.JournalDao
 import com.prody.prashant.data.local.dao.UserDao
 import com.prody.prashant.data.local.entity.JournalEntryEntity
+import com.prody.prashant.data.local.preferences.PreferencesManager
 import com.prody.prashant.domain.model.JournalTemplate
 import com.prody.prashant.domain.model.Mood
 import com.prody.prashant.util.BuddhaWisdom
@@ -17,23 +20,51 @@ import javax.inject.Inject
 data class NewJournalEntryUiState(
     val content: String = "",
     val selectedMood: Mood = Mood.CALM,
+    val moodIntensity: Int = 5,
     val wordCount: Int = 0,
     val isSaving: Boolean = false,
     val isSaved: Boolean = false,
+    val isGeneratingAiResponse: Boolean = false,
     val error: String? = null,
     val selectedTemplate: JournalTemplate? = null,
     val showTemplateSelector: Boolean = false,
-    val availableTemplates: List<JournalTemplate> = JournalTemplate.all()
+    val availableTemplates: List<JournalTemplate> = JournalTemplate.all(),
+    val buddhaAiEnabled: Boolean = true,
+    val geminiConfigured: Boolean = false
 )
 
 @HiltViewModel
 class NewJournalEntryViewModel @Inject constructor(
     private val journalDao: JournalDao,
-    private val userDao: UserDao
+    private val userDao: UserDao,
+    private val geminiService: GeminiService,
+    private val preferencesManager: PreferencesManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(NewJournalEntryUiState())
     val uiState: StateFlow<NewJournalEntryUiState> = _uiState.asStateFlow()
+
+    init {
+        loadAiSettings()
+    }
+
+    private fun loadAiSettings() {
+        viewModelScope.launch {
+            combine(
+                preferencesManager.buddhaAiEnabled,
+                preferencesManager.geminiApiKey
+            ) { enabled, apiKey ->
+                Pair(enabled, apiKey.isNotBlank())
+            }.collect { (enabled, configured) ->
+                _uiState.update {
+                    it.copy(
+                        buddhaAiEnabled = enabled,
+                        geminiConfigured = configured
+                    )
+                }
+            }
+        }
+    }
 
     fun updateContent(content: String) {
         val wordCount = if (content.isBlank()) 0 else content.trim().split("\\s+".toRegex()).size
@@ -44,6 +75,10 @@ class NewJournalEntryViewModel @Inject constructor(
 
     fun updateMood(mood: Mood) {
         _uiState.update { it.copy(selectedMood = mood) }
+    }
+
+    fun updateMoodIntensity(intensity: Int) {
+        _uiState.update { it.copy(moodIntensity = intensity.coerceIn(1, 10)) }
     }
 
     fun toggleTemplateSelector() {
@@ -74,22 +109,26 @@ class NewJournalEntryViewModel @Inject constructor(
 
     fun saveEntry() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isSaving = true) }
+            val state = _uiState.value
+
+            // Don't save empty entries
+            if (state.content.isBlank()) {
+                _uiState.update { it.copy(error = "Please write something before saving") }
+                return@launch
+            }
+
+            _uiState.update { it.copy(isSaving = true, isGeneratingAiResponse = true, error = null) }
 
             try {
-                val state = _uiState.value
+                // Generate Buddha's response - use Gemini if available, fallback to local
+                val buddhaResponse = generateBuddhaResponse(state)
 
-                // Generate Buddha's response
-                val buddhaResponse = BuddhaWisdom.generateResponse(
-                    content = state.content,
-                    mood = state.selectedMood,
-                    wordCount = state.wordCount
-                )
+                _uiState.update { it.copy(isGeneratingAiResponse = false) }
 
                 val entry = JournalEntryEntity(
                     content = state.content,
                     mood = state.selectedMood.name,
-                    moodIntensity = 5,
+                    moodIntensity = state.moodIntensity,
                     buddhaResponse = buddhaResponse,
                     wordCount = state.wordCount,
                     createdAt = System.currentTimeMillis(),
@@ -111,10 +150,57 @@ class NewJournalEntryViewModel @Inject constructor(
                 _uiState.update { it.copy(isSaving = false, isSaved = true) }
             } catch (e: Exception) {
                 _uiState.update {
-                    it.copy(isSaving = false, error = e.message)
+                    it.copy(
+                        isSaving = false,
+                        isGeneratingAiResponse = false,
+                        error = "Failed to save: ${e.message}"
+                    )
                 }
             }
         }
+    }
+
+    private suspend fun generateBuddhaResponse(state: NewJournalEntryUiState): String {
+        // Only use Gemini AI if enabled and configured
+        if (state.buddhaAiEnabled && state.geminiConfigured && geminiService.isConfigured()) {
+            val result = geminiService.generateJournalResponse(
+                content = state.content,
+                mood = state.selectedMood,
+                moodIntensity = state.moodIntensity,
+                wordCount = state.wordCount
+            )
+
+            return when (result) {
+                is GeminiResult.Success -> result.data
+                is GeminiResult.Error -> {
+                    // Log the error but fall back to local generation
+                    BuddhaWisdom.generateResponse(
+                        content = state.content,
+                        mood = state.selectedMood,
+                        wordCount = state.wordCount
+                    )
+                }
+                is GeminiResult.ApiKeyNotSet,
+                is GeminiResult.Loading -> {
+                    BuddhaWisdom.generateResponse(
+                        content = state.content,
+                        mood = state.selectedMood,
+                        wordCount = state.wordCount
+                    )
+                }
+            }
+        }
+
+        // Use local Buddha wisdom
+        return BuddhaWisdom.generateResponse(
+            content = state.content,
+            mood = state.selectedMood,
+            wordCount = state.wordCount
+        )
+    }
+
+    fun clearError() {
+        _uiState.update { it.copy(error = null) }
     }
 
     private suspend fun updateJournalAchievements() {

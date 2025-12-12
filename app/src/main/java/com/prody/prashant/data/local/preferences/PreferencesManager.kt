@@ -40,6 +40,11 @@ class PreferencesManager @Inject constructor(
         val HAPTIC_FEEDBACK_ENABLED = booleanPreferencesKey("haptic_feedback")
         val FIRST_LAUNCH_TIME = longPreferencesKey("first_launch_time")
         val USER_ID = stringPreferencesKey("user_id")
+
+        // Gemini AI Settings
+        val GEMINI_API_KEY = stringPreferencesKey("gemini_api_key")
+        val GEMINI_MODEL = stringPreferencesKey("gemini_model")
+        val BUDDHA_AI_ENABLED = booleanPreferencesKey("buddha_ai_enabled")
     }
 
     // Onboarding
@@ -318,6 +323,52 @@ class PreferencesManager @Inject constructor(
     suspend fun setUserId(id: String) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.USER_ID] = id
+        }
+    }
+
+    // Gemini AI Settings
+    val geminiApiKey: Flow<String> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.GEMINI_API_KEY] ?: ""
+        }
+
+    suspend fun setGeminiApiKey(apiKey: String) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.GEMINI_API_KEY] = apiKey
+        }
+    }
+
+    val geminiModel: Flow<String> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.GEMINI_MODEL] ?: "gemini-1.5-flash"
+        }
+
+    suspend fun setGeminiModel(model: String) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.GEMINI_MODEL] = model
+        }
+    }
+
+    val buddhaAiEnabled: Flow<Boolean> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.BUDDHA_AI_ENABLED] ?: true
+        }
+
+    suspend fun setBuddhaAiEnabled(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.BUDDHA_AI_ENABLED] = enabled
         }
     }
 
