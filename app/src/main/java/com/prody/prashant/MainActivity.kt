@@ -89,14 +89,24 @@ class MainActivity : ComponentActivity() {
         // Check and request notification permission for Android 13+
         requestNotificationPermission()
 
-        // Check if onboarding is completed
-        val isOnboardingCompleted = runBlocking {
-            preferencesManager.onboardingCompleted.first()
+        // Check if onboarding is completed - using try-catch for crash safety
+        val isOnboardingCompleted = try {
+            runBlocking {
+                preferencesManager.onboardingCompleted.first()
+            }
+        } catch (e: Exception) {
+            // Default to false if preferences can't be read
+            false
         }
 
-        // Get theme preference
-        val themeModeString = runBlocking {
-            preferencesManager.themeMode.first()
+        // Get theme preference - using try-catch for crash safety
+        val themeModeString = try {
+            runBlocking {
+                preferencesManager.themeMode.first()
+            }
+        } catch (e: Exception) {
+            // Default to system theme if preferences can't be read
+            "system"
         }
 
         enableEdgeToEdge()
