@@ -50,6 +50,32 @@ import com.prody.prashant.domain.model.Achievements
 import com.prody.prashant.ui.components.ProdyCard
 import com.prody.prashant.ui.theme.*
 import kotlinx.coroutines.delay
+
+/**
+ * Profile Screen - User Profile & Achievement Showcase
+ *
+ * A comprehensive profile view featuring:
+ * - Animated header with avatar, streak, and points
+ * - Level progress with visual indicator
+ * - Statistics cards with animated counters
+ * - Achievement showcase with filtering
+ * - Journey milestones tracking
+ * - Motivational growth quotes
+ *
+ * UI/UX Features:
+ * - Staggered entrance animations for visual delight
+ * - Animated glow effects for achievements
+ * - Progress rings and bars with smooth animations
+ * - Category filtering with animated state changes
+ * - Proper accessibility with content descriptions
+ *
+ * Design Principles:
+ * - Celebratory visual language for achievements
+ * - Clear hierarchy with card-based sections
+ * - Color-coded rarity system for badges
+ * - Generous touch targets (min 48dp)
+ */
+
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin

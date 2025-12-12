@@ -44,6 +44,30 @@ import com.prody.prashant.R
 import com.prody.prashant.ui.components.ProdyCard
 import com.prody.prashant.ui.theme.*
 import kotlinx.coroutines.delay
+
+/**
+ * Home Screen - Main Dashboard
+ *
+ * The central hub of the Prody app featuring:
+ * - Personalized greeting with streak and points display
+ * - Daily wisdom content (quotes, words, proverbs, idioms)
+ * - Quick action shortcuts to core features
+ * - Weekly progress tracking
+ * - AI-powered Buddha's daily thought
+ *
+ * UI/UX Features:
+ * - Staggered entrance animations for visual delight
+ * - Animated background elements for engagement
+ * - Interactive cards with press feedback
+ * - Progress animations for stats
+ * - Proper accessibility support with content descriptions
+ *
+ * Design Principles:
+ * - Clear visual hierarchy with card-based layout
+ * - Color-coded sections for easy scanning
+ * - Celebratory animations for achievements
+ * - Sufficient touch targets (min 48dp)
+ */
 import java.util.Calendar
 import kotlin.math.PI
 import kotlin.math.cos
