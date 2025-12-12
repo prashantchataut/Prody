@@ -5,49 +5,124 @@
     android:viewportWidth="240"
     android:viewportHeight="240">
 
-    <!-- Splash screen logo - larger version of Prody icon -->
+    <!-- Splash screen logo - The Infinite Growth Symbol (larger version) -->
 
-    <!-- Outer glow circle -->
+    <!-- Outer glow ring -->
     <path
         android:fillColor="#5E9970"
         android:fillAlpha="0.3"
         android:pathData="M120,120m-100,0a100,100 0,1 1,200 0a100,100 0,1 1,-200 0" />
 
-    <!-- Main circle -->
+    <!-- Middle glow ring -->
     <path
         android:fillColor="#FFFFFF"
         android:fillAlpha="0.15"
         android:pathData="M120,120m-80,0a80,80 0,1 1,160 0a80,80 0,1 1,-160 0" />
 
-    <!-- Inner glow -->
+    <!-- Inner glow ring -->
     <path
         android:fillColor="#FFFFFF"
         android:fillAlpha="0.1"
         android:pathData="M120,120m-60,0a60,60 0,1 1,120 0a60,60 0,1 1,-120 0" />
 
-    <!-- Stylized P with growth motif -->
+    <!-- Primary flowing curve - scaled up from icon -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M85,160 L85,80 C85,65 100,55 120,55 C150,55 160,75 160,95 C160,120 140,130 120,130 L110,130 L110,160 Z M110,115 L120,115 C135,115 145,105 145,95 C145,85 140,75 120,75 C105,75 110,80 110,90 Z" />
+        android:pathData="
+            M80,148
+            C66,136 66,110 80,94
+            Q92,78 120,74
+            Q148,70 160,86
+            C174,104 174,126 160,142
+            Q148,158 120,162
+            Q108,162 100,158
+            L100,148
+            Q112,152 120,152
+            Q138,148 146,136
+            C154,124 154,108 146,96
+            Q138,82 120,82
+            Q102,86 92,98
+            C82,110 82,128 92,140
+            Q96,144 100,148
+            Z" />
 
-    <!-- Primary growth leaf -->
+    <!-- Secondary ascending curve -->
     <path
         android:fillColor="#A8D5BA"
-        android:pathData="M125,95 Q145,80 160,90 Q170,105 155,115 Q140,110 130,105 Q135,95 125,95 Z" />
+        android:pathData="
+            M120,110
+            Q134,96 148,106
+            Q162,118 156,136
+            Q150,126 142,120
+            Q128,114 120,124
+            Q114,116 120,110
+            Z" />
 
-    <!-- Secondary leaf -->
+    <!-- Rising energy element -->
     <path
         android:fillColor="#E8DCC4"
-        android:pathData="M150,78 Q162,68 175,78 Q180,90 170,95 Q158,88 150,82 Z" />
+        android:pathData="
+            M138,84
+            Q152,74 160,88
+            Q166,102 152,108
+            Q146,98 140,92
+            Q136,92 138,84
+            Z" />
 
-    <!-- Sparkle/star elements for inspiration -->
+    <!-- Wisdom spark - main -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M170,60 L172,68 L180,65 L175,72 L182,78 L174,76 L172,84 L170,76 L162,78 L167,72 L160,65 L168,68 Z" />
+        android:pathData="
+            M158,66
+            L160,74
+            L170,70
+            L166,78
+            L174,82
+            L166,86
+            L170,94
+            L160,88
+            L158,96
+            L156,88
+            L146,94
+            L150,86
+            L142,82
+            L150,78
+            L146,70
+            L156,74
+            Z" />
 
+    <!-- Wisdom spark - secondary -->
     <path
         android:fillColor="#FFFFFF"
         android:fillAlpha="0.7"
-        android:pathData="M185,90 L186,94 L190,92 L188,96 L192,98 L188,97 L186,101 L185,97 L181,98 L183,96 L180,92 L184,94 Z" />
+        android:pathData="
+            M176,98
+            L178,104
+            L184,101
+            L181,107
+            L186,110
+            L181,113
+            L184,119
+            L178,116
+            L176,122
+            L174,116
+            L168,119
+            L171,113
+            L166,110
+            L171,107
+            L168,101
+            L174,104
+            Z" />
+
+    <!-- Inner flow accent -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="0.4"
+        android:pathData="
+            M100,116
+            Q112,106 122,116
+            Q118,128 106,128
+            Q98,124 100,116
+            Z" />
 
 </vector>

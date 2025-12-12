@@ -9,6 +9,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.prody.prashant.ui.screens.challenges.ChallengesScreen
 import com.prody.prashant.ui.screens.futuremessage.FutureMessageListScreen
 import com.prody.prashant.ui.screens.futuremessage.WriteMessageScreen
 import com.prody.prashant.ui.screens.home.HomeScreen
@@ -43,6 +44,7 @@ sealed class Screen(val route: String) {
     }
     data object Quotes : Screen("quotes")
     data object Meditation : Screen("meditation")
+    data object Challenges : Screen("challenges")
 }
 
 @Composable
@@ -106,6 +108,9 @@ fun ProdyNavHost(
                 },
                 onNavigateToMeditation = {
                     navController.navigate(Screen.Meditation.route)
+                },
+                onNavigateToChallenges = {
+                    navController.navigate(Screen.Challenges.route)
                 }
             )
         }
@@ -225,6 +230,14 @@ fun ProdyNavHost(
 
         composable(Screen.Meditation.route) {
             MeditationTimerScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable(Screen.Challenges.route) {
+            ChallengesScreen(
                 onNavigateBack = {
                     navController.popBackStack()
                 }

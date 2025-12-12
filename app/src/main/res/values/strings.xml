@@ -135,4 +135,17 @@
     <string name="proverbs">Proverbs</string>
     <string name="idioms">Idioms</string>
     <string name="phrases">Phrases</string>
+
+    <!-- Community Challenges -->
+    <string name="challenges">Challenges</string>
+    <string name="community_challenges">Community Challenges</string>
+    <string name="join_challenge">Join Challenge</string>
+    <string name="challenge_joined">Challenge Joined</string>
+    <string name="challenge_completed">Challenge Completed!</string>
+    <string name="days_remaining">%d days remaining</string>
+    <string name="participants">%d participants</string>
+    <string name="community_progress">Community Progress</string>
+    <string name="your_progress">Your Progress</string>
+    <string name="challenge_leaderboard">Challenge Leaderboard</string>
+    <string name="milestone_reached">Milestone Reached!</string>
 </resources>
