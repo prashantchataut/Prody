@@ -6,25 +6,51 @@
     android:viewportHeight="108">
 
     <!-- Monochrome version for themed icons (Android 13+) -->
+    <!-- Ascending Lotus Spiral - simplified for monochrome -->
 
-    <!-- P vertical stem -->
+    <!-- Base petal -->
     <path
         android:fillColor="#000000"
-        android:pathData="M40,70 L40,38 C40,32 46,28 54,28 C66,28 70,36 70,44 C70,54 62,58 54,58 L52,58 L52,70 Z M52,50 L54,50 C58,50 62,48 62,44 C62,40 60,36 54,36 C50,36 52,38 52,42 Z" />
+        android:pathData="M54,72
+                C46,72 40,66 40,58
+                C40,50 46,44 54,44
+                C54,44 50,50 50,58
+                C50,64 52,68 54,72 Z" />
 
-    <!-- Growing leaf element -->
+    <!-- Middle petal -->
     <path
         android:fillColor="#000000"
-        android:pathData="M56,44 Q62,38 68,42 Q72,48 66,52 Q60,50 58,48 Q60,44 56,44 Z" />
+        android:pathData="M38,46
+                C42,38 50,34 58,38
+                C66,42 68,52 64,60
+                C64,60 58,54 52,52
+                C46,50 40,50 38,46 Z" />
 
-    <!-- Small accent leaf -->
+    <!-- Top petal -->
     <path
         android:fillColor="#000000"
-        android:pathData="M64,38 Q68,34 72,38 Q74,42 70,44 Q66,42 64,40 Z" />
+        android:pathData="M70,46
+                C66,38 58,34 50,38
+                C50,38 56,42 60,48
+                C64,54 66,60 70,58
+                C78,54 76,44 70,46 Z" />
 
-    <!-- Sparkle accent -->
+    <!-- Central dot -->
     <path
         android:fillColor="#000000"
-        android:pathData="M72,32 L73,35 L76,34 L74,36 L76,38 L73,37 L72,40 L71,37 L68,38 L70,36 L68,34 L71,35 Z" />
+        android:pathData="M54,52m-5,0a5,5 0,1 1,10 0a5,5 0,1 1,-10 0" />
+
+    <!-- Accent leaf -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M66,32
+                Q70,28 74,32
+                Q76,36 72,38
+                Q68,36 66,34 Z" />
+
+    <!-- Top sparkle -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M72,24 L73,28 L77,26 L75,30 L78,32 L74,31 L73,35 L72,31 L68,32 L70,30 L68,26 L72,28 Z" />
 
 </vector>

@@ -5,45 +5,74 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!-- Abstract Prody Logo: A stylized "P" that transforms into an upward-growing sprout/leaf,
-         symbolizing personal growth, productivity, and flourishing.
-         The design represents the journey from potential (P) to growth (leaf). -->
+    <!-- Prody Abstract Logo: Ascending Lotus Spiral
+         A unique abstract geometric design featuring:
+         - Three ascending petals forming an upward spiral motion
+         - Represents continuous growth, mindfulness, and transformation
+         - The spiral suggests the journey of self-improvement
+         - Clean, modern, and minimal aesthetic -->
 
-    <!-- Base circle - growth foundation -->
+    <!-- Soft circular background -->
     <path
         android:fillColor="#4A7C59"
-        android:pathData="M54,54m-38,0a38,38 0,1 1,76 0a38,38 0,1 1,-76 0" />
+        android:pathData="M54,54m-36,0a36,36 0,1 1,72 0a36,36 0,1 1,-72 0" />
 
-    <!-- Inner glow ring -->
+    <!-- Inner subtle glow ring -->
     <path
         android:fillColor="#5E9970"
-        android:pathData="M54,54m-32,0a32,32 0,1 1,64 0a32,32 0,1 1,-64 0" />
+        android:fillAlpha="0.35"
+        android:pathData="M54,54m-29,0a29,29 0,1 1,58 0a29,29 0,1 1,-58 0" />
 
-    <!-- Stylized P stem that curves into a sprout -->
+    <!-- Main abstract shape: Ascending triple petal spiral -->
+    <!-- Base petal - foundation/grounding -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M42,72 L42,44 Q42,32 54,32 Q66,32 66,44 Q66,52 58,54 L58,54 Q50,56 50,52 L50,40 Q50,36 54,36 Q58,36 58,40 L58,48"
-        android:strokeWidth="0"
-        android:strokeColor="#00000000" />
+        android:pathData="M54,72
+                C46,72 40,66 40,58
+                C40,50 46,44 54,44
+                C54,44 50,50 50,58
+                C50,64 52,68 54,72 Z" />
 
-    <!-- P vertical stem -->
+    <!-- Middle petal - present growth (rotated ~120 degrees) -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M40,70 L40,38 C40,32 46,28 54,28 C66,28 70,36 70,44 C70,54 62,58 54,58 L52,58 L52,70 Z M52,50 L54,50 C58,50 62,48 62,44 C62,40 60,36 54,36 C50,36 52,38 52,42 Z" />
+        android:fillAlpha="0.92"
+        android:pathData="M38,46
+                C42,38 50,34 58,38
+                C66,42 68,52 64,60
+                C64,60 58,54 52,52
+                C46,50 40,50 38,46 Z" />
 
-    <!-- Growing leaf element emerging from P - symbolizing growth -->
+    <!-- Top petal - aspiration/future (rotated ~240 degrees) -->
     <path
         android:fillColor="#A8D5BA"
-        android:pathData="M56,44 Q62,38 68,42 Q72,48 66,52 Q60,50 58,48 Q60,44 56,44 Z" />
+        android:pathData="M70,46
+                C66,38 58,34 50,38
+                C50,38 56,42 60,48
+                C64,54 66,60 70,58
+                C78,54 76,44 70,46 Z" />
 
-    <!-- Small accent leaf - continuous growth -->
-    <path
-        android:fillColor="#E8DCC4"
-        android:pathData="M64,38 Q68,34 72,38 Q74,42 70,44 Q66,42 64,40 Z" />
-
-    <!-- Sparkle/star accent - inspiration -->
+    <!-- Central convergence point - mindfulness center -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M72,32 L73,35 L76,34 L74,36 L76,38 L73,37 L72,40 L71,37 L68,38 L70,36 L68,34 L71,35 Z" />
+        android:pathData="M54,52m-5,0a5,5 0,1 1,10 0a5,5 0,1 1,-10 0" />
+
+    <!-- Inner center - enlightenment dot -->
+    <path
+        android:fillColor="#4A7C59"
+        android:pathData="M54,52m-2,0a2,2 0,1 1,4 0a2,2 0,1 1,-4 0" />
+
+    <!-- Ascending accent element - spark of inspiration -->
+    <path
+        android:fillColor="#E8DCC4"
+        android:pathData="M66,32
+                Q70,28 74,32
+                Q76,36 72,38
+                Q68,36 66,34 Z" />
+
+    <!-- Top sparkle - moment of clarity -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M72,24 L73,28 L77,26 L75,30 L78,32 L74,31 L73,35 L72,31 L68,32 L70,30 L68,26 L72,28 Z" />
 
 </vector>

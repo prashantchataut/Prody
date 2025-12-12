@@ -1,8 +1,8 @@
 package com.prody.prashant.domain.model
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.HelpOutline
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.prody.prashant.ui.theme.*
@@ -58,7 +58,7 @@ enum class Mood(
     ),
     CONFUSED(
         displayName = "Confused",
-        icon = Icons.AutoMirrored.Filled.HelpOutline,
+        icon = Icons.Outlined.HelpOutline,
         color = MoodConfused,
         description = "Seeking clarity and direction",
         buddhaPromptHint = "find wisdom in uncertainty"
