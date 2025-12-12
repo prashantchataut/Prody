@@ -400,7 +400,7 @@ private fun OnboardingPageContent(
             )
 
             // Icon overlay
-            AnimatedVisibility(
+            androidx.compose.animation.AnimatedVisibility(
                 visible = showContent,
                 enter = scaleIn(
                     animationSpec = spring(
