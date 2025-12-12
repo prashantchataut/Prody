@@ -20,9 +20,13 @@ import com.prody.prashant.data.local.entity.*
         StreakHistoryEntity::class,
         LeaderboardEntryEntity::class,
         PeerInteractionEntity::class,
-        MotivationalMessageEntity::class
+        MotivationalMessageEntity::class,
+        ChallengeEntity::class,
+        ChallengeMilestoneEntity::class,
+        ChallengeParticipationEntity::class,
+        ChallengeLeaderboardEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = true
 )
 abstract class ProdyDatabase : RoomDatabase() {
@@ -35,6 +39,7 @@ abstract class ProdyDatabase : RoomDatabase() {
     abstract fun idiomDao(): IdiomDao
     abstract fun phraseDao(): PhraseDao
     abstract fun userDao(): UserDao
+    abstract fun challengeDao(): ChallengeDao
 
     companion object {
         const val DATABASE_NAME = "prody_database"

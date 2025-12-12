@@ -83,6 +83,12 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun provideChallengeDao(database: ProdyDatabase): ChallengeDao {
+        return database.challengeDao()
+    }
+
+    @Provides
+    @Singleton
     fun providePreferencesManager(
         @ApplicationContext context: Context
     ): PreferencesManager {

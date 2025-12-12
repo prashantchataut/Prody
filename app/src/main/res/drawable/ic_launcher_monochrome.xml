@@ -5,26 +5,94 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!-- Monochrome version for themed icons (Android 13+) -->
+    <!-- Monochrome version of the Infinite Growth Symbol for themed icons (Android 13+) -->
 
-    <!-- P vertical stem -->
+    <!-- Primary flowing curve -->
     <path
         android:fillColor="#000000"
-        android:pathData="M40,70 L40,38 C40,32 46,28 54,28 C66,28 70,36 70,44 C70,54 62,58 54,58 L52,58 L52,70 Z M52,50 L54,50 C58,50 62,48 62,44 C62,40 60,36 54,36 C50,36 52,38 52,42 Z" />
+        android:pathData="
+            M36,68
+            C30,62 30,50 36,42
+            Q42,34 54,32
+            Q66,30 72,38
+            C78,46 78,56 72,64
+            Q66,72 54,74
+            Q48,74 44,72
+            L44,68
+            Q50,70 54,70
+            Q62,68 66,62
+            C70,56 70,48 66,42
+            Q62,36 54,36
+            Q46,38 42,44
+            C38,50 38,58 42,64
+            Q44,66 46,68
+            Z" />
 
-    <!-- Growing leaf element -->
+    <!-- Secondary ascending curve -->
     <path
         android:fillColor="#000000"
-        android:pathData="M56,44 Q62,38 68,42 Q72,48 66,52 Q60,50 58,48 Q60,44 56,44 Z" />
+        android:pathData="
+            M54,50
+            Q60,44 66,48
+            Q72,52 70,60
+            Q68,56 64,54
+            Q58,52 54,56
+            Q52,52 54,50
+            Z" />
 
-    <!-- Small accent leaf -->
+    <!-- Rising energy element -->
     <path
         android:fillColor="#000000"
-        android:pathData="M64,38 Q68,34 72,38 Q74,42 70,44 Q66,42 64,40 Z" />
+        android:pathData="
+            M62,38
+            Q68,34 72,40
+            Q74,46 68,48
+            Q66,44 64,42
+            Q62,42 62,38
+            Z" />
 
-    <!-- Sparkle accent -->
+    <!-- Wisdom spark -->
     <path
         android:fillColor="#000000"
-        android:pathData="M72,32 L73,35 L76,34 L74,36 L76,38 L73,37 L72,40 L71,37 L68,38 L70,36 L68,34 L71,35 Z" />
+        android:pathData="
+            M70,30
+            L71,34
+            L75,32
+            L73,35
+            L77,36
+            L73,38
+            L75,42
+            L71,39
+            L70,43
+            L69,39
+            L65,42
+            L67,38
+            L63,36
+            L67,35
+            L65,32
+            L69,34
+            Z" />
+
+    <!-- Secondary spark -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="
+            M78,44
+            L79,46
+            L81,45
+            L80,47
+            L82,48
+            L80,49
+            L81,51
+            L79,50
+            L78,52
+            L77,50
+            L75,51
+            L76,49
+            L74,48
+            L76,47
+            L75,45
+            L77,46
+            Z" />
 
 </vector>
