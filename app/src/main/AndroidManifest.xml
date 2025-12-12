@@ -36,6 +36,14 @@
             </intent-filter>
         </activity>
 
+        <!-- Crash Debug Activity -->
+        <activity
+            android:name=".debug.CrashActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Prody"
+            android:excludeFromRecents="true"
+            android:taskAffinity="" />
+
         <receiver
             android:name=".notification.NotificationReceiver"
             android:exported="false" />

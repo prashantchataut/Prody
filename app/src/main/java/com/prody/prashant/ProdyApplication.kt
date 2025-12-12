@@ -6,6 +6,7 @@ import android.app.NotificationManager
 import android.os.Build
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
+import com.prody.prashant.debug.CrashHandler
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 
@@ -23,6 +24,10 @@ class ProdyApplication : Application(), Configuration.Provider {
 
     override fun onCreate() {
         super.onCreate()
+        
+        // Initialize global crash handler first to catch all exceptions
+        CrashHandler.initialize(this)
+        
         try {
             createNotificationChannels()
         } catch (e: Exception) {
