@@ -5,9 +5,9 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!-- Solid sage green background -->
+    <!-- Deep forest green background - matches new design palette -->
     <path
-        android:fillColor="#4A7C59"
+        android:fillColor="#2D5A3D"
         android:pathData="M0,0h108v108h-108z" />
 
 </vector>

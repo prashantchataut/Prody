@@ -39,6 +39,23 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.prody.prashant.R
 import com.prody.prashant.ui.theme.*
 import kotlinx.coroutines.delay
+
+/**
+ * Onboarding Screen - First-time user experience
+ *
+ * A visually engaging 5-page onboarding flow that introduces users to Prody's
+ * core features. Each page features:
+ * - Unique animated illustrations
+ * - Smooth color transitions between pages
+ * - Staggered content animations
+ * - Proper accessibility support
+ *
+ * Design Principles:
+ * - Calm, growth-focused color palette
+ * - Engaging but not overwhelming animations
+ * - Clear call-to-action progression
+ * - Sufficient contrast for accessibility
+ */
 import kotlinx.coroutines.launch
 import kotlin.math.PI
 import kotlin.math.cos

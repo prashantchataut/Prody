@@ -5,124 +5,183 @@
     android:viewportWidth="240"
     android:viewportHeight="240">
 
-    <!-- Splash screen logo - The Infinite Growth Symbol (larger version) -->
+    <!--
+        PRODY SPLASH LOGO - "The Ascending Path" (Large Version)
+
+        Scaled-up version of the app icon for splash screen display.
+        Features enhanced detail visibility at larger sizes.
+    -->
 
     <!-- Outer glow ring -->
     <path
-        android:fillColor="#5E9970"
+        android:fillColor="#3D7050"
         android:fillAlpha="0.3"
         android:pathData="M120,120m-100,0a100,100 0,1 1,200 0a100,100 0,1 1,-200 0" />
 
     <!-- Middle glow ring -->
     <path
-        android:fillColor="#FFFFFF"
-        android:fillAlpha="0.15"
+        android:fillColor="#2D5A3D"
+        android:fillAlpha="0.5"
         android:pathData="M120,120m-80,0a80,80 0,1 1,160 0a80,80 0,1 1,-160 0" />
 
     <!-- Inner glow ring -->
     <path
-        android:fillColor="#FFFFFF"
-        android:fillAlpha="0.1"
+        android:fillColor="#4D8060"
+        android:fillAlpha="0.4"
         android:pathData="M120,120m-60,0a60,60 0,1 1,120 0a60,60 0,1 1,-120 0" />
 
-    <!-- Primary flowing curve - scaled up from icon -->
+    <!-- Base Arc - Foundation/Grounding (bottom) - scaled -->
     <path
         android:fillColor="#FFFFFF"
         android:pathData="
-            M80,148
-            C66,136 66,110 80,94
-            Q92,78 120,74
-            Q148,70 160,86
-            C174,104 174,126 160,142
-            Q148,158 120,162
-            Q108,162 100,158
-            L100,148
-            Q112,152 120,152
-            Q138,148 146,136
-            C154,124 154,108 146,96
-            Q138,82 120,82
-            Q102,86 92,98
-            C82,110 82,128 92,140
-            Q96,144 100,148
+            M66,138
+            Q66,164 94,172
+            Q120,180 146,172
+            Q174,164 174,138
+            Q174,148 160,156
+            Q146,164 120,168
+            Q94,164 80,156
+            Q66,148 66,138
             Z" />
 
-    <!-- Secondary ascending curve -->
+    <!-- Middle Arc - Growth/Learning (rising) - scaled -->
     <path
-        android:fillColor="#A8D5BA"
+        android:fillColor="#5B9A8B"
         android:pathData="
-            M120,110
-            Q134,96 148,106
-            Q162,118 156,136
-            Q150,126 142,120
-            Q128,114 120,124
-            Q114,116 120,110
+            M76,116
+            Q76,144 102,152
+            Q120,156 138,152
+            Q164,144 164,116
+            Q164,128 152,138
+            Q138,148 120,148
+            Q102,148 88,138
+            Q76,128 76,116
             Z" />
 
-    <!-- Rising energy element -->
-    <path
-        android:fillColor="#E8DCC4"
-        android:pathData="
-            M138,84
-            Q152,74 160,88
-            Q166,102 152,108
-            Q146,98 140,92
-            Q136,92 138,84
-            Z" />
-
-    <!-- Wisdom spark - main -->
+    <!-- Top Crescent - Aspiration/Enlightenment - scaled -->
     <path
         android:fillColor="#FFFFFF"
         android:pathData="
-            M158,66
-            L160,74
-            L170,70
-            L166,78
-            L174,82
-            L166,86
-            L170,94
-            L160,88
-            L158,96
-            L156,88
-            L146,94
-            L150,86
-            L142,82
-            L150,78
-            L146,70
-            L156,74
+            M84,94
+            Q84,116 106,124
+            Q120,128 134,124
+            Q156,116 156,94
+            Q156,108 142,114
+            Q128,120 120,120
+            Q112,120 98,114
+            Q84,108 84,94
             Z" />
 
-    <!-- Wisdom spark - secondary -->
+    <!-- Central Focal Point - Core Self - scaled -->
+    <path
+        android:fillColor="#D4C4A8"
+        android:pathData="
+            M120,120
+            m-18,0
+            a18,18 0,1 1,36 0
+            a18,18 0,1 1,-36 0" />
+
+    <!-- Inner Core - Consciousness - scaled -->
     <path
         android:fillColor="#FFFFFF"
-        android:fillAlpha="0.7"
         android:pathData="
-            M176,98
-            L178,104
-            L184,101
-            L181,107
-            L186,110
-            L181,113
-            L184,119
-            L178,116
-            L176,122
-            L174,116
-            L168,119
-            L171,113
-            L166,110
-            L171,107
-            L168,101
-            L174,104
+            M120,120
+            m-9,0
+            a9,9 0,1 1,18 0
+            a9,9 0,1 1,-18 0" />
+
+    <!-- Rising Line - Upward Journey (left) - scaled -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="0.8"
+        android:pathData="
+            M88,156
+            Q84,132 94,106
+            Q98,88 112,74
+            L116,78
+            Q102,92 98,110
+            Q94,132 98,152
             Z" />
 
-    <!-- Inner flow accent -->
+    <!-- Rising Line - Upward Journey (right) - scaled -->
     <path
         android:fillColor="#FFFFFF"
-        android:fillAlpha="0.4"
+        android:fillAlpha="0.8"
         android:pathData="
-            M100,116
-            Q112,106 122,116
-            Q118,128 106,128
-            Q98,124 100,116
+            M152,156
+            Q156,132 146,106
+            Q142,88 128,74
+            L124,78
+            Q138,92 142,110
+            Q146,132 142,152
+            Z" />
+
+    <!-- Radiant Accent - Wisdom Star (top) - scaled -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="
+            M120,56
+            L122,64
+            L132,60
+            L128,70
+            L138,72
+            L128,76
+            L132,86
+            L122,80
+            L120,88
+            L118,80
+            L108,86
+            L112,76
+            L102,72
+            L112,70
+            L108,60
+            L118,64
+            Z" />
+
+    <!-- Secondary Accent - Growth Spark (right) - scaled -->
+    <path
+        android:fillColor="#D4C4A8"
+        android:fillAlpha="0.9"
+        android:pathData="
+            M170,88
+            L172,96
+            L180,92
+            L176,100
+            L184,102
+            L176,106
+            L180,114
+            L172,110
+            L170,118
+            L168,110
+            L160,114
+            L164,106
+            L156,102
+            L164,100
+            L160,92
+            L168,96
+            Z" />
+
+    <!-- Tertiary Accent - Balance Spark (left) - scaled -->
+    <path
+        android:fillColor="#5B9A8B"
+        android:fillAlpha="0.8"
+        android:pathData="
+            M70,88
+            L72,94
+            L78,91
+            L75,97
+            L81,99
+            L75,102
+            L78,108
+            L72,105
+            L70,111
+            L68,105
+            L62,108
+            L65,102
+            L59,99
+            L65,97
+            L62,91
+            L68,94
             Z" />
 
 </vector>

@@ -29,6 +29,22 @@ import com.prody.prashant.ui.theme.*
 import java.text.SimpleDateFormat
 import java.util.*
 
+/**
+ * Journal List Screen
+ *
+ * Displays all journal entries in a scrollable list with:
+ * - Date-based sorting (newest first)
+ * - Mood indicators with color coding
+ * - Bookmark filtering capability
+ * - Buddha response indicators
+ * - Word count display
+ *
+ * Accessibility Features:
+ * - Proper content descriptions for icons
+ * - Sufficient touch targets (min 48dp)
+ * - Clear visual hierarchy
+ * - Screen reader support
+ */
 @Composable
 fun JournalListScreen(
     onNavigateToNewEntry: () -> Unit,

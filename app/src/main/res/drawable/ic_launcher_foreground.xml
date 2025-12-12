@@ -5,134 +5,201 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!-- PRODY LOGO - The Infinite Growth Symbol
+    <!--
+        PRODY LOGO - "The Ascending Path"
 
-         Design Philosophy:
-         - An abstract representation of continuous growth, transformation, and the
-           infinite journey of self-improvement
-         - Combines the fluidity of a Mobius strip with the upward energy of growth
-         - The interconnected curves represent mind-body-spirit harmony
-         - Negative space creates a subtle "P" shape for brand recognition
-         - The design evokes both ancient wisdom (flowing forms) and modern progress
+        A completely new, modern abstract logo design representing:
+        - Personal growth and continuous improvement
+        - The journey of self-discovery and mindfulness
+        - Forward momentum and positive transformation
+        - Balance between reflection and progress
 
-         Uniqueness: This custom design blends organic growth patterns with
-         geometric precision - a rare combination not commonly seen in app logos.
+        Design Concept:
+        Three ascending arcs forming an abstract mountain/path shape, symbolizing
+        the journey of growth. The overlapping elements create depth and represent
+        the interconnected aspects of mind, body, and spirit.
+
+        Visual Elements:
+        1. Base foundation arc - represents grounding and current self
+        2. Middle rising arc - represents active growth and learning
+        3. Top crescent - represents aspirations and enlightenment
+        4. Central focal point - represents the core self/consciousness
+        5. Radiant accents - represent illumination and wisdom gained
+
+        Color Philosophy:
+        - Deep forest green (#2D5A3D): growth, nature, wisdom
+        - Soft teal (#5B9A8B): clarity, calm, mindfulness
+        - Warm cream (#D4C4A8): warmth, approachability, balance
     -->
 
-    <!-- Background glow - subtle radial gradient effect -->
+    <!-- Soft circular background glow -->
     <path
-        android:fillColor="#4A7C59"
-        android:pathData="M54,54m-38,0a38,38 0,1 1,76 0a38,38 0,1 1,-76 0" />
+        android:fillColor="#2D5A3D"
+        android:pathData="M54,54m-36,0a36,36 0,1 1,72 0a36,36 0,1 1,-72 0" />
 
-    <!-- Inner glow layer -->
+    <!-- Inner glow ring -->
     <path
-        android:fillColor="#5E9970"
-        android:pathData="M54,54m-33,0a33,33 0,1 1,66 0a33,33 0,1 1,-66 0" />
+        android:fillColor="#3D7050"
+        android:pathData="M54,54m-30,0a30,30 0,1 1,60 0a30,30 0,1 1,-60 0" />
 
     <!-- Core glow -->
     <path
-        android:fillColor="#6BAB7D"
-        android:fillAlpha="0.6"
-        android:pathData="M54,54m-28,0a28,28 0,1 1,56 0a28,28 0,1 1,-56 0" />
+        android:fillColor="#4D8060"
+        android:fillAlpha="0.7"
+        android:pathData="M54,54m-24,0a24,24 0,1 1,48 0a24,24 0,1 1,-48 0" />
 
-    <!-- Primary flowing curve - represents continuous growth journey -->
+    <!-- Base Arc - Foundation/Grounding (bottom) -->
     <path
         android:fillColor="#FFFFFF"
         android:pathData="
-            M36,68
-            C30,62 30,50 36,42
-            Q42,34 54,32
-            Q66,30 72,38
-            C78,46 78,56 72,64
-            Q66,72 54,74
-            Q48,74 44,72
-            L44,68
-            Q50,70 54,70
-            Q62,68 66,62
-            C70,56 70,48 66,42
-            Q62,36 54,36
-            Q46,38 42,44
-            C38,50 38,58 42,64
-            Q44,66 46,68
+            M30,62
+            Q30,74 42,78
+            Q54,82 66,78
+            Q78,74 78,62
+            Q78,66 72,70
+            Q66,74 54,76
+            Q42,74 36,70
+            Q30,66 30,62
             Z" />
 
-    <!-- Secondary ascending curve - represents aspiration and elevation -->
+    <!-- Middle Arc - Growth/Learning (rising) -->
     <path
-        android:fillColor="#A8D5BA"
+        android:fillColor="#5B9A8B"
         android:pathData="
-            M54,50
-            Q60,44 66,48
-            Q72,52 70,60
-            Q68,56 64,54
-            Q58,52 54,56
-            Q52,52 54,50
+            M34,52
+            Q34,64 46,68
+            Q54,70 62,68
+            Q74,64 74,52
+            Q74,58 68,62
+            Q62,66 54,66
+            Q46,66 40,62
+            Q34,58 34,52
             Z" />
 
-    <!-- Rising energy element - the spark of motivation -->
-    <path
-        android:fillColor="#E8DCC4"
-        android:pathData="
-            M62,38
-            Q68,34 72,40
-            Q74,46 68,48
-            Q66,44 64,42
-            Q62,42 62,38
-            Z" />
-
-    <!-- Wisdom spark - top accent representing enlightenment -->
+    <!-- Top Crescent - Aspiration/Enlightenment -->
     <path
         android:fillColor="#FFFFFF"
         android:pathData="
-            M70,30
-            L71,34
-            L75,32
-            L73,35
-            L77,36
-            L73,38
-            L75,42
-            L71,39
-            L70,43
-            L69,39
-            L65,42
-            L67,38
-            L63,36
-            L67,35
-            L65,32
-            L69,34
+            M38,42
+            Q38,52 48,56
+            Q54,58 60,56
+            Q70,52 70,42
+            Q70,48 64,50
+            Q58,52 54,52
+            Q50,52 44,50
+            Q38,48 38,42
             Z" />
 
-    <!-- Secondary spark - continuity of growth -->
+    <!-- Central Focal Point - Core Self -->
+    <path
+        android:fillColor="#D4C4A8"
+        android:pathData="
+            M54,54
+            m-8,0
+            a8,8 0,1 1,16 0
+            a8,8 0,1 1,-16 0" />
+
+    <!-- Inner Core - Consciousness -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="
+            M54,54
+            m-4,0
+            a4,4 0,1 1,8 0
+            a4,4 0,1 1,-8 0" />
+
+    <!-- Rising Line - Upward Journey (left) -->
     <path
         android:fillColor="#FFFFFF"
         android:fillAlpha="0.8"
         android:pathData="
-            M78,44
-            L79,46
-            L81,45
-            L80,47
-            L82,48
-            L80,49
-            L81,51
-            L79,50
-            L78,52
-            L77,50
-            L75,51
-            L76,49
-            L74,48
-            L76,47
-            L75,45
-            L77,46
+            M40,70
+            Q38,60 42,48
+            Q44,40 50,34
+            L52,36
+            Q46,42 44,50
+            Q42,60 44,68
             Z" />
 
-    <!-- Inner flow accent - represents mindfulness -->
+    <!-- Rising Line - Upward Journey (right) -->
     <path
         android:fillColor="#FFFFFF"
-        android:fillAlpha="0.4"
+        android:fillAlpha="0.8"
         android:pathData="
-            M46,52
-            Q50,48 54,52
-            Q52,56 48,56
-            Q46,54 46,52
+            M68,70
+            Q70,60 66,48
+            Q64,40 58,34
+            L56,36
+            Q62,42 64,50
+            Q66,60 64,68
+            Z" />
+
+    <!-- Radiant Accent - Wisdom Star (top) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="
+            M54,26
+            L55,30
+            L59,28
+            L57,32
+            L61,33
+            L57,35
+            L59,39
+            L55,37
+            L54,41
+            L53,37
+            L49,39
+            L51,35
+            L47,33
+            L51,32
+            L49,28
+            L53,30
+            Z" />
+
+    <!-- Secondary Accent - Growth Spark (right) -->
+    <path
+        android:fillColor="#D4C4A8"
+        android:fillAlpha="0.9"
+        android:pathData="
+            M76,40
+            L77,43
+            L80,41
+            L78,44
+            L81,45
+            L78,47
+            L80,50
+            L77,48
+            L76,51
+            L75,48
+            L72,50
+            L74,47
+            L71,45
+            L74,44
+            L72,41
+            L75,43
+            Z" />
+
+    <!-- Tertiary Accent - Balance Spark (left) -->
+    <path
+        android:fillColor="#5B9A8B"
+        android:fillAlpha="0.8"
+        android:pathData="
+            M32,40
+            L33,42
+            L35,41
+            L34,43
+            L36,44
+            L34,45
+            L35,47
+            L33,46
+            L32,48
+            L31,46
+            L29,47
+            L30,45
+            L28,44
+            L30,43
+            L29,41
+            L31,42
             Z" />
 
 </vector>
