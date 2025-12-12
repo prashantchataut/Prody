@@ -6,6 +6,7 @@ import com.prody.prashant.data.local.dao.*
 import com.prody.prashant.data.local.database.ProdyDatabase
 import com.prody.prashant.data.local.preferences.PreferencesManager
 import com.prody.prashant.data.backup.BackupManager
+import com.prody.prashant.util.GeminiManager
 import com.prody.prashant.util.TextToSpeechManager
 import dagger.Module
 import dagger.Provides
@@ -94,6 +95,15 @@ object AppModule {
         @ApplicationContext context: Context
     ): TextToSpeechManager {
         return TextToSpeechManager(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideGeminiManager(
+        @ApplicationContext context: Context,
+        preferencesManager: PreferencesManager
+    ): GeminiManager {
+        return GeminiManager(context, preferencesManager)
     }
 
     @Provides

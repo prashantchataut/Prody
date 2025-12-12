@@ -18,6 +18,8 @@ accompanist = "0.34.0"
 coil = "2.7.0"
 workManager = "2.10.0"
 hiltWork = "1.2.0"
+gemini = "0.9.0"
+okhttp = "4.12.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -50,6 +52,8 @@ kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-
 accompanist-systemuicontroller = { group = "com.google.accompanist", name = "accompanist-systemuicontroller", version.ref = "accompanist" }
 accompanist-permissions = { group = "com.google.accompanist", name = "accompanist-permissions", version.ref = "accompanist" }
 coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
+google-generativeai = { group = "com.google.ai.client.generativeai", name = "generativeai", version.ref = "gemini" }
+okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

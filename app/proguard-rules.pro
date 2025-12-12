@@ -60,3 +60,15 @@
 -keep class com.prody.prashant.data.model.** { *; }
 -keep class com.prody.prashant.domain.model.** { *; }
 -keep class com.prody.prashant.data.local.entity.** { *; }
+
+# Google Generative AI (Gemini)
+-keep class com.google.ai.client.generativeai.** { *; }
+-keep class com.google.ai.client.generativeai.type.** { *; }
+-dontwarn com.google.ai.client.generativeai.**
+
+# OkHttp
+-dontwarn okhttp3.**
+-dontwarn okio.**
+-keep class okhttp3.** { *; }
+-keep interface okhttp3.** { *; }
+-keepnames class okhttp3.internal.publicsuffix.PublicSuffixDatabase

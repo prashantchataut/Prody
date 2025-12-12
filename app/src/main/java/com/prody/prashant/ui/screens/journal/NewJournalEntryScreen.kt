@@ -61,10 +61,19 @@ fun NewJournalEntryScreen(
                         enabled = uiState.content.isNotBlank() && !uiState.isSaving
                     ) {
                         if (uiState.isSaving) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(16.dp),
-                                strokeWidth = 2.dp
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(16.dp),
+                                    strokeWidth = 2.dp
+                                )
+                                Text(
+                                    text = if (uiState.isGeneratingAiResponse) "Buddha thinking..." else "Saving...",
+                                    style = MaterialTheme.typography.labelMedium
+                                )
+                            }
                         } else {
                             Text(
                                 text = stringResource(R.string.save_entry),

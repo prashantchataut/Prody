@@ -145,6 +145,10 @@ dependencies {
     // WorkManager
     implementation(libs.androidx.work.runtime.ktx)
 
+    // Gemini AI
+    implementation(libs.google.generativeai)
+    implementation(libs.okhttp)
+
     // Core Library Desugaring
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.3")
 

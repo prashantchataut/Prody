@@ -40,6 +40,10 @@ class PreferencesManager @Inject constructor(
         val HAPTIC_FEEDBACK_ENABLED = booleanPreferencesKey("haptic_feedback")
         val FIRST_LAUNCH_TIME = longPreferencesKey("first_launch_time")
         val USER_ID = stringPreferencesKey("user_id")
+        // Gemini AI settings
+        val GEMINI_API_KEY = stringPreferencesKey("gemini_api_key")
+        val GEMINI_MODEL = stringPreferencesKey("gemini_model")
+        val GEMINI_ENABLED = booleanPreferencesKey("gemini_enabled")
     }
 
     // Onboarding
@@ -318,6 +322,52 @@ class PreferencesManager @Inject constructor(
     suspend fun setUserId(id: String) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.USER_ID] = id
+        }
+    }
+
+    // Gemini AI
+    val geminiApiKey: Flow<String> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.GEMINI_API_KEY] ?: ""
+        }
+
+    suspend fun setGeminiApiKey(key: String) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.GEMINI_API_KEY] = key
+        }
+    }
+
+    val geminiModel: Flow<String> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.GEMINI_MODEL] ?: "gemini-1.5-flash"
+        }
+
+    suspend fun setGeminiModel(model: String) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.GEMINI_MODEL] = model
+        }
+    }
+
+    val geminiEnabled: Flow<Boolean> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.GEMINI_ENABLED] ?: true
+        }
+
+    suspend fun setGeminiEnabled(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.GEMINI_ENABLED] = enabled
         }
     }
 
