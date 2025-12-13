@@ -8,8 +8,8 @@ import com.prody.prashant.data.local.dao.JournalDao
 import com.prody.prashant.data.local.dao.UserDao
 import com.prody.prashant.data.local.entity.JournalEntryEntity
 import com.prody.prashant.data.local.preferences.PreferencesManager
-import com.prody.prashant.domain.model.JournalTemplate
 import com.prody.prashant.domain.model.Mood
+import com.prody.prashant.ui.theme.JournalTemplate
 import com.prody.prashant.util.BuddhaWisdom
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*

@@ -1,0 +1,52 @@
+package com.prody.prashant.ui.theme
+
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.HelpOutline
+import androidx.compose.material.icons.filled.Celebration
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.LocalFireDepartment
+import androidx.compose.material.icons.filled.Psychology
+import androidx.compose.material.icons.filled.SelfImprovement
+import androidx.compose.material.icons.filled.SentimentDissatisfied
+import androidx.compose.material.icons.filled.SentimentVerySatisfied
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import com.prody.prashant.domain.model.Mood
+
+/**
+ * UI extension properties for Mood enum.
+ *
+ * These are separated from the Mood domain model to avoid Compose dependencies
+ * in the domain layer, preventing class initialization crashes when Mood is
+ * accessed from background threads or before Compose is initialized.
+ */
+
+/**
+ * Returns the icon for this mood.
+ */
+val Mood.icon: ImageVector
+    get() = when (this) {
+        Mood.HAPPY -> Icons.Filled.SentimentVerySatisfied
+        Mood.CALM -> Icons.Filled.SelfImprovement
+        Mood.ANXIOUS -> Icons.Filled.Psychology
+        Mood.SAD -> Icons.Filled.SentimentDissatisfied
+        Mood.MOTIVATED -> Icons.Filled.LocalFireDepartment
+        Mood.GRATEFUL -> Icons.Filled.Favorite
+        Mood.CONFUSED -> Icons.AutoMirrored.Filled.HelpOutline
+        Mood.EXCITED -> Icons.Filled.Celebration
+    }
+
+/**
+ * Returns the color for this mood.
+ */
+val Mood.color: Color
+    get() = when (this) {
+        Mood.HAPPY -> MoodHappy
+        Mood.CALM -> MoodCalm
+        Mood.ANXIOUS -> MoodAnxious
+        Mood.SAD -> MoodSad
+        Mood.MOTIVATED -> MoodMotivated
+        Mood.GRATEFUL -> MoodGrateful
+        Mood.CONFUSED -> MoodConfused
+        Mood.EXCITED -> MoodExcited
+    }

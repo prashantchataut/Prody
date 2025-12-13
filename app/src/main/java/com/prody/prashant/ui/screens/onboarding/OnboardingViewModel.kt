@@ -8,7 +8,7 @@ import com.prody.prashant.data.local.entity.AchievementEntity
 import com.prody.prashant.data.local.entity.UserProfileEntity
 import com.prody.prashant.data.local.entity.UserStatsEntity
 import com.prody.prashant.data.local.preferences.PreferencesManager
-import com.prody.prashant.domain.model.Achievements
+import com.prody.prashant.ui.theme.Achievements
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import java.util.UUID

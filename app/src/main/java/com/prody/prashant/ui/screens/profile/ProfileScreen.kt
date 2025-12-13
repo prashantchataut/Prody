@@ -45,9 +45,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.R
 import com.prody.prashant.data.local.entity.AchievementEntity
-import com.prody.prashant.domain.model.AchievementCategory
-import com.prody.prashant.domain.model.AchievementRarity
-import com.prody.prashant.domain.model.Achievements
 import com.prody.prashant.ui.components.ProdyCard
 import com.prody.prashant.ui.theme.*
 import kotlinx.coroutines.delay
