@@ -1,59 +1,75 @@
 <?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="200dp"
-    android:height="200dp"
-    android:viewportWidth="200"
-    android:viewportHeight="200">
+    android:width="288dp"
+    android:height="288dp"
+    android:viewportWidth="288"
+    android:viewportHeight="288">
 
-    <!-- Outer decorative ring -->
+    <!--
+    PRODY SPLASH LOGO: Extended "Ascent" design
+    Larger canvas with subtle environmental elements
+
+    Uses Deep Forest Green (#2D5A3D) to match the app's theme.
+    The abstract geometric design reveals an upward arrow
+    through negative space - symbolizing growth and progress.
+    -->
+
+    <!-- Outer atmosphere ring - barely visible -->
     <path
-        android:pathData="M100,100m-90,0a90,90 0,1 1,180 0a90,90 0,1 1,-180 0"
+        android:pathData="M144,144m-140,0a140,140 0,1 1,280 0a140,140 0,1 1,-280 0"
         android:fillColor="#00000000"
-        android:strokeColor="#6B5CE7"
-        android:strokeWidth="2"
-        android:strokeAlpha="0.3"/>
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="0.5"
+        android:strokeAlpha="0.1"/>
 
-    <!-- Middle ring -->
+    <!-- Secondary ring -->
     <path
-        android:pathData="M100,100m-75,0a75,75 0,1 1,150 0a75,75 0,1 1,-150 0"
+        android:pathData="M144,144m-125,0a125,125 0,1 1,250 0a125,125 0,1 1,-250 0"
         android:fillColor="#00000000"
-        android:strokeColor="#6B5CE7"
-        android:strokeWidth="1.5"
-        android:strokeAlpha="0.5"/>
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="0.3"
+        android:strokeAlpha="0.08"/>
 
-    <!-- Main background circle -->
+    <!-- Main circular container - Deep Forest Green -->
     <path
-        android:pathData="M100,100m-55,0a55,55 0,1 1,110 0a55,55 0,1 1,-110 0"
-        android:fillColor="#6B5CE7"/>
+        android:pathData="M144,144m-100,0a100,100 0,1 1,200 0a100,100 0,1 1,-200 0"
+        android:fillColor="#2D5A3D"/>
 
-    <!-- Inner highlight circle -->
+    <!-- Upper-left block -->
     <path
-        android:pathData="M100,100m-48,0a48,48 0,1 1,96 0a48,48 0,1 1,-96 0"
-        android:fillColor="#7D6FE9"/>
-
-    <!-- Stylized P letter -->
-    <path
-        android:pathData="M75,60 L75,140 L90,140 L90,110 L115,110 C135,110 150,95 150,80 C150,65 135,50 115,50 L75,50 L75,60 Z M90,65 L112,65 C125,65 135,72 135,80 C135,88 125,95 112,95 L90,95 L90,65 Z"
+        android:pathData="M64,64
+                          L144,64
+                          L144,112
+                          L96,160
+                          L64,160
+                          Z"
         android:fillColor="#FFFFFF"/>
 
-    <!-- Accent dot representing growth/progress -->
+    <!-- Lower-right block -->
     <path
-        android:pathData="M140,115m-8,0a8,8 0,1 1,16 0a8,8 0,1 1,-16 0"
-        android:fillColor="#D4AF37"/>
+        android:pathData="M144,156
+                          L192,108
+                          L224,108
+                          L224,224
+                          L144,224
+                          Z"
+        android:fillColor="#FFFFFF"/>
 
-    <!-- Small decorative elements -->
+    <!-- Destination accent -->
     <path
-        android:pathData="M55,55m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0"
+        android:pathData="M200,72 L216,72 L216,88 L200,88 Z"
         android:fillColor="#FFFFFF"
-        android:fillAlpha="0.6"/>
+        android:fillAlpha="0.7"/>
 
+    <!-- Trail elements - journey markers -->
     <path
-        android:pathData="M145,55m-2,0a2,2 0,1 1,4 0a2,2 0,1 1,-4 0"
+        android:pathData="M212,96m-4,0a4,4 0,1 1,8 0a4,4 0,1 1,-8 0"
         android:fillColor="#FFFFFF"
         android:fillAlpha="0.4"/>
 
     <path
-        android:pathData="M60,140m-2,0a2,2 0,1 1,4 0a2,2 0,1 1,-4 0"
+        android:pathData="M220,104m-2.5,0a2.5,2.5 0,1 1,5 0a2.5,2.5 0,1 1,-5 0"
         android:fillColor="#FFFFFF"
-        android:fillAlpha="0.4"/>
+        android:fillAlpha="0.25"/>
+
 </vector>

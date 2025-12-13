@@ -6,32 +6,43 @@
     android:viewportHeight="108">
 
     <!--
-        PRODY MONOCHROME LOGO PLACEHOLDER
-        For Android 13+ themed icon support.
-        Single color version that adapts to system theme colors.
+    PRODY MONOCHROME LOGO: "The Ascent"
+    For Android 13+ themed icon support.
+    Single color version that adapts to system theme colors.
 
-        Replace this with your custom monochrome logo.
+    Abstract geometric design - NO LETTERS.
+    System applies theme tint automatically.
     -->
 
-    <!-- Simple placeholder circle with "P" for Prody -->
-    <group
-        android:translateX="54"
-        android:translateY="54">
+    <!-- Circular base -->
+    <path
+        android:pathData="M54,54m-40,0a40,40 0,1 1,80 0a40,40 0,1 1,-80 0"
+        android:fillColor="#000000"/>
 
-        <!-- Outer circle -->
-        <path
-            android:fillColor="#000000"
-            android:pathData="M0,0m-28,0a28,28 0,1 1,56 0a28,28 0,1 1,-56 0" />
+    <!-- Upper-left cutout -->
+    <path
+        android:pathData="M14,14
+                          L54,14
+                          L54,42
+                          L28,68
+                          L14,68
+                          Z"
+        android:fillColor="#FFFFFF"/>
 
-        <!-- Inner circle (cutout effect) -->
-        <path
-            android:fillColor="#FFFFFF"
-            android:pathData="M0,0m-24,0a24,24 0,1 1,48 0a24,24 0,1 1,-48 0" />
+    <!-- Lower-right cutout -->
+    <path
+        android:pathData="M54,66
+                          L80,40
+                          L94,40
+                          L94,94
+                          L54,94
+                          Z"
+        android:fillColor="#FFFFFF"/>
 
-        <!-- Letter P stylized -->
-        <path
-            android:fillColor="#000000"
-            android:pathData="M-8,-16 L-8,16 L-2,16 L-2,4 L4,4 C12,4 12,-8 4,-8 L-2,-8 L-2,-16 Z M-2,-2 L-2,-8 L3,-8 C6,-8 6,-2 3,-2 Z" />
-    </group>
+    <!-- Accent -->
+    <path
+        android:pathData="M78,22 L86,22 L86,30 L78,30 Z"
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="0.75"/>
 
 </vector>
