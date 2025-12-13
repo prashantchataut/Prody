@@ -25,11 +25,10 @@ object AppModule {
         @ApplicationContext context: Context
     ): ProdyDatabase {
         return Room.databaseBuilder(
-            context,
+            context.applicationContext,
             ProdyDatabase::class.java,
             ProdyDatabase.DATABASE_NAME
         )
-            .addMigrations(ProdyDatabase.MIGRATION_3_4)
             .fallbackToDestructiveMigration()
             .build()
     }

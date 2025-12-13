@@ -51,7 +51,7 @@ import com.prody.prashant.data.local.entity.*
         ChallengeLeaderboardEntity::class
     ],
     version = 1,
-    exportSchema = true
+    exportSchema = false
 )
 abstract class ProdyDatabase : RoomDatabase() {
 
