@@ -2,45 +2,266 @@ package com.prody.prashant.ui.theme
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.MenuBook
+import androidx.compose.material.icons.filled.Architecture
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.AutoStories
+import androidx.compose.material.icons.filled.Bolt
+import androidx.compose.material.icons.filled.Book
+import androidx.compose.material.icons.filled.Chat
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.CollectionsBookmark
+import androidx.compose.material.icons.filled.Construction
 import androidx.compose.material.icons.filled.Create
+import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.Diversity3
+import androidx.compose.material.icons.filled.Eco
 import androidx.compose.material.icons.filled.EditNote
 import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.material.icons.filled.Explore
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Forum
+import androidx.compose.material.icons.filled.Foundation
+import androidx.compose.material.icons.filled.Handshake
+import androidx.compose.material.icons.filled.Handyman
+import androidx.compose.material.icons.filled.Hearing
+import androidx.compose.material.icons.filled.HelpOutline
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.HistoryEdu
+import androidx.compose.material.icons.filled.HourglassEmpty
+import androidx.compose.material.icons.filled.Landscape
 import androidx.compose.material.icons.filled.Leaderboard
+import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.LocalFireDepartment
 import androidx.compose.material.icons.filled.Mail
+import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.MarkEmailRead
+import androidx.compose.material.icons.filled.Memory
+import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.MilitaryTech
 import androidx.compose.material.icons.filled.Mood
+import androidx.compose.material.icons.filled.Moving
+import androidx.compose.material.icons.filled.Nightlight
 import androidx.compose.material.icons.filled.NightsStay
+import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.Park
 import androidx.compose.material.icons.filled.Psychology
+import androidx.compose.material.icons.filled.PsychologyAlt
+import androidx.compose.material.icons.filled.RecordVoiceOver
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.School
+import androidx.compose.material.icons.filled.SelfImprovement
+import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.filled.Stars
+import androidx.compose.material.icons.filled.Terrain
 import androidx.compose.material.icons.filled.ThumbUp
+import androidx.compose.material.icons.filled.TrendingUp
+import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material.icons.filled.WbSunny
+import androidx.compose.material.icons.filled.WbTwilight
 import androidx.compose.material.icons.filled.Whatshot
 import androidx.compose.material.icons.filled.WorkspacePremium
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.prody.prashant.domain.identity.ProdyAchievements
+
+/**
+ * [AchievementUi] - UI layer achievement models with Compose types
+ *
+ * This file provides the bridge between the domain-layer achievement system
+ * (ProdyAchievements) and the UI layer, adding Compose-specific types like
+ * Color and ImageVector that cannot exist in the domain layer.
+ *
+ * The UI layer models wrap domain models and add visual properties needed
+ * for rendering achievements in Jetpack Compose.
+ */
 
 /**
  * UI model for achievement rarity with visual properties.
+ * Maps to ProdyAchievements.Rarity with added Compose Color support.
+ *
+ * @property color Primary display color for this rarity
+ * @property secondaryColor Secondary/gradient color for this rarity
+ * @property displayName User-facing rarity name
+ * @property glowIntensity Visual glow effect intensity (0.0 to 1.0)
  */
-enum class AchievementRarity(val color: Color, val displayName: String) {
-    COMMON(Color(0xFF9E9E9E), "Common"),
-    UNCOMMON(Color(0xFF4CAF50), "Uncommon"),
-    RARE(Color(0xFF2196F3), "Rare"),
-    EPIC(Color(0xFF9C27B0), "Epic"),
-    LEGENDARY(Color(0xFFFF9800), "Legendary")
+enum class AchievementRarity(
+    val color: Color,
+    val secondaryColor: Color,
+    val displayName: String,
+    val glowIntensity: Float
+) {
+    COMMON(
+        color = Color(0xFF78909C),
+        secondaryColor = Color(0xFF90A4AE),
+        displayName = "Common",
+        glowIntensity = 0f
+    ),
+    UNCOMMON(
+        color = Color(0xFF4CAF50),
+        secondaryColor = Color(0xFF81C784),
+        displayName = "Uncommon",
+        glowIntensity = 0.2f
+    ),
+    RARE(
+        color = Color(0xFF2196F3),
+        secondaryColor = Color(0xFF64B5F6),
+        displayName = "Rare",
+        glowIntensity = 0.4f
+    ),
+    EPIC(
+        color = Color(0xFF9C27B0),
+        secondaryColor = Color(0xFFBA68C8),
+        displayName = "Epic",
+        glowIntensity = 0.6f
+    ),
+    LEGENDARY(
+        color = Color(0xFFD4AF37),
+        secondaryColor = Color(0xFFF4D03F),
+        displayName = "Legendary",
+        glowIntensity = 0.85f
+    );
+
+    /**
+     * Gets gradient colors for this rarity.
+     */
+    val gradientColors: List<Color>
+        get() = listOf(color, secondaryColor)
+
+    companion object {
+        /**
+         * Converts domain rarity to UI rarity.
+         */
+        fun fromDomain(domainRarity: ProdyAchievements.Rarity): AchievementRarity {
+            return when (domainRarity) {
+                ProdyAchievements.Rarity.COMMON -> COMMON
+                ProdyAchievements.Rarity.UNCOMMON -> UNCOMMON
+                ProdyAchievements.Rarity.RARE -> RARE
+                ProdyAchievements.Rarity.EPIC -> EPIC
+                ProdyAchievements.Rarity.LEGENDARY -> LEGENDARY
+            }
+        }
+    }
 }
 
 /**
- * Categories of achievements.
+ * Categories of achievements with visual properties.
+ * Maps to ProdyAchievements.Category with added Compose Color and Icon support.
+ *
+ * @property displayName User-facing category name
+ * @property description Category description
+ * @property color Primary color for this category
+ * @property secondaryColor Secondary/gradient color
+ * @property icon Default icon for this category
  */
-enum class AchievementCategory {
-    STREAK, LEARNING, JOURNAL, SOCIAL, SPECIAL
+enum class AchievementCategory(
+    val displayName: String,
+    val description: String,
+    val color: Color,
+    val secondaryColor: Color,
+    val icon: ImageVector
+) {
+    WISDOM(
+        displayName = "Wisdom",
+        description = "Achievements from learning words, quotes, and proverbs",
+        color = Color(0xFF6B5CE7),
+        secondaryColor = Color(0xFF9B8AFF),
+        icon = Icons.Filled.AutoStories
+    ),
+    REFLECTION(
+        displayName = "Reflection",
+        description = "Achievements from journaling and self-examination",
+        color = Color(0xFF3AAFA9),
+        secondaryColor = Color(0xFF6FD5CE),
+        icon = Icons.Filled.Psychology
+    ),
+    CONSISTENCY(
+        displayName = "Consistency",
+        description = "Achievements from maintaining streaks and habits",
+        color = Color(0xFFFF6B6B),
+        secondaryColor = Color(0xFFFFAB76),
+        icon = Icons.Filled.LocalFireDepartment
+    ),
+    PRESENCE(
+        displayName = "Presence",
+        description = "Achievements from engaging with Buddha and mindfulness",
+        color = Color(0xFF4ECDC4),
+        secondaryColor = Color(0xFF44B09E),
+        icon = Icons.Filled.SelfImprovement
+    ),
+    TEMPORAL(
+        displayName = "Temporal",
+        description = "Achievements from future-self letters and time awareness",
+        color = Color(0xFF667EEA),
+        secondaryColor = Color(0xFF764BA2),
+        icon = Icons.Filled.Schedule
+    ),
+    MASTERY(
+        displayName = "Mastery",
+        description = "Special achievements for exceptional dedication",
+        color = Color(0xFFD4AF37),
+        secondaryColor = Color(0xFFF4D03F),
+        icon = Icons.Filled.WorkspacePremium
+    ),
+
+    // Legacy categories for backwards compatibility
+    STREAK(
+        displayName = "Streak",
+        description = "Consistency achievements",
+        color = Color(0xFFFF6B6B),
+        secondaryColor = Color(0xFFFFAB76),
+        icon = Icons.Filled.LocalFireDepartment
+    ),
+    LEARNING(
+        displayName = "Learning",
+        description = "Vocabulary achievements",
+        color = Color(0xFF6B5CE7),
+        secondaryColor = Color(0xFF9B8AFF),
+        icon = Icons.AutoMirrored.Filled.MenuBook
+    ),
+    JOURNAL(
+        displayName = "Journal",
+        description = "Journaling achievements",
+        color = Color(0xFF3AAFA9),
+        secondaryColor = Color(0xFF6FD5CE),
+        icon = Icons.Filled.EditNote
+    ),
+    SOCIAL(
+        displayName = "Social",
+        description = "Social engagement achievements",
+        color = Color(0xFF4ECDC4),
+        secondaryColor = Color(0xFF44B09E),
+        icon = Icons.Filled.ThumbUp
+    ),
+    SPECIAL(
+        displayName = "Special",
+        description = "Special achievements",
+        color = Color(0xFF667EEA),
+        secondaryColor = Color(0xFF764BA2),
+        icon = Icons.Filled.AutoAwesome
+    );
+
+    /**
+     * Gets gradient colors for this category.
+     */
+    val gradientColors: List<Color>
+        get() = listOf(color, secondaryColor)
+
+    companion object {
+        /**
+         * Converts domain category to UI category.
+         */
+        fun fromDomain(domainCategory: ProdyAchievements.Category): AchievementCategory {
+            return when (domainCategory) {
+                ProdyAchievements.Category.WISDOM -> WISDOM
+                ProdyAchievements.Category.REFLECTION -> REFLECTION
+                ProdyAchievements.Category.CONSISTENCY -> CONSISTENCY
+                ProdyAchievements.Category.PRESENCE -> PRESENCE
+                ProdyAchievements.Category.TEMPORAL -> TEMPORAL
+                ProdyAchievements.Category.MASTERY -> MASTERY
+            }
+        }
+    }
 }
 
 /**
@@ -48,6 +269,20 @@ enum class AchievementCategory {
  *
  * This is placed in the ui.theme package because it contains Compose types
  * (Color, ImageVector), keeping Compose dependencies out of the domain layer.
+ *
+ * @property id Unique identifier for persistence and lookup
+ * @property name Achievement name displayed to users
+ * @property description Philosophical or poetic description
+ * @property icon Material icon for visual representation
+ * @property category The category this achievement belongs to
+ * @property rarity The rarity level determining visual treatment
+ * @property requirement Numeric threshold to unlock this achievement
+ * @property requirementDescription Human-readable requirement explanation
+ * @property celebrationMessage Elegant message shown when unlocked
+ * @property currentProgress Current user progress toward this achievement
+ * @property isUnlocked Whether the user has unlocked this achievement
+ * @property unlockedAt Timestamp when achievement was unlocked
+ * @property rewardPoints Points awarded for unlocking this achievement
  */
 data class Achievement(
     val id: String,
@@ -57,248 +292,491 @@ data class Achievement(
     val category: AchievementCategory,
     val rarity: AchievementRarity,
     val requirement: Int,
+    val requirementDescription: String = "",
+    val celebrationMessage: String = "",
     val currentProgress: Int = 0,
     val isUnlocked: Boolean = false,
     val unlockedAt: Long? = null,
     val rewardPoints: Int = 100
 ) {
+    /**
+     * Progress percentage toward unlocking this achievement.
+     */
     val progressPercentage: Float
         get() = if (requirement > 0) (currentProgress.toFloat() / requirement).coerceIn(0f, 1f) else 0f
+
+    /**
+     * Whether this achievement is close to being unlocked (>75% progress).
+     */
+    val isNearCompletion: Boolean
+        get() = !isUnlocked && progressPercentage >= 0.75f
+
+    companion object {
+        /**
+         * Creates a UI Achievement from a domain Achievement.
+         *
+         * @param domainAchievement The domain-layer achievement
+         * @param currentProgress Current user progress
+         * @param isUnlocked Whether unlocked
+         * @param unlockedAt When unlocked
+         * @return UI Achievement with proper icon
+         */
+        fun fromDomain(
+            domainAchievement: ProdyAchievements.Achievement,
+            currentProgress: Int = 0,
+            isUnlocked: Boolean = false,
+            unlockedAt: Long? = null
+        ): Achievement {
+            return Achievement(
+                id = domainAchievement.id,
+                name = domainAchievement.name,
+                description = domainAchievement.description,
+                icon = AchievementIcons.getIcon(domainAchievement.iconName),
+                category = AchievementCategory.fromDomain(domainAchievement.category),
+                rarity = AchievementRarity.fromDomain(domainAchievement.rarity),
+                requirement = domainAchievement.requirement,
+                requirementDescription = domainAchievement.requirementDescription,
+                celebrationMessage = domainAchievement.celebrationMessage,
+                currentProgress = currentProgress,
+                isUnlocked = isUnlocked,
+                unlockedAt = unlockedAt,
+                rewardPoints = domainAchievement.rewardPoints
+            )
+        }
+    }
 }
 
 /**
- * All available achievements.
+ * Maps icon name strings to Material Icons.
+ * Used to convert domain-layer icon names to Compose ImageVectors.
+ */
+object AchievementIcons {
+    private val iconMap: Map<String, ImageVector> = mapOf(
+        // General
+        "lightbulb" to Icons.Filled.Lightbulb,
+        "eco" to Icons.Filled.Eco,
+        "construction" to Icons.Filled.Construction,
+        "handyman" to Icons.Filled.Handyman,
+        "menu_book" to Icons.Filled.MenuBook,
+        "school" to Icons.Filled.School,
+        "favorite" to Icons.Filled.Favorite,
+        "stars" to Icons.Filled.Stars,
+        "format_quote" to Icons.Filled.AutoStories,
+        "auto_stories" to Icons.Filled.AutoStories,
+        "collections_bookmark" to Icons.Filled.CollectionsBookmark,
+        "explore" to Icons.Filled.Explore,
+        "history_edu" to Icons.Filled.HistoryEdu,
+
+        // Reflection
+        "edit_note" to Icons.Filled.EditNote,
+        "record_voice_over" to Icons.Filled.RecordVoiceOver,
+        "chat" to Icons.Filled.Chat,
+        "history" to Icons.Filled.History,
+        "psychology" to Icons.Filled.Psychology,
+        "book" to Icons.Filled.Book,
+        "auto_awesome" to Icons.Filled.AutoAwesome,
+        "mood" to Icons.Filled.Mood,
+        "map" to Icons.Filled.Map,
+        "palette" to Icons.Filled.Palette,
+
+        // Consistency
+        "whatshot" to Icons.Filled.Whatshot,
+        "local_fire_department" to Icons.Filled.LocalFireDepartment,
+        "bolt" to Icons.Filled.Bolt,
+        "nightlight" to Icons.Filled.Nightlight,
+        "dark_mode" to Icons.Filled.DarkMode,
+        "park" to Icons.Filled.Park,
+        "landscape" to Icons.Filled.Landscape,
+        "psychology_alt" to Icons.Filled.PsychologyAlt,
+
+        // Presence
+        "forum" to Icons.Filled.Forum,
+        "help_outline" to Icons.Filled.HelpOutline,
+        "diversity_3" to Icons.Filled.Diversity3,
+        "self_improvement" to Icons.Filled.SelfImprovement,
+        "handshake" to Icons.Filled.Handshake,
+
+        // Temporal
+        "mail" to Icons.Filled.Mail,
+        "send" to Icons.Filled.Send,
+        "hourglass_empty" to Icons.Filled.HourglassEmpty,
+        "architecture" to Icons.Filled.Architecture,
+        "mark_email_read" to Icons.Filled.MarkEmailRead,
+        "hearing" to Icons.Filled.Hearing,
+        "schedule" to Icons.Filled.Schedule,
+
+        // Mastery
+        "wb_twilight" to Icons.Filled.WbTwilight,
+        "nights_stay" to Icons.Filled.NightsStay,
+        "check_circle" to Icons.Filled.CheckCircle,
+        "verified" to Icons.Filled.Verified,
+        "moving" to Icons.Filled.Moving,
+        "trending_up" to Icons.Filled.TrendingUp,
+        "terrain" to Icons.Filled.Terrain,
+        "refresh" to Icons.Filled.Refresh,
+        "memory" to Icons.Filled.Memory,
+        "foundation" to Icons.Filled.Foundation,
+        "workspace_premium" to Icons.Filled.WorkspacePremium,
+
+        // Legacy
+        "emoji_events" to Icons.Filled.EmojiEvents,
+        "military_tech" to Icons.Filled.MilitaryTech,
+        "create" to Icons.Filled.Create,
+        "wb_sunny" to Icons.Filled.WbSunny,
+        "thumb_up" to Icons.Filled.ThumbUp,
+        "leaderboard" to Icons.Filled.Leaderboard
+    )
+
+    /**
+     * Gets the ImageVector for a given icon name.
+     * Falls back to AutoAwesome for unknown icons.
+     */
+    fun getIcon(iconName: String): ImageVector {
+        return iconMap[iconName] ?: Icons.Filled.AutoAwesome
+    }
+}
+
+/**
+ * All available achievements with full visual properties.
+ * Provides access to both legacy UI achievements and new domain-based achievements.
  */
 object Achievements {
-    val allAchievements = listOf(
+    /**
+     * All achievements converted from domain layer with proper icons.
+     */
+    val allAchievements: List<Achievement> by lazy {
+        ProdyAchievements.allAchievements.map { domainAchievement ->
+            Achievement.fromDomain(domainAchievement)
+        }
+    }
+
+    /**
+     * Legacy achievements for backwards compatibility.
+     * These will be gradually replaced by the domain-based achievements.
+     */
+    val legacyAchievements = listOf(
         // Streak Achievements
         Achievement(
             id = "streak_3",
-            name = "Getting Started",
-            description = "Maintain a 3-day streak",
-            icon = Icons.Filled.LocalFireDepartment,
-            category = AchievementCategory.STREAK,
+            name = "Kindling",
+            description = "A spark becomes a flame with patient tending",
+            icon = Icons.Filled.Whatshot,
+            category = AchievementCategory.CONSISTENCY,
             rarity = AchievementRarity.COMMON,
             requirement = 3,
+            requirementDescription = "Maintain a 3-day streak",
+            celebrationMessage = "Three days - the kindling has caught. Keep tending the flame.",
             rewardPoints = 50
         ),
         Achievement(
             id = "streak_7",
-            name = "Week Warrior",
-            description = "Maintain a 7-day streak",
-            icon = Icons.Filled.Whatshot,
-            category = AchievementCategory.STREAK,
+            name = "Steady Flame",
+            description = "A week of presence - the habit takes root",
+            icon = Icons.Filled.LocalFireDepartment,
+            category = AchievementCategory.CONSISTENCY,
             rarity = AchievementRarity.UNCOMMON,
             requirement = 7,
+            requirementDescription = "Maintain a 7-day streak",
+            celebrationMessage = "Seven days without breaking - you are building something real.",
             rewardPoints = 150
         ),
         Achievement(
             id = "streak_30",
-            name = "Monthly Master",
-            description = "Maintain a 30-day streak",
-            icon = Icons.Filled.EmojiEvents,
-            category = AchievementCategory.STREAK,
+            name = "Moon Cycle",
+            description = "A complete lunar cycle of daily practice",
+            icon = Icons.Filled.Nightlight,
+            category = AchievementCategory.CONSISTENCY,
             rarity = AchievementRarity.RARE,
             requirement = 30,
+            requirementDescription = "Maintain a 30-day streak",
+            celebrationMessage = "One moon's passage of unbroken dedication. The habit is forged.",
             rewardPoints = 500
         ),
         Achievement(
-            id = "streak_100",
-            name = "Century Champion",
-            description = "Maintain a 100-day streak",
-            icon = Icons.Filled.MilitaryTech,
-            category = AchievementCategory.STREAK,
+            id = "streak_90",
+            name = "Season of Growth",
+            description = "Three months - a season of transformation",
+            icon = Icons.Filled.Park,
+            category = AchievementCategory.CONSISTENCY,
             rarity = AchievementRarity.EPIC,
-            requirement = 100,
+            requirement = 90,
+            requirementDescription = "Maintain a 90-day streak",
+            celebrationMessage = "A full season of growth. You have transformed.",
             rewardPoints = 1500
         ),
         Achievement(
             id = "streak_365",
-            name = "Year of Growth",
-            description = "Maintain a 365-day streak",
-            icon = Icons.Filled.AutoAwesome,
-            category = AchievementCategory.STREAK,
+            name = "Year of Presence",
+            description = "365 days of showing up for yourself",
+            icon = Icons.Filled.Stars,
+            category = AchievementCategory.CONSISTENCY,
             rarity = AchievementRarity.LEGENDARY,
             requirement = 365,
+            requirementDescription = "Maintain a 365-day streak",
+            celebrationMessage = "One complete orbit around the sun, present each day. This is mastery.",
             rewardPoints = 5000
         ),
 
         // Learning Achievements
         Achievement(
             id = "words_10",
-            name = "Word Explorer",
-            description = "Learn 10 new words",
-            icon = Icons.AutoMirrored.Filled.MenuBook,
-            category = AchievementCategory.LEARNING,
+            name = "Gathering Words",
+            description = "A vocabulary is a garden - you are planting seeds",
+            icon = Icons.Filled.Eco,
+            category = AchievementCategory.WISDOM,
             rarity = AchievementRarity.COMMON,
             requirement = 10,
+            requirementDescription = "Learn 10 words",
+            celebrationMessage = "Ten words now live within you, ready to bloom in thought and speech.",
             rewardPoints = 50
         ),
         Achievement(
             id = "words_50",
-            name = "Vocabulary Builder",
-            description = "Learn 50 new words",
-            icon = Icons.Filled.School,
-            category = AchievementCategory.LEARNING,
+            name = "Wordsmith",
+            description = "Words are tools, and you are learning your craft",
+            icon = Icons.Filled.Handyman,
+            category = AchievementCategory.WISDOM,
             rarity = AchievementRarity.UNCOMMON,
             requirement = 50,
+            requirementDescription = "Learn 50 words",
+            celebrationMessage = "Fifty words - a craftsman's toolkit begins to take shape.",
             rewardPoints = 200
         ),
         Achievement(
             id = "words_100",
-            name = "Word Master",
-            description = "Learn 100 new words",
-            icon = Icons.Filled.Psychology,
-            category = AchievementCategory.LEARNING,
+            name = "Lexicon Keeper",
+            description = "A hundred words is a language unto itself",
+            icon = Icons.Filled.MenuBook,
+            category = AchievementCategory.WISDOM,
             rarity = AchievementRarity.RARE,
             requirement = 100,
+            requirementDescription = "Learn 100 words",
+            celebrationMessage = "One hundred words now color your world with new meaning.",
             rewardPoints = 500
         ),
         Achievement(
             id = "words_500",
-            name = "Lexicon Legend",
-            description = "Learn 500 new words",
-            icon = Icons.Filled.WorkspacePremium,
-            category = AchievementCategory.LEARNING,
+            name = "Logophile",
+            description = "A true lover of words, their histories, their music",
+            icon = Icons.Filled.Favorite,
+            category = AchievementCategory.WISDOM,
             rarity = AchievementRarity.LEGENDARY,
             requirement = 500,
+            requirementDescription = "Learn 500 words",
+            celebrationMessage = "Five hundred words - you have become a keeper of language.",
             rewardPoints = 2500
         ),
 
         // Journal Achievements
         Achievement(
             id = "journal_1",
-            name = "First Thoughts",
-            description = "Write your first journal entry",
-            icon = Icons.Filled.Create,
-            category = AchievementCategory.JOURNAL,
+            name = "First Reflection",
+            description = "The examined life begins with a single honest word",
+            icon = Icons.Filled.EditNote,
+            category = AchievementCategory.REFLECTION,
             rarity = AchievementRarity.COMMON,
             requirement = 1,
+            requirementDescription = "Write your first journal entry",
+            celebrationMessage = "You have begun the sacred practice of self-examination.",
             rewardPoints = 25
         ),
         Achievement(
             id = "journal_10",
-            name = "Thoughtful Mind",
-            description = "Write 10 journal entries",
-            icon = Icons.Filled.EditNote,
-            category = AchievementCategory.JOURNAL,
+            name = "Inner Dialogue",
+            description = "A conversation with yourself, growing richer each day",
+            icon = Icons.Filled.Chat,
+            category = AchievementCategory.REFLECTION,
             rarity = AchievementRarity.UNCOMMON,
             requirement = 10,
+            requirementDescription = "Write 10 journal entries",
+            celebrationMessage = "Ten conversations with your deeper self - the dialogue deepens.",
             rewardPoints = 150
         ),
         Achievement(
-            id = "journal_50",
-            name = "Reflective Soul",
-            description = "Write 50 journal entries",
+            id = "journal_30",
+            name = "Chronicle Keeper",
+            description = "Your story is being written, one entry at a time",
             icon = Icons.Filled.AutoStories,
-            category = AchievementCategory.JOURNAL,
+            category = AchievementCategory.REFLECTION,
             rarity = AchievementRarity.RARE,
-            requirement = 50,
+            requirement = 30,
+            requirementDescription = "Write 30 journal entries",
+            celebrationMessage = "Thirty chapters of your inner life now preserved in words.",
             rewardPoints = 500
         ),
         Achievement(
             id = "journal_100",
-            name = "Chronicle Keeper",
-            description = "Write 100 journal entries",
-            icon = Icons.Filled.HistoryEdu,
-            category = AchievementCategory.JOURNAL,
+            name = "Memoir of the Soul",
+            description = "A hundred glimpses into the depths of your being",
+            icon = Icons.Filled.Book,
+            category = AchievementCategory.REFLECTION,
             rarity = AchievementRarity.EPIC,
             requirement = 100,
+            requirementDescription = "Write 100 journal entries",
+            celebrationMessage = "One hundred reflections - a true memoir of the soul.",
             rewardPoints = 1000
         ),
 
         // Future Message Achievements
         Achievement(
             id = "future_1",
-            name = "Time Traveler",
-            description = "Send your first message to future self",
-            icon = Icons.Filled.Schedule,
-            category = AchievementCategory.SPECIAL,
-            rarity = AchievementRarity.COMMON,
+            name = "Message in a Bottle",
+            description = "A letter cast into the river of time",
+            icon = Icons.Filled.Mail,
+            category = AchievementCategory.TEMPORAL,
+            rarity = AchievementRarity.UNCOMMON,
             requirement = 1,
+            requirementDescription = "Write your first future-self letter",
+            celebrationMessage = "Your words now travel toward a future you. May they arrive with meaning.",
             rewardPoints = 50
         ),
         Achievement(
-            id = "future_10",
-            name = "Future Connector",
-            description = "Send 10 messages to future self",
-            icon = Icons.Filled.Mail,
-            category = AchievementCategory.SPECIAL,
-            rarity = AchievementRarity.UNCOMMON,
-            requirement = 10,
+            id = "future_5",
+            name = "Time Weaver",
+            description = "Connecting present intention to future realization",
+            icon = Icons.Filled.HourglassEmpty,
+            category = AchievementCategory.TEMPORAL,
+            rarity = AchievementRarity.RARE,
+            requirement = 5,
+            requirementDescription = "Write 5 future-self letters",
+            celebrationMessage = "Five letters to your future self - you are weaving threads across time.",
             rewardPoints = 200
         ),
         Achievement(
             id = "future_received",
-            name = "Message Received",
-            description = "Receive your first message from past self",
+            name = "Echo from the Past",
+            description = "Your past self has something to tell you",
             icon = Icons.Filled.MarkEmailRead,
-            category = AchievementCategory.SPECIAL,
+            category = AchievementCategory.TEMPORAL,
             rarity = AchievementRarity.RARE,
             requirement = 1,
+            requirementDescription = "Receive your first future-self letter",
+            celebrationMessage = "A message from who you were. Listen carefully.",
             rewardPoints = 300
+        ),
+
+        // Buddha/Presence Achievements
+        Achievement(
+            id = "buddha_first",
+            name = "First Counsel",
+            description = "You sought wisdom, and wisdom answered",
+            icon = Icons.Filled.Forum,
+            category = AchievementCategory.PRESENCE,
+            rarity = AchievementRarity.COMMON,
+            requirement = 1,
+            requirementDescription = "Have your first conversation with Buddha",
+            celebrationMessage = "The dialogue has begun. Buddha awaits your questions.",
+            rewardPoints = 25
+        ),
+        Achievement(
+            id = "buddha_10",
+            name = "Seeking Mind",
+            description = "One who asks is one who grows",
+            icon = Icons.Filled.PsychologyAlt,
+            category = AchievementCategory.PRESENCE,
+            rarity = AchievementRarity.UNCOMMON,
+            requirement = 10,
+            requirementDescription = "Have 10 conversations with Buddha",
+            celebrationMessage = "Ten conversations - you are learning to ask the right questions.",
+            rewardPoints = 150
         ),
 
         // Social Achievements
         Achievement(
             id = "boost_10",
             name = "Encourager",
-            description = "Boost 10 peers",
+            description = "Supporting others on their journey",
             icon = Icons.Filled.ThumbUp,
             category = AchievementCategory.SOCIAL,
             rarity = AchievementRarity.UNCOMMON,
             requirement = 10,
+            requirementDescription = "Boost 10 peers",
+            celebrationMessage = "Ten souls encouraged. Your support ripples outward.",
             rewardPoints = 150
         ),
         Achievement(
             id = "top_weekly",
             name = "Weekly Champion",
-            description = "Reach #1 on weekly leaderboard",
+            description = "Rising to the summit of dedication",
             icon = Icons.Filled.Leaderboard,
             category = AchievementCategory.SOCIAL,
             rarity = AchievementRarity.EPIC,
             requirement = 1,
+            requirementDescription = "Reach first place on weekly leaderboard",
+            celebrationMessage = "You stand at the pinnacle this week. Well earned.",
             rewardPoints = 1000
         ),
 
         // Special Achievements
         Achievement(
             id = "night_owl",
-            name = "Night Owl",
-            description = "Journal after midnight",
+            name = "Evening Contemplative",
+            description = "The quiet hours of night invite reflection",
             icon = Icons.Filled.NightsStay,
-            category = AchievementCategory.SPECIAL,
+            category = AchievementCategory.MASTERY,
             rarity = AchievementRarity.UNCOMMON,
-            requirement = 1,
-            rewardPoints = 100
+            requirement = 7,
+            requirementDescription = "Use Prody after 10 PM for 7 days",
+            celebrationMessage = "Seven nights of quiet contemplation. The darkness holds its own wisdom.",
+            rewardPoints = 200
         ),
         Achievement(
             id = "early_bird",
-            name = "Early Bird",
-            description = "Journal before 6 AM",
-            icon = Icons.Filled.WbSunny,
-            category = AchievementCategory.SPECIAL,
+            name = "Dawn Seeker",
+            description = "Those who rise with the sun often find themselves ahead",
+            icon = Icons.Filled.WbTwilight,
+            category = AchievementCategory.MASTERY,
             rarity = AchievementRarity.UNCOMMON,
-            requirement = 1,
-            rewardPoints = 100
+            requirement = 7,
+            requirementDescription = "Use Prody before 7 AM for 7 days",
+            celebrationMessage = "Seven dawns greeted with intention. The early hours hold power.",
+            rewardPoints = 200
         ),
         Achievement(
             id = "all_moods",
-            name = "Emotional Range",
-            description = "Journal with all different moods",
-            icon = Icons.Filled.Mood,
-            category = AchievementCategory.SPECIAL,
+            name = "Emotional Cartographer",
+            description = "Mapping the terrain of your inner landscape",
+            icon = Icons.Filled.Map,
+            category = AchievementCategory.REFLECTION,
             rarity = AchievementRarity.RARE,
-            requirement = 8, // Number of moods
+            requirement = 8,
+            requirementDescription = "Experience all mood types",
+            celebrationMessage = "The full spectrum of emotion is yours to understand.",
             rewardPoints = 400
         )
     )
 
+    /**
+     * Gets an achievement by ID, checking both new and legacy achievements.
+     */
     fun getAchievementById(id: String): Achievement? {
         return allAchievements.find { it.id == id }
+            ?: legacyAchievements.find { it.id == id }
     }
 
+    /**
+     * Gets achievements by category.
+     */
     fun getAchievementsByCategory(category: AchievementCategory): List<Achievement> {
         return allAchievements.filter { it.category == category }
     }
+
+    /**
+     * Gets achievements by rarity.
+     */
+    fun getAchievementsByRarity(rarity: AchievementRarity): List<Achievement> {
+        return allAchievements.filter { it.rarity == rarity }
+    }
+
+    /**
+     * Gets achievements that are nearly complete for a user.
+     */
+    fun getNearCompletionAchievements(achievements: List<Achievement>): List<Achievement> {
+        return achievements.filter { it.isNearCompletion }
+    }
+
+    /**
+     * Total number of achievements available.
+     */
+    val totalCount: Int get() = allAchievements.size
 }
