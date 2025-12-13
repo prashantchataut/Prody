@@ -31,18 +31,22 @@ class NotificationScheduler @Inject constructor(
     }
 
     suspend fun rescheduleAllNotifications() {
-        val notificationsEnabled = preferencesManager.notificationsEnabled.first()
-        if (!notificationsEnabled) {
-            cancelAllNotifications()
-            return
-        }
+        try {
+            val notificationsEnabled = preferencesManager.notificationsEnabled.first()
+            if (!notificationsEnabled) {
+                cancelAllNotifications()
+                return
+            }
 
-        scheduleMorningWisdom()
-        scheduleEveningReflection()
-        scheduleWordOfDay()
-        scheduleStreakReminder()
-        scheduleJournalReminder()
-        scheduleFutureMessages()
+            scheduleMorningWisdom()
+            scheduleEveningReflection()
+            scheduleWordOfDay()
+            scheduleStreakReminder()
+            scheduleJournalReminder()
+            scheduleFutureMessages()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     fun scheduleMorningWisdom() {

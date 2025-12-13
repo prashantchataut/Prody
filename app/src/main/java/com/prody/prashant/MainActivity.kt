@@ -76,7 +76,11 @@ class MainActivity : ComponentActivity() {
         if (isGranted) {
             // Permission granted, schedule notifications
             lifecycleScope.launch(Dispatchers.IO) {
-                notificationScheduler.rescheduleAllNotifications()
+                try {
+                    notificationScheduler.rescheduleAllNotifications()
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
             }
         }
     }
@@ -86,11 +90,15 @@ class MainActivity : ComponentActivity() {
 
         super.onCreate(savedInstanceState)
 
-        // Create notification channels
-        NotificationReceiver.createNotificationChannels(this)
+        // Create notification channels - handled in Application class
+        // NotificationReceiver.createNotificationChannels(this)
 
         // Check and request notification permission for Android 13+
-        requestNotificationPermission()
+        try {
+            requestNotificationPermission()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
 
         enableEdgeToEdge()
 
@@ -156,7 +164,11 @@ class MainActivity : ComponentActivity() {
                 ) == PackageManager.PERMISSION_GRANTED -> {
                     // Permission already granted
                     lifecycleScope.launch(Dispatchers.IO) {
-                        notificationScheduler.rescheduleAllNotifications()
+                        try {
+                            notificationScheduler.rescheduleAllNotifications()
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
                     }
                 }
                 else -> {
@@ -166,7 +178,11 @@ class MainActivity : ComponentActivity() {
         } else {
             // For older versions, schedule notifications directly
             lifecycleScope.launch(Dispatchers.IO) {
-                notificationScheduler.rescheduleAllNotifications()
+                try {
+                    notificationScheduler.rescheduleAllNotifications()
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
             }
         }
     }
