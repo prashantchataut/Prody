@@ -89,6 +89,12 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun provideVocabularyLearningDao(database: ProdyDatabase): VocabularyLearningDao {
+        return database.vocabularyLearningDao()
+    }
+
+    @Provides
+    @Singleton
     fun providePreferencesManager(
         @ApplicationContext context: Context
     ): PreferencesManager {

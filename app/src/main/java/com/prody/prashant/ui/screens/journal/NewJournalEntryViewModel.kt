@@ -228,8 +228,8 @@ class NewJournalEntryViewModel @Inject constructor(
             checkAndUnlockAchievement("night_owl")
         }
 
-        // Early bird achievement (before 6am)
-        if (currentHour in 5..5) {
+        // Early bird achievement (5am to 6am - users who wake early)
+        if (currentHour == 5) {
             checkAndUnlockAchievement("early_bird")
         }
 
