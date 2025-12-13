@@ -10,8 +10,8 @@ data class UserProfileEntity(
     val displayName: String = "Growth Seeker",
     val bio: String = "",
     val avatarId: String = "default",
-    val bannerId: String = "default",
-    val titleId: String = "newcomer", // Earned title
+    val bannerId: String = "default_dawn",
+    val titleId: String = "seeker", // Earned title
     val totalPoints: Int = 0,
     val currentStreak: Int = 0,
     val longestStreak: Int = 0,
@@ -20,10 +20,14 @@ data class UserProfileEntity(
     val wordsLearned: Int = 0,
     val journalEntriesCount: Int = 0,
     val futureMessagesCount: Int = 0,
+    val futureLettersSent: Int = 0,
+    val futureLettersReceived: Int = 0,
+    val buddhaConversations: Int = 0,
     val quotesReflected: Int = 0,
     val totalReflectionTime: Long = 0, // in seconds
     val preferredWisdomCategories: String = "", // Comma-separated
-    val dailyGoalMinutes: Int = 10
+    val dailyGoalMinutes: Int = 10,
+    val preferences: String = "{}" // JSON string for additional preferences
 )
 
 @Entity(tableName = "achievements")
@@ -33,15 +37,49 @@ data class AchievementEntity(
     val name: String,
     val description: String,
     val iconId: String,
-    val category: String, // streak, learning, social, special
+    val category: String, // wisdom, reflection, consistency, presence, temporal, mastery
     val requirement: Int, // Number needed to unlock
     val currentProgress: Int = 0,
     val isUnlocked: Boolean = false,
     val unlockedAt: Long? = null,
     val rewardType: String = "points", // points, avatar, banner, title
     val rewardValue: String = "100", // Points amount or reward ID
-    val rarity: String = "common" // common, uncommon, rare, epic, legendary
-)
+    val rarity: String = "common", // common, uncommon, rare, epic, legendary
+    val celebrationMessage: String = "" // Elegant message shown when unlocked
+) {
+    companion object {
+        /**
+         * Creates an AchievementEntity from domain values.
+         */
+        fun fromDomain(
+            id: String,
+            name: String,
+            description: String,
+            category: String,
+            rarity: String,
+            iconName: String,
+            requirement: Int,
+            celebrationMessage: String,
+            rewardPoints: Int = 100
+        ): AchievementEntity {
+            return AchievementEntity(
+                id = id,
+                name = name,
+                description = description,
+                category = category,
+                rarity = rarity,
+                iconId = iconName,
+                requirement = requirement,
+                currentProgress = 0,
+                isUnlocked = false,
+                unlockedAt = null,
+                rewardType = "points",
+                rewardValue = rewardPoints.toString(),
+                celebrationMessage = celebrationMessage
+            )
+        }
+    }
+}
 
 @Entity(tableName = "user_stats")
 data class UserStatsEntity(

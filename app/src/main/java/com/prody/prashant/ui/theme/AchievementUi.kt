@@ -1,13 +1,17 @@
 package com.prody.prashant.ui.theme
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Chat
+import androidx.compose.material.icons.automirrored.filled.HelpOutline
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.automirrored.filled.MenuBook
+import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.Architecture
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.AutoStories
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.Book
-import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.CollectionsBookmark
 import androidx.compose.material.icons.filled.Construction
@@ -24,7 +28,6 @@ import androidx.compose.material.icons.filled.Foundation
 import androidx.compose.material.icons.filled.Handshake
 import androidx.compose.material.icons.filled.Handyman
 import androidx.compose.material.icons.filled.Hearing
-import androidx.compose.material.icons.filled.HelpOutline
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.HistoryEdu
 import androidx.compose.material.icons.filled.HourglassEmpty
@@ -36,7 +39,6 @@ import androidx.compose.material.icons.filled.Mail
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.MarkEmailRead
 import androidx.compose.material.icons.filled.Memory
-import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.MilitaryTech
 import androidx.compose.material.icons.filled.Mood
 import androidx.compose.material.icons.filled.Moving
@@ -51,11 +53,9 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.School
 import androidx.compose.material.icons.filled.SelfImprovement
-import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.Stars
 import androidx.compose.material.icons.filled.Terrain
 import androidx.compose.material.icons.filled.ThumbUp
-import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material.icons.filled.WbSunny
 import androidx.compose.material.icons.filled.WbTwilight
@@ -357,7 +357,7 @@ object AchievementIcons {
         "eco" to Icons.Filled.Eco,
         "construction" to Icons.Filled.Construction,
         "handyman" to Icons.Filled.Handyman,
-        "menu_book" to Icons.Filled.MenuBook,
+        "menu_book" to Icons.AutoMirrored.Filled.MenuBook,
         "school" to Icons.Filled.School,
         "favorite" to Icons.Filled.Favorite,
         "stars" to Icons.Filled.Stars,
@@ -370,7 +370,7 @@ object AchievementIcons {
         // Reflection
         "edit_note" to Icons.Filled.EditNote,
         "record_voice_over" to Icons.Filled.RecordVoiceOver,
-        "chat" to Icons.Filled.Chat,
+        "chat" to Icons.AutoMirrored.Filled.Chat,
         "history" to Icons.Filled.History,
         "psychology" to Icons.Filled.Psychology,
         "book" to Icons.Filled.Book,
@@ -391,14 +391,14 @@ object AchievementIcons {
 
         // Presence
         "forum" to Icons.Filled.Forum,
-        "help_outline" to Icons.Filled.HelpOutline,
+        "help_outline" to Icons.AutoMirrored.Filled.HelpOutline,
         "diversity_3" to Icons.Filled.Diversity3,
         "self_improvement" to Icons.Filled.SelfImprovement,
         "handshake" to Icons.Filled.Handshake,
 
         // Temporal
         "mail" to Icons.Filled.Mail,
-        "send" to Icons.Filled.Send,
+        "send" to Icons.AutoMirrored.Filled.Send,
         "hourglass_empty" to Icons.Filled.HourglassEmpty,
         "architecture" to Icons.Filled.Architecture,
         "mark_email_read" to Icons.Filled.MarkEmailRead,
@@ -411,7 +411,7 @@ object AchievementIcons {
         "check_circle" to Icons.Filled.CheckCircle,
         "verified" to Icons.Filled.Verified,
         "moving" to Icons.Filled.Moving,
-        "trending_up" to Icons.Filled.TrendingUp,
+        "trending_up" to Icons.AutoMirrored.Filled.TrendingUp,
         "terrain" to Icons.Filled.Terrain,
         "refresh" to Icons.Filled.Refresh,
         "memory" to Icons.Filled.Memory,
@@ -546,7 +546,7 @@ object Achievements {
             id = "words_100",
             name = "Lexicon Keeper",
             description = "A hundred words is a language unto itself",
-            icon = Icons.Filled.MenuBook,
+            icon = Icons.AutoMirrored.Filled.MenuBook,
             category = AchievementCategory.WISDOM,
             rarity = AchievementRarity.RARE,
             requirement = 100,
@@ -584,7 +584,7 @@ object Achievements {
             id = "journal_10",
             name = "Inner Dialogue",
             description = "A conversation with yourself, growing richer each day",
-            icon = Icons.Filled.Chat,
+            icon = Icons.AutoMirrored.Filled.Chat,
             category = AchievementCategory.REFLECTION,
             rarity = AchievementRarity.UNCOMMON,
             requirement = 10,

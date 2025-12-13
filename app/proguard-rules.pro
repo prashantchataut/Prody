@@ -2,17 +2,49 @@
 # You can control the set of applied configuration files using the
 # proguardFiles setting in build.gradle.kts.
 
-# Keep data classes
+# ========================================
+# Prody Application Classes
+# ========================================
+
+# Keep all Prody app classes
+-keep class com.prody.prashant.** { *; }
+
+# Keep data models
+-keep class com.prody.prashant.data.model.** { *; }
+-keep class com.prody.prashant.domain.model.** { *; }
+-keep class com.prody.prashant.domain.identity.** { *; }
+-keep class com.prody.prashant.data.local.entity.** { *; }
+
+# Keep data classes members
 -keepclassmembers class * {
     @kotlinx.serialization.SerialName <fields>;
 }
 
-# Room
+# ========================================
+# Kotlin
+# ========================================
+
+-keep class kotlin.** { *; }
+-keep class kotlinx.** { *; }
+-dontwarn kotlin.**
+-dontwarn kotlinx.**
+
+# ========================================
+# Room Database
+# ========================================
+
 -keep class * extends androidx.room.RoomDatabase
 -keep @androidx.room.Entity class *
+-keep @androidx.room.Dao interface *
 -dontwarn androidx.room.paging.**
 
+# Keep Room generated code
+-keep class * extends androidx.room.RoomDatabase$Callback
+
+# ========================================
 # Kotlin Serialization
+# ========================================
+
 -keepattributes *Annotation*, InnerClasses
 -dontnote kotlinx.serialization.AnnotationsKt
 
@@ -31,21 +63,38 @@
     kotlinx.serialization.KSerializer serializer(...);
 }
 
-# Hilt
+# ========================================
+# Hilt Dependency Injection
+# ========================================
+
+-keep class dagger.hilt.** { *; }
+-keep class javax.inject.** { *; }
+-keep class * extends dagger.hilt.android.lifecycle.HiltViewModel
 -dontwarn dagger.hilt.internal.aggregatedroot.codegen.**
 -keepclasseswithmembers class * {
     @dagger.hilt.* <methods>;
 }
 
-# Compose
+# ========================================
+# Jetpack Compose
+# ========================================
+
+-keep class androidx.compose.** { *; }
 -dontwarn androidx.compose.**
 
+# ========================================
 # Coroutines
+# ========================================
+
 -keepnames class kotlinx.coroutines.internal.MainDispatcherFactory {}
 -keepnames class kotlinx.coroutines.CoroutineExceptionHandler {}
 -keepclassmembers class kotlinx.coroutines.** {
     volatile <fields>;
 }
+
+# ========================================
+# Retrofit (if used)
+# ========================================
 
 # Keep generic signature of Call, Response (R8 full mode strips signatures from non-kept items).
 -keep,allowobfuscation,allowshrinking interface retrofit2.Call
@@ -56,7 +105,48 @@
 -if interface * { @retrofit2.http.* public *** *(...); }
 -keep,allowoptimization,allowshrinking,allowobfuscation class <3>
 
-# Keep data models
--keep class com.prody.prashant.data.model.** { *; }
--keep class com.prody.prashant.domain.model.** { *; }
--keep class com.prody.prashant.data.local.entity.** { *; }
+# ========================================
+# DataStore
+# ========================================
+
+-keep class androidx.datastore.** { *; }
+
+# ========================================
+# WorkManager
+# ========================================
+
+-keep class * extends androidx.work.Worker
+-keep class * extends androidx.work.ListenableWorker {
+    public <init>(android.content.Context,androidx.work.WorkerParameters);
+}
+
+# ========================================
+# Parcelable
+# ========================================
+
+-keepclassmembers class * implements android.os.Parcelable {
+    public static final ** CREATOR;
+}
+
+# ========================================
+# Enums
+# ========================================
+
+-keepclassmembers enum * {
+    public static **[] values();
+    public static ** valueOf(java.lang.String);
+}
+
+# ========================================
+# Generative AI (Gemini)
+# ========================================
+
+-keep class com.google.ai.client.generativeai.** { *; }
+-dontwarn com.google.ai.client.generativeai.**
+
+# ========================================
+# Glance App Widgets
+# ========================================
+
+-keep class androidx.glance.** { *; }
+-dontwarn androidx.glance.**
