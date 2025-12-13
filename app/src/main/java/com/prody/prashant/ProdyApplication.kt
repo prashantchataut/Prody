@@ -4,6 +4,7 @@ import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
+import android.util.Log
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import com.prody.prashant.debug.CrashHandler
@@ -19,20 +20,35 @@ class ProdyApplication : Application(), Configuration.Provider {
     override val workManagerConfiguration: Configuration
         get() = Configuration.Builder()
             .setWorkerFactory(workerFactory)
-            .setMinimumLoggingLevel(android.util.Log.INFO)
+            .setMinimumLoggingLevel(if (BuildConfig.DEBUG) Log.DEBUG else Log.ERROR)
             .build()
 
     override fun onCreate() {
         super.onCreate()
-        
-        // Initialize global crash handler first to catch all exceptions
-        CrashHandler.initialize(this)
-        
+
+        // Initialize crash handler for debug builds only
+        if (BuildConfig.DEBUG) {
+            initializeCrashHandler()
+        }
+
+        // Initialize other components safely
+        initializeApp()
+    }
+
+    private fun initializeCrashHandler() {
+        try {
+            CrashHandler.initialize(this)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to initialize crash handler", e)
+        }
+    }
+
+    private fun initializeApp() {
         try {
             createNotificationChannels()
         } catch (e: Exception) {
             // Log error but don't crash the app - notifications are not critical for launch
-            android.util.Log.e("ProdyApplication", "Failed to create notification channels", e)
+            Log.e(TAG, "Failed to create notification channels", e)
         }
     }
 
@@ -98,6 +114,7 @@ class ProdyApplication : Application(), Configuration.Provider {
     }
 
     companion object {
+        private const val TAG = "ProdyApplication"
         const val CHANNEL_MAIN = "prody_main"
         const val CHANNEL_WISDOM = "prody_wisdom"
         const val CHANNEL_JOURNAL = "prody_journal"
