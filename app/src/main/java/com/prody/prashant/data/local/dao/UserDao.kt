@@ -56,6 +56,30 @@ interface UserDao {
     @Query("UPDATE user_profile SET futureMessagesCount = futureMessagesCount + 1 WHERE id = 1")
     suspend fun incrementFutureMessages()
 
+    @Query("UPDATE user_profile SET avatarId = :avatarId WHERE id = 1")
+    suspend fun updateAvatarId(avatarId: String)
+
+    @Query("UPDATE user_profile SET bannerId = :bannerId WHERE id = 1")
+    suspend fun updateBannerId(bannerId: String)
+
+    @Query("UPDATE user_profile SET titleId = :titleId WHERE id = 1")
+    suspend fun updateTitleId(titleId: String)
+
+    @Query("UPDATE user_profile SET totalPoints = :points WHERE id = 1")
+    suspend fun setTotalPoints(points: Int)
+
+    @Query("UPDATE user_profile SET currentStreak = :streak WHERE id = 1")
+    suspend fun updateCurrentStreak(streak: Int)
+
+    @Query("UPDATE user_profile SET longestStreak = :streak WHERE id = 1")
+    suspend fun updateLongestStreak(streak: Int)
+
+    @Query("SELECT totalPoints FROM user_profile WHERE id = 1")
+    fun getTotalPoints(): kotlinx.coroutines.flow.Flow<Int?>
+
+    @Query("SELECT currentStreak FROM user_profile WHERE id = 1")
+    fun getCurrentStreak(): kotlinx.coroutines.flow.Flow<Int?>
+
     // User Stats
     @Query("SELECT * FROM user_stats WHERE id = 1")
     fun getUserStats(): Flow<UserStatsEntity?>

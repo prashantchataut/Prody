@@ -2,6 +2,15 @@
 # You can control the set of applied configuration files using the
 # proguardFiles setting in build.gradle.kts.
 
+# Keep Prody app classes
+-keep class com.prody.prashant.** { *; }
+
+# Kotlin
+-keep class kotlin.** { *; }
+-keep class kotlinx.** { *; }
+-dontwarn kotlin.**
+-dontwarn kotlinx.**
+
 # Keep data classes
 -keepclassmembers class * {
     @kotlinx.serialization.SerialName <fields>;
@@ -32,13 +41,20 @@
 }
 
 # Hilt
+-keep class dagger.hilt.** { *; }
+-keep class javax.inject.** { *; }
+-keep class * extends dagger.hilt.android.lifecycle.HiltViewModel
 -dontwarn dagger.hilt.internal.aggregatedroot.codegen.**
 -keepclasseswithmembers class * {
     @dagger.hilt.* <methods>;
 }
 
 # Compose
+-keep class androidx.compose.** { *; }
 -dontwarn androidx.compose.**
+
+# DataStore
+-keep class androidx.datastore.** { *; }
 
 # Coroutines
 -keepnames class kotlinx.coroutines.internal.MainDispatcherFactory {}
@@ -60,3 +76,19 @@
 -keep class com.prody.prashant.data.model.** { *; }
 -keep class com.prody.prashant.domain.model.** { *; }
 -keep class com.prody.prashant.data.local.entity.** { *; }
+
+# Keep data classes with Gson
+-keepclassmembers class * {
+    @com.google.gson.annotations.SerializedName <fields>;
+}
+
+# Prevent stripping of parcelable
+-keepclassmembers class * implements android.os.Parcelable {
+    public static final ** CREATOR;
+}
+
+# Keep enums
+-keepclassmembers enum * {
+    public static **[] values();
+    public static ** valueOf(java.lang.String);
+}

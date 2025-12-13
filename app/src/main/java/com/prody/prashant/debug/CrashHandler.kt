@@ -2,8 +2,10 @@ package com.prody.prashant.debug
 
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
+import androidx.core.content.pm.PackageInfoCompat
 import java.io.PrintWriter
 import java.io.StringWriter
 import java.text.SimpleDateFormat
@@ -127,9 +129,16 @@ class CrashHandler private constructor(
 
     private fun getAppVersion(): String {
         return try {
-            val packageInfo = applicationContext.packageManager
-                .getPackageInfo(applicationContext.packageName, 0)
-            "${packageInfo.versionName} (${packageInfo.longVersionCode})"
+            val packageInfo = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                applicationContext.packageManager.getPackageInfo(
+                    applicationContext.packageName,
+                    PackageManager.PackageInfoFlags.of(0)
+                )
+            } else {
+                @Suppress("DEPRECATION")
+                applicationContext.packageManager.getPackageInfo(applicationContext.packageName, 0)
+            }
+            "${packageInfo.versionName} (${PackageInfoCompat.getLongVersionCode(packageInfo)})"
         } catch (e: Exception) {
             "Unknown"
         }

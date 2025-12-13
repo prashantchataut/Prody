@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Background circle with gradient effect -->
+    <group
+        android:pivotX="54"
+        android:pivotY="54">
+
+        <!-- Outer glow ring -->
+        <path
+            android:pathData="M54,54m-40,0a40,40 0,1 1,80 0a40,40 0,1 1,-80 0"
+            android:fillColor="#1A6B5CE7"
+            android:strokeWidth="0"/>
+
+        <!-- Main circle -->
+        <path
+            android:pathData="M54,54m-32,0a32,32 0,1 1,64 0a32,32 0,1 1,-64 0"
+            android:fillColor="#6B5CE7"
+            android:strokeWidth="0"/>
+
+        <!-- Inner highlight -->
+        <path
+            android:pathData="M54,54m-28,0a28,28 0,1 1,56 0a28,28 0,1 1,-56 0"
+            android:fillColor="#7D6FE9"
+            android:strokeWidth="0"/>
+
+        <!-- Letter P stylized -->
+        <path
+            android:pathData="M42,38 L42,70 L48,70 L48,58 L56,58 C63,58 68,53 68,46 C68,39 63,34 56,34 L42,34 L42,38 Z M48,40 L55,40 C59,40 62,42.5 62,46 C62,49.5 59,52 55,52 L48,52 L48,40 Z"
+            android:fillColor="#FFFFFF"
+            android:strokeWidth="0"/>
+
+        <!-- Decorative dot -->
+        <path
+            android:pathData="M70,62m-4,0a4,4 0,1 1,8 0a4,4 0,1 1,-8 0"
+            android:fillColor="#FFD700"
+            android:strokeWidth="0"/>
+    </group>
+</vector>
