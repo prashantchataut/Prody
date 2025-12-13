@@ -154,7 +154,7 @@ class MeditationTimerViewModel @Inject constructor(
             try {
                 userDao.addPoints(sessionMinutes * 10) // 10 points per minute
             } catch (e: Exception) {
-                // Handle error silently
+                android.util.Log.e("MeditationTimer", "Failed to add meditation points", e)
             }
 
             _uiState.update {

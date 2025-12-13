@@ -190,15 +190,15 @@ private fun VocabularyCard(
 
                 IconButton(
                     onClick = onFavoriteClick,
-                    modifier = Modifier.size(32.dp)
+                    modifier = Modifier.size(48.dp)
                 ) {
                     Icon(
                         imageVector = if (word.isFavorite) Icons.Filled.Favorite
                         else Icons.Filled.FavoriteBorder,
-                        contentDescription = "Favorite",
+                        contentDescription = if (word.isFavorite) "Remove from favorites" else "Add to favorites",
                         tint = if (word.isFavorite) MaterialTheme.colorScheme.error
                         else MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(24.dp)
                     )
                 }
             }

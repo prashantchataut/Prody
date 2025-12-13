@@ -13,6 +13,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.*
+import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
@@ -542,7 +543,7 @@ private fun DailyFocusCard() {
     val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
     val (focusText, focusIcon) = when {
         hour < 12 -> "Morning Reflection" to Icons.Filled.WbSunny
-        hour < 17 -> "Afternoon Growth" to Icons.Filled.TrendingUp
+        hour < 17 -> "Afternoon Growth" to Icons.AutoMirrored.Filled.TrendingUp
         else -> "Evening Gratitude" to Icons.Filled.NightsStay
     }
 

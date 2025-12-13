@@ -13,6 +13,8 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.TrendingDown
+import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
@@ -961,7 +963,7 @@ private fun ProgressInsightsSection(
         InsightCard(
             title = "Weekly Growth",
             value = "${if (weeklyGrowth >= 0) "+" else ""}$weeklyGrowth%",
-            icon = if (weeklyGrowth >= 0) Icons.Filled.TrendingUp else Icons.Filled.TrendingDown,
+            icon = if (weeklyGrowth >= 0) Icons.AutoMirrored.Filled.TrendingUp else Icons.AutoMirrored.Filled.TrendingDown,
             color = if (weeklyGrowth >= 0) AchievementUnlocked else MoodAnxious,
             modifier = Modifier.weight(1f)
         )

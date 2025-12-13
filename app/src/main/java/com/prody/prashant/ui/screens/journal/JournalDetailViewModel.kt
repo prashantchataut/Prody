@@ -12,7 +12,8 @@ import javax.inject.Inject
 data class JournalDetailUiState(
     val entry: JournalEntryEntity? = null,
     val isLoading: Boolean = true,
-    val showDeleteDialog: Boolean = false
+    val showDeleteDialog: Boolean = false,
+    val error: String? = null
 )
 
 @HiltViewModel
@@ -25,9 +26,15 @@ class JournalDetailViewModel @Inject constructor(
 
     fun loadEntry(entryId: Long) {
         viewModelScope.launch {
-            journalDao.observeEntryById(entryId).collect { entry ->
+            try {
+                journalDao.observeEntryById(entryId).collect { entry ->
+                    _uiState.update {
+                        it.copy(entry = entry, isLoading = false, error = null)
+                    }
+                }
+            } catch (e: Exception) {
                 _uiState.update {
-                    it.copy(entry = entry, isLoading = false)
+                    it.copy(isLoading = false, error = "Failed to load journal entry")
                 }
             }
         }
@@ -35,8 +42,12 @@ class JournalDetailViewModel @Inject constructor(
 
     fun toggleBookmark() {
         viewModelScope.launch {
-            _uiState.value.entry?.let { entry ->
-                journalDao.updateBookmarkStatus(entry.id, !entry.isBookmarked)
+            try {
+                _uiState.value.entry?.let { entry ->
+                    journalDao.updateBookmarkStatus(entry.id, !entry.isBookmarked)
+                }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(error = "Failed to update bookmark") }
             }
         }
     }
@@ -51,9 +62,17 @@ class JournalDetailViewModel @Inject constructor(
 
     fun deleteEntry() {
         viewModelScope.launch {
-            _uiState.value.entry?.let { entry ->
-                journalDao.deleteEntry(entry)
+            try {
+                _uiState.value.entry?.let { entry ->
+                    journalDao.deleteEntry(entry)
+                }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(error = "Failed to delete entry") }
             }
         }
+    }
+
+    fun clearError() {
+        _uiState.update { it.copy(error = null) }
     }
 }

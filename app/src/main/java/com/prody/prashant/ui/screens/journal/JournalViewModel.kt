@@ -13,7 +13,8 @@ data class JournalUiState(
     val entries: List<JournalEntryEntity> = emptyList(),
     val totalEntries: Int = 0,
     val showBookmarkedOnly: Boolean = false,
-    val isLoading: Boolean = true
+    val isLoading: Boolean = true,
+    val error: String? = null
 )
 
 @HiltViewModel
@@ -32,19 +33,26 @@ class JournalViewModel @Inject constructor(
 
     private fun loadEntries() {
         viewModelScope.launch {
-            combine(
-                _showBookmarkedOnly,
-                journalDao.getAllEntries(),
-                journalDao.getBookmarkedEntries()
-            ) { showBookmarked, allEntries, bookmarkedEntries ->
-                JournalUiState(
-                    entries = if (showBookmarked) bookmarkedEntries else allEntries,
-                    totalEntries = allEntries.size,
-                    showBookmarkedOnly = showBookmarked,
-                    isLoading = false
-                )
-            }.collect { state ->
-                _uiState.value = state
+            try {
+                combine(
+                    _showBookmarkedOnly,
+                    journalDao.getAllEntries(),
+                    journalDao.getBookmarkedEntries()
+                ) { showBookmarked, allEntries, bookmarkedEntries ->
+                    JournalUiState(
+                        entries = if (showBookmarked) bookmarkedEntries else allEntries,
+                        totalEntries = allEntries.size,
+                        showBookmarkedOnly = showBookmarked,
+                        isLoading = false,
+                        error = null
+                    )
+                }.collect { state ->
+                    _uiState.update { state }
+                }
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(isLoading = false, error = "Failed to load journal entries")
+                }
             }
         }
     }
@@ -55,10 +63,18 @@ class JournalViewModel @Inject constructor(
 
     fun toggleBookmark(entryId: Long) {
         viewModelScope.launch {
-            val entry = journalDao.getEntryById(entryId)
-            entry?.let {
-                journalDao.updateBookmarkStatus(entryId, !it.isBookmarked)
+            try {
+                val entry = journalDao.getEntryById(entryId)
+                entry?.let {
+                    journalDao.updateBookmarkStatus(entryId, !it.isBookmarked)
+                }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(error = "Failed to update bookmark") }
             }
         }
+    }
+
+    fun clearError() {
+        _uiState.update { it.copy(error = null) }
     }
 }
