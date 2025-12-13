@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.util.Log
+import androidx.core.content.pm.PackageInfoCompat
 import java.io.PrintWriter
 import java.io.StringWriter
 import java.text.SimpleDateFormat
@@ -129,7 +130,8 @@ class CrashHandler private constructor(
         return try {
             val packageInfo = applicationContext.packageManager
                 .getPackageInfo(applicationContext.packageName, 0)
-            "${packageInfo.versionName} (${packageInfo.longVersionCode})"
+            val versionCode = PackageInfoCompat.getLongVersionCode(packageInfo)
+            "${packageInfo.versionName} ($versionCode)"
         } catch (e: Exception) {
             "Unknown"
         }
