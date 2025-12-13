@@ -1,69 +1,55 @@
 package com.prody.prashant.domain.model
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import com.prody.prashant.ui.theme.*
-
 /**
- * Difficulty levels for challenges with associated visual properties.
+ * Difficulty levels for challenges.
+ *
+ * Note: UI properties (icon, color) are provided separately via ChallengeUi extensions
+ * in the ui.theme package to avoid Compose dependencies in the domain layer.
+ * This prevents class initialization crashes when Challenge is accessed from
+ * background threads or before Compose is initialized.
  */
 enum class ChallengeDifficulty(
     val displayName: String,
-    val color: Color,
-    val icon: ImageVector,
     val pointMultiplier: Float
 ) {
-    EASY("Easy", MoodCalm, Icons.Filled.SentimentSatisfied, 1.0f),
-    MEDIUM("Medium", MoodMotivated, Icons.Filled.Psychology, 1.5f),
-    HARD("Hard", MoodExcited, Icons.Filled.Whatshot, 2.0f),
-    EXTREME("Extreme", Color(0xFFFF5722), Icons.Filled.Bolt, 3.0f)
+    EASY("Easy", 1.0f),
+    MEDIUM("Medium", 1.5f),
+    HARD("Hard", 2.0f),
+    EXTREME("Extreme", 3.0f)
 }
 
 /**
  * Types of challenges available in the app.
+ *
+ * Note: UI properties (icon, color) are provided separately via ChallengeUi extensions
+ * in the ui.theme package to avoid Compose dependencies in the domain layer.
  */
 enum class ChallengeType(
     val displayName: String,
-    val icon: ImageVector,
-    val color: Color,
     val description: String
 ) {
     JOURNALING(
         "Journaling",
-        Icons.Filled.Book,
-        MoodCalm,
         "Write journal entries consistently"
     ),
     VOCABULARY(
         "Vocabulary",
-        Icons.Filled.School,
-        MoodMotivated,
         "Learn new words and expand your vocabulary"
     ),
     STREAK(
         "Streak",
-        Icons.Filled.LocalFireDepartment,
-        StreakFire,
         "Maintain daily activity streaks"
     ),
     MEDITATION(
         "Meditation",
-        Icons.Filled.SelfImprovement,
-        ProdyPrimary,
         "Practice mindfulness and meditation"
     ),
     REFLECTION(
         "Reflection",
-        Icons.Filled.Psychology,
-        ProdyTertiary,
         "Engage in deep reflection activities"
     ),
     MIXED(
         "Mixed",
-        Icons.Filled.Dashboard,
-        GoldTier,
         "Complete various activities"
     )
 }

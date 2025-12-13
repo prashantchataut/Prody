@@ -1,12 +1,33 @@
-package com.prody.prashant.domain.model
+package com.prody.prashant.ui.theme
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.*
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.MenuBook
+import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.AutoStories
+import androidx.compose.material.icons.filled.Create
+import androidx.compose.material.icons.filled.EditNote
+import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.material.icons.filled.HistoryEdu
+import androidx.compose.material.icons.filled.Leaderboard
+import androidx.compose.material.icons.filled.LocalFireDepartment
+import androidx.compose.material.icons.filled.Mail
+import androidx.compose.material.icons.filled.MarkEmailRead
+import androidx.compose.material.icons.filled.MilitaryTech
+import androidx.compose.material.icons.filled.Mood
+import androidx.compose.material.icons.filled.NightsStay
+import androidx.compose.material.icons.filled.Psychology
+import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.School
+import androidx.compose.material.icons.filled.ThumbUp
+import androidx.compose.material.icons.filled.WbSunny
+import androidx.compose.material.icons.filled.Whatshot
+import androidx.compose.material.icons.filled.WorkspacePremium
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import com.prody.prashant.ui.theme.*
 
+/**
+ * UI model for achievement rarity with visual properties.
+ */
 enum class AchievementRarity(val color: Color, val displayName: String) {
     COMMON(Color(0xFF9E9E9E), "Common"),
     UNCOMMON(Color(0xFF4CAF50), "Uncommon"),
@@ -15,10 +36,19 @@ enum class AchievementRarity(val color: Color, val displayName: String) {
     LEGENDARY(Color(0xFFFF9800), "Legendary")
 }
 
+/**
+ * Categories of achievements.
+ */
 enum class AchievementCategory {
     STREAK, LEARNING, JOURNAL, SOCIAL, SPECIAL
 }
 
+/**
+ * UI model for achievements with visual properties.
+ *
+ * This is placed in the ui.theme package because it contains Compose types
+ * (Color, ImageVector), keeping Compose dependencies out of the domain layer.
+ */
 data class Achievement(
     val id: String,
     val name: String,
@@ -36,6 +66,9 @@ data class Achievement(
         get() = if (requirement > 0) (currentProgress.toFloat() / requirement).coerceIn(0f, 1f) else 0f
 }
 
+/**
+ * All available achievements.
+ */
 object Achievements {
     val allAchievements = listOf(
         // Streak Achievements

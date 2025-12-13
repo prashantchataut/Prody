@@ -1,13 +1,25 @@
-package com.prody.prashant.domain.model
+package com.prody.prashant.ui.theme
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Flag
+import androidx.compose.material.icons.filled.Lightbulb
+import androidx.compose.material.icons.filled.NightsStay
+import androidx.compose.material.icons.filled.Psychology
+import androidx.compose.material.icons.filled.SelfImprovement
+import androidx.compose.material.icons.filled.WbSunny
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import com.prody.prashant.ui.theme.*
 
 /**
  * Represents a journal entry template with guided prompts.
+ *
+ * This is a UI model that includes Compose types (Color, ImageVector).
+ * It's placed in the ui.theme package to keep Compose dependencies
+ * out of the domain layer.
  */
 data class JournalTemplate(
     val id: String,
