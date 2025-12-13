@@ -258,10 +258,10 @@ object ProdyTokens {
         val maxHeight = 200.dp
         val iconSize = 48.dp
         val avatarSize = 40.dp
-        val padding = lg
-        val contentSpacing = sm
+        val padding = Spacing.lg
+        val contentSpacing = Spacing.sm
         val actionButtonHeight = 36.dp
-        val cornerRadius = xl
+        val cornerRadius = Radius.xl
         val illustrationSize = 64.dp
         val progressBarHeight = 4.dp
     }
