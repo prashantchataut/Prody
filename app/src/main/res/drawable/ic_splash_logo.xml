@@ -18,17 +18,15 @@
     <path
         android:pathData="M144,144m-140,0a140,140 0,1 1,280 0a140,140 0,1 1,-280 0"
         android:fillColor="#00000000"
-        android:strokeColor="#FFFFFF"
-        android:strokeWidth="0.5"
-        android:strokeAlpha="0.1"/>
+        android:strokeColor="#1AFFFFFF"
+        android:strokeWidth="0.5"/>
 
     <!-- Secondary ring -->
     <path
         android:pathData="M144,144m-125,0a125,125 0,1 1,250 0a125,125 0,1 1,-250 0"
         android:fillColor="#00000000"
-        android:strokeColor="#FFFFFF"
-        android:strokeWidth="0.3"
-        android:strokeAlpha="0.08"/>
+        android:strokeColor="#14FFFFFF"
+        android:strokeWidth="0.3"/>
 
     <!-- Main circular container - Deep Forest Green -->
     <path
@@ -37,39 +35,26 @@
 
     <!-- Upper-left block -->
     <path
-        android:pathData="M64,64
-                          L144,64
-                          L144,112
-                          L96,160
-                          L64,160
-                          Z"
+        android:pathData="M64,64L144,64L144,112L96,160L64,160Z"
         android:fillColor="#FFFFFF"/>
 
     <!-- Lower-right block -->
     <path
-        android:pathData="M144,156
-                          L192,108
-                          L224,108
-                          L224,224
-                          L144,224
-                          Z"
+        android:pathData="M144,156L192,108L224,108L224,224L144,224Z"
         android:fillColor="#FFFFFF"/>
 
     <!-- Destination accent -->
     <path
-        android:pathData="M200,72 L216,72 L216,88 L200,88 Z"
-        android:fillColor="#FFFFFF"
-        android:fillAlpha="0.7"/>
+        android:pathData="M200,72L216,72L216,88L200,88Z"
+        android:fillColor="#B3FFFFFF"/>
 
     <!-- Trail elements - journey markers -->
     <path
         android:pathData="M212,96m-4,0a4,4 0,1 1,8 0a4,4 0,1 1,-8 0"
-        android:fillColor="#FFFFFF"
-        android:fillAlpha="0.4"/>
+        android:fillColor="#66FFFFFF"/>
 
     <path
         android:pathData="M220,104m-2.5,0a2.5,2.5 0,1 1,5 0a2.5,2.5 0,1 1,-5 0"
-        android:fillColor="#FFFFFF"
-        android:fillAlpha="0.25"/>
+        android:fillColor="#40FFFFFF"/>
 
 </vector>

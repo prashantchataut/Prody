@@ -19,20 +19,34 @@ class BootReceiver : BroadcastReceiver() {
         fun notificationScheduler(): NotificationScheduler
     }
 
+    companion object {
+        private const val TAG = "BootReceiver"
+    }
+
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action == Intent.ACTION_BOOT_COMPLETED ||
             intent.action == Intent.ACTION_MY_PACKAGE_REPLACED
         ) {
-            // Get NotificationScheduler from Hilt using EntryPointAccessors
-            val entryPoint = EntryPointAccessors.fromApplication(
-                context.applicationContext,
-                BootReceiverEntryPoint::class.java
-            )
-            val notificationScheduler = entryPoint.notificationScheduler()
-            
-            // Reschedule all notifications after boot
-            CoroutineScope(Dispatchers.Default).launch {
-                notificationScheduler.rescheduleAllNotifications()
+            try {
+                // Get NotificationScheduler from Hilt using EntryPointAccessors
+                val entryPoint = EntryPointAccessors.fromApplication(
+                    context.applicationContext,
+                    BootReceiverEntryPoint::class.java
+                )
+                val notificationScheduler = entryPoint.notificationScheduler()
+
+                // Reschedule all notifications after boot
+                CoroutineScope(Dispatchers.Default).launch {
+                    try {
+                        notificationScheduler.rescheduleAllNotifications()
+                        android.util.Log.d(TAG, "Notifications rescheduled after boot/update")
+                    } catch (e: Exception) {
+                        android.util.Log.e(TAG, "Failed to reschedule notifications", e)
+                    }
+                }
+            } catch (e: Exception) {
+                // Hilt might not be initialized yet or other initialization issues
+                android.util.Log.e(TAG, "Failed to get NotificationScheduler from Hilt", e)
             }
         }
     }

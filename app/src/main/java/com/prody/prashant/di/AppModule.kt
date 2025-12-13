@@ -1,7 +1,10 @@
 package com.prody.prashant.di
 
 import android.content.Context
+import android.util.Log
 import androidx.room.Room
+import androidx.room.RoomDatabase
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.prody.prashant.data.ai.GeminiService
 import com.prody.prashant.data.local.dao.*
 import com.prody.prashant.data.local.database.ProdyDatabase
@@ -19,6 +22,29 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object AppModule {
 
+    private const val TAG = "AppModule"
+
+    /**
+     * Database callback for initialization tasks and logging.
+     * This helps track database lifecycle and catch potential issues early.
+     */
+    private val databaseCallback = object : RoomDatabase.Callback() {
+        override fun onCreate(db: SupportSQLiteDatabase) {
+            super.onCreate(db)
+            Log.d(TAG, "Database created successfully")
+        }
+
+        override fun onOpen(db: SupportSQLiteDatabase) {
+            super.onOpen(db)
+            Log.d(TAG, "Database opened")
+        }
+
+        override fun onDestructiveMigration(db: SupportSQLiteDatabase) {
+            super.onDestructiveMigration(db)
+            Log.w(TAG, "Destructive migration performed - data was cleared")
+        }
+    }
+
     @Provides
     @Singleton
     fun provideDatabase(
@@ -30,6 +56,7 @@ object AppModule {
             ProdyDatabase.DATABASE_NAME
         )
             .fallbackToDestructiveMigration()
+            .addCallback(databaseCallback)
             .build()
     }
 
