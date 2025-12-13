@@ -15,7 +15,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.core.content.ContextCompat
@@ -51,11 +54,11 @@ import com.prody.prashant.ui.screens.vocabulary.VocabularyListScreen
 import com.prody.prashant.ui.theme.ProdyTheme
 import com.prody.prashant.ui.theme.ThemeMode
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
+import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -72,7 +75,7 @@ class MainActivity : ComponentActivity() {
     ) { isGranted: Boolean ->
         if (isGranted) {
             // Permission granted, schedule notifications
-            CoroutineScope(Dispatchers.IO).launch {
+            lifecycleScope.launch(Dispatchers.IO) {
                 notificationScheduler.rescheduleAllNotifications()
             }
         }
@@ -89,31 +92,43 @@ class MainActivity : ComponentActivity() {
         // Check and request notification permission for Android 13+
         requestNotificationPermission()
 
-        // Check if onboarding is completed - using try-catch for crash safety
-        val isOnboardingCompleted = try {
-            runBlocking {
-                preferencesManager.onboardingCompleted.first()
-            }
-        } catch (e: Exception) {
-            // Default to false if preferences can't be read
-            false
-        }
-
-        // Get theme preference - using try-catch for crash safety
-        val themeModeString = try {
-            runBlocking {
-                preferencesManager.themeMode.first()
-            }
-        } catch (e: Exception) {
-            // Default to system theme if preferences can't be read
-            "system"
-        }
-
         enableEdgeToEdge()
 
+        // Use mutable state to update UI when preferences are loaded
+        var isOnboardingCompleted by mutableStateOf<Boolean?>(null)
+        var initialThemeMode by mutableStateOf("system")
+
+        // Keep splash screen visible until preferences are loaded
+        splashScreen.setKeepOnScreenCondition { isOnboardingCompleted == null }
+
+        // Load preferences asynchronously to avoid blocking main thread
+        lifecycleScope.launch {
+            try {
+                val onboardingResult = withContext(Dispatchers.IO) {
+                    preferencesManager.onboardingCompleted.first()
+                }
+                val themeResult = withContext(Dispatchers.IO) {
+                    preferencesManager.themeMode.first()
+                }
+                initialThemeMode = themeResult
+                isOnboardingCompleted = onboardingResult
+            } catch (e: Exception) {
+                // Default values if preferences can't be read
+                initialThemeMode = "system"
+                isOnboardingCompleted = false
+            }
+        }
+
         setContent {
+            // Wait until preferences are loaded
+            val onboardingDone = isOnboardingCompleted
+            if (onboardingDone == null) {
+                // Show nothing while loading (splash screen is still visible)
+                return@setContent
+            }
+
             val currentThemeModeString by preferencesManager.themeMode.collectAsStateWithLifecycle(
-                initialValue = themeModeString
+                initialValue = initialThemeMode
             )
 
             val themeModeState = when (currentThemeModeString.lowercase()) {
@@ -126,7 +141,7 @@ class MainActivity : ComponentActivity() {
                 themeMode = themeModeState
             ) {
                 ProdyApp(
-                    startDestination = if (isOnboardingCompleted) Screen.Home.route else Screen.Onboarding.route
+                    startDestination = if (onboardingDone) Screen.Home.route else Screen.Onboarding.route
                 )
             }
         }
@@ -140,7 +155,7 @@ class MainActivity : ComponentActivity() {
                     Manifest.permission.POST_NOTIFICATIONS
                 ) == PackageManager.PERMISSION_GRANTED -> {
                     // Permission already granted
-                    CoroutineScope(Dispatchers.IO).launch {
+                    lifecycleScope.launch(Dispatchers.IO) {
                         notificationScheduler.rescheduleAllNotifications()
                     }
                 }
@@ -150,7 +165,7 @@ class MainActivity : ComponentActivity() {
             }
         } else {
             // For older versions, schedule notifications directly
-            CoroutineScope(Dispatchers.IO).launch {
+            lifecycleScope.launch(Dispatchers.IO) {
                 notificationScheduler.rescheduleAllNotifications()
             }
         }

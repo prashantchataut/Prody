@@ -233,69 +233,81 @@ class ChallengesViewModel @Inject constructor(
 
     fun joinChallenge(challengeId: String) {
         viewModelScope.launch {
-            challengeDao.joinChallenge(challengeId)
+            try {
+                challengeDao.joinChallenge(challengeId)
 
-            // Add user to leaderboard
-            val userProfile = userDao.getUserProfileSync()
-            val leaderboardEntry = ChallengeLeaderboardEntity(
-                odId = "current_user",
-                challengeId = challengeId,
-                displayName = userProfile?.displayName ?: "You",
-                avatarId = userProfile?.avatarId ?: "default",
-                progress = 0,
-                rank = 0,
-                isCurrentUser = true
-            )
-            challengeDao.insertLeaderboardEntry(leaderboardEntry)
-
-            // Award points for joining
-            userDao.addPoints(10)
-
-            // Show celebration
-            _uiState.update {
-                it.copy(
-                    showCelebration = true,
-                    celebrationMessage = "Challenge Joined! +10 points"
+                // Add user to leaderboard
+                val userProfile = userDao.getUserProfileSync()
+                val leaderboardEntry = ChallengeLeaderboardEntity(
+                    odId = "current_user",
+                    challengeId = challengeId,
+                    displayName = userProfile?.displayName ?: "You",
+                    avatarId = userProfile?.avatarId ?: "default",
+                    progress = 0,
+                    rank = 0,
+                    isCurrentUser = true
                 )
+                challengeDao.insertLeaderboardEntry(leaderboardEntry)
+
+                // Award points for joining
+                userDao.addPoints(10)
+
+                // Show celebration
+                _uiState.update {
+                    it.copy(
+                        showCelebration = true,
+                        celebrationMessage = "Challenge Joined! +10 points"
+                    )
+                }
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(error = "Failed to join challenge. Please try again.")
+                }
             }
         }
     }
 
     fun recordProgress(challengeId: String, progressAmount: Int = 1) {
         viewModelScope.launch {
-            val challenge = challengeDao.getChallengeByIdSync(challengeId) ?: return@launch
+            try {
+                val challenge = challengeDao.getChallengeByIdSync(challengeId) ?: return@launch
 
-            if (!challenge.isJoined) return@launch
+                if (!challenge.isJoined) return@launch
 
-            // Update user progress
-            challengeDao.incrementUserProgress(challengeId, progressAmount)
+                // Update user progress
+                challengeDao.incrementUserProgress(challengeId, progressAmount)
 
-            // Check if completed
-            val newProgress = challenge.currentUserProgress + progressAmount
-            if (newProgress >= challenge.targetCount && !challenge.isCompleted) {
-                challengeDao.markChallengeCompleted(challengeId)
+                // Check if completed
+                val newProgress = challenge.currentUserProgress + progressAmount
+                if (newProgress >= challenge.targetCount && !challenge.isCompleted) {
+                    challengeDao.markChallengeCompleted(challengeId)
 
-                // Award completion reward
-                userDao.addPoints(challenge.rewardPoints)
+                    // Award completion reward
+                    userDao.addPoints(challenge.rewardPoints)
 
+                    _uiState.update {
+                        it.copy(
+                            showCelebration = true,
+                            celebrationMessage = "Challenge Completed! +${challenge.rewardPoints} points"
+                        )
+                    }
+                }
+
+                // Update community progress simulation
+                val updatedCommunityProgress = challenge.communityProgress + progressAmount
+                challengeDao.updateCommunityProgress(
+                    challengeId,
+                    updatedCommunityProgress,
+                    challenge.totalParticipants
+                )
+
+                // Check milestones
+                checkMilestones(challengeId, updatedCommunityProgress, challenge.communityTarget)
+            } catch (e: Exception) {
                 _uiState.update {
-                    it.copy(
-                        showCelebration = true,
-                        celebrationMessage = "Challenge Completed! +${challenge.rewardPoints} points"
-                    )
+                    it.copy(error = "Failed to record progress. Please try again.")
                 }
             }
-
-            // Update community progress simulation
-            val updatedCommunityProgress = challenge.communityProgress + progressAmount
-            challengeDao.updateCommunityProgress(
-                challengeId,
-                updatedCommunityProgress,
-                challenge.totalParticipants
-            )
-
-            // Check milestones
-            checkMilestones(challengeId, updatedCommunityProgress, challenge.communityTarget)
         }
     }
 

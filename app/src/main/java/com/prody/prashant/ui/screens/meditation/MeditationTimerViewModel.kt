@@ -52,16 +52,12 @@ class MeditationTimerViewModel @Inject constructor(
 
     private fun loadInitialWisdom() {
         viewModelScope.launch {
-            val quotes = try {
-                quoteDao.getAllQuotes().first()
+            try {
+                val quotes = quoteDao.getAllQuotes().first()
+                val wisdom = quotes.randomOrNull()?.content
+                    ?: "Take a moment to breathe deeply and be present."
+                _uiState.update { it.copy(openingWisdom = wisdom) }
             } catch (e: Exception) {
-                emptyList()
-            }
-
-            if (quotes.isNotEmpty()) {
-                val randomQuote = quotes.random()
-                _uiState.update { it.copy(openingWisdom = randomQuote.content) }
-            } else {
                 _uiState.update {
                     it.copy(openingWisdom = "Take a moment to breathe deeply and be present.")
                 }
@@ -146,15 +142,10 @@ class MeditationTimerViewModel @Inject constructor(
     private fun completeMeditation() {
         viewModelScope.launch {
             // Load closing wisdom
-            val quotes = try {
-                quoteDao.getAllQuotes().first()
+            val closingQuote = try {
+                val quotes = quoteDao.getAllQuotes().first()
+                quotes.randomOrNull()?.content ?: "Well done. Carry this peace with you."
             } catch (e: Exception) {
-                emptyList()
-            }
-
-            val closingQuote = if (quotes.isNotEmpty()) {
-                quotes.random().content
-            } else {
                 "Well done. Carry this peace with you."
             }
 
