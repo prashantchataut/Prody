@@ -41,7 +41,7 @@ fun FloatingParticles(
     minSize: Dp = 4.dp,
     maxSize: Dp = 12.dp
 ) {
-    val particles = remember {
+    val particles = remember(particleCount, minSize, maxSize) {
         List(particleCount) {
             Particle(
                 x = Random.nextFloat(),
@@ -175,7 +175,7 @@ fun ConfettiAnimation(
 ) {
     if (!isPlaying) return
 
-    val particles = remember {
+    val particles = remember(particleCount, colors) {
         List(particleCount) {
             ConfettiParticle(
                 x = Random.nextFloat(),
@@ -189,8 +189,7 @@ fun ConfettiAnimation(
         }
     }
 
-    val infiniteTransition = rememberInfiniteTransition(label = "confetti")
-    val time by infiniteTransition.animateFloat(
+    val time by rememberInfiniteTransition(label = "confetti").animateFloat(
         initialValue = 0f,
         targetValue = 1f,
         animationSpec = infiniteRepeatable(
@@ -475,13 +474,13 @@ fun SparkleEffect(
  * Staggered entrance animation helper
  */
 @Composable
-fun StaggeredAnimationState(
-    itemCount: Int,
+fun <T> StaggeredAnimationState(
+    items: List<T>,
     delayPerItem: Int = 100
 ): List<State<Float>> {
-    return (0 until itemCount).map { index ->
-        val animatable = remember { Animatable(0f) }
-        LaunchedEffect(Unit) {
+    return items.mapIndexed { index, item ->
+        val animatable = remember(item) { Animatable(0f) }
+        LaunchedEffect(item) {
             delay(index * delayPerItem.toLong())
             animatable.animateTo(
                 targetValue = 1f,
@@ -501,14 +500,15 @@ fun StaggeredAnimationState(
 @Composable
 fun AnimatedCounter(
     count: Int,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    animationSpec: AnimationSpec<Float> = tween(1000, easing = FastOutSlowInEasing)
 ): State<Int> {
     val animatedCount = remember { Animatable(0f) }
 
     LaunchedEffect(count) {
         animatedCount.animateTo(
             targetValue = count.toFloat(),
-            animationSpec = tween(1000, easing = FastOutSlowInEasing)
+            animationSpec = animationSpec
         )
     }
 
@@ -526,11 +526,12 @@ fun AnimatedProgressRing(
     modifier: Modifier = Modifier,
     color: Color = ProdyPrimary,
     backgroundColor: Color = ProdyPrimary.copy(alpha = 0.2f),
-    strokeWidth: Dp = 8.dp
+    strokeWidth: Dp = 8.dp,
+    animationSpec: AnimationSpec<Float> = tween(1000, easing = FastOutSlowInEasing)
 ) {
     val animatedProgress by animateFloatAsState(
         targetValue = progress,
-        animationSpec = tween(1000, easing = FastOutSlowInEasing),
+        animationSpec = animationSpec,
         label = "progress_ring"
     )
 

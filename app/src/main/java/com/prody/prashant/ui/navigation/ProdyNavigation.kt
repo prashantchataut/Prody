@@ -1,13 +1,18 @@
 package com.prody.prashant.ui.navigation
 
-import androidx.compose.animation.*
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.tween
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.navigation.NavHostController
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideOutVertically
+import androidx.navigation.NavController
+import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
-import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.prody.prashant.ui.screens.challenges.ChallengesScreen
@@ -41,15 +46,15 @@ import com.prody.prashant.ui.screens.vocabulary.VocabularyListScreen
 // =============================================================================
 
 // Custom easing for smooth, natural-feeling transitions
-private val EaseOutQuart = CubicBezierEasing(0.25f, 1f, 0.5f, 1f)
-private val EaseInQuart = CubicBezierEasing(0.5f, 0f, 0.75f, 0f)
+val EaseOutQuart = CubicBezierEasing(0.25f, 1f, 0.5f, 1f)
+val EaseInQuart = CubicBezierEasing(0.5f, 0f, 0.75f, 0f)
 
 // Animation durations (in milliseconds)
-private const val TRANSITION_DURATION = 350
-private const val FADE_DURATION = 250
+const val TRANSITION_DURATION = 350
+const val FADE_DURATION = 250
 
 // Slide offset for horizontal transitions
-private const val SLIDE_OFFSET_FRACTION = 0.15f
+const val SLIDE_OFFSET_FRACTION = 0.15f
 
 // =============================================================================
 // SCREEN ROUTE DEFINITIONS
@@ -78,301 +83,223 @@ sealed class Screen(val route: String) {
 }
 
 // =============================================================================
-// NAVIGATION HOST
+// NAVIGATION GRAPH BUILDER
 // =============================================================================
 
 /**
- * Main navigation host with smooth transitions between screens.
+ * Extension function to build the navigation graph.
+ * This approach centralizes the navigation logic.
  */
-@Composable
-fun ProdyNavHost(
-    navController: NavHostController,
-    startDestination: String,
-    modifier: Modifier = Modifier
-) {
-    NavHost(
-        navController = navController,
-        startDestination = startDestination,
-        modifier = modifier,
-        // Enter transition - new screen sliding in from right
+fun NavGraphBuilder.prodyNavGraph(navController: NavController) {
+    // =====================================================================
+    // ONBOARDING
+    // =====================================================================
+    composable(
+        route = Screen.Onboarding.route,
+        enterTransition = { fadeIn(tween(400)) },
+        exitTransition = { fadeOut(tween(300)) }
+    ) {
+        OnboardingScreen(
+            onComplete = {
+                navController.navigate(Screen.Home.route) {
+                    popUpTo(Screen.Onboarding.route) { inclusive = true }
+                }
+            }
+        )
+    }
+
+    // =====================================================================
+    // HOME
+    // =====================================================================
+    composable(Screen.Home.route) {
+        HomeScreen(
+            onNavigateToVocabulary = {
+                navController.navigate(Screen.VocabularyList.route)
+            },
+            onNavigateToQuotes = {
+                navController.navigate(Screen.Quotes.route)
+            },
+            onNavigateToJournal = {
+                navController.navigate(Screen.JournalList.route)
+            },
+            onNavigateToFutureMessage = {
+                navController.navigate(Screen.FutureMessageList.route)
+            },
+            onNavigateToMeditation = {
+                navController.navigate(Screen.Meditation.route)
+            },
+            onNavigateToChallenges = {
+                navController.navigate(Screen.Challenges.route)
+            }
+        )
+    }
+
+    // =====================================================================
+    // JOURNAL
+    // =====================================================================
+    composable(Screen.JournalList.route) {
+        JournalListScreen(
+            onNavigateToNewEntry = {
+                navController.navigate(Screen.NewJournalEntry.route)
+            },
+            onNavigateToDetail = { entryId ->
+                navController.navigate(Screen.JournalDetail.createRoute(entryId))
+            }
+        )
+    }
+
+    composable(
+        route = Screen.NewJournalEntry.route,
         enterTransition = {
-            fadeIn(
-                animationSpec = tween(
-                    durationMillis = FADE_DURATION,
-                    easing = EaseOutQuart
-                )
-            ) + slideInHorizontally(
-                initialOffsetX = { (it * SLIDE_OFFSET_FRACTION).toInt() },
-                animationSpec = tween(
-                    durationMillis = TRANSITION_DURATION,
-                    easing = EaseOutQuart
-                )
+            fadeIn(tween(FADE_DURATION)) + slideInVertically(
+                initialOffsetY = { it / 4 },
+                animationSpec = tween(TRANSITION_DURATION, easing = EaseOutQuart)
             )
         },
-        // Exit transition - current screen fading out while staying mostly in place
-        exitTransition = {
-            fadeOut(
-                animationSpec = tween(
-                    durationMillis = FADE_DURATION,
-                    easing = EaseInQuart
-                )
-            ) + slideOutHorizontally(
-                targetOffsetX = { -(it * SLIDE_OFFSET_FRACTION * 0.3f).toInt() },
-                animationSpec = tween(
-                    durationMillis = TRANSITION_DURATION,
-                    easing = EaseInQuart
-                )
-            )
-        },
-        // Pop enter transition - returning screen sliding in from left
-        popEnterTransition = {
-            fadeIn(
-                animationSpec = tween(
-                    durationMillis = FADE_DURATION,
-                    easing = EaseOutQuart
-                )
-            ) + slideInHorizontally(
-                initialOffsetX = { -(it * SLIDE_OFFSET_FRACTION * 0.3f).toInt() },
-                animationSpec = tween(
-                    durationMillis = TRANSITION_DURATION,
-                    easing = EaseOutQuart
-                )
-            )
-        },
-        // Pop exit transition - current screen sliding out to right
+        exitTransition = { fadeOut(tween(FADE_DURATION)) },
         popExitTransition = {
-            fadeOut(
-                animationSpec = tween(
-                    durationMillis = FADE_DURATION,
-                    easing = EaseInQuart
-                )
-            ) + slideOutHorizontally(
-                targetOffsetX = { (it * SLIDE_OFFSET_FRACTION).toInt() },
-                animationSpec = tween(
-                    durationMillis = TRANSITION_DURATION,
-                    easing = EaseInQuart
-                )
+            fadeOut(tween(FADE_DURATION)) + slideOutVertically(
+                targetOffsetY = { it / 4 },
+                animationSpec = tween(TRANSITION_DURATION, easing = EaseInQuart)
             )
         }
     ) {
-        // =====================================================================
-        // ONBOARDING
-        // =====================================================================
-        composable(
-            route = Screen.Onboarding.route,
-            // Special fade-only transition for onboarding
-            enterTransition = { fadeIn(tween(400)) },
-            exitTransition = { fadeOut(tween(300)) }
-        ) {
-            OnboardingScreen(
-                onComplete = {
-                    navController.navigate(Screen.Home.route) {
-                        popUpTo(Screen.Onboarding.route) { inclusive = true }
-                    }
-                }
-            )
-        }
+        NewJournalEntryScreen(
+            onNavigateBack = { navController.popBackStack() },
+            onEntrySaved = { navController.popBackStack() }
+        )
+    }
 
-        // =====================================================================
-        // HOME
-        // =====================================================================
-        composable(Screen.Home.route) {
-            HomeScreen(
-                onNavigateToVocabulary = {
-                    navController.navigate(Screen.VocabularyList.route)
-                },
-                onNavigateToQuotes = {
-                    navController.navigate(Screen.Quotes.route)
-                },
-                onNavigateToJournal = {
-                    navController.navigate(Screen.JournalList.route)
-                },
-                onNavigateToFutureMessage = {
-                    navController.navigate(Screen.FutureMessageList.route)
-                },
-                onNavigateToMeditation = {
-                    navController.navigate(Screen.Meditation.route)
-                },
-                onNavigateToChallenges = {
-                    navController.navigate(Screen.Challenges.route)
-                }
-            )
-        }
+    composable(
+        route = Screen.JournalDetail.route,
+        arguments = listOf(navArgument("entryId") { type = NavType.LongType })
+    ) { backStackEntry ->
+        val entryId = backStackEntry.arguments?.getLong("entryId") ?: return@composable
+        JournalDetailScreen(
+            entryId = entryId,
+            onNavigateBack = { navController.popBackStack() }
+        )
+    }
 
-        // =====================================================================
-        // JOURNAL
-        // =====================================================================
-        composable(Screen.JournalList.route) {
-            JournalListScreen(
-                onNavigateToNewEntry = {
-                    navController.navigate(Screen.NewJournalEntry.route)
-                },
-                onNavigateToDetail = { entryId ->
-                    navController.navigate(Screen.JournalDetail.createRoute(entryId))
-                }
-            )
-        }
-
-        composable(
-            route = Screen.NewJournalEntry.route,
-            // Slide up transition for creation screens
-            enterTransition = {
-                fadeIn(tween(FADE_DURATION)) + slideInVertically(
-                    initialOffsetY = { it / 4 },
-                    animationSpec = tween(TRANSITION_DURATION, easing = EaseOutQuart)
-                )
+    // =====================================================================
+    // FUTURE MESSAGES
+    // =====================================================================
+    composable(Screen.FutureMessageList.route) {
+        FutureMessageListScreen(
+            onNavigateToWrite = {
+                navController.navigate(Screen.WriteMessage.route)
             },
-            exitTransition = {
-                fadeOut(tween(FADE_DURATION))
-            },
-            popExitTransition = {
-                fadeOut(tween(FADE_DURATION)) + slideOutVertically(
-                    targetOffsetY = { it / 4 },
-                    animationSpec = tween(TRANSITION_DURATION, easing = EaseInQuart)
-                )
+            onNavigateBack = { navController.popBackStack() }
+        )
+    }
+
+    composable(
+        route = Screen.WriteMessage.route,
+        enterTransition = {
+            fadeIn(tween(FADE_DURATION)) + slideInVertically(
+                initialOffsetY = { it / 4 },
+                animationSpec = tween(TRANSITION_DURATION, easing = EaseOutQuart)
+            )
+        },
+        popExitTransition = {
+            fadeOut(tween(FADE_DURATION)) + slideOutVertically(
+                targetOffsetY = { it / 4 },
+                animationSpec = tween(TRANSITION_DURATION, easing = EaseInQuart)
+            )
+        }
+    ) {
+        WriteMessageScreen(
+            onNavigateBack = { navController.popBackStack() },
+            onMessageSaved = { navController.popBackStack() }
+        )
+    }
+
+    // =====================================================================
+    // STATS
+    // =====================================================================
+    composable(Screen.Stats.route) {
+        StatsScreen()
+    }
+
+    // =====================================================================
+    // PROFILE & SETTINGS
+    // =====================================================================
+    composable(Screen.Profile.route) {
+        ProfileScreen(
+            onNavigateToSettings = {
+                navController.navigate(Screen.Settings.route)
             }
-        ) {
-            NewJournalEntryScreen(
-                onNavigateBack = { navController.popBackStack() },
-                onEntrySaved = { navController.popBackStack() }
-            )
-        }
+        )
+    }
 
-        composable(
-            route = Screen.JournalDetail.route,
-            arguments = listOf(navArgument("entryId") { type = NavType.LongType })
-        ) { backStackEntry ->
-            val entryId = backStackEntry.arguments?.getLong("entryId") ?: return@composable
-            JournalDetailScreen(
-                entryId = entryId,
-                onNavigateBack = { navController.popBackStack() }
-            )
-        }
+    composable(Screen.Settings.route) {
+        SettingsScreen(
+            onNavigateBack = { navController.popBackStack() }
+        )
+    }
 
-        // =====================================================================
-        // FUTURE MESSAGES
-        // =====================================================================
-        composable(Screen.FutureMessageList.route) {
-            FutureMessageListScreen(
-                onNavigateToWrite = {
-                    navController.navigate(Screen.WriteMessage.route)
-                },
-                onNavigateBack = { navController.popBackStack() }
-            )
-        }
-
-        composable(
-            route = Screen.WriteMessage.route,
-            // Slide up for creation screens
-            enterTransition = {
-                fadeIn(tween(FADE_DURATION)) + slideInVertically(
-                    initialOffsetY = { it / 4 },
-                    animationSpec = tween(TRANSITION_DURATION, easing = EaseOutQuart)
-                )
+    // =====================================================================
+    // VOCABULARY
+    // =====================================================================
+    composable(Screen.VocabularyList.route) {
+        VocabularyListScreen(
+            onNavigateToDetail = { wordId ->
+                navController.navigate(Screen.VocabularyDetail.createRoute(wordId))
             },
-            popExitTransition = {
-                fadeOut(tween(FADE_DURATION)) + slideOutVertically(
-                    targetOffsetY = { it / 4 },
-                    animationSpec = tween(TRANSITION_DURATION, easing = EaseInQuart)
-                )
-            }
-        ) {
-            WriteMessageScreen(
-                onNavigateBack = { navController.popBackStack() },
-                onMessageSaved = { navController.popBackStack() }
+            onNavigateBack = { navController.popBackStack() }
+        )
+    }
+
+    composable(
+        route = Screen.VocabularyDetail.route,
+        arguments = listOf(navArgument("wordId") { type = NavType.LongType })
+    ) { backStackEntry ->
+        val wordId = backStackEntry.arguments?.getLong("wordId") ?: return@composable
+        VocabularyDetailScreen(
+            wordId = wordId,
+            onNavigateBack = { navController.popBackStack() }
+        )
+    }
+
+    // =====================================================================
+    // QUOTES
+    // =====================================================================
+    composable(Screen.Quotes.route) {
+        QuotesScreen(
+            onNavigateBack = { navController.popBackStack() }
+        )
+    }
+
+    // =====================================================================
+    // MEDITATION
+    // =====================================================================
+    composable(
+        route = Screen.Meditation.route,
+        enterTransition = {
+            fadeIn(tween(500, easing = EaseOutQuart)) + scaleIn(
+                initialScale = 0.95f,
+                animationSpec = tween(500, easing = EaseOutQuart)
+            )
+        },
+        exitTransition = { fadeOut(tween(300)) },
+        popExitTransition = {
+            fadeOut(tween(400)) + scaleOut(
+                targetScale = 0.95f,
+                animationSpec = tween(400, easing = EaseInQuart)
             )
         }
+    ) {
+        MeditationTimerScreen(
+            onNavigateBack = { navController.popBackStack() }
+        )
+    }
 
-        // =====================================================================
-        // STATS
-        // =====================================================================
-        composable(Screen.Stats.route) {
-            StatsScreen()
-        }
-
-        // =====================================================================
-        // PROFILE & SETTINGS
-        // =====================================================================
-        composable(Screen.Profile.route) {
-            ProfileScreen(
-                onNavigateToSettings = {
-                    navController.navigate(Screen.Settings.route)
-                }
-            )
-        }
-
-        composable(Screen.Settings.route) {
-            SettingsScreen(
-                onNavigateBack = { navController.popBackStack() }
-            )
-        }
-
-        // =====================================================================
-        // VOCABULARY
-        // =====================================================================
-        composable(Screen.VocabularyList.route) {
-            VocabularyListScreen(
-                onNavigateToDetail = { wordId ->
-                    navController.navigate(Screen.VocabularyDetail.createRoute(wordId))
-                },
-                onNavigateBack = { navController.popBackStack() }
-            )
-        }
-
-        composable(
-            route = Screen.VocabularyDetail.route,
-            arguments = listOf(navArgument("wordId") { type = NavType.LongType })
-        ) { backStackEntry ->
-            val wordId = backStackEntry.arguments?.getLong("wordId") ?: return@composable
-            VocabularyDetailScreen(
-                wordId = wordId,
-                onNavigateBack = { navController.popBackStack() }
-            )
-        }
-
-        // =====================================================================
-        // QUOTES
-        // =====================================================================
-        composable(Screen.Quotes.route) {
-            QuotesScreen(
-                onNavigateBack = { navController.popBackStack() }
-            )
-        }
-
-        // =====================================================================
-        // MEDITATION
-        // =====================================================================
-        composable(
-            route = Screen.Meditation.route,
-            // Special calm transition for meditation
-            enterTransition = {
-                fadeIn(tween(500, easing = EaseOutQuart)) + scaleIn(
-                    initialScale = 0.95f,
-                    animationSpec = tween(500, easing = EaseOutQuart)
-                )
-            },
-            exitTransition = {
-                fadeOut(tween(300))
-            },
-            popExitTransition = {
-                fadeOut(tween(400)) + scaleOut(
-                    targetScale = 0.95f,
-                    animationSpec = tween(400, easing = EaseInQuart)
-                )
-            }
-        ) {
-            MeditationTimerScreen(
-                onNavigateBack = { navController.popBackStack() }
-            )
-        }
-
-        // =====================================================================
-        // CHALLENGES
-        // =====================================================================
-        composable(Screen.Challenges.route) {
-            ChallengesScreen(
-                onNavigateBack = { navController.popBackStack() }
-            )
-        }
+    // =====================================================================
+    // CHALLENGES
+    // =====================================================================
+    composable(Screen.Challenges.route) {
+        ChallengesScreen(
+            onNavigateBack = { navController.popBackStack() }
+        )
     }
 }

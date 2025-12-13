@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
@@ -99,6 +100,7 @@ fun ProdyCard(
  * @param shape Shape of the card corners
  * @param backgroundColor Background color of the card
  * @param elevation Shadow elevation (animates on press)
+ * @param disabledAlpha Alpha for the disabled state
  * @param contentDescription Accessibility description for screen readers
  * @param content Content to display inside the card
  */
@@ -110,6 +112,7 @@ fun ProdyClickableCard(
     shape: Shape = CardShape,
     backgroundColor: Color = MaterialTheme.colorScheme.surface,
     elevation: Dp = 2.dp,
+    disabledAlpha: Float = 0.6f,
     contentDescription: String? = null,
     content: @Composable BoxScope.() -> Unit
 ) {
@@ -130,9 +133,17 @@ fun ProdyClickableCard(
         label = "card_elevation"
     )
 
+    // Fade out the card when it's disabled
+    val alpha by animateFloatAsState(
+        targetValue = if (enabled) 1f else disabledAlpha,
+        animationSpec = tween(durationMillis = 200),
+        label = "card_alpha"
+    )
+
     Box(
         modifier = modifier
             .scale(scale)
+            .alpha(alpha)
             .shadow(
                 elevation = animatedElevation,
                 shape = shape,

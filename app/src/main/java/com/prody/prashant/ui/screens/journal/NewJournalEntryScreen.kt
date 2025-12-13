@@ -123,6 +123,7 @@ fun NewJournalEntryScreen(
             MoodSelector(
                 selectedMood = uiState.selectedMood,
                 moodIntensity = uiState.moodIntensity,
+                availableMoods = Mood.all(),
                 onMoodSelected = { viewModel.updateMood(it) },
                 onIntensityChanged = { viewModel.updateMoodIntensity(it) }
             )
@@ -177,6 +178,7 @@ fun NewJournalEntryScreen(
 private fun MoodSelector(
     selectedMood: Mood,
     moodIntensity: Int,
+    availableMoods: List<Mood>,
     onMoodSelected: (Mood) -> Unit,
     onIntensityChanged: (Int) -> Unit
 ) {
@@ -194,7 +196,7 @@ private fun MoodSelector(
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            items(Mood.all()) { mood ->
+            items(availableMoods) { mood ->
                 MoodChip(
                     mood = mood,
                     isSelected = mood == selectedMood,
@@ -492,7 +494,7 @@ private fun TemplateCard(
                     .size(36.dp)
                     .clip(CircleShape)
                     .background(template.color.copy(alpha = 0.2f)),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.center
             ) {
                 Icon(
                     imageVector = template.icon,

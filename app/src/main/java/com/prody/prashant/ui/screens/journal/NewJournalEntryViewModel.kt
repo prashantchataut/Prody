@@ -28,7 +28,7 @@ data class NewJournalEntryUiState(
     val error: String? = null,
     val selectedTemplate: JournalTemplate? = null,
     val showTemplateSelector: Boolean = false,
-    val availableTemplates: List<JournalTemplate> = JournalTemplate.all(),
+    val availableTemplates: List<JournalTemplate> = emptyList(),
     val buddhaAiEnabled: Boolean = true,
     val geminiConfigured: Boolean = false
 )
@@ -46,6 +46,7 @@ class NewJournalEntryViewModel @Inject constructor(
 
     init {
         loadAiSettings()
+        loadAvailableTemplates()
     }
 
     private fun loadAiSettings() {
@@ -64,6 +65,10 @@ class NewJournalEntryViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    private fun loadAvailableTemplates() {
+        _uiState.update { it.copy(availableTemplates = JournalTemplate.all()) }
     }
 
     fun updateContent(content: String) {

@@ -90,12 +90,7 @@ fun StreakBadge(
         label = "glow_alpha"
     )
 
-    // Accessibility description
-    val description = when {
-        streakDays == 0 -> "No active streak"
-        streakDays == 1 -> "1 day streak"
-        else -> "$streakDays day streak"
-    }
+    val description = getStreakAccessibilityText(streakDays)
 
     Box(
         modifier = modifier.semantics { contentDescription = description },
@@ -173,13 +168,9 @@ fun StreakBadgeWithLabel(
     streakDays: Int,
     modifier: Modifier = Modifier,
     showAnimation: Boolean = true,
-    label: String = "Day Streak"
+    label: String = stringResource(R.string.day_streak)
 ) {
-    val description = when {
-        streakDays == 0 -> "No active streak"
-        streakDays == 1 -> "1 $label"
-        else -> "$streakDays $label"
-    }
+    val description = getStreakAccessibilityText(streakDays, label)
 
     Column(
         modifier = modifier.semantics { contentDescription = description },
@@ -212,11 +203,7 @@ fun CompactStreakIndicator(
     modifier: Modifier = Modifier
 ) {
     val (primaryColor, _) = getStreakColors(streakDays)
-
-    val description = when {
-        streakDays == 0 -> "No streak"
-        else -> "$streakDays days"
-    }
+    val description = getStreakAccessibilityText(streakDays)
 
     Row(
         modifier = modifier.semantics { contentDescription = description },
@@ -269,5 +256,18 @@ private fun getStreakColors(streakDays: Int): Pair<Color, Color> {
         streakDays >= 7 -> StreakMonth to StreakWeek        // 7+ days: Orange (weekly)
         streakDays > 0 -> StreakFire to StreakGlow          // 1-6 days: Standard fire
         else -> Color.Gray to Color.Gray.copy(alpha = 0.5f) // No streak
+    }
+}
+
+/**
+ * Generates accessibility text for the streak badge.
+ */
+@Composable
+private fun getStreakAccessibilityText(streakDays: Int, label: String? = null): String {
+    val dayString = if (streakDays == 1) "day" else "days"
+    val labelString = label ?: "streak"
+    return when {
+        streakDays == 0 -> stringResource(R.string.no_active_streak)
+        else -> "$streakDays $dayString $labelString"
     }
 }
