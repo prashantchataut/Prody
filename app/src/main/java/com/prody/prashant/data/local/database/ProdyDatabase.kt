@@ -1,6 +1,5 @@
 package com.prody.prashant.data.local.database
 
-import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import com.prody.prashant.data.local.dao.*
@@ -29,10 +28,7 @@ import com.prody.prashant.data.local.entity.*
         ChallengeLeaderboardEntity::class
     ],
     version = 3,
-    exportSchema = true,
-    autoMigrations = [
-        AutoMigration(from = 2, to = 3)
-    ]
+    exportSchema = true
 )
 abstract class ProdyDatabase : RoomDatabase() {
 

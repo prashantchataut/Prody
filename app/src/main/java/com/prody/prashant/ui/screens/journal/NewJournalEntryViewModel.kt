@@ -228,16 +228,20 @@ class NewJournalEntryViewModel @Inject constructor(
             checkAndUnlockAchievement("night_owl")
         }
 
-        // Early bird achievement (5am to 6am - users who wake early)
-        if (currentHour == 5) {
+        // Early bird achievement (5am to 7am - users who wake early)
+        if (currentHour in 5..6) {
             checkAndUnlockAchievement("early_bird")
         }
 
         // Check for all moods achievement
-        val allMoods = journalDao.getAllMoods().first()
-        if (allMoods.size >= Mood.entries.size) {
-            userDao.updateAchievementProgress("all_moods", allMoods.size)
-            checkAndUnlockAchievement("all_moods")
+        try {
+            val allMoods = journalDao.getAllMoods().firstOrNull() ?: emptyList()
+            if (allMoods.size >= Mood.entries.size) {
+                userDao.updateAchievementProgress("all_moods", allMoods.size)
+                checkAndUnlockAchievement("all_moods")
+            }
+        } catch (e: Exception) {
+            // Silently ignore - achievement check is non-critical
         }
     }
 

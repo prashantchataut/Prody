@@ -1089,8 +1089,7 @@ private fun EnhancedAchievementCard(
     ProdyCard(
         modifier = Modifier
             .width(150.dp)
-            .scale(glowScale)
-            .clickable { },
+            .scale(glowScale),
         backgroundColor = if (isUnlocked)
             rarity.color.copy(alpha = 0.12f)
         else

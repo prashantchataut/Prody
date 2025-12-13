@@ -1,5 +1,6 @@
 package com.prody.prashant.ui.screens.home
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.prody.prashant.data.local.dao.*
@@ -45,6 +46,10 @@ class HomeViewModel @Inject constructor(
     private val preferencesManager: PreferencesManager
 ) : ViewModel() {
 
+    companion object {
+        private const val TAG = "HomeViewModel"
+    }
+
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
@@ -57,77 +62,97 @@ class HomeViewModel @Inject constructor(
     private fun loadHomeData() {
         viewModelScope.launch {
             // Load user profile
-            userDao.getUserProfile().collect { profile ->
-                profile?.let {
+            userDao.getUserProfile()
+                .catch { e ->
+                    Log.e(TAG, "Error loading user profile", e)
+                }
+                .collect { profile ->
+                    profile?.let {
+                        _uiState.update { state ->
+                            state.copy(
+                                userName = it.displayName,
+                                currentStreak = it.currentStreak,
+                                totalPoints = it.totalPoints
+                            )
+                        }
+                    }
+                }
+        }
+
+        viewModelScope.launch {
+            try {
+                // Load quote of the day
+                val quote = quoteDao.getQuoteOfTheDay()
+                quote?.let {
+                    quoteDao.markAsShownDaily(it.id)
                     _uiState.update { state ->
                         state.copy(
-                            userName = it.displayName,
-                            currentStreak = it.currentStreak,
-                            totalPoints = it.totalPoints
+                            dailyQuote = it.content,
+                            dailyQuoteAuthor = it.author
                         )
                     }
                 }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error loading quote of the day", e)
             }
         }
 
         viewModelScope.launch {
-            // Load quote of the day
-            val quote = quoteDao.getQuoteOfTheDay()
-            quote?.let {
-                quoteDao.markAsShownDaily(it.id)
-                _uiState.update { state ->
-                    state.copy(
-                        dailyQuote = it.content,
-                        dailyQuoteAuthor = it.author
-                    )
+            try {
+                // Load word of the day
+                val word = vocabularyDao.getWordOfTheDay()
+                word?.let {
+                    currentWordId = it.id
+                    vocabularyDao.markAsShownDaily(it.id)
+                    _uiState.update { state ->
+                        state.copy(
+                            wordOfTheDay = it.word,
+                            wordDefinition = it.definition,
+                            wordPronunciation = it.pronunciation,
+                            wordId = it.id
+                        )
+                    }
                 }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error loading word of the day", e)
             }
         }
 
         viewModelScope.launch {
-            // Load word of the day
-            val word = vocabularyDao.getWordOfTheDay()
-            word?.let {
-                currentWordId = it.id
-                vocabularyDao.markAsShownDaily(it.id)
-                _uiState.update { state ->
-                    state.copy(
-                        wordOfTheDay = it.word,
-                        wordDefinition = it.definition,
-                        wordPronunciation = it.pronunciation,
-                        wordId = it.id
-                    )
+            try {
+                // Load proverb of the day
+                val proverb = proverbDao.getProverbOfTheDay()
+                proverb?.let {
+                    proverbDao.markAsShownDaily(it.id)
+                    _uiState.update { state ->
+                        state.copy(
+                            dailyProverb = it.content,
+                            proverbMeaning = it.meaning,
+                            proverbOrigin = it.origin
+                        )
+                    }
                 }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error loading proverb of the day", e)
             }
         }
 
         viewModelScope.launch {
-            // Load proverb of the day
-            val proverb = proverbDao.getProverbOfTheDay()
-            proverb?.let {
-                proverbDao.markAsShownDaily(it.id)
-                _uiState.update { state ->
-                    state.copy(
-                        dailyProverb = it.content,
-                        proverbMeaning = it.meaning,
-                        proverbOrigin = it.origin
-                    )
+            try {
+                // Load idiom of the day
+                val idiom = idiomDao.getIdiomOfTheDay()
+                idiom?.let {
+                    idiomDao.markAsShownDaily(it.id)
+                    _uiState.update { state ->
+                        state.copy(
+                            dailyIdiom = it.phrase,
+                            idiomMeaning = it.meaning,
+                            idiomExample = it.exampleSentence
+                        )
+                    }
                 }
-            }
-        }
-
-        viewModelScope.launch {
-            // Load idiom of the day
-            val idiom = idiomDao.getIdiomOfTheDay()
-            idiom?.let {
-                idiomDao.markAsShownDaily(it.id)
-                _uiState.update { state ->
-                    state.copy(
-                        dailyIdiom = it.phrase,
-                        idiomMeaning = it.meaning,
-                        idiomExample = it.exampleSentence
-                    )
-                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error loading idiom of the day", e)
             }
         }
 
@@ -136,6 +161,9 @@ class HomeViewModel @Inject constructor(
             val weekStart = getWeekStartTimestamp()
 
             journalDao.getEntriesByDateRange(weekStart, System.currentTimeMillis())
+                .catch { e ->
+                    Log.e(TAG, "Error loading journal entries", e)
+                }
                 .collect { entries ->
                     _uiState.update { state ->
                         state.copy(journalEntriesThisWeek = entries.size)
@@ -144,11 +172,15 @@ class HomeViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            vocabularyDao.getLearnedCount().collect { count ->
-                _uiState.update { state ->
-                    state.copy(wordsLearnedThisWeek = count)
+            vocabularyDao.getLearnedCount()
+                .catch { e ->
+                    Log.e(TAG, "Error loading learned count", e)
                 }
-            }
+                .collect { count ->
+                    _uiState.update { state ->
+                        state.copy(wordsLearnedThisWeek = count)
+                    }
+                }
         }
 
         viewModelScope.launch {
@@ -163,49 +195,61 @@ class HomeViewModel @Inject constructor(
 
         // Calculate days active this week
         viewModelScope.launch {
-            userDao.getStreakHistory().collect { history ->
-                val weekStart = getWeekStartTimestamp()
-                val daysActive = history.count { it.date >= weekStart }
-                _uiState.update { state ->
-                    state.copy(daysActiveThisWeek = daysActive)
+            userDao.getStreakHistory()
+                .catch { e ->
+                    Log.e(TAG, "Error loading streak history", e)
                 }
-            }
+                .collect { history ->
+                    val weekStart = getWeekStartTimestamp()
+                    val daysActive = history.count { it.date >= weekStart }
+                    _uiState.update { state ->
+                        state.copy(daysActiveThisWeek = daysActive)
+                    }
+                }
         }
     }
 
     fun markWordAsLearned() {
         viewModelScope.launch {
-            if (currentWordId > 0) {
-                vocabularyDao.markAsLearned(currentWordId)
-                userDao.incrementWordsLearned()
-                userDao.addPoints(25) // Points for learning a word
+            try {
+                if (currentWordId > 0) {
+                    vocabularyDao.markAsLearned(currentWordId)
+                    userDao.incrementWordsLearned()
+                    userDao.addPoints(25) // Points for learning a word
 
-                // Update achievement progress
-                userDao.getUserProfileSync()?.let { profile ->
-                    userDao.updateAchievementProgress("words_10", profile.wordsLearned)
-                    userDao.updateAchievementProgress("words_50", profile.wordsLearned)
-                    userDao.updateAchievementProgress("words_100", profile.wordsLearned)
-                    userDao.updateAchievementProgress("words_500", profile.wordsLearned)
+                    // Update achievement progress
+                    userDao.getUserProfileSync()?.let { profile ->
+                        userDao.updateAchievementProgress("words_10", profile.wordsLearned)
+                        userDao.updateAchievementProgress("words_50", profile.wordsLearned)
+                        userDao.updateAchievementProgress("words_100", profile.wordsLearned)
+                        userDao.updateAchievementProgress("words_500", profile.wordsLearned)
 
-                    // Check for unlocks
-                    checkAndUnlockAchievement("words_10", profile.wordsLearned, 10)
-                    checkAndUnlockAchievement("words_50", profile.wordsLearned, 50)
-                    checkAndUnlockAchievement("words_100", profile.wordsLearned, 100)
-                    checkAndUnlockAchievement("words_500", profile.wordsLearned, 500)
+                        // Check for unlocks
+                        checkAndUnlockAchievement("words_10", profile.wordsLearned, 10)
+                        checkAndUnlockAchievement("words_50", profile.wordsLearned, 50)
+                        checkAndUnlockAchievement("words_100", profile.wordsLearned, 100)
+                        checkAndUnlockAchievement("words_500", profile.wordsLearned, 500)
+                    }
                 }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error marking word as learned", e)
             }
         }
     }
 
     private suspend fun checkAndUnlockAchievement(achievementId: String, progress: Int, requirement: Int) {
-        if (progress >= requirement) {
-            val achievement = userDao.getAchievementById(achievementId)
-            if (achievement != null && !achievement.isUnlocked) {
-                userDao.unlockAchievement(achievementId)
-                // Award points for achievement
-                val points = achievement.rewardValue.toIntOrNull() ?: 100
-                userDao.addPoints(points)
+        try {
+            if (progress >= requirement) {
+                val achievement = userDao.getAchievementById(achievementId)
+                if (achievement != null && !achievement.isUnlocked) {
+                    userDao.unlockAchievement(achievementId)
+                    // Award points for achievement
+                    val points = achievement.rewardValue.toIntOrNull() ?: 100
+                    userDao.addPoints(points)
+                }
             }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error checking/unlocking achievement: $achievementId", e)
         }
     }
 
