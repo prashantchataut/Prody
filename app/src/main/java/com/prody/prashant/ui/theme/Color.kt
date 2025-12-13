@@ -199,7 +199,6 @@ val ProdyPremiumVioletContainer = Color(0xFFE8E5FC)
 // =============================================================================
 
 val MoodJoyful = Color(0xFFFFC857)       // Warm sunshine yellow
-val MoodCalm = Color(0xFF7EC8E3)         // Serene sky blue
 val MoodReflective = Color(0xFFB4A7D6)   // Soft lavender for contemplation
 val MoodNeutral = Color(0xFFB0BEC5)      // Balanced gray
 
