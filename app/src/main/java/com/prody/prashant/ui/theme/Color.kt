@@ -183,3 +183,105 @@ val GradientWarmEnd = Color(0xFFF5EDE0)
 // Accent gradient colors
 val GradientAccentStart = Color(0xFFE65C2C)
 val GradientAccentEnd = Color(0xFFFFD93D)
+
+// =============================================================================
+// PREMIUM VIOLET PALETTE - Wisdom & Introspection Theme
+// =============================================================================
+
+// Primary Violet - Deep wisdom, introspection
+val ProdyPremiumViolet = Color(0xFF6B5CE7)
+val ProdyPremiumVioletVariant = Color(0xFF5A4AD4)
+val ProdyPremiumVioletLight = Color(0xFF8B7EF0)
+val ProdyPremiumVioletContainer = Color(0xFFE8E5FC)
+
+// =============================================================================
+// JOURNAL MOOD COLORS - Extended Premium Palette
+// =============================================================================
+
+val MoodJoyful = Color(0xFFFFC857)       // Warm sunshine yellow
+val MoodCalm = Color(0xFF7EC8E3)         // Serene sky blue
+val MoodReflective = Color(0xFFB4A7D6)   // Soft lavender for contemplation
+val MoodNeutral = Color(0xFFB0BEC5)      // Balanced gray
+
+// =============================================================================
+// ACHIEVEMENT RARITY COLORS - Premium Tier System
+// =============================================================================
+
+val RarityCommon = Color(0xFF78909C)     // Slate gray
+val RarityUncommon = Color(0xFF66BB6A)   // Fresh green
+val RarityRare = Color(0xFF42A5F5)       // Bright blue
+val RarityEpic = Color(0xFFAB47BC)       // Rich purple
+val RarityLegendary = Color(0xFFD4AF37)  // Prestigious gold
+
+// =============================================================================
+// ENHANCED STREAK COLORS - Fire & Energy
+// =============================================================================
+
+val StreakEmber = Color(0xFFFFC371)      // Warm ember glow
+
+// =============================================================================
+// STATUS COLORS - Clear Communication
+// =============================================================================
+
+val SuccessColor = Color(0xFF4CAF50)
+val WarningColor = Color(0xFFFFC107)
+val ErrorColor = Color(0xFFE53935)
+val InfoColor = Color(0xFF2196F3)
+
+// =============================================================================
+// TEXT HIERARCHY COLORS - Enhanced Readability
+// =============================================================================
+
+val TextPrimaryLight = Color(0xFF1A1A2E)
+val TextSecondaryLight = Color(0xFF5A5A7A)
+val TextTertiaryLight = Color(0xFF8A8AA0)
+
+val TextPrimaryDark = Color(0xFFFAFAFC)
+val TextSecondaryDark = Color(0xFFB0B0C0)
+val TextTertiaryDark = Color(0xFF707080)
+
+// =============================================================================
+// SURFACE COLORS - Premium Depth System
+// =============================================================================
+
+val SurfaceLight = Color(0xFFFAFAFC)
+val SurfaceMedium = Color(0xFFF5F5F7)
+val SurfaceDark = Color(0xFF1A1A2E)
+val SurfaceDarkElevated = Color(0xFF252542)
+
+// =============================================================================
+// NOTIFICATION COLORS - Lively & Engaging
+// =============================================================================
+
+val NotificationPrimary = Color(0xFF6B5CE7)
+val NotificationSuccess = Color(0xFF4CAF50)
+val NotificationWarning = Color(0xFFFF9800)
+val NotificationCelebration = Color(0xFFFFD700)
+val NotificationStreak = Color(0xFFFF6B6B)
+val NotificationAchievement = Color(0xFF9C27B0)
+val NotificationReminder = Color(0xFF00BCD4)
+val NotificationMotivation = Color(0xFFFF5722)
+
+// =============================================================================
+// GRADIENT DEFINITIONS - Premium Visual Effects
+// =============================================================================
+
+object ProdyGradients {
+    val primaryGradient = listOf(ProdyPrimary, ProdyTertiary)
+    val premiumGradient = listOf(ProdyPremiumViolet, ProdyPremiumVioletLight)
+    val goldGradient = listOf(Color(0xFFD4AF37), Color(0xFFF4D03F))
+    val streakGradient = listOf(StreakFire, StreakGlow, StreakEmber)
+    val calmGradient = listOf(Color(0xFF667EEA), Color(0xFF764BA2))
+    val growthGradient = listOf(Color(0xFF11998E), Color(0xFF38EF7D))
+    val sunriseGradient = listOf(Color(0xFFFF6B6B), Color(0xFFFFC371))
+    val oceanGradient = listOf(Color(0xFF2193B0), Color(0xFF6DD5ED))
+    val forestGradient = listOf(Color(0xFF134E5E), Color(0xFF71B280))
+    val motivationGradient = listOf(Color(0xFFFF416C), Color(0xFFFF4B2B))
+    val serenityGradient = listOf(Color(0xFFA18CD1), Color(0xFFFBC2EB))
+    val wisdomGradient = listOf(Color(0xFF4568DC), Color(0xFFB06AB3))
+
+    // Notification-specific gradients
+    val celebrationGradient = listOf(Color(0xFFFFD700), Color(0xFFFF8C00), Color(0xFFFF6347))
+    val achievementGradient = listOf(Color(0xFF9C27B0), Color(0xFFE040FB))
+    val streakNotificationGradient = listOf(Color(0xFFFF6B6B), Color(0xFFFFAB76))
+}
