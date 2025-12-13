@@ -188,15 +188,15 @@ private fun JournalEntryCard(
 
                 IconButton(
                     onClick = onBookmarkClick,
-                    modifier = Modifier.size(32.dp)
+                    modifier = Modifier.size(48.dp)  // Minimum 48dp touch target for accessibility
                 ) {
                     Icon(
                         imageVector = if (entry.isBookmarked) Icons.Filled.Bookmark
                         else Icons.Filled.BookmarkBorder,
-                        contentDescription = "Bookmark",
+                        contentDescription = if (entry.isBookmarked) "Remove bookmark" else "Add bookmark",
                         tint = if (entry.isBookmarked) MaterialTheme.colorScheme.primary
                         else MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(24.dp)
                     )
                 }
             }
@@ -219,7 +219,7 @@ private fun JournalEntryCard(
                 ) {
                     Icon(
                         imageVector = Icons.Filled.SelfImprovement,
-                        contentDescription = null,
+                        contentDescription = "Buddha wisdom available",
                         tint = ProdyPrimary,
                         modifier = Modifier.size(14.dp)
                     )

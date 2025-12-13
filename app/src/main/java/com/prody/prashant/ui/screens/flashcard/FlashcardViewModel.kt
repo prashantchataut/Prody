@@ -152,52 +152,58 @@ class FlashcardViewModel @Inject constructor(
 
     private fun processAnswer(response: ReviewResponse) {
         viewModelScope.launch {
-            val currentState = _uiState.value
-            if (currentState.currentIndex >= currentState.cards.size) return@launch
+            try {
+                val currentState = _uiState.value
+                if (currentState.currentIndex >= currentState.cards.size) return@launch
 
-            val currentWord = currentState.cards[currentState.currentIndex]
-            val responseTimeMs = System.currentTimeMillis() - cardStartTime
+                val currentWord = currentState.cards[currentState.currentIndex]
+                val responseTimeMs = System.currentTimeMillis() - cardStartTime
 
-            // Get or create learning entry
-            val learningEntry = currentState.learningEntries[currentWord.id]
-                ?: vocabularyLearningDao.getLearningForWord(currentWord.id)
-                ?: spacedRepetitionEngine.createInitialLearningEntity(currentWord.id)
+                // Get or create learning entry
+                val learningEntry = currentState.learningEntries[currentWord.id]
+                    ?: vocabularyLearningDao.getLearningForWord(currentWord.id)
+                    ?: spacedRepetitionEngine.createInitialLearningEntity(currentWord.id)
 
-            // Calculate review result using SM-2 algorithm
-            val quality = spacedRepetitionEngine.qualityFromResponse(response)
-            val reviewResult = spacedRepetitionEngine.calculateNextReview(quality, learningEntry)
+                // Calculate review result using SM-2 algorithm
+                val quality = spacedRepetitionEngine.qualityFromResponse(response)
+                val reviewResult = spacedRepetitionEngine.calculateNextReview(quality, learningEntry)
 
-            // Apply the result to the learning entry
-            val updatedLearning = spacedRepetitionEngine.applyReviewResult(
-                currentLearning = learningEntry,
-                result = reviewResult,
-                responseTimeMs = responseTimeMs
-            )
-
-            // Save to database
-            vocabularyLearningDao.updateLearning(updatedLearning)
-
-            // Update mastery level in vocabulary entity
-            vocabularyDao.updateReviewProgress(
-                id = currentWord.id,
-                reviewedAt = System.currentTimeMillis(),
-                nextReview = reviewResult.nextReviewDate,
-                mastery = (updatedLearning.accuracy).toInt().coerceIn(0, 100)
-            )
-
-            // Update UI state
-            val isCorrect = quality >= 3
-            _uiState.update {
-                it.copy(
-                    currentIndex = it.currentIndex + 1,
-                    knownCount = if (isCorrect) it.knownCount + 1 else it.knownCount,
-                    unknownCount = if (!isCorrect) it.unknownCount + 1 else it.unknownCount,
-                    sessionComplete = it.currentIndex + 1 >= it.cards.size,
-                    learningEntries = it.learningEntries + (currentWord.id to updatedLearning)
+                // Apply the result to the learning entry
+                val updatedLearning = spacedRepetitionEngine.applyReviewResult(
+                    currentLearning = learningEntry,
+                    result = reviewResult,
+                    responseTimeMs = responseTimeMs
                 )
-            }
 
-            cardStartTime = System.currentTimeMillis()
+                // Save to database
+                vocabularyLearningDao.updateLearning(updatedLearning)
+
+                // Update mastery level in vocabulary entity
+                vocabularyDao.updateReviewProgress(
+                    id = currentWord.id,
+                    reviewedAt = System.currentTimeMillis(),
+                    nextReview = reviewResult.nextReviewDate,
+                    mastery = (updatedLearning.accuracy).toInt().coerceIn(0, 100)
+                )
+
+                // Update UI state
+                val isCorrect = quality >= 3
+                _uiState.update {
+                    it.copy(
+                        currentIndex = it.currentIndex + 1,
+                        knownCount = if (isCorrect) it.knownCount + 1 else it.knownCount,
+                        unknownCount = if (!isCorrect) it.unknownCount + 1 else it.unknownCount,
+                        sessionComplete = it.currentIndex + 1 >= it.cards.size,
+                        learningEntries = it.learningEntries + (currentWord.id to updatedLearning)
+                    )
+                }
+
+                cardStartTime = System.currentTimeMillis()
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(error = "Failed to save review. Please try again.")
+                }
+            }
         }
     }
 
@@ -258,7 +264,9 @@ class FlashcardViewModel @Inject constructor(
 
     override fun onCleared() {
         super.onCleared()
-        textToSpeechManager.shutdown()
+        // Stop any ongoing speech but don't shutdown TTS since it's a singleton
+        // managed at the application level
+        textToSpeechManager.stop()
     }
 }
 
