@@ -1,13 +1,33 @@
 package com.prody.prashant.data.local.database
 
-import androidx.room.AutoMigration
+import android.content.Context
+import android.util.Log
 import androidx.room.Database
+import androidx.room.Room
 import androidx.room.RoomDatabase
-import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.prody.prashant.data.local.dao.*
 import com.prody.prashant.data.local.entity.*
 
+/**
+ * Prody Room Database
+ *
+ * Central database for all Prody app data including:
+ * - User profile and preferences
+ * - Achievements and progress tracking
+ * - Vocabulary and learning progress
+ * - Quotes, proverbs, idioms, phrases
+ * - Journal entries
+ * - Future messages (letters to future self)
+ * - Community challenges and leaderboards
+ *
+ * Migration Strategy:
+ * - For development: Uses fallbackToDestructiveMigration()
+ * - For production: Implement proper migrations before release
+ *
+ * Schema Version History:
+ * - Version 1: Initial schema with all core entities
+ */
 @Database(
     entities = [
         JournalEntryEntity::class,
@@ -30,11 +50,8 @@ import com.prody.prashant.data.local.entity.*
         ChallengeParticipationEntity::class,
         ChallengeLeaderboardEntity::class
     ],
-    version = 4,
-    exportSchema = true,
-    autoMigrations = [
-        AutoMigration(from = 2, to = 3)
-    ]
+    version = 1,
+    exportSchema = true
 )
 abstract class ProdyDatabase : RoomDatabase() {
 
@@ -50,72 +67,46 @@ abstract class ProdyDatabase : RoomDatabase() {
     abstract fun challengeDao(): ChallengeDao
 
     companion object {
+        private const val TAG = "ProdyDatabase"
         const val DATABASE_NAME = "prody_database"
 
+        @Volatile
+        private var INSTANCE: ProdyDatabase? = null
+
+        fun getInstance(context: Context): ProdyDatabase {
+            return INSTANCE ?: synchronized(this) {
+                INSTANCE ?: buildDatabase(context).also { INSTANCE = it }
+            }
+        }
+
+        private fun buildDatabase(context: Context): ProdyDatabase {
+            return Room.databaseBuilder(
+                context.applicationContext,
+                ProdyDatabase::class.java,
+                DATABASE_NAME
+            )
+                .fallbackToDestructiveMigration()
+                .addCallback(DatabaseCallback())
+                .build()
+        }
+
         /**
-         * Migration from version 3 to 4.
-         * Adds new columns to user_profile and achievements tables for identity system.
+         * Database callback for initialization tasks
          */
-        val MIGRATION_3_4 = object : Migration(3, 4) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                // Add celebrationMessage column to achievements table
-                try {
-                    database.execSQL(
-                        "ALTER TABLE achievements ADD COLUMN celebrationMessage TEXT NOT NULL DEFAULT ''"
-                    )
-                } catch (e: Exception) {
-                    // Column might already exist
-                }
+        private class DatabaseCallback : Callback() {
+            override fun onCreate(db: SupportSQLiteDatabase) {
+                super.onCreate(db)
+                Log.d(TAG, "Database created successfully")
+            }
 
-                // Add new columns to user_profile table
-                try {
-                    database.execSQL(
-                        "ALTER TABLE user_profile ADD COLUMN futureLettersSent INTEGER NOT NULL DEFAULT 0"
-                    )
-                } catch (e: Exception) {
-                    // Column might already exist
-                }
+            override fun onOpen(db: SupportSQLiteDatabase) {
+                super.onOpen(db)
+                Log.d(TAG, "Database opened")
+            }
 
-                try {
-                    database.execSQL(
-                        "ALTER TABLE user_profile ADD COLUMN futureLettersReceived INTEGER NOT NULL DEFAULT 0"
-                    )
-                } catch (e: Exception) {
-                    // Column might already exist
-                }
-
-                try {
-                    database.execSQL(
-                        "ALTER TABLE user_profile ADD COLUMN buddhaConversations INTEGER NOT NULL DEFAULT 0"
-                    )
-                } catch (e: Exception) {
-                    // Column might already exist
-                }
-
-                try {
-                    database.execSQL(
-                        "ALTER TABLE user_profile ADD COLUMN preferences TEXT NOT NULL DEFAULT '{}'"
-                    )
-                } catch (e: Exception) {
-                    // Column might already exist
-                }
-
-                // Update default values for existing columns
-                try {
-                    database.execSQL(
-                        "UPDATE user_profile SET bannerId = 'default_dawn' WHERE bannerId = 'default'"
-                    )
-                } catch (e: Exception) {
-                    // Update might fail if no rows match
-                }
-
-                try {
-                    database.execSQL(
-                        "UPDATE user_profile SET titleId = 'seeker' WHERE titleId = 'newcomer'"
-                    )
-                } catch (e: Exception) {
-                    // Update might fail if no rows match
-                }
+            override fun onDestructiveMigration(db: SupportSQLiteDatabase) {
+                super.onDestructiveMigration(db)
+                Log.w(TAG, "Destructive migration performed - data was cleared")
             }
         }
     }
