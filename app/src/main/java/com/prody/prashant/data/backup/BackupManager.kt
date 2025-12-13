@@ -3,6 +3,7 @@ package com.prody.prashant.data.backup
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.util.Log
 import androidx.core.content.FileProvider
 import com.prody.prashant.BuildConfig
 import com.prody.prashant.data.local.dao.*
@@ -33,6 +34,10 @@ class BackupManager @Inject constructor(
     private val userDao: UserDao,
     private val preferencesManager: PreferencesManager
 ) {
+    companion object {
+        private const val TAG = "BackupManager"
+    }
+
     private val json = Json {
         prettyPrint = true
         ignoreUnknownKeys = true
@@ -104,7 +109,7 @@ class BackupManager @Inject constructor(
                 backupFile
             )
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e(TAG, "Failed to export backup", e)
             null
         }
     }
@@ -222,7 +227,7 @@ class BackupManager @Inject constructor(
                 backupDate = backup.createdAt
             )
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e(TAG, "Failed to restore backup", e)
             RestoreResult.Error("Failed to restore backup: ${e.message}")
         }
     }
@@ -248,7 +253,7 @@ class BackupManager @Inject constructor(
                 streakHistoryCount = backup.streakHistory.size
             )
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e(TAG, "Failed to validate backup", e)
             null
         }
     }
