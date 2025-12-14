@@ -20,6 +20,8 @@ import kotlin.random.Random
 class NotificationReceiver : BroadcastReceiver() {
 
     companion object {
+        private const val TAG = "NotificationReceiver"
+
         const val CHANNEL_ID_WISDOM = "prody_wisdom_channel"
         const val CHANNEL_ID_FUTURE = "prody_future_channel"
         const val CHANNEL_ID_REMINDER = "prody_reminder_channel"
@@ -41,43 +43,62 @@ class NotificationReceiver : BroadcastReceiver() {
         private const val NOTIFICATION_ID_STREAK = 1005
         private const val NOTIFICATION_ID_JOURNAL = 1006
 
+        // Default fallback messages for when lists are empty (defensive programming)
+        private val DEFAULT_WISDOM = Triple("Daily Wisdom", "Take a moment to reflect on your journey today.", "Read more")
+        private val DEFAULT_EVENING = Triple("Evening Reflection", "How did today shape you?", "Reflect")
+        private val DEFAULT_WORD = Triple("Word of the Day", "Expand your vocabulary today.", "Learn")
+        private val DEFAULT_STREAK = Triple("Keep Going!", "Your consistency is building something great.", "Continue")
+        private val DEFAULT_JOURNAL = Triple("Journal Time", "Capture your thoughts for today.", "Write")
+        private val DEFAULT_FUTURE_MESSAGE = Triple("Message from the Past", "Your past self has something to share.", "Read")
+
         fun createNotificationChannels(context: Context) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                // Safely obtain NotificationManager - can return null on some devices/custom ROMs
                 val notificationManager = context.getSystemService(NotificationManager::class.java)
-
-                // Wisdom Channel
-                val wisdomChannel = NotificationChannel(
-                    CHANNEL_ID_WISDOM,
-                    "Daily Wisdom",
-                    NotificationManager.IMPORTANCE_DEFAULT
-                ).apply {
-                    description = "Daily wisdom, vocabulary, and inspiration"
-                    enableVibration(true)
+                if (notificationManager == null) {
+                    android.util.Log.w(TAG, "NotificationManager not available, skipping channel creation")
+                    return
                 }
-                notificationManager.createNotificationChannel(wisdomChannel)
 
-                // Future Messages Channel
-                val futureChannel = NotificationChannel(
-                    CHANNEL_ID_FUTURE,
-                    "Messages from Past You",
-                    NotificationManager.IMPORTANCE_HIGH
-                ).apply {
-                    description = "Messages you wrote to your future self"
-                    enableVibration(true)
-                    enableLights(true)
-                }
-                notificationManager.createNotificationChannel(futureChannel)
+                try {
+                    // Wisdom Channel
+                    val wisdomChannel = NotificationChannel(
+                        CHANNEL_ID_WISDOM,
+                        "Daily Wisdom",
+                        NotificationManager.IMPORTANCE_DEFAULT
+                    ).apply {
+                        description = "Daily wisdom, vocabulary, and inspiration"
+                        enableVibration(true)
+                    }
 
-                // Reminders Channel
-                val reminderChannel = NotificationChannel(
-                    CHANNEL_ID_REMINDER,
-                    "Reminders",
-                    NotificationManager.IMPORTANCE_DEFAULT
-                ).apply {
-                    description = "Streak and journal reminders"
-                    enableVibration(true)
+                    // Future Messages Channel
+                    val futureChannel = NotificationChannel(
+                        CHANNEL_ID_FUTURE,
+                        "Messages from Past You",
+                        NotificationManager.IMPORTANCE_HIGH
+                    ).apply {
+                        description = "Messages you wrote to your future self"
+                        enableVibration(true)
+                        enableLights(true)
+                    }
+
+                    // Reminders Channel
+                    val reminderChannel = NotificationChannel(
+                        CHANNEL_ID_REMINDER,
+                        "Reminders",
+                        NotificationManager.IMPORTANCE_DEFAULT
+                    ).apply {
+                        description = "Streak and journal reminders"
+                        enableVibration(true)
+                    }
+
+                    notificationManager.createNotificationChannels(
+                        listOf(wisdomChannel, futureChannel, reminderChannel)
+                    )
+                    android.util.Log.d(TAG, "Notification channels created successfully")
+                } catch (e: Exception) {
+                    android.util.Log.e(TAG, "Failed to create notification channels", e)
                 }
-                notificationManager.createNotificationChannel(reminderChannel)
             }
         }
     }
@@ -98,7 +119,7 @@ class NotificationReceiver : BroadcastReceiver() {
     }
 
     private fun showMorningWisdomNotification(context: Context) {
-        val (title, body, _) = NotificationMessages.morningWisdom.random()
+        val (title, body, _) = NotificationMessages.morningWisdom.randomOrNull() ?: DEFAULT_WISDOM
         showNotification(
             context = context,
             channelId = CHANNEL_ID_WISDOM,
@@ -110,7 +131,7 @@ class NotificationReceiver : BroadcastReceiver() {
     }
 
     private fun showEveningReflectionNotification(context: Context) {
-        val (title, body, _) = NotificationMessages.eveningReflection.random()
+        val (title, body, _) = NotificationMessages.eveningReflection.randomOrNull() ?: DEFAULT_EVENING
         showNotification(
             context = context,
             channelId = CHANNEL_ID_WISDOM,
@@ -122,7 +143,7 @@ class NotificationReceiver : BroadcastReceiver() {
     }
 
     private fun showWordOfDayNotification(context: Context) {
-        val (title, body, _) = NotificationMessages.wordOfDay.random()
+        val (title, body, _) = NotificationMessages.wordOfDay.randomOrNull() ?: DEFAULT_WORD
         showNotification(
             context = context,
             channelId = CHANNEL_ID_WISDOM,
@@ -134,7 +155,8 @@ class NotificationReceiver : BroadcastReceiver() {
     }
 
     private fun showFutureMessageNotification(context: Context, title: String, body: String) {
-        val messageTitle = NotificationMessages.futureMessageReceived.random().first
+        val messageTitle = NotificationMessages.futureMessageReceived.randomOrNull()?.first
+            ?: DEFAULT_FUTURE_MESSAGE.first
         showNotification(
             context = context,
             channelId = CHANNEL_ID_FUTURE,
@@ -147,7 +169,7 @@ class NotificationReceiver : BroadcastReceiver() {
     }
 
     private fun showStreakReminderNotification(context: Context) {
-        val (title, body, _) = NotificationMessages.streakReminder.random()
+        val (title, body, _) = NotificationMessages.streakReminder.randomOrNull() ?: DEFAULT_STREAK
         showNotification(
             context = context,
             channelId = CHANNEL_ID_REMINDER,
@@ -159,7 +181,7 @@ class NotificationReceiver : BroadcastReceiver() {
     }
 
     private fun showJournalReminderNotification(context: Context) {
-        val (title, body, _) = NotificationMessages.journalPrompt.random()
+        val (title, body, _) = NotificationMessages.journalPrompt.randomOrNull() ?: DEFAULT_JOURNAL
         showNotification(
             context = context,
             channelId = CHANNEL_ID_REMINDER,

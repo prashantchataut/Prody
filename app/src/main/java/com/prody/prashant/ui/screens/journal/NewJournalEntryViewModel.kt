@@ -221,23 +221,28 @@ class NewJournalEntryViewModel @Inject constructor(
     }
 
     private suspend fun checkSpecialAchievements() {
-        val currentHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+        try {
+            val currentHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
 
-        // Night owl achievement (after midnight, before 5am)
-        if (currentHour in 0..4) {
-            checkAndUnlockAchievement("night_owl")
-        }
+            // Night owl achievement (after midnight, before 5am)
+            if (currentHour in 0..4) {
+                checkAndUnlockAchievement("night_owl")
+            }
 
-        // Early bird achievement (5am to 6am - users who wake early)
-        if (currentHour == 5) {
-            checkAndUnlockAchievement("early_bird")
-        }
+            // Early bird achievement (5am to 6am - users who wake early)
+            if (currentHour == 5) {
+                checkAndUnlockAchievement("early_bird")
+            }
 
-        // Check for all moods achievement
-        val allMoods = journalDao.getAllMoods().first()
-        if (allMoods.size >= Mood.entries.size) {
-            userDao.updateAchievementProgress("all_moods", allMoods.size)
-            checkAndUnlockAchievement("all_moods")
+            // Check for all moods achievement
+            // Use firstOrNull to safely handle potential empty Flow scenarios
+            val allMoods = journalDao.getAllMoods().firstOrNull() ?: emptyList()
+            if (allMoods.size >= Mood.entries.size) {
+                userDao.updateAchievementProgress("all_moods", allMoods.size)
+                checkAndUnlockAchievement("all_moods")
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("NewJournalEntryVM", "Failed to check special achievements", e)
         }
     }
 

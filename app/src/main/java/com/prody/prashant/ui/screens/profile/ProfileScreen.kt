@@ -1324,7 +1324,8 @@ private fun GrowthJourneyCard() {
             "You're building something remarkable."
         )
     }
-    val quote = remember { quotes.random() }
+    // Use randomOrNull with fallback for defensive programming
+    val quote = remember { quotes.randomOrNull() ?: "Every step forward is progress." }
 
     Box(
         modifier = Modifier

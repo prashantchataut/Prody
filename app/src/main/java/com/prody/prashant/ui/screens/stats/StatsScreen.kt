@@ -1390,7 +1390,8 @@ private fun MotivationalFooter() {
             "Consistency is the key to mastery."
         )
     }
-    val quote = remember { quotes.random() }
+    // Use randomOrNull with fallback for defensive programming
+    val quote = remember { quotes.randomOrNull() ?: "Every step forward is progress." }
 
     Box(
         modifier = Modifier

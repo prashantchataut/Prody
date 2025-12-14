@@ -39,22 +39,51 @@ class NotificationScheduler @Inject constructor(
         private const val REQUEST_FUTURE_BASE = 1000
     }
 
+    /**
+     * Reschedules all notifications based on user preferences.
+     *
+     * This method is typically called:
+     * - After device boot (via BootReceiver)
+     * - After app update
+     * - When user enables notifications in settings
+     *
+     * Each notification type is scheduled independently to ensure that
+     * if one fails, the others can still be scheduled successfully.
+     */
     suspend fun rescheduleAllNotifications() {
         try {
             val notificationsEnabled = preferencesManager.notificationsEnabled.first()
             if (!notificationsEnabled) {
+                android.util.Log.d(TAG, "Notifications disabled, cancelling all")
                 cancelAllNotifications()
                 return
             }
 
-            scheduleMorningWisdom()
-            scheduleEveningReflection()
-            scheduleWordOfDay()
-            scheduleStreakReminder()
-            scheduleJournalReminder()
-            scheduleFutureMessages()
+            android.util.Log.d(TAG, "Rescheduling all notifications...")
+
+            // Schedule each notification type independently
+            // If one fails, the others should still be scheduled
+            runCatching { scheduleMorningWisdom() }
+                .onFailure { android.util.Log.e(TAG, "Failed to schedule morning wisdom", it) }
+
+            runCatching { scheduleEveningReflection() }
+                .onFailure { android.util.Log.e(TAG, "Failed to schedule evening reflection", it) }
+
+            runCatching { scheduleWordOfDay() }
+                .onFailure { android.util.Log.e(TAG, "Failed to schedule word of day", it) }
+
+            runCatching { scheduleStreakReminder() }
+                .onFailure { android.util.Log.e(TAG, "Failed to schedule streak reminder", it) }
+
+            runCatching { scheduleJournalReminder() }
+                .onFailure { android.util.Log.e(TAG, "Failed to schedule journal reminder", it) }
+
+            runCatching { scheduleFutureMessages() }
+                .onFailure { android.util.Log.e(TAG, "Failed to schedule future messages", it) }
+
+            android.util.Log.d(TAG, "Notification rescheduling completed")
         } catch (e: Exception) {
-            e.printStackTrace()
+            android.util.Log.e(TAG, "Failed to reschedule notifications", e)
         }
     }
 

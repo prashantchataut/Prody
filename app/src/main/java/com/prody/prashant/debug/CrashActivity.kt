@@ -78,10 +78,20 @@ class CrashActivity : ComponentActivity() {
     }
 
     private fun copyToClipboard(text: String) {
-        val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        val clip = ClipData.newPlainText("Prody Crash Report", text)
-        clipboard.setPrimaryClip(clip)
-        Toast.makeText(this, "Crash report copied to clipboard", Toast.LENGTH_SHORT).show()
+        try {
+            // Safely obtain ClipboardManager - can be null on some devices
+            val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
+            if (clipboard == null) {
+                Toast.makeText(this, "Clipboard not available", Toast.LENGTH_SHORT).show()
+                return
+            }
+            val clip = ClipData.newPlainText("Prody Crash Report", text)
+            clipboard.setPrimaryClip(clip)
+            Toast.makeText(this, "Crash report copied to clipboard", Toast.LENGTH_SHORT).show()
+        } catch (e: Exception) {
+            android.util.Log.e("CrashActivity", "Failed to copy to clipboard", e)
+            Toast.makeText(this, "Failed to copy to clipboard", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun restartApp() {
