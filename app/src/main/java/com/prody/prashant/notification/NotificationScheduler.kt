@@ -19,9 +19,18 @@ class NotificationScheduler @Inject constructor(
     private val preferencesManager: PreferencesManager,
     private val futureMessageDao: FutureMessageDao
 ) {
-    private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+    // Safely obtain AlarmManager - this can return null on some devices/configurations
+    private val alarmManager: AlarmManager? by lazy {
+        try {
+            context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager
+        } catch (e: Exception) {
+            android.util.Log.e(TAG, "Failed to get AlarmManager", e)
+            null
+        }
+    }
 
     companion object {
+        private const val TAG = "NotificationScheduler"
         private const val REQUEST_MORNING = 100
         private const val REQUEST_EVENING = 101
         private const val REQUEST_WORD = 102
@@ -173,18 +182,27 @@ class NotificationScheduler @Inject constructor(
     }
 
     fun cancelFutureMessageNotification(messageId: Long) {
-        val intent = Intent(context, NotificationReceiver::class.java).apply {
-            action = NotificationReceiver.ACTION_FUTURE_MESSAGE
+        val manager = alarmManager ?: run {
+            android.util.Log.w(TAG, "AlarmManager not available, skipping future message cancellation")
+            return
         }
-        val pendingIntent = PendingIntent.getBroadcast(
-            context,
-            (REQUEST_FUTURE_BASE + messageId).toInt(),
-            intent,
-            PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
-        )
-        pendingIntent?.let {
-            alarmManager.cancel(it)
-            it.cancel()
+
+        try {
+            val intent = Intent(context, NotificationReceiver::class.java).apply {
+                action = NotificationReceiver.ACTION_FUTURE_MESSAGE
+            }
+            val pendingIntent = PendingIntent.getBroadcast(
+                context,
+                (REQUEST_FUTURE_BASE + messageId).toInt(),
+                intent,
+                PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
+            )
+            pendingIntent?.let {
+                manager.cancel(it)
+                it.cancel()
+            }
+        } catch (e: Exception) {
+            android.util.Log.e(TAG, "Failed to cancel future message notification: $messageId", e)
         }
     }
 
@@ -194,6 +212,11 @@ class NotificationScheduler @Inject constructor(
         triggerTime: Long,
         intervalMillis: Long
     ) {
+        val manager = alarmManager ?: run {
+            android.util.Log.w(TAG, "AlarmManager not available, skipping alarm scheduling")
+            return
+        }
+
         val intent = Intent(context, NotificationReceiver::class.java).apply {
             this.action = action
         }
@@ -204,12 +227,16 @@ class NotificationScheduler @Inject constructor(
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        alarmManager.setRepeating(
-            AlarmManager.RTC_WAKEUP,
-            triggerTime,
-            intervalMillis,
-            pendingIntent
-        )
+        try {
+            manager.setRepeating(
+                AlarmManager.RTC_WAKEUP,
+                triggerTime,
+                intervalMillis,
+                pendingIntent
+            )
+        } catch (e: Exception) {
+            android.util.Log.e(TAG, "Failed to schedule repeating alarm", e)
+        }
     }
 
     private fun scheduleExactAlarm(
@@ -218,6 +245,11 @@ class NotificationScheduler @Inject constructor(
         triggerTime: Long,
         extras: Map<String, String> = emptyMap()
     ) {
+        val manager = alarmManager ?: run {
+            android.util.Log.w(TAG, "AlarmManager not available, skipping exact alarm scheduling")
+            return
+        }
+
         val intent = Intent(context, NotificationReceiver::class.java).apply {
             this.action = action
             extras.forEach { (key, value) ->
@@ -231,30 +263,39 @@ class NotificationScheduler @Inject constructor(
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            if (alarmManager.canScheduleExactAlarms()) {
-                alarmManager.setExactAndAllowWhileIdle(
-                    AlarmManager.RTC_WAKEUP,
-                    triggerTime,
-                    pendingIntent
-                )
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                if (manager.canScheduleExactAlarms()) {
+                    manager.setExactAndAllowWhileIdle(
+                        AlarmManager.RTC_WAKEUP,
+                        triggerTime,
+                        pendingIntent
+                    )
+                } else {
+                    manager.setAndAllowWhileIdle(
+                        AlarmManager.RTC_WAKEUP,
+                        triggerTime,
+                        pendingIntent
+                    )
+                }
             } else {
-                alarmManager.setAndAllowWhileIdle(
+                manager.setExactAndAllowWhileIdle(
                     AlarmManager.RTC_WAKEUP,
                     triggerTime,
                     pendingIntent
                 )
             }
-        } else {
-            alarmManager.setExactAndAllowWhileIdle(
-                AlarmManager.RTC_WAKEUP,
-                triggerTime,
-                pendingIntent
-            )
+        } catch (e: Exception) {
+            android.util.Log.e(TAG, "Failed to schedule exact alarm", e)
         }
     }
 
     private fun cancelAllNotifications() {
+        val manager = alarmManager ?: run {
+            android.util.Log.w(TAG, "AlarmManager not available, skipping notification cancellation")
+            return
+        }
+
         listOf(
             REQUEST_MORNING to NotificationReceiver.ACTION_MORNING_WISDOM,
             REQUEST_EVENING to NotificationReceiver.ACTION_EVENING_REFLECTION,
@@ -262,18 +303,22 @@ class NotificationScheduler @Inject constructor(
             REQUEST_STREAK to NotificationReceiver.ACTION_STREAK_REMINDER,
             REQUEST_JOURNAL to NotificationReceiver.ACTION_JOURNAL_REMINDER
         ).forEach { (requestCode, action) ->
-            val intent = Intent(context, NotificationReceiver::class.java).apply {
-                this.action = action
-            }
-            val pendingIntent = PendingIntent.getBroadcast(
-                context,
-                requestCode,
-                intent,
-                PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
-            )
-            pendingIntent?.let {
-                alarmManager.cancel(it)
-                it.cancel()
+            try {
+                val intent = Intent(context, NotificationReceiver::class.java).apply {
+                    this.action = action
+                }
+                val pendingIntent = PendingIntent.getBroadcast(
+                    context,
+                    requestCode,
+                    intent,
+                    PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
+                )
+                pendingIntent?.let {
+                    manager.cancel(it)
+                    it.cancel()
+                }
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Failed to cancel notification for action: $action", e)
             }
         }
     }

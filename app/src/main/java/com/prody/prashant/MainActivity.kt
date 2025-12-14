@@ -70,34 +70,32 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var notificationScheduler: NotificationScheduler
 
+    // Flag to track if Hilt injection is complete
+    private var isInjectionComplete = false
+
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
-        if (isGranted) {
-            // Permission granted, schedule notifications
-            lifecycleScope.launch(Dispatchers.IO) {
-                try {
-                    notificationScheduler.rescheduleAllNotifications()
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-            }
+        if (isGranted && isInjectionComplete) {
+            // Permission granted, schedule notifications safely
+            scheduleNotificationsSafely()
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Install splash screen BEFORE calling super.onCreate()
         val splashScreen = installSplashScreen()
 
         super.onCreate(savedInstanceState)
 
-        // Create notification channels - handled in Application class
-        // NotificationReceiver.createNotificationChannels(this)
+        // Mark injection as complete after super.onCreate() for Hilt activities
+        isInjectionComplete = true
 
-        // Check and request notification permission for Android 13+
+        // Check and request notification permission for Android 13+ safely
         try {
             requestNotificationPermission()
         } catch (e: Exception) {
-            e.printStackTrace()
+            android.util.Log.e("MainActivity", "Failed to request notification permission", e)
         }
 
         enableEdgeToEdge()
@@ -162,27 +160,39 @@ class MainActivity : ComponentActivity() {
                     this,
                     Manifest.permission.POST_NOTIFICATIONS
                 ) == PackageManager.PERMISSION_GRANTED -> {
-                    // Permission already granted
-                    lifecycleScope.launch(Dispatchers.IO) {
-                        try {
-                            notificationScheduler.rescheduleAllNotifications()
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                        }
-                    }
+                    // Permission already granted, schedule notifications safely
+                    scheduleNotificationsSafely()
                 }
                 else -> {
                     requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                 }
             }
         } else {
-            // For older versions, schedule notifications directly
-            lifecycleScope.launch(Dispatchers.IO) {
-                try {
+            // For older versions (API < 33), schedule notifications directly
+            scheduleNotificationsSafely()
+        }
+    }
+
+    /**
+     * Safely schedules notifications with proper error handling.
+     * This method ensures we don't crash if the notification scheduler
+     * has issues during initialization or scheduling.
+     */
+    private fun scheduleNotificationsSafely() {
+        if (!isInjectionComplete) {
+            android.util.Log.w("MainActivity", "Injection not complete, skipping notification scheduling")
+            return
+        }
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                if (::notificationScheduler.isInitialized) {
                     notificationScheduler.rescheduleAllNotifications()
-                } catch (e: Exception) {
-                    e.printStackTrace()
+                } else {
+                    android.util.Log.w("MainActivity", "NotificationScheduler not initialized")
                 }
+            } catch (e: Exception) {
+                android.util.Log.e("MainActivity", "Failed to schedule notifications", e)
             }
         }
     }

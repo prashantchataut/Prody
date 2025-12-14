@@ -223,27 +223,39 @@ fun ProdyTheme(
         else -> LightColorScheme
     }
 
-    // Configure system UI appearance
+    // Configure system UI appearance safely
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
-            val window = (view.context as Activity).window
+            // Safely obtain Activity context - prevents crash on non-Activity contexts
+            // This can occur during preview mode, widget rendering, or service contexts
+            val activity = view.context as? Activity
+            if (activity != null) {
+                try {
+                    val window = activity.window
+                    if (window != null) {
+                        // Enable edge-to-edge display
+                        WindowCompat.setDecorFitsSystemWindows(window, false)
 
-            // Enable edge-to-edge display
-            WindowCompat.setDecorFitsSystemWindows(window, false)
+                        // Set transparent system bars
+                        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+                            @Suppress("DEPRECATION")
+                            window.statusBarColor = Color.Transparent.toArgb()
+                            @Suppress("DEPRECATION")
+                            window.navigationBarColor = Color.Transparent.toArgb()
+                        }
 
-            // Set transparent system bars
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
-                @Suppress("DEPRECATION")
-                window.statusBarColor = Color.Transparent.toArgb()
-                @Suppress("DEPRECATION")
-                window.navigationBarColor = Color.Transparent.toArgb()
-            }
-
-            // Configure system bar icon colors based on theme
-            WindowCompat.getInsetsController(window, view).apply {
-                isAppearanceLightStatusBars = !darkTheme
-                isAppearanceLightNavigationBars = !darkTheme
+                        // Configure system bar icon colors based on theme
+                        WindowCompat.getInsetsController(window, view).apply {
+                            isAppearanceLightStatusBars = !darkTheme
+                            isAppearanceLightNavigationBars = !darkTheme
+                        }
+                    }
+                } catch (e: Exception) {
+                    // Silently handle window configuration errors to prevent crash
+                    // This can occur during rapid lifecycle transitions or edge cases
+                    android.util.Log.w("ProdyTheme", "Failed to configure system UI: ${e.message}")
+                }
             }
         }
     }

@@ -34,38 +34,60 @@ class TextToSpeechManager @Inject constructor(
     val pitch: StateFlow<Float> = _pitch.asStateFlow()
 
     init {
-        initialize()
+        // Initialize TTS safely - wrapped in try-catch to prevent app crash
+        // on devices with TTS issues or missing TTS engines
+        try {
+            initialize()
+        } catch (e: Exception) {
+            android.util.Log.e(TAG, "Failed to initialize TextToSpeech", e)
+            _isInitialized.value = false
+        }
     }
 
     private fun initialize() {
-        textToSpeech = TextToSpeech(context) { status ->
-            if (status == TextToSpeech.SUCCESS) {
-                val result = textToSpeech?.setLanguage(Locale.US)
-                _isInitialized.value = result != TextToSpeech.LANG_MISSING_DATA &&
-                        result != TextToSpeech.LANG_NOT_SUPPORTED
+        try {
+            textToSpeech = TextToSpeech(context) { status ->
+                try {
+                    if (status == TextToSpeech.SUCCESS) {
+                        val result = textToSpeech?.setLanguage(Locale.US)
+                        _isInitialized.value = result != TextToSpeech.LANG_MISSING_DATA &&
+                                result != TextToSpeech.LANG_NOT_SUPPORTED
 
-                textToSpeech?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
-                    override fun onStart(utteranceId: String?) {
-                        _isSpeaking.value = true
-                    }
+                        textToSpeech?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
+                            override fun onStart(utteranceId: String?) {
+                                _isSpeaking.value = true
+                            }
 
-                    override fun onDone(utteranceId: String?) {
-                        _isSpeaking.value = false
-                    }
+                            override fun onDone(utteranceId: String?) {
+                                _isSpeaking.value = false
+                            }
 
-                    @Deprecated("Deprecated in Java")
-                    override fun onError(utteranceId: String?) {
-                        _isSpeaking.value = false
-                    }
+                            @Deprecated("Deprecated in Java")
+                            override fun onError(utteranceId: String?) {
+                                _isSpeaking.value = false
+                            }
 
-                    override fun onError(utteranceId: String?, errorCode: Int) {
-                        _isSpeaking.value = false
+                            override fun onError(utteranceId: String?, errorCode: Int) {
+                                _isSpeaking.value = false
+                            }
+                        })
+                    } else {
+                        _isInitialized.value = false
+                        android.util.Log.w(TAG, "TextToSpeech initialization failed with status: $status")
                     }
-                })
-            } else {
-                _isInitialized.value = false
+                } catch (e: Exception) {
+                    android.util.Log.e(TAG, "Error during TTS initialization callback", e)
+                    _isInitialized.value = false
+                }
             }
+        } catch (e: Exception) {
+            android.util.Log.e(TAG, "Failed to create TextToSpeech instance", e)
+            _isInitialized.value = false
         }
+    }
+
+    companion object {
+        private const val TAG = "TextToSpeechManager"
     }
 
     /**

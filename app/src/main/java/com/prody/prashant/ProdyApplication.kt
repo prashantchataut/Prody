@@ -54,7 +54,12 @@ class ProdyApplication : Application(), Configuration.Provider {
 
     private fun createNotificationChannels() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // Safely obtain NotificationManager - can be null on some custom ROMs
             val notificationManager = getSystemService(NotificationManager::class.java)
+            if (notificationManager == null) {
+                Log.w(TAG, "NotificationManager not available, skipping channel creation")
+                return
+            }
 
             // Main notification channel
             val mainChannel = NotificationChannel(
@@ -107,9 +112,14 @@ class ProdyApplication : Application(), Configuration.Provider {
                 enableVibration(true)
             }
 
-            notificationManager.createNotificationChannels(
-                listOf(mainChannel, wisdomChannel, journalChannel, futureChannel, achievementsChannel)
-            )
+            try {
+                notificationManager.createNotificationChannels(
+                    listOf(mainChannel, wisdomChannel, journalChannel, futureChannel, achievementsChannel)
+                )
+                Log.d(TAG, "Notification channels created successfully")
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to create notification channels", e)
+            }
         }
     }
 
