@@ -3,6 +3,7 @@ package com.prody.prashant
 import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.content.Context
 import android.os.Build
 import android.util.Log
 import androidx.hilt.work.HiltWorkerFactory
@@ -18,22 +19,46 @@ class ProdyApplication : Application(), Configuration.Provider {
     lateinit var workerFactory: HiltWorkerFactory
 
     override val workManagerConfiguration: Configuration
-        get() = Configuration.Builder()
-            .setWorkerFactory(workerFactory)
-            .setMinimumLoggingLevel(if (BuildConfig.DEBUG) Log.DEBUG else Log.ERROR)
-            .build()
+        get() = try {
+            Configuration.Builder()
+                .setWorkerFactory(workerFactory)
+                .setMinimumLoggingLevel(if (BuildConfig.DEBUG) Log.DEBUG else Log.ERROR)
+                .build()
+        } catch (e: Exception) {
+            // Fallback configuration if workerFactory is not initialized
+            Log.e(TAG, "WorkerFactory not ready, using default configuration", e)
+            Configuration.Builder()
+                .setMinimumLoggingLevel(if (BuildConfig.DEBUG) Log.DEBUG else Log.ERROR)
+                .build()
+        }
+
+    /**
+     * CRITICAL: Initialize crash handler at the earliest possible point.
+     * attachBaseContext() is called BEFORE onCreate() and BEFORE Hilt injection.
+     * This ensures we catch ALL crashes, including those during Hilt setup.
+     */
+    override fun attachBaseContext(base: Context) {
+        super.attachBaseContext(base)
+
+        // Initialize crash handler at the EARLIEST possible point - before ANYTHING else
+        // This runs before onCreate() and before Hilt injection
+        if (!isCrashProcess()) {
+            try {
+                CrashHandler.initialize(this)
+                Log.d(TAG, "CrashHandler initialized in attachBaseContext")
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to initialize crash handler in attachBaseContext", e)
+            }
+        }
+    }
 
     override fun onCreate() {
         super.onCreate()
 
-        // Check if we are running in the crash process
+        // Check if we are running in the crash process - don't initialize anything
         if (isCrashProcess()) {
+            Log.d(TAG, "Running in crash process, skipping initialization")
             return
-        }
-
-        // Initialize crash handler for debug builds only
-        if (BuildConfig.DEBUG) {
-            initializeCrashHandler()
         }
 
         // Initialize other components safely
@@ -41,21 +66,18 @@ class ProdyApplication : Application(), Configuration.Provider {
     }
 
     private fun isCrashProcess(): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            getProcessName().endsWith(":crash")
-        } else {
-            // Fallback for older versions
-            val pid = android.os.Process.myPid()
-            val manager = getSystemService(android.app.ActivityManager::class.java)
-            manager?.runningAppProcesses?.firstOrNull { it.pid == pid }?.processName?.endsWith(":crash") == true
-        }
-    }
-
-    private fun initializeCrashHandler() {
-        try {
-            CrashHandler.initialize(this)
+        return try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                getProcessName()?.endsWith(":crash") == true
+            } else {
+                // Fallback for older versions
+                val pid = android.os.Process.myPid()
+                val manager = getSystemService(android.app.ActivityManager::class.java)
+                manager?.runningAppProcesses?.firstOrNull { it.pid == pid }?.processName?.endsWith(":crash") == true
+            }
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to initialize crash handler", e)
+            Log.e(TAG, "Error checking process name", e)
+            false
         }
     }
 

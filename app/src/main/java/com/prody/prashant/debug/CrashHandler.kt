@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.util.Log
-import androidx.core.content.pm.PackageInfoCompat
 import java.io.PrintWriter
 import java.io.StringWriter
 import java.text.SimpleDateFormat
@@ -13,116 +12,160 @@ import java.util.Locale
 
 /**
  * Global Exception Handler for Prody
- * 
- * This handler catches all uncaught exceptions and redirects to a crash activity
- * that displays the full error information with options to copy or restart.
+ *
+ * CRITICAL: This handler MUST be initialized as early as possible in attachBaseContext().
+ * It catches ALL uncaught exceptions and redirects to CrashActivity.
+ *
+ * Key Design Principles:
+ * - Zero dependencies on Hilt or any DI framework
+ * - Minimal dependencies to prevent initialization failures
+ * - Catches exceptions from ALL threads
+ * - Handles TransactionTooLargeException by truncating data
+ * - Runs CrashActivity in a separate process for isolation
  */
 class CrashHandler private constructor(
     private val applicationContext: Context
 ) : Thread.UncaughtExceptionHandler {
 
-    private val defaultHandler = Thread.getDefaultUncaughtExceptionHandler()
+    private val defaultHandler: Thread.UncaughtExceptionHandler? = Thread.getDefaultUncaughtExceptionHandler()
 
     companion object {
         private const val TAG = "CrashHandler"
-        const val EXTRA_CRASH_INFO = "crash_info"
-        const val EXTRA_EXCEPTION_TYPE = "exception_type"
-        const val EXTRA_EXCEPTION_MESSAGE = "exception_message"
-        const val EXTRA_STACK_TRACE = "stack_trace"
-        const val EXTRA_DEVICE_INFO = "device_info"
-        const val EXTRA_TIMESTAMP = "timestamp"
+
+        // Intent extras - kept short to minimize data size
+        const val EXTRA_EXCEPTION_TYPE = "ex_type"
+        const val EXTRA_EXCEPTION_MESSAGE = "ex_msg"
+        const val EXTRA_STACK_TRACE = "stack"
+        const val EXTRA_DEVICE_INFO = "device"
+        const val EXTRA_TIMESTAMP = "time"
+        const val EXTRA_FULL_REPORT = "report"
+        const val EXTRA_THREAD_NAME = "thread"
+        const val EXTRA_ROOT_CAUSE_TYPE = "root_type"
+        const val EXTRA_ROOT_CAUSE_MSG = "root_msg"
+
+        // Size limits to prevent TransactionTooLargeException
+        private const val MAX_MESSAGE_LENGTH = 2000
+        private const val MAX_STACK_TRACE_LENGTH = 50_000
+        private const val MAX_REPORT_LENGTH = 100_000
 
         @Volatile
         private var instance: CrashHandler? = null
 
+        @Volatile
+        private var isInitialized = false
+
+        /**
+         * Initialize the crash handler. Can be called multiple times safely.
+         * Should be called in attachBaseContext() for earliest possible initialization.
+         */
+        @JvmStatic
         fun initialize(context: Context) {
-            if (instance == null) {
-                synchronized(this) {
-                    if (instance == null) {
-                        instance = CrashHandler(context.applicationContext)
-                        Thread.setDefaultUncaughtExceptionHandler(instance)
-                        Log.d(TAG, "CrashHandler initialized")
-                    }
+            if (isInitialized) {
+                Log.d(TAG, "CrashHandler already initialized")
+                return
+            }
+
+            synchronized(this) {
+                if (isInitialized) return
+
+                try {
+                    val handler = CrashHandler(context.applicationContext)
+                    Thread.setDefaultUncaughtExceptionHandler(handler)
+                    instance = handler
+                    isInitialized = true
+                    Log.i(TAG, "CrashHandler initialized successfully")
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to initialize CrashHandler", e)
                 }
             }
         }
 
-        fun getInstance(): CrashHandler? = instance
+        @JvmStatic
+        fun isInitialized(): Boolean = isInitialized
     }
 
     override fun uncaughtException(thread: Thread, throwable: Throwable) {
+        Log.e(TAG, "═══════════════════════════════════════════════════════════════")
+        Log.e(TAG, "UNCAUGHT EXCEPTION in thread: ${thread.name}")
+        Log.e(TAG, "═══════════════════════════════════════════════════════════════")
+        Log.e(TAG, "Exception:", throwable)
+
         try {
-            Log.e(TAG, "Uncaught exception in thread: ${thread.name}", throwable)
-            
-            // Collect crash information
+            // Build crash information
             val crashInfo = buildCrashInfo(thread, throwable)
-            
-            // Launch crash activity
+
+            // Launch crash activity in separate process
             launchCrashActivity(crashInfo)
-            
-            // Give some time for the crash activity to start
-            Thread.sleep(500)
-            
+
+            // Give time for crash activity to start
+            try {
+                Thread.sleep(800)
+            } catch (e: InterruptedException) {
+                // Ignore
+            }
+
         } catch (e: Exception) {
-            Log.e(TAG, "Error handling crash", e)
+            Log.e(TAG, "Error handling crash - falling back to default handler", e)
+            // If we fail to handle the crash, let the default handler take over
+            defaultHandler?.uncaughtException(thread, throwable)
+        } finally {
+            // Always kill the process to ensure clean state
+            android.os.Process.killProcess(android.os.Process.myPid())
+            System.exit(1)
         }
-        
-        // Kill the process
-        android.os.Process.killProcess(android.os.Process.myPid())
-        System.exit(1)
     }
 
     private fun buildCrashInfo(thread: Thread, throwable: Throwable): CrashInfo {
         val stackTraceWriter = StringWriter()
         throwable.printStackTrace(PrintWriter(stackTraceWriter))
-        
+
         val rootCause = getRootCause(throwable)
-        val rootCauseWriter = StringWriter()
-        rootCause.printStackTrace(PrintWriter(rootCauseWriter))
 
         return CrashInfo(
             exceptionType = throwable::class.java.simpleName,
-            exceptionMessage = throwable.message ?: "No message",
+            exceptionMessage = throwable.message ?: "No message available",
             fullStackTrace = stackTraceWriter.toString(),
             rootCauseType = rootCause::class.java.simpleName,
-            rootCauseMessage = rootCause.message ?: "No message",
-            rootCauseStackTrace = rootCauseWriter.toString(),
+            rootCauseMessage = rootCause.message ?: "No message available",
             threadName = thread.name,
             deviceInfo = buildDeviceInfo(),
-            timestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
+            timestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.US).format(Date())
         )
     }
 
     private fun getRootCause(throwable: Throwable): Throwable {
-        var cause: Throwable? = throwable
-        while (cause?.cause != null && cause.cause != cause) {
-            cause = cause.cause
+        var cause: Throwable = throwable
+        var depth = 0
+        val maxDepth = 20 // Prevent infinite loops
+
+        while (cause.cause != null && cause.cause != cause && depth < maxDepth) {
+            cause = cause.cause!!
+            depth++
         }
-        return cause ?: throwable
+        return cause
     }
 
     private fun buildDeviceInfo(): String {
-        return buildString {
-            appendLine("═══ Device Information ═══")
-            appendLine("App Version: ${getAppVersion()}")
-            appendLine("Android Version: ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})")
-            appendLine("Device: ${Build.MANUFACTURER} ${Build.MODEL}")
-            appendLine("Brand: ${Build.BRAND}")
-            appendLine("Product: ${Build.PRODUCT}")
-            appendLine("Hardware: ${Build.HARDWARE}")
-            appendLine("Build ID: ${Build.ID}")
-            appendLine("Build Type: ${Build.TYPE}")
-            appendLine()
-            appendLine("═══ Memory Information ═══")
-            val runtime = Runtime.getRuntime()
-            val maxMemory = runtime.maxMemory() / 1024 / 1024
-            val totalMemory = runtime.totalMemory() / 1024 / 1024
-            val freeMemory = runtime.freeMemory() / 1024 / 1024
-            val usedMemory = totalMemory - freeMemory
-            appendLine("Max Memory: ${maxMemory}MB")
-            appendLine("Total Memory: ${totalMemory}MB")
-            appendLine("Used Memory: ${usedMemory}MB")
-            appendLine("Free Memory: ${freeMemory}MB")
+        return try {
+            buildString {
+                appendLine("═══ Device Information ═══")
+                appendLine("App Version: ${getAppVersion()}")
+                appendLine("Android: ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})")
+                appendLine("Device: ${Build.MANUFACTURER} ${Build.MODEL}")
+                appendLine("Brand: ${Build.BRAND}")
+                appendLine("Product: ${Build.PRODUCT}")
+                appendLine("Hardware: ${Build.HARDWARE}")
+                appendLine("Build ID: ${Build.ID}")
+                appendLine()
+                appendLine("═══ Memory Information ═══")
+                val runtime = Runtime.getRuntime()
+                val maxMem = runtime.maxMemory() / 1024 / 1024
+                val totalMem = runtime.totalMemory() / 1024 / 1024
+                val freeMem = runtime.freeMemory() / 1024 / 1024
+                appendLine("Max: ${maxMem}MB | Total: ${totalMem}MB | Free: ${freeMem}MB")
+            }
+        } catch (e: Exception) {
+            "Device info unavailable: ${e.message}"
         }
     }
 
@@ -130,7 +173,12 @@ class CrashHandler private constructor(
         return try {
             val packageInfo = applicationContext.packageManager
                 .getPackageInfo(applicationContext.packageName, 0)
-            val versionCode = PackageInfoCompat.getLongVersionCode(packageInfo)
+            val versionCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                packageInfo.longVersionCode
+            } else {
+                @Suppress("DEPRECATION")
+                packageInfo.versionCode.toLong()
+            }
             "${packageInfo.versionName} ($versionCode)"
         } catch (e: Exception) {
             "Unknown"
@@ -138,19 +186,31 @@ class CrashHandler private constructor(
     }
 
     private fun launchCrashActivity(crashInfo: CrashInfo) {
-        val intent = Intent(applicationContext, CrashActivity::class.java).apply {
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
-            addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
-            // Truncate data to avoid TransactionTooLargeException
-            putExtra(EXTRA_EXCEPTION_TYPE, crashInfo.exceptionType)
-            putExtra(EXTRA_EXCEPTION_MESSAGE, crashInfo.exceptionMessage.take(1000))
-            putExtra(EXTRA_STACK_TRACE, crashInfo.fullStackTrace.take(100_000)) // Max 100KB
-            putExtra(EXTRA_DEVICE_INFO, crashInfo.deviceInfo)
-            putExtra(EXTRA_TIMESTAMP, crashInfo.timestamp)
-            putExtra(EXTRA_CRASH_INFO, crashInfo.getFullReport().take(200_000)) // Max 200KB
+        try {
+            val intent = Intent(applicationContext, CrashActivity::class.java).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
+                addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS)
+
+                // Truncate data to prevent TransactionTooLargeException
+                putExtra(EXTRA_EXCEPTION_TYPE, crashInfo.exceptionType)
+                putExtra(EXTRA_EXCEPTION_MESSAGE, crashInfo.exceptionMessage.take(MAX_MESSAGE_LENGTH))
+                putExtra(EXTRA_STACK_TRACE, crashInfo.fullStackTrace.take(MAX_STACK_TRACE_LENGTH))
+                putExtra(EXTRA_DEVICE_INFO, crashInfo.deviceInfo)
+                putExtra(EXTRA_TIMESTAMP, crashInfo.timestamp)
+                putExtra(EXTRA_THREAD_NAME, crashInfo.threadName)
+                putExtra(EXTRA_ROOT_CAUSE_TYPE, crashInfo.rootCauseType)
+                putExtra(EXTRA_ROOT_CAUSE_MSG, crashInfo.rootCauseMessage.take(MAX_MESSAGE_LENGTH))
+                putExtra(EXTRA_FULL_REPORT, crashInfo.getFullReport().take(MAX_REPORT_LENGTH))
+            }
+
+            applicationContext.startActivity(intent)
+            Log.i(TAG, "CrashActivity launched successfully")
+
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to launch CrashActivity", e)
         }
-        applicationContext.startActivity(intent)
     }
 }
 
@@ -163,34 +223,33 @@ data class CrashInfo(
     val fullStackTrace: String,
     val rootCauseType: String,
     val rootCauseMessage: String,
-    val rootCauseStackTrace: String,
     val threadName: String,
     val deviceInfo: String,
     val timestamp: String
 ) {
     fun getFullReport(): String = buildString {
-        appendLine("╔════════════════════════════════════════╗")
-        appendLine("║           PRODY CRASH REPORT           ║")
-        appendLine("╚════════════════════════════════════════╝")
+        appendLine("╔════════════════════════════════════════════════════════════╗")
+        appendLine("║              PRODY CRASH REPORT                            ║")
+        appendLine("╚════════════════════════════════════════════════════════════╝")
         appendLine()
-        appendLine("⏱ Timestamp: $timestamp")
-        appendLine("🧵 Thread: $threadName")
+        appendLine("Timestamp: $timestamp")
+        appendLine("Thread: $threadName")
         appendLine()
-        appendLine("═══════════════════════════════════════")
-        appendLine("🔴 EXCEPTION")
-        appendLine("═══════════════════════════════════════")
+        appendLine("════════════════════════════════════════════════════════════")
+        appendLine("EXCEPTION")
+        appendLine("════════════════════════════════════════════════════════════")
         appendLine("Type: $exceptionType")
         appendLine("Message: $exceptionMessage")
         appendLine()
-        appendLine("═══════════════════════════════════════")
-        appendLine("🎯 ROOT CAUSE")
-        appendLine("═══════════════════════════════════════")
+        appendLine("════════════════════════════════════════════════════════════")
+        appendLine("ROOT CAUSE")
+        appendLine("════════════════════════════════════════════════════════════")
         appendLine("Type: $rootCauseType")
         appendLine("Message: $rootCauseMessage")
         appendLine()
-        appendLine("═══════════════════════════════════════")
-        appendLine("📋 FULL STACK TRACE")
-        appendLine("═══════════════════════════════════════")
+        appendLine("════════════════════════════════════════════════════════════")
+        appendLine("FULL STACK TRACE")
+        appendLine("════════════════════════════════════════════════════════════")
         appendLine(fullStackTrace)
         appendLine()
         appendLine(deviceInfo)
