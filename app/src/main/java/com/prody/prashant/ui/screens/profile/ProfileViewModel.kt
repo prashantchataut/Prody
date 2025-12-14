@@ -35,6 +35,10 @@ class ProfileViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(ProfileUiState())
     val uiState: StateFlow<ProfileUiState> = _uiState.asStateFlow()
 
+    companion object {
+        private const val TAG = "ProfileViewModel"
+    }
+
     init {
         loadProfile()
         loadAchievements()
@@ -42,27 +46,34 @@ class ProfileViewModel @Inject constructor(
 
     private fun loadProfile() {
         viewModelScope.launch {
-            userDao.getUserProfile().collect { profile ->
-                profile?.let {
-                    val daysOnPrody = TimeUnit.MILLISECONDS.toDays(
-                        System.currentTimeMillis() - it.joinedAt
-                    ).toInt().coerceAtLeast(1)
+            try {
+                userDao.getUserProfile().collect { profile ->
+                    profile?.let {
+                        val daysOnPrody = TimeUnit.MILLISECONDS.toDays(
+                            System.currentTimeMillis() - it.joinedAt
+                        ).toInt().coerceAtLeast(1)
 
-                    _uiState.update { state ->
-                        state.copy(
-                            displayName = it.displayName,
-                            title = getTitleFromId(it.titleId),
-                            avatarId = it.avatarId,
-                            bannerId = it.bannerId,
-                            totalPoints = it.totalPoints,
-                            currentStreak = it.currentStreak,
-                            longestStreak = it.longestStreak,
-                            wordsLearned = it.wordsLearned,
-                            journalEntries = it.journalEntriesCount,
-                            daysOnPrody = daysOnPrody,
-                            isLoading = false
-                        )
+                        _uiState.update { state ->
+                            state.copy(
+                                displayName = it.displayName,
+                                title = getTitleFromId(it.titleId),
+                                avatarId = it.avatarId,
+                                bannerId = it.bannerId,
+                                totalPoints = it.totalPoints,
+                                currentStreak = it.currentStreak,
+                                longestStreak = it.longestStreak,
+                                wordsLearned = it.wordsLearned,
+                                journalEntries = it.journalEntriesCount,
+                                daysOnPrody = daysOnPrody,
+                                isLoading = false
+                            )
+                        }
                     }
+                }
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error loading profile", e)
+                _uiState.update { state ->
+                    state.copy(isLoading = false)
                 }
             }
         }
@@ -70,19 +81,23 @@ class ProfileViewModel @Inject constructor(
 
     private fun loadAchievements() {
         viewModelScope.launch {
-            combine(
-                userDao.getUnlockedAchievements(),
-                userDao.getLockedAchievements()
-            ) { unlocked, locked ->
-                Pair(unlocked, locked)
-            }.collect { (unlocked, locked) ->
-                _uiState.update { state ->
-                    state.copy(
-                        unlockedAchievements = unlocked,
-                        lockedAchievements = locked,
-                        achievementsUnlocked = unlocked.size
-                    )
+            try {
+                combine(
+                    userDao.getUnlockedAchievements(),
+                    userDao.getLockedAchievements()
+                ) { unlocked, locked ->
+                    Pair(unlocked, locked)
+                }.collect { (unlocked, locked) ->
+                    _uiState.update { state ->
+                        state.copy(
+                            unlockedAchievements = unlocked,
+                            lockedAchievements = locked,
+                            achievementsUnlocked = unlocked.size
+                        )
+                    }
                 }
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error loading achievements", e)
             }
         }
     }

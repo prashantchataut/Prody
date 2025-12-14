@@ -27,56 +27,64 @@ class SettingsViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(SettingsUiState())
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
 
+    companion object {
+        private const val TAG = "SettingsViewModel"
+    }
+
     init {
         loadSettings()
     }
 
     private fun loadSettings() {
         viewModelScope.launch {
-            // Combine first 5 appearance/notification settings
-            val appearanceAndNotifications = combine(
-                preferencesManager.themeMode,
-                preferencesManager.dynamicColors,
-                preferencesManager.notificationsEnabled,
-                preferencesManager.wisdomNotificationEnabled,
-                preferencesManager.journalReminderEnabled
-            ) { themeMode, dynamicColors, notificationsEnabled, wisdomEnabled, journalEnabled ->
-                AppearanceAndNotificationSettings(
-                    themeMode = themeMode,
-                    dynamicColors = dynamicColors,
-                    notificationsEnabled = notificationsEnabled,
-                    wisdomNotificationsEnabled = wisdomEnabled,
-                    journalRemindersEnabled = journalEnabled
-                )
-            }
+            try {
+                // Combine first 5 appearance/notification settings
+                val appearanceAndNotifications = combine(
+                    preferencesManager.themeMode,
+                    preferencesManager.dynamicColors,
+                    preferencesManager.notificationsEnabled,
+                    preferencesManager.wisdomNotificationEnabled,
+                    preferencesManager.journalReminderEnabled
+                ) { themeMode, dynamicColors, notificationsEnabled, wisdomEnabled, journalEnabled ->
+                    AppearanceAndNotificationSettings(
+                        themeMode = themeMode,
+                        dynamicColors = dynamicColors,
+                        notificationsEnabled = notificationsEnabled,
+                        wisdomNotificationsEnabled = wisdomEnabled,
+                        journalRemindersEnabled = journalEnabled
+                    )
+                }
 
-            // Combine remaining preference settings
-            val preferences = combine(
-                preferencesManager.hapticFeedbackEnabled,
-                preferencesManager.compactCardView,
-                preferencesManager.buddhaAiEnabled
-            ) { hapticEnabled, compactView, buddhaEnabled ->
-                PreferenceSettings(
-                    hapticFeedbackEnabled = hapticEnabled,
-                    compactView = compactView,
-                    buddhaAiEnabled = buddhaEnabled
-                )
-            }
+                // Combine remaining preference settings
+                val preferences = combine(
+                    preferencesManager.hapticFeedbackEnabled,
+                    preferencesManager.compactCardView,
+                    preferencesManager.buddhaAiEnabled
+                ) { hapticEnabled, compactView, buddhaEnabled ->
+                    PreferenceSettings(
+                        hapticFeedbackEnabled = hapticEnabled,
+                        compactView = compactView,
+                        buddhaAiEnabled = buddhaEnabled
+                    )
+                }
 
-            // Combine both groups into final state
-            combine(appearanceAndNotifications, preferences) { appearance, prefs ->
-                SettingsUiState(
-                    themeMode = appearance.themeMode,
-                    dynamicColors = appearance.dynamicColors,
-                    notificationsEnabled = appearance.notificationsEnabled,
-                    wisdomNotificationsEnabled = appearance.wisdomNotificationsEnabled,
-                    journalRemindersEnabled = appearance.journalRemindersEnabled,
-                    hapticFeedbackEnabled = prefs.hapticFeedbackEnabled,
-                    compactView = prefs.compactView,
-                    buddhaAiEnabled = prefs.buddhaAiEnabled
-                )
-            }.collect { state ->
-                _uiState.value = state
+                // Combine both groups into final state
+                combine(appearanceAndNotifications, preferences) { appearance, prefs ->
+                    SettingsUiState(
+                        themeMode = appearance.themeMode,
+                        dynamicColors = appearance.dynamicColors,
+                        notificationsEnabled = appearance.notificationsEnabled,
+                        wisdomNotificationsEnabled = appearance.wisdomNotificationsEnabled,
+                        journalRemindersEnabled = appearance.journalRemindersEnabled,
+                        hapticFeedbackEnabled = prefs.hapticFeedbackEnabled,
+                        compactView = prefs.compactView,
+                        buddhaAiEnabled = prefs.buddhaAiEnabled
+                    )
+                }.collect { state ->
+                    _uiState.value = state
+                }
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error loading settings", e)
             }
         }
     }
@@ -97,49 +105,81 @@ class SettingsViewModel @Inject constructor(
 
     fun setThemeMode(mode: String) {
         viewModelScope.launch {
-            preferencesManager.setThemeMode(mode)
+            try {
+                preferencesManager.setThemeMode(mode)
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error setting theme mode", e)
+            }
         }
     }
 
     fun setDynamicColors(enabled: Boolean) {
         viewModelScope.launch {
-            preferencesManager.setDynamicColors(enabled)
+            try {
+                preferencesManager.setDynamicColors(enabled)
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error setting dynamic colors", e)
+            }
         }
     }
 
     fun setNotificationsEnabled(enabled: Boolean) {
         viewModelScope.launch {
-            preferencesManager.setNotificationsEnabled(enabled)
+            try {
+                preferencesManager.setNotificationsEnabled(enabled)
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error setting notifications enabled", e)
+            }
         }
     }
 
     fun setWisdomNotifications(enabled: Boolean) {
         viewModelScope.launch {
-            preferencesManager.setWisdomNotificationEnabled(enabled)
+            try {
+                preferencesManager.setWisdomNotificationEnabled(enabled)
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error setting wisdom notifications", e)
+            }
         }
     }
 
     fun setJournalReminders(enabled: Boolean) {
         viewModelScope.launch {
-            preferencesManager.setJournalReminderEnabled(enabled)
+            try {
+                preferencesManager.setJournalReminderEnabled(enabled)
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error setting journal reminders", e)
+            }
         }
     }
 
     fun setHapticFeedback(enabled: Boolean) {
         viewModelScope.launch {
-            preferencesManager.setHapticFeedbackEnabled(enabled)
+            try {
+                preferencesManager.setHapticFeedbackEnabled(enabled)
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error setting haptic feedback", e)
+            }
         }
     }
 
     fun setCompactView(compact: Boolean) {
         viewModelScope.launch {
-            preferencesManager.setCompactCardView(compact)
+            try {
+                preferencesManager.setCompactCardView(compact)
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error setting compact view", e)
+            }
         }
     }
 
     fun setBuddhaAiEnabled(enabled: Boolean) {
         viewModelScope.launch {
-            preferencesManager.setBuddhaAiEnabled(enabled)
+            try {
+                preferencesManager.setBuddhaAiEnabled(enabled)
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error setting Buddha AI enabled", e)
+            }
         }
     }
 }

@@ -178,21 +178,29 @@ class NotificationScheduler @Inject constructor(
     }
 
     suspend fun scheduleFutureMessages() {
-        val pendingMessages = futureMessageDao.getAllMessagesSync()
-        val currentTime = System.currentTimeMillis()
+        try {
+            val pendingMessages = futureMessageDao.getAllMessagesSync()
+            val currentTime = System.currentTimeMillis()
 
-        pendingMessages.forEachIndexed { index, message ->
-            if (message.deliveryDate > currentTime) {
-                scheduleExactAlarm(
-                    action = NotificationReceiver.ACTION_FUTURE_MESSAGE,
-                    requestCode = REQUEST_FUTURE_BASE + index,
-                    triggerTime = message.deliveryDate,
-                    extras = mapOf(
-                        NotificationReceiver.EXTRA_MESSAGE_TITLE to message.title,
-                        NotificationReceiver.EXTRA_MESSAGE_BODY to message.content.take(200)
-                    )
-                )
+            pendingMessages.forEachIndexed { index, message ->
+                try {
+                    if (message.deliveryDate > currentTime) {
+                        scheduleExactAlarm(
+                            action = NotificationReceiver.ACTION_FUTURE_MESSAGE,
+                            requestCode = REQUEST_FUTURE_BASE + index,
+                            triggerTime = message.deliveryDate,
+                            extras = mapOf(
+                                NotificationReceiver.EXTRA_MESSAGE_TITLE to message.title,
+                                NotificationReceiver.EXTRA_MESSAGE_BODY to message.content.take(200)
+                            )
+                        )
+                    }
+                } catch (e: Exception) {
+                    android.util.Log.e(TAG, "Failed to schedule future message: ${message.id}", e)
+                }
             }
+        } catch (e: Exception) {
+            android.util.Log.e(TAG, "Failed to fetch future messages from database", e)
         }
     }
 

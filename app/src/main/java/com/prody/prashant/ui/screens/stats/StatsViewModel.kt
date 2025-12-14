@@ -37,6 +37,10 @@ class StatsViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(StatsUiState())
     val uiState: StateFlow<StatsUiState> = _uiState.asStateFlow()
 
+    companion object {
+        private const val TAG = "StatsViewModel"
+    }
+
     init {
         loadStats()
         loadLeaderboard()
@@ -44,57 +48,70 @@ class StatsViewModel @Inject constructor(
 
     private fun loadStats() {
         viewModelScope.launch {
-            userDao.getUserProfile().collect { profile ->
-                profile?.let {
-                    _uiState.update { state ->
-                        state.copy(
-                            totalPoints = it.totalPoints,
-                            currentStreak = it.currentStreak,
-                            longestStreak = it.longestStreak,
-                            wordsLearned = it.wordsLearned,
-                            journalEntries = it.journalEntriesCount,
-                            futureMessages = it.futureMessagesCount,
-                            isLoading = false
-                        )
+            try {
+                userDao.getUserProfile().collect { profile ->
+                    profile?.let {
+                        _uiState.update { state ->
+                            state.copy(
+                                totalPoints = it.totalPoints,
+                                currentStreak = it.currentStreak,
+                                longestStreak = it.longestStreak,
+                                wordsLearned = it.wordsLearned,
+                                journalEntries = it.journalEntriesCount,
+                                futureMessages = it.futureMessagesCount,
+                                isLoading = false
+                            )
+                        }
                     }
                 }
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error loading user profile", e)
+                _uiState.update { state -> state.copy(isLoading = false) }
             }
         }
 
         viewModelScope.launch {
-            userDao.getStreakHistory().collect { history ->
-                val daysActive = history.size
-                val weeklyProgress = calculateWeeklyProgress(history.map { it.pointsEarned })
-                val consistencyScore = calculateConsistencyScore(history.size)
-                val weeklyGrowth = calculateWeeklyGrowth(weeklyProgress)
-                val learningPace = determineLearningPace(weeklyProgress)
+            try {
+                userDao.getStreakHistory().collect { history ->
+                    val daysActive = history.size
+                    val weeklyProgress = calculateWeeklyProgress(history.map { it.pointsEarned })
+                    val consistencyScore = calculateConsistencyScore(history.size)
+                    val weeklyGrowth = calculateWeeklyGrowth(weeklyProgress)
+                    val learningPace = determineLearningPace(weeklyProgress)
 
-                _uiState.update { state ->
-                    state.copy(
-                        daysActive = daysActive,
-                        weeklyProgress = weeklyProgress,
-                        consistencyScore = consistencyScore,
-                        weeklyGrowthPercent = weeklyGrowth,
-                        learningPace = learningPace
-                    )
+                    _uiState.update { state ->
+                        state.copy(
+                            daysActive = daysActive,
+                            weeklyProgress = weeklyProgress,
+                            consistencyScore = consistencyScore,
+                            weeklyGrowthPercent = weeklyGrowth,
+                            learningPace = learningPace
+                        )
+                    }
                 }
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error loading streak history", e)
             }
         }
 
         // Load mood distribution
         viewModelScope.launch {
-            // Generate sample mood distribution data
-            // In a real app, this would come from journal entries
-            val sampleMoodData = mapOf(
-                "happy" to (10..30).random(),
-                "calm" to (15..35).random(),
-                "motivated" to (8..25).random(),
-                "grateful" to (5..20).random(),
-                "anxious" to (3..12).random(),
-                "sad" to (2..8).random()
-            )
-            _uiState.update { state ->
-                state.copy(moodDistribution = sampleMoodData)
+            try {
+                // Generate sample mood distribution data
+                // In a real app, this would come from journal entries
+                val sampleMoodData = mapOf(
+                    "happy" to (10..30).random(),
+                    "calm" to (15..35).random(),
+                    "motivated" to (8..25).random(),
+                    "grateful" to (5..20).random(),
+                    "anxious" to (3..12).random(),
+                    "sad" to (2..8).random()
+                )
+                _uiState.update { state ->
+                    state.copy(moodDistribution = sampleMoodData)
+                }
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error loading mood distribution", e)
             }
         }
     }
@@ -127,27 +144,35 @@ class StatsViewModel @Inject constructor(
 
     private fun loadLeaderboard() {
         viewModelScope.launch {
-            // Initialize with sample data for demo
-            // In a real app, this would come from a backend
-            val sampleLeaderboard = createSampleLeaderboard()
-            userDao.insertLeaderboardEntries(sampleLeaderboard)
+            try {
+                // Initialize with sample data for demo
+                // In a real app, this would come from a backend
+                val sampleLeaderboard = createSampleLeaderboard()
+                userDao.insertLeaderboardEntries(sampleLeaderboard)
 
-            userDao.getLeaderboard().collect { leaderboard ->
-                _uiState.update { state ->
-                    val currentUserRank = leaderboard.indexOfFirst { it.isCurrentUser } + 1
-                    state.copy(
-                        allTimeLeaderboard = leaderboard,
-                        currentRank = if (currentUserRank > 0) currentUserRank else 0
-                    )
+                userDao.getLeaderboard().collect { leaderboard ->
+                    _uiState.update { state ->
+                        val currentUserRank = leaderboard.indexOfFirst { it.isCurrentUser } + 1
+                        state.copy(
+                            allTimeLeaderboard = leaderboard,
+                            currentRank = if (currentUserRank > 0) currentUserRank else 0
+                        )
+                    }
                 }
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error loading all-time leaderboard", e)
             }
         }
 
         viewModelScope.launch {
-            userDao.getWeeklyLeaderboard().collect { leaderboard ->
-                _uiState.update { state ->
-                    state.copy(weeklyLeaderboard = leaderboard)
+            try {
+                userDao.getWeeklyLeaderboard().collect { leaderboard ->
+                    _uiState.update { state ->
+                        state.copy(weeklyLeaderboard = leaderboard)
+                    }
                 }
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error loading weekly leaderboard", e)
             }
         }
     }
@@ -181,15 +206,23 @@ class StatsViewModel @Inject constructor(
 
     fun boostPeer(peerId: String) {
         viewModelScope.launch {
-            userDao.incrementBoosts(peerId)
-            // In a real app, this would also send a notification to the peer
+            try {
+                userDao.incrementBoosts(peerId)
+                // In a real app, this would also send a notification to the peer
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error boosting peer: $peerId", e)
+            }
         }
     }
 
     fun congratulatePeer(peerId: String) {
         viewModelScope.launch {
-            userDao.incrementCongrats(peerId)
-            // In a real app, this would also send a notification to the peer
+            try {
+                userDao.incrementCongrats(peerId)
+                // In a real app, this would also send a notification to the peer
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error congratulating peer: $peerId", e)
+            }
         }
     }
 }

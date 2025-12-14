@@ -24,6 +24,10 @@ class FutureMessageViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(FutureMessageUiState())
     val uiState: StateFlow<FutureMessageUiState> = _uiState.asStateFlow()
 
+    companion object {
+        private const val TAG = "FutureMessageViewModel"
+    }
+
     init {
         loadMessages()
         checkForDeliveredMessages()
@@ -31,35 +35,52 @@ class FutureMessageViewModel @Inject constructor(
 
     private fun loadMessages() {
         viewModelScope.launch {
-            combine(
-                futureMessageDao.getDeliveredMessages(),
-                futureMessageDao.getPendingMessages(),
-                futureMessageDao.getUnreadCount()
-            ) { delivered, pending, unread ->
-                FutureMessageUiState(
-                    deliveredMessages = delivered,
-                    pendingMessages = pending,
-                    unreadCount = unread,
-                    isLoading = false
-                )
-            }.collect { state ->
-                _uiState.value = state
+            try {
+                combine(
+                    futureMessageDao.getDeliveredMessages(),
+                    futureMessageDao.getPendingMessages(),
+                    futureMessageDao.getUnreadCount()
+                ) { delivered, pending, unread ->
+                    FutureMessageUiState(
+                        deliveredMessages = delivered,
+                        pendingMessages = pending,
+                        unreadCount = unread,
+                        isLoading = false
+                    )
+                }.collect { state ->
+                    _uiState.value = state
+                }
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error loading messages", e)
+                _uiState.update { it.copy(isLoading = false) }
             }
         }
     }
 
     private fun checkForDeliveredMessages() {
         viewModelScope.launch {
-            val readyMessages = futureMessageDao.getMessagesReadyForDelivery(System.currentTimeMillis())
-            readyMessages.forEach { message ->
-                futureMessageDao.markAsDelivered(message.id)
+            try {
+                val readyMessages = futureMessageDao.getMessagesReadyForDelivery(System.currentTimeMillis())
+                readyMessages.forEach { message ->
+                    try {
+                        futureMessageDao.markAsDelivered(message.id)
+                    } catch (e: Exception) {
+                        android.util.Log.e(TAG, "Error marking message as delivered: ${message.id}", e)
+                    }
+                }
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error checking for delivered messages", e)
             }
         }
     }
 
     fun markAsRead(messageId: Long) {
         viewModelScope.launch {
-            futureMessageDao.markAsRead(messageId)
+            try {
+                futureMessageDao.markAsRead(messageId)
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error marking message as read: $messageId", e)
+            }
         }
     }
 }
