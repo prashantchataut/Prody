@@ -33,31 +33,67 @@ class SettingsViewModel @Inject constructor(
 
     private fun loadSettings() {
         viewModelScope.launch {
-            combine(
+            // Combine first 5 appearance/notification settings
+            val appearanceAndNotifications = combine(
                 preferencesManager.themeMode,
                 preferencesManager.dynamicColors,
                 preferencesManager.notificationsEnabled,
                 preferencesManager.wisdomNotificationEnabled,
-                preferencesManager.journalReminderEnabled,
+                preferencesManager.journalReminderEnabled
+            ) { themeMode, dynamicColors, notificationsEnabled, wisdomEnabled, journalEnabled ->
+                AppearanceAndNotificationSettings(
+                    themeMode = themeMode,
+                    dynamicColors = dynamicColors,
+                    notificationsEnabled = notificationsEnabled,
+                    wisdomNotificationsEnabled = wisdomEnabled,
+                    journalRemindersEnabled = journalEnabled
+                )
+            }
+
+            // Combine remaining preference settings
+            val preferences = combine(
                 preferencesManager.hapticFeedbackEnabled,
                 preferencesManager.compactCardView,
                 preferencesManager.buddhaAiEnabled
-            ) { values ->
+            ) { hapticEnabled, compactView, buddhaEnabled ->
+                PreferenceSettings(
+                    hapticFeedbackEnabled = hapticEnabled,
+                    compactView = compactView,
+                    buddhaAiEnabled = buddhaEnabled
+                )
+            }
+
+            // Combine both groups into final state
+            combine(appearanceAndNotifications, preferences) { appearance, prefs ->
                 SettingsUiState(
-                    themeMode = values[0] as String,
-                    dynamicColors = values[1] as Boolean,
-                    notificationsEnabled = values[2] as Boolean,
-                    wisdomNotificationsEnabled = values[3] as Boolean,
-                    journalRemindersEnabled = values[4] as Boolean,
-                    hapticFeedbackEnabled = values[5] as Boolean,
-                    compactView = values[6] as Boolean,
-                    buddhaAiEnabled = values[7] as Boolean
+                    themeMode = appearance.themeMode,
+                    dynamicColors = appearance.dynamicColors,
+                    notificationsEnabled = appearance.notificationsEnabled,
+                    wisdomNotificationsEnabled = appearance.wisdomNotificationsEnabled,
+                    journalRemindersEnabled = appearance.journalRemindersEnabled,
+                    hapticFeedbackEnabled = prefs.hapticFeedbackEnabled,
+                    compactView = prefs.compactView,
+                    buddhaAiEnabled = prefs.buddhaAiEnabled
                 )
             }.collect { state ->
                 _uiState.value = state
             }
         }
     }
+
+    private data class AppearanceAndNotificationSettings(
+        val themeMode: String,
+        val dynamicColors: Boolean,
+        val notificationsEnabled: Boolean,
+        val wisdomNotificationsEnabled: Boolean,
+        val journalRemindersEnabled: Boolean
+    )
+
+    private data class PreferenceSettings(
+        val hapticFeedbackEnabled: Boolean,
+        val compactView: Boolean,
+        val buddhaAiEnabled: Boolean
+    )
 
     fun setThemeMode(mode: String) {
         viewModelScope.launch {
