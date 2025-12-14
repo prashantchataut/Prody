@@ -41,7 +41,7 @@
             android:name=".debug.CrashActivity"
             android:process=":crash"
             android:exported="false"
-            android:theme="@android:style/Theme.Material.NoActionBar"
+            android:theme="@style/Theme.Prody"
             android:excludeFromRecents="true"
             android:taskAffinity=""
             android:launchMode="singleInstance"

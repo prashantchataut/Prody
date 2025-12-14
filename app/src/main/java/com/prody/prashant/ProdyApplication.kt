@@ -53,13 +53,15 @@ class ProdyApplication : Application(), Configuration.Provider {
     }
 
     override fun onCreate() {
-        super.onCreate()
-
-        // Check if we are running in the crash process - don't initialize anything
+        // CRITICAL: Check for crash process BEFORE super.onCreate()
+        // calling super.onCreate() triggers Hilt injection, which might crash if dependencies are broken.
+        // We MUST skip Hilt injection in the crash reporting process.
         if (isCrashProcess()) {
-            Log.d(TAG, "Running in crash process, skipping initialization")
+            Log.d(TAG, "Running in crash process, skipping Hilt injection and initialization")
             return
         }
+
+        super.onCreate()
 
         // Initialize other components safely
         initializeApp()
