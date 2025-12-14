@@ -1,5 +1,6 @@
 package com.prody.prashant.debug
 
+import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.os.Build
@@ -31,6 +32,7 @@ class CrashHandler private constructor(
 
     companion object {
         private const val TAG = "CrashHandler"
+        private const val CRASH_PROCESS_SUFFIX = ":crash"
 
         // Intent extras - kept short to minimize data size
         const val EXTRA_EXCEPTION_TYPE = "ex_type"
@@ -61,7 +63,7 @@ class CrashHandler private constructor(
         @JvmStatic
         fun initialize(context: Context) {
             if (isInitialized) {
-                Log.d(TAG, "CrashHandler already initialized")
+                // Already initialized, no need to log constantly
                 return
             }
 
@@ -82,9 +84,37 @@ class CrashHandler private constructor(
 
         @JvmStatic
         fun isInitialized(): Boolean = isInitialized
+        
+        /**
+         * Checks if the current process is the crash reporting process.
+         */
+        fun isCrashProcess(context: Context): Boolean {
+            return try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    Application.getProcessName()?.endsWith(CRASH_PROCESS_SUFFIX) == true
+                } else {
+                    val pid = android.os.Process.myPid()
+                    val manager = context.getSystemService(Context.ACTIVITY_SERVICE) as? android.app.ActivityManager
+                    manager?.runningAppProcesses?.firstOrNull { it.pid == pid }?.processName?.endsWith(CRASH_PROCESS_SUFFIX) == true
+                }
+            } catch (e: Exception) {
+                false
+            }
+        }
     }
 
     override fun uncaughtException(thread: Thread, throwable: Throwable) {
+        // SAFETY CHECK: If we are already in the crash process, DO NOT launch CrashActivity again.
+        // This prevents infinite crash loops if the CrashActivity itself fails.
+        if (isCrashProcess(applicationContext)) {
+             Log.e(TAG, "CRASH IN CRASH PROCESS! Creating infinite loop detected. Terminating.", throwable)
+             // Log to system log so at least adb logcat catches it
+             defaultHandler?.uncaughtException(thread, throwable)
+             android.os.Process.killProcess(android.os.Process.myPid())
+             System.exit(10)
+             return
+        }
+
         Log.e(TAG, "═══════════════════════════════════════════════════════════════")
         Log.e(TAG, "UNCAUGHT EXCEPTION in thread: ${thread.name}")
         Log.e(TAG, "═══════════════════════════════════════════════════════════════")

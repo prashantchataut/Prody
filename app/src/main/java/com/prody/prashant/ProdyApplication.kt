@@ -40,47 +40,44 @@ class ProdyApplication : Application(), Configuration.Provider {
     override fun attachBaseContext(base: Context) {
         super.attachBaseContext(base)
 
-        // Initialize crash handler at the EARLIEST possible point - before ANYTHING else
-        // This runs before onCreate() and before Hilt injection
-        if (!isCrashProcess()) {
-            try {
-                CrashHandler.initialize(this)
-                Log.d(TAG, "CrashHandler initialized in attachBaseContext")
-            } catch (e: Exception) {
-                Log.e(TAG, "Failed to initialize crash handler in attachBaseContext", e)
-            }
+        // ALWAYS initialize crash handler, regardless of process.
+        // The CrashHandler itself now has logic to prevent infinite loops (checks if in :crash process).
+        try {
+            CrashHandler.initialize(this)
+            Log.d(TAG, "CrashHandler initialized in attachBaseContext")
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to initialize crash handler in attachBaseContext", e)
         }
     }
 
     override fun onCreate() {
-        // CRITICAL: Check for crash process BEFORE super.onCreate()
-        // calling super.onCreate() triggers Hilt injection, which might crash if dependencies are broken.
-        // We MUST skip Hilt injection in the crash reporting process.
-        if (isCrashProcess()) {
+        // Check for crash process to skip unnecessary heavy initialization
+        if (CrashHandler.isCrashProcess(this)) {
             Log.d(TAG, "Running in crash process, skipping Hilt injection and initialization")
             return
         }
 
-        super.onCreate()
+        // CRITICAL: Wrap super.onCreate() in try-catch.
+        // Triggering Hilt injection (which happens in super.onCreate()) is a common source of startup crashes.
+        try {
+            super.onCreate()
+        } catch (e: Throwable) {
+            Log.e(TAG, "CRITICAL ERROR IN APPLICATION ONCREATE / HILT INIT", e)
+            
+            // Invoke uncaught exception handler directly to ensure we show the crash screen
+            val handler = Thread.getDefaultUncaughtExceptionHandler()
+            if (handler != null) {
+                handler.uncaughtException(Thread.currentThread(), e)
+            } else {
+                // Fallback if somehow handler was lost
+                CrashHandler.initialize(this)
+                Thread.getDefaultUncaughtExceptionHandler()?.uncaughtException(Thread.currentThread(), e)
+            }
+            return
+        }
 
         // Initialize other components safely
         initializeApp()
-    }
-
-    private fun isCrashProcess(): Boolean {
-        return try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                getProcessName()?.endsWith(":crash") == true
-            } else {
-                // Fallback for older versions
-                val pid = android.os.Process.myPid()
-                val manager = getSystemService(android.app.ActivityManager::class.java)
-                manager?.runningAppProcesses?.firstOrNull { it.pid == pid }?.processName?.endsWith(":crash") == true
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error checking process name", e)
-            false
-        }
     }
 
     private fun initializeApp() {
