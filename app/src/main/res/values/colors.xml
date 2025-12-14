@@ -15,6 +15,8 @@
     <color name="prody_secondary">#D4C4A8</color>
     <color name="prody_secondary_variant">#C4B494</color>
     <color name="prody_on_secondary">#2D2A24</color>
+    <color name="prody_secondary_container">#D4C4A8</color>
+    <color name="prody_on_secondary_container">#2D2A24</color>
 
     <!-- Tertiary - Soft Teal (adds freshness and vitality) -->
     <color name="prody_tertiary">#5B9A8B</color>

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <!-- Theme for API 23+ (Marshmallow+) with Day/Night support -->
-    <style name="Theme.Prody" parent="Theme.Material.DayNight.NoActionBar">
+    <!-- Theme for API 21+ (Lollipop+) with Material Design support -->
+    <style name="Theme.Prody" parent="android:Theme.Material.Light.NoActionBar">
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar">true</item>
