@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.Prody" parent="Theme.Material3.DayNight.NoActionBar">
+    <style name="Theme.Prody" parent="Theme.Material.DayNight.NoActionBar">
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar">true</item>
+        <item name="colorOnPrimary">@color/prody_on_primary</item>
+        <item name="colorPrimary">@color/prody_primary</item>
+        <item name="colorOnSurface">@color/prody_on_surface</item>
     </style>
 
     <style name="Theme.Prody.Splash" parent="Theme.SplashScreen">
