@@ -59,6 +59,11 @@ class CrashHandler private constructor(
         /**
          * Initialize the crash handler. Can be called multiple times safely.
          * Should be called in attachBaseContext() for earliest possible initialization.
+         *
+         * CRITICAL: This method is designed to be called during attachBaseContext(),
+         * which is the earliest possible point in the Application lifecycle. At this
+         * stage, the Application object is not fully initialized, so we must be
+         * extremely careful about what methods we call.
          */
         @JvmStatic
         fun initialize(context: Context) {
@@ -71,7 +76,23 @@ class CrashHandler private constructor(
                 if (isInitialized) return
 
                 try {
-                    val handler = CrashHandler(context.applicationContext)
+                    // CRITICAL FIX: During attachBaseContext(), calling context.applicationContext
+                    // can be problematic on some devices/OS versions because the Application
+                    // object is not fully initialized yet. Instead, we should:
+                    // 1. If the context IS an Application, use it directly
+                    // 2. Otherwise, try to get applicationContext, but fall back to the context itself
+                    val safeContext: Context = when {
+                        context is Application -> context
+                        else -> try {
+                            context.applicationContext ?: context
+                        } catch (e: Exception) {
+                            // If applicationContext throws, use the context directly
+                            Log.w(TAG, "Failed to get applicationContext, using context directly", e)
+                            context
+                        }
+                    }
+
+                    val handler = CrashHandler(safeContext)
                     Thread.setDefaultUncaughtExceptionHandler(handler)
                     instance = handler
                     isInitialized = true
@@ -87,17 +108,56 @@ class CrashHandler private constructor(
         
         /**
          * Checks if the current process is the crash reporting process.
+         *
+         * This method is designed to be safe during early initialization phases
+         * and will never throw or cause crashes. If process detection fails for
+         * any reason, it conservatively returns false (assumes main process).
          */
         fun isCrashProcess(context: Context): Boolean {
             return try {
+                // Method 1 (Android P+): Use Application.getProcessName() - most reliable
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                    Application.getProcessName()?.endsWith(CRASH_PROCESS_SUFFIX) == true
-                } else {
+                    val processName = try {
+                        Application.getProcessName()
+                    } catch (e: Exception) {
+                        null
+                    }
+                    if (processName != null) {
+                        return processName.endsWith(CRASH_PROCESS_SUFFIX)
+                    }
+                }
+
+                // Method 2: Try to get process name from ActivityManager
+                try {
                     val pid = android.os.Process.myPid()
                     val manager = context.getSystemService(Context.ACTIVITY_SERVICE) as? android.app.ActivityManager
-                    manager?.runningAppProcesses?.firstOrNull { it.pid == pid }?.processName?.endsWith(CRASH_PROCESS_SUFFIX) == true
+                    val processInfo = manager?.runningAppProcesses?.firstOrNull { it.pid == pid }
+                    if (processInfo?.processName?.endsWith(CRASH_PROCESS_SUFFIX) == true) {
+                        return true
+                    }
+                } catch (e: Exception) {
+                    // ActivityManager access failed, continue to next method
+                    Log.w(TAG, "Failed to get process name from ActivityManager", e)
                 }
+
+                // Method 3: Fallback - check /proc/self/cmdline
+                try {
+                    val cmdline = java.io.File("/proc/self/cmdline").readText()
+                        .trim()
+                        .replace("\u0000", "") // Remove null terminators
+                    if (cmdline.endsWith(CRASH_PROCESS_SUFFIX)) {
+                        return true
+                    }
+                } catch (e: Exception) {
+                    // /proc access failed
+                    Log.w(TAG, "Failed to read /proc/self/cmdline", e)
+                }
+
+                // Default: assume we're in main process
+                false
             } catch (e: Exception) {
+                // Outer catch-all - never let this method crash
+                Log.e(TAG, "Unexpected error checking crash process", e)
                 false
             }
         }

@@ -36,24 +36,77 @@ class ProdyApplication : Application(), Configuration.Provider {
      * CRITICAL: Initialize crash handler at the earliest possible point.
      * attachBaseContext() is called BEFORE onCreate() and BEFORE Hilt injection.
      * This ensures we catch ALL crashes, including those during Hilt setup.
+     *
+     * Order of Android Application lifecycle:
+     * 1. Application constructor (class loading)
+     * 2. attachBaseContext(base) - EARLIEST point we can safely run code
+     * 3. onCreate() - Hilt injection happens here for @HiltAndroidApp
+     * 4. Activity/Service/Receiver creation
+     *
+     * Crashes BEFORE attachBaseContext cannot be caught by any exception handler
+     * because the handler cannot be installed before the Application exists.
+     * This includes:
+     * - Static initializers in any class
+     * - Class loading failures (missing dependencies, dex issues)
+     * - Application constructor failures
+     *
+     * Crashes AFTER attachBaseContext but BEFORE CrashHandler.initialize()
+     * are covered by the try-catch around super.attachBaseContext(base).
      */
     override fun attachBaseContext(base: Context) {
-        super.attachBaseContext(base)
+        // Wrap super.attachBaseContext in try-catch as a safety measure
+        // This catches any crashes in the base framework initialization
+        try {
+            super.attachBaseContext(base)
+        } catch (e: Throwable) {
+            // If super.attachBaseContext fails, we're in a very bad state
+            // Log to system log and rethrow - there's nothing we can do
+            Log.e(TAG, "CRITICAL: super.attachBaseContext failed", e)
+            throw e
+        }
 
         // ALWAYS initialize crash handler, regardless of process.
-        // The CrashHandler itself now has logic to prevent infinite loops (checks if in :crash process).
+        // The CrashHandler itself has logic to prevent infinite loops (checks if in :crash process).
+        // This MUST happen IMMEDIATELY after super.attachBaseContext() completes.
         try {
             CrashHandler.initialize(this)
             Log.d(TAG, "CrashHandler initialized in attachBaseContext")
         } catch (e: Exception) {
+            // Failed to initialize crash handler - log but don't crash
+            // The app will run without crash reporting, but at least it might start
             Log.e(TAG, "Failed to initialize crash handler in attachBaseContext", e)
         }
     }
 
+    /**
+     * Track if we're in the crash process for later checks.
+     * Determined once during onCreate to avoid repeated process checks.
+     */
+    private var inCrashProcess = false
+
     override fun onCreate() {
-        // Check for crash process to skip unnecessary heavy initialization
-        if (CrashHandler.isCrashProcess(this)) {
+        // Determine if we're in the crash process FIRST
+        // We need to do this check carefully as isCrashProcess can potentially
+        // have issues during early initialization
+        inCrashProcess = try {
+            CrashHandler.isCrashProcess(this)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to determine crash process status, assuming main process", e)
+            false
+        }
+
+        if (inCrashProcess) {
             Log.d(TAG, "Running in crash process, skipping Hilt injection and initialization")
+            // CRITICAL: For the crash process, we skip Hilt initialization entirely.
+            // CrashActivity is designed to work without any Hilt/DI dependencies.
+            // We don't call super.onCreate() because:
+            // 1. @HiltAndroidApp generates code in super.onCreate() that initializes Hilt
+            // 2. The crash might have been caused by Hilt/DI - re-initializing would cause infinite loops
+            // 3. CrashActivity only needs basic Android framework, not our DI graph
+            //
+            // Note: The base Application.onCreate() does minimal work (just sets mLoadedApk)
+            // and Hilt's Hilt_ProdyApplication handles the Hilt setup we want to skip.
+            // On modern Android, not calling super.onCreate() in a secondary process is safe.
             return
         }
 
@@ -63,7 +116,7 @@ class ProdyApplication : Application(), Configuration.Provider {
             super.onCreate()
         } catch (e: Throwable) {
             Log.e(TAG, "CRITICAL ERROR IN APPLICATION ONCREATE / HILT INIT", e)
-            
+
             // Invoke uncaught exception handler directly to ensure we show the crash screen
             val handler = Thread.getDefaultUncaughtExceptionHandler()
             if (handler != null) {
