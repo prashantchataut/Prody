@@ -142,12 +142,13 @@ class CrashHandler private constructor(
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
             addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
+            // Truncate data to avoid TransactionTooLargeException
             putExtra(EXTRA_EXCEPTION_TYPE, crashInfo.exceptionType)
-            putExtra(EXTRA_EXCEPTION_MESSAGE, crashInfo.exceptionMessage)
-            putExtra(EXTRA_STACK_TRACE, crashInfo.fullStackTrace)
+            putExtra(EXTRA_EXCEPTION_MESSAGE, crashInfo.exceptionMessage.take(1000))
+            putExtra(EXTRA_STACK_TRACE, crashInfo.fullStackTrace.take(100_000)) // Max 100KB
             putExtra(EXTRA_DEVICE_INFO, crashInfo.deviceInfo)
             putExtra(EXTRA_TIMESTAMP, crashInfo.timestamp)
-            putExtra(EXTRA_CRASH_INFO, crashInfo.getFullReport())
+            putExtra(EXTRA_CRASH_INFO, crashInfo.getFullReport().take(200_000)) // Max 200KB
         }
         applicationContext.startActivity(intent)
     }

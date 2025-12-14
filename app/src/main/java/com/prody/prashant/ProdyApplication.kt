@@ -24,15 +24,31 @@ class ProdyApplication : Application(), Configuration.Provider {
             .build()
 
     override fun onCreate() {
-        // Initialize crash handler FIRST to catch any startup errors, including Hilt injection
+        super.onCreate()
+
+        // Check if we are running in the crash process
+        if (isCrashProcess()) {
+            return
+        }
+
+        // Initialize crash handler for debug builds only
         if (BuildConfig.DEBUG) {
             initializeCrashHandler()
         }
 
-        super.onCreate()
-
         // Initialize other components safely
         initializeApp()
+    }
+
+    private fun isCrashProcess(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            getProcessName().endsWith(":crash")
+        } else {
+            // Fallback for older versions
+            val pid = android.os.Process.myPid()
+            val manager = getSystemService(android.app.ActivityManager::class.java)
+            manager?.runningAppProcesses?.firstOrNull { it.pid == pid }?.processName?.endsWith(":crash") == true
+        }
     }
 
     private fun initializeCrashHandler() {
