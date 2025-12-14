@@ -9,7 +9,6 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -35,78 +34,137 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.prody.prashant.MainActivity
 
 /**
  * Crash Activity - Beautiful Debug Screen
- * 
+ *
  * A modern, minimalist crash reporting screen that displays error details
  * with options to copy the report or restart the app.
- * 
- * Design: Clean, professional aesthetic matching Prody's design language
+ *
+ * CRITICAL DESIGN DECISIONS:
+ * - Runs in separate process (:crash) for complete isolation from main app
+ * - NO Hilt/DI dependencies - completely standalone
+ * - Uses its own theme to avoid dependency on main app theme
+ * - Graceful fallback handling for all operations
  */
 class CrashActivity : ComponentActivity() {
 
+    private var exceptionType: String = "Unknown"
+    private var exceptionMessage: String = "No message"
+    private var stackTrace: String = "No stack trace available"
+    private var deviceInfo: String = ""
+    private var timestamp: String = ""
+    private var fullReport: String = ""
+    private var threadName: String = "Unknown"
+    private var rootCauseType: String = ""
+    private var rootCauseMsg: String = ""
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
 
-        val exceptionType = intent.getStringExtra(CrashHandler.EXTRA_EXCEPTION_TYPE) ?: "Unknown"
-        val exceptionMessage = intent.getStringExtra(CrashHandler.EXTRA_EXCEPTION_MESSAGE) ?: "No message"
-        val stackTrace = intent.getStringExtra(CrashHandler.EXTRA_STACK_TRACE) ?: "No stack trace"
-        val deviceInfo = intent.getStringExtra(CrashHandler.EXTRA_DEVICE_INFO) ?: ""
-        val timestamp = intent.getStringExtra(CrashHandler.EXTRA_TIMESTAMP) ?: ""
-        val fullReport = intent.getStringExtra(CrashHandler.EXTRA_CRASH_INFO) ?: ""
+        // Extract crash information from intent
+        extractCrashInfo()
 
-        setContent {
-            CrashTheme {
-                CrashScreen(
-                    exceptionType = exceptionType,
-                    exceptionMessage = exceptionMessage,
-                    stackTrace = stackTrace,
-                    deviceInfo = deviceInfo,
-                    timestamp = timestamp,
-                    fullReport = fullReport,
-                    onCopyClick = { copyToClipboard(fullReport) },
-                    onRestartClick = { restartApp() }
-                )
+        try {
+            enableEdgeToEdge()
+            setContent {
+                CrashTheme {
+                    CrashScreen(
+                        exceptionType = exceptionType,
+                        exceptionMessage = exceptionMessage,
+                        stackTrace = stackTrace,
+                        deviceInfo = deviceInfo,
+                        timestamp = timestamp,
+                        fullReport = fullReport,
+                        threadName = threadName,
+                        rootCauseType = rootCauseType,
+                        rootCauseMsg = rootCauseMsg,
+                        onCopyClick = { copyToClipboard() },
+                        onRestartClick = { restartApp() }
+                    )
+                }
+            }
+        } catch (e: Exception) {
+            // If Compose fails, the activity will at least show something
+            android.util.Log.e("CrashActivity", "Failed to set Compose content", e)
+            // Try to at least show a toast with the error
+            try {
+                Toast.makeText(this, "Crash: $exceptionType - $exceptionMessage", Toast.LENGTH_LONG).show()
+            } catch (ignore: Exception) {
+                // Last resort - just log
             }
         }
     }
 
-    private fun copyToClipboard(text: String) {
+    private fun extractCrashInfo() {
         try {
-            // Safely obtain ClipboardManager - can be null on some devices
+            exceptionType = intent.getStringExtra(CrashHandler.EXTRA_EXCEPTION_TYPE) ?: "Unknown"
+            exceptionMessage = intent.getStringExtra(CrashHandler.EXTRA_EXCEPTION_MESSAGE) ?: "No message"
+            stackTrace = intent.getStringExtra(CrashHandler.EXTRA_STACK_TRACE) ?: "No stack trace available"
+            deviceInfo = intent.getStringExtra(CrashHandler.EXTRA_DEVICE_INFO) ?: ""
+            timestamp = intent.getStringExtra(CrashHandler.EXTRA_TIMESTAMP) ?: ""
+            fullReport = intent.getStringExtra(CrashHandler.EXTRA_FULL_REPORT) ?: buildFallbackReport()
+            threadName = intent.getStringExtra(CrashHandler.EXTRA_THREAD_NAME) ?: "Unknown"
+            rootCauseType = intent.getStringExtra(CrashHandler.EXTRA_ROOT_CAUSE_TYPE) ?: ""
+            rootCauseMsg = intent.getStringExtra(CrashHandler.EXTRA_ROOT_CAUSE_MSG) ?: ""
+        } catch (e: Exception) {
+            android.util.Log.e("CrashActivity", "Error extracting crash info", e)
+        }
+    }
+
+    private fun buildFallbackReport(): String {
+        return buildString {
+            appendLine("PRODY CRASH REPORT")
+            appendLine("==================")
+            appendLine("Exception: $exceptionType")
+            appendLine("Message: $exceptionMessage")
+            appendLine()
+            appendLine("Stack Trace:")
+            appendLine(stackTrace)
+            appendLine()
+            appendLine(deviceInfo)
+        }
+    }
+
+    private fun copyToClipboard() {
+        try {
             val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
             if (clipboard == null) {
                 Toast.makeText(this, "Clipboard not available", Toast.LENGTH_SHORT).show()
                 return
             }
-            val clip = ClipData.newPlainText("Prody Crash Report", text)
+            val clip = ClipData.newPlainText("Prody Crash Report", fullReport)
             clipboard.setPrimaryClip(clip)
             Toast.makeText(this, "Crash report copied to clipboard", Toast.LENGTH_SHORT).show()
         } catch (e: Exception) {
             android.util.Log.e("CrashActivity", "Failed to copy to clipboard", e)
-            Toast.makeText(this, "Failed to copy to clipboard", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Failed to copy: ${e.message}", Toast.LENGTH_SHORT).show()
         }
     }
 
     private fun restartApp() {
-        val intent = Intent(this, MainActivity::class.java).apply {
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+        try {
+            val intent = Intent(this, MainActivity::class.java).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            }
+            startActivity(intent)
+            finish()
+
+            // Kill the crash process
+            android.os.Process.killProcess(android.os.Process.myPid())
+        } catch (e: Exception) {
+            android.util.Log.e("CrashActivity", "Failed to restart app", e)
+            Toast.makeText(this, "Failed to restart: ${e.message}", Toast.LENGTH_SHORT).show()
         }
-        startActivity(intent)
-        finish()
-        Runtime.getRuntime().exit(0)
     }
 }
 
 // =============================================================================
-// CRASH THEME
+// CRASH THEME - Completely self-contained, no external dependencies
 // =============================================================================
 
 @Composable
@@ -146,11 +204,15 @@ private fun CrashScreen(
     deviceInfo: String,
     timestamp: String,
     fullReport: String,
+    threadName: String,
+    rootCauseType: String,
+    rootCauseMsg: String,
     onCopyClick: () -> Unit,
     onRestartClick: () -> Unit
 ) {
     var showStackTrace by remember { mutableStateOf(false) }
     var showDeviceInfo by remember { mutableStateOf(false) }
+    var showRootCause by remember { mutableStateOf(false) }
 
     // Pulse animation for the error icon
     val infiniteTransition = rememberInfiniteTransition(label = "pulse")
@@ -190,11 +252,11 @@ private fun CrashScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(24.dp)
+                .padding(20.dp)
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             // Animated error icon with glow
             Box(contentAlignment = Alignment.Center) {
@@ -214,7 +276,7 @@ private fun CrashScreen(
                             shape = CircleShape
                         )
                 )
-                
+
                 // Icon container
                 Box(
                     modifier = Modifier
@@ -244,28 +306,28 @@ private fun CrashScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(28.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             // Title
             Text(
-                text = "Something went wrong",
+                text = "App Crashed",
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground,
                 textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
-            // Timestamp
+            // Timestamp & Thread
             Text(
-                text = timestamp,
+                text = "$timestamp • Thread: $threadName",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(28.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             // Exception Type Card
             ErrorInfoCard(
@@ -274,14 +336,28 @@ private fun CrashScreen(
                 color = Color(0xFFE65C5C)
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
             // Exception Message Card
             ErrorMessageCard(
                 message = exceptionMessage
             )
 
-            Spacer(modifier = Modifier.height(20.dp))
+            // Root Cause Section (if different from main exception)
+            if (rootCauseType.isNotEmpty() && rootCauseType != exceptionType) {
+                Spacer(modifier = Modifier.height(14.dp))
+
+                ExpandableSection(
+                    title = "Root Cause: $rootCauseType",
+                    icon = Icons.Filled.Warning,
+                    isExpanded = showRootCause,
+                    onToggle = { showRootCause = !showRootCause }
+                ) {
+                    CodeBlock(text = rootCauseMsg)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
 
             // Stack Trace Expandable Section
             ExpandableSection(
@@ -293,7 +369,7 @@ private fun CrashScreen(
                 CodeBlock(text = stackTrace)
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
             // Device Info Expandable Section
             ExpandableSection(
@@ -305,7 +381,7 @@ private fun CrashScreen(
                 CodeBlock(text = deviceInfo)
             }
 
-            Spacer(modifier = Modifier.height(36.dp))
+            Spacer(modifier = Modifier.height(28.dp))
 
             // Action Buttons
             Row(
@@ -331,7 +407,7 @@ private fun CrashScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.height(32.dp))
         }
     }
 }
@@ -414,12 +490,6 @@ private fun ExpandableSection(
     onToggle: () -> Unit,
     content: @Composable () -> Unit
 ) {
-    val rotationAngle by animateFloatAsState(
-        targetValue = if (isExpanded) 180f else 0f,
-        animationSpec = tween(200),
-        label = "rotation"
-    )
-
     Column(modifier = Modifier.fillMaxWidth()) {
         Surface(
             modifier = Modifier
@@ -434,7 +504,7 @@ private fun ExpandableSection(
             )
         ) {
             Row(
-                modifier = Modifier.padding(16.dp),
+                modifier = Modifier.padding(14.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
@@ -486,10 +556,10 @@ private fun CodeBlock(text: String) {
             fontFamily = FontFamily.Monospace,
             color = Color(0xFFB8D4C8),
             modifier = Modifier
-                .padding(16.dp)
+                .padding(14.dp)
                 .fillMaxWidth(),
-            fontSize = 11.sp,
-            lineHeight = 16.sp
+            fontSize = 10.sp,
+            lineHeight = 14.sp
         )
     }
 }
@@ -515,8 +585,8 @@ private fun ActionButton(
 
     Button(
         onClick = onClick,
-        modifier = modifier.height(56.dp),
-        shape = RoundedCornerShape(16.dp),
+        modifier = modifier.height(52.dp),
+        shape = RoundedCornerShape(14.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = backgroundColor,
             contentColor = contentColor
@@ -528,12 +598,12 @@ private fun ActionButton(
         Icon(
             imageVector = icon,
             contentDescription = null,
-            modifier = Modifier.size(20.dp)
+            modifier = Modifier.size(18.dp)
         )
-        Spacer(modifier = Modifier.width(10.dp))
+        Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = text,
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.titleSmall,
             fontWeight = FontWeight.SemiBold
         )
     }

@@ -36,14 +36,17 @@
             </intent-filter>
         </activity>
 
-        <!-- Crash Debug Activity -->
+        <!-- Crash Debug Activity - Runs in separate process for crash isolation -->
         <activity
             android:name=".debug.CrashActivity"
             android:process=":crash"
             android:exported="false"
-            android:theme="@style/Theme.Prody"
+            android:theme="@android:style/Theme.Material.NoActionBar"
             android:excludeFromRecents="true"
-            android:taskAffinity="" />
+            android:taskAffinity=""
+            android:launchMode="singleInstance"
+            android:noHistory="true"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize" />
 
         <receiver
             android:name=".notification.NotificationReceiver"
