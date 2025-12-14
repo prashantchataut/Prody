@@ -20,25 +20,3 @@ data class LeaderboardEntryEntity(
     val boostsReceived: Int = 0,
     val congratsReceived: Int = 0
 )
-
-@Entity(tableName = "peer_interactions")
-data class PeerInteractionEntity(
-    @PrimaryKey(autoGenerate = true)
-    val id: Long = 0,
-    val peerId: String,
-    val interactionType: String, // boost, congrats
-    val timestamp: Long = System.currentTimeMillis(),
-    val message: String? = null
-)
-
-@Entity(tableName = "motivational_messages")
-data class MotivationalMessageEntity(
-    @PrimaryKey(autoGenerate = true)
-    val id: Long = 0,
-    val senderId: String,
-    val senderName: String,
-    val message: String,
-    val messageType: String, // boost, congrats, encouragement
-    val isRead: Boolean = false,
-    val receivedAt: Long = System.currentTimeMillis()
-)
