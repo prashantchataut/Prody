@@ -2,7 +2,7 @@
 <resources>
 
     <!-- Theme for API 27+ (Android 9.0+) with enhanced Material Design support -->
-    <style name="Theme.Prody" parent="android:Theme.Material.Light.NoActionBar">
+    <style name="Theme.Prody" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar">true</item>
