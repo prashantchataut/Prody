@@ -39,6 +39,7 @@
         <!-- Crash Debug Activity -->
         <activity
             android:name=".debug.CrashActivity"
+            android:process=":crash"
             android:exported="false"
             android:theme="@style/Theme.Prody"
             android:excludeFromRecents="true"

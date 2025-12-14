@@ -24,12 +24,12 @@ class ProdyApplication : Application(), Configuration.Provider {
             .build()
 
     override fun onCreate() {
-        super.onCreate()
-
-        // Initialize crash handler for debug builds only
+        // Initialize crash handler FIRST to catch any startup errors, including Hilt injection
         if (BuildConfig.DEBUG) {
             initializeCrashHandler()
         }
+
+        super.onCreate()
 
         // Initialize other components safely
         initializeApp()
