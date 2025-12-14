@@ -44,24 +44,32 @@ class NewJournalEntryViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(NewJournalEntryUiState())
     val uiState: StateFlow<NewJournalEntryUiState> = _uiState.asStateFlow()
 
+    companion object {
+        private const val TAG = "NewJournalEntryViewModel"
+    }
+
     init {
         loadAiSettings()
     }
 
     private fun loadAiSettings() {
         viewModelScope.launch {
-            combine(
-                preferencesManager.buddhaAiEnabled,
-                preferencesManager.geminiApiKey
-            ) { enabled, apiKey ->
-                Pair(enabled, apiKey.isNotBlank())
-            }.collect { (enabled, configured) ->
-                _uiState.update {
-                    it.copy(
-                        buddhaAiEnabled = enabled,
-                        geminiConfigured = configured
-                    )
+            try {
+                combine(
+                    preferencesManager.buddhaAiEnabled,
+                    preferencesManager.geminiApiKey
+                ) { enabled, apiKey ->
+                    Pair(enabled, apiKey.isNotBlank())
+                }.collect { (enabled, configured) ->
+                    _uiState.update {
+                        it.copy(
+                            buddhaAiEnabled = enabled,
+                            geminiConfigured = configured
+                        )
+                    }
                 }
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error loading AI settings", e)
             }
         }
     }

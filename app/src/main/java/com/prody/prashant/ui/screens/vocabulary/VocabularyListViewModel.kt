@@ -29,6 +29,10 @@ class VocabularyListViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(VocabularyListUiState())
     val uiState: StateFlow<VocabularyListUiState> = _uiState.asStateFlow()
 
+    companion object {
+        private const val TAG = "VocabularyListViewModel"
+    }
+
     init {
         loadVocabulary()
         loadCounts()
@@ -36,35 +40,44 @@ class VocabularyListViewModel @Inject constructor(
 
     private fun loadVocabulary() {
         viewModelScope.launch {
-            combine(
-                vocabularyDao.getAllVocabulary(),
-                vocabularyDao.getLearnedWords(),
-                vocabularyDao.getFavoriteWords(),
-                _showFavoritesOnly,
-                _currentFilter
-            ) { all, learned, favorites, favOnly, filter ->
-                val baseList = when {
-                    favOnly -> favorites
-                    filter == "learned" -> learned
-                    filter == "new" -> all.filter { !it.isLearned }
-                    else -> all
+            try {
+                combine(
+                    vocabularyDao.getAllVocabulary(),
+                    vocabularyDao.getLearnedWords(),
+                    vocabularyDao.getFavoriteWords(),
+                    _showFavoritesOnly,
+                    _currentFilter
+                ) { all, learned, favorites, favOnly, filter ->
+                    val baseList = when {
+                        favOnly -> favorites
+                        filter == "learned" -> learned
+                        filter == "new" -> all.filter { !it.isLearned }
+                        else -> all
+                    }
+                    baseList
+                }.collect { words ->
+                    _uiState.update { it.copy(words = words, isLoading = false) }
                 }
-                baseList
-            }.collect { words ->
-                _uiState.update { it.copy(words = words, isLoading = false) }
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error loading vocabulary", e)
+                _uiState.update { it.copy(isLoading = false) }
             }
         }
     }
 
     private fun loadCounts() {
         viewModelScope.launch {
-            combine(
-                vocabularyDao.getLearnedCount(),
-                vocabularyDao.getTotalCount()
-            ) { learned, total ->
-                Pair(learned, total)
-            }.collect { (learned, total) ->
-                _uiState.update { it.copy(learnedCount = learned, totalCount = total) }
+            try {
+                combine(
+                    vocabularyDao.getLearnedCount(),
+                    vocabularyDao.getTotalCount()
+                ) { learned, total ->
+                    Pair(learned, total)
+                }.collect { (learned, total) ->
+                    _uiState.update { it.copy(learnedCount = learned, totalCount = total) }
+                }
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error loading vocabulary counts", e)
             }
         }
     }
@@ -81,9 +94,13 @@ class VocabularyListViewModel @Inject constructor(
 
     fun toggleFavorite(wordId: Long) {
         viewModelScope.launch {
-            val word = vocabularyDao.getWordById(wordId)
-            word?.let {
-                vocabularyDao.updateFavoriteStatus(wordId, !it.isFavorite)
+            try {
+                val word = vocabularyDao.getWordById(wordId)
+                word?.let {
+                    vocabularyDao.updateFavoriteStatus(wordId, !it.isFavorite)
+                }
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error toggling favorite for word: $wordId", e)
             }
         }
     }
