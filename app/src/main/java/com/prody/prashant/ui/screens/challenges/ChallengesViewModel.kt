@@ -122,60 +122,69 @@ class ChallengesViewModel @Inject constructor(
     }
 
     private suspend fun initializeDefaultChallenges() {
-        // Check if challenges already exist
-        val existingChallenges = challengeDao.getActiveChallenges().first()
-        if (existingChallenges.isEmpty()) {
-            // Insert default challenges
-            val allChallenges = DefaultChallenges.monthlyChallenges +
-                    DefaultChallenges.weeklyChallenges +
-                    DefaultChallenges.specialChallenges
+        try {
+            // Check if challenges already exist
+            val existingChallenges = challengeDao.getActiveChallenges().firstOrNull() ?: emptyList()
+            if (existingChallenges.isEmpty()) {
+                // Insert default challenges
+                val allChallenges = DefaultChallenges.monthlyChallenges +
+                        DefaultChallenges.weeklyChallenges +
+                        DefaultChallenges.specialChallenges
 
-            allChallenges.forEach { challenge ->
-                val entity = mapChallengeToEntity(challenge)
-                challengeDao.insertChallenge(entity)
+                allChallenges.forEach { challenge ->
+                    val entity = mapChallengeToEntity(challenge)
+                    challengeDao.insertChallenge(entity)
 
-                // Insert milestones
-                challenge.milestones.forEach { milestone ->
-                    val milestoneEntity = ChallengeMilestoneEntity(
-                        id = milestone.id,
-                        challengeId = milestone.challengeId,
-                        title = milestone.title,
-                        description = milestone.description,
-                        targetProgress = milestone.targetProgress,
-                        isPercentage = milestone.isPercentage,
-                        isReached = milestone.isReached,
-                        reachedAt = milestone.reachedAt,
-                        rewardPoints = milestone.rewardPoints,
-                        celebrationMessage = milestone.celebrationMessage,
-                        orderIndex = challenge.milestones.indexOf(milestone)
-                    )
-                    challengeDao.insertMilestone(milestoneEntity)
+                    // Insert milestones
+                    challenge.milestones.forEach { milestone ->
+                        val milestoneEntity = ChallengeMilestoneEntity(
+                            id = milestone.id,
+                            challengeId = milestone.challengeId,
+                            title = milestone.title,
+                            description = milestone.description,
+                            targetProgress = milestone.targetProgress,
+                            isPercentage = milestone.isPercentage,
+                            isReached = milestone.isReached,
+                            reachedAt = milestone.reachedAt,
+                            rewardPoints = milestone.rewardPoints,
+                            celebrationMessage = milestone.celebrationMessage,
+                            orderIndex = challenge.milestones.indexOf(milestone)
+                        )
+                        challengeDao.insertMilestone(milestoneEntity)
+                    }
                 }
-            }
 
-            // Generate simulated community data
-            generateSimulatedCommunityData()
+                // Generate simulated community data
+                generateSimulatedCommunityData()
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("ChallengesViewModel", "Failed to initialize default challenges", e)
         }
     }
 
     private suspend fun generateSimulatedCommunityData() {
-        val challenges = challengeDao.getActiveChallenges().first()
+        try {
+            val challenges = challengeDao.getActiveChallenges().firstOrNull() ?: emptyList()
+            if (challenges.isEmpty()) return
 
-        challenges.forEach { challenge ->
-            // Simulate community progress
-            val simulatedParticipants = Random.nextInt(500, 2000)
-            val progressPercentage = Random.nextFloat() * 0.6f // 0-60% progress
-            val simulatedProgress = (challenge.communityTarget * progressPercentage).toInt()
+            challenges.forEach { challenge ->
+                // Simulate community progress
+                val simulatedParticipants = Random.nextInt(500, 2000)
+                val progressPercentage = Random.nextFloat() * 0.6f // 0-60% progress
+                val simulatedProgress = (challenge.communityTarget * progressPercentage).toInt()
 
-            challengeDao.updateCommunityProgress(
-                challengeId = challenge.id,
-                progress = simulatedProgress,
-                participants = simulatedParticipants
-            )
+                challengeDao.updateCommunityProgress(
+                    challengeId = challenge.id,
+                    progress = simulatedProgress,
+                    participants = simulatedParticipants
+                )
 
-            // Generate simulated leaderboard
-            val leaderboardEntries = generateSimulatedLeaderboard(challenge.id, challenge.targetCount)
-            challengeDao.insertLeaderboardEntries(leaderboardEntries)
+                // Generate simulated leaderboard
+                val leaderboardEntries = generateSimulatedLeaderboard(challenge.id, challenge.targetCount)
+                challengeDao.insertLeaderboardEntries(leaderboardEntries)
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("ChallengesViewModel", "Failed to generate simulated community data", e)
         }
     }
 
@@ -312,31 +321,37 @@ class ChallengesViewModel @Inject constructor(
     }
 
     private suspend fun checkMilestones(challengeId: String, currentProgress: Int, target: Int) {
-        val milestones = challengeDao.getMilestonesForChallenge(challengeId).first()
-        val progressPercentage = (currentProgress.toFloat() / target * 100).toInt()
+        try {
+            val milestones = challengeDao.getMilestonesForChallenge(challengeId).firstOrNull() ?: emptyList()
+            if (milestones.isEmpty() || target <= 0) return
 
-        milestones.forEach { milestone ->
-            if (!milestone.isReached) {
-                val threshold = if (milestone.isPercentage) {
-                    milestone.targetProgress
-                } else {
-                    (milestone.targetProgress.toFloat() / target * 100).toInt()
-                }
+            val progressPercentage = (currentProgress.toFloat() / target * 100).toInt()
 
-                if (progressPercentage >= threshold) {
-                    challengeDao.markMilestoneReached(milestone.id)
+            milestones.forEach { milestone ->
+                if (!milestone.isReached) {
+                    val threshold = if (milestone.isPercentage) {
+                        milestone.targetProgress
+                    } else {
+                        (milestone.targetProgress.toFloat() / target * 100).toInt()
+                    }
 
-                    // Award milestone points
-                    userDao.addPoints(milestone.rewardPoints)
+                    if (progressPercentage >= threshold) {
+                        challengeDao.markMilestoneReached(milestone.id)
 
-                    _uiState.update {
-                        it.copy(
-                            showCelebration = true,
-                            celebrationMessage = "${milestone.celebrationMessage}\n+${milestone.rewardPoints} points"
-                        )
+                        // Award milestone points
+                        userDao.addPoints(milestone.rewardPoints)
+
+                        _uiState.update {
+                            it.copy(
+                                showCelebration = true,
+                                celebrationMessage = "${milestone.celebrationMessage}\n+${milestone.rewardPoints} points"
+                            )
+                        }
                     }
                 }
             }
+        } catch (e: Exception) {
+            android.util.Log.e("ChallengesViewModel", "Failed to check milestones for challenge: $challengeId", e)
         }
     }
 

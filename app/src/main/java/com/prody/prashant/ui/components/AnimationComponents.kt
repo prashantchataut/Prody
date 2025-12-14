@@ -175,14 +175,20 @@ fun ConfettiAnimation(
 ) {
     if (!isPlaying) return
 
-    val particles = remember {
+    // Ensure we have at least one color to prevent crash on empty list
+    // This provides defensive programming against callers passing empty lists
+    val safeColors = colors.ifEmpty {
+        listOf(MoodHappy, MoodExcited, MoodMotivated, MoodGrateful, GoldTier, ProdyPrimary, ProdyTertiary)
+    }
+
+    val particles = remember(safeColors) {
         List(particleCount) {
             ConfettiParticle(
                 x = Random.nextFloat(),
                 startY = -Random.nextFloat() * 0.2f,
                 rotation = Random.nextFloat() * 360f,
                 size = Random.nextFloat() * 8f + 4f,
-                color = colors.random(),
+                color = safeColors.random(),
                 speed = Random.nextFloat() * 0.3f + 0.5f,
                 rotationSpeed = Random.nextFloat() * 5f - 2.5f
             )

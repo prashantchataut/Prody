@@ -154,18 +154,33 @@ object NotificationMessages {
         Triple("Fun fact:", "People with larger vocabularies are perceived as more intelligent. Just saying.", "Expand vocab")
     )
 
+    // Default fallback notification for when a category is empty
+    private val DEFAULT_NOTIFICATION = Triple(
+        "Prody Notification",
+        "You have a new notification from Prody.",
+        "View"
+    )
+
     /**
      * Gets a random notification from a category with placeholder replacement.
+     * Returns a default notification if the category is empty.
+     *
+     * @param category The list of notification messages to choose from
+     * @return A random Triple(title, body, action) from the category, or default if empty
      */
     fun getRandomNotification(category: List<Triple<String, String, String>>): Triple<String, String, String> {
-        return category.random()
+        return category.randomOrNull() ?: DEFAULT_NOTIFICATION
     }
 
     /**
      * Gets a streak notification with the streak count filled in.
+     *
+     * @param streakDays The current streak count to display
+     * @return A formatted notification Triple(title, body, action)
      */
     fun getStreakNotification(streakDays: Int): Triple<String, String, String> {
-        val notification = streakMotivation.random()
+        val notification = streakMotivation.randomOrNull()
+            ?: Triple("Streak alert!", "Your %d-day streak is on fire.", "Keep it going")
         return Triple(
             notification.first,
             notification.second.replace("%d", streakDays.toString()),
@@ -175,9 +190,13 @@ object NotificationMessages {
 
     /**
      * Gets an achievement notification with the achievement name filled in.
+     *
+     * @param achievementName The name of the unlocked achievement
+     * @return A formatted notification Triple(title, body, action)
      */
     fun getAchievementNotification(achievementName: String): Triple<String, String, String> {
-        val notification = achievementUnlocked.random()
+        val notification = achievementUnlocked.randomOrNull()
+            ?: Triple("Achievement unlocked!", "You just earned '%s'.", "View achievement")
         return Triple(
             notification.first,
             notification.second.replace("%s", achievementName),
@@ -187,9 +206,19 @@ object NotificationMessages {
 
     /**
      * Gets a leaderboard notification with rank filled in.
+     *
+     * @param rank The user's current leaderboard position
+     * @return A formatted notification Triple(title, body, action)
      */
     fun getLeaderboardNotification(rank: Int): Triple<String, String, String> {
-        val notification = leaderboardUpdates[Random.nextInt(3)] // First 3 have rank
+        // Get first 3 notifications (which have rank placeholders)
+        // Use safe access with coerceIn to prevent IndexOutOfBoundsException
+        val safeIndex = (leaderboardUpdates.size.coerceAtMost(3) - 1).coerceAtLeast(0)
+        val notification = if (leaderboardUpdates.isNotEmpty()) {
+            leaderboardUpdates[Random.nextInt(safeIndex + 1)]
+        } else {
+            Triple("You're climbing!", "You've moved up to #%d on the leaderboard.", "See standings")
+        }
         return Triple(
             notification.first,
             notification.second.replace("%d", rank.toString()),
