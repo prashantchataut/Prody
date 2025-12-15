@@ -124,6 +124,190 @@ fun FlashcardStack(
 }
 
 /**
+ * A swipeable flashcard stack that tracks when the user flips the card to see the answer.
+ * This enables showing more detailed review options after the user has seen the definition.
+ */
+@Composable
+fun FlashcardStackWithFlipTracking(
+    cards: List<VocabularyEntity>,
+    currentIndex: Int,
+    onSwipeLeft: (VocabularyEntity) -> Unit,
+    onSwipeRight: (VocabularyEntity) -> Unit,
+    onSwipeUp: (VocabularyEntity) -> Unit,
+    onSpeak: (String) -> Unit,
+    onFlip: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    if (cards.isEmpty() || currentIndex >= cards.size) {
+        EmptyFlashcardState(modifier = modifier)
+        return
+    }
+
+    val currentCard = cards[currentIndex]
+
+    Box(
+        modifier = modifier.fillMaxWidth(),
+        contentAlignment = Alignment.Center
+    ) {
+        // Show next card behind (preview)
+        if (currentIndex + 1 < cards.size) {
+            val nextCard = cards[currentIndex + 1]
+            Flashcard(
+                word = nextCard,
+                isFlipped = false,
+                onFlip = {},
+                onSpeak = {},
+                swipeState = SwipeState(),
+                modifier = Modifier
+                    .scale(0.9f)
+                    .graphicsLayer { alpha = 0.5f }
+            )
+        }
+
+        // Show current card on top with flip tracking
+        SwipeableFlashcardWithFlipTracking(
+            word = currentCard,
+            onSwipeLeft = { onSwipeLeft(currentCard) },
+            onSwipeRight = { onSwipeRight(currentCard) },
+            onSwipeUp = { onSwipeUp(currentCard) },
+            onSpeak = { onSpeak(currentCard.word) },
+            onFlip = onFlip
+        )
+    }
+}
+
+/**
+ * Swipeable flashcard with gesture detection and flip tracking callback.
+ */
+@Composable
+fun SwipeableFlashcardWithFlipTracking(
+    word: VocabularyEntity,
+    onSwipeLeft: () -> Unit,
+    onSwipeRight: () -> Unit,
+    onSwipeUp: () -> Unit,
+    onSpeak: () -> Unit,
+    onFlip: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var isFlipped by remember { mutableStateOf(false) }
+    var offsetX by remember { mutableFloatStateOf(0f) }
+    var offsetY by remember { mutableFloatStateOf(0f) }
+    var swipeState by remember { mutableStateOf(SwipeState()) }
+
+    val scope = rememberCoroutineScope()
+    val animatedOffsetX = remember { Animatable(0f) }
+    val animatedOffsetY = remember { Animatable(0f) }
+
+    val swipeThreshold = 150f
+
+    LaunchedEffect(offsetX, offsetY) {
+        val direction = when {
+            abs(offsetY) > abs(offsetX) && offsetY < -swipeThreshold * 0.3f -> SwipeDirection.UP
+            offsetX < -swipeThreshold * 0.3f -> SwipeDirection.LEFT
+            offsetX > swipeThreshold * 0.3f -> SwipeDirection.RIGHT
+            else -> SwipeDirection.NONE
+        }
+        val progress = when (direction) {
+            SwipeDirection.UP -> (abs(offsetY) / swipeThreshold).coerceIn(0f, 1f)
+            SwipeDirection.LEFT, SwipeDirection.RIGHT -> (abs(offsetX) / swipeThreshold).coerceIn(0f, 1f)
+            SwipeDirection.NONE -> 0f
+        }
+        swipeState = SwipeState(direction, progress)
+    }
+
+    Flashcard(
+        word = word,
+        isFlipped = isFlipped,
+        onFlip = {
+            isFlipped = !isFlipped
+            if (!isFlipped) {
+                // Card was just flipped to back (showing answer)
+            } else {
+                // Card is now showing front
+            }
+            // Always notify parent when card is flipped to show answer (back)
+            if (isFlipped) {
+                // isFlipped = true means showing back (answer)
+            }
+            // Actually, we flip on tap, so when isFlipped becomes true, user sees the answer
+            // Notify on first flip to back
+            onFlip()
+        },
+        onSpeak = onSpeak,
+        swipeState = swipeState,
+        modifier = modifier
+            .offset {
+                IntOffset(
+                    animatedOffsetX.value.roundToInt() + offsetX.roundToInt(),
+                    animatedOffsetY.value.roundToInt() + offsetY.roundToInt()
+                )
+            }
+            .rotate(offsetX / 20f)
+            .pointerInput(Unit) {
+                detectDragGestures(
+                    onDragEnd = {
+                        when {
+                            // Swipe up (skip)
+                            offsetY < -swipeThreshold -> {
+                                scope.launch {
+                                    animatedOffsetY.animateTo(
+                                        -1000f,
+                                        spring(stiffness = Spring.StiffnessLow)
+                                    )
+                                    onSwipeUp()
+                                    animatedOffsetY.snapTo(0f)
+                                    animatedOffsetX.snapTo(0f)
+                                    isFlipped = false
+                                }
+                            }
+                            // Swipe left (don't know)
+                            offsetX < -swipeThreshold -> {
+                                scope.launch {
+                                    animatedOffsetX.animateTo(
+                                        -1000f,
+                                        spring(stiffness = Spring.StiffnessLow)
+                                    )
+                                    onSwipeLeft()
+                                    animatedOffsetX.snapTo(0f)
+                                    animatedOffsetY.snapTo(0f)
+                                    isFlipped = false
+                                }
+                            }
+                            // Swipe right (know)
+                            offsetX > swipeThreshold -> {
+                                scope.launch {
+                                    animatedOffsetX.animateTo(
+                                        1000f,
+                                        spring(stiffness = Spring.StiffnessLow)
+                                    )
+                                    onSwipeRight()
+                                    animatedOffsetX.snapTo(0f)
+                                    animatedOffsetY.snapTo(0f)
+                                    isFlipped = false
+                                }
+                            }
+                            // Return to center
+                            else -> {
+                                scope.launch {
+                                    animatedOffsetX.animateTo(0f, spring())
+                                    animatedOffsetY.animateTo(0f, spring())
+                                }
+                            }
+                        }
+                        offsetX = 0f
+                        offsetY = 0f
+                    },
+                    onDrag = { change, dragAmount ->
+                        change.consume()
+                        offsetX += dragAmount.x
+                        offsetY += dragAmount.y
+                    }
+                )
+            }
+    )
+}
+
+/**
  * A single flashcard with flip animation.
  */
 @Composable
@@ -482,66 +666,185 @@ fun SwipeableFlashcard(
 
 /**
  * Control buttons for flashcard actions.
+ *
+ * When showDetailedOptions is true (card is flipped), shows 4-tier response options:
+ * - Again (Don't Know): Failed to recall, short interval
+ * - Hard: Recalled with difficulty
+ * - Good: Recalled correctly
+ * - Easy (Perfect): Recalled effortlessly, longer interval
+ *
+ * When showDetailedOptions is false, shows simple 3-button controls.
  */
 @Composable
 fun FlashcardControls(
     onDontKnow: () -> Unit,
     onSkip: () -> Unit,
     onKnow: () -> Unit,
+    onHard: (() -> Unit)? = null,
+    onPerfect: (() -> Unit)? = null,
+    showDetailedOptions: Boolean = false,
     modifier: Modifier = Modifier
 ) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceEvenly,
-        verticalAlignment = Alignment.CenterVertically
+    if (showDetailedOptions && onHard != null && onPerfect != null) {
+        // 4-tier Anki-style response buttons for better spaced repetition
+        Column(
+            modifier = modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Again (Don't Know) - Red
+                ResponseButton(
+                    label = "Again",
+                    sublabel = "<1m",
+                    onClick = onDontKnow,
+                    containerColor = Color(0xFFFFCDD2),
+                    contentColor = Color(0xFFD32F2F),
+                    size = 56
+                )
+
+                // Hard - Orange
+                ResponseButton(
+                    label = "Hard",
+                    sublabel = "<10m",
+                    onClick = onHard,
+                    containerColor = Color(0xFFFFE0B2),
+                    contentColor = Color(0xFFE65100),
+                    size = 56
+                )
+
+                // Good (Know) - Light Green
+                ResponseButton(
+                    label = "Good",
+                    sublabel = "~1d",
+                    onClick = onKnow,
+                    containerColor = Color(0xFFC8E6C9),
+                    contentColor = Color(0xFF388E3C),
+                    size = 56
+                )
+
+                // Easy (Perfect) - Blue
+                ResponseButton(
+                    label = "Easy",
+                    sublabel = "~4d",
+                    onClick = onPerfect,
+                    containerColor = Color(0xFFBBDEFB),
+                    contentColor = Color(0xFF1565C0),
+                    size = 56
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Skip option still available
+            Text(
+                text = "Swipe up to skip",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+            )
+        }
+    } else {
+        // Simple 3-button controls (front of card)
+        Row(
+            modifier = modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Don't Know button
+            FilledIconButton(
+                onClick = onDontKnow,
+                modifier = Modifier.size(64.dp),
+                colors = IconButtonDefaults.filledIconButtonColors(
+                    containerColor = Color(0xFFFFCDD2),
+                    contentColor = Color(0xFFD32F2F)
+                )
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Close,
+                    contentDescription = "Don't Know",
+                    modifier = Modifier.size(32.dp)
+                )
+            }
+
+            // Skip button
+            FilledIconButton(
+                onClick = onSkip,
+                modifier = Modifier.size(48.dp),
+                colors = IconButtonDefaults.filledIconButtonColors(
+                    containerColor = Color(0xFFFFE0B2),
+                    contentColor = Color(0xFFF57C00)
+                )
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.SkipNext,
+                    contentDescription = "Skip",
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+
+            // Know button
+            FilledIconButton(
+                onClick = onKnow,
+                modifier = Modifier.size(64.dp),
+                colors = IconButtonDefaults.filledIconButtonColors(
+                    containerColor = Color(0xFFC8E6C9),
+                    contentColor = Color(0xFF388E3C)
+                )
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Check,
+                    contentDescription = "Know",
+                    modifier = Modifier.size(32.dp)
+                )
+            }
+        }
+    }
+}
+
+/**
+ * Response button with label and sublabel for interval hint.
+ */
+@Composable
+private fun ResponseButton(
+    label: String,
+    sublabel: String,
+    onClick: () -> Unit,
+    containerColor: Color,
+    contentColor: Color,
+    size: Int
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Don't Know button
         FilledIconButton(
-            onClick = onDontKnow,
-            modifier = Modifier.size(64.dp),
+            onClick = onClick,
+            modifier = Modifier.size(size.dp),
             colors = IconButtonDefaults.filledIconButtonColors(
-                containerColor = Color(0xFFFFCDD2),
-                contentColor = Color(0xFFD32F2F)
+                containerColor = containerColor,
+                contentColor = contentColor
             )
         ) {
-            Icon(
-                imageVector = Icons.Filled.Close,
-                contentDescription = "Don't Know",
-                modifier = Modifier.size(32.dp)
+            Text(
+                text = label.first().toString(),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
             )
         }
-
-        // Skip button
-        FilledIconButton(
-            onClick = onSkip,
-            modifier = Modifier.size(48.dp),
-            colors = IconButtonDefaults.filledIconButtonColors(
-                containerColor = Color(0xFFFFE0B2),
-                contentColor = Color(0xFFF57C00)
-            )
-        ) {
-            Icon(
-                imageVector = Icons.Filled.SkipNext,
-                contentDescription = "Skip",
-                modifier = Modifier.size(24.dp)
-            )
-        }
-
-        // Know button
-        FilledIconButton(
-            onClick = onKnow,
-            modifier = Modifier.size(64.dp),
-            colors = IconButtonDefaults.filledIconButtonColors(
-                containerColor = Color(0xFFC8E6C9),
-                contentColor = Color(0xFF388E3C)
-            )
-        ) {
-            Icon(
-                imageVector = Icons.Filled.Check,
-                contentDescription = "Know",
-                modifier = Modifier.size(32.dp)
-            )
-        }
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = FontWeight.Medium,
+            color = contentColor
+        )
+        Text(
+            text = sublabel,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+        )
     }
 }
 

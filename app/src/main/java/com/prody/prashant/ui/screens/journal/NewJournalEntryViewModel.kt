@@ -28,7 +28,7 @@ data class NewJournalEntryUiState(
     val error: String? = null,
     val selectedTemplate: JournalTemplate? = null,
     val showTemplateSelector: Boolean = false,
-    val availableTemplates: List<JournalTemplate> = JournalTemplate.all(),
+    val availableTemplates: List<JournalTemplate> = JournalTemplate.all,
     val buddhaAiEnabled: Boolean = true,
     val geminiConfigured: Boolean = false
 )
