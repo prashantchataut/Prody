@@ -156,6 +156,26 @@ fun ProfileScreen(
             }
         }
 
+        // Stats storytelling - narrative insights
+        item {
+            AnimatedVisibility(
+                visible = isVisible,
+                enter = fadeIn(tween(600, delayMillis = 250)) + slideInVertically(
+                    initialOffsetY = { it / 2 },
+                    animationSpec = tween(600, delayMillis = 250, easing = EaseOutCubic)
+                )
+            ) {
+                StatsStorytellingCard(
+                    wordsLearned = uiState.wordsLearned,
+                    journalEntries = uiState.journalEntries,
+                    daysOnPrody = uiState.daysOnPrody,
+                    currentStreak = uiState.currentStreak,
+                    longestStreak = uiState.longestStreak,
+                    totalPoints = uiState.totalPoints
+                )
+            }
+        }
+
         // Achievements section header
         item {
             AnimatedVisibility(
@@ -1774,5 +1794,226 @@ private fun getNextTitle(currentTitle: String): String {
         titles[currentIndex + 1]
     } else {
         "Ascended"
+    }
+}
+
+/**
+ * Stats Storytelling Card - Narrative insights about user progress
+ *
+ * Features:
+ * - Dynamic insights based on actual user data
+ * - Celebratory messaging for achievements
+ * - Motivational context for growth
+ * - Animated entry for visual delight
+ */
+@Composable
+private fun StatsStorytellingCard(
+    wordsLearned: Int,
+    journalEntries: Int,
+    daysOnPrody: Int,
+    currentStreak: Int,
+    longestStreak: Int,
+    totalPoints: Int
+) {
+    // Generate dynamic insights based on user data
+    val insights = remember(wordsLearned, journalEntries, daysOnPrody, currentStreak, longestStreak, totalPoints) {
+        buildList {
+            // Words learned insight
+            if (wordsLearned >= 100) {
+                add(StoryInsight(
+                    icon = Icons.Filled.School,
+                    color = MoodMotivated,
+                    headline = "Vocabulary Champion",
+                    message = "You've learned $wordsLearned words! That's like reading a small dictionary."
+                ))
+            } else if (wordsLearned >= 10) {
+                add(StoryInsight(
+                    icon = Icons.Filled.School,
+                    color = MoodMotivated,
+                    headline = "Growing Vocabulary",
+                    message = "${100 - wordsLearned} more words to reach your first hundred!"
+                ))
+            }
+
+            // Streak insight
+            if (currentStreak >= longestStreak && currentStreak > 0) {
+                add(StoryInsight(
+                    icon = Icons.Filled.LocalFireDepartment,
+                    color = StreakFire,
+                    headline = "Personal Best!",
+                    message = "You're on your longest streak ever - $currentStreak days strong!"
+                ))
+            } else if (currentStreak > 0) {
+                add(StoryInsight(
+                    icon = Icons.Filled.LocalFireDepartment,
+                    color = StreakFire,
+                    headline = "Keep the Fire Burning",
+                    message = "${longestStreak - currentStreak} more days to beat your record of $longestStreak!"
+                ))
+            }
+
+            // Journal entries insight
+            if (journalEntries >= 30) {
+                add(StoryInsight(
+                    icon = Icons.Filled.AutoStories,
+                    color = MoodCalm,
+                    headline = "Dedicated Journaler",
+                    message = "$journalEntries entries and counting! Your story is being written."
+                ))
+            } else if (journalEntries >= 7) {
+                add(StoryInsight(
+                    icon = Icons.Filled.AutoStories,
+                    color = MoodCalm,
+                    headline = "Building a Habit",
+                    message = "A week's worth of reflections! Keep documenting your journey."
+                ))
+            }
+
+            // Days active insight
+            if (daysOnPrody >= 30) {
+                val months = daysOnPrody / 30
+                add(StoryInsight(
+                    icon = Icons.Filled.CalendarMonth,
+                    color = MoodGrateful,
+                    headline = "Loyal Companion",
+                    message = if (months >= 2) "Over $months months of growth with Prody!"
+                              else "$daysOnPrody days of consistent self-improvement!"
+                ))
+            } else if (daysOnPrody >= 7) {
+                add(StoryInsight(
+                    icon = Icons.Filled.CalendarMonth,
+                    color = MoodGrateful,
+                    headline = "One Week In",
+                    message = "You've been growing with Prody for $daysOnPrody days!"
+                ))
+            }
+
+            // Points milestone insight
+            when {
+                totalPoints >= 1000 -> add(StoryInsight(
+                    icon = Icons.Filled.Stars,
+                    color = GoldTier,
+                    headline = "Rising Star",
+                    message = "Over ${totalPoints / 1000}K points earned! Your dedication is inspiring."
+                ))
+                totalPoints >= 100 -> add(StoryInsight(
+                    icon = Icons.Filled.Stars,
+                    color = GoldTier,
+                    headline = "Steady Progress",
+                    message = "${1000 - totalPoints} points to your first thousand!"
+                ))
+            }
+        }.take(2) // Show at most 2 insights
+    }
+
+    if (insights.isEmpty()) return
+
+    ProdyCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            // Header
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.TrendingUp,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(20.dp)
+                )
+                Text(
+                    text = "Your Growth Story",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+
+            // Insight cards
+            insights.forEachIndexed { index, insight ->
+                StoryInsightRow(insight = insight, index = index)
+            }
+        }
+    }
+}
+
+private data class StoryInsight(
+    val icon: ImageVector,
+    val color: Color,
+    val headline: String,
+    val message: String
+)
+
+@Composable
+private fun StoryInsightRow(
+    insight: StoryInsight,
+    index: Int
+) {
+    var isVisible by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        delay((index * 150).toLong())
+        isVisible = true
+    }
+
+    val alpha by animateFloatAsState(
+        targetValue = if (isVisible) 1f else 0f,
+        animationSpec = tween(500),
+        label = "insight_alpha"
+    )
+
+    val offsetX by animateFloatAsState(
+        targetValue = if (isVisible) 0f else 20f,
+        animationSpec = tween(500, easing = EaseOutCubic),
+        label = "insight_offset"
+    )
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .alpha(alpha)
+            .offset(x = offsetX.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(insight.color.copy(alpha = 0.08f))
+            .padding(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        // Icon
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .clip(CircleShape)
+                .background(insight.color.copy(alpha = 0.15f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = insight.icon,
+                contentDescription = null,
+                tint = insight.color,
+                modifier = Modifier.size(20.dp)
+            )
+        }
+
+        // Text content
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = insight.headline,
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.SemiBold,
+                color = insight.color
+            )
+            Text(
+                text = insight.message,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                lineHeight = 16.sp
+            )
+        }
     }
 }

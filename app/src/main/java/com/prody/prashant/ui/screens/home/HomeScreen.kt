@@ -6,6 +6,8 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -33,6 +35,8 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -1019,6 +1023,15 @@ private fun EnhancedQuickActionsSection(
     }
 }
 
+/**
+ * Enhanced Quick Action Item - Improved visual hierarchy
+ *
+ * Features:
+ * - Clear size/weight differential between primary and secondary text
+ * - Subtle press animation for tactile feedback
+ * - Color-coded accent for category indication
+ * - Minimum 48dp touch target
+ */
 @Composable
 private fun EnhancedQuickActionItem(
     icon: ImageVector,
@@ -1028,52 +1041,89 @@ private fun EnhancedQuickActionItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val interactionScale by animateFloatAsState(
-        targetValue = 1f,
-        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.95f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessMedium
+        ),
         label = "scale"
+    )
+
+    val elevation by animateDpAsState(
+        targetValue = if (isPressed) 1.dp else 2.dp,
+        animationSpec = tween(100),
+        label = "elevation"
     )
 
     Card(
         onClick = onClick,
-        modifier = modifier.scale(interactionScale),
+        modifier = modifier
+            .scale(scale)
+            .semantics {
+                contentDescription = "$label: $subtitle"
+            },
         colors = CardDefaults.cardColors(
-            containerColor = color.copy(alpha = 0.1f)
+            containerColor = color.copy(alpha = 0.08f)
         ),
-        shape = RoundedCornerShape(16.dp)
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = elevation),
+        interactionSource = interactionSource
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 14.dp),
+                .defaultMinSize(minHeight = 48.dp)
+                .padding(vertical = 14.dp, horizontal = 8.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // Icon with subtle glow effect
             Box(
                 modifier = Modifier
-                    .size(44.dp)
+                    .size(46.dp)
                     .clip(CircleShape)
-                    .background(color.copy(alpha = 0.2f)),
+                    .background(
+                        Brush.radialGradient(
+                            colors = listOf(
+                                color.copy(alpha = 0.25f),
+                                color.copy(alpha = 0.1f)
+                            )
+                        )
+                    ),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = icon,
-                    contentDescription = label,
+                    contentDescription = null,
                     tint = color,
-                    modifier = Modifier.size(22.dp)
+                    modifier = Modifier.size(24.dp)
                 )
             }
-            Spacer(modifier = Modifier.height(8.dp))
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Primary label - larger, bolder
             Text(
                 text = label,
-                style = MaterialTheme.typography.labelMedium,
+                style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1
             )
+
+            Spacer(modifier = Modifier.height(2.dp))
+
+            // Secondary label - smaller, muted opacity
             Text(
                 text = subtitle,
                 style = MaterialTheme.typography.labelSmall,
-                color = color,
-                fontSize = 10.sp
+                color = color.copy(alpha = 0.8f),
+                fontWeight = FontWeight.Normal,
+                fontSize = 10.sp,
+                maxLines = 1
             )
         }
     }
@@ -1551,6 +1601,15 @@ private fun EnhancedBuddhaThoughtCard(
     }
 }
 
+/**
+ * Compact Weekly Progress Strip - Condensed horizontal stat display
+ *
+ * Features:
+ * - Horizontal layout saves vertical space
+ * - Animated counters with smooth entry
+ * - Color-coded stats for quick scanning
+ * - Progress indicator for weekly goal
+ */
 @Composable
 private fun WeeklyProgressCard(
     journalEntriesThisWeek: Int,
@@ -1559,16 +1618,25 @@ private fun WeeklyProgressCard(
 ) {
     var isAnimated by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
-        delay(600)
+        delay(400)
         isAnimated = true
     }
+
+    val weekProgress = daysActiveThisWeek / 7f
+    val animatedProgress by animateFloatAsState(
+        targetValue = if (isAnimated) weekProgress else 0f,
+        animationSpec = tween(1200, easing = FastOutSlowInEasing),
+        label = "week_progress"
+    )
 
     ProdyCard(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        backgroundColor = MaterialTheme.colorScheme.surface
     ) {
-        Column(modifier = Modifier.padding(20.dp)) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            // Header with compact progress bar
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -1576,56 +1644,98 @@ private fun WeeklyProgressCard(
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Filled.Insights,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(18.dp)
                     )
                     Text(
                         text = "This Week",
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.SemiBold
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
 
-                Surface(
-                    color = MaterialTheme.colorScheme.primaryContainer,
-                    shape = RoundedCornerShape(8.dp)
+                // Compact progress indicator
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
+                    Box(
+                        modifier = Modifier
+                            .width(60.dp)
+                            .height(6.dp)
+                            .clip(RoundedCornerShape(3.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth(animatedProgress)
+                                .fillMaxHeight()
+                                .clip(RoundedCornerShape(3.dp))
+                                .background(
+                                    Brush.horizontalGradient(
+                                        colors = listOf(
+                                            MaterialTheme.colorScheme.primary,
+                                            MoodGrateful
+                                        )
+                                    )
+                                )
+                        )
+                    }
                     Text(
-                        text = "$daysActiveThisWeek/7 days",
+                        text = "$daysActiveThisWeek/7",
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
+            // Horizontal stat strip - compact single row
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                AnimatedActivityStat(
+                CompactStatItem(
                     value = journalEntriesThisWeek,
                     label = "Entries",
                     icon = Icons.Outlined.Book,
                     color = MoodCalm,
                     isAnimated = isAnimated
                 )
-                AnimatedActivityStat(
+
+                // Subtle divider
+                Box(
+                    modifier = Modifier
+                        .width(1.dp)
+                        .height(32.dp)
+                        .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                )
+
+                CompactStatItem(
                     value = wordsLearnedThisWeek,
                     label = "Words",
                     icon = Icons.Outlined.School,
                     color = MoodMotivated,
                     isAnimated = isAnimated
                 )
-                AnimatedActivityStat(
+
+                // Subtle divider
+                Box(
+                    modifier = Modifier
+                        .width(1.dp)
+                        .height(32.dp)
+                        .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                )
+
+                CompactStatItem(
                     value = daysActiveThisWeek,
                     label = "Active",
                     icon = Icons.Outlined.CalendarMonth,
@@ -1637,8 +1747,11 @@ private fun WeeklyProgressCard(
     }
 }
 
+/**
+ * Compact Stat Item - Horizontal inline stat display
+ */
 @Composable
-private fun AnimatedActivityStat(
+private fun CompactStatItem(
     value: Int,
     label: String,
     icon: ImageVector,
@@ -1651,45 +1764,46 @@ private fun AnimatedActivityStat(
         label = "stat_value"
     )
 
-    val scale by animateFloatAsState(
-        targetValue = if (isAnimated) 1f else 0.8f,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessLow
-        ),
-        label = "scale"
+    val alpha by animateFloatAsState(
+        targetValue = if (isAnimated) 1f else 0f,
+        animationSpec = tween(600),
+        label = "alpha"
     )
 
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.scale(scale)
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier.alpha(alpha)
     ) {
         Box(
             modifier = Modifier
-                .size(48.dp)
+                .size(32.dp)
                 .clip(CircleShape)
-                .background(color.copy(alpha = 0.15f)),
+                .background(color.copy(alpha = 0.12f)),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
                 tint = color,
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(16.dp)
             )
         }
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = animatedValue.toString(),
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold,
-            color = color
-        )
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
+
+        Column {
+            Text(
+                text = animatedValue.toString(),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = color
+            )
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontSize = 10.sp
+            )
+        }
     }
 }
 
