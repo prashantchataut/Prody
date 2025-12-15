@@ -44,6 +44,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.R
 import com.prody.prashant.ui.components.ProdyCard
 import com.prody.prashant.ui.theme.*
+import com.prody.prashant.ui.theme.WisdomHeroStyle
 import kotlinx.coroutines.delay
 
 /**
@@ -1243,81 +1244,308 @@ private fun EnhancedIdiomCard(
     }
 }
 
+/**
+ * Premium Buddha's Thought Card - Hero-level wisdom display
+ *
+ * This is the unique selling point of Prody, featuring:
+ * - Elegant serif typography (Playfair Display) for philosophical content
+ * - Animated gradient background with subtle movement
+ * - Decorative quote marks and visual hierarchy
+ * - Share and save actions readily accessible
+ * - Breathing/pulsing glow effect for meditative feel
+ */
 @Composable
 private fun EnhancedBuddhaThoughtCard(
     thought: String
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "buddha_glow")
+
+    // Primary glow animation - soft pulsing for meditative effect
     val glowAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.3f,
-        targetValue = 0.5f,
+        initialValue = 0.25f,
+        targetValue = 0.45f,
         animationSpec = infiniteRepeatable(
-            animation = tween(3000, easing = EaseInOutCubic),
+            animation = tween(3500, easing = EaseInOutCubic),
             repeatMode = RepeatMode.Reverse
         ),
-        label = "glow"
+        label = "glow_primary"
     )
 
-    ProdyCard(
+    // Secondary accent glow - offset timing for depth
+    val accentGlowAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.15f,
+        targetValue = 0.35f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(4000, delayMillis = 500, easing = EaseInOutCubic),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "glow_accent"
+    )
+
+    // Subtle scale breathing effect
+    val breathScale by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 1.02f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(4000, easing = EaseInOutCubic),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "breath_scale"
+    )
+
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        backgroundColor = ProdyPrimary.copy(alpha = 0.08f)
+            .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
-        Box {
-            // Subtle decorative element
+        // Main card with gradient background
+        ProdyCard(
+            modifier = Modifier.fillMaxWidth(),
+            backgroundColor = Color.Transparent
+        ) {
             Box(
                 modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .size(80.dp)
-                    .offset(x = 20.dp, y = (-20).dp)
-                    .blur(30.dp)
-                    .alpha(glowAlpha)
-                    .background(ProdyTertiary, CircleShape)
-            )
+                    .fillMaxWidth()
+                    .background(
+                        Brush.linearGradient(
+                            colors = listOf(
+                                ProdyPrimary.copy(alpha = 0.12f),
+                                ProdyTertiary.copy(alpha = 0.08f),
+                                ProdyPrimary.copy(alpha = 0.06f)
+                            )
+                        )
+                    )
+            ) {
+                // Top-right decorative glow orb
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .size(120.dp)
+                        .offset(x = 40.dp, y = (-30).dp)
+                        .blur(40.dp)
+                        .alpha(glowAlpha)
+                        .background(ProdyTertiary, CircleShape)
+                )
 
-            Column(modifier = Modifier.padding(20.dp)) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                // Bottom-left accent glow
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .size(80.dp)
+                        .offset(x = (-20).dp, y = 20.dp)
+                        .blur(30.dp)
+                        .alpha(accentGlowAlpha)
+                        .background(GoldTier.copy(alpha = 0.6f), CircleShape)
+                )
+
+                // Decorative large quote mark (background)
+                Text(
+                    text = """,
+                    style = MaterialTheme.typography.displayLarge.copy(
+                        fontSize = 120.sp,
+                        fontWeight = FontWeight.Light
+                    ),
+                    color = ProdyPrimary.copy(alpha = 0.06f),
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .offset(x = (-8).dp, y = (-40).dp)
+                )
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(24.dp)
                 ) {
+                    // Header with icon and title
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            // Animated icon container with glow
+                            Box(contentAlignment = Alignment.Center) {
+                                // Glow behind icon
+                                Box(
+                                    modifier = Modifier
+                                        .size(48.dp)
+                                        .scale(breathScale)
+                                        .blur(12.dp)
+                                        .alpha(glowAlpha * 0.8f)
+                                        .background(ProdyPrimary, CircleShape)
+                                )
+                                // Icon background
+                                Box(
+                                    modifier = Modifier
+                                        .size(44.dp)
+                                        .clip(CircleShape)
+                                        .background(
+                                            Brush.linearGradient(
+                                                colors = listOf(
+                                                    ProdyPrimary.copy(alpha = 0.25f),
+                                                    ProdyPrimary.copy(alpha = 0.15f)
+                                                )
+                                            )
+                                        )
+                                        .border(
+                                            width = 1.dp,
+                                            brush = Brush.linearGradient(
+                                                colors = listOf(
+                                                    ProdyPrimary.copy(alpha = 0.4f),
+                                                    ProdyPrimary.copy(alpha = 0.1f)
+                                                )
+                                            ),
+                                            shape = CircleShape
+                                        ),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.SelfImprovement,
+                                        contentDescription = null,
+                                        tint = ProdyPrimary,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                }
+                            }
+
+                            Column {
+                                Text(
+                                    text = "Buddha's Thought",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = ProdyPrimary
+                                )
+                                Text(
+                                    text = "Daily Wisdom",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                                    letterSpacing = 1.sp
+                                )
+                            }
+                        }
+
+                        // Action buttons
+                        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                            // Share button
+                            IconButton(
+                                onClick = { /* Share functionality */ },
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.5f))
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Share,
+                                    contentDescription = "Share thought",
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                            // Save/bookmark button
+                            IconButton(
+                                onClick = { /* Save functionality */ },
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.5f))
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.BookmarkBorder,
+                                    contentDescription = "Save thought",
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    // Main wisdom text with serif typography
+                    Text(
+                        text = thought,
+                        style = WisdomHeroStyle,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        textAlign = TextAlign.Start,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    // Decorative bottom divider with gradient
                     Box(
                         modifier = Modifier
-                            .size(36.dp)
-                            .clip(CircleShape)
-                            .background(ProdyPrimary.copy(alpha = 0.15f)),
-                        contentAlignment = Alignment.Center
+                            .fillMaxWidth()
+                            .height(2.dp)
+                            .background(
+                                Brush.horizontalGradient(
+                                    colors = listOf(
+                                        Color.Transparent,
+                                        ProdyPrimary.copy(alpha = 0.3f),
+                                        GoldTier.copy(alpha = 0.4f),
+                                        ProdyPrimary.copy(alpha = 0.3f),
+                                        Color.Transparent
+                                    )
+                                )
+                            )
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Bottom attribution and meditation prompt
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            imageVector = Icons.Filled.SelfImprovement,
-                            contentDescription = null,
-                            tint = ProdyPrimary,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                    Column {
-                        Text(
-                            text = "Buddha's Thought",
-                            style = MaterialTheme.typography.labelLarge,
-                            fontWeight = FontWeight.SemiBold,
-                            color = ProdyPrimary
-                        )
-                        Text(
-                            text = "Daily reflection",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        // Meditation timer suggestion
+                        Surface(
+                            color = ProdyPrimary.copy(alpha = 0.08f),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Timer,
+                                    contentDescription = null,
+                                    tint = ProdyPrimary,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Text(
+                                    text = "Reflect for 2 min",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = ProdyPrimary,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
+                        }
+
+                        // Point reward
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Stars,
+                                contentDescription = null,
+                                tint = GoldTier,
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Text(
+                                text = "+15 XP daily",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = GoldTier.copy(alpha = 0.9f),
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
                     }
                 }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text(
-                    text = thought,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    lineHeight = 24.sp
-                )
             }
         }
     }

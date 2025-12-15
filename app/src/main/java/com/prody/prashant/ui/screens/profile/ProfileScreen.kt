@@ -1211,19 +1211,88 @@ private fun EnhancedAchievementCard(
     }
 }
 
+/**
+ * Journey Milestones Card - Premium Achievement-Style Display
+ *
+ * Features:
+ * - Achievement-style milestone cards instead of radio buttons
+ * - Completed milestones: Golden accent, checkmark, subtle glow
+ * - Locked milestones: Dimmed with padlock, progress indicator
+ * - In-progress milestones: Animated progress ring
+ * - Proper visual hierarchy and state management
+ */
 @Composable
 private fun JourneyMilestoneCard(
     daysOnPrody: Int,
     totalPoints: Int,
     achievementsUnlocked: Int
 ) {
+    // Define milestones with name, target, current progress, and achievement status
+    data class Milestone(
+        val name: String,
+        val description: String,
+        val target: Int,
+        val current: Int,
+        val icon: ImageVector,
+        val color: Color,
+        val xpReward: Int
+    )
+
     val milestones = listOf(
-        Triple("7 days", 7, daysOnPrody >= 7),
-        Triple("100 pts", 100, totalPoints >= 100),
-        Triple("1 badge", 1, achievementsUnlocked >= 1),
-        Triple("30 days", 30, daysOnPrody >= 30),
-        Triple("500 pts", 500, totalPoints >= 500),
-        Triple("5 badges", 5, achievementsUnlocked >= 5)
+        Milestone(
+            name = "First Week",
+            description = "Active for 7 days",
+            target = 7,
+            current = daysOnPrody.coerceAtMost(7),
+            icon = Icons.Filled.CalendarMonth,
+            color = MoodCalm,
+            xpReward = 50
+        ),
+        Milestone(
+            name = "Century",
+            description = "Earn 100 points",
+            target = 100,
+            current = totalPoints.coerceAtMost(100),
+            icon = Icons.Filled.Stars,
+            color = GoldTier,
+            xpReward = 25
+        ),
+        Milestone(
+            name = "First Badge",
+            description = "Unlock an achievement",
+            target = 1,
+            current = achievementsUnlocked.coerceAtMost(1),
+            icon = Icons.Filled.EmojiEvents,
+            color = MoodExcited,
+            xpReward = 30
+        ),
+        Milestone(
+            name = "Monthly",
+            description = "Active for 30 days",
+            target = 30,
+            current = daysOnPrody.coerceAtMost(30),
+            icon = Icons.Filled.Event,
+            color = MoodMotivated,
+            xpReward = 150
+        ),
+        Milestone(
+            name = "Half K",
+            description = "Earn 500 points",
+            target = 500,
+            current = totalPoints.coerceAtMost(500),
+            icon = Icons.Filled.Bolt,
+            color = MoodGrateful,
+            xpReward = 75
+        ),
+        Milestone(
+            name = "Collector",
+            description = "Unlock 5 badges",
+            target = 5,
+            current = achievementsUnlocked.coerceAtMost(5),
+            icon = Icons.Filled.Diamond,
+            color = SilverTier,
+            xpReward = 100
+        )
     )
 
     ProdyCard(
@@ -1232,37 +1301,94 @@ private fun JourneyMilestoneCard(
             .padding(16.dp)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(20.dp)
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Flag,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(20.dp)
-                )
-                Text(
-                    text = "Journey Milestones",
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
+            // Section header
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                milestones.chunked(3).forEach { row ->
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)),
+                        contentAlignment = Alignment.Center
                     ) {
-                        row.forEach { (label, _, achieved) ->
-                            MilestoneChip(label = label, achieved = achieved)
+                        Icon(
+                            imageVector = Icons.Filled.Flag,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                    Column {
+                        Text(
+                            text = "Journey Milestones",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "Track your growth path",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
+                // Completion counter
+                val completedCount = milestones.count { it.current >= it.target }
+                Surface(
+                    color = if (completedCount == milestones.size)
+                        GoldTier.copy(alpha = 0.2f)
+                    else
+                        MaterialTheme.colorScheme.primaryContainer,
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text(
+                        text = "$completedCount / ${milestones.size}",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = if (completedCount == milestones.size)
+                            GoldTier
+                        else
+                            MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Milestone grid - 2 columns
+            Column(
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                milestones.chunked(2).forEach { rowMilestones ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        rowMilestones.forEach { milestone ->
+                            MilestoneCard(
+                                name = milestone.name,
+                                description = milestone.description,
+                                target = milestone.target,
+                                current = milestone.current,
+                                icon = milestone.icon,
+                                color = milestone.color,
+                                xpReward = milestone.xpReward,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                        // Fill remaining space if odd number
+                        if (rowMilestones.size == 1) {
+                            Spacer(modifier = Modifier.weight(1f))
                         }
                     }
                 }
@@ -1271,44 +1397,283 @@ private fun JourneyMilestoneCard(
     }
 }
 
+/**
+ * Individual Milestone Card - Achievement-Style Display
+ *
+ * States:
+ * - COMPLETED: Golden glow, checkmark icon, celebration styling
+ * - IN_PROGRESS: Animated progress ring, percentage display
+ * - LOCKED: Dimmed, padlock icon overlay
+ */
+
 @Composable
-private fun MilestoneChip(
-    label: String,
-    achieved: Boolean
+private fun MilestoneCard(
+    name: String,
+    description: String,
+    target: Int,
+    current: Int,
+    icon: ImageVector,
+    color: Color,
+    xpReward: Int,
+    modifier: Modifier = Modifier
 ) {
-    val scale by animateFloatAsState(
-        targetValue = if (achieved) 1f else 0.95f,
-        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
-        label = "milestone_scale"
+    val isCompleted = current >= target
+    val progress = (current.toFloat() / target).coerceIn(0f, 1f)
+    val isInProgress = !isCompleted && current > 0
+
+    val infiniteTransition = rememberInfiniteTransition(label = "milestone_anim")
+
+    // Glow animation for completed milestones
+    val glowAlpha by infiniteTransition.animateFloat(
+        initialValue = if (isCompleted) 0.3f else 0f,
+        targetValue = if (isCompleted) 0.6f else 0f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2000, easing = EaseInOutCubic),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "glow"
     )
 
-    Surface(
-        modifier = Modifier.scale(scale),
-        color = if (achieved) AchievementUnlocked.copy(alpha = 0.15f)
-        else MaterialTheme.colorScheme.surfaceVariant,
-        shape = RoundedCornerShape(20.dp),
-        border = if (achieved) null else androidx.compose.foundation.BorderStroke(
-            1.dp,
-            MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
-        )
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
+    // Progress ring animation for in-progress milestones
+    val progressRotation by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = if (isInProgress) 360f else 0f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(3000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "progress_rotation"
+    )
+
+    val animatedProgress by animateFloatAsState(
+        targetValue = progress,
+        animationSpec = tween(1000, easing = FastOutSlowInEasing),
+        label = "progress"
+    )
+
+    val scale by animateFloatAsState(
+        targetValue = if (isCompleted) 1f else 0.98f,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+        label = "scale"
+    )
+
+    Box(modifier = modifier.scale(scale)) {
+        // Card background
+        ProdyCard(
+            modifier = Modifier.fillMaxWidth(),
+            backgroundColor = when {
+                isCompleted -> color.copy(alpha = 0.12f)
+                isInProgress -> MaterialTheme.colorScheme.surface
+                else -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+            },
+            elevation = if (isCompleted) 4.dp else 2.dp
         ) {
-            Icon(
-                imageVector = if (achieved) Icons.Filled.CheckCircle else Icons.Outlined.Circle,
-                contentDescription = null,
-                tint = if (achieved) AchievementUnlocked else AchievementLocked,
-                modifier = Modifier.size(14.dp)
-            )
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelSmall,
-                color = if (achieved) AchievementUnlocked else MaterialTheme.colorScheme.onSurfaceVariant,
-                fontWeight = if (achieved) FontWeight.Medium else FontWeight.Normal
-            )
+            Box {
+                // Glow effect for completed
+                if (isCompleted) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .size(60.dp)
+                            .offset(x = 15.dp, y = (-15).dp)
+                            .blur(20.dp)
+                            .alpha(glowAlpha)
+                            .background(color, CircleShape)
+                    )
+                }
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(14.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    // Icon with status indicator
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier.size(56.dp)
+                    ) {
+                        // Progress ring background
+                        if (isInProgress || isCompleted) {
+                            Canvas(modifier = Modifier.fillMaxSize()) {
+                                val strokeWidth = 3.dp.toPx()
+                                val radius = (size.minDimension - strokeWidth) / 2
+
+                                // Background ring
+                                drawCircle(
+                                    color = color.copy(alpha = 0.2f),
+                                    radius = radius,
+                                    style = Stroke(width = strokeWidth)
+                                )
+
+                                // Progress arc
+                                drawArc(
+                                    color = color,
+                                    startAngle = -90f,
+                                    sweepAngle = animatedProgress * 360f,
+                                    useCenter = false,
+                                    style = Stroke(width = strokeWidth, cap = StrokeCap.Round),
+                                    topLeft = Offset(strokeWidth / 2, strokeWidth / 2),
+                                    size = Size(size.width - strokeWidth, size.height - strokeWidth)
+                                )
+                            }
+                        }
+
+                        // Icon background
+                        Box(
+                            modifier = Modifier
+                                .size(44.dp)
+                                .clip(CircleShape)
+                                .background(
+                                    when {
+                                        isCompleted -> Brush.radialGradient(
+                                            colors = listOf(
+                                                color.copy(alpha = 0.3f),
+                                                color.copy(alpha = 0.15f)
+                                            )
+                                        )
+                                        else -> Brush.radialGradient(
+                                            colors = listOf(
+                                                AchievementLocked.copy(alpha = 0.15f),
+                                                AchievementLocked.copy(alpha = 0.08f)
+                                            )
+                                        )
+                                    }
+                                )
+                                .then(
+                                    if (isCompleted) {
+                                        Modifier.border(2.dp, color.copy(alpha = 0.5f), CircleShape)
+                                    } else {
+                                        Modifier.border(
+                                            1.dp,
+                                            MaterialTheme.colorScheme.outline.copy(alpha = 0.2f),
+                                            CircleShape
+                                        )
+                                    }
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            if (isCompleted) {
+                                // Checkmark overlay for completed
+                                Icon(
+                                    imageVector = Icons.Filled.CheckCircle,
+                                    contentDescription = "Completed",
+                                    tint = color,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            } else if (!isInProgress) {
+                                // Lock icon for locked milestones
+                                Icon(
+                                    imageVector = Icons.Filled.Lock,
+                                    contentDescription = "Locked",
+                                    tint = AchievementLocked,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            } else {
+                                // Original icon for in-progress
+                                Icon(
+                                    imageVector = icon,
+                                    contentDescription = null,
+                                    tint = color,
+                                    modifier = Modifier.size(22.dp)
+                                )
+                            }
+                        }
+
+                        // Completed badge
+                        if (isCompleted) {
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.BottomEnd)
+                                    .size(18.dp)
+                                    .clip(CircleShape)
+                                    .background(AchievementUnlocked)
+                                    .border(1.5.dp, Color.White, CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Check,
+                                    contentDescription = null,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(10.dp)
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    // Milestone name
+                    Text(
+                        text = name,
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = if (isCompleted) FontWeight.Bold else FontWeight.SemiBold,
+                        color = when {
+                            isCompleted -> color
+                            isInProgress -> MaterialTheme.colorScheme.onSurface
+                            else -> MaterialTheme.colorScheme.onSurfaceVariant
+                        },
+                        textAlign = TextAlign.Center,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+
+                    Spacer(modifier = Modifier.height(2.dp))
+
+                    // Description
+                    Text(
+                        text = description,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                            alpha = if (isCompleted) 0.9f else 0.7f
+                        ),
+                        textAlign = TextAlign.Center,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        fontSize = 10.sp
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // Progress indicator or completion badge
+                    if (isCompleted) {
+                        // XP reward badge
+                        Surface(
+                            color = GoldTier.copy(alpha = 0.15f),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(3.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Stars,
+                                    contentDescription = null,
+                                    tint = GoldTier,
+                                    modifier = Modifier.size(12.dp)
+                                )
+                                Text(
+                                    text = "+$xpReward XP",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = GoldTier,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 10.sp
+                                )
+                            }
+                        }
+                    } else {
+                        // Progress text
+                        Text(
+                            text = "$current / $target",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = if (isInProgress) color else AchievementLocked,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 11.sp
+                        )
+                    }
+                }
+            }
         }
     }
 }

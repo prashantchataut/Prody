@@ -185,21 +185,44 @@ fun StatsScreen(
                 }
             }
         } else {
+            // Top 3 Podium Visualization
+            if (displayedLeaderboard.size >= 3) {
+                item {
+                    AnimatedVisibility(
+                        visible = isVisible,
+                        enter = fadeIn(tween(600, delayMillis = 700)) + scaleIn(
+                            initialScale = 0.9f,
+                            animationSpec = tween(600, delayMillis = 700, easing = EaseOutCubic)
+                        )
+                    ) {
+                        LeaderboardPodium(
+                            first = displayedLeaderboard[0],
+                            second = displayedLeaderboard[1],
+                            third = displayedLeaderboard[2],
+                            onBoost = { viewModel.boostPeer(it) },
+                            onCongrats = { viewModel.congratulatePeer(it) }
+                        )
+                    }
+                }
+            }
+
+            // Rest of the leaderboard (skip top 3 if podium is shown)
+            val startIndex = if (displayedLeaderboard.size >= 3) 3 else 0
             itemsIndexed(
-                items = displayedLeaderboard.take(10),
+                items = displayedLeaderboard.drop(startIndex).take(7),
                 key = { _, item -> item.odId }
             ) { index, entry ->
                 AnimatedVisibility(
                     visible = isVisible,
-                    enter = fadeIn(tween(300, delayMillis = 700 + index * 50)) +
+                    enter = fadeIn(tween(300, delayMillis = 900 + index * 50)) +
                             slideInHorizontally(
                                 initialOffsetX = { it },
-                                animationSpec = tween(400, delayMillis = 700 + index * 50)
+                                animationSpec = tween(400, delayMillis = 900 + index * 50)
                             )
                 ) {
                     LeaderboardItem(
                         entry = entry,
-                        rank = index + 1,
+                        rank = startIndex + index + 1,
                         onBoost = { viewModel.boostPeer(entry.odId) },
                         onCongrats = { viewModel.congratulatePeer(entry.odId) }
                     )
@@ -1318,6 +1341,391 @@ private fun RankIndicator(rank: Int) {
                     fontWeight = FontWeight.Bold,
                     color = textColor
                 )
+            }
+        }
+    }
+}
+
+/**
+ * Premium Podium Visualization for Top 3 Leaderboard Users
+ *
+ * Features:
+ * - Classic podium design with 1st place elevated in center
+ * - Metallic gradient backgrounds for each tier
+ * - Animated glow effects for winners
+ * - User avatars with rank badges
+ * - Points and streak display
+ * - Interaction buttons for boosting/congratulating
+ */
+@Composable
+private fun LeaderboardPodium(
+    first: LeaderboardEntryEntity,
+    second: LeaderboardEntryEntity,
+    third: LeaderboardEntryEntity,
+    onBoost: (String) -> Unit,
+    onCongrats: (String) -> Unit
+) {
+    val infiniteTransition = rememberInfiniteTransition(label = "podium_animation")
+
+    // Gold glow for first place
+    val goldGlowAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.3f,
+        targetValue = 0.6f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2000, easing = EaseInOutCubic),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "gold_glow"
+    )
+
+    // Shine sweep animation
+    val shinePosition by infiniteTransition.animateFloat(
+        initialValue = -0.5f,
+        targetValue = 1.5f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(3000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "shine"
+    )
+
+    ProdyCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        backgroundColor = MaterialTheme.colorScheme.surface
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // Podium title
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.EmojiEvents,
+                    contentDescription = null,
+                    tint = GoldTier,
+                    modifier = Modifier.size(24.dp)
+                )
+                Text(
+                    text = "Top Performers",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Podium layout: 2nd | 1st | 3rd
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.Bottom
+            ) {
+                // 2nd Place (Silver) - Left
+                PodiumPlace(
+                    entry = second,
+                    rank = 2,
+                    podiumHeight = 100.dp,
+                    tierColor = SilverTier,
+                    glowAlpha = 0.3f,
+                    shinePosition = shinePosition,
+                    onBoost = onBoost,
+                    onCongrats = onCongrats
+                )
+
+                // 1st Place (Gold) - Center, tallest
+                PodiumPlace(
+                    entry = first,
+                    rank = 1,
+                    podiumHeight = 130.dp,
+                    tierColor = GoldTier,
+                    glowAlpha = goldGlowAlpha,
+                    shinePosition = shinePosition,
+                    onBoost = onBoost,
+                    onCongrats = onCongrats
+                )
+
+                // 3rd Place (Bronze) - Right
+                PodiumPlace(
+                    entry = third,
+                    rank = 3,
+                    podiumHeight = 80.dp,
+                    tierColor = BronzeTier,
+                    glowAlpha = 0.25f,
+                    shinePosition = shinePosition,
+                    onBoost = onBoost,
+                    onCongrats = onCongrats
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun PodiumPlace(
+    entry: LeaderboardEntryEntity,
+    rank: Int,
+    podiumHeight: Dp,
+    tierColor: Color,
+    glowAlpha: Float,
+    shinePosition: Float,
+    onBoost: (String) -> Unit,
+    onCongrats: (String) -> Unit
+) {
+    val infiniteTransition = rememberInfiniteTransition(label = "podium_place_$rank")
+
+    // Scale animation for the avatar
+    val avatarScale by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = if (rank == 1) 1.05f else 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1500, easing = EaseInOutCubic),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "avatar_scale"
+    )
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.width(100.dp)
+    ) {
+        // Avatar with glow
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.padding(bottom = 8.dp)
+        ) {
+            // Glow effect
+            Box(
+                modifier = Modifier
+                    .size(if (rank == 1) 70.dp else 60.dp)
+                    .blur(12.dp)
+                    .alpha(glowAlpha)
+                    .background(tierColor, CircleShape)
+            )
+
+            // Avatar container
+            Box(
+                modifier = Modifier
+                    .size(if (rank == 1) 64.dp else 54.dp)
+                    .scale(avatarScale)
+                    .clip(CircleShape)
+                    .background(
+                        Brush.linearGradient(
+                            colors = listOf(
+                                tierColor.copy(alpha = 0.3f),
+                                tierColor.copy(alpha = 0.15f)
+                            )
+                        )
+                    )
+                    .border(
+                        width = if (rank == 1) 3.dp else 2.dp,
+                        brush = Brush.linearGradient(
+                            colors = listOf(
+                                tierColor,
+                                tierColor.copy(alpha = 0.6f)
+                            )
+                        ),
+                        shape = CircleShape
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                // User initial or icon
+                Text(
+                    text = entry.displayName.firstOrNull()?.uppercase() ?: "?",
+                    style = if (rank == 1) MaterialTheme.typography.headlineSmall
+                    else MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = tierColor
+                )
+            }
+
+            // Rank badge
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .offset(x = 4.dp, y = 4.dp)
+                    .size(if (rank == 1) 26.dp else 22.dp)
+                    .clip(CircleShape)
+                    .background(tierColor)
+                    .border(2.dp, Color.White, CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                when (rank) {
+                    1 -> Icon(
+                        imageVector = Icons.Filled.EmojiEvents,
+                        contentDescription = "1st Place",
+                        tint = Color.White,
+                        modifier = Modifier.size(14.dp)
+                    )
+                    2 -> Text(
+                        text = "2",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                    3 -> Text(
+                        text = "3",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                }
+            }
+        }
+
+        // User name
+        Text(
+            text = if (entry.isCurrentUser) "You" else entry.displayName,
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = if (entry.isCurrentUser) FontWeight.Bold else FontWeight.SemiBold,
+            color = if (entry.isCurrentUser) MaterialTheme.colorScheme.primary
+            else MaterialTheme.colorScheme.onSurface,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        // Podium base with gradient
+        Box(
+            modifier = Modifier
+                .width(80.dp)
+                .height(podiumHeight)
+                .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            tierColor,
+                            tierColor.copy(alpha = 0.7f),
+                            tierColor.copy(alpha = 0.5f)
+                        )
+                    )
+                )
+        ) {
+            // Shine effect on podium
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                val shineWidth = size.width * 0.4f
+                val shineX = shinePosition * (size.width + shineWidth) - shineWidth
+
+                drawRect(
+                    brush = Brush.horizontalGradient(
+                        colors = listOf(
+                            Color.Transparent,
+                            Color.White.copy(alpha = 0.2f),
+                            Color.White.copy(alpha = 0.4f),
+                            Color.White.copy(alpha = 0.2f),
+                            Color.Transparent
+                        ),
+                        startX = shineX,
+                        endX = shineX + shineWidth
+                    )
+                )
+            }
+
+            // Stats on podium
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(8.dp),
+                verticalArrangement = Arrangement.SpaceBetween,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Points
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(2.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Stars,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(12.dp)
+                        )
+                        Text(
+                            text = formatNumber(entry.totalPoints),
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
+
+                    // Streak if present
+                    if (entry.currentStreak > 0) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(2.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.LocalFireDepartment,
+                                contentDescription = null,
+                                tint = Color.White.copy(alpha = 0.9f),
+                                modifier = Modifier.size(10.dp)
+                            )
+                            Text(
+                                text = "${entry.currentStreak}d",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = Color.White.copy(alpha = 0.9f)
+                            )
+                        }
+                    }
+                }
+
+                // Action buttons (only for non-current user)
+                if (!entry.isCurrentUser) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        IconButton(
+                            onClick = { onBoost(entry.odId) },
+                            modifier = Modifier
+                                .size(28.dp)
+                                .clip(CircleShape)
+                                .background(Color.White.copy(alpha = 0.2f))
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.ThumbUp,
+                                contentDescription = "Boost",
+                                modifier = Modifier.size(14.dp),
+                                tint = Color.White
+                            )
+                        }
+                        IconButton(
+                            onClick = { onCongrats(entry.odId) },
+                            modifier = Modifier
+                                .size(28.dp)
+                                .clip(CircleShape)
+                                .background(Color.White.copy(alpha = 0.2f))
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Celebration,
+                                contentDescription = "Congratulate",
+                                modifier = Modifier.size(14.dp),
+                                tint = Color.White
+                            )
+                        }
+                    }
+                } else {
+                    // "You" badge for current user
+                    Surface(
+                        color = Color.White.copy(alpha = 0.2f),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(
+                            text = "You!",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        )
+                    }
+                }
             }
         }
     }
