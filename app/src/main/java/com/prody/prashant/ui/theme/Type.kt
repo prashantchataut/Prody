@@ -331,3 +331,228 @@ val StoicMaximStyle = TextStyle(
     lineHeight = 24.sp,
     letterSpacing = 0.3.sp
 )
+
+// =============================================================================
+// GAMIFICATION TYPOGRAPHY - Stats, Badges, Streaks, XP
+// =============================================================================
+
+/**
+ * Stat number style - For large stat displays (total entries, words written)
+ */
+val StatNumberStyle = TextStyle(
+    fontFamily = PoppinsFamily,
+    fontWeight = FontWeight.Bold,
+    fontSize = 32.sp,
+    lineHeight = 40.sp,
+    letterSpacing = (-0.5).sp
+)
+
+/**
+ * Large stat number - For hero stats and major milestones
+ */
+val StatNumberLargeStyle = TextStyle(
+    fontFamily = PoppinsFamily,
+    fontWeight = FontWeight.Bold,
+    fontSize = 48.sp,
+    lineHeight = 56.sp,
+    letterSpacing = (-0.5).sp
+)
+
+/**
+ * Badge title style - For achievement and badge names
+ */
+val BadgeTitleStyle = TextStyle(
+    fontFamily = PoppinsFamily,
+    fontWeight = FontWeight.SemiBold,
+    fontSize = 14.sp,
+    lineHeight = 18.sp,
+    letterSpacing = 0.5.sp
+)
+
+/**
+ * Badge description style - For achievement descriptions
+ */
+val BadgeDescriptionStyle = TextStyle(
+    fontFamily = PoppinsFamily,
+    fontWeight = FontWeight.Normal,
+    fontSize = 12.sp,
+    lineHeight = 16.sp,
+    letterSpacing = 0.25.sp
+)
+
+/**
+ * Streak counter style - For displaying streak numbers prominently
+ */
+val StreakCounterStyle = TextStyle(
+    fontFamily = PoppinsFamily,
+    fontWeight = FontWeight.Bold,
+    fontSize = 36.sp,
+    lineHeight = 44.sp,
+    letterSpacing = (-0.5).sp
+)
+
+/**
+ * Streak label style - For "days" or "streak" labels
+ */
+val StreakLabelStyle = TextStyle(
+    fontFamily = PoppinsFamily,
+    fontWeight = FontWeight.Medium,
+    fontSize = 12.sp,
+    lineHeight = 16.sp,
+    letterSpacing = 0.5.sp
+)
+
+/**
+ * XP text style - For experience points display
+ */
+val XpTextStyle = TextStyle(
+    fontFamily = PoppinsFamily,
+    fontWeight = FontWeight.SemiBold,
+    fontSize = 16.sp,
+    lineHeight = 20.sp,
+    letterSpacing = 0.1.sp
+)
+
+/**
+ * Level text style - For level display
+ */
+val LevelTextStyle = TextStyle(
+    fontFamily = PoppinsFamily,
+    fontWeight = FontWeight.Bold,
+    fontSize = 20.sp,
+    lineHeight = 24.sp,
+    letterSpacing = 0.sp
+)
+
+/**
+ * Leaderboard rank style - For position numbers on leaderboard
+ */
+val LeaderboardRankStyle = TextStyle(
+    fontFamily = PoppinsFamily,
+    fontWeight = FontWeight.ExtraBold,
+    fontSize = 24.sp,
+    lineHeight = 28.sp,
+    letterSpacing = (-0.5).sp
+)
+
+/**
+ * Leaderboard name style - For user names on leaderboard
+ */
+val LeaderboardNameStyle = TextStyle(
+    fontFamily = PoppinsFamily,
+    fontWeight = FontWeight.Medium,
+    fontSize = 14.sp,
+    lineHeight = 20.sp,
+    letterSpacing = 0.1.sp
+)
+
+/**
+ * Progress percentage style - For showing progress percentages
+ */
+val ProgressPercentageStyle = TextStyle(
+    fontFamily = PoppinsFamily,
+    fontWeight = FontWeight.SemiBold,
+    fontSize = 14.sp,
+    lineHeight = 18.sp,
+    letterSpacing = 0.25.sp
+)
+
+// =============================================================================
+// NOTIFICATION TYPOGRAPHY - For push notifications and in-app messages
+// =============================================================================
+
+/**
+ * Notification title style - Bold and attention-grabbing
+ */
+val NotificationTitleStyle = TextStyle(
+    fontFamily = PoppinsFamily,
+    fontWeight = FontWeight.SemiBold,
+    fontSize = 16.sp,
+    lineHeight = 22.sp,
+    letterSpacing = 0.1.sp
+)
+
+/**
+ * Notification body style - Clear and readable
+ */
+val NotificationBodyStyle = TextStyle(
+    fontFamily = PoppinsFamily,
+    fontWeight = FontWeight.Normal,
+    fontSize = 14.sp,
+    lineHeight = 20.sp,
+    letterSpacing = 0.2.sp
+)
+
+// =============================================================================
+// CARD TYPOGRAPHY - For various card types
+// =============================================================================
+
+/**
+ * Card title style - For card headers
+ */
+val CardTitleStyle = TextStyle(
+    fontFamily = PoppinsFamily,
+    fontWeight = FontWeight.SemiBold,
+    fontSize = 18.sp,
+    lineHeight = 24.sp,
+    letterSpacing = 0.sp
+)
+
+/**
+ * Card subtitle style - For card secondary headers
+ */
+val CardSubtitleStyle = TextStyle(
+    fontFamily = PoppinsFamily,
+    fontWeight = FontWeight.Medium,
+    fontSize = 14.sp,
+    lineHeight = 20.sp,
+    letterSpacing = 0.1.sp
+)
+
+/**
+ * Card body style - For card content
+ */
+val CardBodyStyle = TextStyle(
+    fontFamily = PoppinsFamily,
+    fontWeight = FontWeight.Normal,
+    fontSize = 14.sp,
+    lineHeight = 22.sp,
+    letterSpacing = 0.2.sp
+)
+
+/**
+ * Card caption style - For timestamps and metadata on cards
+ */
+val CardCaptionStyle = TextStyle(
+    fontFamily = PoppinsFamily,
+    fontWeight = FontWeight.Normal,
+    fontSize = 11.sp,
+    lineHeight = 16.sp,
+    letterSpacing = 0.4.sp
+)
+
+// =============================================================================
+// WISDOM SERIF TYPOGRAPHY - Extended Playfair styles
+// =============================================================================
+
+/**
+ * Wisdom serif for Buddha's thought - Elegant and contemplative
+ */
+val WisdomSerifStyle = TextStyle(
+    fontFamily = PlayfairFamily,
+    fontWeight = FontWeight.Normal,
+    fontSize = 20.sp,
+    lineHeight = 30.sp,
+    letterSpacing = 0.sp
+)
+
+/**
+ * Large wisdom serif - For featured quotes
+ */
+val WisdomSerifLargeStyle = TextStyle(
+    fontFamily = PlayfairFamily,
+    fontWeight = FontWeight.Medium,
+    fontSize = 24.sp,
+    lineHeight = 34.sp,
+    letterSpacing = 0.sp
+)

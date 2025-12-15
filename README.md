@@ -8,90 +8,164 @@
 
 ## Features
 
+### Journaling
+- Daily journaling with AI-powered prompts
+- Emotional insights from Buddha (AI assistant)
+- Pattern detection over time
+- Templates for different reflection types
+- Mood tracking with thoughtful reflections
+
+### Gamification
+- XP and leveling system with 10 rank tiers
+- Achievement badges with rarity tiers (Common to Legendary)
+- Customizable profile banners
+- Competitive leaderboard
+- Streak tracking with celebration milestones
+
 ### Daily Wisdom
 - **Word of the Day**: Expand your vocabulary with curated words, definitions, etymology, and usage examples
-- **Quote Collection**: Inspirational quotes from great thinkers
+- **Quote Collection**: Inspirational quotes from great thinkers across 7 themes
 - **Proverbs & Idioms**: Cultural wisdom with meanings and origins
 - **Phrases**: Useful phrases for everyday communication
+- Personalized quotes based on your journey
+- Not preachy, just helpful
 
 ### Buddha - Your Stoic AI Guide
 - Journal your thoughts and receive personalized stoic wisdom
-- Mood tracking with thoughtful reflections
 - Content analysis for contextual responses
 - Weekly summaries of your growth journey
+- Mood-appropriate wisdom delivery
 
 ### Future Self Messaging
 - Write letters to your future self
-- Schedule delivery dates
+- Schedule delivery from 1 week to 1 year
+- Multiple categories: Goal, Motivation, Promise, General
+- Receive motivation when you need it
 - Countdown to delivery
-- Reflect on your past self's intentions
-
-### Gamification
-- Achievement system with 20+ unlockable badges
-- Streak tracking for consistent engagement
-- Points and leveling system
-- Leaderboard with peer interactions
 
 ### Profile & Stats
-- Comprehensive activity statistics
+- Track your progress with detailed statistics
+- Weekly and monthly summaries
 - Achievement showcase
-- Customizable settings
-- Theme preferences (Light/Dark/System)
+- Customizable profile with banners and badges
+- Visual journey timeline
 
-## Technology Stack
+## Tech Stack
 
-- **Language**: Kotlin 2.0
-- **UI Framework**: Jetpack Compose with Material 3
-- **Architecture**: MVVM with Clean Architecture principles
-- **Dependency Injection**: Hilt
-- **Database**: Room with Flow
-- **Preferences**: DataStore
-- **Async**: Kotlin Coroutines
-- **Navigation**: Compose Navigation with animations
-- **Background Work**: WorkManager
-- **Fonts**: Poppins (Google Fonts)
+| Component | Technology |
+|-----------|------------|
+| **Language** | Kotlin 2.0 |
+| **UI** | Jetpack Compose with Material 3 |
+| **Architecture** | MVVM + Clean Architecture |
+| **DI** | Hilt |
+| **AI** | Gemini API (Buddha) |
+| **Database** | Room with Flow |
+| **Preferences** | DataStore |
+| **Async** | Kotlin Coroutines |
+| **Navigation** | Compose Navigation with animations |
+| **Background Work** | WorkManager |
+| **Fonts** | Poppins + Playfair Display |
 
-## Screenshots
+## Design System
 
-*Coming soon*
+Prody features a comprehensive design system:
 
-## Building the App
+- **Colors**: 100+ semantic colors including brand, mood, gamification, and rarity colors
+- **Typography**: Full Material 3 type scale plus custom styles for wisdom, stats, badges
+- **Shapes**: 40+ shape definitions for cards, buttons, badges, and special components
+- **Dimensions**: Complete spacing system based on 8dp grid
+- **Design Tokens**: Centralized token system for consistent theming
+
+## Setup
 
 ### Prerequisites
-- Android Studio Hedgehog (2023.1.1) or later
-- JDK 17
+- Android Studio Hedgehog (2023.1.1) or newer
+- JDK 17+
 - Android SDK 35
+
+### AI Features (Optional)
+To enable Buddha AI features:
+
+1. Get a Gemini API key from [Google AI Studio](https://makersuite.google.com/app/apikey)
+2. Create/edit `local.properties` in project root:
+   ```
+   AI_API_KEY=your_api_key_here
+   ```
+3. Rebuild the project
+
+*Note: Without an API key, the app works with static content from the wisdom library.*
 
 ### Build Steps
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/prody.git
+git clone https://github.com/prashantchataut/prody.git
 cd prody
 ```
 
-2. Generate a keystore (optional, for release builds):
-```bash
-cd keystore
-keytool -genkeypair -v \
-  -keystore prody-release.jks \
-  -keyalg RSA -keysize 2048 \
-  -validity 10000 -alias prody \
-  -storepass prody2024 -keypass prody2024 \
-  -dname "CN=Prody App, OU=Prody, O=Prody, L=Unknown, ST=Unknown, C=IN"
-```
-
-3. Build debug APK:
+2. Build debug APK:
 ```bash
 ./gradlew assembleDebug
 ```
 
-4. Build release APK:
+3. Build release APK:
 ```bash
 ./gradlew assembleRelease
 ```
 
 The APK will be available at `app/build/outputs/apk/`
+
+## Project Structure
+
+```
+app/src/main/java/com/prody/prashant/
+├── data/
+│   ├── content/           # Content libraries (Wisdom, Prompts)
+│   ├── local/
+│   │   ├── dao/          # Room DAOs
+│   │   ├── database/     # Room Database
+│   │   ├── entity/       # Database entities
+│   │   └── preferences/  # DataStore preferences
+│   └── repository/       # Repository implementations
+├── di/
+│   └── AppModule.kt      # Hilt dependency injection
+├── domain/
+│   ├── identity/         # Achievements, Ranks, Banners
+│   ├── model/            # Domain models
+│   └── repository/       # Repository interfaces
+├── notification/
+│   ├── NotificationReceiver.kt
+│   ├── NotificationScheduler.kt
+│   └── BootReceiver.kt
+├── ui/
+│   ├── components/       # Reusable UI components
+│   ├── navigation/       # Navigation setup
+│   ├── screens/          # App screens
+│   └── theme/            # Design system (Colors, Typography, Shapes, Dimensions, Tokens)
+├── util/
+│   ├── BuddhaWisdom.kt   # AI wisdom generator
+│   └── NotificationMessages.kt  # 100+ notification messages
+├── MainActivity.kt
+└── ProdyApplication.kt
+```
+
+## Content Library
+
+Prody includes extensive static content:
+
+| Content Type | Count | Categories |
+|--------------|-------|------------|
+| **Wisdom Quotes** | 75+ | Growth, Resilience, Gratitude, Mindfulness, Action, Self-Compassion, Perspective |
+| **Journal Prompts** | 80+ | Morning, Evening, Gratitude, Reflection, Growth, Emotional, Quick, Creative |
+| **Notification Messages** | 100+ | Re-engagement, Celebration, Competitive, Streak, Journal, Future Message, etc. |
+| **Achievements** | 20+ | Wisdom, Reflection, Consistency, Presence, Temporal, Mastery, Social, Explorer |
+| **Ranks** | 10 | Seeker to Awakened |
+
+## Documentation
+
+- [Database Schema](docs/database_schema.md) - Complete entity definitions and relationships
+- [NEXT_STEPS.md](NEXT_STEPS.md) - Roadmap with 25+ planned features
+- [DEVELOPMENT_ROADMAP.md](DEVELOPMENT_ROADMAP.md) - Technical implementation phases
 
 ## CI/CD
 
@@ -111,48 +185,19 @@ git push origin v1.0.0
 
 2. GitHub Actions will automatically build and create a release with the signed APK.
 
-## Project Structure
-
-```
-app/src/main/java/com/prody/prashant/
-├── data/
-│   ├── local/
-│   │   ├── dao/          # Room DAOs
-│   │   ├── database/     # Room Database
-│   │   ├── entity/       # Database entities
-│   │   └── preferences/  # DataStore preferences
-│   └── InitialContentData.kt
-├── di/
-│   └── AppModule.kt      # Hilt dependency injection
-├── domain/
-│   └── model/            # Domain models
-├── notification/
-│   ├── NotificationReceiver.kt
-│   ├── NotificationScheduler.kt
-│   └── BootReceiver.kt
-├── ui/
-│   ├── components/       # Reusable UI components
-│   ├── navigation/       # Navigation setup
-│   ├── screens/          # App screens
-│   └── theme/            # Material 3 theme
-├── util/
-│   ├── BuddhaWisdom.kt   # AI wisdom generator
-│   └── NotificationMessages.kt
-├── MainActivity.kt
-└── ProdyApplication.kt
-```
-
 ## Contributing
 
-Contributions are welcome! Please read our contributing guidelines before submitting PRs.
+This is a personal project by Prashant Chataut. Contributions, suggestions, and feedback are welcome!
+
+## Contact
+
+- **Instagram:** [@prashantchataut_](https://www.instagram.com/prashantchataut_/)
+- **Website:** [knowprashant.vercel.app](https://knowprashant.vercel.app)
+- **GitHub:** [prashantchataut](https://github.com/prashantchataut)
 
 ## License
 
 This project is open source. See the LICENSE file for details.
-
-## Roadmap
-
-See [NEXT_STEPS.md](NEXT_STEPS.md) for 25+ planned features and improvements.
 
 ---
 

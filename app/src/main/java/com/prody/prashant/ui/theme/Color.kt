@@ -211,12 +211,44 @@ val RarityUncommon = Color(0xFF66BB6A)   // Fresh green
 val RarityRare = Color(0xFF42A5F5)       // Bright blue
 val RarityEpic = Color(0xFFAB47BC)       // Rich purple
 val RarityLegendary = Color(0xFFD4AF37)  // Prestigious gold
+val RarityMythic = Color(0xFFFFD700)     // Brilliant gold with special treatment
+
+// Rarity Glow Colors (for badges/achievements)
+val RarityCommonGlow = Color(0x339E9E9E)
+val RarityUncommonGlow = Color(0x3366BB6A)
+val RarityRareGlow = Color(0x3342A5F5)
+val RarityEpicGlow = Color(0x33AB47BC)
+val RarityLegendaryGlow = Color(0x33D4AF37)
+val RarityMythicGlow = Color(0x66FFD700)
 
 // =============================================================================
 // ENHANCED STREAK COLORS - Fire & Energy
 // =============================================================================
 
 val StreakEmber = Color(0xFFFFC371)      // Warm ember glow
+val StreakCold = Color(0xFF90CAF9)       // Just started - cool blue
+val StreakWarm = Color(0xFFFFB74D)       // Building up - warm orange
+val StreakHot = Color(0xFFFF7043)        // On fire - deep orange
+val StreakBlazing = Color(0xFFE53935)    // Incredible streak - red hot
+
+// =============================================================================
+// LEADERBOARD POSITION COLORS
+// =============================================================================
+
+val LeaderboardGold = Color(0xFFFFD700)    // 1st place
+val LeaderboardSilver = Color(0xFFC0C0C0)  // 2nd place
+val LeaderboardBronze = Color(0xFFCD7F32)  // 3rd place
+val LeaderboardTop10 = Color(0xFF6B5CE7)   // Top 10 highlight
+
+// =============================================================================
+// XP & PROGRESS BAR COLORS
+// =============================================================================
+
+val XpBarBackground = Color(0xFFE0E0E0)
+val XpBarFill = Color(0xFF66BB6A)
+val XpBarGlow = Color(0x6666BB6A)
+val XpBarFillAlt = Color(0xFF4CAF50)      // Alternative XP bar fill
+val LevelUpGlow = Color(0xFFFFD700)       // Level up celebration glow
 
 // =============================================================================
 // STATUS COLORS - Clear Communication
@@ -283,4 +315,44 @@ object ProdyGradients {
     val celebrationGradient = listOf(Color(0xFFFFD700), Color(0xFFFF8C00), Color(0xFFFF6347))
     val achievementGradient = listOf(Color(0xFF9C27B0), Color(0xFFE040FB))
     val streakNotificationGradient = listOf(Color(0xFFFF6B6B), Color(0xFFFFAB76))
+
+    // Rarity-specific gradients
+    val epicGradient = listOf(RarityEpic, Color(0xFFE040FB))
+    val legendaryGradient = listOf(RarityLegendary, Color(0xFFF4D03F))
+    val mythicGradient = listOf(RarityMythic, Color(0xFFFFF59D), RarityMythic)
+
+    // XP and level gradients
+    val xpGradient = listOf(XpBarFill, Color(0xFF81C784))
+    val levelUpGradient = listOf(Color(0xFFFFD700), Color(0xFFFFE57F), Color(0xFFFFD700))
+
+    // Streak intensity gradients
+    val streakIntensityGradient = listOf(StreakCold, StreakWarm, StreakHot, StreakBlazing)
+
+    // Leaderboard gradients
+    val leaderboardGoldGradient = listOf(Color(0xFFFFD700), Color(0xFFFFF176))
+    val leaderboardSilverGradient = listOf(Color(0xFFC0C0C0), Color(0xFFE0E0E0))
+    val leaderboardBronzeGradient = listOf(Color(0xFFCD7F32), Color(0xFFD4A574))
 }
+
+// =============================================================================
+// BRAND COLORS - Prody Identity
+// =============================================================================
+
+// Primary brand identity colors (aliases for consistent naming)
+val ProdyGreen = ProdyPrimary
+val ProdyGreenLight = ProdyTertiary
+val ProdyGreenDark = ProdyPrimaryVariant
+
+// Achievement/reward gold
+val ProdyGold = Color(0xFFFFB300)
+val ProdyGoldLight = Color(0xFFFFE54C)
+val ProdyGoldDark = Color(0xFFC68400)
+
+// =============================================================================
+// SEMANTIC SUCCESS/WARNING/ERROR CONTAINERS
+// =============================================================================
+
+val SuccessGreenContainer = Color(0xFFE8F5E9)
+val WarningAmberContainer = Color(0xFFFFF8E1)
+val ErrorRedContainer = Color(0xFFFFEBEE)
+val InfoBlueContainer = Color(0xFFE3F2FD)

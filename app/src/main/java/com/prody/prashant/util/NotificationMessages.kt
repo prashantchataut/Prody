@@ -130,7 +130,56 @@ object NotificationMessages {
         Triple("Not a drill:", "Today is a good day to grow. That's it. That's the notification.", "Growing"),
         Triple("Fun fact about you:", "You're more resilient than you give yourself credit for.", "Thanks"),
         Triple("The grind never stops", "But also, take breaks. Balance is key.", "Balanced"),
-        Triple("Real ones grow daily", "You're a real one, right?", "Obviously")
+        Triple("Real ones grow daily", "You're a real one, right?", "Obviously"),
+        Triple("Just checking in", "How's life treating you? Take a moment to reflect.", "Check in"),
+        Triple("Growth o'clock", "Perfect time for a quick check-in.", "Let's go"),
+        Triple("Hey you", "Yeah you. How's it going?", "Going good"),
+        Triple("Random reminder:", "You're doing better than you think.", "Thanks"),
+        Triple("Quick question:", "When was the last time you celebrated a small win?", "Let me think"),
+        Triple("Halfway through the day", "How's your energy level? Time for a reset?", "Reset"),
+        Triple("Mental wellness check", "Your mind deserves attention too.", "Focus on me")
+    )
+
+    /**
+     * Morning motivation notifications
+     */
+    val morningMotivation = listOf(
+        Triple("Rise and grind?", "More like rise and shine. Start your day intentionally.", "Shine on"),
+        Triple("Morning!", "Buddha's got coffee... I mean wisdom.", "Get wisdom"),
+        Triple("New day, new opportunities", "What will you focus on today?", "Set intention"),
+        Triple("Fresh start activated", "Yesterday is gone. Today is yours.", "Claim it"),
+        Triple("Sunlight mode: ON", "Your potential is waiting to be unlocked.", "Unlock"),
+        Triple("Wake up call", "Not the annoying kind. The inspiring kind.", "Inspired"),
+        Triple("Morning mindset", "Choose growth. Choose positivity. Choose you.", "Choosing"),
+        Triple("First thought of the day:", "You have 24 hours of opportunity ahead.", "Make them count")
+    )
+
+    /**
+     * Evening reflection notifications
+     */
+    val eveningReflectionFun = listOf(
+        Triple("Day's wrapping up", "Time for a quick reflection?", "Reflect"),
+        Triple("Before you scroll into oblivion...", "Maybe journal first?", "Good idea"),
+        Triple("Night mode: activated", "Perfect time to reflect on today.", "Start"),
+        Triple("Sunset thoughts", "What made today meaningful?", "Think about it"),
+        Triple("Evening wisdom", "Process today before tomorrow arrives.", "Process"),
+        Triple("Wind down with Buddha", "Let's talk about how today went.", "Let's talk"),
+        Triple("Stars are coming out", "Time to let today's lessons sink in.", "Sink in"),
+        Triple("End of day debrief", "Quick reflection before rest.", "Debrief")
+    )
+
+    /**
+     * Level up / XP notifications
+     */
+    val levelUpNotifications = listOf(
+        Triple("{name}, level up bro", "You just hit level {level}!", "Celebrate"),
+        Triple("LEVEL UP!", "Level {level} unlocked. New rewards await!", "Check rewards"),
+        Triple("Character development: Complete", "Welcome to level {level}.", "View level"),
+        Triple("Ding!", "You've ascended to level {level}.", "Ascend"),
+        Triple("XP milestone reached!", "Your consistency is paying off.", "View XP"),
+        Triple("New level unlocked", "The view is better up here.", "Enjoy"),
+        Triple("Growth detected!", "Your level just increased.", "See progress"),
+        Triple("You're leveling up IRL", "And in the app. Level {level} achieved.", "Nice")
     )
 
     // ================== ORIGINAL NOTIFICATIONS (Enhanced) ==================
