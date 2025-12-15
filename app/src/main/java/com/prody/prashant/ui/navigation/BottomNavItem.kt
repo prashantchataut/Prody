@@ -79,12 +79,22 @@ sealed class BottomNavItem(
     companion object {
         /**
          * List of all bottom navigation items in display order.
+         *
+         * Note: Using lazy initialization to avoid static initialization order issues
+         * that can cause ExceptionInInitializerError/NullPointerException on some devices
+         * when data objects are accessed before they are fully initialized.
          */
-        val items = listOf(Home, Journal, Stats, Profile)
+        val items: List<BottomNavItem> by lazy {
+            listOf(Home, Journal, Stats, Profile)
+        }
 
         /**
          * Routes that should show the bottom navigation bar.
+         *
+         * Note: Using lazy initialization to avoid static initialization order issues.
          */
-        val bottomBarRoutes = items.map { it.route }
+        val bottomBarRoutes: List<String> by lazy {
+            items.map { it.route }
+        }
     }
 }
