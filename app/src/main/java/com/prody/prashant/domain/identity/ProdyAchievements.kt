@@ -88,6 +88,22 @@ object ProdyAchievements {
             iconName = "workspace_premium",
             primaryColorHex = 0xFFD4AF37,
             secondaryColorHex = 0xFFF4D03F
+        ),
+        SOCIAL(
+            id = "social",
+            displayName = "Social",
+            description = "Achievements from sharing and connecting with others",
+            iconName = "group",
+            primaryColorHex = 0xFFE91E63,
+            secondaryColorHex = 0xFFF48FB1
+        ),
+        EXPLORER(
+            id = "explorer",
+            displayName = "Explorer",
+            description = "Achievements from exploring all Prody features",
+            iconName = "explore",
+            primaryColorHex = 0xFF00BCD4,
+            secondaryColorHex = 0xFF4DD0E1
         );
 
         companion object {
@@ -992,6 +1008,220 @@ object ProdyAchievements {
                 iconName = "foundation",
                 celebrationMessage = "You were here at the beginning. This journey, we share.",
                 rewardPoints = 1000
+            )
+        )
+
+        // ===== SOCIAL CATEGORY =====
+        add(
+            Achievement(
+                id = "first_share",
+                name = "Sharing is Caring",
+                description = "Your journey inspires others",
+                category = Category.SOCIAL,
+                rarity = Rarity.COMMON,
+                requirement = 1,
+                requirementDescription = "Share your profile for the first time",
+                iconName = "share",
+                celebrationMessage = "You've shared your growth journey. May it inspire others.",
+                rewardPoints = 50
+            )
+        )
+        add(
+            Achievement(
+                id = "social_butterfly",
+                name = "Social Butterfly",
+                description = "Spreading inspiration far and wide",
+                category = Category.SOCIAL,
+                rarity = Rarity.UNCOMMON,
+                requirement = 5,
+                requirementDescription = "Share your achievements 5 times",
+                iconName = "flutter_dash",
+                celebrationMessage = "Five shares - your journey touches many hearts.",
+                rewardPoints = 100
+            )
+        )
+        add(
+            Achievement(
+                id = "influencer",
+                name = "Growth Influencer",
+                description = "Your dedication inspires a community",
+                category = Category.SOCIAL,
+                rarity = Rarity.RARE,
+                requirement = 15,
+                requirementDescription = "Share your achievements 15 times",
+                iconName = "campaign",
+                celebrationMessage = "Fifteen moments shared - you are building a community of growth.",
+                rewardPoints = 300
+            )
+        )
+        add(
+            Achievement(
+                id = "leaderboard_top3",
+                name = "Podium Finisher",
+                description = "Among the most dedicated seekers",
+                category = Category.SOCIAL,
+                rarity = Rarity.EPIC,
+                requirement = 1,
+                requirementDescription = "Reach the top 3 on the leaderboard",
+                iconName = "emoji_events",
+                celebrationMessage = "You stand among the greats. Timi ta babal raixau yr!",
+                rewardPoints = 500
+            )
+        )
+        add(
+            Achievement(
+                id = "leaderboard_champion",
+                name = "Champion of Growth",
+                description = "The pinnacle of dedication and consistency",
+                category = Category.SOCIAL,
+                rarity = Rarity.LEGENDARY,
+                requirement = 1,
+                requirementDescription = "Reach #1 on the leaderboard",
+                iconName = "military_tech",
+                celebrationMessage = "You are the champion. Your dedication is unmatched!",
+                rewardPoints = 1000
+            )
+        )
+
+        // ===== EXPLORER CATEGORY =====
+        add(
+            Achievement(
+                id = "first_word_learned",
+                name = "Word Explorer",
+                description = "The journey of a thousand words begins with one",
+                category = Category.EXPLORER,
+                rarity = Rarity.COMMON,
+                requirement = 1,
+                requirementDescription = "View your first word of the day",
+                iconName = "search",
+                celebrationMessage = "You've discovered your first word. Many more await!",
+                rewardPoints = 25
+            )
+        )
+        add(
+            Achievement(
+                id = "quote_explorer",
+                name = "Quote Explorer",
+                description = "Wisdom from the ages, discovered",
+                category = Category.EXPLORER,
+                rarity = Rarity.COMMON,
+                requirement = 1,
+                requirementDescription = "Read your first daily quote",
+                iconName = "format_quote",
+                celebrationMessage = "You've discovered the wisdom section. Explore freely!",
+                rewardPoints = 25
+            )
+        )
+        add(
+            Achievement(
+                id = "meditation_beginner",
+                name = "Mindful Moment",
+                description = "The first step into stillness",
+                category = Category.EXPLORER,
+                rarity = Rarity.COMMON,
+                requirement = 1,
+                requirementDescription = "Complete your first meditation session",
+                iconName = "self_improvement",
+                celebrationMessage = "You've taken your first mindful breath. Peace awaits.",
+                rewardPoints = 50
+            )
+        )
+        add(
+            Achievement(
+                id = "meditation_regular",
+                name = "Regular Meditator",
+                description = "Finding peace through consistent practice",
+                category = Category.EXPLORER,
+                rarity = Rarity.RARE,
+                requirement = 10,
+                requirementDescription = "Complete 10 meditation sessions",
+                iconName = "spa",
+                celebrationMessage = "Ten sessions of stillness. The calm within grows.",
+                rewardPoints = 200
+            )
+        )
+        add(
+            Achievement(
+                id = "challenge_accepted",
+                name = "Challenge Accepted",
+                description = "Growth comes from stepping outside comfort zones",
+                category = Category.EXPLORER,
+                rarity = Rarity.UNCOMMON,
+                requirement = 1,
+                requirementDescription = "Join your first challenge",
+                iconName = "flag",
+                celebrationMessage = "You've accepted the challenge. Rise to it!",
+                rewardPoints = 75
+            )
+        )
+        add(
+            Achievement(
+                id = "challenge_victor",
+                name = "Challenge Victor",
+                description = "Challenges conquered, character forged",
+                category = Category.EXPLORER,
+                rarity = Rarity.RARE,
+                requirement = 5,
+                requirementDescription = "Complete 5 challenges",
+                iconName = "star",
+                celebrationMessage = "Five challenges completed. You are unstoppable!",
+                rewardPoints = 300
+            )
+        )
+        add(
+            Achievement(
+                id = "feature_master",
+                name = "Feature Master",
+                description = "Explored every corner of Prody",
+                category = Category.EXPLORER,
+                rarity = Rarity.EPIC,
+                requirement = 1,
+                requirementDescription = "Use all major Prody features at least once",
+                iconName = "apps",
+                celebrationMessage = "You've explored all of Prody. You are a true master!",
+                rewardPoints = 500
+            )
+        )
+        add(
+            Achievement(
+                id = "comeback_kid",
+                name = "Comeback Kid",
+                description = "Falling down is not failure, staying down is",
+                category = Category.EXPLORER,
+                rarity = Rarity.UNCOMMON,
+                requirement = 1,
+                requirementDescription = "Return after a 7+ day absence",
+                iconName = "refresh",
+                celebrationMessage = "Welcome back! Every return is a victory.",
+                rewardPoints = 100
+            )
+        )
+        add(
+            Achievement(
+                id = "night_explorer",
+                name = "Night Explorer",
+                description = "The quiet hours hold their own wisdom",
+                category = Category.EXPLORER,
+                rarity = Rarity.UNCOMMON,
+                requirement = 5,
+                requirementDescription = "Use Prody between midnight and 4 AM, 5 times",
+                iconName = "bedtime",
+                celebrationMessage = "Five midnight sessions. You find wisdom in the quiet hours.",
+                rewardPoints = 150
+            )
+        )
+        add(
+            Achievement(
+                id = "weekend_warrior",
+                name = "Weekend Warrior",
+                description = "Growth doesn't take weekends off",
+                category = Category.EXPLORER,
+                rarity = Rarity.RARE,
+                requirement = 8,
+                requirementDescription = "Use Prody on 8 consecutive weekend days",
+                iconName = "weekend",
+                celebrationMessage = "Eight weekends of dedication. You never stop growing!",
+                rewardPoints = 250
             )
         )
     }

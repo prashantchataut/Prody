@@ -35,6 +35,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -47,6 +48,7 @@ import com.prody.prashant.R
 import com.prody.prashant.data.local.entity.AchievementEntity
 import com.prody.prashant.ui.components.ProdyCard
 import com.prody.prashant.ui.theme.*
+import com.prody.prashant.util.ShareProfileUtil
 import kotlinx.coroutines.delay
 
 /**
@@ -117,6 +119,9 @@ fun ProfileScreen(
                     currentStreak = uiState.currentStreak,
                     longestStreak = uiState.longestStreak,
                     daysOnPrody = uiState.daysOnPrody,
+                    wordsLearned = uiState.wordsLearned,
+                    journalEntries = uiState.journalEntries,
+                    achievementsUnlocked = uiState.achievementsUnlocked,
                     onSettingsClick = onNavigateToSettings
                 )
             }
@@ -364,8 +369,14 @@ private fun ProfileHeader(
     currentStreak: Int,
     longestStreak: Int,
     daysOnPrody: Int,
+    wordsLearned: Int = 0,
+    journalEntries: Int = 0,
+    achievementsUnlocked: Int = 0,
     onSettingsClick: () -> Unit
 ) {
+    val context = LocalContext.current
+    var showShareMenu by remember { mutableStateOf(false) }
+
     val infiniteTransition = rememberInfiniteTransition(label = "header_animation")
     val glowAlpha by infiniteTransition.animateFloat(
         initialValue = 0.3f,
@@ -393,19 +404,86 @@ private fun ProfileHeader(
         // Animated background
         ProfileHeaderBackground()
 
-        // Settings button
-        IconButton(
-            onClick = onSettingsClick,
+        // Top action buttons row
+        Row(
             modifier = Modifier
                 .align(Alignment.TopEnd)
                 .statusBarsPadding()
-                .padding(8.dp)
+                .padding(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            Icon(
-                imageVector = Icons.Filled.Settings,
-                contentDescription = stringResource(R.string.settings),
-                tint = Color.White
-            )
+            // Share button
+            Box {
+                IconButton(onClick = { showShareMenu = true }) {
+                    Icon(
+                        imageVector = Icons.Filled.Share,
+                        contentDescription = "Share Profile",
+                        tint = Color.White
+                    )
+                }
+
+                // Share dropdown menu
+                DropdownMenu(
+                    expanded = showShareMenu,
+                    onDismissRequest = { showShareMenu = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Share Profile Card") },
+                        onClick = {
+                            showShareMenu = false
+                            ShareProfileUtil.shareProfile(
+                                context = context,
+                                userName = displayName,
+                                title = title,
+                                level = getLevelFromPoints(totalPoints),
+                                totalPoints = totalPoints,
+                                currentStreak = currentStreak,
+                                longestStreak = longestStreak,
+                                wordsLearned = wordsLearned,
+                                journalEntries = journalEntries,
+                                achievementsUnlocked = achievementsUnlocked,
+                                isDarkMode = false,
+                                shareAsStory = false
+                            )
+                        },
+                        leadingIcon = {
+                            Icon(Icons.Filled.Image, contentDescription = null)
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Share as Story") },
+                        onClick = {
+                            showShareMenu = false
+                            ShareProfileUtil.shareProfile(
+                                context = context,
+                                userName = displayName,
+                                title = title,
+                                level = getLevelFromPoints(totalPoints),
+                                totalPoints = totalPoints,
+                                currentStreak = currentStreak,
+                                longestStreak = longestStreak,
+                                wordsLearned = wordsLearned,
+                                journalEntries = journalEntries,
+                                achievementsUnlocked = achievementsUnlocked,
+                                isDarkMode = false,
+                                shareAsStory = true
+                            )
+                        },
+                        leadingIcon = {
+                            Icon(Icons.Filled.Slideshow, contentDescription = null)
+                        }
+                    )
+                }
+            }
+
+            // Settings button
+            IconButton(onClick = onSettingsClick) {
+                Icon(
+                    imageVector = Icons.Filled.Settings,
+                    contentDescription = stringResource(R.string.settings),
+                    tint = Color.White
+                )
+            }
         }
 
         Column(
