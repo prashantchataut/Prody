@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -5,6 +7,14 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
     alias(libs.plugins.kotlin.serialization)
+}
+
+// Load local.properties for API key configuration
+val localProperties = Properties().apply {
+    val localPropertiesFile = rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        load(localPropertiesFile.inputStream())
+    }
 }
 
 android {
@@ -29,6 +39,14 @@ android {
             arg("room.incremental", "true")
             arg("room.generateKotlin", "true")
         }
+
+        // AI API Key configuration - reads from local.properties
+        // Add your API key to local.properties: AI_API_KEY=your_gemini_api_key_here
+        buildConfigField(
+            "String",
+            "AI_API_KEY",
+            "\"${localProperties.getProperty("AI_API_KEY", "")}\""
+        )
     }
 
     sourceSets {

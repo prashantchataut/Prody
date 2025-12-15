@@ -8,6 +8,7 @@ import com.google.ai.client.generativeai.type.HarmCategory
 import com.google.ai.client.generativeai.type.SafetySetting
 import com.google.ai.client.generativeai.type.content
 import com.google.ai.client.generativeai.type.generationConfig
+import com.prody.prashant.BuildConfig
 import com.prody.prashant.domain.model.Mood
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -184,6 +185,30 @@ class GeminiService @Inject constructor() {
     private var generativeModel: GenerativeModel? = null
     private var currentApiKey: String? = null
     private var currentModel: GeminiModel = GeminiModel.GEMINI_1_5_FLASH
+
+    companion object {
+        /**
+         * Gets the API key from BuildConfig (set via local.properties).
+         * This is the recommended way to configure the API key for security.
+         *
+         * To configure:
+         * 1. Open local.properties in the project root
+         * 2. Add: AI_API_KEY=your_gemini_api_key_here
+         * 3. Rebuild the project
+         *
+         * The API key will be injected at compile time and NOT stored in source control.
+         */
+        fun getApiKeyFromBuildConfig(): String? {
+            return BuildConfig.AI_API_KEY.takeIf { it.isNotBlank() }
+        }
+
+        /**
+         * Checks if an API key is configured in BuildConfig.
+         */
+        fun isApiKeyConfiguredInBuildConfig(): Boolean {
+            return BuildConfig.AI_API_KEY.isNotBlank()
+        }
+    }
 
     private val safetySettings = listOf(
         SafetySetting(HarmCategory.HARASSMENT, BlockThreshold.MEDIUM_AND_ABOVE),

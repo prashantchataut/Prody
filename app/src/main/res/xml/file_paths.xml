@@ -3,4 +3,7 @@
     <cache-path
         name="backups"
         path="backups/" />
+    <cache-path
+        name="images"
+        path="images/" />
 </paths>
