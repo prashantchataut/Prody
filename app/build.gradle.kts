@@ -47,6 +47,11 @@ android {
             "AI_API_KEY",
             "\"${localProperties.getProperty("AI_API_KEY", "")}\""
         )
+        buildConfigField(
+            "String",
+            "OPENROUTER_API_KEY",
+            "\"${localProperties.getProperty("OPENROUTER_API_KEY", "")}\""
+        )
     }
 
     sourceSets {
@@ -198,4 +203,10 @@ dependencies {
     // Debug
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+    // Networking
+    implementation(libs.okhttp)
+    implementation(libs.okhttp.logging)
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.kotlinx.serialization)
 }

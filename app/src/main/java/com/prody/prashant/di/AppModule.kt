@@ -161,4 +161,10 @@ object AppModule {
     fun provideGeminiService(): GeminiService {
         return GeminiService()
     }
+
+    @Provides
+    @Singleton
+    fun provideOpenRouterService(): OpenRouterService {
+        return OpenRouterService()
+    }
 }
