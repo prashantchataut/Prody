@@ -316,6 +316,145 @@ object ProdyGradients {
     val achievementGradient = listOf(Color(0xFF9C27B0), Color(0xFFE040FB))
     val streakNotificationGradient = listOf(Color(0xFFFF6B6B), Color(0xFFFFAB76))
 
+    // Rarity tier gradients for achievement badges
+    val commonGradient = listOf(RarityCommon, Color(0xFF90A4AE))
+    val uncommonGradient = listOf(RarityUncommon, Color(0xFF81C784))
+    val rareGradient = listOf(RarityRare, Color(0xFF64B5F6))
+    val epicGradient = listOf(RarityEpic, Color(0xFFCE93D8))
+    val legendaryGradient = listOf(RarityLegendary, Color(0xFFF4D03F))
+    val mythicGradient = listOf(Color(0xFFFFD700), Color(0xFFFFF59D), Color(0xFFFFD700))
+
+    // Level up celebration gradients
+    val levelUpGradient = listOf(Color(0xFF7C4DFF), Color(0xFF448AFF), Color(0xFF69F0AE))
+    val xpBoostGradient = listOf(Color(0xFF66BB6A), Color(0xFFA5D6A7))
+}
+
+// =============================================================================
+// LEADERBOARD PODIUM COLORS - Distinct Position Indicators
+// =============================================================================
+
+val LeaderboardFirst = Color(0xFFFFD700)       // Gold for 1st place
+val LeaderboardSecond = Color(0xFFC0C0C0)      // Silver for 2nd place
+val LeaderboardThird = Color(0xFFCD7F32)       // Bronze for 3rd place
+val LeaderboardTop10 = Color(0xFF64B5F6)       // Blue highlight for top 10
+val LeaderboardUser = Color(0xFF81C784)        // Green highlight for current user
+
+// Podium glow effects (with alpha for ambient lighting)
+val LeaderboardFirstGlow = Color(0x66FFD700)
+val LeaderboardSecondGlow = Color(0x66C0C0C0)
+val LeaderboardThirdGlow = Color(0x66CD7F32)
+
+// =============================================================================
+// RARITY GLOW COLORS - Achievement Badge Ambient Effects
+// =============================================================================
+
+val RarityCommonGlow = Color(0x3378909C)       // Subtle gray glow
+val RarityUncommonGlow = Color(0x3366BB6A)     // Soft green glow
+val RarityRareGlow = Color(0x3342A5F5)         // Blue glow
+val RarityEpicGlow = Color(0x33AB47BC)         // Purple glow
+val RarityLegendaryGlow = Color(0x66D4AF37)    // Strong gold glow
+val RarityMythicGlow = Color(0x80FFD700)       // Intense golden glow
+
+// =============================================================================
+// STREAK INTENSITY COLORS - Visual Progression
+// =============================================================================
+
+// Streak colors based on count (gradient from cold to blazing)
+val StreakCold = Color(0xFF90CAF9)             // 1-3 days - just starting
+val StreakWarm = Color(0xFFFFB74D)             // 4-6 days - building momentum
+val StreakHot = Color(0xFFFF7043)              // 7-13 days - on fire
+val StreakBlazing = Color(0xFFE53935)          // 14-29 days - incredible
+val StreakInferno = Color(0xFFD500F9)          // 30+ days - legendary
+
+// Streak milestone colors
+val StreakWeekMilestone = Color(0xFFFF8C42)    // 7-day milestone
+val StreakMonthMilestone = Color(0xFFE65C2C)   // 30-day milestone
+val StreakQuarterMilestone = Color(0xFFD43B3B) // 90-day milestone
+val StreakYearMilestone = Color(0xFFFFD700)    // 365-day milestone
+
+// =============================================================================
+// XP & LEVEL COLORS - Progress Visualization
+// =============================================================================
+
+val XpBarBackground = Color(0xFFE0E0E0)
+val XpBarFill = Color(0xFF66BB6A)
+val XpBarGlow = Color(0x6666BB6A)
+val XpBarOverflow = Color(0xFFFFD700)          // When XP exceeds level requirement
+
+val LevelBadgeBackground = Color(0xFF2D5A3D)
+val LevelBadgeText = Color(0xFFFFFFFF)
+val LevelUpGlow = Color(0x667C4DFF)
+
+// =============================================================================
+// EMOTION SPECTRUM COLORS - Journal Mood Tracking
+// =============================================================================
+
+// Primary emotions with psychological color associations
+val EmotionJoy = Color(0xFFFFC93C)             // Warm yellow - happiness, optimism
+val EmotionPeace = Color(0xFF81D4FA)           // Light blue - calm, serenity
+val EmotionGratitude = Color(0xFFFF8A65)       // Warm coral - appreciation, warmth
+val EmotionLove = Color(0xFFFF6B6B)            // Soft red - affection, connection
+val EmotionHope = Color(0xFF69F0AE)            // Mint green - optimism, possibility
+val EmotionCuriosity = Color(0xFFFFD54F)       // Amber - exploration, interest
+
+// Challenging emotions (with softer, supportive tones)
+val EmotionAnxiety = Color(0xFFCE93D8)         // Soft purple - gentle acknowledgment
+val EmotionSadness = Color(0xFF90A4AE)         // Muted blue-grey - understanding
+val EmotionAnger = Color(0xFFEF5350)           // Red - intensity, passion
+val EmotionFear = Color(0xFF7E57C2)            // Deep purple - depth, mystery
+val EmotionFrustration = Color(0xFFFFAB91)     // Peach - warm acknowledgment
+val EmotionConfusion = Color(0xFFFFCC80)       // Light orange - seeking clarity
+
+// Neutral/transitional emotions
+val EmotionNeutral = Color(0xFFB0BEC5)         // Balanced gray
+val EmotionReflective = Color(0xFFB4A7D6)      // Soft lavender - contemplation
+val EmotionFocused = Color(0xFF4FC3F7)         // Clear blue - concentration
+val EmotionDetermined = Color(0xFFFF7043)      // Deep orange - resolve
+
+// =============================================================================
+// WISDOM CONTENT COLORS - Buddha's Wisdom Cards
+// =============================================================================
+
+val WisdomCardBackground = Color(0xFFFFFBF0)   // Warm parchment-like background
+val WisdomCardBackgroundDark = Color(0xFF2A2520) // Dark theme parchment
+val WisdomQuoteText = Color(0xFF3E2723)        // Deep brown for wisdom text
+val WisdomQuoteTextDark = Color(0xFFEFE8DC)    // Light warm text for dark mode
+val WisdomAuthor = Color(0xFF5D4037)           // Brown for attribution
+val WisdomAuthorDark = Color(0xFFBCAAA4)       // Light brown for dark mode
+
+// Wisdom category colors
+val WisdomStoic = Color(0xFF5C6BC0)            // Indigo - stoic philosophy
+val WisdomGrowth = Color(0xFF66BB6A)           // Green - personal growth
+val WisdomMindfulness = Color(0xFF26A69A)      // Teal - presence, awareness
+val WisdomResilience = Color(0xFFEF6C00)       // Orange - strength, endurance
+val WisdomGratitude = Color(0xFFFFB300)        // Amber - appreciation
+val WisdomPerspective = Color(0xFF7E57C2)      // Purple - expanded viewpoint
+
+// =============================================================================
+// CHALLENGE COLORS - Community Challenges
+// =============================================================================
+
+val ChallengeActive = Color(0xFF4CAF50)        // Green - in progress
+val ChallengeCompleted = Color(0xFFFFD700)     // Gold - achieved
+val ChallengePending = Color(0xFFFFB300)       // Amber - upcoming
+val ChallengeExpired = Color(0xFF9E9E9E)       // Gray - missed
+
+val ChallengeMilestoneReached = Color(0xFF66BB6A)
+val ChallengeMilestonePending = Color(0xFFE0E0E0)
+
+// =============================================================================
+// FUTURE MESSAGE COLORS - Time Capsule UI
+// =============================================================================
+
+val FutureMessageScheduled = Color(0xFF5C6BC0)  // Indigo - waiting
+val FutureMessageArrived = Color(0xFFFFD700)    // Gold - delivered
+val FutureMessageRead = Color(0xFF66BB6A)       // Green - opened
+
+// Category colors for future messages
+val FutureGoal = Color(0xFF66BB6A)              // Green - goals
+val FutureMotivation = Color(0xFFFF7043)        // Orange - motivation
+val FuturePromise = Color(0xFF5C6BC0)           // Indigo - commitments
+val FutureGeneral = Color(0xFF90A4AE)           // Gray - general thoughts
     // Rarity-specific gradients
     val epicGradient = listOf(RarityEpic, Color(0xFFE040FB))
     val legendaryGradient = listOf(RarityLegendary, Color(0xFFF4D03F))

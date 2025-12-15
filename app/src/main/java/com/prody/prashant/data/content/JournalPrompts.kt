@@ -219,6 +219,16 @@ object JournalPrompts {
     }
 
     /**
+     * Gets a single prompt for time of day.
+     */
+    fun getPromptForTimeOfDay(hour: Int): Prompt {
+        return getPromptsForTimeOfDay(hour).random()
+    }
+
+    /**
+     * Gets random prompts across categories (for variety).
+     */
+    fun getRandomPrompts(count: Int = 3): List<Prompt> {
      * Get a random prompt from all available prompts.
      *
      * @return A random journal prompt
@@ -266,6 +276,82 @@ object JournalPrompts {
     }
 
     /**
+     * Gets quick prompts for when time is limited.
+     */
+    fun getQuickPrompt(): Prompt {
+        return allQuickPrompts.random()
+    }
+
+    /**
+     * Gets prompts appropriate for user's mood.
+     */
+    fun getPromptForMood(mood: String): Prompt {
+        return when (mood.lowercase()) {
+            "happy", "joyful", "excited" -> gratitudePrompts.random()
+            "sad", "down", "low" -> emotionalPrompts.random()
+            "anxious", "worried" -> (emotionalPrompts + reflectionPrompts).random()
+            "motivated", "energetic" -> growthPrompts.random()
+            "grateful", "thankful" -> gratitudePrompts.random()
+            "confused", "lost" -> reflectionPrompts.random()
+            "creative", "inspired" -> creativePrompts.random()
+            "tired", "exhausted" -> quickPrompts.random()
+            else -> allPrompts.random()
+        }
+    }
+
+    /**
+     * Gets a milestone prompt with streak count.
+     */
+    fun getMilestonePrompt(streakDays: Int): Prompt {
+        val prompt = milestonePrompts.random()
+        return prompt.copy(
+            text = prompt.text.replace("{days}", streakDays.toString())
+        )
+    }
+
+    /**
+     * Gets prompts with follow-ups for deeper exploration.
+     */
+    fun getPromptsWithFollowUps(): List<Prompt> {
+        return allPrompts.filter { it.followUp != null }
+    }
+
+    /**
+     * Gets prompts within a time limit.
+     */
+    fun getPromptsWithinTimeLimit(maxMinutes: Int): List<Prompt> {
+        return allPrompts.filter { it.estimatedMinutes <= maxMinutes }
+    }
+
+    /**
+     * Searches prompts by keyword.
+     */
+    fun searchPrompts(keyword: String): List<Prompt> {
+        val lowerKeyword = keyword.lowercase()
+        return allPrompts.filter {
+            it.text.lowercase().contains(lowerKeyword)
+        }
+    }
+
+    /**
+     * Gets the total count of prompts.
+     */
+    fun getTotalPromptCount(): Int = allPrompts.size
+
+    /**
+     * Gets count by category.
+     */
+    fun getCountByCategory(category: PromptCategory): Int {
+        return getPromptsByCategory(category).size
+    }
+
+    /**
+     * Gets a diverse set of prompts (one from each category).
+     */
+    fun getDiversePrompts(): List<Prompt> {
+        return PromptCategory.values().mapNotNull { category ->
+            getPromptsByCategory(category).randomOrNull()
+        }
      * Get prompts based on the user's mood.
      *
      * @param moodName The name of the mood

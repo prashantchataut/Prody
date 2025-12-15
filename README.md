@@ -4,6 +4,20 @@
   <img src="app/src/main/res/mipmap-xxxhdpi/ic_launcher.webp" alt="Prody Logo" width="120"/>
 </p>
 
+<p align="center">
+  <strong>Transform the way you think, learn, and evolve</strong>
+</p>
+
+<p align="center">
+  <a href="#features">Features</a> |
+  <a href="#technology-stack">Tech Stack</a> |
+  <a href="#ai-integration">AI Setup</a> |
+  <a href="#building-the-app">Build</a> |
+  <a href="#architecture">Architecture</a>
+</p>
+
+---
+
 **Prody** is a comprehensive self-improvement Android app that transforms the way you think, learn, and evolve. Built with modern Android development practices using Kotlin, Jetpack Compose, and Material 3 Design.
 
 ## Features
@@ -82,6 +96,7 @@ Prody features a comprehensive design system:
 - Android Studio Hedgehog (2023.1.1) or newer
 - JDK 17+
 - Android SDK 35
+- (Optional) AI API keys for Buddha functionality
 
 ### AI Features (Optional)
 To enable Buddha AI features:
@@ -97,7 +112,7 @@ To enable Buddha AI features:
 
 ### Build Steps
 
-1. Clone the repository:
+1. **Clone the repository:**
 ```bash
 git clone https://github.com/prashantchataut/prody.git
 cd prody
@@ -128,7 +143,7 @@ app/src/main/java/com/prody/prashant/
 │   │   └── preferences/  # DataStore preferences
 │   └── repository/       # Repository implementations
 ├── di/
-│   └── AppModule.kt      # Hilt dependency injection
+│   └── AppModule.kt          # Hilt dependency injection
 ├── domain/
 │   ├── identity/         # Achievements, Ranks, Banners
 │   ├── model/            # Domain models
@@ -199,6 +214,49 @@ This is a personal project by Prashant Chataut. Contributions, suggestions, and 
 
 This project is open source. See the LICENSE file for details.
 
+Upcoming features:
+- Cloud sync with Firebase
+- Social sharing features
+- Widget support
+- Wear OS companion app
+- Advanced spaced repetition
+
 ---
 
-*Built with love for personal growth seekers*
+## Support & Contact
+
+### Bug Reports & Feature Requests
+
+Please use [GitHub Issues](https://github.com/yourusername/prody/issues) for:
+- Bug reports
+- Feature requests
+- Documentation improvements
+
+### Developer Contact
+
+- **Email**: developer@prodyapp.com
+- **Twitter**: [@ProdyApp](https://twitter.com/prodyapp)
+- **Discord**: [Prody Community](https://discord.gg/prody)
+
+### FAQ
+
+**Q: Does Buddha work offline?**
+A: Yes, previously cached responses work offline. New journal entries queue for AI response when online.
+
+**Q: How secure are my journal entries?**
+A: All data is stored locally on your device. AI requests use encrypted connections. No personal data is stored on servers.
+
+**Q: Can I export my data?**
+A: Yes, Settings > Export Data creates a JSON backup of all your entries and progress.
+
+---
+
+## License
+
+This project is open source. See the [LICENSE](LICENSE) file for details.
+
+---
+
+<p align="center">
+  <sub>Built with love for personal growth seekers</sub>
+</p>

@@ -447,6 +447,9 @@ val LeaderboardNameStyle = TextStyle(
 )
 
 /**
+ * Leaderboard points style - For point displays
+ */
+val LeaderboardPointsStyle = TextStyle(
  * Progress percentage style - For showing progress percentages
  */
 val ProgressPercentageStyle = TextStyle(
