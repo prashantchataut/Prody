@@ -36,7 +36,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -127,6 +129,8 @@ fun FlashcardScreen(
                         onKnow = { viewModel.onKnow() },
                         onDontKnow = { viewModel.onDontKnow() },
                         onSkip = { viewModel.onSkip() },
+                        onHard = { viewModel.onHard() },
+                        onPerfect = { viewModel.onPerfect() },
                         onSpeak = { viewModel.speakWord(it) }
                     )
                 }
@@ -141,8 +145,13 @@ private fun FlashcardReviewContent(
     onKnow: () -> Unit,
     onDontKnow: () -> Unit,
     onSkip: () -> Unit,
+    onHard: () -> Unit,
+    onPerfect: () -> Unit,
     onSpeak: (String) -> Unit
 ) {
+    // Track if user has flipped the card to see the answer
+    var hasSeenAnswer by remember(uiState.currentIndex) { mutableStateOf(false) }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -173,30 +182,38 @@ private fun FlashcardReviewContent(
                 .fillMaxWidth(),
             contentAlignment = Alignment.Center
         ) {
-            FlashcardStack(
+            FlashcardStackWithFlipTracking(
                 cards = uiState.cards,
                 currentIndex = uiState.currentIndex,
                 onSwipeLeft = { onDontKnow() },
                 onSwipeRight = { onKnow() },
                 onSwipeUp = { onSkip() },
-                onSpeak = onSpeak
+                onSpeak = onSpeak,
+                onFlip = { hasSeenAnswer = true }
             )
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Control buttons
+        // Control buttons - show detailed options after user flips the card
         FlashcardControls(
             onDontKnow = onDontKnow,
             onSkip = onSkip,
-            onKnow = onKnow
+            onKnow = onKnow,
+            onHard = onHard,
+            onPerfect = onPerfect,
+            showDetailedOptions = hasSeenAnswer
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Swipe instructions
+        // Swipe instructions (changes based on state)
         Text(
-            text = "Swipe left: Don't Know  |  Swipe right: Know  |  Swipe up: Skip",
+            text = if (hasSeenAnswer) {
+                "Rate how well you knew this word"
+            } else {
+                "Tap card to reveal answer, then rate your recall"
+            },
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center

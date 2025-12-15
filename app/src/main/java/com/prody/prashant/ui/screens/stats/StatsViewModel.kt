@@ -2,6 +2,7 @@ package com.prody.prashant.ui.screens.stats
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.prody.prashant.data.local.dao.JournalDao
 import com.prody.prashant.data.local.dao.UserDao
 import com.prody.prashant.data.local.entity.LeaderboardEntryEntity
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -26,12 +27,14 @@ data class StatsUiState(
     val weeklyGrowthPercent: Int = 0,
     val consistencyScore: Int = 0,
     val learningPace: String = "Steady",
-    val isLoading: Boolean = true
+    val isLoading: Boolean = true,
+    val totalWordsWritten: Int = 0
 )
 
 @HiltViewModel
 class StatsViewModel @Inject constructor(
-    private val userDao: UserDao
+    private val userDao: UserDao,
+    private val journalDao: JournalDao
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(StatsUiState())
@@ -94,24 +97,33 @@ class StatsViewModel @Inject constructor(
             }
         }
 
-        // Load mood distribution
+        // Load real mood distribution from journal entries
         viewModelScope.launch {
             try {
-                // Generate sample mood distribution data
-                // In a real app, this would come from journal entries
-                val sampleMoodData = mapOf(
-                    "happy" to (10..30).random(),
-                    "calm" to (15..35).random(),
-                    "motivated" to (8..25).random(),
-                    "grateful" to (5..20).random(),
-                    "anxious" to (3..12).random(),
-                    "sad" to (2..8).random()
-                )
-                _uiState.update { state ->
-                    state.copy(moodDistribution = sampleMoodData)
+                journalDao.getMoodDistribution().collect { moodCounts ->
+                    val moodMap = moodCounts
+                        .filter { it.mood.isNotBlank() }
+                        .associate { it.mood.lowercase() to it.count }
+
+                    _uiState.update { state ->
+                        state.copy(moodDistribution = moodMap)
+                    }
                 }
             } catch (e: Exception) {
                 android.util.Log.e(TAG, "Error loading mood distribution", e)
+            }
+        }
+
+        // Load total words written from journals
+        viewModelScope.launch {
+            try {
+                journalDao.getTotalWordCount().collect { wordCount ->
+                    _uiState.update { state ->
+                        state.copy(totalWordsWritten = wordCount ?: 0)
+                    }
+                }
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error loading total word count", e)
             }
         }
     }
