@@ -32,25 +32,28 @@ data class JournalTemplate(
 ) {
     companion object {
         /**
-         * Returns all available journal templates.
+         * Lazily initialized list of all available journal templates.
+         * This prevents the list from being created on app startup, improving performance.
          */
-        fun all(): List<JournalTemplate> = listOf(
-            gratitude(),
-            reflection(),
-            goalSetting(),
-            morningPages(),
-            eveningReview(),
-            problemSolving(),
-            creativeBrainstorm(),
-            selfCompassion(),
-            habitTracker(),
-            weeklyReview()
-        )
+        val all: List<JournalTemplate> by lazy {
+            listOf(
+                gratitude(),
+                reflection(),
+                goalSetting(),
+                morningPages(),
+                eveningReview(),
+                problemSolving(),
+                creativeBrainstorm(),
+                selfCompassion(),
+                habitTracker(),
+                weeklyReview()
+            )
+        }
 
         /**
          * Gratitude template - Focus on thankfulness.
          */
-        fun gratitude() = JournalTemplate(
+        private fun gratitude() = JournalTemplate(
             id = "gratitude",
             name = "Gratitude Journal",
             description = "Cultivate positivity by reflecting on what you're thankful for",
@@ -74,7 +77,7 @@ data class JournalTemplate(
         /**
          * Daily reflection template.
          */
-        fun reflection() = JournalTemplate(
+        private fun reflection() = JournalTemplate(
             id = "reflection",
             name = "Daily Reflection",
             description = "Review your day with structured prompts",
@@ -97,7 +100,7 @@ data class JournalTemplate(
         /**
          * Goal setting template.
          */
-        fun goalSetting() = JournalTemplate(
+        private fun goalSetting() = JournalTemplate(
             id = "goals",
             name = "Goal Setting",
             description = "Define and track your personal goals",
@@ -123,7 +126,7 @@ data class JournalTemplate(
         /**
          * Morning pages - stream of consciousness writing.
          */
-        fun morningPages() = JournalTemplate(
+        private fun morningPages() = JournalTemplate(
             id = "morning",
             name = "Morning Pages",
             description = "Start your day with free-flowing thoughts",
@@ -149,7 +152,7 @@ data class JournalTemplate(
         /**
          * Evening review template.
          */
-        fun eveningReview() = JournalTemplate(
+        private fun eveningReview() = JournalTemplate(
             id = "evening",
             name = "Evening Wind-Down",
             description = "Process your day before rest",
@@ -176,7 +179,7 @@ data class JournalTemplate(
         /**
          * Problem solving template.
          */
-        fun problemSolving() = JournalTemplate(
+        private fun problemSolving() = JournalTemplate(
             id = "problem",
             name = "Problem Solving",
             description = "Work through challenges systematically",
@@ -206,7 +209,7 @@ data class JournalTemplate(
         /**
          * Creative brainstorming template.
          */
-        fun creativeBrainstorm() = JournalTemplate(
+        private fun creativeBrainstorm() = JournalTemplate(
             id = "creative",
             name = "Creative Brainstorm",
             description = "Explore ideas freely without judgment",
@@ -233,7 +236,7 @@ data class JournalTemplate(
         /**
          * Self-compassion template.
          */
-        fun selfCompassion() = JournalTemplate(
+        private fun selfCompassion() = JournalTemplate(
             id = "compassion",
             name = "Self-Compassion",
             description = "Practice kindness toward yourself",
@@ -258,7 +261,7 @@ data class JournalTemplate(
         /**
          * Habit tracker journal.
          */
-        fun habitTracker() = JournalTemplate(
+        private fun habitTracker() = JournalTemplate(
             id = "habits",
             name = "Habit Check-In",
             description = "Track and reflect on your daily habits",
@@ -284,7 +287,7 @@ data class JournalTemplate(
         /**
          * Weekly review template.
          */
-        fun weeklyReview() = JournalTemplate(
+        private fun weeklyReview() = JournalTemplate(
             id = "weekly",
             name = "Weekly Review",
             description = "Comprehensive review of your week",
@@ -314,6 +317,6 @@ data class JournalTemplate(
         /**
          * Get template by ID.
          */
-        fun getById(id: String): JournalTemplate? = all().find { it.id == id }
+        fun getById(id: String): JournalTemplate? = all.find { it.id == id }
     }
 }
