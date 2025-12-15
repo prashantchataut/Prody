@@ -1390,7 +1390,7 @@ private fun EnhancedBuddhaThoughtCard(
 
                 // Decorative large quote mark (background)
                 Text(
-                    text = "\u201C",
+                    text = "\"",
                     style = MaterialTheme.typography.displayLarge.copy(
                         fontSize = 120.sp,
                         fontWeight = FontWeight.Light
