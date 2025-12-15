@@ -6,6 +6,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.prody.prashant.data.ai.GeminiService
+import com.prody.prashant.data.ai.OpenRouterService
 import com.prody.prashant.data.local.dao.*
 import com.prody.prashant.data.local.database.ProdyDatabase
 import com.prody.prashant.data.local.preferences.PreferencesManager
