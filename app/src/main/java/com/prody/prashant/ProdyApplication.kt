@@ -9,7 +9,12 @@ import android.util.Log
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import com.prody.prashant.debug.CrashHandler
+import com.prody.prashant.domain.gamification.GamificationService
 import dagger.hilt.android.HiltAndroidApp
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltAndroidApp
@@ -17,6 +22,11 @@ class ProdyApplication : Application(), Configuration.Provider {
 
     @Inject
     lateinit var workerFactory: HiltWorkerFactory
+
+    @Inject
+    lateinit var gamificationService: GamificationService
+
+    private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     override val workManagerConfiguration: Configuration
         get() = try {
@@ -139,6 +149,19 @@ class ProdyApplication : Application(), Configuration.Provider {
         } catch (e: Exception) {
             // Log error but don't crash the app - notifications are not critical for launch
             Log.e(TAG, "Failed to create notification channels", e)
+        }
+
+        // Initialize gamification data (user profile, achievements) asynchronously
+        applicationScope.launch {
+            try {
+                if (::gamificationService.isInitialized) {
+                    gamificationService.initializeUserData()
+                    gamificationService.checkAndResetDailyStats()
+                    Log.d(TAG, "Gamification data initialized")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to initialize gamification data", e)
+            }
         }
     }
 

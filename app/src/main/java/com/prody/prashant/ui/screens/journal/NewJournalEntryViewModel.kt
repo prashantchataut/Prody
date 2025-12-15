@@ -4,17 +4,18 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.prody.prashant.data.ai.GeminiResult
 import com.prody.prashant.data.ai.GeminiService
+import com.prody.prashant.data.ai.OpenRouterService
 import com.prody.prashant.data.local.dao.JournalDao
 import com.prody.prashant.data.local.dao.UserDao
 import com.prody.prashant.data.local.entity.JournalEntryEntity
 import com.prody.prashant.data.local.preferences.PreferencesManager
+import com.prody.prashant.domain.gamification.GamificationService
 import com.prody.prashant.domain.model.Mood
 import com.prody.prashant.ui.theme.JournalTemplate
 import com.prody.prashant.util.BuddhaWisdom
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import java.util.Calendar
 import javax.inject.Inject
 
 data class NewJournalEntryUiState(
@@ -30,7 +31,8 @@ data class NewJournalEntryUiState(
     val showTemplateSelector: Boolean = false,
     val availableTemplates: List<JournalTemplate> = JournalTemplate.all,
     val buddhaAiEnabled: Boolean = true,
-    val geminiConfigured: Boolean = false
+    val geminiConfigured: Boolean = false,
+    val openRouterConfigured: Boolean = false
 )
 
 @HiltViewModel
@@ -38,7 +40,9 @@ class NewJournalEntryViewModel @Inject constructor(
     private val journalDao: JournalDao,
     private val userDao: UserDao,
     private val geminiService: GeminiService,
-    private val preferencesManager: PreferencesManager
+    private val openRouterService: OpenRouterService,
+    private val preferencesManager: PreferencesManager,
+    private val gamificationService: GamificationService
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(NewJournalEntryUiState())
@@ -59,12 +63,17 @@ class NewJournalEntryViewModel @Inject constructor(
                     preferencesManager.buddhaAiEnabled,
                     preferencesManager.geminiApiKey
                 ) { enabled, apiKey ->
-                    Pair(enabled, apiKey.isNotBlank())
-                }.collect { (enabled, configured) ->
+                    Triple(
+                        enabled,
+                        apiKey.isNotBlank() || GeminiService.isApiKeyConfiguredInBuildConfig(),
+                        openRouterService.isConfigured()
+                    )
+                }.collect { (enabled, geminiConfigured, openRouterConfigured) ->
                     _uiState.update {
                         it.copy(
                             buddhaAiEnabled = enabled,
-                            geminiConfigured = configured
+                            geminiConfigured = geminiConfigured,
+                            openRouterConfigured = openRouterConfigured
                         )
                     }
                 }
@@ -145,15 +154,14 @@ class NewJournalEntryViewModel @Inject constructor(
 
                 journalDao.insertEntry(entry)
 
-                // Update user stats
-                userDao.incrementJournalEntries()
-                userDao.addPoints(50) // Points for journaling
+                // Use GamificationService for all points and achievements
+                val pointsAwarded = gamificationService.recordActivity(
+                    GamificationService.ActivityType.JOURNAL_ENTRY
+                )
+                android.util.Log.d(TAG, "Journal entry saved, $pointsAwarded points awarded")
 
-                // Update achievements
-                updateJournalAchievements()
-
-                // Check for special achievements
-                checkSpecialAchievements()
+                // Check for time-based achievements (early bird, night owl)
+                gamificationService.checkTimeBasedAchievements()
 
                 _uiState.update { it.copy(isSaving = false, isSaved = true) }
             } catch (e: Exception) {
@@ -168,38 +176,60 @@ class NewJournalEntryViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Generates Buddha's response using a multi-tier fallback strategy:
+     * 1. Primary: Google Gemini AI (if configured and enabled)
+     * 2. Secondary: OpenRouter (if configured, when Gemini fails)
+     * 3. Tertiary: Local BuddhaWisdom (always available, never fails)
+     *
+     * This ensures users always receive a meaningful response regardless of API availability.
+     */
     private suspend fun generateBuddhaResponse(state: NewJournalEntryUiState): String {
-        // Only use Gemini AI if enabled and configured
-        if (state.buddhaAiEnabled && state.geminiConfigured && geminiService.isConfigured()) {
-            val result = geminiService.generateJournalResponse(
+        // Tier 1: Try Gemini AI if enabled and configured
+        if (state.buddhaAiEnabled && geminiService.isConfigured()) {
+            val geminiResult = geminiService.generateJournalResponse(
                 content = state.content,
                 mood = state.selectedMood,
                 moodIntensity = state.moodIntensity,
                 wordCount = state.wordCount
             )
 
-            return when (result) {
-                is GeminiResult.Success -> result.data
-                is GeminiResult.Error -> {
-                    // Log the error but fall back to local generation
-                    BuddhaWisdom.generateResponse(
-                        content = state.content,
-                        mood = state.selectedMood,
-                        wordCount = state.wordCount
-                    )
+            when (geminiResult) {
+                is GeminiResult.Success -> {
+                    android.util.Log.d(TAG, "Buddha response generated via Gemini")
+                    return geminiResult.data
                 }
-                is GeminiResult.ApiKeyNotSet,
+                is GeminiResult.Error -> {
+                    android.util.Log.w(TAG, "Gemini failed: ${geminiResult.message}, trying OpenRouter fallback")
+                }
+                is GeminiResult.ApiKeyNotSet -> {
+                    android.util.Log.d(TAG, "Gemini API key not set, trying OpenRouter fallback")
+                }
                 is GeminiResult.Loading -> {
-                    BuddhaWisdom.generateResponse(
-                        content = state.content,
-                        mood = state.selectedMood,
-                        wordCount = state.wordCount
-                    )
+                    // Shouldn't happen for non-streaming calls, but handle gracefully
                 }
             }
         }
 
-        // Use local Buddha wisdom
+        // Tier 2: Try OpenRouter as fallback if Gemini failed or is not available
+        if (state.buddhaAiEnabled && openRouterService.isConfigured()) {
+            val openRouterResult = openRouterService.generateJournalResponse(
+                content = state.content,
+                mood = state.selectedMood,
+                moodIntensity = state.moodIntensity,
+                wordCount = state.wordCount
+            )
+
+            openRouterResult.onSuccess { response ->
+                android.util.Log.d(TAG, "Buddha response generated via OpenRouter fallback")
+                return response
+            }.onFailure { e ->
+                android.util.Log.w(TAG, "OpenRouter fallback failed: ${e.message}, using local wisdom")
+            }
+        }
+
+        // Tier 3: Local BuddhaWisdom - always available, guaranteed response
+        android.util.Log.d(TAG, "Using local BuddhaWisdom for response")
         return BuddhaWisdom.generateResponse(
             content = state.content,
             mood = state.selectedMood,
@@ -209,57 +239,5 @@ class NewJournalEntryViewModel @Inject constructor(
 
     fun clearError() {
         _uiState.update { it.copy(error = null) }
-    }
-
-    private suspend fun updateJournalAchievements() {
-        val profile = userDao.getUserProfileSync() ?: return
-        val entriesCount = profile.journalEntriesCount
-
-        // Update progress
-        userDao.updateAchievementProgress("journal_1", entriesCount)
-        userDao.updateAchievementProgress("journal_10", entriesCount)
-        userDao.updateAchievementProgress("journal_50", entriesCount)
-        userDao.updateAchievementProgress("journal_100", entriesCount)
-
-        // Check unlocks
-        if (entriesCount >= 1) checkAndUnlockAchievement("journal_1")
-        if (entriesCount >= 10) checkAndUnlockAchievement("journal_10")
-        if (entriesCount >= 50) checkAndUnlockAchievement("journal_50")
-        if (entriesCount >= 100) checkAndUnlockAchievement("journal_100")
-    }
-
-    private suspend fun checkSpecialAchievements() {
-        try {
-            val currentHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
-
-            // Night owl achievement (after midnight, before 5am)
-            if (currentHour in 0..4) {
-                checkAndUnlockAchievement("night_owl")
-            }
-
-            // Early bird achievement (5am to 6am - users who wake early)
-            if (currentHour == 5) {
-                checkAndUnlockAchievement("early_bird")
-            }
-
-            // Check for all moods achievement
-            // Use firstOrNull to safely handle potential empty Flow scenarios
-            val allMoods = journalDao.getAllMoods().firstOrNull() ?: emptyList()
-            if (allMoods.size >= Mood.entries.size) {
-                userDao.updateAchievementProgress("all_moods", allMoods.size)
-                checkAndUnlockAchievement("all_moods")
-            }
-        } catch (e: Exception) {
-            android.util.Log.e("NewJournalEntryVM", "Failed to check special achievements", e)
-        }
-    }
-
-    private suspend fun checkAndUnlockAchievement(achievementId: String) {
-        val achievement = userDao.getAchievementById(achievementId)
-        if (achievement != null && !achievement.isUnlocked) {
-            userDao.unlockAchievement(achievementId)
-            val points = achievement.rewardValue.toIntOrNull() ?: 100
-            userDao.addPoints(points)
-        }
     }
 }

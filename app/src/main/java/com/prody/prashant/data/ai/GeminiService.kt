@@ -178,6 +178,8 @@ Based on the user's activity summary, provide an encouraging weekly reflection t
 /**
  * Production-grade Gemini AI service for Buddha (Stoic AI Mentor) functionality.
  * Handles API communication, error handling, and response generation.
+ *
+ * The service auto-initializes from BuildConfig API key on first use if not manually initialized.
  */
 @Singleton
 class GeminiService @Inject constructor() {
@@ -185,6 +187,8 @@ class GeminiService @Inject constructor() {
     private var generativeModel: GenerativeModel? = null
     private var currentApiKey: String? = null
     private var currentModel: GeminiModel = GeminiModel.GEMINI_1_5_FLASH
+    @Volatile
+    private var isAutoInitialized: Boolean = false
 
     companion object {
         /**
@@ -207,6 +211,25 @@ class GeminiService @Inject constructor() {
          */
         fun isApiKeyConfiguredInBuildConfig(): Boolean {
             return BuildConfig.AI_API_KEY.isNotBlank()
+        }
+    }
+
+    init {
+        // Auto-initialize from BuildConfig if API key is available
+        autoInitializeFromBuildConfig()
+    }
+
+    /**
+     * Automatically initializes the service from BuildConfig API key.
+     * This is called during construction and can be called again to reinitialize.
+     */
+    private fun autoInitializeFromBuildConfig() {
+        if (!isAutoInitialized) {
+            val apiKey = getApiKeyFromBuildConfig()
+            if (apiKey != null) {
+                initialize(apiKey, GeminiModel.GEMINI_1_5_FLASH)
+                isAutoInitialized = true
+            }
         }
     }
 
@@ -249,8 +272,15 @@ class GeminiService @Inject constructor() {
 
     /**
      * Checks if the service is properly configured with an API key.
+     * Attempts auto-initialization from BuildConfig if not already configured.
      */
-    fun isConfigured(): Boolean = generativeModel != null && !currentApiKey.isNullOrBlank()
+    fun isConfigured(): Boolean {
+        // Try auto-initialization if not yet configured
+        if (generativeModel == null && !isAutoInitialized) {
+            autoInitializeFromBuildConfig()
+        }
+        return generativeModel != null && !currentApiKey.isNullOrBlank()
+    }
 
     /**
      * Gets the current model being used.
