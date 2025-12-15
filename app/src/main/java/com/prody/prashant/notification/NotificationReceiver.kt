@@ -1,8 +1,6 @@
 package com.prody.prashant.notification
 
 import android.Manifest
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -22,9 +20,11 @@ class NotificationReceiver : BroadcastReceiver() {
     companion object {
         private const val TAG = "NotificationReceiver"
 
-        const val CHANNEL_ID_WISDOM = "prody_wisdom_channel"
-        const val CHANNEL_ID_FUTURE = "prody_future_channel"
-        const val CHANNEL_ID_REMINDER = "prody_reminder_channel"
+        // IMPORTANT: These channel IDs MUST match the ones created in ProdyApplication
+        // Channels are: prody_wisdom, prody_journal, prody_future, prody_achievements, prody_main
+        const val CHANNEL_ID_WISDOM = "prody_wisdom"
+        const val CHANNEL_ID_FUTURE = "prody_future"
+        const val CHANNEL_ID_REMINDER = "prody_journal"  // Using journal channel for reminders
 
         const val ACTION_MORNING_WISDOM = "com.prody.prashant.MORNING_WISDOM"
         const val ACTION_EVENING_REFLECTION = "com.prody.prashant.EVENING_REFLECTION"
@@ -51,56 +51,8 @@ class NotificationReceiver : BroadcastReceiver() {
         private val DEFAULT_JOURNAL = Triple("Journal Time", "Capture your thoughts for today.", "Write")
         private val DEFAULT_FUTURE_MESSAGE = Triple("Message from the Past", "Your past self has something to share.", "Read")
 
-        fun createNotificationChannels(context: Context) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                // Safely obtain NotificationManager - can return null on some devices/custom ROMs
-                val notificationManager = context.getSystemService(NotificationManager::class.java)
-                if (notificationManager == null) {
-                    android.util.Log.w(TAG, "NotificationManager not available, skipping channel creation")
-                    return
-                }
-
-                try {
-                    // Wisdom Channel
-                    val wisdomChannel = NotificationChannel(
-                        CHANNEL_ID_WISDOM,
-                        "Daily Wisdom",
-                        NotificationManager.IMPORTANCE_DEFAULT
-                    ).apply {
-                        description = "Daily wisdom, vocabulary, and inspiration"
-                        enableVibration(true)
-                    }
-
-                    // Future Messages Channel
-                    val futureChannel = NotificationChannel(
-                        CHANNEL_ID_FUTURE,
-                        "Messages from Past You",
-                        NotificationManager.IMPORTANCE_HIGH
-                    ).apply {
-                        description = "Messages you wrote to your future self"
-                        enableVibration(true)
-                        enableLights(true)
-                    }
-
-                    // Reminders Channel
-                    val reminderChannel = NotificationChannel(
-                        CHANNEL_ID_REMINDER,
-                        "Reminders",
-                        NotificationManager.IMPORTANCE_DEFAULT
-                    ).apply {
-                        description = "Streak and journal reminders"
-                        enableVibration(true)
-                    }
-
-                    notificationManager.createNotificationChannels(
-                        listOf(wisdomChannel, futureChannel, reminderChannel)
-                    )
-                    android.util.Log.d(TAG, "Notification channels created successfully")
-                } catch (e: Exception) {
-                    android.util.Log.e(TAG, "Failed to create notification channels", e)
-                }
-            }
-        }
+        // NOTE: Notification channels are created in ProdyApplication.kt
+        // This ensures channels exist before any notifications are sent
     }
 
     override fun onReceive(context: Context, intent: Intent) {
