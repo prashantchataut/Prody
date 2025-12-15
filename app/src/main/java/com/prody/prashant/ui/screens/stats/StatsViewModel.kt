@@ -225,4 +225,15 @@ class StatsViewModel @Inject constructor(
             }
         }
     }
+
+    /**
+     * Refresh all stats and leaderboard data
+     */
+    fun refresh() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+            loadStats()
+            loadLeaderboard()
+        }
+    }
 }
