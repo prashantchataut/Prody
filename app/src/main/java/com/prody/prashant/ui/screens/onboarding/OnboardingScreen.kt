@@ -172,12 +172,6 @@ fun OnboardingScreen(
                 )
             )
     ) {
-        // Animated background particles
-        AnimatedBackgroundParticles(
-            primaryColor = animatedPrimaryColor,
-            accentColor = currentPage.accentColor
-        )
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -246,58 +240,6 @@ fun OnboardingScreen(
         }
     }
 }
-
-@Composable
-private fun AnimatedBackgroundParticles(
-    primaryColor: Color,
-    accentColor: Color
-) {
-    val infiniteTransition = rememberInfiniteTransition(label = "bg_particles")
-    val time by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(15000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "particle_time"
-    )
-
-    val particles = remember {
-        List(30) {
-            BackgroundParticle(
-                x = Random.nextFloat(),
-                y = Random.nextFloat(),
-                size = Random.nextFloat() * 6f + 2f,
-                speed = Random.nextFloat() * 0.3f + 0.1f,
-                alpha = Random.nextFloat() * 0.4f + 0.1f,
-                isAccent = Random.nextFloat() > 0.7f
-            )
-        }
-    }
-
-    Canvas(modifier = Modifier.fillMaxSize()) {
-        particles.forEach { particle ->
-            val y = (particle.y + time * particle.speed) % 1f
-            val x = particle.x + sin(y * PI * 2 + particle.x * PI).toFloat() * 0.03f
-            val color = if (particle.isAccent) accentColor else Color.White
-            drawCircle(
-                color = color.copy(alpha = particle.alpha),
-                radius = particle.size,
-                center = Offset(x * size.width, y * size.height)
-            )
-        }
-    }
-}
-
-private data class BackgroundParticle(
-    val x: Float,
-    val y: Float,
-    val size: Float,
-    val speed: Float,
-    val alpha: Float,
-    val isAccent: Boolean
-)
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -519,31 +461,44 @@ private fun AnimatedIllustration(
 
 @Composable
 private fun GrowthSpiralAnimation(accentColor: Color, isActive: Boolean) {
-    val infiniteTransition = rememberInfiniteTransition(label = "growth_spiral")
-    val rotation by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 360f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(20000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "spiral_rotation"
-    )
-    val pulseScale by infiniteTransition.animateFloat(
-        initialValue = 0.95f,
-        targetValue = 1.05f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(2000, easing = EaseInOutCubic),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "pulse"
-    )
+    val rotation = remember { Animatable(0f) }
+    val pulseScale = remember { Animatable(0.95f) }
+
+    // Use LaunchedEffect to start/stop animations based on visibility
+    LaunchedEffect(isActive) {
+        if (isActive) {
+            launch {
+                rotation.animateTo(
+                    targetValue = 360f,
+                    animationSpec = infiniteRepeatable(
+                        animation = tween(20000, easing = LinearEasing),
+                        repeatMode = RepeatMode.Restart
+                    )
+                )
+            }
+            launch {
+                pulseScale.animateTo(
+                    targetValue = 1.05f,
+                    animationSpec = infiniteRepeatable(
+                        animation = tween(2000, easing = EaseInOutCubic),
+                        repeatMode = RepeatMode.Reverse
+                    )
+                )
+            }
+        } else {
+            // Stop animations and reset to initial values when not active
+            rotation.stop()
+            pulseScale.stop()
+            rotation.snapTo(0f)
+            pulseScale.snapTo(0.95f)
+        }
+    }
 
     Canvas(
         modifier = Modifier
             .fillMaxSize()
-            .scale(if (isActive) pulseScale else 1f)
-            .rotate(rotation)
+            .scale(pulseScale.value)
+            .rotate(rotation.value)
     ) {
         val center = Offset(size.width / 2, size.height / 2)
         val maxRadius = minOf(size.width, size.height) / 2 * 0.9f
@@ -586,30 +541,41 @@ private fun GrowthSpiralAnimation(accentColor: Color, isActive: Boolean) {
 
 @Composable
 private fun WisdomRaysAnimation(accentColor: Color, isActive: Boolean) {
-    val infiniteTransition = rememberInfiniteTransition(label = "wisdom_rays")
-    val rayRotation by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 360f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(30000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "ray_rotation"
-    )
-    val pulseAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.3f,
-        targetValue = 0.7f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1500, easing = EaseInOutCubic),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "pulse_alpha"
-    )
+    val rayRotation = remember { Animatable(0f) }
+    val pulseAlpha = remember { Animatable(0.3f) }
+
+    LaunchedEffect(isActive) {
+        if (isActive) {
+            launch {
+                rayRotation.animateTo(
+                    targetValue = 360f,
+                    animationSpec = infiniteRepeatable(
+                        animation = tween(30000, easing = LinearEasing),
+                        repeatMode = RepeatMode.Restart
+                    )
+                )
+            }
+            launch {
+                pulseAlpha.animateTo(
+                    targetValue = 0.7f,
+                    animationSpec = infiniteRepeatable(
+                        animation = tween(1500, easing = EaseInOutCubic),
+                        repeatMode = RepeatMode.Reverse
+                    )
+                )
+            }
+        } else {
+            rayRotation.stop()
+            pulseAlpha.stop()
+            rayRotation.snapTo(0f)
+            pulseAlpha.snapTo(0.3f)
+        }
+    }
 
     Canvas(
         modifier = Modifier
             .fillMaxSize()
-            .rotate(rayRotation)
+            .rotate(rayRotation.value)
     ) {
         val center = Offset(size.width / 2, size.height / 2)
         val maxRadius = minOf(size.width, size.height) / 2 * 0.85f
@@ -626,8 +592,8 @@ private fun WisdomRaysAnimation(accentColor: Color, isActive: Boolean) {
             val endY = center.y + outerRadius * sin(angle).toFloat()
 
             drawLine(
-                color = if (i % 2 == 0) accentColor.copy(alpha = pulseAlpha)
-                else Color.White.copy(alpha = pulseAlpha * 0.5f),
+                color = if (i % 2 == 0) accentColor.copy(alpha = pulseAlpha.value)
+                else Color.White.copy(alpha = pulseAlpha.value * 0.5f),
                 start = Offset(startX, startY),
                 end = Offset(endX, endY),
                 strokeWidth = if (i % 2 == 0) 4f else 2f,
@@ -648,16 +614,22 @@ private fun WisdomRaysAnimation(accentColor: Color, isActive: Boolean) {
 
 @Composable
 private fun JournalWavesAnimation(secondaryColor: Color, isActive: Boolean) {
-    val infiniteTransition = rememberInfiniteTransition(label = "journal_waves")
-    val wavePhase by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 2 * PI.toFloat(),
-        animationSpec = infiniteRepeatable(
-            animation = tween(3000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "wave_phase"
-    )
+    val wavePhase = remember { Animatable(0f) }
+
+    LaunchedEffect(isActive) {
+        if (isActive) {
+            wavePhase.animateTo(
+                targetValue = 2 * PI.toFloat(),
+                animationSpec = infiniteRepeatable(
+                    animation = tween(3000, easing = LinearEasing),
+                    repeatMode = RepeatMode.Restart
+                )
+            )
+        } else {
+            wavePhase.stop()
+            wavePhase.snapTo(0f)
+        }
+    }
 
     Canvas(modifier = Modifier.fillMaxSize()) {
         val center = Offset(size.width / 2, size.height / 2)
@@ -667,7 +639,7 @@ private fun JournalWavesAnimation(secondaryColor: Color, isActive: Boolean) {
             val path = Path()
             val waveY = center.y + (wave - 1.5f) * 35f
             val amplitude = 20f - wave * 3f
-            val phase = wavePhase + wave * 0.5f
+            val phase = wavePhase.value + wave * 0.5f
 
             path.moveTo(0f, waveY)
             for (x in 0..size.width.toInt() step 3) {
@@ -686,7 +658,7 @@ private fun JournalWavesAnimation(secondaryColor: Color, isActive: Boolean) {
         // Floating dots
         for (i in 0 until 8) {
             val dotX = (size.width / 8) * (i + 0.5f)
-            val dotY = center.y + 20f * sin(wavePhase + i * 0.5f)
+            val dotY = center.y + 20f * sin(wavePhase.value + i * 0.5f)
             drawCircle(
                 color = Color.White.copy(alpha = 0.6f),
                 radius = 4f,
@@ -698,43 +670,59 @@ private fun JournalWavesAnimation(secondaryColor: Color, isActive: Boolean) {
 
 @Composable
 private fun TimePortalAnimation(accentColor: Color, isActive: Boolean) {
-    val infiniteTransition = rememberInfiniteTransition(label = "time_portal")
-    val ringRotation by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 360f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(8000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "ring_rotation"
-    )
-    val innerRotation by infiniteTransition.animateFloat(
-        initialValue = 360f,
-        targetValue = 0f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(6000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "inner_rotation"
-    )
-    val pulseScale by infiniteTransition.animateFloat(
-        initialValue = 0.9f,
-        targetValue = 1.1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(2000, easing = EaseInOutCubic),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "portal_pulse"
-    )
+    val ringRotation = remember { Animatable(0f) }
+    val innerRotation = remember { Animatable(360f) }
+    val pulseScale = remember { Animatable(0.9f) }
 
-    Canvas(modifier = Modifier.fillMaxSize().scale(pulseScale)) {
+    LaunchedEffect(isActive) {
+        if (isActive) {
+            launch {
+                ringRotation.animateTo(
+                    targetValue = 360f,
+                    animationSpec = infiniteRepeatable(
+                        animation = tween(8000, easing = LinearEasing),
+                        repeatMode = RepeatMode.Restart
+                    )
+                )
+            }
+            launch {
+                innerRotation.animateTo(
+                    targetValue = 0f,
+                    animationSpec = infiniteRepeatable(
+                        animation = tween(6000, easing = LinearEasing),
+                        repeatMode = RepeatMode.Restart
+                    )
+                )
+            }
+            launch {
+                pulseScale.animateTo(
+                    targetValue = 1.1f,
+                    animationSpec = infiniteRepeatable(
+                        animation = tween(2000, easing = EaseInOutCubic),
+                        repeatMode = RepeatMode.Reverse
+                    )
+                )
+            }
+        } else {
+            ringRotation.stop()
+            innerRotation.stop()
+            pulseScale.stop()
+            ringRotation.snapTo(0f)
+            innerRotation.snapTo(360f)
+            pulseScale.snapTo(0.9f)
+        }
+    }
+
+    Canvas(modifier = Modifier
+        .fillMaxSize()
+        .scale(pulseScale.value)) {
         val center = Offset(size.width / 2, size.height / 2)
         val maxRadius = minOf(size.width, size.height) / 2 * 0.8f
 
         // Outer rotating ring
         drawArc(
             color = accentColor.copy(alpha = 0.4f),
-            startAngle = ringRotation,
+            startAngle = ringRotation.value,
             sweepAngle = 270f,
             useCenter = false,
             style = Stroke(width = 4f, cap = StrokeCap.Round),
@@ -746,7 +734,7 @@ private fun TimePortalAnimation(accentColor: Color, isActive: Boolean) {
         val midRadius = maxRadius * 0.7f
         drawArc(
             color = Color.White.copy(alpha = 0.5f),
-            startAngle = innerRotation,
+            startAngle = innerRotation.value,
             sweepAngle = 200f,
             useCenter = false,
             style = Stroke(width = 3f, cap = StrokeCap.Round),
@@ -758,7 +746,7 @@ private fun TimePortalAnimation(accentColor: Color, isActive: Boolean) {
         val innerRadius = maxRadius * 0.4f
         drawArc(
             color = accentColor.copy(alpha = 0.6f),
-            startAngle = ringRotation * 1.5f,
+            startAngle = ringRotation.value * 1.5f,
             sweepAngle = 150f,
             useCenter = false,
             style = Stroke(width = 2f, cap = StrokeCap.Round),
@@ -779,7 +767,40 @@ private fun TimePortalAnimation(accentColor: Color, isActive: Boolean) {
 
 @Composable
 private fun AchievementStarsAnimation(accentColor: Color, isActive: Boolean) {
-    val infiniteTransition = rememberInfiniteTransition(label = "achievement_stars")
+    val mainRotation = remember { Animatable(0f) }
+    val twinkles = remember {
+        List(8) { Animatable(0.3f) }
+    }
+
+    LaunchedEffect(isActive) {
+        if (isActive) {
+            launch {
+                mainRotation.animateTo(
+                    targetValue = 360f,
+                    animationSpec = infiniteRepeatable(
+                        animation = tween(25000, easing = LinearEasing),
+                        repeatMode = RepeatMode.Restart
+                    )
+                )
+            }
+            twinkles.forEachIndexed { index, animatable ->
+                launch {
+                    animatable.animateTo(
+                        targetValue = 1f,
+                        animationSpec = infiniteRepeatable(
+                            animation = tween(1000 + index * 200, easing = EaseInOutCubic),
+                            repeatMode = RepeatMode.Reverse
+                        )
+                    )
+                }
+            }
+        } else {
+            mainRotation.stop()
+            twinkles.forEach { it.stop() }
+            mainRotation.snapTo(0f)
+            twinkles.forEach { it.snapTo(0.3f) }
+        }
+    }
 
     val starAngles = remember {
         List(8) { Random.nextFloat() * 360f }
@@ -791,35 +812,15 @@ private fun AchievementStarsAnimation(accentColor: Color, isActive: Boolean) {
         List(8) { Random.nextFloat() * 6f + 4f }
     }
 
-    val twinkles = starAngles.mapIndexed { index, _ ->
-        infiniteTransition.animateFloat(
-            initialValue = 0.3f,
-            targetValue = 1f,
-            animationSpec = infiniteRepeatable(
-                animation = tween(1000 + index * 200, easing = EaseInOutCubic),
-                repeatMode = RepeatMode.Reverse
-            ),
-            label = "twinkle_$index"
-        )
-    }
-
-    val mainRotation by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 360f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(25000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "main_rotation"
-    )
-
-    Canvas(modifier = Modifier.fillMaxSize().rotate(mainRotation * 0.1f)) {
+    Canvas(modifier = Modifier
+        .fillMaxSize()
+        .rotate(mainRotation.value * 0.1f)) {
         val center = Offset(size.width / 2, size.height / 2)
         val maxRadius = minOf(size.width, size.height) / 2 * 0.85f
 
         // Draw stars
         starAngles.forEachIndexed { index, baseAngle ->
-            val angle = (baseAngle + mainRotation * 0.2f) * PI / 180
+            val angle = (baseAngle + mainRotation.value * 0.2f) * PI / 180
             val distance = starDistances[index] * maxRadius
             val x = center.x + distance * cos(angle).toFloat()
             val y = center.y + distance * sin(angle).toFloat()

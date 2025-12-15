@@ -25,3 +25,6 @@ google-services.json
 
 # Generated files
 build_output.txt
+
+# Kotlin
+.kotlin/
