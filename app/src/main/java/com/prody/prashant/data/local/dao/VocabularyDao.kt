@@ -46,6 +46,19 @@ interface VocabularyDao {
     @Query("SELECT COUNT(*) FROM vocabulary WHERE isLearned = 1")
     fun getLearnedCount(): Flow<Int>
 
+    /**
+     * Get count of words learned within a specific time range (for weekly stats).
+     * @param startTime The start timestamp (e.g., beginning of the week)
+     */
+    @Query("SELECT COUNT(*) FROM vocabulary WHERE isLearned = 1 AND learnedAt >= :startTime")
+    fun getLearnedCountSince(startTime: Long): Flow<Int>
+
+    /**
+     * Suspend version of getLearnedCountSince for one-time queries.
+     */
+    @Query("SELECT COUNT(*) FROM vocabulary WHERE isLearned = 1 AND learnedAt >= :startTime")
+    suspend fun getLearnedCountSinceSync(startTime: Long): Int
+
     @Query("SELECT COUNT(*) FROM vocabulary")
     fun getTotalCount(): Flow<Int>
 

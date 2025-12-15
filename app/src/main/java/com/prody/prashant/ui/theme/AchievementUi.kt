@@ -239,6 +239,13 @@ enum class AchievementCategory(
         color = Color(0xFF667EEA),
         secondaryColor = Color(0xFF764BA2),
         icon = Icons.Filled.AutoAwesome
+    ),
+    EXPLORER(
+        displayName = "Explorer",
+        description = "Exploration achievements",
+        color = Color(0xFF00BCD4),
+        secondaryColor = Color(0xFF4DD0E1),
+        icon = Icons.Filled.Explore
     );
 
     /**
@@ -259,6 +266,8 @@ enum class AchievementCategory(
                 ProdyAchievements.Category.PRESENCE -> PRESENCE
                 ProdyAchievements.Category.TEMPORAL -> TEMPORAL
                 ProdyAchievements.Category.MASTERY -> MASTERY
+                ProdyAchievements.Category.SOCIAL -> SOCIAL
+                ProdyAchievements.Category.EXPLORER -> EXPLORER
             }
         }
     }

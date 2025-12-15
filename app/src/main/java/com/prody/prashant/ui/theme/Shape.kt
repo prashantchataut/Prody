@@ -188,3 +188,158 @@ val NavIndicatorShape = RoundedCornerShape(50)
 
 /** Tab indicator shape */
 val TabIndicatorShape = RoundedCornerShape(50)
+
+// =============================================================================
+// EXTENDED CARD SHAPES - For Prody-specific card types
+// =============================================================================
+
+/** Small card shape - for compact content cards */
+val CardShapeSmall = RoundedCornerShape(8.dp)
+
+/** Default card shape - for most content cards */
+val CardShapeDefault = RoundedCornerShape(12.dp)
+
+/** Large card shape - for featured content */
+val CardShapeLarge = RoundedCornerShape(16.dp)
+
+/** Hero card shape - for prominent hero sections */
+val CardShapeHero = RoundedCornerShape(20.dp)
+
+// =============================================================================
+// BADGE & ACHIEVEMENT SHAPES
+// =============================================================================
+
+/** Badge shape - for small status indicators */
+val BadgeShapeSmall = RoundedCornerShape(6.dp)
+
+/** Badge pill shape - for tag-like badges */
+val BadgeShapePill = RoundedCornerShape(50)
+
+/** Achievement badge shape - for achievement icons */
+val AchievementBadgeShape = RoundedCornerShape(16.dp)
+
+/** Rarity badge shape - circular for rarity indicators */
+val RarityBadgeShape: Shape = CircleShape
+
+// =============================================================================
+// BUTTON SHAPES - Extended
+// =============================================================================
+
+/** Default button shape */
+val ButtonShapeDefault = RoundedCornerShape(12.dp)
+
+/** Pill button shape - fully rounded */
+val ButtonShapePill = RoundedCornerShape(50)
+
+/** Small button shape - for compact buttons */
+val ButtonShapeSmall = RoundedCornerShape(8.dp)
+
+/** Large button shape - for prominent CTAs */
+val ButtonShapeLarge = RoundedCornerShape(16.dp)
+
+// =============================================================================
+// PROGRESS & XP BAR SHAPES
+// =============================================================================
+
+/** Progress bar shape - rounded ends */
+val ProgressBarShape = RoundedCornerShape(50)
+
+/** XP bar shape - fully rounded for visual appeal */
+val XpBarShape = RoundedCornerShape(50)
+
+/** Level progress shape - slightly rounded */
+val LevelProgressShape = RoundedCornerShape(6.dp)
+
+// =============================================================================
+// SPECIAL PURPOSE SHAPES
+// =============================================================================
+
+/** Quote card shape - distinctive styling with asymmetric corners */
+val QuoteCardShapeAsymmetric = RoundedCornerShape(
+    topStart = 4.dp,
+    topEnd = 16.dp,
+    bottomEnd = 16.dp,
+    bottomStart = 16.dp
+)
+
+/** Future message card shape - unique styling */
+val FutureMessageCardShape = RoundedCornerShape(
+    topStart = 20.dp,
+    topEnd = 20.dp,
+    bottomEnd = 4.dp,
+    bottomStart = 20.dp
+)
+
+/** Notification card shape */
+val NotificationCardShape = RoundedCornerShape(16.dp)
+
+/** Leaderboard item shape */
+val LeaderboardItemShape = RoundedCornerShape(12.dp)
+
+/** Leaderboard top 3 shape - more prominent */
+val LeaderboardTopShape = RoundedCornerShape(16.dp)
+
+// =============================================================================
+// INPUT & FORM SHAPES
+// =============================================================================
+
+/** Journal entry text field shape */
+val JournalTextFieldShape = RoundedCornerShape(16.dp)
+
+/** Comment/Reply input shape */
+val CommentInputShape = RoundedCornerShape(24.dp)
+
+/** Date picker shape */
+val DatePickerShape = RoundedCornerShape(16.dp)
+
+// =============================================================================
+// MODAL & SHEET SHAPES - Extended
+// =============================================================================
+
+/** Small bottom sheet shape */
+val BottomSheetShapeSmall = RoundedCornerShape(
+    topStart = 20.dp,
+    topEnd = 20.dp,
+    bottomStart = 0.dp,
+    bottomEnd = 0.dp
+)
+
+/** Full bottom sheet shape */
+val BottomSheetShapeFull = RoundedCornerShape(
+    topStart = 32.dp,
+    topEnd = 32.dp,
+    bottomStart = 0.dp,
+    bottomEnd = 0.dp
+)
+
+/** Modal card shape */
+val ModalCardShape = RoundedCornerShape(24.dp)
+
+// =============================================================================
+// GAMIFICATION SHAPES
+// =============================================================================
+
+/** Streak flame container shape */
+val StreakContainerShape = RoundedCornerShape(20.dp)
+
+/** XP container shape */
+val XpContainerShape = RoundedCornerShape(16.dp)
+
+/** Level badge shape */
+val LevelBadgeShape = RoundedCornerShape(12.dp)
+
+/** Celebration card shape - extra rounded for festive feel */
+val CelebrationCardShape = RoundedCornerShape(24.dp)
+
+// =============================================================================
+// LIST ITEM SHAPES
+// =============================================================================
+
+/** Standard list item shape */
+val ListItemShape = RoundedCornerShape(12.dp)
+
+/** Compact list item shape */
+val ListItemShapeCompact = RoundedCornerShape(8.dp)
+
+/** Selectable list item shape */
+val SelectableListItemShape = RoundedCornerShape(14.dp)

@@ -1,30 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- ========================================================================== -->
+    <!-- ==================== -->
     <!-- APP IDENTITY -->
-    <!-- ========================================================================== -->
+    <!-- ==================== -->
     <string name="app_name">Prody</string>
     <string name="app_tagline">Your Growth Companion</string>
-    <string name="app_description">Transform the way you think, learn, and evolve with daily wisdom, stoic AI guidance, and meaningful self-reflection.</string>
+    <string name="app_description">Self-improvement, one day at a time.</string>
 
-    <!-- ========================================================================== -->
-    <!-- ONBOARDING -->
-    <!-- ========================================================================== -->
-    <string name="onboarding_welcome_title">Welcome to Prody</string>
-    <string name="onboarding_welcome_desc">Your personal growth companion that transforms the way you think, learn, and evolve. Let\'s begin your journey to becoming the best version of yourself.</string>
+    <!-- ==================== -->
+    <!-- NAVIGATION -->
+    <!-- ==================== -->
+    <string name="nav_home">Home</string>
+    <string name="nav_journal">Journal</string>
+    <string name="nav_future">Future</string>
+    <string name="nav_stats">Stats</string>
+    <string name="nav_profile">Profile</string>
+    <string name="nav_settings">Settings</string>
+    <string name="nav_leaderboard">Leaderboard</string>
 
-    <string name="onboarding_wisdom_title">Daily Wisdom</string>
-    <string name="onboarding_wisdom_desc">Discover curated vocabulary, proverbs, idioms, and quotes that expand your mind and enrich your language every single day.</string>
+    <!-- ==================== -->
+    <!-- COMMON ACTIONS -->
+    <!-- ==================== -->
+    <string name="action_save">Save</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_edit">Edit</string>
+    <string name="action_share">Share</string>
+    <string name="action_done">Done</string>
+    <string name="action_next">Next</string>
+    <string name="action_back">Back</string>
+    <string name="action_skip">Skip</string>
+    <string name="action_retry">Retry</string>
+    <string name="action_close">Close</string>
+    <string name="action_confirm">Confirm</string>
+    <string name="action_refresh">Refresh</string>
+    <string name="action_view_all">View All</string>
+    <string name="action_learn_more">Learn More</string>
 
-    <string name="onboarding_journal_title">Buddha - Your Stoic Guide</string>
-    <string name="onboarding_journal_desc">Journal your thoughts and let Buddha, your AI mentor, listen, reflect, and guide you with timeless stoic wisdom. A safe space for your deepest thoughts.</string>
-
-    <string name="onboarding_future_title">Message Your Future Self</string>
-    <string name="onboarding_future_desc">Write letters to your future self, set intentions, and reflect on how far you\'ve come. Make your future self proud of who you\'re becoming today.</string>
-
-    <string name="onboarding_growth_title">Track Your Growth</string>
-    <string name="onboarding_growth_desc">Celebrate your progress, earn achievements, and see how you compare with fellow growth seekers. Every step forward is a victory.</string>
-
+    <!-- Legacy aliases for compatibility -->
     <string name="get_started">Get Started</string>
     <string name="next">Next</string>
     <string name="skip">Skip</string>
@@ -33,26 +46,22 @@
     <string name="done">Done</string>
     <string name="finish">Finish</string>
 
-    <!-- ========================================================================== -->
-    <!-- NAVIGATION -->
-    <!-- ========================================================================== -->
-    <string name="nav_home">Home</string>
-    <string name="nav_journal">Journal</string>
-    <string name="nav_future">Future</string>
-    <string name="nav_stats">Stats</string>
-    <string name="nav_profile">Profile</string>
-
-    <!-- Navigation accessibility -->
-    <string name="nav_home_desc">Navigate to home screen</string>
-    <string name="nav_journal_desc">Navigate to journal screen</string>
-    <string name="nav_future_desc">Navigate to future messages screen</string>
-    <string name="nav_stats_desc">Navigate to statistics and leaderboard</string>
-    <string name="nav_profile_desc">Navigate to your profile</string>
-
-    <!-- ========================================================================== -->
+    <!-- ==================== -->
     <!-- HOME SCREEN -->
-    <!-- ========================================================================== -->
-    <!-- Greetings -->
+    <!-- ==================== -->
+    <string name="home_greeting_morning">Good morning</string>
+    <string name="home_greeting_afternoon">Good afternoon</string>
+    <string name="home_greeting_evening">Good evening</string>
+    <string name="home_buddha_says">Buddha Says</string>
+    <string name="home_personalized_for_you">Just for you</string>
+    <string name="home_quick_actions">Quick Actions</string>
+    <string name="home_your_stats">Your Stats</string>
+    <string name="home_word_of_day">Word of the Day</string>
+    <string name="home_quote_of_day">Quote of the Day</string>
+    <string name="home_continue_journey">Continue your journey</string>
+    <string name="home_daily_wisdom">Daily Wisdom</string>
+
+    <!-- Legacy aliases -->
     <string name="good_morning">Good Morning</string>
     <string name="good_afternoon">Good Afternoon</string>
     <string name="good_evening">Good Evening</string>
@@ -79,20 +88,28 @@
     <string name="new_record">New personal record!</string>
     <string name="longest_streak">Longest: %d days</string>
 
-    <!-- Quick Actions -->
-    <string name="quick_journal">Quick Journal</string>
-    <string name="write_now">Write Now</string>
-    <string name="learn_word">Learn Word</string>
-    <string name="reflect">Reflect</string>
-
-    <!-- ========================================================================== -->
+    <!-- ==================== -->
     <!-- JOURNAL -->
-    <!-- ========================================================================== -->
+    <!-- ==================== -->
+    <string name="journal_title">Journal</string>
+    <string name="journal_new_entry">New Entry</string>
+    <string name="journal_prompt_inspiration">Need inspiration?</string>
+    <string name="journal_prompt_more">More prompts</string>
+    <string name="journal_placeholder">What\'s on your mind?</string>
+    <string name="journal_saved">Entry saved!</string>
+    <string name="journal_word_count">%d words</string>
+    <string name="journal_empty_title">No entries yet</string>
+    <string name="journal_empty_message">Start your journey by writing your first entry.</string>
+    <string name="journal_today">Today</string>
+    <string name="journal_yesterday">Yesterday</string>
+    <string name="journal_this_week">This Week</string>
+    <string name="journal_earlier">Earlier</string>
+    <string name="journal_delete_confirm">Delete this entry?</string>
+    <string name="journal_delete_message">This action cannot be undone.</string>
+
+    <!-- Legacy aliases -->
     <string name="new_entry">New Entry</string>
-    <string name="journal_placeholder">Pour your heart out. Buddha is listening...</string>
-    <string name="journal_placeholder_short">What\'s on your mind?</string>
     <string name="save_entry">Save Entry</string>
-    <string name="buddha_response">Buddha\'s Reflection</string>
     <string name="entry_saved">Entry saved successfully</string>
     <string name="mood_question">How are you feeling today?</string>
     <string name="select_mood">Select your mood</string>
@@ -129,17 +146,34 @@
     <string name="creative_prompts">Creative Prompts</string>
     <string name="milestone_prompts">Milestone Prompts</string>
 
-    <!-- Buddha AI -->
-    <string name="buddha_is_thinking">Buddha is thinking...</string>
-    <string name="buddha_wisdom">Buddha\'s Wisdom</string>
-    <string name="ai_powered">AI Powered</string>
-    <string name="regenerate_response">Regenerate response</string>
-    <string name="copy_response">Copy response</string>
-    <string name="share_wisdom">Share wisdom</string>
+    <!-- Buddha Insights -->
+    <string name="insight_title">Buddha\'s Take</string>
+    <string name="insight_emotion">Feeling</string>
+    <string name="insight_themes">Themes</string>
+    <string name="insight_dismiss">Got it</string>
+    <string name="buddha_response">Buddha\'s Reflection</string>
 
-    <!-- ========================================================================== -->
-    <!-- FUTURE MESSAGES -->
-    <!-- ========================================================================== -->
+    <!-- ==================== -->
+    <!-- FUTURE MESSAGE -->
+    <!-- ==================== -->
+    <string name="future_title">Write to Future You</string>
+    <string name="future_category_goal">Goal</string>
+    <string name="future_category_motivation">Motivation</string>
+    <string name="future_category_promise">Promise</string>
+    <string name="future_category_general">General</string>
+    <string name="future_timeframe_week">1 Week</string>
+    <string name="future_timeframe_month">1 Month</string>
+    <string name="future_timeframe_3months">3 Months</string>
+    <string name="future_timeframe_6months">6 Months</string>
+    <string name="future_timeframe_year">1 Year</string>
+    <string name="future_need_help">Need help starting?</string>
+    <string name="future_schedule">Schedule Message</string>
+    <string name="future_arriving_in">Arriving in %s</string>
+    <string name="future_empty_title">No messages yet</string>
+    <string name="future_empty_message">Write your first message to future you.</string>
+    <string name="future_message_arrived">A message from your past self!</string>
+
+    <!-- Legacy aliases -->
     <string name="write_to_future">Write to Future You</string>
     <string name="future_message_hint">What do you want your future self to know?</string>
     <string name="delivery_date">Delivery Date</string>
@@ -168,9 +202,23 @@
     <string name="no_received_messages">No messages received yet</string>
     <string name="mark_as_read">Mark as read</string>
 
-    <!-- ========================================================================== -->
-    <!-- STATISTICS & LEADERBOARD -->
-    <!-- ========================================================================== -->
+    <!-- ==================== -->
+    <!-- STATS -->
+    <!-- ==================== -->
+    <string name="stats_title">Your Journey</string>
+    <string name="stats_total_entries">Total Entries</string>
+    <string name="stats_total_words">Words Written</string>
+    <string name="stats_current_streak">Current Streak</string>
+    <string name="stats_longest_streak">Longest Streak</string>
+    <string name="stats_level">Level</string>
+    <string name="stats_xp">XP</string>
+    <string name="stats_weekly_summary">This Week</string>
+    <string name="stats_monthly_summary">This Month</string>
+    <string name="stats_all_time">All Time</string>
+    <string name="stats_insights">Insights</string>
+    <string name="stats_mood_trends">Mood Trends</string>
+
+    <!-- Legacy aliases -->
     <string name="leaderboard">Leaderboard</string>
     <string name="your_rank">Your Rank</string>
     <string name="total_points">Total Points</string>
@@ -193,32 +241,23 @@
     <string name="hours_short">hr</string>
     <string name="average_mood">Average Mood</string>
 
-    <!-- Leaderboard -->
-    <string name="rank_change_up">Up %d positions</string>
-    <string name="rank_change_down">Down %d positions</string>
-    <string name="rank_no_change">No change</string>
-    <string name="weekly_leaderboard">Weekly</string>
-    <string name="all_time_leaderboard">All Time</string>
-    <string name="top_performers">Top Performers</string>
-    <string name="you_are_rank">You are #%d</string>
-    <string name="boost_sent">Boost sent!</string>
-    <string name="congrats_sent">Congrats sent!</string>
-    <string name="boosts_received">Boosts: %d</string>
-    <string name="congrats_received">Congrats: %d</string>
-
-    <!-- XP & Levels -->
-    <string name="level">Level %d</string>
-    <string name="level_up">Level Up!</string>
-    <string name="current_level">Current Level</string>
-    <string name="next_level">Next Level</string>
-    <string name="xp_to_next_level">%d XP to next level</string>
-    <string name="total_xp">Total XP: %d</string>
-    <string name="xp_earned">+%d XP</string>
-    <string name="xp_format">%,d XP</string>
-
-    <!-- ========================================================================== -->
+    <!-- ==================== -->
     <!-- PROFILE -->
-    <!-- ========================================================================== -->
+    <!-- ==================== -->
+    <string name="profile_title">Profile</string>
+    <string name="profile_edit">Edit Profile</string>
+    <string name="profile_badges">Badges</string>
+    <string name="profile_achievements">Achievements</string>
+    <string name="profile_banners">Banners</string>
+    <string name="profile_customize">Customize</string>
+    <string name="profile_share">Share Profile</string>
+    <string name="profile_share_card">Share as Card</string>
+    <string name="profile_share_story">Share as Story</string>
+    <string name="profile_level">Level %d</string>
+    <string name="profile_rank">%s</string>
+    <string name="profile_bio_placeholder">Tell the world about yourself...</string>
+
+    <!-- Legacy aliases -->
     <string name="edit_profile">Edit Profile</string>
     <string name="achievements">Achievements</string>
     <string name="unlocked">Unlocked</string>
@@ -242,85 +281,35 @@
     <string name="equip">Equip</string>
     <string name="preview">Preview</string>
 
-    <!-- ========================================================================== -->
-    <!-- VOCABULARY -->
-    <!-- ========================================================================== -->
-    <string name="vocabulary">Vocabulary</string>
-    <string name="definition">Definition</string>
-    <string name="example">Example</string>
-    <string name="pronunciation">Pronunciation</string>
-    <string name="origin">Origin</string>
-    <string name="synonyms">Synonyms</string>
-    <string name="antonyms">Antonyms</string>
-    <string name="mark_learned">Mark as Learned</string>
-    <string name="review_words">Review Words</string>
-    <string name="part_of_speech">Part of Speech</string>
-    <string name="difficulty">Difficulty</string>
-    <string name="mastery">Mastery</string>
-    <string name="mastery_percent">%d%% mastered</string>
-    <string name="next_review">Next review: %s</string>
-    <string name="review_now">Review now</string>
-    <string name="add_to_favorites">Add to favorites</string>
-    <string name="remove_from_favorites">Remove from favorites</string>
-    <string name="word_learned">Word learned!</string>
-    <string name="practice_mode">Practice Mode</string>
-    <string name="quiz_mode">Quiz Mode</string>
+    <!-- ==================== -->
+    <!-- LEADERBOARD -->
+    <!-- ==================== -->
+    <string name="leaderboard_title">Leaderboard</string>
+    <string name="leaderboard_weekly">Weekly</string>
+    <string name="leaderboard_monthly">Monthly</string>
+    <string name="leaderboard_all_time">All Time</string>
+    <string name="leaderboard_your_rank">Your Rank</string>
+    <string name="leaderboard_empty_title">No rankings yet</string>
+    <string name="leaderboard_empty_message">Be the first to climb the leaderboard!</string>
+    <string name="leaderboard_position">#%d</string>
+    <string name="leaderboard_points">%d pts</string>
 
-    <!-- ========================================================================== -->
-    <!-- NOTIFICATIONS -->
-    <!-- ========================================================================== -->
-    <string name="notification_channel_name">Prody Notifications</string>
-    <string name="notification_channel_desc">Daily wisdom, reminders, and motivation</string>
-    <string name="notification_channel_streak">Streak Reminders</string>
-    <string name="notification_channel_streak_desc">Notifications to help maintain your streak</string>
-    <string name="notification_channel_wisdom">Daily Wisdom</string>
-    <string name="notification_channel_wisdom_desc">Daily word, quote, and wisdom notifications</string>
-    <string name="notification_channel_future">Future Messages</string>
-    <string name="notification_channel_future_desc">Notifications when your future messages arrive</string>
-    <string name="notification_channel_achievements">Achievements</string>
-    <string name="notification_channel_achievements_desc">Badge unlock and achievement notifications</string>
-    <string name="notification_channel_challenges">Challenges</string>
-    <string name="notification_channel_challenges_desc">Community challenge updates</string>
-
-    <!-- ========================================================================== -->
-    <!-- SETTINGS -->
-    <!-- ========================================================================== -->
-    <string name="notifications">Notifications</string>
-    <string name="daily_reminder_time">Daily Reminder Time</string>
-    <string name="theme">Theme</string>
-    <string name="dark_mode">Dark Mode</string>
-    <string name="system_default">System Default</string>
-    <string name="light">Light</string>
-    <string name="dark">Dark</string>
-    <string name="about">About</string>
-    <string name="version">Version</string>
-    <string name="privacy_policy">Privacy Policy</string>
-    <string name="terms_of_service">Terms of Service</string>
-    <string name="feedback">Send Feedback</string>
-    <string name="rate_app">Rate App</string>
-    <string name="share_app">Share Prody</string>
-    <string name="export_data">Export Data</string>
-    <string name="import_data">Import Data</string>
-    <string name="clear_data">Clear All Data</string>
-    <string name="clear_data_warning">This will permanently delete all your data. This action cannot be undone.</string>
-    <string name="data_cleared">All data cleared</string>
-    <string name="notification_settings">Notification Settings</string>
-    <string name="streak_reminders">Streak Reminders</string>
-    <string name="daily_wisdom_notifications">Daily Wisdom</string>
-    <string name="achievement_notifications">Achievement Alerts</string>
-    <string name="challenge_notifications">Challenge Updates</string>
-    <string name="ai_settings">AI Settings</string>
-    <string name="ai_provider">AI Provider</string>
-    <string name="response_style">Response Style</string>
-    <string name="language">Language</string>
-    <string name="accessibility">Accessibility</string>
-    <string name="font_size">Font Size</string>
-    <string name="reduce_motion">Reduce Motion</string>
-    <string name="high_contrast">High Contrast</string>
-
-    <!-- ========================================================================== -->
+    <!-- ==================== -->
     <!-- ACHIEVEMENTS -->
-    <!-- ========================================================================== -->
+    <!-- ==================== -->
+    <string name="achievement_unlocked">Achievement Unlocked!</string>
+    <string name="achievement_progress">%d%% complete</string>
+    <string name="achievement_locked">Locked</string>
+    <string name="achievement_rarity_common">Common</string>
+    <string name="achievement_rarity_uncommon">Uncommon</string>
+    <string name="achievement_rarity_rare">Rare</string>
+    <string name="achievement_rarity_epic">Epic</string>
+    <string name="achievement_rarity_legendary">Legendary</string>
+    <string name="achievement_rarity_mythic">Mythic</string>
+    <string name="achievement_showcase">Showcase</string>
+    <string name="achievement_earned_on">Earned on %s</string>
+
+    <!-- Achievement Definitions -->
     <string name="achievement_first_journal">First Thoughts</string>
     <string name="achievement_first_journal_desc">Write your first journal entry</string>
     <string name="achievement_week_streak">Week Warrior</string>
@@ -334,32 +323,69 @@
     <string name="achievement_future_writer">Time Traveler</string>
     <string name="achievement_future_writer_desc">Send 10 messages to your future self</string>
 
-    <!-- Achievement Rarities -->
-    <string name="rarity_common">Common</string>
-    <string name="rarity_uncommon">Uncommon</string>
-    <string name="rarity_rare">Rare</string>
-    <string name="rarity_epic">Epic</string>
-    <string name="rarity_legendary">Legendary</string>
+    <!-- ==================== -->
+    <!-- SETTINGS -->
+    <!-- ==================== -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_account">Account</string>
+    <string name="settings_appearance">Appearance</string>
+    <string name="settings_notifications">Notifications</string>
+    <string name="settings_privacy">Privacy</string>
+    <string name="settings_about">About</string>
+    <string name="settings_dark_mode">Dark Mode</string>
+    <string name="settings_dark_mode_system">System</string>
+    <string name="settings_dark_mode_on">On</string>
+    <string name="settings_dark_mode_off">Off</string>
+    <string name="settings_language">Language</string>
+    <string name="settings_export_data">Export Data</string>
+    <string name="settings_delete_account">Delete Account</string>
 
-    <!-- Achievement Categories -->
-    <string name="category_wisdom">Wisdom</string>
-    <string name="category_reflection">Reflection</string>
-    <string name="category_consistency">Consistency</string>
-    <string name="category_presence">Presence</string>
-    <string name="category_temporal">Temporal</string>
-    <string name="category_mastery">Mastery</string>
+    <!-- AI Settings -->
+    <string name="settings_ai_title">Buddha AI</string>
+    <string name="settings_ai_enabled">Enable AI Features</string>
+    <string name="settings_ai_wisdom">Personalized Wisdom</string>
+    <string name="settings_ai_insights">Journal Insights</string>
+    <string name="settings_ai_prompts">Smart Prompts</string>
+    <string name="settings_ai_patterns">Pattern Detection</string>
+    <string name="settings_ai_privacy_info">Your journal entries are only used to generate insights. Nothing is stored on external servers.</string>
 
-    <!-- Achievement Progress -->
-    <string name="progress_format">%d / %d</string>
-    <string name="achievement_unlocked">Achievement Unlocked!</string>
-    <string name="reward_earned">Reward: %s</string>
-    <string name="view_achievement">View Achievement</string>
-    <string name="share_achievement">Share Achievement</string>
+    <!-- About Developer -->
+    <string name="settings_developer">About Developer</string>
+    <string name="developer_name">Prashant Chataut</string>
+    <string name="developer_role">Creator &amp; Developer</string>
+    <string name="developer_instagram">Instagram</string>
+    <string name="developer_website">Website</string>
+    <string name="developer_github">GitHub</string>
+    <string name="developer_feedback">Send Feedback</string>
 
-    <!-- ========================================================================== -->
+    <!-- Legacy aliases -->
+    <string name="notifications">Notifications</string>
+    <string name="daily_reminder_time">Daily Reminder Time</string>
+    <string name="theme">Theme</string>
+    <string name="dark_mode">Dark Mode</string>
+    <string name="system_default">System Default</string>
+    <string name="light">Light</string>
+    <string name="dark">Dark</string>
+    <string name="about">About</string>
+    <string name="version">Version</string>
+
+    <!-- ==================== -->
+    <!-- VOCABULARY -->
+    <!-- ==================== -->
+    <string name="vocabulary">Vocabulary</string>
+    <string name="definition">Definition</string>
+    <string name="example">Example</string>
+    <string name="pronunciation">Pronunciation</string>
+    <string name="origin">Origin</string>
+    <string name="synonyms">Synonyms</string>
+    <string name="antonyms">Antonyms</string>
+    <string name="mark_learned">Mark as Learned</string>
+    <string name="review_words">Review Words</string>
+    <string name="words_learned">%d words learned</string>
+
+    <!-- ==================== -->
     <!-- MOODS -->
-    <!-- ========================================================================== -->
-    <string name="mood_joyful">Joyful</string>
+    <!-- ==================== -->
     <string name="mood_happy">Happy</string>
     <string name="mood_content">Content</string>
     <string name="mood_calm">Calm</string>
@@ -373,48 +399,23 @@
     <string name="mood_grateful">Grateful</string>
     <string name="mood_confused">Confused</string>
     <string name="mood_excited">Excited</string>
-    <string name="mood_tired">Tired</string>
-    <string name="mood_hopeful">Hopeful</string>
-    <string name="mood_intensity">Intensity: %d/10</string>
+    <string name="mood_energetic">Energetic</string>
+    <string name="mood_inspired">Inspired</string>
 
-    <!-- ========================================================================== -->
+    <!-- ==================== -->
     <!-- WISDOM COLLECTION -->
-    <!-- ========================================================================== -->
+    <!-- ==================== -->
     <string name="wisdom_collection">Wisdom Collection</string>
     <string name="quotes">Quotes</string>
     <string name="proverbs">Proverbs</string>
     <string name="idioms">Idioms</string>
     <string name="phrases">Phrases</string>
-    <string name="saved_wisdom">Saved Wisdom</string>
-    <string name="favorites">Favorites</string>
-    <string name="all_wisdom">All Wisdom</string>
-    <string name="wisdom_categories">Categories</string>
-    <string name="browse_wisdom">Browse Wisdom</string>
-    <string name="random_wisdom">Random Wisdom</string>
-    <string name="share_quote">Share Quote</string>
-    <string name="copy_quote">Copy Quote</string>
-    <string name="save_to_collection">Save to Collection</string>
-    <string name="wisdom_saved">Wisdom saved</string>
-    <string name="wisdom_removed">Wisdom removed</string>
-    <string name="meaning">Meaning</string>
-    <string name="usage">Usage</string>
-    <string name="source">Source</string>
+    <string name="wisdom_saved">Added to favorites</string>
+    <string name="wisdom_share">Share wisdom</string>
 
-    <!-- Wisdom Themes -->
-    <string name="theme_growth">Growth</string>
-    <string name="theme_resilience">Resilience</string>
-    <string name="theme_gratitude">Gratitude</string>
-    <string name="theme_mindfulness">Mindfulness</string>
-    <string name="theme_action">Action</string>
-    <string name="theme_self_compassion">Self-Compassion</string>
-    <string name="theme_perspective">Perspective</string>
-    <string name="theme_stoic">Stoic</string>
-    <string name="theme_philosophical">Philosophical</string>
-    <string name="theme_motivational">Motivational</string>
-
-    <!-- ========================================================================== -->
+    <!-- ==================== -->
     <!-- COMMUNITY CHALLENGES -->
-    <!-- ========================================================================== -->
+    <!-- ==================== -->
     <string name="challenges">Challenges</string>
     <string name="community_challenges">Community Challenges</string>
     <string name="join_challenge">Join Challenge</string>
@@ -428,253 +429,106 @@
     <string name="your_progress">Your Progress</string>
     <string name="challenge_leaderboard">Challenge Leaderboard</string>
     <string name="milestone_reached">Milestone Reached!</string>
-    <string name="active_challenges">Active Challenges</string>
-    <string name="completed_challenges">Completed Challenges</string>
-    <string name="upcoming_challenges">Upcoming Challenges</string>
-    <string name="past_challenges">Past Challenges</string>
-    <string name="featured_challenge">Featured</string>
-    <string name="challenge_reward">Reward</string>
-    <string name="challenge_difficulty">Difficulty</string>
-    <string name="difficulty_easy">Easy</string>
-    <string name="difficulty_medium">Medium</string>
-    <string name="difficulty_hard">Hard</string>
-    <string name="difficulty_extreme">Extreme</string>
 
-    <!-- Challenge Types -->
-    <string name="challenge_type_journaling">Journaling</string>
-    <string name="challenge_type_vocabulary">Vocabulary</string>
-    <string name="challenge_type_streak">Streak</string>
-    <string name="challenge_type_meditation">Meditation</string>
-    <string name="challenge_type_mixed">Mixed</string>
+    <!-- ==================== -->
+    <!-- NOTIFICATIONS -->
+    <!-- ==================== -->
+    <string name="notification_channel_name">Prody Notifications</string>
+    <string name="notification_channel_desc">Daily wisdom, reminders, and motivation</string>
+    <string name="notification_reminder_title">Time to reflect</string>
+    <string name="notification_reminder_body">Your journal is waiting for today\'s thoughts.</string>
 
-    <!-- ========================================================================== -->
-    <!-- ACCESSIBILITY - Content Descriptions -->
-    <!-- ========================================================================== -->
-    <!-- Icons -->
-    <string name="cd_app_logo">Prody app logo</string>
-    <string name="cd_streak_flame">Streak flame icon</string>
-    <string name="cd_achievement_badge">Achievement badge</string>
-    <string name="cd_mood_icon">Mood indicator</string>
-    <string name="cd_close_button">Close</string>
-    <string name="cd_back_button">Go back</string>
-    <string name="cd_menu_button">Open menu</string>
-    <string name="cd_more_options">More options</string>
-    <string name="cd_search">Search</string>
-    <string name="cd_filter">Filter</string>
-    <string name="cd_sort">Sort</string>
-    <string name="cd_refresh">Refresh</string>
-    <string name="cd_share">Share</string>
-    <string name="cd_edit">Edit</string>
-    <string name="cd_delete">Delete</string>
-    <string name="cd_copy">Copy</string>
-    <string name="cd_bookmark">Bookmark</string>
-    <string name="cd_favorite">Favorite</string>
-    <string name="cd_settings">Settings</string>
-    <string name="cd_notifications">Notifications</string>
-    <string name="cd_calendar">Calendar</string>
-    <string name="cd_time_picker">Select time</string>
-    <string name="cd_date_picker">Select date</string>
-
-    <!-- Navigation -->
-    <string name="cd_nav_selected">Currently selected</string>
-    <string name="cd_bottom_nav">Main navigation</string>
-    <string name="cd_tab_selected">Selected tab</string>
-
-    <!-- Progress -->
-    <string name="cd_progress_bar">Progress indicator, %d percent complete</string>
-    <string name="cd_loading">Loading content</string>
-    <string name="cd_xp_progress">Experience points progress, %d of %d XP</string>
-    <string name="cd_streak_progress">Streak progress, %d days</string>
-
-    <!-- User Elements -->
-    <string name="cd_user_avatar">User avatar for %s</string>
-    <string name="cd_user_banner">Profile banner</string>
-    <string name="cd_level_badge">Level %d badge</string>
-    <string name="cd_rank_badge">Rank #%d</string>
-
-    <!-- Leaderboard -->
-    <string name="cd_first_place">First place, gold podium</string>
-    <string name="cd_second_place">Second place, silver podium</string>
-    <string name="cd_third_place">Third place, bronze podium</string>
-    <string name="cd_boost_button">Send boost to %s</string>
-    <string name="cd_congrats_button">Send congratulations to %s</string>
-
-    <!-- Cards -->
-    <string name="cd_quote_card">Quote card</string>
-    <string name="cd_word_card">Word of the day card</string>
-    <string name="cd_journal_entry_card">Journal entry from %s</string>
-    <string name="cd_achievement_card">Achievement: %s</string>
-    <string name="cd_challenge_card">Challenge: %s</string>
-    <string name="cd_future_message_card">Future message arriving in %s</string>
-
-    <!-- Mood Selection -->
-    <string name="cd_mood_selection">Select your current mood</string>
-    <string name="cd_mood_selected">Selected mood: %s</string>
-    <string name="cd_mood_intensity_slider">Mood intensity slider, current value %d</string>
-
-    <!-- ========================================================================== -->
-    <!-- ACCESSIBILITY - Actions -->
-    <!-- ========================================================================== -->
-    <string name="action_double_tap_to_open">Double tap to open</string>
-    <string name="action_double_tap_to_select">Double tap to select</string>
-    <string name="action_swipe_to_dismiss">Swipe to dismiss</string>
-    <string name="action_swipe_for_more">Swipe for more options</string>
-    <string name="action_expand">Expand</string>
-    <string name="action_collapse">Collapse</string>
-    <string name="action_play">Play</string>
-    <string name="action_pause">Pause</string>
-    <string name="action_stop">Stop</string>
-
-    <!-- ========================================================================== -->
-    <!-- ACCESSIBILITY - Announcements -->
-    <!-- ========================================================================== -->
-    <string name="announce_achievement_unlocked">Achievement unlocked: %s</string>
-    <string name="announce_streak_updated">Streak updated to %d days</string>
-    <string name="announce_level_up">Level up! You are now level %d</string>
-    <string name="announce_entry_saved">Journal entry saved successfully</string>
-    <string name="announce_message_scheduled">Future message scheduled for %s</string>
-    <string name="announce_loading_complete">Loading complete</string>
-    <string name="announce_error">Error: %s</string>
-
-    <!-- ========================================================================== -->
-    <!-- COMMON ACTIONS -->
-    <!-- ========================================================================== -->
-    <string name="cancel">Cancel</string>
-    <string name="confirm">Confirm</string>
-    <string name="ok">OK</string>
-    <string name="yes">Yes</string>
-    <string name="no">No</string>
-    <string name="save">Save</string>
-    <string name="delete">Delete</string>
-    <string name="edit">Edit</string>
-    <string name="share">Share</string>
-    <string name="copy">Copy</string>
-    <string name="close">Close</string>
-    <string name="retry">Retry</string>
-    <string name="dismiss">Dismiss</string>
-    <string name="learn_more">Learn More</string>
-    <string name="see_all">See All</string>
-    <string name="view_all">View All</string>
-    <string name="show_more">Show More</string>
-    <string name="show_less">Show Less</string>
-    <string name="reset">Reset</string>
-    <string name="apply">Apply</string>
-    <string name="clear">Clear</string>
-    <string name="select">Select</string>
-    <string name="select_all">Select All</string>
-    <string name="deselect_all">Deselect All</string>
-
-    <!-- ========================================================================== -->
+    <!-- ==================== -->
     <!-- ERRORS & EMPTY STATES -->
-    <!-- ========================================================================== -->
+    <!-- ==================== -->
     <string name="error_generic">Something went wrong. Please try again.</string>
-    <string name="error_network">No internet connection. Please check your network.</string>
-    <string name="error_loading">Failed to load content</string>
-    <string name="error_saving">Failed to save</string>
-    <string name="error_ai_unavailable">AI is temporarily unavailable</string>
-    <string name="error_invalid_date">Please select a valid date</string>
-    <string name="error_empty_content">Content cannot be empty</string>
-    <string name="error_name_too_short">Name must be at least 2 characters</string>
-    <string name="error_name_too_long">Name cannot exceed 30 characters</string>
+    <string name="error_network">No internet connection. Check your network.</string>
+    <string name="error_loading">Couldn\'t load data. Tap to retry.</string>
+    <string name="empty_generic">Nothing here yet</string>
+    <string name="loading">Loading…</string>
+    <string name="error_save_failed">Couldn\'t save. Please try again.</string>
+    <string name="error_delete_failed">Couldn\'t delete. Please try again.</string>
 
-    <string name="empty_journal">No journal entries yet</string>
-    <string name="empty_journal_subtitle">Start writing to capture your thoughts</string>
-    <string name="empty_future_messages">No future messages</string>
-    <string name="empty_future_messages_subtitle">Write a letter to your future self</string>
-    <string name="empty_achievements">No achievements yet</string>
-    <string name="empty_achievements_subtitle">Keep growing to unlock achievements</string>
-    <string name="empty_favorites">No favorites yet</string>
-    <string name="empty_favorites_subtitle">Save wisdom you want to revisit</string>
-    <string name="empty_search">No results found</string>
-    <string name="empty_search_subtitle">Try different keywords</string>
-    <string name="empty_challenges">No active challenges</string>
-    <string name="empty_challenges_subtitle">Check back for new challenges</string>
+    <!-- ==================== -->
+    <!-- ACCESSIBILITY -->
+    <!-- ==================== -->
+    <string name="cd_back_button">Go back</string>
+    <string name="cd_close_button">Close</string>
+    <string name="cd_menu_button">Open menu</string>
+    <string name="cd_share_button">Share</string>
+    <string name="cd_save_button">Save</string>
+    <string name="cd_profile_picture">Profile picture</string>
+    <string name="cd_badge_icon">Badge: %s</string>
+    <string name="cd_loading">Loading content</string>
+    <string name="cd_streak_fire">Streak fire icon</string>
+    <string name="cd_leaderboard_rank">Rank %d</string>
+    <string name="cd_mood_selector">Select your mood</string>
+    <string name="cd_play_audio">Play pronunciation</string>
+    <string name="cd_navigation_item">Navigate to %s</string>
 
-    <!-- ========================================================================== -->
-    <!-- DATE & TIME FORMATS -->
-    <!-- ========================================================================== -->
-    <string name="date_today">Today</string>
-    <string name="date_yesterday">Yesterday</string>
-    <string name="date_tomorrow">Tomorrow</string>
-    <string name="date_format_full">MMMM d, yyyy</string>
-    <string name="date_format_short">MMM d</string>
-    <string name="time_format">h:mm a</string>
-    <string name="datetime_format">MMM d, h:mm a</string>
-    <string name="just_now">Just now</string>
-    <string name="minutes_ago">%d minutes ago</string>
-    <string name="hours_ago">%d hours ago</string>
-    <string name="days_ago">%d days ago</string>
-    <string name="weeks_ago">%d weeks ago</string>
-    <string name="months_ago">%d months ago</string>
+    <!-- ==================== -->
+    <!-- ONBOARDING -->
+    <!-- ==================== -->
+    <string name="onboarding_welcome">Welcome to Prody</string>
+    <string name="onboarding_tagline">Your journey to self-improvement starts here</string>
+    <string name="onboarding_step1_title">Reflect Daily</string>
+    <string name="onboarding_step1_desc">Journal your thoughts and track your growth</string>
+    <string name="onboarding_step2_title">Gain Wisdom</string>
+    <string name="onboarding_step2_desc">Buddha shares personalized insights just for you</string>
+    <string name="onboarding_step3_title">Level Up</string>
+    <string name="onboarding_step3_desc">Earn XP, unlock badges, and climb the leaderboard</string>
+    <string name="onboarding_get_started">Get Started</string>
 
-    <!-- ========================================================================== -->
-    <!-- PLURALS -->
-    <!-- ========================================================================== -->
-    <plurals name="days_count">
-        <item quantity="one">%d day</item>
-        <item quantity="other">%d days</item>
-    </plurals>
-    <plurals name="hours_count">
-        <item quantity="one">%d hour</item>
-        <item quantity="other">%d hours</item>
-    </plurals>
-    <plurals name="minutes_count">
-        <item quantity="one">%d minute</item>
-        <item quantity="other">%d minutes</item>
-    </plurals>
-    <plurals name="words_count">
-        <item quantity="one">%d word</item>
-        <item quantity="other">%d words</item>
-    </plurals>
-    <plurals name="entries_count">
-        <item quantity="one">%d entry</item>
-        <item quantity="other">%d entries</item>
-    </plurals>
-    <plurals name="points_count">
-        <item quantity="one">%d point</item>
-        <item quantity="other">%d points</item>
-    </plurals>
-    <plurals name="participants_count">
-        <item quantity="one">%d participant</item>
-        <item quantity="other">%d participants</item>
-    </plurals>
-    <plurals name="achievements_count">
-        <item quantity="one">%d achievement</item>
-        <item quantity="other">%d achievements</item>
-    </plurals>
+    <!-- Onboarding Legacy -->
+    <string name="onboarding_welcome_title">Welcome to Prody</string>
+    <string name="onboarding_welcome_desc">Your personal growth companion that transforms the way you think, learn, and evolve. Let\'s begin your journey to becoming the best version of yourself.</string>
+    <string name="onboarding_wisdom_title">Daily Wisdom</string>
+    <string name="onboarding_wisdom_desc">Discover curated vocabulary, proverbs, idioms, and quotes that expand your mind and enrich your language every single day.</string>
+    <string name="onboarding_journal_title">Buddha - Your Stoic Guide</string>
+    <string name="onboarding_journal_desc">Journal your thoughts and let Buddha, your AI mentor, listen, reflect, and guide you with timeless stoic wisdom. A safe space for your deepest thoughts.</string>
+    <string name="onboarding_future_title">Message Your Future Self</string>
+    <string name="onboarding_future_desc">Write letters to your future self, set intentions, and reflect on how far you\'ve come. Make your future self proud of who you\'re becoming today.</string>
+    <string name="onboarding_growth_title">Track Your Growth</string>
+    <string name="onboarding_growth_desc">Celebrate your progress, earn achievements, and see how you compare with fellow growth seekers. Every step forward is a victory.</string>
 
-    <!-- ========================================================================== -->
-    <!-- MISC -->
-    <!-- ========================================================================== -->
-    <string name="copyright">Copyright 2024 Prody</string>
-    <string name="made_with_love">Made with love for personal growth seekers</string>
-    <string name="offline_mode">Offline Mode</string>
-    <string name="sync_in_progress">Syncing...</string>
-    <string name="last_synced">Last synced: %s</string>
-    <string name="new_update_available">New update available</string>
-    <string name="update_now">Update Now</string>
-    <string name="remind_later">Remind Later</string>
-    <string name="whats_new">What\'s New</string>
-    <string name="getting_started">Getting Started</string>
-    <string name="help_support">Help &amp; Support</string>
-    <string name="contact_us">Contact Us</string>
-    <string name="faq">FAQ</string>
-    <string name="tutorial">Tutorial</string>
-    <string name="tips_tricks">Tips &amp; Tricks</string>
+    <!-- ==================== -->
+    <!-- STREAK -->
+    <!-- ==================== -->
+    <string name="streak_current">Current Streak</string>
+    <string name="streak_longest">Longest Streak</string>
+    <string name="streak_days_format">%d days</string>
+    <string name="streak_day_format">%d day</string>
+    <string name="streak_on_fire">You\'re on fire!</string>
+    <string name="streak_keep_going">Keep going!</string>
+    <string name="streak_broken">Streak ended</string>
+    <string name="streak_restart">Start a new streak</string>
 
-    <!-- ========================================================================== -->
-    <!-- NEPALI EXPRESSIONS (Cultural Personality) -->
-    <!-- ========================================================================== -->
-    <string name="nepali_ramro_lagena">Prody ramro lagena ra?</string>
-    <string name="nepali_ramro_lagena_meaning">Didn\'t you like Prody?</string>
-    <string name="nepali_sanchai_ho">Sanchai ho hami?</string>
-    <string name="nepali_sanchai_ho_meaning">Are we good?</string>
-    <string name="nepali_kasto_cha">Kasto cha aajkal?</string>
-    <string name="nepali_kasto_cha_meaning">How is it going these days?</string>
-    <string name="nepali_kata_harayo">Kata harayo timi?</string>
-    <string name="nepali_kata_harayo_meaning">Where did you disappear?</string>
-    <string name="nepali_babal">Timi ta babal raixau!</string>
-    <string name="nepali_babal_meaning">You\'re amazing!</string>
-    <string name="nepali_ramro_garyo">Ramro garyou!</string>
-    <string name="nepali_ramro_garyo_meaning">Well done!</string>
+    <!-- ==================== -->
+    <!-- XP & LEVELS -->
+    <!-- ==================== -->
+    <string name="xp_format">%d XP</string>
+    <string name="xp_earned">+%d XP</string>
+    <string name="level_format">Level %d</string>
+    <string name="level_up">Level Up!</string>
+    <string name="xp_to_next">%d XP to next level</string>
+    <string name="xp_progress">%d / %d XP</string>
+
+    <!-- ==================== -->
+    <!-- TIME FORMATS -->
+    <!-- ==================== -->
+    <string name="time_just_now">Just now</string>
+    <string name="time_minutes_ago">%d min ago</string>
+    <string name="time_hours_ago">%d hr ago</string>
+    <string name="time_days_ago">%d days ago</string>
+    <string name="time_weeks_ago">%d weeks ago</string>
+
+    <!-- ==================== -->
+    <!-- DIALOGS -->
+    <!-- ==================== -->
+    <string name="dialog_delete_title">Delete Entry</string>
+    <string name="dialog_delete_message">Are you sure you want to delete this entry? This action cannot be undone.</string>
+    <string name="dialog_discard_title">Discard Changes</string>
+    <string name="dialog_discard_message">You have unsaved changes. Are you sure you want to discard them?</string>
+    <string name="dialog_logout_title">Log Out</string>
+    <string name="dialog_logout_message">Are you sure you want to log out?</string>
 </resources>

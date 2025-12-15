@@ -1,706 +1,219 @@
 package com.prody.prashant.data.content
 
+import java.util.Calendar
+
 /**
- * Prody Journal Prompts Library
+ * Prody Journal Prompt Library
  *
- * A comprehensive, production-grade collection of journal prompts designed to
- * facilitate meaningful reflection across different contexts and emotional states.
+ * A comprehensive collection of journal prompts organized by category.
+ * Designed to inspire reflection, self-discovery, and personal growth.
  *
  * Features:
- * - 100+ unique journal prompts across 8 categories
- * - Time-of-day appropriate prompts
- * - Quick prompts for when time is limited
+ * - 80+ carefully crafted prompts across 8 categories
+ * - Time-of-day appropriate prompt selection
+ * - Quick prompts for time-constrained journaling
  * - Creative prompts for deeper exploration
- * - Mood-based prompt suggestions
- * - Streak milestone celebration prompts
- *
- * Design Philosophy:
- * - Non-judgmental and open-ended
- * - Encourages self-discovery without prescribing answers
- * - Varies in depth - from quick captures to deep dives
- * - Respectful of user's time and emotional state
+ * - Category-based filtering
  */
 object JournalPrompts {
 
-    // =========================================================================
-    // DATA CLASSES
-    // =========================================================================
-
-    /**
-     * Represents a journal prompt with metadata.
-     */
-    data class Prompt(
-        val text: String,
-        val category: PromptCategory,
-        val estimatedMinutes: Int = 5,
-        val isQuick: Boolean = false,
-        val followUp: String? = null
-    )
-
-    /**
-     * Prompt categories for organization and filtering.
-     */
-    enum class PromptCategory {
-        MORNING,
-        EVENING,
-        GRATITUDE,
-        REFLECTION,
-        GROWTH,
-        EMOTIONAL,
-        QUICK,
-        CREATIVE,
-        MILESTONE
-    }
-
-    // =========================================================================
-    // MORNING PROMPTS - Start the day with intention
-    // =========================================================================
+    // =============================================================================
+    // MORNING PROMPTS - For starting the day with intention
+    // =============================================================================
 
     val morningPrompts = listOf(
-        Prompt(
-            text = "What's one thing you want to accomplish today?",
-            category = PromptCategory.MORNING,
-            estimatedMinutes = 3,
-            followUp = "Why does this matter to you?"
-        ),
-        Prompt(
-            text = "How are you feeling this morning? Why?",
-            category = PromptCategory.MORNING,
-            estimatedMinutes = 5
-        ),
-        Prompt(
-            text = "What would make today great?",
-            category = PromptCategory.MORNING,
-            estimatedMinutes = 3,
-            followUp = "What can you do to make that happen?"
-        ),
-        Prompt(
-            text = "What's your intention for today?",
-            category = PromptCategory.MORNING,
-            estimatedMinutes = 3
-        ),
-        Prompt(
-            text = "If today was your best day ever, what would happen?",
-            category = PromptCategory.MORNING,
-            estimatedMinutes = 5
-        ),
-        Prompt(
-            text = "What's one thing you're looking forward to today?",
-            category = PromptCategory.MORNING,
-            estimatedMinutes = 2,
-            isQuick = true
-        ),
-        Prompt(
-            text = "How can you show up as your best self today?",
-            category = PromptCategory.MORNING,
-            estimatedMinutes = 5,
-            followUp = "What might get in the way, and how will you handle it?"
-        ),
-        Prompt(
-            text = "What challenges might you face today? How will you handle them?",
-            category = PromptCategory.MORNING,
-            estimatedMinutes = 5
-        ),
-        Prompt(
-            text = "If you could guarantee one win today, what would it be?",
-            category = PromptCategory.MORNING,
-            estimatedMinutes = 3
-        ),
-        Prompt(
-            text = "What energy do you want to bring into today?",
-            category = PromptCategory.MORNING,
-            estimatedMinutes = 3
-        ),
-        Prompt(
-            text = "Who do you want to be today? What version of yourself?",
-            category = PromptCategory.MORNING,
-            estimatedMinutes = 5
-        ),
-        Prompt(
-            text = "What's something you've been putting off that you could tackle today?",
-            category = PromptCategory.MORNING,
-            estimatedMinutes = 3
-        )
+        "What's one thing you want to accomplish today?",
+        "How are you feeling this morning? Why?",
+        "What would make today great?",
+        "What's your intention for today?",
+        "If today was your best day ever, what would happen?",
+        "What's one thing you're looking forward to?",
+        "How can you show up as your best self today?",
+        "What challenges might you face today? How will you handle them?",
+        "What are you grateful for as you start this day?",
+        "What energy do you want to bring into today?",
+        "If you could accomplish just one thing today, what would it be?",
+        "What's something small you can do today that your future self will thank you for?"
     )
 
-    // =========================================================================
-    // EVENING PROMPTS - Reflect and process
-    // =========================================================================
+    // =============================================================================
+    // EVENING PROMPTS - For reflecting on the day
+    // =============================================================================
 
     val eveningPrompts = listOf(
-        Prompt(
-            text = "What went well today? What could have gone better?",
-            category = PromptCategory.EVENING,
-            estimatedMinutes = 5
-        ),
-        Prompt(
-            text = "What are you grateful for from today?",
-            category = PromptCategory.EVENING,
-            estimatedMinutes = 3
-        ),
-        Prompt(
-            text = "What did you learn today?",
-            category = PromptCategory.EVENING,
-            estimatedMinutes = 5,
-            followUp = "How can you apply this tomorrow?"
-        ),
-        Prompt(
-            text = "How did you grow today?",
-            category = PromptCategory.EVENING,
-            estimatedMinutes = 5
-        ),
-        Prompt(
-            text = "What moment made you smile today?",
-            category = PromptCategory.EVENING,
-            estimatedMinutes = 3,
-            isQuick = true
-        ),
-        Prompt(
-            text = "What drained your energy today? What energized you?",
-            category = PromptCategory.EVENING,
-            estimatedMinutes = 5
-        ),
-        Prompt(
-            text = "If you could relive one moment from today, which would it be?",
-            category = PromptCategory.EVENING,
-            estimatedMinutes = 3
-        ),
-        Prompt(
-            text = "What would you do differently if you could redo today?",
-            category = PromptCategory.EVENING,
-            estimatedMinutes = 5,
-            followUp = "How will you approach tomorrow differently?"
-        ),
-        Prompt(
-            text = "What's something kind you did today, even small?",
-            category = PromptCategory.EVENING,
-            estimatedMinutes = 3
-        ),
-        Prompt(
-            text = "How did you take care of yourself today?",
-            category = PromptCategory.EVENING,
-            estimatedMinutes = 3
-        ),
-        Prompt(
-            text = "What conversation or interaction stood out today?",
-            category = PromptCategory.EVENING,
-            estimatedMinutes = 5
-        ),
-        Prompt(
-            text = "What's one thing you're proud of from today?",
-            category = PromptCategory.EVENING,
-            estimatedMinutes = 3,
-            isQuick = true
-        )
+        "What went well today? What could have gone better?",
+        "What are you grateful for from today?",
+        "What did you learn today?",
+        "How did you grow today?",
+        "What moment made you smile today?",
+        "What drained your energy today? What energized you?",
+        "If you could relive one moment from today, which would it be?",
+        "What would you do differently if you could redo today?",
+        "What's one thing you did today that you're proud of?",
+        "How did you handle today's challenges?",
+        "What was unexpected about today?",
+        "What will you remember about today?"
     )
 
-    // =========================================================================
-    // GRATITUDE PROMPTS - Cultivate appreciation
-    // =========================================================================
+    // =============================================================================
+    // GRATITUDE PROMPTS - For cultivating appreciation
+    // =============================================================================
 
     val gratitudePrompts = listOf(
-        Prompt(
-            text = "Name 3 things you're grateful for right now.",
-            category = PromptCategory.GRATITUDE,
-            estimatedMinutes = 3,
-            isQuick = true
-        ),
-        Prompt(
-            text = "Who made a positive impact on your life recently?",
-            category = PromptCategory.GRATITUDE,
-            estimatedMinutes = 5,
-            followUp = "Have you told them?"
-        ),
-        Prompt(
-            text = "What's something you usually take for granted?",
-            category = PromptCategory.GRATITUDE,
-            estimatedMinutes = 5
-        ),
-        Prompt(
-            text = "What's a simple pleasure that brought you joy lately?",
-            category = PromptCategory.GRATITUDE,
-            estimatedMinutes = 3
-        ),
-        Prompt(
-            text = "What ability or skill are you thankful to have?",
-            category = PromptCategory.GRATITUDE,
-            estimatedMinutes = 5
-        ),
-        Prompt(
-            text = "What's something in nature you appreciate?",
-            category = PromptCategory.GRATITUDE,
-            estimatedMinutes = 3
-        ),
-        Prompt(
-            text = "Who has helped you become who you are?",
-            category = PromptCategory.GRATITUDE,
-            estimatedMinutes = 5
-        ),
-        Prompt(
-            text = "What challenge are you grateful for in hindsight?",
-            category = PromptCategory.GRATITUDE,
-            estimatedMinutes = 5
-        ),
-        Prompt(
-            text = "What comfort do you enjoy that many don't have?",
-            category = PromptCategory.GRATITUDE,
-            estimatedMinutes = 3
-        ),
-        Prompt(
-            text = "What's something about your body you're grateful for?",
-            category = PromptCategory.GRATITUDE,
-            estimatedMinutes = 3
-        ),
-        Prompt(
-            text = "What technology makes your life better that you rarely appreciate?",
-            category = PromptCategory.GRATITUDE,
-            estimatedMinutes = 3
-        )
+        "Name 3 things you're grateful for right now.",
+        "Who made a positive impact on your life recently?",
+        "What's something you usually take for granted?",
+        "What's a simple pleasure that brought you joy lately?",
+        "What ability or skill are you thankful to have?",
+        "What's something in nature you appreciate?",
+        "Who has helped you become who you are?",
+        "What's a memory you're grateful to have?",
+        "What modern convenience are you thankful for today?",
+        "What challenge taught you something valuable?",
+        "Who in your life makes you feel loved and supported?",
+        "What part of your body are you grateful for and why?"
     )
 
-    // =========================================================================
-    // REFLECTION PROMPTS - Deep self-examination
-    // =========================================================================
+    // =============================================================================
+    // REFLECTION PROMPTS - For deeper self-understanding
+    // =============================================================================
 
     val reflectionPrompts = listOf(
-        Prompt(
-            text = "What's been on your mind lately?",
-            category = PromptCategory.REFLECTION,
-            estimatedMinutes = 5
-        ),
-        Prompt(
-            text = "What patterns have you noticed in your life recently?",
-            category = PromptCategory.REFLECTION,
-            estimatedMinutes = 7
-        ),
-        Prompt(
-            text = "What's one thing you'd tell your younger self?",
-            category = PromptCategory.REFLECTION,
-            estimatedMinutes = 5
-        ),
-        Prompt(
-            text = "What does your ideal life look like?",
-            category = PromptCategory.REFLECTION,
-            estimatedMinutes = 10
-        ),
-        Prompt(
-            text = "What fears are holding you back?",
-            category = PromptCategory.REFLECTION,
-            estimatedMinutes = 7,
-            followUp = "What would you do if you weren't afraid?"
-        ),
-        Prompt(
-            text = "What would you do if you knew you couldn't fail?",
-            category = PromptCategory.REFLECTION,
-            estimatedMinutes = 5
-        ),
-        Prompt(
-            text = "What beliefs about yourself might not be true?",
-            category = PromptCategory.REFLECTION,
-            estimatedMinutes = 7
-        ),
-        Prompt(
-            text = "What's something you need to let go of?",
-            category = PromptCategory.REFLECTION,
-            estimatedMinutes = 5
-        ),
-        Prompt(
-            text = "What do you need more of in your life right now?",
-            category = PromptCategory.REFLECTION,
-            estimatedMinutes = 5
-        ),
-        Prompt(
-            text = "What boundaries do you need to set or strengthen?",
-            category = PromptCategory.REFLECTION,
-            estimatedMinutes = 7
-        ),
-        Prompt(
-            text = "What's a decision you've been avoiding?",
-            category = PromptCategory.REFLECTION,
-            estimatedMinutes = 5,
-            followUp = "What's really stopping you?"
-        ),
-        Prompt(
-            text = "When do you feel most like yourself?",
-            category = PromptCategory.REFLECTION,
-            estimatedMinutes = 5
-        ),
-        Prompt(
-            text = "What's a relationship in your life that needs attention?",
-            category = PromptCategory.REFLECTION,
-            estimatedMinutes = 7
-        )
+        "What's been on your mind lately?",
+        "What patterns have you noticed in your life recently?",
+        "What's one thing you'd tell your younger self?",
+        "What does your ideal life look like?",
+        "What fears are holding you back?",
+        "What would you do if you knew you couldn't fail?",
+        "What beliefs about yourself might not be true?",
+        "What's something you need to let go of?",
+        "When do you feel most like yourself?",
+        "What's a decision you've been avoiding?",
+        "What does success mean to you?",
+        "What would your life look like with less fear?"
     )
 
-    // =========================================================================
-    // GROWTH PROMPTS - Focus on development
-    // =========================================================================
+    // =============================================================================
+    // GROWTH PROMPTS - For personal development
+    // =============================================================================
 
     val growthPrompts = listOf(
-        Prompt(
-            text = "What's one area of your life you want to improve?",
-            category = PromptCategory.GROWTH,
-            estimatedMinutes = 5,
-            followUp = "What's one step you could take this week?"
-        ),
-        Prompt(
-            text = "What's a mistake you learned from recently?",
-            category = PromptCategory.GROWTH,
-            estimatedMinutes = 5
-        ),
-        Prompt(
-            text = "What's outside your comfort zone that you want to try?",
-            category = PromptCategory.GROWTH,
-            estimatedMinutes = 5
-        ),
-        Prompt(
-            text = "What habit would most improve your life?",
-            category = PromptCategory.GROWTH,
-            estimatedMinutes = 5
-        ),
-        Prompt(
-            text = "What skill do you want to develop?",
-            category = PromptCategory.GROWTH,
-            estimatedMinutes = 3,
-            followUp = "What's stopping you from starting?"
-        ),
-        Prompt(
-            text = "What's holding you back from your goals?",
-            category = PromptCategory.GROWTH,
-            estimatedMinutes = 7
-        ),
-        Prompt(
-            text = "What's one small step you can take toward your dreams?",
-            category = PromptCategory.GROWTH,
-            estimatedMinutes = 3
-        ),
-        Prompt(
-            text = "What feedback have you received that you should act on?",
-            category = PromptCategory.GROWTH,
-            estimatedMinutes = 5
-        ),
-        Prompt(
-            text = "What would the best version of you do right now?",
-            category = PromptCategory.GROWTH,
-            estimatedMinutes = 5
-        ),
-        Prompt(
-            text = "What's a book, podcast, or idea that's influenced you recently?",
-            category = PromptCategory.GROWTH,
-            estimatedMinutes = 5
-        ),
-        Prompt(
-            text = "Where are you playing small when you could aim bigger?",
-            category = PromptCategory.GROWTH,
-            estimatedMinutes = 5
-        ),
-        Prompt(
-            text = "What's something you used to struggle with that you've improved at?",
-            category = PromptCategory.GROWTH,
-            estimatedMinutes = 5
-        )
+        "What's one area of your life you want to improve?",
+        "What's a mistake you learned from recently?",
+        "What's outside your comfort zone that you want to try?",
+        "What habit would most improve your life?",
+        "What skill do you want to develop?",
+        "What's holding you back from your goals?",
+        "What's one small step you can take toward your dreams?",
+        "How have you grown in the past year?",
+        "What's a limiting belief you want to overcome?",
+        "What would you attempt if you were 10x bolder?",
+        "Who inspires you and what can you learn from them?",
+        "What does your best self look like?"
     )
 
-    // =========================================================================
-    // EMOTIONAL PROMPTS - Process feelings
-    // =========================================================================
+    // =============================================================================
+    // EMOTIONAL PROCESSING - For understanding and processing feelings
+    // =============================================================================
 
     val emotionalPrompts = listOf(
-        Prompt(
-            text = "How are you really feeling right now? Don't filter it.",
-            category = PromptCategory.EMOTIONAL,
-            estimatedMinutes = 5
-        ),
-        Prompt(
-            text = "What emotion has been most present for you lately?",
-            category = PromptCategory.EMOTIONAL,
-            estimatedMinutes = 5,
-            followUp = "What might this emotion be telling you?"
-        ),
-        Prompt(
-            text = "What's something you haven't allowed yourself to feel?",
-            category = PromptCategory.EMOTIONAL,
-            estimatedMinutes = 7
-        ),
-        Prompt(
-            text = "What would you say to a friend feeling what you're feeling?",
-            category = PromptCategory.EMOTIONAL,
-            estimatedMinutes = 5
-        ),
-        Prompt(
-            text = "What does your stress feel like? Where do you feel it in your body?",
-            category = PromptCategory.EMOTIONAL,
-            estimatedMinutes = 5
-        ),
-        Prompt(
-            text = "What brings you peace?",
-            category = PromptCategory.EMOTIONAL,
-            estimatedMinutes = 3
-        ),
-        Prompt(
-            text = "What makes you feel alive?",
-            category = PromptCategory.EMOTIONAL,
-            estimatedMinutes = 5
-        ),
-        Prompt(
-            text = "What are you worried about that might never happen?",
-            category = PromptCategory.EMOTIONAL,
-            estimatedMinutes = 5
-        ),
-        Prompt(
-            text = "If your emotions could speak, what would they say?",
-            category = PromptCategory.EMOTIONAL,
-            estimatedMinutes = 7
-        ),
-        Prompt(
-            text = "What's something you need to forgive yourself for?",
-            category = PromptCategory.EMOTIONAL,
-            estimatedMinutes = 7
-        ),
-        Prompt(
-            text = "What makes you feel safe and secure?",
-            category = PromptCategory.EMOTIONAL,
-            estimatedMinutes = 5
-        ),
-        Prompt(
-            text = "What do you need to hear right now?",
-            category = PromptCategory.EMOTIONAL,
-            estimatedMinutes = 3
-        )
+        "How are you really feeling right now? Don't filter it.",
+        "What emotion has been most present for you lately?",
+        "What's something you haven't allowed yourself to feel?",
+        "What would you say to a friend feeling what you're feeling?",
+        "What does your stress feel like? Where do you feel it?",
+        "What brings you peace?",
+        "What makes you feel alive?",
+        "What's weighing on your heart today?",
+        "When did you last cry, and what triggered it?",
+        "What would emotional freedom look like for you?",
+        "What emotion do you tend to avoid? Why?",
+        "How do you typically cope with difficult emotions?"
     )
 
-    // =========================================================================
-    // QUICK PROMPTS - For limited time
-    // =========================================================================
+    // =============================================================================
+    // QUICK PROMPTS - For time-limited journaling
+    // =============================================================================
 
     val quickPrompts = listOf(
-        Prompt(
-            text = "One word to describe today:",
-            category = PromptCategory.QUICK,
-            estimatedMinutes = 1,
-            isQuick = true
-        ),
-        Prompt(
-            text = "Today's highlight:",
-            category = PromptCategory.QUICK,
-            estimatedMinutes = 1,
-            isQuick = true
-        ),
-        Prompt(
-            text = "I'm feeling...",
-            category = PromptCategory.QUICK,
-            estimatedMinutes = 1,
-            isQuick = true
-        ),
-        Prompt(
-            text = "Tomorrow I want to...",
-            category = PromptCategory.QUICK,
-            estimatedMinutes = 1,
-            isQuick = true
-        ),
-        Prompt(
-            text = "Right now I need...",
-            category = PromptCategory.QUICK,
-            estimatedMinutes = 1,
-            isQuick = true
-        ),
-        Prompt(
-            text = "One thing I appreciate:",
-            category = PromptCategory.QUICK,
-            estimatedMinutes = 1,
-            isQuick = true
-        ),
-        Prompt(
-            text = "A thought I want to capture:",
-            category = PromptCategory.QUICK,
-            estimatedMinutes = 2,
-            isQuick = true
-        ),
-        Prompt(
-            text = "The best part of today was...",
-            category = PromptCategory.QUICK,
-            estimatedMinutes = 1,
-            isQuick = true
-        ),
-        Prompt(
-            text = "I'm proud of myself for...",
-            category = PromptCategory.QUICK,
-            estimatedMinutes = 1,
-            isQuick = true
-        ),
-        Prompt(
-            text = "Something that made me think:",
-            category = PromptCategory.QUICK,
-            estimatedMinutes = 2,
-            isQuick = true
-        ),
-        Prompt(
-            text = "My energy level is:",
-            category = PromptCategory.QUICK,
-            estimatedMinutes = 1,
-            isQuick = true
-        ),
-        Prompt(
-            text = "One thing I learned:",
-            category = PromptCategory.QUICK,
-            estimatedMinutes = 1,
-            isQuick = true
-        )
+        "One word to describe today:",
+        "Today's highlight:",
+        "I'm feeling...",
+        "Tomorrow I want to...",
+        "Right now I need...",
+        "One thing I appreciate:",
+        "A thought I want to capture:",
+        "Today I'm proud of:",
+        "Something I learned:",
+        "My energy level is:",
+        "One word for my mood:",
+        "What I'm looking forward to:"
     )
 
-    // =========================================================================
-    // CREATIVE PROMPTS - Imaginative exploration
-    // =========================================================================
+    // =============================================================================
+    // CREATIVE PROMPTS - For imaginative exploration
+    // =============================================================================
 
     val creativePrompts = listOf(
-        Prompt(
-            text = "If your life was a book, what would this chapter be called?",
-            category = PromptCategory.CREATIVE,
-            estimatedMinutes = 5
-        ),
-        Prompt(
-            text = "Write a letter to your future self (1 year from now).",
-            category = PromptCategory.CREATIVE,
-            estimatedMinutes = 10
-        ),
-        Prompt(
-            text = "If you could have dinner with anyone, who and why?",
-            category = PromptCategory.CREATIVE,
-            estimatedMinutes = 5,
-            followUp = "What would you ask them?"
-        ),
-        Prompt(
-            text = "Describe your perfect day from start to finish.",
-            category = PromptCategory.CREATIVE,
-            estimatedMinutes = 10
-        ),
-        Prompt(
-            text = "What would your 80-year-old self think about your current worries?",
-            category = PromptCategory.CREATIVE,
-            estimatedMinutes = 5
-        ),
-        Prompt(
-            text = "If money wasn't a factor, what would you do?",
-            category = PromptCategory.CREATIVE,
-            estimatedMinutes = 5
-        ),
-        Prompt(
-            text = "What's a memory that always makes you smile?",
-            category = PromptCategory.CREATIVE,
-            estimatedMinutes = 5
-        ),
-        Prompt(
-            text = "If you had a superpower for a day, what would it be and what would you do?",
-            category = PromptCategory.CREATIVE,
-            estimatedMinutes = 5
-        ),
-        Prompt(
-            text = "Write about a turning point in your life.",
-            category = PromptCategory.CREATIVE,
-            estimatedMinutes = 10
-        ),
-        Prompt(
-            text = "What would you tell your 10-year-old self?",
-            category = PromptCategory.CREATIVE,
-            estimatedMinutes = 7
-        ),
-        Prompt(
-            text = "If you could master any skill overnight, which would it be?",
-            category = PromptCategory.CREATIVE,
-            estimatedMinutes = 5,
-            followUp = "How would your life change?"
-        ),
-        Prompt(
-            text = "Describe a place where you feel completely at peace.",
-            category = PromptCategory.CREATIVE,
-            estimatedMinutes = 5
-        )
+        "If your life was a book, what would this chapter be called?",
+        "Write a letter to your future self (1 year from now).",
+        "If you could have dinner with anyone, who and why?",
+        "Describe your perfect day from start to finish.",
+        "What would your 80-year-old self think about your current worries?",
+        "If money wasn't a factor, what would you do?",
+        "What's a memory that always makes you smile?",
+        "If you could master any skill instantly, what would it be?",
+        "Write a thank you letter to a body part that serves you well.",
+        "If your emotions were weather, what's the forecast today?",
+        "Describe a place where you feel completely at peace.",
+        "What advice would you give to someone going through what you're going through?",
+        "If your life had a soundtrack, what song would be playing right now?",
+        "Write a letter to your past self from 5 years ago."
     )
 
-    // =========================================================================
-    // MILESTONE PROMPTS - Celebrate streaks and achievements
-    // =========================================================================
+    // =============================================================================
+    // RELATIONSHIP PROMPTS - For exploring connections
+    // =============================================================================
 
-    val milestonePrompts = listOf(
-        Prompt(
-            text = "You've kept a {days}-day streak! What has this consistency taught you?",
-            category = PromptCategory.MILESTONE,
-            estimatedMinutes = 5
-        ),
-        Prompt(
-            text = "Reflect on your journey so far. What are you most proud of?",
-            category = PromptCategory.MILESTONE,
-            estimatedMinutes = 5
-        ),
-        Prompt(
-            text = "How has journaling changed your perspective over the past week/month?",
-            category = PromptCategory.MILESTONE,
-            estimatedMinutes = 7
-        ),
-        Prompt(
-            text = "What patterns have you noticed in your entries?",
-            category = PromptCategory.MILESTONE,
-            estimatedMinutes = 5
-        ),
-        Prompt(
-            text = "If you could read your first entry again, what do you think you'd notice?",
-            category = PromptCategory.MILESTONE,
-            estimatedMinutes = 5
-        ),
-        Prompt(
-            text = "What's the biggest insight you've gained from journaling?",
-            category = PromptCategory.MILESTONE,
-            estimatedMinutes = 5
-        ),
-        Prompt(
-            text = "How have your goals or priorities shifted since you started?",
-            category = PromptCategory.MILESTONE,
-            estimatedMinutes = 7
-        ),
-        Prompt(
-            text = "Write a message to yourself to read at your next milestone.",
-            category = PromptCategory.MILESTONE,
-            estimatedMinutes = 5
-        )
+    val relationshipPrompts = listOf(
+        "Who do you need to forgive? (Including yourself)",
+        "What relationship needs more attention?",
+        "How have you shown love to someone recently?",
+        "What's a conversation you've been avoiding?",
+        "Who makes you feel seen and heard?",
+        "What do you value most in your closest friendships?",
+        "How can you be a better friend/partner/family member?",
+        "What boundary do you need to set?",
+        "Who do you need to thank but haven't?",
+        "What's something you wish someone knew about you?"
     )
 
-    // =========================================================================
-    // AGGREGATED COLLECTIONS
-    // =========================================================================
+    // =============================================================================
+    // ALL PROMPTS COMBINED
+    // =============================================================================
 
-    /**
-     * All prompts combined for random access.
-     */
-    val allPrompts: List<Prompt> by lazy {
-        morningPrompts +
-                eveningPrompts +
-                gratitudePrompts +
-                reflectionPrompts +
-                growthPrompts +
-                emotionalPrompts +
-                quickPrompts +
-                creativePrompts +
-                milestonePrompts
+    val allPrompts: List<String> by lazy {
+        morningPrompts + eveningPrompts + gratitudePrompts + reflectionPrompts +
+                growthPrompts + emotionalPrompts + quickPrompts + creativePrompts +
+                relationshipPrompts
     }
 
-    /**
-     * All quick prompts for fast access.
-     */
-    val allQuickPrompts: List<Prompt> by lazy {
-        allPrompts.filter { it.isQuick || it.estimatedMinutes <= 2 }
-    }
-
-    // =========================================================================
+    // =============================================================================
     // HELPER FUNCTIONS
-    // =========================================================================
+    // =============================================================================
 
     /**
-     * Gets prompts appropriate for time of day.
+     * Get prompts appropriate for the current time of day.
+     *
+     * @param hour The current hour (0-23)
+     * @return A list of time-appropriate prompts
      */
-    fun getPromptsForTimeOfDay(hour: Int): List<Prompt> {
-        return when (hour) {
-            in 5..11 -> morningPrompts
-            in 18..23, in 0..4 -> eveningPrompts
+    fun getPromptsForTimeOfDay(
+        hour: Int = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+    ): List<String> {
+        return when {
+            hour in 5..11 -> morningPrompts
+            hour in 18..23 || hour in 0..4 -> eveningPrompts
             else -> reflectionPrompts
         }
     }
@@ -716,13 +229,29 @@ object JournalPrompts {
      * Gets random prompts across categories (for variety).
      */
     fun getRandomPrompts(count: Int = 3): List<Prompt> {
+     * Get a random prompt from all available prompts.
+     *
+     * @return A random journal prompt
+     */
+    fun getRandomPrompt(): String = allPrompts.random()
+
+    /**
+     * Get multiple random prompts.
+     *
+     * @param count Number of prompts to return (default 3)
+     * @return A list of diverse prompts
+     */
+    fun getRandomPrompts(count: Int = 3): List<String> {
         return allPrompts.shuffled().take(count.coerceAtMost(allPrompts.size))
     }
 
     /**
-     * Gets prompts by category.
+     * Get prompts by category.
+     *
+     * @param category The prompt category to filter by
+     * @return A list of prompts in the specified category
      */
-    fun getPromptsByCategory(category: PromptCategory): List<Prompt> {
+    fun getPromptsByCategory(category: PromptCategory): List<String> {
         return when (category) {
             PromptCategory.MORNING -> morningPrompts
             PromptCategory.EVENING -> eveningPrompts
@@ -732,14 +261,17 @@ object JournalPrompts {
             PromptCategory.EMOTIONAL -> emotionalPrompts
             PromptCategory.QUICK -> quickPrompts
             PromptCategory.CREATIVE -> creativePrompts
-            PromptCategory.MILESTONE -> milestonePrompts
+            PromptCategory.RELATIONSHIP -> relationshipPrompts
         }
     }
 
     /**
-     * Gets a single random prompt from a category.
+     * Get a single random prompt from a specific category.
+     *
+     * @param category The prompt category
+     * @return A random prompt from the category
      */
-    fun getRandomFromCategory(category: PromptCategory): Prompt {
+    fun getPromptByCategory(category: PromptCategory): String {
         return getPromptsByCategory(category).random()
     }
 
@@ -820,5 +352,58 @@ object JournalPrompts {
         return PromptCategory.values().mapNotNull { category ->
             getPromptsByCategory(category).randomOrNull()
         }
+     * Get prompts based on the user's mood.
+     *
+     * @param moodName The name of the mood
+     * @return A list of mood-appropriate prompts
+     */
+    fun getPromptsForMood(moodName: String): List<String> {
+        return when (moodName.lowercase()) {
+            "happy", "excited", "grateful" -> gratitudePrompts
+            "sad", "down", "melancholy" -> emotionalPrompts + creativePrompts.take(3)
+            "anxious", "worried", "stressed" -> quickPrompts + reflectionPrompts.take(3)
+            "motivated", "energetic", "inspired" -> growthPrompts
+            "confused", "lost", "uncertain" -> reflectionPrompts + creativePrompts.take(3)
+            "calm", "peaceful", "serene" -> gratitudePrompts + reflectionPrompts.take(3)
+            "frustrated", "angry", "upset" -> emotionalPrompts
+            else -> getRandomPrompts(5)
+        }
+    }
+
+    /**
+     * Get a quick prompt for time-constrained journaling.
+     *
+     * @return A quick journal prompt
+     */
+    fun getQuickPrompt(): String = quickPrompts.random()
+
+    /**
+     * Get multiple prompts across diverse categories.
+     *
+     * @param count Number of prompts to return
+     * @return A list of diverse prompts from different categories
+     */
+    fun getDiversePrompts(count: Int = 3): List<String> {
+        val categories = PromptCategory.entries.shuffled().take(count)
+        return categories.map { getPromptByCategory(it) }
+    }
+
+    // =============================================================================
+    // PROMPT CATEGORY ENUM
+    // =============================================================================
+
+    /**
+     * Categories for journal prompts.
+     */
+    enum class PromptCategory {
+        MORNING,
+        EVENING,
+        GRATITUDE,
+        REFLECTION,
+        GROWTH,
+        EMOTIONAL,
+        QUICK,
+        CREATIVE,
+        RELATIONSHIP
     }
 }

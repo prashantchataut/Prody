@@ -6,695 +6,418 @@ import androidx.compose.ui.unit.dp
 /**
  * Prody Design System - Dimensions
  *
- * A comprehensive dimension system for consistent spacing, sizing, and layout
- * throughout the application. Built on a 4dp base unit grid system for visual
- * harmony and predictable layouts.
+ * A comprehensive dimension system for consistent spacing, sizing, and layout across the app.
+ * Based on an 8dp grid system with 4dp increments for fine-tuning.
  *
- * Design Principles:
- * - 4dp base unit for all spacing calculations
- * - Consistent touch targets for accessibility (48dp minimum)
- * - Clear visual hierarchy through size differentiation
- * - Responsive-ready values for different screen sizes
- *
- * Usage:
- * ```kotlin
- * Modifier.padding(ProdyDimensions.Spacing.lg)
- * Modifier.size(ProdyDimensions.Icon.md)
- * Modifier.height(ProdyDimensions.Component.buttonHeight)
- * ```
+ * Design Philosophy:
+ * - Consistent spacing creates visual rhythm and harmony
+ * - Touch targets meet accessibility guidelines (minimum 48dp)
+ * - Component sizes are proportional and scalable
+ * - All dimensions are multiples of 4dp for pixel-perfect alignment
  */
-object ProdyDimensions {
+object ProddyDimens {
 
-    // =========================================================================
-    // SPACING SYSTEM - Based on 4dp grid
-    // =========================================================================
+    // =============================================================================
+    // BASE SPACING UNIT (8dp grid with 4dp fine-tuning)
+    // =============================================================================
 
-    /**
-     * Spacing values for margins, paddings, and gaps.
-     * Follows a consistent scale based on 4dp base unit.
-     */
-    object Spacing {
-        /** 2dp - Micro spacing for dense elements */
-        val xxs: Dp = 2.dp
+    /** Extra extra small spacing - 2dp */
+    val spacingXxs: Dp = 2.dp
 
-        /** 4dp - Extra small for tight gaps */
-        val xs: Dp = 4.dp
+    /** Extra small spacing - 4dp */
+    val spacingXs: Dp = 4.dp
 
-        /** 8dp - Small padding/margin */
-        val sm: Dp = 8.dp
+    /** Small spacing - 8dp */
+    val spacingSm: Dp = 8.dp
 
-        /** 12dp - Medium comfortable spacing */
-        val md: Dp = 12.dp
+    /** Medium spacing - 12dp */
+    val spacingMd: Dp = 12.dp
 
-        /** 16dp - Large standard content padding */
-        val lg: Dp = 16.dp
+    /** Default/Large spacing - 16dp */
+    val spacingLg: Dp = 16.dp
 
-        /** 20dp - Extra large */
-        val xl: Dp = 20.dp
+    /** Extra large spacing - 24dp */
+    val spacingXl: Dp = 24.dp
 
-        /** 24dp - Section spacing */
-        val xxl: Dp = 24.dp
+    /** Extra extra large spacing - 32dp */
+    val spacingXxl: Dp = 32.dp
 
-        /** 32dp - Major section breaks */
-        val xxxl: Dp = 32.dp
+    /** Triple extra large spacing - 48dp */
+    val spacingXxxl: Dp = 48.dp
 
-        /** 40dp - Large section breaks */
-        val huge: Dp = 40.dp
+    /** Massive spacing - 64dp */
+    val spacingMassive: Dp = 64.dp
 
-        /** 48dp - Hero section spacing */
-        val massive: Dp = 48.dp
+    // =============================================================================
+    // CONTENT PADDING
+    // =============================================================================
 
-        /** 64dp - Full-screen hero elements */
-        val giant: Dp = 64.dp
+    /** Screen horizontal padding */
+    val screenPadding: Dp = 16.dp
 
-        // Semantic spacing aliases
-        /** Standard screen horizontal padding */
-        val screenHorizontal: Dp = lg
+    /** Screen vertical padding */
+    val screenPaddingVertical: Dp = 16.dp
 
-        /** Standard screen vertical padding */
-        val screenVertical: Dp = lg
+    /** Card content padding */
+    val cardPadding: Dp = 16.dp
 
-        /** Standard card internal padding */
-        val cardPadding: Dp = lg
+    /** Small card content padding */
+    val cardPaddingSmall: Dp = 12.dp
 
-        /** Small card internal padding */
-        val cardPaddingSmall: Dp = md
+    /** Large card content padding */
+    val cardPaddingLarge: Dp = 20.dp
 
-        /** Large card internal padding */
-        val cardPaddingLarge: Dp = xl
+    /** Modal/Dialog padding */
+    val modalPadding: Dp = 24.dp
 
-        /** Space between list items */
-        val listItemSpacing: Dp = sm
+    /** Section padding (between major sections) */
+    val sectionPadding: Dp = 24.dp
 
-        /** Space between sections */
-        val sectionSpacing: Dp = xxl
+    // =============================================================================
+    // COMPONENT SIZES - BUTTONS
+    // =============================================================================
 
-        /** Space between related content groups */
-        val contentGroupSpacing: Dp = lg
+    /** Standard button height */
+    val buttonHeight: Dp = 48.dp
 
-        /** Space between icon and text */
-        val iconTextGap: Dp = sm
+    /** Small button height */
+    val buttonHeightSmall: Dp = 36.dp
 
-        /** Space between chip content and edges */
-        val chipPadding: Dp = sm
+    /** Large button height */
+    val buttonHeightLarge: Dp = 56.dp
 
-        /** Space for inline elements */
-        val inlineSpacing: Dp = xs
-    }
+    /** Icon button size */
+    val iconButtonSize: Dp = 48.dp
 
-    // =========================================================================
-    // ICON SIZES - Standard icon dimensions
-    // =========================================================================
+    /** Small icon button size */
+    val iconButtonSizeSmall: Dp = 40.dp
 
-    /**
-     * Standard icon sizes for visual hierarchy.
-     */
-    object Icon {
-        /** 12dp - Extra tiny icons */
-        val xxs: Dp = 12.dp
+    /** FAB size */
+    val fabSize: Dp = 56.dp
 
-        /** 16dp - Tiny inline icons, indicators */
-        val xs: Dp = 16.dp
+    /** Mini FAB size */
+    val fabSizeMini: Dp = 40.dp
 
-        /** 20dp - Small icons */
-        val sm: Dp = 20.dp
+    // =============================================================================
+    // COMPONENT SIZES - ICONS
+    // =============================================================================
 
-        /** 24dp - Default Material icon size */
-        val md: Dp = 24.dp
+    /** Extra small icon - 16dp */
+    val iconSizeSmall: Dp = 16.dp
 
-        /** 28dp - Medium-large icons */
-        val lg: Dp = 28.dp
+    /** Default icon size - 24dp */
+    val iconSizeDefault: Dp = 24.dp
 
-        /** 32dp - Prominent icons */
-        val xl: Dp = 32.dp
+    /** Large icon size - 32dp */
+    val iconSizeLarge: Dp = 32.dp
 
-        /** 40dp - Large icons */
-        val xxl: Dp = 40.dp
+    /** Extra large icon - 48dp */
+    val iconSizeXl: Dp = 48.dp
 
-        /** 48dp - Hero icons, achievements */
-        val hero: Dp = 48.dp
+    /** Huge icon - for hero sections */
+    val iconSizeHuge: Dp = 64.dp
 
-        /** 56dp - Featured icons */
-        val featured: Dp = 56.dp
+    // =============================================================================
+    // COMPONENT SIZES - AVATARS
+    // =============================================================================
 
-        /** 64dp - Extra large feature icons */
-        val jumbo: Dp = 64.dp
+    /** Small avatar - 32dp */
+    val avatarSizeSmall: Dp = 32.dp
 
-        /** 80dp - Empty state illustrations */
-        val illustration: Dp = 80.dp
+    /** Default avatar - 48dp */
+    val avatarSizeDefault: Dp = 48.dp
 
-        // Semantic icon sizes
-        /** Navigation bar icon */
-        val navigation: Dp = md
+    /** Large avatar - 64dp */
+    val avatarSizeLarge: Dp = 64.dp
 
-        /** Bottom bar icon */
-        val bottomNav: Dp = md
+    /** Extra large avatar - 96dp */
+    val avatarSizeXl: Dp = 96.dp
 
-        /** Tab icon */
-        val tab: Dp = md
+    /** Hero avatar - 120dp */
+    val avatarSizeHero: Dp = 120.dp
 
-        /** Button inline icon */
-        val button: Dp = md
+    /** Profile page avatar */
+    val profileAvatarSize: Dp = 100.dp
 
-        /** List item leading icon */
-        val listItem: Dp = md
+    // =============================================================================
+    // COMPONENT SIZES - BADGES
+    // =============================================================================
 
-        /** Chip icon */
-        val chip: Dp = 18.dp
+    /** Small badge size - 24dp */
+    val badgeSizeSmall: Dp = 24.dp
 
-        /** Badge icon */
-        val badge: Dp = xs
+    /** Default badge size - 48dp */
+    val badgeSizeDefault: Dp = 48.dp
 
-        /** Achievement badge icon */
-        val achievement: Dp = xl
+    /** Large badge size - 64dp */
+    val badgeSizeLarge: Dp = 64.dp
 
-        /** Mood selector icon */
-        val mood: Dp = xxl
+    /** Showcase badge size - 80dp */
+    val badgeSizeShowcase: Dp = 80.dp
 
-        /** Empty state icon */
-        val emptyState: Dp = illustration
-    }
+    /** Achievement icon size on cards */
+    val achievementIconSize: Dp = 48.dp
 
-    // =========================================================================
-    // AVATAR SIZES - Profile and user images
-    // =========================================================================
+    // =============================================================================
+    // TOUCH TARGETS (Accessibility)
+    // =============================================================================
 
-    /**
-     * Avatar sizes for user profile images.
-     */
-    object Avatar {
-        /** 24dp - Tiny avatar for dense lists */
-        val tiny: Dp = 24.dp
+    /** Minimum touch target - accessibility requirement */
+    val minTouchTarget: Dp = 48.dp
 
-        /** 32dp - Small avatar for compact layouts */
-        val sm: Dp = 32.dp
+    /** Comfortable touch target */
+    val comfortableTouchTarget: Dp = 56.dp
 
-        /** 40dp - Default avatar size */
-        val md: Dp = 40.dp
+    /** Small touch target - use sparingly */
+    val smallTouchTarget: Dp = 40.dp
 
-        /** 48dp - Large avatar */
-        val lg: Dp = 48.dp
+    // =============================================================================
+    // ELEVATION SYSTEM
+    // =============================================================================
 
-        /** 56dp - Extra large avatar */
-        val xl: Dp = 56.dp
+    /** No elevation */
+    val elevationNone: Dp = 0.dp
 
-        /** 64dp - Featured avatar */
-        val xxl: Dp = 64.dp
+    /** Low elevation - subtle shadow */
+    val elevationLow: Dp = 2.dp
 
-        /** 80dp - Profile page avatar */
-        val profile: Dp = 80.dp
+    /** Medium elevation - standard cards */
+    val elevationMedium: Dp = 4.dp
 
-        /** 100dp - Hero profile avatar */
-        val hero: Dp = 100.dp
+    /** High elevation - FABs, elevated surfaces */
+    val elevationHigh: Dp = 8.dp
 
-        /** 120dp - Full profile display */
-        val full: Dp = 120.dp
+    /** Very high elevation - modals, dialogs */
+    val elevationVeryHigh: Dp = 16.dp
 
-        // Semantic avatar sizes
-        /** Leaderboard row avatar */
-        val leaderboard: Dp = lg
+    /** Card default elevation */
+    val cardElevation: Dp = 2.dp
 
-        /** Comment/chat avatar */
-        val chat: Dp = md
+    /** FAB elevation */
+    val fabElevation: Dp = 6.dp
 
-        /** Notification avatar */
-        val notification: Dp = md
-    }
+    /** Dialog elevation */
+    val dialogElevation: Dp = 24.dp
 
-    // =========================================================================
-    // COMPONENT HEIGHTS - Standard component dimensions
-    // =========================================================================
+    // =============================================================================
+    // BORDER WIDTHS
+    // =============================================================================
 
-    /**
-     * Standard heights for UI components.
-     */
-    object Component {
-        /** 36dp - Small button height */
-        val buttonHeightSmall: Dp = 36.dp
+    /** Thin border - 1dp */
+    val borderThin: Dp = 1.dp
 
-        /** 44dp - Compact button height */
-        val buttonHeightCompact: Dp = 44.dp
+    /** Default border - 2dp */
+    val borderDefault: Dp = 2.dp
 
-        /** 48dp - Default button height */
-        val buttonHeight: Dp = 48.dp
+    /** Thick border - 3dp */
+    val borderThick: Dp = 3.dp
 
-        /** 56dp - Large button height */
-        val buttonHeightLarge: Dp = 56.dp
+    /** Focus ring width */
+    val focusRingWidth: Dp = 2.dp
 
-        /** 64dp - Hero button height */
-        val buttonHeightHero: Dp = 64.dp
+    /** Selection indicator width */
+    val selectionIndicatorWidth: Dp = 3.dp
 
-        /** 32dp - Chip height */
-        val chipHeight: Dp = 32.dp
+    // =============================================================================
+    // DIVIDERS
+    // =============================================================================
 
-        /** 40dp - Large chip height */
-        val chipHeightLarge: Dp = 40.dp
+    /** Divider height */
+    val dividerHeight: Dp = 1.dp
 
-        /** 48dp - Input field height */
-        val inputHeight: Dp = 48.dp
+    /** Thick divider height */
+    val dividerHeightThick: Dp = 2.dp
 
-        /** 56dp - Large input field height */
-        val inputHeightLarge: Dp = 56.dp
+    // =============================================================================
+    // PROGRESS BARS
+    // =============================================================================
 
-        /** 48dp - Search bar height */
-        val searchBarHeight: Dp = 48.dp
+    /** Default progress bar height */
+    val progressBarHeight: Dp = 8.dp
 
-        /** 56dp - FAB size */
-        val fabSize: Dp = 56.dp
+    /** Large progress bar height */
+    val progressBarHeightLarge: Dp = 12.dp
 
-        /** 40dp - Small FAB size */
-        val fabSizeSmall: Dp = 40.dp
+    /** Small progress bar height */
+    val progressBarHeightSmall: Dp = 4.dp
 
-        /** 96dp - Extended FAB width (minimum) */
-        val fabExtendedMinWidth: Dp = 96.dp
+    /** XP bar height */
+    val xpBarHeight: Dp = 10.dp
 
-        /** 64dp - Bottom navigation bar height */
-        val bottomNavHeight: Dp = 64.dp
+    /** Level progress bar height */
+    val levelProgressHeight: Dp = 12.dp
 
-        /** 56dp - Top app bar height */
-        val topAppBarHeight: Dp = 56.dp
+    /** Circular progress size */
+    val circularProgressSize: Dp = 48.dp
 
-        /** 64dp - Large top app bar height */
-        val topAppBarHeightLarge: Dp = 64.dp
+    /** Small circular progress size */
+    val circularProgressSizeSmall: Dp = 24.dp
 
-        /** 48dp - Tab bar height */
-        val tabBarHeight: Dp = 48.dp
+    // =============================================================================
+    // NAVIGATION
+    // =============================================================================
 
-        /** 56dp - List item minimum height */
-        val listItemHeight: Dp = 56.dp
+    /** Bottom navigation bar height */
+    val bottomNavHeight: Dp = 64.dp
 
-        /** 72dp - Two-line list item height */
-        val listItemHeightTwoLine: Dp = 72.dp
+    /** Top app bar height */
+    val topAppBarHeight: Dp = 64.dp
 
-        /** 88dp - Three-line list item height */
-        val listItemHeightThreeLine: Dp = 88.dp
+    /** Navigation rail width */
+    val navRailWidth: Dp = 80.dp
 
-        /** 48dp - Divider touch target height */
-        val dividerTouchTarget: Dp = 48.dp
-    }
+    // =============================================================================
+    // CARDS & CONTAINERS
+    // =============================================================================
 
-    // =========================================================================
-    // CARD DIMENSIONS - Card and container sizes
-    // =========================================================================
+    /** Minimum card height */
+    val cardMinHeight: Dp = 80.dp
 
-    /**
-     * Card dimensions for various card types.
-     */
-    object Card {
-        /** 80dp - Compact card minimum height */
-        val minHeightCompact: Dp = 80.dp
+    /** Standard card height */
+    val cardStandardHeight: Dp = 120.dp
 
-        /** 100dp - Standard card minimum height */
-        val minHeight: Dp = 100.dp
+    /** Featured card height */
+    val cardFeaturedHeight: Dp = 200.dp
 
-        /** 120dp - Featured card minimum height */
-        val minHeightFeatured: Dp = 120.dp
+    /** Quote card min height */
+    val quoteCardMinHeight: Dp = 140.dp
 
-        /** 160dp - Hero card height */
-        val heroHeight: Dp = 160.dp
+    /** Journal entry card height */
+    val journalCardHeight: Dp = 160.dp
 
-        /** 200dp - Large card height */
-        val largeHeight: Dp = 200.dp
+    // =============================================================================
+    // PROFILE & BANNERS
+    // =============================================================================
 
-        /** 160dp - Small card width */
-        val smallWidth: Dp = 160.dp
+    /** Profile banner height */
+    val bannerHeight: Dp = 180.dp
 
-        /** 200dp - Medium card width */
-        val mediumWidth: Dp = 200.dp
+    /** Profile avatar offset (overlap with banner) */
+    val profileAvatarOffset: Dp = 50.dp
 
-        /** 280dp - Large card width */
-        val largeWidth: Dp = 280.dp
+    /** Profile stats card width */
+    val statsCardMinWidth: Dp = 100.dp
 
-        /** 140dp - Achievement card size */
-        val achievementSize: Dp = 140.dp
+    /** Rank badge size */
+    val rankBadgeSize: Dp = 28.dp
 
-        /** 160dp - Quote card width */
-        val quoteWidth: Dp = 160.dp
+    // =============================================================================
+    // STREAK & GAMIFICATION
+    // =============================================================================
 
-        /** 120dp - Stat card width */
-        val statCardWidth: Dp = 120.dp
+    /** Streak flame icon size */
+    val streakFlameSize: Dp = 32.dp
 
-        /** 200dp - Wisdom card height */
-        val wisdomHeight: Dp = 200.dp
-    }
+    /** Streak badge container size */
+    val streakBadgeSize: Dp = 56.dp
 
-    // =========================================================================
-    // BADGE DIMENSIONS - Achievement and notification badges
-    // =========================================================================
+    /** Leaderboard rank number width */
+    val leaderboardRankWidth: Dp = 40.dp
 
-    /**
-     * Badge sizes for achievements, notifications, and indicators.
-     */
-    object Badge {
-        /** 8dp - Tiny indicator dot */
-        val indicatorDot: Dp = 8.dp
+    /** Leaderboard avatar size */
+    val leaderboardAvatarSize: Dp = 44.dp
 
-        /** 16dp - Small notification badge */
-        val notification: Dp = 16.dp
+    // =============================================================================
+    // INPUT FIELDS
+    // =============================================================================
 
-        /** 20dp - Count badge */
-        val count: Dp = 20.dp
+    /** Standard text field height */
+    val textFieldHeight: Dp = 56.dp
 
-        /** 24dp - Small badge */
-        val sm: Dp = 24.dp
+    /** Search bar height */
+    val searchBarHeight: Dp = 48.dp
 
-        /** 32dp - Default badge */
-        val md: Dp = 32.dp
+    /** Multiline text field min height */
+    val textAreaMinHeight: Dp = 120.dp
 
-        /** 40dp - Large badge */
-        val lg: Dp = 40.dp
+    /** Journal entry text field min height */
+    val journalTextFieldMinHeight: Dp = 200.dp
 
-        /** 48dp - Achievement badge small */
-        val achievementSmall: Dp = 48.dp
+    // =============================================================================
+    // CHIPS & TAGS
+    // =============================================================================
 
-        /** 56dp - Achievement badge medium */
-        val achievementMedium: Dp = 56.dp
+    /** Chip height */
+    val chipHeight: Dp = 32.dp
 
-        /** 64dp - Achievement badge default */
-        val achievement: Dp = 64.dp
+    /** Small chip height */
+    val chipHeightSmall: Dp = 24.dp
 
-        /** 80dp - Achievement badge large */
-        val achievementLarge: Dp = 80.dp
+    /** Filter chip height */
+    val filterChipHeight: Dp = 36.dp
 
-        /** 100dp - Achievement showcase */
-        val achievementShowcase: Dp = 100.dp
+    // =============================================================================
+    // MODALS & SHEETS
+    // =============================================================================
 
-        /** 120dp - Achievement hero display */
-        val achievementHero: Dp = 120.dp
-    }
+    /** Bottom sheet peek height */
+    val bottomSheetPeekHeight: Dp = 56.dp
 
-    // =========================================================================
-    // PROGRESS INDICATORS - Progress bars and circles
-    // =========================================================================
+    /** Modal max width */
+    val modalMaxWidth: Dp = 400.dp
 
-    /**
-     * Progress indicator dimensions.
-     */
-    object Progress {
-        /** 2dp - Thin progress bar */
-        val linearThin: Dp = 2.dp
+    /** Dialog min width */
+    val dialogMinWidth: Dp = 280.dp
 
-        /** 4dp - Small progress bar */
-        val linearSmall: Dp = 4.dp
+    /** Dialog max width */
+    val dialogMaxWidth: Dp = 560.dp
 
-        /** 8dp - Default progress bar */
-        val linearDefault: Dp = 8.dp
+    // =============================================================================
+    // LISTS
+    // =============================================================================
 
-        /** 12dp - Large progress bar */
-        val linearLarge: Dp = 12.dp
+    /** List item height - single line */
+    val listItemHeightSingle: Dp = 48.dp
 
-        /** 16dp - Hero progress bar */
-        val linearHero: Dp = 16.dp
+    /** List item height - two lines */
+    val listItemHeightDouble: Dp = 64.dp
 
-        /** 10dp - XP bar height */
-        val xpBar: Dp = 10.dp
+    /** List item height - three lines */
+    val listItemHeightTriple: Dp = 88.dp
 
-        /** 24dp - Small circular progress */
-        val circularSmall: Dp = 24.dp
+    /** List item leading icon padding */
+    val listItemIconPadding: Dp = 16.dp
 
-        /** 32dp - Compact circular progress */
-        val circularCompact: Dp = 32.dp
+    // =============================================================================
+    // IMAGE SIZES
+    // =============================================================================
 
-        /** 48dp - Default circular progress */
-        val circularDefault: Dp = 48.dp
+    /** Thumbnail size - small */
+    val thumbnailSmall: Dp = 40.dp
 
-        /** 64dp - Large circular progress */
-        val circularLarge: Dp = 64.dp
+    /** Thumbnail size - medium */
+    val thumbnailMedium: Dp = 56.dp
 
-        /** 120dp - Hero circular progress (profile level) */
-        val circularHero: Dp = 120.dp
+    /** Thumbnail size - large */
+    val thumbnailLarge: Dp = 80.dp
 
-        /** 2dp - Progress bar stroke width */
-        val strokeThin: Dp = 2.dp
+    /** Image preview size */
+    val imagePreviewSize: Dp = 120.dp
+}
 
-        /** 4dp - Default stroke width */
-        val strokeDefault: Dp = 4.dp
+/**
+ * Extension object for common spacing combinations
+ */
+object ProdySpacingCombinations {
 
-        /** 8dp - Large stroke width */
-        val strokeLarge: Dp = 8.dp
+    /** Card internal spacing */
+    val cardInternal = ProddyDimens.spacingLg
 
-        /** 12dp - Hero stroke width */
-        val strokeHero: Dp = 12.dp
-    }
+    /** Section gap */
+    val sectionGap = ProddyDimens.spacingXl
 
-    // =========================================================================
-    // STREAK DISPLAY - Streak counter and flame dimensions
-    // =========================================================================
+    /** Icon to text gap */
+    val iconTextGap = ProddyDimens.spacingSm
 
-    /**
-     * Streak-specific dimensions.
-     */
-    object Streak {
-        /** 48dp - Small streak badge */
-        val badgeSmall: Dp = 48.dp
+    /** Button horizontal padding */
+    val buttonHorizontalPadding = ProddyDimens.spacingLg
 
-        /** 64dp - Default streak badge */
-        val badgeMedium: Dp = 64.dp
+    /** Chip horizontal padding */
+    val chipHorizontalPadding = ProddyDimens.spacingMd
 
-        /** 80dp - Large streak badge */
-        val badgeLarge: Dp = 80.dp
+    /** List item horizontal padding */
+    val listItemHorizontalPadding = ProddyDimens.spacingLg
 
-        /** 100dp - Hero streak display */
-        val badgeHero: Dp = 100.dp
-
-        /** 20dp - Small flame icon */
-        val flameSmall: Dp = 20.dp
-
-        /** 28dp - Default flame icon */
-        val flameMedium: Dp = 28.dp
-
-        /** 40dp - Large flame icon */
-        val flameLarge: Dp = 40.dp
-
-        /** 56dp - Hero flame icon */
-        val flameHero: Dp = 56.dp
-
-        /** 24dp - Glow radius effect */
-        val glowRadius: Dp = 24.dp
-    }
-
-    // =========================================================================
-    // PROFILE BANNER - Banner and profile header dimensions
-    // =========================================================================
-
-    /**
-     * Profile banner and header dimensions.
-     */
-    object Banner {
-        /** 180dp - Default banner height */
-        val height: Dp = 180.dp
-
-        /** 200dp - Large banner height */
-        val heightLarge: Dp = 200.dp
-
-        /** 140dp - Compact banner height */
-        val heightCompact: Dp = 140.dp
-
-        /** 100dp - Profile image size */
-        val profileImageSize: Dp = 100.dp
-
-        /** 50dp - Profile image overlap with banner */
-        val profileImageOffset: Dp = 50.dp
-
-        /** 4dp - Profile image border width */
-        val profileImageBorder: Dp = 4.dp
-    }
-
-    // =========================================================================
-    // TOUCH TARGETS - Accessibility-compliant touch areas
-    // =========================================================================
-
-    /**
-     * Minimum touch target sizes for accessibility compliance.
-     * Follows WCAG 2.1 Level AA guidelines.
-     */
-    object Touch {
-        /** 44dp - Minimum recommended touch target (WCAG) */
-        val minimum: Dp = 44.dp
-
-        /** 48dp - Standard comfortable touch target */
-        val standard: Dp = 48.dp
-
-        /** 56dp - Large comfortable touch target */
-        val large: Dp = 56.dp
-
-        /** 64dp - Spacious touch target */
-        val spacious: Dp = 64.dp
-
-        // Specific touch targets
-        /** Icon button touch target */
-        val iconButton: Dp = standard
-
-        /** Checkbox/Radio touch target */
-        val selectionControl: Dp = standard
-
-        /** Slider thumb touch target */
-        val sliderThumb: Dp = standard
-
-        /** Close button touch target */
-        val closeButton: Dp = standard
-    }
-
-    // =========================================================================
-    // BORDERS & DIVIDERS - Line widths and border sizes
-    // =========================================================================
-
-    /**
-     * Border widths and divider heights.
-     */
-    object Border {
-        /** 0.5dp - Hairline border */
-        val hairline: Dp = 0.5.dp
-
-        /** 1dp - Thin border */
-        val thin: Dp = 1.dp
-
-        /** 2dp - Default border */
-        val medium: Dp = 2.dp
-
-        /** 3dp - Thick border */
-        val thick: Dp = 3.dp
-
-        /** 4dp - Extra thick border */
-        val extraThick: Dp = 4.dp
-
-        /** 2dp - Focus ring width */
-        val focusRing: Dp = 2.dp
-
-        /** 2dp - Selection border */
-        val selection: Dp = 2.dp
-
-        /** 1dp - Divider height */
-        val divider: Dp = 1.dp
-    }
-
-    // =========================================================================
-    // ELEVATION VALUES - Shadow depth levels
-    // =========================================================================
-
-    /**
-     * Elevation values for shadow depth.
-     */
-    object Elevation {
-        /** 0dp - No elevation */
-        val none: Dp = 0.dp
-
-        /** 1dp - Subtle lift */
-        val xs: Dp = 1.dp
-
-        /** 2dp - Low elevation (standard cards) */
-        val sm: Dp = 2.dp
-
-        /** 4dp - Medium elevation (elevated cards, FAB) */
-        val md: Dp = 4.dp
-
-        /** 6dp - High elevation (modals) */
-        val lg: Dp = 6.dp
-
-        /** 8dp - Higher elevation (dialogs) */
-        val xl: Dp = 8.dp
-
-        /** 12dp - Maximum elevation (tooltips, dropdowns) */
-        val xxl: Dp = 12.dp
-
-        /** 16dp - Overlay elevation */
-        val overlay: Dp = 16.dp
-
-        // Semantic elevations
-        /** Card default elevation */
-        val card: Dp = sm
-
-        /** Elevated card elevation */
-        val cardElevated: Dp = md
-
-        /** FAB elevation */
-        val fab: Dp = md
-
-        /** Dialog elevation */
-        val dialog: Dp = xl
-
-        /** Bottom sheet elevation */
-        val bottomSheet: Dp = xxl
-
-        /** Dropdown/Menu elevation */
-        val dropdown: Dp = md
-
-        /** Tooltip elevation */
-        val tooltip: Dp = sm
-    }
-
-    // =========================================================================
-    // BOTTOM SHEET DIMENSIONS
-    // =========================================================================
-
-    /**
-     * Bottom sheet specific dimensions.
-     */
-    object BottomSheet {
-        /** 4dp - Handle width */
-        val handleWidth: Dp = 32.dp
-
-        /** 4dp - Handle height */
-        val handleHeight: Dp = 4.dp
-
-        /** 8dp - Handle top margin */
-        val handleTopMargin: Dp = 8.dp
-
-        /** 200dp - Peek height */
-        val peekHeight: Dp = 200.dp
-
-        /** 400dp - Half expanded height */
-        val halfExpandedHeight: Dp = 400.dp
-    }
-
-    // =========================================================================
-    // DIALOG DIMENSIONS
-    // =========================================================================
-
-    /**
-     * Dialog and modal dimensions.
-     */
-    object Dialog {
-        /** 280dp - Minimum dialog width */
-        val minWidth: Dp = 280.dp
-
-        /** 340dp - Default dialog width */
-        val defaultWidth: Dp = 340.dp
-
-        /** 400dp - Maximum dialog width */
-        val maxWidth: Dp = 400.dp
-
-        /** 24dp - Dialog content padding */
-        val contentPadding: Dp = 24.dp
-
-        /** 16dp - Dialog title bottom padding */
-        val titleBottomPadding: Dp = 16.dp
-
-        /** 24dp - Dialog actions top padding */
-        val actionsTopPadding: Dp = 24.dp
-    }
-
-    // =========================================================================
-    // CONTENT CONSTRAINTS - Maximum widths for readability
-    // =========================================================================
-
-    /**
-     * Maximum content widths for optimal readability.
-     */
-    object ContentWidth {
-        /** 320dp - Narrow content (forms) */
-        val narrow: Dp = 320.dp
-
-        /** 480dp - Medium content */
-        val medium: Dp = 480.dp
-
-        /** 600dp - Wide content (optimal reading) */
-        val wide: Dp = 600.dp
-
-        /** 840dp - Extra wide content */
-        val extraWide: Dp = 840.dp
-
-        /** 600dp - Optimal reading width */
-        val readable: Dp = 600.dp
-    }
+    /** Dense list item gap */
+    val denseItemGap = ProddyDimens.spacingXs
 }

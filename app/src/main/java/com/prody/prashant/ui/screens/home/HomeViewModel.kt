@@ -173,13 +173,14 @@ class HomeViewModel @Inject constructor(
 
         viewModelScope.launch {
             try {
-                vocabularyDao.getLearnedCount().collect { count ->
+                val weekStart = getWeekStartTimestamp()
+                vocabularyDao.getLearnedCountSince(weekStart).collect { count ->
                     _uiState.update { state ->
                         state.copy(wordsLearnedThisWeek = count)
                     }
                 }
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error loading learned words count", e)
+                android.util.Log.e(TAG, "Error loading learned words count this week", e)
             }
         }
 

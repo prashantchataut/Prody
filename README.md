@@ -22,244 +22,165 @@
 
 ## Features
 
+### Journaling
+- Daily journaling with AI-powered prompts
+- Emotional insights from Buddha (AI assistant)
+- Pattern detection over time
+- Templates for different reflection types
+- Mood tracking with thoughtful reflections
+
+### Gamification
+- XP and leveling system with 10 rank tiers
+- Achievement badges with rarity tiers (Common to Legendary)
+- Customizable profile banners
+- Competitive leaderboard
+- Streak tracking with celebration milestones
+
 ### Daily Wisdom
 - **Word of the Day**: Expand your vocabulary with curated words, definitions, etymology, and usage examples
 - **Quote Collection**: Inspirational quotes from great thinkers across 7 themes
 - **Proverbs & Idioms**: Cultural wisdom with meanings and origins
 - **Phrases**: Useful phrases for everyday communication
+- Personalized quotes based on your journey
+- Not preachy, just helpful
 
 ### Buddha - Your Stoic AI Guide
 - Journal your thoughts and receive personalized stoic wisdom
-- Mood tracking with thoughtful reflections (16 emotion states)
 - Content analysis for contextual responses
 - Weekly summaries of your growth journey
-- Multiple AI provider support (OpenAI, Gemini, OpenRouter, Ollama)
+- Mood-appropriate wisdom delivery
 
 ### Future Self Messaging
 - Write letters to your future self
-- Schedule delivery dates (time capsule feature)
-- Countdown to delivery with categories
-- Reflect on your past self's intentions
-
-### Gamification
-- **Achievement System**: 20+ unlockable badges across 6 categories
-- **Rarity Tiers**: Common, Uncommon, Rare, Epic, Legendary
-- **Streak Tracking**: Visual streak flames with intensity levels
-- **XP & Leveling**: Points system with level progression
-- **Leaderboard**: Peer interactions with boosts and congratulations
-- **Community Challenges**: Time-limited group challenges
+- Schedule delivery from 1 week to 1 year
+- Multiple categories: Goal, Motivation, Promise, General
+- Receive motivation when you need it
+- Countdown to delivery
 
 ### Profile & Stats
-- Comprehensive activity statistics (daily, weekly, monthly, all-time)
-- Achievement showcase with celebration animations
-- Customizable avatars, banners, and titles
-- Theme preferences (Light/Dark/System)
+- Track your progress with detailed statistics
+- Weekly and monthly summaries
+- Achievement showcase
+- Customizable profile with banners and badges
+- Visual journey timeline
 
----
+## Tech Stack
 
-## Technology Stack
-
-| Category | Technology |
-|----------|------------|
+| Component | Technology |
+|-----------|------------|
 | **Language** | Kotlin 2.0 |
-| **UI Framework** | Jetpack Compose with Material 3 |
+| **UI** | Jetpack Compose with Material 3 |
 | **Architecture** | MVVM + Clean Architecture |
 | **DI** | Hilt |
+| **AI** | Gemini API (Buddha) |
 | **Database** | Room with Flow |
 | **Preferences** | DataStore |
 | **Async** | Kotlin Coroutines |
 | **Navigation** | Compose Navigation with animations |
 | **Background Work** | WorkManager |
 | **Fonts** | Poppins + Playfair Display |
-| **AI Integration** | OpenAI, Gemini, OpenRouter, Ollama |
 
----
+## Design System
 
-## AI Integration
+Prody features a comprehensive design system:
 
-Prody supports multiple AI providers for Buddha's wisdom responses. Configure your preferred provider in the app settings.
+- **Colors**: 100+ semantic colors including brand, mood, gamification, and rarity colors
+- **Typography**: Full Material 3 type scale plus custom styles for wisdom, stats, badges
+- **Shapes**: 40+ shape definitions for cards, buttons, badges, and special components
+- **Dimensions**: Complete spacing system based on 8dp grid
+- **Design Tokens**: Centralized token system for consistent theming
 
-### Supported Providers
-
-| Provider | Models | Use Case |
-|----------|--------|----------|
-| **OpenAI** | GPT-4, GPT-3.5 Turbo | Production, high quality |
-| **Google Gemini** | Gemini Pro, Gemini Flash | Fast responses, free tier |
-| **OpenRouter** | Multiple models | Flexibility, aggregator |
-| **Ollama** | Llama 2, Mistral, etc. | Local/offline, privacy |
-
-### API Key Setup
-
-#### Option 1: Environment Variables (Recommended for Development)
-
-Create a `local.properties` file in the project root (gitignored):
-
-```properties
-# OpenAI Configuration
-OPENAI_API_KEY=sk-your-openai-key-here
-OPENAI_MODEL=gpt-4
-
-# Google Gemini Configuration
-GEMINI_API_KEY=your-gemini-api-key-here
-GEMINI_MODEL=gemini-pro
-
-# OpenRouter Configuration
-OPENROUTER_API_KEY=your-openrouter-key-here
-OPENROUTER_MODEL=anthropic/claude-3-opus
-
-# Ollama Configuration (Local)
-OLLAMA_BASE_URL=http://localhost:11434
-OLLAMA_MODEL=llama2
-```
-
-#### Option 2: Gradle Build Config
-
-Add to your `app/build.gradle.kts`:
-
-```kotlin
-android {
-    defaultConfig {
-        buildConfigField("String", "OPENAI_API_KEY", "\"${project.findProperty("OPENAI_API_KEY") ?: ""}\"")
-        buildConfigField("String", "GEMINI_API_KEY", "\"${project.findProperty("GEMINI_API_KEY") ?: ""}\"")
-        buildConfigField("String", "OPENROUTER_API_KEY", "\"${project.findProperty("OPENROUTER_API_KEY") ?: ""}\"")
-    }
-}
-```
-
-#### Option 3: In-App Configuration
-
-Users can configure API keys directly in Settings > AI Settings within the app.
-
-### Getting API Keys
-
-| Provider | Steps |
-|----------|-------|
-| **OpenAI** | 1. Visit [platform.openai.com](https://platform.openai.com) <br> 2. Create account & add billing <br> 3. Generate API key in API Keys section |
-| **Gemini** | 1. Visit [aistudio.google.com](https://aistudio.google.com) <br> 2. Click "Get API Key" <br> 3. Create key in new/existing project |
-| **OpenRouter** | 1. Visit [openrouter.ai](https://openrouter.ai) <br> 2. Sign up with GitHub/Google <br> 3. Generate API key in dashboard |
-| **Ollama** | 1. Install from [ollama.ai](https://ollama.ai) <br> 2. Run `ollama pull llama2` <br> 3. Start with `ollama serve` |
-
-### AI Response Caching
-
-Buddha responses are cached locally to:
-- Reduce API costs
-- Enable offline access to previous wisdom
-- Improve response times for similar entries
-
-Cache TTL: 7 days (configurable)
-
----
-
-## Building the App
+## Setup
 
 ### Prerequisites
-
-- Android Studio Hedgehog (2023.1.1) or later
-- JDK 17
+- Android Studio Hedgehog (2023.1.1) or newer
+- JDK 17+
 - Android SDK 35
 - (Optional) AI API keys for Buddha functionality
+
+### AI Features (Optional)
+To enable Buddha AI features:
+
+1. Get a Gemini API key from [Google AI Studio](https://makersuite.google.com/app/apikey)
+2. Create/edit `local.properties` in project root:
+   ```
+   AI_API_KEY=your_api_key_here
+   ```
+3. Rebuild the project
+
+*Note: Without an API key, the app works with static content from the wisdom library.*
 
 ### Build Steps
 
 1. **Clone the repository:**
 ```bash
-git clone https://github.com/yourusername/prody.git
+git clone https://github.com/prashantchataut/prody.git
 cd prody
 ```
 
-2. **Configure API keys (optional):**
-```bash
-# Create local.properties with your API keys
-echo "OPENAI_API_KEY=sk-your-key" >> local.properties
-echo "GEMINI_API_KEY=your-key" >> local.properties
-```
-
-3. **Generate a keystore (for release builds):**
-```bash
-cd keystore
-keytool -genkeypair -v \
-  -keystore prody-release.jks \
-  -keyalg RSA -keysize 2048 \
-  -validity 10000 -alias prody \
-  -storepass prody2024 -keypass prody2024 \
-  -dname "CN=Prody App, OU=Prody, O=Prody, L=Unknown, ST=Unknown, C=IN"
-```
-
-4. **Build debug APK:**
+2. Build debug APK:
 ```bash
 ./gradlew assembleDebug
 ```
 
-5. **Build release APK:**
+3. Build release APK:
 ```bash
 ./gradlew assembleRelease
 ```
 
 The APK will be available at `app/build/outputs/apk/`
 
----
-
-## Architecture
-
-### Project Structure
+## Project Structure
 
 ```
 app/src/main/java/com/prody/prashant/
 ├── data/
+│   ├── content/           # Content libraries (Wisdom, Prompts)
 │   ├── local/
-│   │   ├── dao/              # Room DAOs
-│   │   ├── database/         # Room Database
-│   │   ├── entity/           # Database entities
-│   │   └── preferences/      # DataStore preferences
-│   └── content/              # Content libraries
-│       ├── NotificationContent.kt
-│       ├── WisdomContent.kt
-│       └── JournalPrompts.kt
+│   │   ├── dao/          # Room DAOs
+│   │   ├── database/     # Room Database
+│   │   ├── entity/       # Database entities
+│   │   └── preferences/  # DataStore preferences
+│   └── repository/       # Repository implementations
 ├── di/
 │   └── AppModule.kt          # Hilt dependency injection
 ├── domain/
-│   └── model/                # Domain models
+│   ├── identity/         # Achievements, Ranks, Banners
+│   ├── model/            # Domain models
+│   └── repository/       # Repository interfaces
 ├── notification/
 │   ├── NotificationReceiver.kt
 │   ├── NotificationScheduler.kt
 │   └── BootReceiver.kt
 ├── ui/
-│   ├── components/           # Reusable UI components
-│   ├── navigation/           # Navigation setup
-│   ├── screens/              # App screens
-│   └── theme/                # Material 3 theme
-│       ├── Color.kt          # Color system
-│       ├── Type.kt           # Typography system
-│       ├── Dimensions.kt     # Spacing & sizing
-│       ├── Shape.kt          # Shape definitions
-│       └── Theme.kt          # Theme composition
+│   ├── components/       # Reusable UI components
+│   ├── navigation/       # Navigation setup
+│   ├── screens/          # App screens
+│   └── theme/            # Design system (Colors, Typography, Shapes, Dimensions, Tokens)
 ├── util/
-│   ├── BuddhaWisdom.kt       # AI wisdom generator
-│   └── NotificationMessages.kt
+│   ├── BuddhaWisdom.kt   # AI wisdom generator
+│   └── NotificationMessages.kt  # 100+ notification messages
 ├── MainActivity.kt
 └── ProdyApplication.kt
 ```
 
-### Design System
+## Content Library
 
-Prody uses a comprehensive design system:
+Prody includes extensive static content:
 
-| Component | Description |
-|-----------|-------------|
-| **Colors** | 150+ colors including gamification, emotions, rarity tiers |
-| **Typography** | 40+ text styles with Poppins (UI) and Playfair (wisdom) |
-| **Dimensions** | 4dp grid system with accessibility-compliant touch targets |
-| **Shapes** | Consistent corner radii across components |
+| Content Type | Count | Categories |
+|--------------|-------|------------|
+| **Wisdom Quotes** | 75+ | Growth, Resilience, Gratitude, Mindfulness, Action, Self-Compassion, Perspective |
+| **Journal Prompts** | 80+ | Morning, Evening, Gratitude, Reflection, Growth, Emotional, Quick, Creative |
+| **Notification Messages** | 100+ | Re-engagement, Celebration, Competitive, Streak, Journal, Future Message, etc. |
+| **Achievements** | 20+ | Wisdom, Reflection, Consistency, Presence, Temporal, Mastery, Social, Explorer |
+| **Ranks** | 10 | Seeker to Awakened |
 
-### Database Schema
+## Documentation
 
-See [docs/database_schema.md](docs/database_schema.md) for complete database documentation including:
-- 19 entity tables
-- Entity relationships
-- Migration strategy
-- Query patterns
-
----
+- [Database Schema](docs/database_schema.md) - Complete entity definitions and relationships
+- [NEXT_STEPS.md](NEXT_STEPS.md) - Roadmap with 25+ planned features
+- [DEVELOPMENT_ROADMAP.md](DEVELOPMENT_ROADMAP.md) - Technical implementation phases
 
 ## CI/CD
 
@@ -279,50 +200,19 @@ git push origin v1.0.0
 
 2. GitHub Actions will automatically build and create a release with the signed APK.
 
----
-
-## Content Libraries
-
-Prody includes extensive content libraries:
-
-| Library | Count | Categories |
-|---------|-------|------------|
-| **Journal Prompts** | 100+ | Morning, Evening, Gratitude, Reflection, Growth, Emotional, Quick, Creative, Milestone |
-| **Wisdom Quotes** | 60+ | Growth, Resilience, Gratitude, Mindfulness, Action, Self-Compassion, Perspective |
-| **Notifications** | 90+ | Inactive, Celebration, Competitive, Level Up, Streak, Journal, Future Message, Wisdom, Check-In, Morning, Evening |
-
----
-
-## Accessibility
-
-Prody is built with accessibility in mind:
-
-- **Screen Reader Support**: Comprehensive content descriptions
-- **Touch Targets**: Minimum 48dp (WCAG 2.1 Level AA)
-- **Color Contrast**: High contrast mode available
-- **Reduce Motion**: Animation preference support
-- **Font Scaling**: Respects system font size
-
----
-
 ## Contributing
 
-Contributions are welcome! Please read our contributing guidelines before submitting PRs.
+This is a personal project by Prashant Chataut. Contributions, suggestions, and feedback are welcome!
 
-### Development Setup
+## Contact
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Run tests: `./gradlew test`
-5. Run lint: `./gradlew lint`
-6. Submit a pull request
+- **Instagram:** [@prashantchataut_](https://www.instagram.com/prashantchataut_/)
+- **Website:** [knowprashant.vercel.app](https://knowprashant.vercel.app)
+- **GitHub:** [prashantchataut](https://github.com/prashantchataut)
 
----
+## License
 
-## Roadmap
-
-See [NEXT_STEPS.md](NEXT_STEPS.md) for 25+ planned features and improvements.
+This project is open source. See the LICENSE file for details.
 
 Upcoming features:
 - Cloud sync with Firebase
