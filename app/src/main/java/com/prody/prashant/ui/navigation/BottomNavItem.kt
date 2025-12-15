@@ -26,9 +26,11 @@ sealed class BottomNavItem(
 ) {
     /**
      * Home - Main dashboard and daily content
+     * Note: Using string literal instead of Screen.Home.route to avoid static initialization
+     * order dependency that can cause ExceptionInInitializerError on some devices.
      */
     data object Home : BottomNavItem(
-        route = Screen.Home.route,
+        route = "home",
         labelResId = R.string.nav_home,
         selectedIcon = Icons.Filled.Home,
         unselectedIcon = Icons.Outlined.Home,
@@ -37,9 +39,11 @@ sealed class BottomNavItem(
 
     /**
      * Journal - Personal journal and reflections
+     * Note: Using string literal instead of Screen.JournalList.route to avoid static initialization
+     * order dependency that can cause ExceptionInInitializerError on some devices.
      */
     data object Journal : BottomNavItem(
-        route = Screen.JournalList.route,
+        route = "journal",
         labelResId = R.string.nav_journal,
         selectedIcon = Icons.Filled.Book,
         unselectedIcon = Icons.Outlined.Book,
@@ -48,9 +52,11 @@ sealed class BottomNavItem(
 
     /**
      * Stats - Progress and analytics
+     * Note: Using string literal instead of Screen.Stats.route to avoid static initialization
+     * order dependency that can cause ExceptionInInitializerError on some devices.
      */
     data object Stats : BottomNavItem(
-        route = Screen.Stats.route,
+        route = "stats",
         labelResId = R.string.nav_stats,
         selectedIcon = Icons.Filled.BarChart,
         unselectedIcon = Icons.Outlined.BarChart,
@@ -59,9 +65,11 @@ sealed class BottomNavItem(
 
     /**
      * Profile - User profile and settings
+     * Note: Using string literal instead of Screen.Profile.route to avoid static initialization
+     * order dependency that can cause ExceptionInInitializerError on some devices.
      */
     data object Profile : BottomNavItem(
-        route = Screen.Profile.route,
+        route = "profile",
         labelResId = R.string.nav_profile,
         selectedIcon = Icons.Filled.Person,
         unselectedIcon = Icons.Outlined.Person,
