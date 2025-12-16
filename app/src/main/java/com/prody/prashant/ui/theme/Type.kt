@@ -23,27 +23,39 @@ import com.prody.prashant.R
  */
 
 // Primary font family - Poppins (for UI elements)
-val PoppinsFamily = FontFamily(
-    Font(R.font.poppins_thin, FontWeight.Thin),
-    Font(R.font.poppins_extralight, FontWeight.ExtraLight),
-    Font(R.font.poppins_light, FontWeight.Light),
-    Font(R.font.poppins_regular, FontWeight.Normal),
-    Font(R.font.poppins_medium, FontWeight.Medium),
-    Font(R.font.poppins_semibold, FontWeight.SemiBold),
-    Font(R.font.poppins_bold, FontWeight.Bold),
-    Font(R.font.poppins_extrabold, FontWeight.ExtraBold),
-    Font(R.font.poppins_black, FontWeight.Black)
-)
+// Safe font definition with fallback to prevent crashes on font loading issues
+val PoppinsFamily: FontFamily = try {
+    FontFamily(
+        Font(R.font.poppins_thin, FontWeight.Thin),
+        Font(R.font.poppins_extralight, FontWeight.ExtraLight),
+        Font(R.font.poppins_light, FontWeight.Light),
+        Font(R.font.poppins_regular, FontWeight.Normal),
+        Font(R.font.poppins_medium, FontWeight.Medium),
+        Font(R.font.poppins_semibold, FontWeight.SemiBold),
+        Font(R.font.poppins_bold, FontWeight.Bold),
+        Font(R.font.poppins_extrabold, FontWeight.ExtraBold),
+        Font(R.font.poppins_black, FontWeight.Black)
+    )
+} catch (e: Exception) {
+    // Fallback to system default if fonts fail to load
+    FontFamily.SansSerif
+}
 
 // Secondary font family - Playfair Display (for wisdom, quotes, and stoic content)
 // This elegant serif font contrasts with Poppins to separate "ancient wisdom" from "modern interface"
-val PlayfairFamily = FontFamily(
-    Font(R.font.playfairdisplay_regular, FontWeight.Normal),
-    Font(R.font.playfairdisplay_medium, FontWeight.Medium),
-    Font(R.font.playfairdisplay_semibold, FontWeight.SemiBold),
-    Font(R.font.playfairdisplay_bold, FontWeight.Bold),
-    Font(R.font.playfairdisplay_italic, FontWeight.Normal, FontStyle.Italic)
-)
+// Safe font definition with fallback to prevent crashes on font loading issues
+val PlayfairFamily: FontFamily = try {
+    FontFamily(
+        Font(R.font.playfairdisplay_regular, FontWeight.Normal),
+        Font(R.font.playfairdisplay_medium, FontWeight.Medium),
+        Font(R.font.playfairdisplay_semibold, FontWeight.SemiBold),
+        Font(R.font.playfairdisplay_bold, FontWeight.Bold),
+        Font(R.font.playfairdisplay_italic, FontWeight.Normal, FontStyle.Italic)
+    )
+} catch (e: Exception) {
+    // Fallback to system serif if fonts fail to load
+    FontFamily.Serif
+}
 
 /**
  * Main Typography configuration following Material Design 3 guidelines
