@@ -99,21 +99,19 @@ fun HomeScreen(
         isVisible = true
     }
 
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
-        contentPadding = PaddingValues(bottom = 100.dp)
+    AnimatedVisibility(
+        visible = isVisible,
+        enter = fadeIn(animationSpec = tween(600, easing = EaseOutCubic)),
+        exit = fadeOut(animationSpec = tween(600, easing = EaseOutCubic))
     ) {
-        // Animated header with greeting and streak
-        item {
-            AnimatedVisibility(
-                visible = isVisible,
-                enter = fadeIn(tween(600)) + slideInVertically(
-                    initialOffsetY = { -it },
-                    animationSpec = tween(600, easing = EaseOutCubic)
-                )
-            ) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background),
+            contentPadding = PaddingValues(bottom = 100.dp)
+        ) {
+            // Animated header with greeting and streak
+            item {
                 EnhancedHomeHeader(
                     greeting = greeting,
                     userName = uiState.userName,
@@ -121,60 +119,28 @@ fun HomeScreen(
                     totalPoints = uiState.totalPoints
                 )
             }
-        }
 
-        // Daily focus card
-        item {
-            AnimatedVisibility(
-                visible = isVisible,
-                enter = fadeIn(tween(500, delayMillis = 150)) + slideInVertically(
-                    initialOffsetY = { it / 3 },
-                    animationSpec = tween(500, delayMillis = 150, easing = EaseOutCubic)
-                )
-            ) {
+            // Daily focus card
+            item {
                 DailyFocusCard()
             }
-        }
 
-        // Community Challenges card
-        item {
-            AnimatedVisibility(
-                visible = isVisible,
-                enter = fadeIn(tween(500, delayMillis = 175)) + slideInVertically(
-                    initialOffsetY = { it / 3 },
-                    animationSpec = tween(500, delayMillis = 175, easing = EaseOutCubic)
-                )
-            ) {
+            // Community Challenges card
+            item {
                 CommunityChallengesCard(onClick = onNavigateToChallenges)
             }
-        }
 
-        // Daily wisdom card
-        item {
-            AnimatedVisibility(
-                visible = isVisible,
-                enter = fadeIn(tween(500, delayMillis = 200)) + slideInVertically(
-                    initialOffsetY = { it / 3 },
-                    animationSpec = tween(500, delayMillis = 200, easing = EaseOutCubic)
-                )
-            ) {
+            // Daily wisdom card
+            item {
                 EnhancedDailyWisdomCard(
                     quote = uiState.dailyQuote,
                     author = uiState.dailyQuoteAuthor,
                     onQuoteTap = onNavigateToQuotes
                 )
             }
-        }
 
-        // Word of the day
-        item {
-            AnimatedVisibility(
-                visible = isVisible,
-                enter = fadeIn(tween(500, delayMillis = 250)) + slideInVertically(
-                    initialOffsetY = { it / 3 },
-                    animationSpec = tween(500, delayMillis = 250, easing = EaseOutCubic)
-                )
-            ) {
+            // Word of the day
+            item {
                 EnhancedWordOfTheDayCard(
                     word = uiState.wordOfTheDay,
                     definition = uiState.wordDefinition,
@@ -183,17 +149,9 @@ fun HomeScreen(
                     onMarkLearned = { viewModel.markWordAsLearned() }
                 )
             }
-        }
 
-        // Quick actions grid
-        item {
-            AnimatedVisibility(
-                visible = isVisible,
-                enter = fadeIn(tween(500, delayMillis = 300)) + slideInVertically(
-                    initialOffsetY = { it / 3 },
-                    animationSpec = tween(500, delayMillis = 300, easing = EaseOutCubic)
-                )
-            ) {
+            // Quick actions grid
+            item {
                 EnhancedQuickActionsSection(
                     onJournalClick = onNavigateToJournal,
                     onFutureMessageClick = onNavigateToFutureMessage,
@@ -201,18 +159,10 @@ fun HomeScreen(
                     onQuotesClick = onNavigateToQuotes
                 )
             }
-        }
 
-        // Proverb of the day
-        if (uiState.dailyProverb.isNotBlank()) {
-            item {
-                AnimatedVisibility(
-                    visible = isVisible,
-                    enter = fadeIn(tween(500, delayMillis = 350)) + slideInVertically(
-                        initialOffsetY = { it / 3 },
-                        animationSpec = tween(500, delayMillis = 350, easing = EaseOutCubic)
-                    )
-                ) {
+            // Proverb of the day
+            if (uiState.dailyProverb.isNotBlank()) {
+                item {
                     EnhancedProverbCard(
                         proverb = uiState.dailyProverb,
                         meaning = uiState.proverbMeaning,
@@ -220,18 +170,10 @@ fun HomeScreen(
                     )
                 }
             }
-        }
 
-        // Idiom of the day
-        if (uiState.dailyIdiom.isNotBlank()) {
-            item {
-                AnimatedVisibility(
-                    visible = isVisible,
-                    enter = fadeIn(tween(500, delayMillis = 400)) + slideInVertically(
-                        initialOffsetY = { it / 3 },
-                        animationSpec = tween(500, delayMillis = 400, easing = EaseOutCubic)
-                    )
-                ) {
+            // Idiom of the day
+            if (uiState.dailyIdiom.isNotBlank()) {
+                item {
                     EnhancedIdiomCard(
                         idiom = uiState.dailyIdiom,
                         meaning = uiState.idiomMeaning,
@@ -239,32 +181,16 @@ fun HomeScreen(
                     )
                 }
             }
-        }
 
-        // Buddha's daily thought
-        item {
-            AnimatedVisibility(
-                visible = isVisible,
-                enter = fadeIn(tween(500, delayMillis = 450)) + slideInVertically(
-                    initialOffsetY = { it / 3 },
-                    animationSpec = tween(500, delayMillis = 450, easing = EaseOutCubic)
-                )
-            ) {
+            // Buddha's daily thought
+            item {
                 EnhancedBuddhaThoughtCard(
                     thought = uiState.buddhaThought
                 )
             }
-        }
 
-        // Weekly progress card
-        item {
-            AnimatedVisibility(
-                visible = isVisible,
-                enter = fadeIn(tween(500, delayMillis = 500)) + slideInVertically(
-                    initialOffsetY = { it / 3 },
-                    animationSpec = tween(500, delayMillis = 500, easing = EaseOutCubic)
-                )
-            ) {
+            // Weekly progress card
+            item {
                 WeeklyProgressCard(
                     journalEntriesThisWeek = uiState.journalEntriesThisWeek,
                     wordsLearnedThisWeek = uiState.wordsLearnedThisWeek,
@@ -306,9 +232,6 @@ private fun EnhancedHomeHeader(
                 )
             )
     ) {
-        // Animated background particles
-        HeaderBackgroundAnimation()
-
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -353,64 +276,18 @@ private fun EnhancedHomeHeader(
 }
 
 @Composable
-private fun HeaderBackgroundAnimation() {
-    val infiniteTransition = rememberInfiniteTransition(label = "bg_particles")
-    val rotation by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 360f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(30000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "rotation"
-    )
-
-    Canvas(modifier = Modifier.fillMaxSize().alpha(0.25f)) {
-        val center = Offset(size.width * 0.8f, size.height * 0.3f)
-
-        // Draw orbiting circles
-        for (i in 0 until 4) {
-            val angle = (rotation + i * 90f) * PI / 180
-            val radius = minOf(size.width, size.height) * 0.25f
-            val x = center.x + radius * cos(angle).toFloat()
-            val y = center.y + radius * sin(angle).toFloat()
-            drawCircle(
-                color = Color.White.copy(alpha = 0.15f - i * 0.03f),
-                radius = 25f - i * 5f,
-                center = Offset(x, y)
-            )
-        }
-
-        // Draw decorative circles
-        drawCircle(
-            color = Color.White.copy(alpha = 0.05f),
-            radius = size.height * 0.4f,
-            center = Offset(size.width * 0.9f, size.height * 0.2f)
-        )
-    }
-}
-
-@Composable
 private fun AnimatedStreakBadge(streakDays: Int) {
-    val infiniteTransition = rememberInfiniteTransition(label = "streak")
-    val fireScale by infiniteTransition.animateFloat(
-        initialValue = 1f,
-        targetValue = 1.12f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(600, easing = EaseInOutCubic),
-            repeatMode = RepeatMode.Reverse
-        ),
+    val fireScale by animateFloatAsState(
+        targetValue = if (streakDays > 0) 1.12f else 1f,
+        animationSpec = tween(600),
         label = "fire_scale"
     )
-    val glowAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.4f,
-        targetValue = 0.8f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(800, easing = EaseInOutCubic),
-            repeatMode = RepeatMode.Reverse
-        ),
+    val glowAlpha by animateFloatAsState(
+        targetValue = if (streakDays > 0) 0.8f else 0f,
+        animationSpec = tween(800),
         label = "glow"
     )
+
 
     Box(contentAlignment = Alignment.Center) {
         // Fire glow
@@ -1308,38 +1185,23 @@ private fun EnhancedIdiomCard(
 private fun EnhancedBuddhaThoughtCard(
     thought: String
 ) {
-    val infiniteTransition = rememberInfiniteTransition(label = "buddha_glow")
-
-    // Primary glow animation - soft pulsing for meditative effect
-    val glowAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.25f,
+    val glowAlpha by animateFloatAsState(
         targetValue = 0.45f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(3500, easing = EaseInOutCubic),
-            repeatMode = RepeatMode.Reverse
-        ),
+        animationSpec = tween(3500),
         label = "glow_primary"
     )
 
     // Secondary accent glow - offset timing for depth
-    val accentGlowAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.15f,
+    val accentGlowAlpha by animateFloatAsState(
         targetValue = 0.35f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(4000, delayMillis = 500, easing = EaseInOutCubic),
-            repeatMode = RepeatMode.Reverse
-        ),
+        animationSpec = tween(4000),
         label = "glow_accent"
     )
 
     // Subtle scale breathing effect
-    val breathScale by infiniteTransition.animateFloat(
-        initialValue = 1f,
+    val breathScale by animateFloatAsState(
         targetValue = 1.02f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(4000, easing = EaseInOutCubic),
-            repeatMode = RepeatMode.Reverse
-        ),
+        animationSpec = tween(4000),
         label = "breath_scale"
     )
 
