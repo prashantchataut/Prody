@@ -221,29 +221,23 @@ object JournalPrompts {
     /**
      * Gets a single prompt for time of day.
      */
-    fun getPromptForTimeOfDay(hour: Int): Prompt {
+    fun getPromptForTimeOfDay(hour: Int): String {
         return getPromptsForTimeOfDay(hour).random()
     }
 
     /**
      * Gets random prompts across categories (for variety).
      */
-    fun getRandomPrompts(count: Int = 3): List<Prompt> {
+    fun getRandomPrompts(count: Int = 3): List<String> {
+        return allPrompts.shuffled().take(count.coerceAtMost(allPrompts.size))
+    }
+
+    /**
      * Get a random prompt from all available prompts.
      *
      * @return A random journal prompt
      */
     fun getRandomPrompt(): String = allPrompts.random()
-
-    /**
-     * Get multiple random prompts.
-     *
-     * @param count Number of prompts to return (default 3)
-     * @return A list of diverse prompts
-     */
-    fun getRandomPrompts(count: Int = 3): List<String> {
-        return allPrompts.shuffled().take(count.coerceAtMost(allPrompts.size))
-    }
 
     /**
      * Get prompts by category.
@@ -348,10 +342,13 @@ object JournalPrompts {
     /**
      * Gets a diverse set of prompts (one from each category).
      */
-    fun getDiversePrompts(): List<Prompt> {
+    fun getDiversePrompts(): List<String> {
         return PromptCategory.values().mapNotNull { category ->
             getPromptsByCategory(category).randomOrNull()
         }
+    }
+
+    /**
      * Get prompts based on the user's mood.
      *
      * @param moodName The name of the mood
