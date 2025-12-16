@@ -185,7 +185,12 @@ fun HomeScreen(
             // Buddha's daily thought
             item {
                 EnhancedBuddhaThoughtCard(
-                    thought = uiState.buddhaThought
+                    thought = uiState.buddhaThought,
+                    explanation = uiState.buddhaThoughtExplanation,
+                    isAiGenerated = uiState.isBuddhaThoughtAiGenerated,
+                    isLoading = uiState.isBuddhaThoughtLoading,
+                    canRefresh = uiState.canRefreshBuddhaThought,
+                    onRefresh = { viewModel.refreshBuddhaThought() }
                 )
             }
 
@@ -1180,10 +1185,17 @@ private fun EnhancedIdiomCard(
  * - Decorative quote marks and visual hierarchy
  * - Share and save actions readily accessible
  * - Breathing/pulsing glow effect for meditative feel
+ * - AI-generated wisdom with refresh capability
+ * - "Why this" explanation (subtle, non-botty)
  */
 @Composable
 private fun EnhancedBuddhaThoughtCard(
-    thought: String
+    thought: String,
+    explanation: String = "",
+    isAiGenerated: Boolean = false,
+    isLoading: Boolean = false,
+    canRefresh: Boolean = true,
+    onRefresh: () -> Unit = {}
 ) {
     val glowAlpha by animateFloatAsState(
         targetValue = 0.45f,
@@ -1341,6 +1353,41 @@ private fun EnhancedBuddhaThoughtCard(
 
                         // Action buttons
                         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                            // Refresh button with cooldown
+                            val refreshRotation by animateFloatAsState(
+                                targetValue = if (isLoading) 360f else 0f,
+                                animationSpec = if (isLoading) infiniteRepeatable(
+                                    animation = tween(1000, easing = LinearEasing),
+                                    repeatMode = RepeatMode.Restart
+                                ) else tween(0),
+                                label = "refresh_rotation"
+                            )
+
+                            IconButton(
+                                onClick = onRefresh,
+                                enabled = canRefresh && !isLoading,
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        if (canRefresh && !isLoading)
+                                            MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+                                        else
+                                            MaterialTheme.colorScheme.surface.copy(alpha = 0.3f)
+                                    )
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Refresh,
+                                    contentDescription = "Refresh wisdom",
+                                    tint = if (canRefresh && !isLoading)
+                                        MaterialTheme.colorScheme.primary
+                                    else
+                                        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                                    modifier = Modifier
+                                        .size(18.dp)
+                                        .rotate(refreshRotation)
+                                )
+                            }
                             // Share button
                             IconButton(
                                 onClick = { /* Share functionality */ },
@@ -1386,6 +1433,35 @@ private fun EnhancedBuddhaThoughtCard(
                     )
 
                     Spacer(modifier = Modifier.height(20.dp))
+
+                    // "Why this" explanation (subtle, non-botty)
+                    if (explanation.isNotBlank()) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f))
+                                .padding(10.dp)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Lightbulb,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                                    modifier = Modifier.size(14.dp)
+                                )
+                                Text(
+                                    text = explanation,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(12.dp))
+                    }
 
                     // Decorative bottom divider with gradient
                     Box(

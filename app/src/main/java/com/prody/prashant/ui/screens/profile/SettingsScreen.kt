@@ -206,7 +206,7 @@ fun SettingsScreen(
                 }
             }
 
-            // Buddha AI section (simplified - no API key required)
+            // Buddha AI section (expanded with per-feature toggles)
             AnimatedVisibility(
                 visible = isVisible,
                 enter = fadeIn(tween(400, delayMillis = 300)) + slideInVertically(
@@ -218,18 +218,132 @@ fun SettingsScreen(
                     title = "Buddha AI",
                     icon = Icons.Filled.SelfImprovement
                 ) {
+                    // Master toggle
                     EnhancedSettingsToggle(
                         icon = Icons.Filled.Psychology,
                         title = "Enable Buddha AI",
-                        subtitle = "AI-powered stoic wisdom in journals",
+                        subtitle = "AI-powered stoic wisdom across the app",
                         checked = uiState.buddhaAiEnabled,
                         onCheckedChange = { viewModel.setBuddhaAiEnabled(it) },
                         iconBackground = ProdyPrimary.copy(alpha = 0.15f),
                         iconTint = ProdyPrimary
                     )
 
+                    HorizontalDivider(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                    )
+
+                    // Per-feature toggles (only when master is enabled)
+                    AnimatedVisibility(visible = uiState.buddhaAiEnabled) {
+                        Column {
+                            EnhancedSettingsToggle(
+                                icon = Icons.Filled.WbSunny,
+                                title = "Daily Wisdom",
+                                subtitle = "AI-generated wisdom on home screen",
+                                checked = uiState.buddhaDailyWisdomEnabled,
+                                onCheckedChange = { viewModel.setBuddhaDailyWisdomEnabled(it) },
+                                iconBackground = GoldTier.copy(alpha = 0.15f),
+                                iconTint = GoldTier
+                            )
+
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = 16.dp),
+                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+                            )
+
+                            EnhancedSettingsToggle(
+                                icon = Icons.Filled.FormatQuote,
+                                title = "Quote Insights",
+                                subtitle = "Meaning and daily action for quotes",
+                                checked = uiState.buddhaQuoteExplanationEnabled,
+                                onCheckedChange = { viewModel.setBuddhaQuoteExplanationEnabled(it) },
+                                iconBackground = MoodCalm.copy(alpha = 0.15f),
+                                iconTint = MoodCalm
+                            )
+
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = 16.dp),
+                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+                            )
+
+                            EnhancedSettingsToggle(
+                                icon = Icons.Filled.Edit,
+                                title = "Journal Insights",
+                                subtitle = "Emotion and theme analysis after journaling",
+                                checked = uiState.buddhaJournalInsightsEnabled,
+                                onCheckedChange = { viewModel.setBuddhaJournalInsightsEnabled(it) },
+                                iconBackground = MoodGrateful.copy(alpha = 0.15f),
+                                iconTint = MoodGrateful
+                            )
+
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = 16.dp),
+                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+                            )
+
+                            EnhancedSettingsToggle(
+                                icon = Icons.Filled.TrendingUp,
+                                title = "Weekly Patterns",
+                                subtitle = "Track mood trends and themes",
+                                checked = uiState.buddhaPatternTrackingEnabled,
+                                onCheckedChange = { viewModel.setBuddhaPatternTrackingEnabled(it) },
+                                iconBackground = MoodMotivated.copy(alpha = 0.15f),
+                                iconTint = MoodMotivated
+                            )
+
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = 16.dp),
+                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+                            )
+
+                            EnhancedSettingsToggle(
+                                icon = Icons.Filled.Spellcheck,
+                                title = "Vocabulary Help",
+                                subtitle = "Example sentences and memory hooks",
+                                checked = uiState.buddhaVocabularyContextEnabled,
+                                onCheckedChange = { viewModel.setBuddhaVocabularyContextEnabled(it) },
+                                iconBackground = MoodExcited.copy(alpha = 0.15f),
+                                iconTint = MoodExcited
+                            )
+
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = 16.dp),
+                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+                            )
+
+                            EnhancedSettingsToggle(
+                                icon = Icons.Filled.EmojiEmotions,
+                                title = "Playful Buddha",
+                                subtitle = "Occasional lighthearted responses",
+                                checked = uiState.buddhaPlayfulMode,
+                                onCheckedChange = { viewModel.setBuddhaPlayfulMode(it) },
+                                iconBackground = MoodJoyful.copy(alpha = 0.15f),
+                                iconTint = MoodJoyful
+                            )
+
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = 16.dp),
+                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+                            )
+
+                            EnhancedSettingsToggle(
+                                icon = Icons.Filled.BatteryChargingFull,
+                                title = "Reduce AI Usage",
+                                subtitle = "Prefer cached responses to save data",
+                                checked = uiState.buddhaReduceAiUsage,
+                                onCheckedChange = { viewModel.setBuddhaReduceAiUsage(it) },
+                                iconBackground = MoodAnxious.copy(alpha = 0.15f),
+                                iconTint = MoodAnxious
+                            )
+                        }
+                    }
+
                     // Info card about Buddha AI
                     BuddhaAiInfoCard()
+
+                    // Privacy note
+                    BuddhaPrivacyNote()
                 }
             }
 
@@ -574,6 +688,46 @@ private fun BuddhaAiInfoCard() {
                             "for your self-improvement journey.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun BuddhaPrivacyNote() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+            .padding(12.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.Top,
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.Shield,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(16.dp)
+            )
+            Column {
+                Text(
+                    text = "Privacy",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = "Your journal content is processed securely for AI features. " +
+                            "Responses are cached locally to reduce data usage. " +
+                            "No data is stored on external servers beyond what's needed to generate responses.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
                 )
             }
         }

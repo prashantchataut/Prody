@@ -2,6 +2,8 @@ package com.prody.prashant.ui.screens.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.prody.prashant.data.ai.BuddhaAiRepository
+import com.prody.prashant.data.ai.BuddhaAiResult
 import com.prody.prashant.data.local.dao.*
 import com.prody.prashant.data.local.preferences.PreferencesManager
 import com.prody.prashant.util.BuddhaWisdom
@@ -28,6 +30,10 @@ data class HomeUiState(
     val idiomMeaning: String = "",
     val idiomExample: String = "",
     val buddhaThought: String = BuddhaWisdom.getRandomEncouragement(),
+    val buddhaThoughtExplanation: String = "",
+    val isBuddhaThoughtAiGenerated: Boolean = false,
+    val isBuddhaThoughtLoading: Boolean = false,
+    val canRefreshBuddhaThought: Boolean = true,
     val journalEntriesThisWeek: Int = 0,
     val wordsLearnedThisWeek: Int = 0,
     val daysActiveThisWeek: Int = 0,
@@ -42,20 +48,24 @@ class HomeViewModel @Inject constructor(
     private val proverbDao: ProverbDao,
     private val idiomDao: IdiomDao,
     private val journalDao: JournalDao,
-    private val preferencesManager: PreferencesManager
+    private val preferencesManager: PreferencesManager,
+    private val buddhaAiRepository: BuddhaAiRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
     private var currentWordId: Long = 0
+    private var lastBuddhaRefreshTime: Long = 0
 
     companion object {
         private const val TAG = "HomeViewModel"
+        private const val REFRESH_COOLDOWN_MS = 30_000L // 30 second cooldown between refreshes
     }
 
     init {
         loadHomeData()
+        loadBuddhaWisdom()
     }
 
     private fun loadHomeData() {
@@ -186,15 +196,12 @@ class HomeViewModel @Inject constructor(
 
         viewModelScope.launch {
             try {
-                // Get daily reflection prompt from Buddha
+                // Set loading to false after initial data load
                 _uiState.update { state ->
-                    state.copy(
-                        buddhaThought = BuddhaWisdom.getDailyReflectionPrompt(),
-                        isLoading = false
-                    )
+                    state.copy(isLoading = false)
                 }
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error loading Buddha thought", e)
+                android.util.Log.e(TAG, "Error completing home data load", e)
                 _uiState.update { state ->
                     state.copy(isLoading = false)
                 }
@@ -265,5 +272,90 @@ class HomeViewModel @Inject constructor(
         calendar.set(Calendar.SECOND, 0)
         calendar.set(Calendar.MILLISECOND, 0)
         return calendar.timeInMillis
+    }
+
+    /**
+     * Load Buddha's daily wisdom using AI with fallback to curated content.
+     * Uses caching to avoid excessive API calls.
+     */
+    private fun loadBuddhaWisdom(forceRefresh: Boolean = false) {
+        viewModelScope.launch {
+            try {
+                _uiState.update { it.copy(isBuddhaThoughtLoading = true) }
+
+                val result = buddhaAiRepository.getDailyWisdom(forceRefresh)
+
+                when (result) {
+                    is BuddhaAiResult.Success -> {
+                        _uiState.update { state ->
+                            state.copy(
+                                buddhaThought = result.data.wisdom,
+                                buddhaThoughtExplanation = result.data.explanation,
+                                isBuddhaThoughtAiGenerated = result.data.isAiGenerated,
+                                isBuddhaThoughtLoading = false
+                            )
+                        }
+                        android.util.Log.d(TAG, "Buddha wisdom loaded (AI: ${result.data.isAiGenerated})")
+                    }
+                    is BuddhaAiResult.Fallback -> {
+                        _uiState.update { state ->
+                            state.copy(
+                                buddhaThought = result.data.wisdom,
+                                buddhaThoughtExplanation = result.data.explanation,
+                                isBuddhaThoughtAiGenerated = false,
+                                isBuddhaThoughtLoading = false
+                            )
+                        }
+                        android.util.Log.d(TAG, "Buddha wisdom loaded (fallback)")
+                    }
+                    is BuddhaAiResult.Error -> {
+                        // Fall back to local wisdom
+                        _uiState.update { state ->
+                            state.copy(
+                                buddhaThought = BuddhaWisdom.getDailyReflectionPrompt(),
+                                buddhaThoughtExplanation = "From the archives",
+                                isBuddhaThoughtAiGenerated = false,
+                                isBuddhaThoughtLoading = false
+                            )
+                        }
+                        android.util.Log.e(TAG, "Buddha wisdom error: ${result.message}")
+                    }
+                }
+
+                lastBuddhaRefreshTime = System.currentTimeMillis()
+
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error loading Buddha wisdom", e)
+                _uiState.update { state ->
+                    state.copy(
+                        buddhaThought = BuddhaWisdom.getDailyReflectionPrompt(),
+                        buddhaThoughtExplanation = "From the archives",
+                        isBuddhaThoughtAiGenerated = false,
+                        isBuddhaThoughtLoading = false
+                    )
+                }
+            }
+        }
+    }
+
+    /**
+     * Refresh Buddha's thought with a new AI-generated one.
+     * Has a cooldown to prevent spam.
+     */
+    fun refreshBuddhaThought() {
+        val timeSinceLastRefresh = System.currentTimeMillis() - lastBuddhaRefreshTime
+
+        if (timeSinceLastRefresh < REFRESH_COOLDOWN_MS) {
+            // Still in cooldown
+            _uiState.update { it.copy(canRefreshBuddhaThought = false) }
+
+            viewModelScope.launch {
+                kotlinx.coroutines.delay(REFRESH_COOLDOWN_MS - timeSinceLastRefresh)
+                _uiState.update { it.copy(canRefreshBuddhaThought = true) }
+            }
+            return
+        }
+
+        loadBuddhaWisdom(forceRefresh = true)
     }
 }

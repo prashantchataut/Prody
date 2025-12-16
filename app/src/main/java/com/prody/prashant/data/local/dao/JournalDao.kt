@@ -73,9 +73,40 @@ interface JournalDao {
 
     @Query("DELETE FROM journal_entries")
     suspend fun deleteAllEntries()
+
+    // Weekly pattern tracking queries
+    @Query("SELECT COUNT(*) FROM journal_entries WHERE createdAt >= :weekStart")
+    suspend fun getEntriesCountThisWeek(weekStart: Long): Int
+
+    @Query("SELECT mood, COUNT(*) as count FROM journal_entries WHERE createdAt >= :weekStart GROUP BY mood ORDER BY count DESC LIMIT 1")
+    suspend fun getDominantMoodThisWeek(weekStart: Long): MoodCount?
+
+    @Query("SELECT aiThemes FROM journal_entries WHERE createdAt >= :weekStart AND aiThemes IS NOT NULL")
+    suspend fun getThemesThisWeek(weekStart: Long): List<String>
+
+    @Query("""
+        SELECT
+            CASE
+                WHEN strftime('%H', datetime(createdAt/1000, 'unixepoch', 'localtime')) < '12' THEN 'morning'
+                WHEN strftime('%H', datetime(createdAt/1000, 'unixepoch', 'localtime')) < '17' THEN 'afternoon'
+                ELSE 'evening'
+            END as timeOfDay,
+            COUNT(*) as count
+        FROM journal_entries
+        WHERE createdAt >= :weekStart
+        GROUP BY timeOfDay
+        ORDER BY count DESC
+        LIMIT 1
+    """)
+    suspend fun getMostActiveTimeOfDay(weekStart: Long): TimeOfDayCount?
 }
 
 data class MoodCount(
     val mood: String,
+    val count: Int
+)
+
+data class TimeOfDayCount(
+    val timeOfDay: String,
     val count: Int
 )

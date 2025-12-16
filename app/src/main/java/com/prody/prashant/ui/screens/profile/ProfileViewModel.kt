@@ -2,11 +2,16 @@ package com.prody.prashant.ui.screens.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.prody.prashant.data.ai.BuddhaAiRepository
+import com.prody.prashant.data.ai.WeeklyPatternResult
+import com.prody.prashant.data.local.dao.JournalDao
 import com.prody.prashant.data.local.dao.UserDao
 import com.prody.prashant.data.local.entity.AchievementEntity
+import com.prody.prashant.domain.model.Mood
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import java.util.Calendar
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
@@ -24,12 +29,18 @@ data class ProfileUiState(
     val daysOnPrody: Int = 0,
     val unlockedAchievements: List<AchievementEntity> = emptyList(),
     val lockedAchievements: List<AchievementEntity> = emptyList(),
-    val isLoading: Boolean = true
+    val isLoading: Boolean = true,
+    // Weekly AI Pattern Tracking
+    val weeklyPattern: WeeklyPatternResult? = null,
+    val isLoadingWeeklyPattern: Boolean = false,
+    val hasEnoughDataForPattern: Boolean = false
 )
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    private val userDao: UserDao
+    private val userDao: UserDao,
+    private val journalDao: JournalDao,
+    private val buddhaAiRepository: BuddhaAiRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProfileUiState())
@@ -42,6 +53,7 @@ class ProfileViewModel @Inject constructor(
     init {
         loadProfile()
         loadAchievements()
+        loadWeeklyPattern()
     }
 
     private fun loadProfile() {
@@ -113,5 +125,110 @@ class ProfileViewModel @Inject constructor(
             "legend" -> "Legend"
             else -> "Growth Seeker"
         }
+    }
+
+    /**
+     * Load weekly pattern analysis based on journal data.
+     * Shows: recurring themes, mood trend, time-of-day patterns.
+     */
+    private fun loadWeeklyPattern() {
+        viewModelScope.launch {
+            try {
+                _uiState.update { it.copy(isLoadingWeeklyPattern = true) }
+
+                // Get start of week
+                val weekStart = getWeekStartTimestamp()
+                val currentStreak = _uiState.value.currentStreak
+
+                // Gather journal data for the week
+                val journalCount = journalDao.getEntriesCountThisWeek(weekStart)
+
+                // Need at least 3 entries for meaningful patterns
+                if (journalCount < 3) {
+                    _uiState.update {
+                        it.copy(
+                            isLoadingWeeklyPattern = false,
+                            hasEnoughDataForPattern = false
+                        )
+                    }
+                    return@launch
+                }
+
+                // Get dominant mood
+                val dominantMoodData = journalDao.getDominantMoodThisWeek(weekStart)
+                val dominantMood = dominantMoodData?.mood?.let { moodName ->
+                    try { Mood.valueOf(moodName) } catch (e: Exception) { null }
+                }
+
+                // Get themes
+                val themesRaw = journalDao.getThemesThisWeek(weekStart)
+                val themes = themesRaw
+                    .flatMap { it.split(",") }
+                    .map { it.trim() }
+                    .filter { it.isNotEmpty() }
+                    .groupingBy { it }
+                    .eachCount()
+                    .entries
+                    .sortedByDescending { it.value }
+                    .take(4)
+                    .map { it.key }
+
+                // Get active time of day
+                val timeOfDay = journalDao.getMostActiveTimeOfDay(weekStart)?.timeOfDay ?: "varied"
+
+                // Calculate mood trend (simple)
+                val moodTrend = when {
+                    dominantMood == Mood.JOYFUL || dominantMood == Mood.EXCITED -> "positive"
+                    dominantMood == Mood.SAD || dominantMood == Mood.ANXIOUS -> "challenging"
+                    else -> "balanced"
+                }
+
+                // Generate AI pattern analysis
+                val result = buddhaAiRepository.getWeeklyPatterns(
+                    journalCount = journalCount,
+                    dominantMood = dominantMood,
+                    themes = themes,
+                    moodTrend = moodTrend,
+                    activeTimeOfDay = timeOfDay,
+                    streakDays = currentStreak
+                )
+
+                result.getOrNull()?.let { pattern ->
+                    _uiState.update {
+                        it.copy(
+                            weeklyPattern = pattern,
+                            isLoadingWeeklyPattern = false,
+                            hasEnoughDataForPattern = true
+                        )
+                    }
+                    android.util.Log.d(TAG, "Weekly pattern loaded: ${pattern.keyPattern}")
+                } ?: run {
+                    _uiState.update {
+                        it.copy(isLoadingWeeklyPattern = false)
+                    }
+                }
+
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error loading weekly pattern", e)
+                _uiState.update { it.copy(isLoadingWeeklyPattern = false) }
+            }
+        }
+    }
+
+    /**
+     * Refresh weekly pattern (for manual refresh).
+     */
+    fun refreshWeeklyPattern() {
+        loadWeeklyPattern()
+    }
+
+    private fun getWeekStartTimestamp(): Long {
+        val calendar = Calendar.getInstance()
+        calendar.set(Calendar.DAY_OF_WEEK, calendar.firstDayOfWeek)
+        calendar.set(Calendar.HOUR_OF_DAY, 0)
+        calendar.set(Calendar.MINUTE, 0)
+        calendar.set(Calendar.SECOND, 0)
+        calendar.set(Calendar.MILLISECOND, 0)
+        return calendar.timeInMillis
     }
 }

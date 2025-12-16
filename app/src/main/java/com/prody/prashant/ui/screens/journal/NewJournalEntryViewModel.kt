@@ -2,8 +2,11 @@ package com.prody.prashant.ui.screens.journal
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.prody.prashant.data.ai.BuddhaAiRepository
+import com.prody.prashant.data.ai.BuddhaAiResult
 import com.prody.prashant.data.ai.GeminiResult
 import com.prody.prashant.data.ai.GeminiService
+import com.prody.prashant.data.ai.JournalInsightResult
 import com.prody.prashant.data.ai.OpenRouterService
 import com.prody.prashant.data.local.dao.JournalDao
 import com.prody.prashant.data.local.dao.UserDao
@@ -32,7 +35,12 @@ data class NewJournalEntryUiState(
     val availableTemplates: List<JournalTemplate> = JournalTemplate.all,
     val buddhaAiEnabled: Boolean = true,
     val geminiConfigured: Boolean = false,
-    val openRouterConfigured: Boolean = false
+    val openRouterConfigured: Boolean = false,
+    // Post-save AI insights (non-blocking)
+    val savedEntryId: Long? = null,
+    val journalInsight: JournalInsightResult? = null,
+    val isGeneratingInsight: Boolean = false,
+    val showInsightCard: Boolean = false
 )
 
 @HiltViewModel
@@ -42,7 +50,8 @@ class NewJournalEntryViewModel @Inject constructor(
     private val geminiService: GeminiService,
     private val openRouterService: OpenRouterService,
     private val preferencesManager: PreferencesManager,
-    private val gamificationService: GamificationService
+    private val gamificationService: GamificationService,
+    private val buddhaAiRepository: BuddhaAiRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(NewJournalEntryUiState())
@@ -152,7 +161,7 @@ class NewJournalEntryViewModel @Inject constructor(
                     updatedAt = System.currentTimeMillis()
                 )
 
-                journalDao.insertEntry(entry)
+                val entryId = journalDao.insertEntry(entry)
 
                 // Use GamificationService for all points and achievements
                 val pointsAwarded = gamificationService.recordActivity(
@@ -163,7 +172,10 @@ class NewJournalEntryViewModel @Inject constructor(
                 // Check for time-based achievements (early bird, night owl)
                 gamificationService.checkTimeBasedAchievements()
 
-                _uiState.update { it.copy(isSaving = false, isSaved = true) }
+                _uiState.update { it.copy(isSaving = false, isSaved = true, savedEntryId = entryId) }
+
+                // Trigger non-blocking insight generation after save
+                generateJournalInsight(entryId, state)
             } catch (e: Exception) {
                 _uiState.update {
                     it.copy(
@@ -239,5 +251,66 @@ class NewJournalEntryViewModel @Inject constructor(
 
     fun clearError() {
         _uiState.update { it.copy(error = null) }
+    }
+
+    /**
+     * Generate AI insights for a journal entry (non-blocking, after save).
+     * Outputs: emotion label, themes (2-4), short reflection insight.
+     * No clinical tone - warm and personal.
+     */
+    private fun generateJournalInsight(entryId: Long, state: NewJournalEntryUiState) {
+        viewModelScope.launch {
+            try {
+                _uiState.update { it.copy(isGeneratingInsight = true) }
+
+                val result = buddhaAiRepository.analyzeJournalEntry(
+                    content = state.content,
+                    mood = state.selectedMood,
+                    moodIntensity = state.moodIntensity,
+                    wordCount = state.wordCount
+                )
+
+                val insight = result.getOrNull()
+                if (insight != null) {
+                    // Update the journal entry with AI insights
+                    try {
+                        val existingEntry = journalDao.getEntryById(entryId)
+                        existingEntry?.let { entry ->
+                            journalDao.updateEntry(
+                                entry.copy(
+                                    aiEmotionLabel = insight.emotionLabel,
+                                    aiThemes = insight.themes.joinToString(","),
+                                    aiInsight = insight.insight,
+                                    aiInsightGenerated = true
+                                )
+                            )
+                        }
+                    } catch (e: Exception) {
+                        android.util.Log.w(TAG, "Failed to persist insight to DB", e)
+                    }
+
+                    _uiState.update {
+                        it.copy(
+                            journalInsight = insight,
+                            isGeneratingInsight = false,
+                            showInsightCard = true
+                        )
+                    }
+                    android.util.Log.d(TAG, "Journal insight generated: ${insight.emotionLabel}")
+                } else {
+                    _uiState.update { it.copy(isGeneratingInsight = false) }
+                }
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error generating journal insight", e)
+                _uiState.update { it.copy(isGeneratingInsight = false) }
+            }
+        }
+    }
+
+    /**
+     * Dismiss the insight card.
+     */
+    fun dismissInsightCard() {
+        _uiState.update { it.copy(showInsightCard = false) }
     }
 }
