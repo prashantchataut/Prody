@@ -1,11 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+   Copyright 2024 The Prody Authors
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
 <data-extraction-rules>
+    <!--
+    Security Hardening: Disable Cloud Backup and Device-to-Device Transfer
+
+    As of Android 12 (API 31+), this file provides granular control over which app data
+    can be backed up to Google Drive (cloud backup) or transferred to a new device
+    (device-to-device transfer).
+
+    Vulnerability Mitigated:
+    By default, if `android:allowBackup="true"` is set, all app data (SharedPreferences,
+    Databases, files) is backed up. This poses a significant security risk for Prody,
+    as it could expose highly sensitive user journal entries and other personal data
+    if the user's Google account is compromised or if data is transferred to an
+    unsecured device.
+
+    The Fix:
+    We explicitly exclude all data domains (`sharedpref`, `database`, `file`, `external`, `root`)
+    from both cloud backup and device transfer. This ensures that no sensitive user data
+    leaves the device via these mechanisms, enforcing a stricter data privacy and
+    security posture. This works in conjunction with setting `android:allowBackup="false"`
+    in the AndroidManifest.xml for older Android versions.
+    -->
     <cloud-backup>
-        <include domain="sharedpref" path="." />
-        <include domain="database" path="." />
+        <exclude domain="root" />
+        <exclude domain="file" />
+        <exclude domain="database" />
+        <exclude domain="sharedpref" />
+        <exclude domain="external" />
     </cloud-backup>
     <device-transfer>
-        <include domain="sharedpref" path="." />
-        <include domain="database" path="." />
+        <exclude domain="root" />
+        <exclude domain="file" />
+        <exclude domain="database" />
+        <exclude domain="sharedpref" />
+        <exclude domain="external" />
     </device-transfer>
 </data-extraction-rules>
