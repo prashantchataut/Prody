@@ -46,6 +46,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.R
 import com.prody.prashant.data.local.entity.LeaderboardEntryEntity
+import com.prody.prashant.ui.components.CompactBannerStrip
 import com.prody.prashant.ui.components.ProdyCard
 import com.prody.prashant.ui.theme.*
 import kotlinx.coroutines.delay
@@ -64,6 +65,11 @@ fun StatsScreen(
     // Pull-to-refresh state using modern Material3 API
     var isRefreshing by remember { mutableStateOf(false) }
 
+    // Support bottom sheet state
+    var showSupportSheet by remember { mutableStateOf(false) }
+    var selectedUserForSupport by remember { mutableStateOf<LeaderboardEntryEntity?>(null) }
+    val sheetState = rememberModalBottomSheetState()
+
     LaunchedEffect(isRefreshing) {
         if (isRefreshing) {
             viewModel.refresh()
@@ -77,6 +83,30 @@ fun StatsScreen(
     LaunchedEffect(Unit) {
         delay(100)
         isVisible = true
+    }
+
+    // Support bottom sheet
+    if (showSupportSheet && selectedUserForSupport != null) {
+        SupportBottomSheet(
+            sheetState = sheetState,
+            entry = selectedUserForSupport!!,
+            onDismiss = {
+                showSupportSheet = false
+                selectedUserForSupport = null
+            },
+            onBoost = {
+                viewModel.sendBoost(selectedUserForSupport!!.odId)
+                showSupportSheet = false
+                selectedUserForSupport = null
+            },
+            onRespect = {
+                viewModel.sendRespect(selectedUserForSupport!!.odId)
+                showSupportSheet = false
+                selectedUserForSupport = null
+            },
+            canBoost = uiState.canBoostToday,
+            canRespect = uiState.canRespectToday
+        )
     }
 
     PullToRefreshBox(
@@ -240,7 +270,11 @@ fun StatsScreen(
                 ) {
                     LeaderboardItem(
                         entry = entry,
-                        rank = startIndex + index + 1
+                        rank = startIndex + index + 1,
+                        onSupportClick = { selectedEntry ->
+                            selectedUserForSupport = selectedEntry
+                            showSupportSheet = true
+                        }
                     )
                 }
             }
@@ -1149,7 +1183,8 @@ private fun StyledTabRow(
 @Composable
 private fun LeaderboardItem(
     entry: LeaderboardEntryEntity,
-    rank: Int
+    rank: Int,
+    onSupportClick: (LeaderboardEntryEntity) -> Unit = {}
 ) {
     val backgroundColor = when {
         entry.isCurrentUser -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
@@ -1197,6 +1232,13 @@ private fun LeaderboardItem(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
+
+                    // Banner strip next to username
+                    CompactBannerStrip(
+                        bannerId = entry.bannerId,
+                        modifier = Modifier.padding(start = 4.dp)
+                    )
+
                     if (entry.isCurrentUser) {
                         Box(
                             modifier = Modifier
@@ -1254,6 +1296,42 @@ private fun LeaderboardItem(
                             )
                         }
                     }
+
+                    // Show support counts if any
+                    val totalSupport = entry.boostsReceived + entry.respectsReceived
+                    if (totalSupport > 0) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(2.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.ThumbUp,
+                                contentDescription = null,
+                                tint = ProdyTertiary,
+                                modifier = Modifier.size(12.dp)
+                            )
+                            Text(
+                                text = formatNumber(totalSupport),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = ProdyTertiary
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Support button (only for non-current users)
+            if (!entry.isCurrentUser) {
+                IconButton(
+                    onClick = { onSupportClick(entry) },
+                    modifier = Modifier.size(36.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.ThumbUp,
+                        contentDescription = "Show support",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                        modifier = Modifier.size(18.dp)
+                    )
                 }
             }
         }
@@ -1783,5 +1861,203 @@ private fun formatNumber(number: Int): String {
         number >= 1000000 -> String.format("%.1fM", number / 1000000.0)
         number >= 1000 -> String.format("%.1fK", number / 1000.0)
         else -> number.toString()
+    }
+}
+
+/**
+ * Support Bottom Sheet - Boosting 2.0 System
+ *
+ * Non-obtrusive support interaction via bottom sheet.
+ * Features:
+ * - Boost: Show support for someone's progress
+ * - Respect: Acknowledge someone's dedication
+ * - Anti-spam: Daily rate limits and per-user cooldowns
+ * - Subtle visual feedback
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SupportBottomSheet(
+    sheetState: SheetState,
+    entry: LeaderboardEntryEntity,
+    onDismiss: () -> Unit,
+    onBoost: () -> Unit,
+    onRespect: () -> Unit,
+    canBoost: Boolean,
+    canRespect: Boolean
+) {
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        containerColor = MaterialTheme.colorScheme.surface,
+        dragHandle = { BottomSheetDefaults.DragHandle() }
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp)
+                .padding(bottom = 32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // Header
+            Text(
+                text = "Support ${entry.displayName}",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "Show your appreciation for their growth journey",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Action buttons
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Boost button
+                SupportActionButton(
+                    modifier = Modifier.weight(1f),
+                    icon = Icons.Filled.RocketLaunch,
+                    title = "Boost",
+                    description = "Power up their journey",
+                    count = entry.boostsReceived,
+                    color = MoodMotivated,
+                    enabled = canBoost,
+                    onClick = onBoost
+                )
+
+                // Respect button
+                SupportActionButton(
+                    modifier = Modifier.weight(1f),
+                    icon = Icons.Filled.ThumbUp,
+                    title = "Respect",
+                    description = "Acknowledge their dedication",
+                    count = entry.respectsReceived,
+                    color = ProdyTertiary,
+                    enabled = canRespect,
+                    onClick = onRespect
+                )
+            }
+
+            // Rate limit warning if applicable
+            if (!canBoost || !canRespect) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Schedule,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Text(
+                        text = "Daily support limits help keep interactions meaningful",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SupportActionButton(
+    modifier: Modifier = Modifier,
+    icon: ImageVector,
+    title: String,
+    description: String,
+    count: Int,
+    color: Color,
+    enabled: Boolean,
+    onClick: () -> Unit
+) {
+    val alpha = if (enabled) 1f else 0.5f
+
+    Surface(
+        modifier = modifier
+            .clip(RoundedCornerShape(16.dp))
+            .clickable(enabled = enabled, onClick = onClick)
+            .alpha(alpha),
+        color = color.copy(alpha = 0.1f),
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            // Icon with count badge
+            Box {
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(CircleShape)
+                        .background(color.copy(alpha = 0.15f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = title,
+                        tint = color,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+
+                // Count badge
+                if (count > 0) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .offset(x = 4.dp, y = (-4).dp)
+                            .size(20.dp)
+                            .clip(CircleShape)
+                            .background(color),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = if (count > 99) "99+" else count.toString(),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Color.White,
+                            fontSize = 9.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold,
+                color = color
+            )
+
+            Text(
+                text = description,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                maxLines = 2
+            )
+
+            if (!enabled) {
+                Text(
+                    text = "Limit reached today",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.error.copy(alpha = 0.7f),
+                    fontSize = 10.sp
+                )
+            }
+        }
     }
 }

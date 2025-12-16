@@ -55,6 +55,10 @@ class PreferencesManager @Inject constructor(
         val BUDDHA_MESSAGE_HELPER_ENABLED = booleanPreferencesKey("buddha_message_helper_enabled")
         val BUDDHA_PLAYFUL_MODE = booleanPreferencesKey("buddha_playful_mode")
         val BUDDHA_REDUCE_AI_USAGE = booleanPreferencesKey("buddha_reduce_ai_usage")
+
+        // Debug: Special Badge Preview Toggles
+        val DEBUG_PREVIEW_DEV_BADGE = booleanPreferencesKey("debug_preview_dev_badge")
+        val DEBUG_PREVIEW_BETA_BADGE = booleanPreferencesKey("debug_preview_beta_badge")
     }
 
     // Onboarding
@@ -500,6 +504,40 @@ class PreferencesManager @Inject constructor(
     suspend fun setBuddhaReduceAiUsage(enabled: Boolean) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.BUDDHA_REDUCE_AI_USAGE] = enabled
+        }
+    }
+
+    // ===== DEBUG: SPECIAL BADGE PREVIEW =====
+    // These are for previewing Dev/Beta badges without OAuth
+    // Only shown in debug builds, not in production
+
+    val debugPreviewDevBadge: Flow<Boolean> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.DEBUG_PREVIEW_DEV_BADGE] ?: false
+        }
+
+    suspend fun setDebugPreviewDevBadge(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.DEBUG_PREVIEW_DEV_BADGE] = enabled
+        }
+    }
+
+    val debugPreviewBetaBadge: Flow<Boolean> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.DEBUG_PREVIEW_BETA_BADGE] ?: false
+        }
+
+    suspend fun setDebugPreviewBetaBadge(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.DEBUG_PREVIEW_BETA_BADGE] = enabled
         }
     }
 
