@@ -336,7 +336,7 @@ object ProdyGradients {
 val LeaderboardFirst = Color(0xFFFFD700)       // Gold for 1st place
 val LeaderboardSecond = Color(0xFFC0C0C0)      // Silver for 2nd place
 val LeaderboardThird = Color(0xFFCD7F32)       // Bronze for 3rd place
-val LeaderboardTop10 = Color(0xFF64B5F6)       // Blue highlight for top 10
+val LeaderboardTop10Highlight = Color(0xFF64B5F6) // Renamed to avoid conflict with LeaderboardTop10
 val LeaderboardUser = Color(0xFF81C784)        // Green highlight for current user
 
 // Podium glow effects (with alpha for ambient lighting)
@@ -345,25 +345,12 @@ val LeaderboardSecondGlow = Color(0x66C0C0C0)
 val LeaderboardThirdGlow = Color(0x66CD7F32)
 
 // =============================================================================
-// RARITY GLOW COLORS - Achievement Badge Ambient Effects
-// =============================================================================
-
-val RarityCommonGlow = Color(0x3378909C)       // Subtle gray glow
-val RarityUncommonGlow = Color(0x3366BB6A)     // Soft green glow
-val RarityRareGlow = Color(0x3342A5F5)         // Blue glow
-val RarityEpicGlow = Color(0x33AB47BC)         // Purple glow
-val RarityLegendaryGlow = Color(0x66D4AF37)    // Strong gold glow
-val RarityMythicGlow = Color(0x80FFD700)       // Intense golden glow
-
-// =============================================================================
 // STREAK INTENSITY COLORS - Visual Progression
 // =============================================================================
 
 // Streak colors based on count (gradient from cold to blazing)
-val StreakCold = Color(0xFF90CAF9)             // 1-3 days - just starting
-val StreakWarm = Color(0xFFFFB74D)             // 4-6 days - building momentum
-val StreakHot = Color(0xFFFF7043)              // 7-13 days - on fire
-val StreakBlazing = Color(0xFFE53935)          // 14-29 days - incredible
+// Note: StreakCold, StreakWarm, StreakHot, StreakBlazing are defined earlier in the file
+
 val StreakInferno = Color(0xFFD500F9)          // 30+ days - legendary
 
 // Streak milestone colors
@@ -376,14 +363,24 @@ val StreakYearMilestone = Color(0xFFFFD700)    // 365-day milestone
 // XP & LEVEL COLORS - Progress Visualization
 // =============================================================================
 
-val XpBarBackground = Color(0xFFE0E0E0)
-val XpBarFill = Color(0xFF66BB6A)
-val XpBarGlow = Color(0x6666BB6A)
+// Note: XpBarBackground, XpBarFill, XpBarGlow, XpBarFillAlt are defined earlier.
+// Wait, XpBarFillAlt is defined earlier (line 250). XpBarFill (248).
+// So I should validly REMOVE these duplicates from this bottom block I am pasting!
+// XpBarOverflow was NOT defined earlier (snippet 229 showed XpBarOverflow in bottom only?)
+// Let's check line 248 in step 310.
+// 248: val XpBarFill = Color(0xFF66BB6A)
+// 249: val XpBarGlow = Color(0x6666BB6A)
+// 250: val XpBarFillAlt = Color(0xFF4CAF50)
+// 251: val LevelUpGlow = Color(0xFFFFD700)
+
+// So I should REMOVE XpBarFill, XpBarGlow, XpBarFillAlt, LevelUpGlow from my New Block.
+// I should KEEP XpBarOverflow.
+
 val XpBarOverflow = Color(0xFFFFD700)          // When XP exceeds level requirement
 
 val LevelBadgeBackground = Color(0xFF2D5A3D)
 val LevelBadgeText = Color(0xFFFFFFFF)
-val LevelUpGlow = Color(0x667C4DFF)
+// LevelUpGlow is defined at 251.
 
 // =============================================================================
 // EMOTION SPECTRUM COLORS - Journal Mood Tracking
@@ -406,6 +403,8 @@ val EmotionFrustration = Color(0xFFFFAB91)     // Peach - warm acknowledgment
 val EmotionConfusion = Color(0xFFFFCC80)       // Light orange - seeking clarity
 
 // Neutral/transitional emotions
+// EmotionNeutral defined at 203? "val MoodNeutral". Not EmotionNeutral.
+// So keeping EmotionNeutral.
 val EmotionNeutral = Color(0xFFB0BEC5)         // Balanced gray
 val EmotionReflective = Color(0xFFB4A7D6)      // Soft lavender - contemplation
 val EmotionFocused = Color(0xFF4FC3F7)         // Clear blue - concentration
@@ -455,23 +454,16 @@ val FutureGoal = Color(0xFF66BB6A)              // Green - goals
 val FutureMotivation = Color(0xFFFF7043)        // Orange - motivation
 val FuturePromise = Color(0xFF5C6BC0)           // Indigo - commitments
 val FutureGeneral = Color(0xFF90A4AE)           // Gray - general thoughts
-    // Rarity-specific gradients
-    val epicGradient = listOf(RarityEpic, Color(0xFFE040FB))
-    val legendaryGradient = listOf(RarityLegendary, Color(0xFFF4D03F))
-    val mythicGradient = listOf(RarityMythic, Color(0xFFFFF59D), RarityMythic)
 
-    // XP and level gradients
-    val xpGradient = listOf(XpBarFill, Color(0xFF81C784))
-    val levelUpGradient = listOf(Color(0xFFFFD700), Color(0xFFFFE57F), Color(0xFFFFD700))
-
-    // Streak intensity gradients
-    val streakIntensityGradient = listOf(StreakCold, StreakWarm, StreakHot, StreakBlazing)
-
-    // Leaderboard gradients
-    val leaderboardGoldGradient = listOf(Color(0xFFFFD700), Color(0xFFFFF176))
-    val leaderboardSilverGradient = listOf(Color(0xFFC0C0C0), Color(0xFFE0E0E0))
-    val leaderboardBronzeGradient = listOf(Color(0xFFCD7F32), Color(0xFFD4A574))
-}
+//Brand/Containers were redundant I believe?
+//Step 310 lines 262 and 284 showed Text/Status/Notification.
+//What about Brand ProdyGreen etc?
+//Line 23ish (in snippet 1 of 306) showed ProdyPrimary etc.
+//Line 480 (in snippet of 306) showed ProdyGreen aliases?
+//Let's check if ProdyGreen is in 1-299.
+//Scan 1-299 content in step 310.
+//ProdyPrimary is there. ProdyGreen is NOT in 1-299 (I don't see aliases).
+//So I KEEP Brand Colors.
 
 // =============================================================================
 // BRAND COLORS - Prody Identity
