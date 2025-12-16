@@ -8,6 +8,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import com.prody.prashant.data.ai.GeminiService
 import com.prody.prashant.data.ai.OpenRouterService
 import com.prody.prashant.data.local.dao.*
+import com.prody.prashant.data.local.database.DatabaseSeeder
 import com.prody.prashant.data.local.database.ProdyDatabase
 import com.prody.prashant.data.local.preferences.PreferencesManager
 import com.prody.prashant.data.backup.BackupManager
@@ -25,14 +26,21 @@ object AppModule {
 
     private const val TAG = "AppModule"
 
+    @Volatile
+    private var databaseInstance: ProdyDatabase? = null
+
     /**
-     * Database callback for initialization tasks and logging.
-     * This helps track database lifecycle and catch potential issues early.
+     * Database callback for initialization tasks, seeding, and logging.
+     * Seeds the database with initial wisdom content on first creation.
      */
     private val databaseCallback = object : RoomDatabase.Callback() {
         override fun onCreate(db: SupportSQLiteDatabase) {
             super.onCreate(db)
-            Log.d(TAG, "Database created successfully")
+            Log.d(TAG, "Database created successfully - initiating data seeding")
+            // Seed the database with initial content
+            databaseInstance?.let { database ->
+                DatabaseSeeder.seedDatabase(database)
+            }
         }
 
         override fun onOpen(db: SupportSQLiteDatabase) {
@@ -42,7 +50,11 @@ object AppModule {
 
         override fun onDestructiveMigration(db: SupportSQLiteDatabase) {
             super.onDestructiveMigration(db)
-            Log.w(TAG, "Destructive migration performed - data was cleared")
+            Log.w(TAG, "Destructive migration performed - re-seeding database")
+            // Re-seed the database after destructive migration
+            databaseInstance?.let { database ->
+                DatabaseSeeder.seedDatabase(database)
+            }
         }
     }
 
@@ -51,14 +63,18 @@ object AppModule {
     fun provideDatabase(
         @ApplicationContext context: Context
     ): ProdyDatabase {
-        return Room.databaseBuilder(
-            context.applicationContext,
-            ProdyDatabase::class.java,
-            ProdyDatabase.DATABASE_NAME
-        )
-            .fallbackToDestructiveMigration()
-            .addCallback(databaseCallback)
-            .build()
+        return databaseInstance ?: synchronized(this) {
+            val instance = Room.databaseBuilder(
+                context.applicationContext,
+                ProdyDatabase::class.java,
+                ProdyDatabase.DATABASE_NAME
+            )
+                .fallbackToDestructiveMigration()
+                .addCallback(databaseCallback)
+                .build()
+            databaseInstance = instance
+            instance
+        }
     }
 
     @Provides
