@@ -2,6 +2,9 @@ package com.prody.prashant.ui.screens.quotes
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.prody.prashant.data.ai.BuddhaAiRepository
+import com.prody.prashant.data.ai.BuddhaAiResult
+import com.prody.prashant.data.ai.QuoteExplanationResult
 import com.prody.prashant.data.local.dao.IdiomDao
 import com.prody.prashant.data.local.dao.PhraseDao
 import com.prody.prashant.data.local.dao.ProverbDao
@@ -25,7 +28,10 @@ data class QuotesUiState(
     val phrases: List<PhraseEntity> = emptyList(),
     val isLoading: Boolean = true,
     val error: String? = null,
-    val loadedCount: Int = 0
+    val loadedCount: Int = 0,
+    // AI-generated quote explanations (keyed by quote ID)
+    val quoteExplanations: Map<Long, QuoteExplanationResult> = emptyMap(),
+    val loadingExplanations: Set<Long> = emptySet()
 )
 
 @HiltViewModel
@@ -33,7 +39,8 @@ class QuotesViewModel @Inject constructor(
     private val quoteDao: QuoteDao,
     private val proverbDao: ProverbDao,
     private val idiomDao: IdiomDao,
-    private val phraseDao: PhraseDao
+    private val phraseDao: PhraseDao,
+    private val buddhaAiRepository: BuddhaAiRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(QuotesUiState())
@@ -161,5 +168,65 @@ class QuotesViewModel @Inject constructor(
 
     fun clearError() {
         _uiState.update { it.copy(error = null) }
+    }
+
+    /**
+     * Load AI-generated explanation for a quote.
+     * Shows "Meaning" and "Try this today" suggestions.
+     * Results are cached for 7 days.
+     */
+    fun loadQuoteExplanation(quote: QuoteEntity) {
+        // Skip if already loaded or loading
+        if (_uiState.value.quoteExplanations.containsKey(quote.id) ||
+            _uiState.value.loadingExplanations.contains(quote.id)) {
+            return
+        }
+
+        viewModelScope.launch {
+            try {
+                // Mark as loading
+                _uiState.update { state ->
+                    state.copy(loadingExplanations = state.loadingExplanations + quote.id)
+                }
+
+                val result = buddhaAiRepository.getQuoteExplanation(
+                    quote = quote.content,
+                    author = quote.author
+                )
+
+                val explanation = result.getOrNull()
+                if (explanation != null) {
+                    _uiState.update { state ->
+                        state.copy(
+                            quoteExplanations = state.quoteExplanations + (quote.id to explanation),
+                            loadingExplanations = state.loadingExplanations - quote.id
+                        )
+                    }
+                } else {
+                    _uiState.update { state ->
+                        state.copy(loadingExplanations = state.loadingExplanations - quote.id)
+                    }
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("QuotesViewModel", "Error loading quote explanation", e)
+                _uiState.update { state ->
+                    state.copy(loadingExplanations = state.loadingExplanations - quote.id)
+                }
+            }
+        }
+    }
+
+    /**
+     * Get explanation for a quote if available.
+     */
+    fun getQuoteExplanation(quoteId: Long): QuoteExplanationResult? {
+        return _uiState.value.quoteExplanations[quoteId]
+    }
+
+    /**
+     * Check if explanation is currently loading for a quote.
+     */
+    fun isExplanationLoading(quoteId: Long): Boolean {
+        return _uiState.value.loadingExplanations.contains(quoteId)
     }
 }

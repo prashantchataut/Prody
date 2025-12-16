@@ -16,5 +16,10 @@ data class JournalEntryEntity(
     val isBookmarked: Boolean = false,
     val wordCount: Int = 0,
     val createdAt: Long = System.currentTimeMillis(),
-    val updatedAt: Long = System.currentTimeMillis()
+    val updatedAt: Long = System.currentTimeMillis(),
+    // AI-generated insights (non-blocking, analyzed after save)
+    val aiEmotionLabel: String? = null,
+    val aiThemes: String? = null, // Comma-separated themes
+    val aiInsight: String? = null,
+    val aiInsightGenerated: Boolean = false
 )

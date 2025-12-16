@@ -45,6 +45,16 @@ class PreferencesManager @Inject constructor(
         val GEMINI_API_KEY = stringPreferencesKey("gemini_api_key")
         val GEMINI_MODEL = stringPreferencesKey("gemini_model")
         val BUDDHA_AI_ENABLED = booleanPreferencesKey("buddha_ai_enabled")
+
+        // Buddha AI Feature Toggles
+        val BUDDHA_DAILY_WISDOM_ENABLED = booleanPreferencesKey("buddha_daily_wisdom_enabled")
+        val BUDDHA_QUOTE_EXPLANATION_ENABLED = booleanPreferencesKey("buddha_quote_explanation_enabled")
+        val BUDDHA_JOURNAL_INSIGHTS_ENABLED = booleanPreferencesKey("buddha_journal_insights_enabled")
+        val BUDDHA_PATTERN_TRACKING_ENABLED = booleanPreferencesKey("buddha_pattern_tracking_enabled")
+        val BUDDHA_VOCABULARY_CONTEXT_ENABLED = booleanPreferencesKey("buddha_vocabulary_context_enabled")
+        val BUDDHA_MESSAGE_HELPER_ENABLED = booleanPreferencesKey("buddha_message_helper_enabled")
+        val BUDDHA_PLAYFUL_MODE = booleanPreferencesKey("buddha_playful_mode")
+        val BUDDHA_REDUCE_AI_USAGE = booleanPreferencesKey("buddha_reduce_ai_usage")
     }
 
     // Onboarding
@@ -369,6 +379,127 @@ class PreferencesManager @Inject constructor(
     suspend fun setBuddhaAiEnabled(enabled: Boolean) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.BUDDHA_AI_ENABLED] = enabled
+        }
+    }
+
+    // Buddha AI Feature Toggles
+    val buddhaDailyWisdomEnabled: Flow<Boolean> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.BUDDHA_DAILY_WISDOM_ENABLED] ?: true
+        }
+
+    suspend fun setBuddhaDailyWisdomEnabled(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.BUDDHA_DAILY_WISDOM_ENABLED] = enabled
+        }
+    }
+
+    val buddhaQuoteExplanationEnabled: Flow<Boolean> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.BUDDHA_QUOTE_EXPLANATION_ENABLED] ?: true
+        }
+
+    suspend fun setBuddhaQuoteExplanationEnabled(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.BUDDHA_QUOTE_EXPLANATION_ENABLED] = enabled
+        }
+    }
+
+    val buddhaJournalInsightsEnabled: Flow<Boolean> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.BUDDHA_JOURNAL_INSIGHTS_ENABLED] ?: true
+        }
+
+    suspend fun setBuddhaJournalInsightsEnabled(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.BUDDHA_JOURNAL_INSIGHTS_ENABLED] = enabled
+        }
+    }
+
+    val buddhaPatternTrackingEnabled: Flow<Boolean> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.BUDDHA_PATTERN_TRACKING_ENABLED] ?: true
+        }
+
+    suspend fun setBuddhaPatternTrackingEnabled(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.BUDDHA_PATTERN_TRACKING_ENABLED] = enabled
+        }
+    }
+
+    val buddhaVocabularyContextEnabled: Flow<Boolean> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.BUDDHA_VOCABULARY_CONTEXT_ENABLED] ?: true
+        }
+
+    suspend fun setBuddhaVocabularyContextEnabled(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.BUDDHA_VOCABULARY_CONTEXT_ENABLED] = enabled
+        }
+    }
+
+    val buddhaMessageHelperEnabled: Flow<Boolean> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.BUDDHA_MESSAGE_HELPER_ENABLED] ?: true
+        }
+
+    suspend fun setBuddhaMessageHelperEnabled(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.BUDDHA_MESSAGE_HELPER_ENABLED] = enabled
+        }
+    }
+
+    val buddhaPlayfulMode: Flow<Boolean> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.BUDDHA_PLAYFUL_MODE] ?: false
+        }
+
+    suspend fun setBuddhaPlayfulMode(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.BUDDHA_PLAYFUL_MODE] = enabled
+        }
+    }
+
+    val buddhaReduceAiUsage: Flow<Boolean> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.BUDDHA_REDUCE_AI_USAGE] ?: false
+        }
+
+    suspend fun setBuddhaReduceAiUsage(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.BUDDHA_REDUCE_AI_USAGE] = enabled
         }
     }
 

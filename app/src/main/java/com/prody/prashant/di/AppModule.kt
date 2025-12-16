@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.prody.prashant.data.ai.BuddhaAiRepository
 import com.prody.prashant.data.ai.GeminiService
 import com.prody.prashant.data.ai.OpenRouterService
 import com.prody.prashant.data.local.dao.*
@@ -183,5 +184,16 @@ object AppModule {
     @Singleton
     fun provideOpenRouterService(): OpenRouterService {
         return OpenRouterService()
+    }
+
+    @Provides
+    @Singleton
+    fun provideBuddhaAiRepository(
+        @ApplicationContext context: Context,
+        geminiService: GeminiService,
+        openRouterService: OpenRouterService,
+        preferencesManager: PreferencesManager
+    ): BuddhaAiRepository {
+        return BuddhaAiRepository(context, geminiService, openRouterService, preferencesManager)
     }
 }

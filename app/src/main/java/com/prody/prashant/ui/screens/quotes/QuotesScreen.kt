@@ -26,6 +26,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.R
 import com.prody.prashant.data.local.entity.*
 import com.prody.prashant.ui.components.ProdyCard
+import com.prody.prashant.data.ai.QuoteExplanationResult
 import com.prody.prashant.ui.theme.*
 import kotlinx.coroutines.launch
 
@@ -103,7 +104,10 @@ fun QuotesScreen(
                 when (WisdomTab.entries[page]) {
                     WisdomTab.QUOTES -> QuotesList(
                         quotes = uiState.quotes,
-                        onFavoriteToggle = { viewModel.toggleQuoteFavorite(it) }
+                        quoteExplanations = uiState.quoteExplanations,
+                        loadingExplanations = uiState.loadingExplanations,
+                        onFavoriteToggle = { viewModel.toggleQuoteFavorite(it) },
+                        onLoadExplanation = { viewModel.loadQuoteExplanation(it) }
                     )
                     WisdomTab.PROVERBS -> ProverbsList(
                         proverbs = uiState.proverbs,
@@ -126,7 +130,10 @@ fun QuotesScreen(
 @Composable
 private fun QuotesList(
     quotes: List<QuoteEntity>,
-    onFavoriteToggle: (QuoteEntity) -> Unit
+    quoteExplanations: Map<Long, QuoteExplanationResult>,
+    loadingExplanations: Set<Long>,
+    onFavoriteToggle: (QuoteEntity) -> Unit,
+    onLoadExplanation: (QuoteEntity) -> Unit
 ) {
     LazyColumn(
         contentPadding = PaddingValues(16.dp),
@@ -135,7 +142,10 @@ private fun QuotesList(
         items(quotes, key = { it.id }) { quote ->
             QuoteCard(
                 quote = quote,
-                onFavoriteToggle = { onFavoriteToggle(quote) }
+                explanation = quoteExplanations[quote.id],
+                isLoadingExplanation = loadingExplanations.contains(quote.id),
+                onFavoriteToggle = { onFavoriteToggle(quote) },
+                onTap = { onLoadExplanation(quote) }
             )
         }
     }
@@ -144,10 +154,22 @@ private fun QuotesList(
 @Composable
 private fun QuoteCard(
     quote: QuoteEntity,
-    onFavoriteToggle: () -> Unit
+    explanation: QuoteExplanationResult? = null,
+    isLoadingExplanation: Boolean = false,
+    onFavoriteToggle: () -> Unit,
+    onTap: () -> Unit = {}
 ) {
+    var expanded by remember { mutableStateOf(false) }
+
     ProdyCard(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                expanded = !expanded
+                if (expanded && explanation == null) {
+                    onTap()
+                }
+            },
         backgroundColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -208,6 +230,129 @@ private fun QuoteCard(
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                     )
                 }
+            }
+
+            // AI Explanation section (expandable)
+            AnimatedVisibility(
+                visible = expanded,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                Column {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    if (isLoadingExplanation) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(16.dp),
+                                strokeWidth = 2.dp,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Buddha is reflecting...",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    } else if (explanation != null) {
+                        // Meaning section
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Lightbulb,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.tertiary,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Text(
+                                text = "Meaning",
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.tertiary
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = explanation.meaning,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        // Try Today section
+                        Surface(
+                            shape = CardShape,
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(12.dp),
+                                verticalAlignment = Alignment.Top,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Today,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Column {
+                                    Text(
+                                        text = "Try this today",
+                                        style = MaterialTheme.typography.labelMedium,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text(
+                                        text = explanation.tryToday,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
+                            }
+                        }
+
+                        // AI indicator (subtle)
+                        if (explanation.isAiGenerated) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "Insight by Buddha",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                                modifier = Modifier.align(Alignment.End)
+                            )
+                        }
+                    } else {
+                        // Fallback - prompt to tap
+                        Text(
+                            text = "Tap to see meaning and today's action",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.align(Alignment.CenterHorizontally)
+                        )
+                    }
+                }
+            }
+
+            // Tap hint when collapsed
+            if (!expanded) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Tap for insight",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                )
             }
         }
     }
