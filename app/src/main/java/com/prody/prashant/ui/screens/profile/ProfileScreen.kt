@@ -45,7 +45,11 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.R
+import com.prody.prashant.data.ai.WeeklyPatternResult
 import com.prody.prashant.data.local.entity.AchievementEntity
+import com.prody.prashant.domain.identity.ProdyBanners
+import com.prody.prashant.ui.components.BannerRenderer
+import com.prody.prashant.ui.components.CompactBannerStrip
 import com.prody.prashant.ui.components.ProdyCard
 import com.prody.prashant.ui.theme.*
 import com.prody.prashant.util.ShareProfileUtil
@@ -115,6 +119,7 @@ fun ProfileScreen(
                 ProfileHeader(
                     displayName = uiState.displayName,
                     title = uiState.title,
+                    bannerId = uiState.bannerId,
                     totalPoints = uiState.totalPoints,
                     currentStreak = uiState.currentStreak,
                     longestStreak = uiState.longestStreak,
@@ -177,6 +182,23 @@ fun ProfileScreen(
                     currentStreak = uiState.currentStreak,
                     longestStreak = uiState.longestStreak,
                     totalPoints = uiState.totalPoints
+                )
+            }
+        }
+
+        // Weekly AI Pattern Card
+        item {
+            AnimatedVisibility(
+                visible = isVisible && (uiState.weeklyPattern != null || uiState.isLoadingWeeklyPattern),
+                enter = fadeIn(tween(600, delayMillis = 275)) + slideInVertically(
+                    initialOffsetY = { it / 2 },
+                    animationSpec = tween(600, delayMillis = 275, easing = EaseOutCubic)
+                )
+            ) {
+                WeeklyPatternCard(
+                    weeklyPattern = uiState.weeklyPattern,
+                    isLoading = uiState.isLoadingWeeklyPattern,
+                    hasEnoughData = uiState.hasEnoughDataForPattern
                 )
             }
         }
@@ -365,6 +387,7 @@ fun ProfileScreen(
 private fun ProfileHeader(
     displayName: String,
     title: String,
+    bannerId: String,
     totalPoints: Int,
     currentStreak: Int,
     longestStreak: Int,
@@ -388,20 +411,39 @@ private fun ProfileHeader(
         label = "glow"
     )
 
+    // Get banner for rendering
+    val banner = remember(bannerId) {
+        ProdyBanners.findById(bannerId) ?: ProdyBanners.getDefaultBanner()
+    }
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(
-                        MaterialTheme.colorScheme.primary,
-                        MaterialTheme.colorScheme.primary.copy(alpha = 0.9f),
-                        MaterialTheme.colorScheme.primary.copy(alpha = 0.75f)
+    ) {
+        // Banner background with pattern
+        BannerRenderer(
+            banner = banner,
+            modifier = Modifier.fillMaxWidth().height(280.dp),
+            showAnimation = true,
+            cornerRadius = 0.dp
+        )
+
+        // Overlay gradient for text readability
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            Color.Black.copy(alpha = 0.1f),
+                            Color.Black.copy(alpha = 0.3f),
+                            Color.Black.copy(alpha = 0.5f)
+                        )
                     )
                 )
-            )
-    ) {
-        // Animated background
+        )
+
+        // Animated background particles
         ProfileHeaderBackground()
 
         // Top action buttons row
@@ -2093,5 +2135,259 @@ private fun StoryInsightRow(
                 lineHeight = 16.sp
             )
         }
+    }
+}
+
+/**
+ * Weekly Pattern Card - AI-Generated Insights
+ *
+ * Displays weekly patterns and insights from AI analysis.
+ * Shows loading state, empty state (not enough data), or actual patterns.
+ */
+@Composable
+private fun WeeklyPatternCard(
+    weeklyPattern: WeeklyPatternResult?,
+    isLoading: Boolean,
+    hasEnoughData: Boolean
+) {
+    ProdyCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            // Header
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(32.dp)
+                            .clip(CircleShape)
+                            .background(ProdyPremiumViolet.copy(alpha = 0.15f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Psychology,
+                            contentDescription = null,
+                            tint = ProdyPremiumViolet,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                    Column {
+                        Text(
+                            text = "Weekly Patterns",
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Text(
+                            text = "AI-powered insights",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
+                if (weeklyPattern?.isAiGenerated == true) {
+                    Surface(
+                        color = ProdyPremiumViolet.copy(alpha = 0.1f),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(
+                            text = "AI",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = ProdyPremiumViolet,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            when {
+                isLoading -> {
+                    // Loading state
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(80.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            color = ProdyPremiumViolet,
+                            strokeWidth = 2.dp
+                        )
+                    }
+                }
+                !hasEnoughData -> {
+                    // Not enough data state
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.EditNote,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                            modifier = Modifier.size(32.dp)
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Write 3+ journal entries this week",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center
+                        )
+                        Text(
+                            text = "to unlock AI pattern analysis",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+                weeklyPattern != null -> {
+                    // Pattern content
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        // Key Pattern
+                        PatternInsightRow(
+                            icon = Icons.Filled.Lightbulb,
+                            color = MoodMotivated,
+                            label = "Key Pattern",
+                            value = weeklyPattern.keyPattern
+                        )
+
+                        // Summary
+                        Text(
+                            text = weeklyPattern.summary,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            lineHeight = 18.sp
+                        )
+
+                        HorizontalDivider(
+                            modifier = Modifier.padding(vertical = 4.dp),
+                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                        )
+
+                        // Suggestion
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(ProdyTertiary.copy(alpha = 0.1f))
+                                .padding(12.dp),
+                            verticalAlignment = Alignment.Top,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Tips,
+                                contentDescription = null,
+                                tint = ProdyTertiary,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Text(
+                                text = weeklyPattern.suggestion,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                lineHeight = 16.sp
+                            )
+                        }
+
+                        // Stats row
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceEvenly
+                        ) {
+                            PatternStatItem(
+                                value = weeklyPattern.journalCount.toString(),
+                                label = "Entries",
+                                color = MoodCalm
+                            )
+                            weeklyPattern.dominantMood?.let { mood ->
+                                PatternStatItem(
+                                    value = mood.replaceFirstChar { it.uppercase() },
+                                    label = "Mood",
+                                    color = MoodHappy
+                                )
+                            }
+                            PatternStatItem(
+                                value = "${weeklyPattern.streakDays}d",
+                                label = "Streak",
+                                color = StreakFire
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun PatternInsightRow(
+    icon: ImageVector,
+    color: Color,
+    label: String,
+    value: String
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = color,
+            modifier = Modifier.size(18.dp)
+        )
+        Text(
+            text = "$label:",
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+    }
+}
+
+@Composable
+private fun PatternStatItem(
+    value: String,
+    label: String,
+    color: Color
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = value,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = color
+        )
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }

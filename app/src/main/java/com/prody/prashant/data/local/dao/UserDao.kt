@@ -162,6 +162,9 @@ interface UserDao {
     @Query("UPDATE leaderboard SET congratsReceived = congratsReceived + 1 WHERE odId = :odId")
     suspend fun incrementCongrats(odId: String)
 
+    @Query("UPDATE leaderboard SET respectsReceived = respectsReceived + 1 WHERE odId = :odId")
+    suspend fun incrementRespects(odId: String)
+
     // Peer Interactions
     @Query("SELECT * FROM peer_interactions ORDER BY timestamp DESC")
     fun getPeerInteractions(): Flow<List<PeerInteractionEntity>>

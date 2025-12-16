@@ -28,7 +28,12 @@ data class StatsUiState(
     val consistencyScore: Int = 0,
     val learningPace: String = "Steady",
     val isLoading: Boolean = true,
-    val totalWordsWritten: Int = 0
+    val totalWordsWritten: Int = 0,
+    // Support system state (Boosting 2.0)
+    val canBoostToday: Boolean = true,
+    val canRespectToday: Boolean = true,
+    val boostsSentToday: Int = 0,
+    val respectsSentToday: Int = 0
 )
 
 @HiltViewModel
@@ -39,10 +44,6 @@ class StatsViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(StatsUiState())
     val uiState: StateFlow<StatsUiState> = _uiState.asStateFlow()
-
-    companion object {
-        private const val TAG = "StatsViewModel"
-    }
 
     init {
         loadStats()
@@ -263,6 +264,106 @@ class StatsViewModel @Inject constructor(
             _uiState.update { it.copy(isLoading = true) }
             loadStats()
             loadLeaderboard()
+        }
+    }
+
+    // =============================================================================
+    // BOOSTING 2.0 - SUPPORT SYSTEM
+    // =============================================================================
+
+    companion object {
+        private const val TAG = "StatsViewModel"
+        private const val MAX_BOOSTS_PER_DAY = 5
+        private const val MAX_RESPECTS_PER_DAY = 10
+    }
+
+    /**
+     * Send a boost to another user.
+     * Rate limited to MAX_BOOSTS_PER_DAY per day.
+     * In production, this would sync with backend.
+     */
+    fun sendBoost(userId: String) {
+        viewModelScope.launch {
+            val currentState = _uiState.value
+            if (!currentState.canBoostToday) {
+                android.util.Log.d(TAG, "Cannot boost: daily limit reached")
+                return@launch
+            }
+
+            try {
+                // Update local leaderboard entry
+                val updatedLeaderboard = currentState.allTimeLeaderboard.map { entry ->
+                    if (entry.odId == userId) {
+                        entry.copy(boostsReceived = entry.boostsReceived + 1)
+                    } else entry
+                }
+
+                val newBoostCount = currentState.boostsSentToday + 1
+                _uiState.update {
+                    it.copy(
+                        allTimeLeaderboard = updatedLeaderboard,
+                        weeklyLeaderboard = currentState.weeklyLeaderboard.map { entry ->
+                            if (entry.odId == userId) {
+                                entry.copy(boostsReceived = entry.boostsReceived + 1)
+                            } else entry
+                        },
+                        boostsSentToday = newBoostCount,
+                        canBoostToday = newBoostCount < MAX_BOOSTS_PER_DAY
+                    )
+                }
+
+                // Update database
+                userDao.incrementBoosts(userId)
+
+                android.util.Log.d(TAG, "Boost sent to $userId. Today's count: $newBoostCount/$MAX_BOOSTS_PER_DAY")
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error sending boost", e)
+            }
+        }
+    }
+
+    /**
+     * Send respect to another user.
+     * Rate limited to MAX_RESPECTS_PER_DAY per day.
+     * In production, this would sync with backend.
+     */
+    fun sendRespect(userId: String) {
+        viewModelScope.launch {
+            val currentState = _uiState.value
+            if (!currentState.canRespectToday) {
+                android.util.Log.d(TAG, "Cannot respect: daily limit reached")
+                return@launch
+            }
+
+            try {
+                // Update local leaderboard entry
+                val updatedLeaderboard = currentState.allTimeLeaderboard.map { entry ->
+                    if (entry.odId == userId) {
+                        entry.copy(respectsReceived = entry.respectsReceived + 1)
+                    } else entry
+                }
+
+                val newRespectCount = currentState.respectsSentToday + 1
+                _uiState.update {
+                    it.copy(
+                        allTimeLeaderboard = updatedLeaderboard,
+                        weeklyLeaderboard = currentState.weeklyLeaderboard.map { entry ->
+                            if (entry.odId == userId) {
+                                entry.copy(respectsReceived = entry.respectsReceived + 1)
+                            } else entry
+                        },
+                        respectsSentToday = newRespectCount,
+                        canRespectToday = newRespectCount < MAX_RESPECTS_PER_DAY
+                    )
+                }
+
+                // Update database
+                userDao.incrementRespects(userId)
+
+                android.util.Log.d(TAG, "Respect sent to $userId. Today's count: $newRespectCount/$MAX_RESPECTS_PER_DAY")
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error sending respect", e)
+            }
         }
     }
 }
