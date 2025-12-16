@@ -82,7 +82,6 @@
     <string name="day_singular">day</string>
     <string name="streak_counter">%d day streak</string>
     <string name="streak_counter_plural">%d days streak</string>
-    <string name="streak_broken">Streak broken</string>
     <string name="streak_at_risk">Streak at risk!</string>
     <string name="keep_it_going">Keep it going!</string>
     <string name="new_record">New personal record!</string>
@@ -381,7 +380,7 @@
     <string name="antonyms">Antonyms</string>
     <string name="mark_learned">Mark as Learned</string>
     <string name="review_words">Review Words</string>
-    <string name="words_learned">%d words learned</string>
+    <string name="vocabulary_words_learned_count">%d words learned</string>
 
     <!-- ==================== -->
     <!-- MOODS -->
