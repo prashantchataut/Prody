@@ -253,7 +253,10 @@ fun ProfileScreen(
                     contentPadding = PaddingValues(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    itemsIndexed(filteredUnlocked) { index, achievement ->
+                    itemsIndexed(
+                        items = filteredUnlocked,
+                        key = { _, item -> item.id }
+                    ) { index, achievement ->
                         AnimatedVisibility(
                             visible = isVisible,
                             enter = fadeIn(tween(300, delayMillis = 450 + index * 50)) +
@@ -316,7 +319,10 @@ fun ProfileScreen(
                     contentPadding = PaddingValues(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    itemsIndexed(filteredLocked.take(8)) { index, achievement ->
+                    itemsIndexed(
+                        items = filteredLocked.take(8),
+                        key = { _, item -> item.id }
+                    ) { index, achievement ->
                         AnimatedVisibility(
                             visible = isVisible,
                             enter = fadeIn(tween(300, delayMillis = 550 + index * 50)) +
@@ -979,7 +985,10 @@ private fun ProfileStatsSection(
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        items(stats.size) { index ->
+        items(
+            count = stats.size,
+            key = { index -> stats[index].label }
+        ) { index ->
             ProfileStatCard(
                 stat = stats[index],
                 delayMillis = index * 100
@@ -1125,7 +1134,10 @@ private fun AchievementCategoryFilter(
         contentPadding = PaddingValues(horizontal = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(categories) { (category, label) ->
+        items(
+            items = categories,
+            key = { (category, _) -> category?.name ?: "all" }
+        ) { (category, label) ->
             val isSelected = selectedCategory == category
             val backgroundColor by animateColorAsState(
                 targetValue = if (isSelected) MaterialTheme.colorScheme.primary

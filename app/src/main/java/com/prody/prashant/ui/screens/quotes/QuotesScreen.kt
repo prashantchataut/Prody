@@ -180,18 +180,18 @@ private fun QuoteCard(
             ) {
                 Icon(
                     imageVector = Icons.Filled.FormatQuote,
-                    contentDescription = null,
+                    contentDescription = null, // Decorative
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(24.dp)
                 )
                 IconButton(
                     onClick = onFavoriteToggle,
-                    modifier = Modifier.size(32.dp)
+                    modifier = Modifier.size(48.dp) // Minimum touch target for accessibility
                 ) {
                     Icon(
                         imageVector = if (quote.isFavorite) Icons.Filled.Favorite
                         else Icons.Filled.FavoriteBorder,
-                        contentDescription = "Favorite",
+                        contentDescription = if (quote.isFavorite) "Remove from favorites" else "Add to favorites",
                         tint = if (quote.isFavorite) MaterialTheme.colorScheme.error
                         else MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(20.dp)
