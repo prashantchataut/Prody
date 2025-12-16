@@ -139,7 +139,10 @@ fun ChallengesScreen(
                             contentPadding = PaddingValues(horizontal = 16.dp),
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            items(uiState.joinedChallenges) { challenge ->
+                            items(
+                                items = uiState.joinedChallenges,
+                                key = { it.id }
+                            ) { challenge ->
                                 ActiveChallengeCard(
                                     challenge = challenge,
                                     onClick = { viewModel.selectChallenge(challenge) }
@@ -165,7 +168,10 @@ fun ChallengesScreen(
             }
 
             val availableChallenges = uiState.activeChallenges.filter { !it.isJoined }
-            itemsIndexed(availableChallenges) { index, challenge ->
+            itemsIndexed(
+                items = availableChallenges,
+                key = { _, challenge -> challenge.id }
+            ) { index, challenge ->
                 AnimatedVisibility(
                     visible = isVisible,
                     enter = fadeIn(tween(400, delayMillis = 450 + index * 50)) + slideInVertically(
@@ -196,7 +202,10 @@ fun ChallengesScreen(
                     }
                 }
 
-                items(uiState.completedChallenges) { challenge ->
+                items(
+                    items = uiState.completedChallenges,
+                    key = { it.id }
+                ) { challenge ->
                     AnimatedVisibility(
                         visible = isVisible,
                         enter = fadeIn(tween(400, delayMillis = 650))

@@ -656,7 +656,10 @@ private fun QuickStatsSection(
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        items(stats.size) { index ->
+        items(
+            count = stats.size,
+            key = { index -> stats[index].label }
+        ) { index ->
             QuickStatCard(
                 stat = stats[index],
                 delayMillis = index * 100

@@ -1,9 +1,11 @@
 package com.prody.prashant.ui.theme
 
+import android.util.Log
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontLoadingStrategy
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
@@ -20,41 +22,93 @@ import com.prody.prashant.R
  * - Subtle letter spacing for elegance
  * - Clear weight distinctions for visual hierarchy
  * - Consistent optical sizing across all text styles
+ *
+ * Font Loading Strategy:
+ * - Uses FontLoadingStrategy.Blocking for critical fonts to ensure synchronous loading
+ * - Each font is individually wrapped with error handling to prevent cascading failures
+ * - Fallback fonts are provided at the family level for graceful degradation
+ * - Font families are defined as top-level vals to ensure single initialization
  */
 
-// Primary font family - Poppins (for UI elements)
-// Safe font definition with fallback to prevent crashes on font loading issues
-val PoppinsFamily: FontFamily = try {
-    FontFamily(
-        Font(R.font.poppins_thin, FontWeight.Thin),
-        Font(R.font.poppins_extralight, FontWeight.ExtraLight),
-        Font(R.font.poppins_light, FontWeight.Light),
-        Font(R.font.poppins_regular, FontWeight.Normal),
-        Font(R.font.poppins_medium, FontWeight.Medium),
-        Font(R.font.poppins_semibold, FontWeight.SemiBold),
-        Font(R.font.poppins_bold, FontWeight.Bold),
-        Font(R.font.poppins_extrabold, FontWeight.ExtraBold),
-        Font(R.font.poppins_black, FontWeight.Black)
-    )
-} catch (e: Exception) {
-    // Fallback to system default if fonts fail to load
-    FontFamily.SansSerif
+private const val TAG = "ProdyTypography"
+
+/**
+ * Creates a safe Font instance with proper error handling.
+ * Returns null if the font fails to load, allowing the FontFamily to fall back gracefully.
+ */
+private fun safeFont(
+    resId: Int,
+    weight: FontWeight,
+    style: FontStyle = FontStyle.Normal
+): Font? {
+    return try {
+        Font(
+            resId = resId,
+            weight = weight,
+            style = style,
+            loadingStrategy = FontLoadingStrategy.Blocking
+        )
+    } catch (e: Exception) {
+        Log.w(TAG, "Failed to load font resource $resId with weight $weight", e)
+        null
+    }
 }
 
-// Secondary font family - Playfair Display (for wisdom, quotes, and stoic content)
-// This elegant serif font contrasts with Poppins to separate "ancient wisdom" from "modern interface"
-// Safe font definition with fallback to prevent crashes on font loading issues
-val PlayfairFamily: FontFamily = try {
-    FontFamily(
-        Font(R.font.playfairdisplay_regular, FontWeight.Normal),
-        Font(R.font.playfairdisplay_medium, FontWeight.Medium),
-        Font(R.font.playfairdisplay_semibold, FontWeight.SemiBold),
-        Font(R.font.playfairdisplay_bold, FontWeight.Bold),
-        Font(R.font.playfairdisplay_italic, FontWeight.Normal, FontStyle.Italic)
+/**
+ * Primary font family - Poppins (for UI elements)
+ *
+ * Uses blocking loading strategy to ensure fonts are available synchronously,
+ * preventing layout jank during scroll. Each font weight is loaded individually
+ * with error handling to ensure partial font family availability.
+ */
+val PoppinsFamily: FontFamily = run {
+    val fonts = listOfNotNull(
+        safeFont(R.font.poppins_thin, FontWeight.Thin),
+        safeFont(R.font.poppins_extralight, FontWeight.ExtraLight),
+        safeFont(R.font.poppins_light, FontWeight.Light),
+        safeFont(R.font.poppins_regular, FontWeight.Normal),
+        safeFont(R.font.poppins_medium, FontWeight.Medium),
+        safeFont(R.font.poppins_semibold, FontWeight.SemiBold),
+        safeFont(R.font.poppins_bold, FontWeight.Bold),
+        safeFont(R.font.poppins_extrabold, FontWeight.ExtraBold),
+        safeFont(R.font.poppins_black, FontWeight.Black)
     )
-} catch (e: Exception) {
-    // Fallback to system serif if fonts fail to load
-    FontFamily.Serif
+
+    if (fonts.isEmpty()) {
+        Log.e(TAG, "All Poppins fonts failed to load, falling back to system sans-serif")
+        FontFamily.SansSerif
+    } else {
+        if (fonts.size < 9) {
+            Log.w(TAG, "Only ${fonts.size}/9 Poppins fonts loaded successfully")
+        }
+        FontFamily(fonts)
+    }
+}
+
+/**
+ * Secondary font family - Playfair Display (for wisdom, quotes, and stoic content)
+ *
+ * This elegant serif font contrasts with Poppins to separate "ancient wisdom"
+ * from "modern interface". Uses the same safe loading strategy as Poppins.
+ */
+val PlayfairFamily: FontFamily = run {
+    val fonts = listOfNotNull(
+        safeFont(R.font.playfairdisplay_regular, FontWeight.Normal),
+        safeFont(R.font.playfairdisplay_medium, FontWeight.Medium),
+        safeFont(R.font.playfairdisplay_semibold, FontWeight.SemiBold),
+        safeFont(R.font.playfairdisplay_bold, FontWeight.Bold),
+        safeFont(R.font.playfairdisplay_italic, FontWeight.Normal, FontStyle.Italic)
+    )
+
+    if (fonts.isEmpty()) {
+        Log.e(TAG, "All Playfair Display fonts failed to load, falling back to system serif")
+        FontFamily.Serif
+    } else {
+        if (fonts.size < 5) {
+            Log.w(TAG, "Only ${fonts.size}/5 Playfair Display fonts loaded successfully")
+        }
+        FontFamily(fonts)
+    }
 }
 
 /**

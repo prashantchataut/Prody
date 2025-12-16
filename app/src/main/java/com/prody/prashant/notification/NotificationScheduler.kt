@@ -327,6 +327,85 @@ class NotificationScheduler @Inject constructor(
         }
     }
 
+    /**
+     * DEBUG ONLY: Triggers a test notification immediately.
+     * This method is useful for verifying that notifications work correctly
+     * without waiting for scheduled times.
+     *
+     * Usage: Call from AiDebugScreen or via adb:
+     * adb shell am broadcast -a com.prody.prashant.MORNING_WISDOM -n com.prody.prashant/.notification.NotificationReceiver
+     *
+     * @param type The type of notification to test (morning, evening, word, streak, journal, future)
+     */
+    fun debugTriggerNotificationNow(type: String) {
+        if (!com.prody.prashant.BuildConfig.DEBUG) {
+            android.util.Log.w(TAG, "Debug notifications only available in debug builds")
+            return
+        }
+
+        val action = when (type.lowercase()) {
+            "morning" -> NotificationReceiver.ACTION_MORNING_WISDOM
+            "evening" -> NotificationReceiver.ACTION_EVENING_REFLECTION
+            "word" -> NotificationReceiver.ACTION_WORD_OF_DAY
+            "streak" -> NotificationReceiver.ACTION_STREAK_REMINDER
+            "journal" -> NotificationReceiver.ACTION_JOURNAL_REMINDER
+            "future" -> NotificationReceiver.ACTION_FUTURE_MESSAGE
+            else -> {
+                android.util.Log.w(TAG, "Unknown notification type: $type")
+                return
+            }
+        }
+
+        android.util.Log.d(TAG, "Triggering debug notification: $type")
+
+        val intent = Intent(context, NotificationReceiver::class.java).apply {
+            this.action = action
+            if (action == NotificationReceiver.ACTION_FUTURE_MESSAGE) {
+                putExtra(NotificationReceiver.EXTRA_MESSAGE_TITLE, "Test Message from Past You")
+                putExtra(NotificationReceiver.EXTRA_MESSAGE_BODY, "This is a debug test notification for future messages.")
+            }
+        }
+
+        // Send broadcast immediately
+        context.sendBroadcast(intent)
+        android.util.Log.d(TAG, "Debug notification broadcast sent for: $type")
+    }
+
+    /**
+     * DEBUG ONLY: Schedules a notification to fire in the specified number of seconds.
+     * Useful for testing without waiting for daily schedules.
+     *
+     * @param type The type of notification (morning, evening, word, streak, journal)
+     * @param delaySeconds How many seconds from now to fire the notification
+     */
+    fun debugScheduleNotificationIn(type: String, delaySeconds: Int) {
+        if (!com.prody.prashant.BuildConfig.DEBUG) {
+            android.util.Log.w(TAG, "Debug notifications only available in debug builds")
+            return
+        }
+
+        val (action, requestCode) = when (type.lowercase()) {
+            "morning" -> NotificationReceiver.ACTION_MORNING_WISDOM to REQUEST_MORNING
+            "evening" -> NotificationReceiver.ACTION_EVENING_REFLECTION to REQUEST_EVENING
+            "word" -> NotificationReceiver.ACTION_WORD_OF_DAY to REQUEST_WORD
+            "streak" -> NotificationReceiver.ACTION_STREAK_REMINDER to REQUEST_STREAK
+            "journal" -> NotificationReceiver.ACTION_JOURNAL_REMINDER to REQUEST_JOURNAL
+            else -> {
+                android.util.Log.w(TAG, "Unknown notification type: $type")
+                return
+            }
+        }
+
+        val triggerTime = System.currentTimeMillis() + (delaySeconds * 1000L)
+        android.util.Log.d(TAG, "Scheduling debug notification '$type' in $delaySeconds seconds")
+
+        scheduleExactAlarm(
+            action = action,
+            requestCode = requestCode + 9000, // Use different request code to not interfere with daily
+            triggerTime = triggerTime
+        )
+    }
+
     private fun cancelAllNotifications() {
         val manager = alarmManager ?: run {
             android.util.Log.w(TAG, "AlarmManager not available, skipping notification cancellation")
