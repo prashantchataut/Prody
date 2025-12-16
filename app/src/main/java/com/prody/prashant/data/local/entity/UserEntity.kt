@@ -27,7 +27,16 @@ data class UserProfileEntity(
     val totalReflectionTime: Long = 0, // in seconds
     val preferredWisdomCategories: String = "", // Comma-separated
     val dailyGoalMinutes: Int = 10,
-    val preferences: String = "{}" // JSON string for additional preferences
+    val preferences: String = "{}", // JSON string for additional preferences
+    // Gamification 2.0 - Special badges (future OAuth assignment)
+    val isDevBadgeHolder: Boolean = false, // Single DEV badge holder
+    val isBetaTester: Boolean = false, // Beta tester badge
+    val isFounder: Boolean = false, // Founding user badge
+    val profileFrameRarity: String = "common", // common, uncommon, rare, epic, legendary
+    val boostsReceived: Int = 0, // Total boosts received
+    val boostsGiven: Int = 0, // Total boosts given
+    val dailyBoostsRemaining: Int = 5, // Daily boost limit
+    val lastBoostResetDate: Long = System.currentTimeMillis() // For daily reset
 )
 
 @Entity(tableName = "achievements")
