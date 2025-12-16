@@ -7,10 +7,17 @@ import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
+
+
+data class StartupPreferences(
+    val onboardingCompleted: Boolean,
+    val themeMode: String
+)
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "prody_preferences")
 
@@ -47,6 +54,12 @@ class PreferencesManager @Inject constructor(
         val BUDDHA_AI_ENABLED = booleanPreferencesKey("buddha_ai_enabled")
     }
 
+    val startupPrefs: Flow<StartupPreferences> = combine(
+        onboardingCompleted,
+        themeMode
+    ) { onboarding, theme ->
+        StartupPreferences(onboarding, theme)
+    }
     // Onboarding
     val onboardingCompleted: Flow<Boolean> = dataStore.data
         .catch { exception ->

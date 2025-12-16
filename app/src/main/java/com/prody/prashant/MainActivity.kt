@@ -51,6 +51,7 @@ import com.prody.prashant.ui.screens.quotes.QuotesScreen
 import com.prody.prashant.ui.screens.stats.StatsScreen
 import com.prody.prashant.ui.screens.vocabulary.VocabularyDetailScreen
 import com.prody.prashant.ui.screens.vocabulary.VocabularyListScreen
+import com.prody.prashant.data.local.preferences.StartupPreferences
 import com.prody.prashant.ui.theme.ProdyTheme
 import com.prody.prashant.ui.theme.ThemeMode
 import dagger.hilt.android.AndroidEntryPoint
@@ -100,41 +101,29 @@ class MainActivity : ComponentActivity() {
 
         enableEdgeToEdge()
 
-        // Use mutable state to update UI when preferences are loaded
-        var isOnboardingCompleted by mutableStateOf<Boolean?>(null)
-        var initialThemeMode by mutableStateOf("system")
+        var startupPrefs by mutableStateOf<com.prody.prashant.data.local.preferences.StartupPreferences?>(null)
 
-        // Keep splash screen visible until preferences are loaded
-        splashScreen.setKeepOnScreenCondition { isOnboardingCompleted == null }
+        splashScreen.setKeepOnScreenCondition { startupPrefs == null }
 
-        // Load preferences asynchronously to avoid blocking main thread
         lifecycleScope.launch {
-            try {
-                val onboardingResult = withContext(Dispatchers.IO) {
-                    preferencesManager.onboardingCompleted.first()
+            val prefs = try {
+                withContext(Dispatchers.IO) {
+                    preferencesManager.startupPrefs.first()
                 }
-                val themeResult = withContext(Dispatchers.IO) {
-                    preferencesManager.themeMode.first()
-                }
-                initialThemeMode = themeResult
-                isOnboardingCompleted = onboardingResult
             } catch (e: Exception) {
-                // Default values if preferences can't be read
-                initialThemeMode = "system"
-                isOnboardingCompleted = false
+                StartupPreferences(false, "system")
             }
+            startupPrefs = prefs
         }
 
         setContent {
-            // Wait until preferences are loaded
-            val onboardingDone = isOnboardingCompleted
-            if (onboardingDone == null) {
-                // Show nothing while loading (splash screen is still visible)
+            val prefs = startupPrefs
+            if (prefs == null) {
                 return@setContent
             }
 
             val currentThemeModeString by preferencesManager.themeMode.collectAsStateWithLifecycle(
-                initialValue = initialThemeMode
+                initialValue = prefs.themeMode
             )
 
             val themeModeState = when (currentThemeModeString.lowercase()) {
@@ -147,7 +136,7 @@ class MainActivity : ComponentActivity() {
                 themeMode = themeModeState
             ) {
                 ProdyApp(
-                    startDestination = if (onboardingDone) Screen.Home.route else Screen.Onboarding.route
+                    startDestination = if (prefs.onboardingCompleted) Screen.Home.route else Screen.Onboarding.route
                 )
             }
         }
