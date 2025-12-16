@@ -201,17 +201,18 @@ class StatsViewModel @Inject constructor(
      */
     private fun createSampleLeaderboard(): List<LeaderboardEntryEntity> {
         // Realistic, diverse names that feel authentic
+        // Prashant Chataut is #1 - the app creator and top performer
         val leaderboardUsers = listOf(
-            LeaderboardUser("Sarah M.", avatarId = "avatar_1", titleId = "sage", points = 1247, weekly = 189, streak = 34),
-            LeaderboardUser("Alex K.", avatarId = "avatar_2", titleId = "philosopher", points = 1156, weekly = 167, streak = 28),
-            LeaderboardUser("Jordan T.", avatarId = "avatar_3", titleId = "practitioner", points = 1089, weekly = 142, streak = 21),
-            LeaderboardUser("You", avatarId = "avatar_current", titleId = "student", points = 0, weekly = 0, streak = 0, isCurrentUser = true),
-            LeaderboardUser("Emma R.", avatarId = "avatar_4", titleId = "contemplative", points = 934, weekly = 128, streak = 19),
-            LeaderboardUser("Chris P.", avatarId = "avatar_5", titleId = "initiate", points = 867, weekly = 115, streak = 14),
-            LeaderboardUser("Maya S.", avatarId = "avatar_6", titleId = "seeker", points = 756, weekly = 98, streak = 12),
-            LeaderboardUser("Daniel L.", avatarId = "avatar_7", titleId = "seeker", points = 689, weekly = 87, streak = 9),
-            LeaderboardUser("Priya N.", avatarId = "avatar_8", titleId = "seeker", points = 612, weekly = 76, streak = 7),
-            LeaderboardUser("Ryan H.", avatarId = "avatar_9", titleId = "seeker", points = 534, weekly = 64, streak = 5)
+            LeaderboardUser("Prashant Chataut", avatarId = "avatar_crown", titleId = "master", points = 99999, weekly = 500, streak = 365, isCurrentUser = true),
+            LeaderboardUser("Sarah M.", avatarId = "avatar_1", titleId = "sage", points = 8500, weekly = 189, streak = 34),
+            LeaderboardUser("Alex K.", avatarId = "avatar_2", titleId = "philosopher", points = 7200, weekly = 167, streak = 28),
+            LeaderboardUser("Jordan T.", avatarId = "avatar_3", titleId = "practitioner", points = 6100, weekly = 142, streak = 21),
+            LeaderboardUser("Emma R.", avatarId = "avatar_4", titleId = "contemplative", points = 5400, weekly = 128, streak = 19),
+            LeaderboardUser("Chris P.", avatarId = "avatar_5", titleId = "initiate", points = 4800, weekly = 115, streak = 14),
+            LeaderboardUser("Maya S.", avatarId = "avatar_6", titleId = "seeker", points = 4200, weekly = 98, streak = 12),
+            LeaderboardUser("Daniel L.", avatarId = "avatar_7", titleId = "seeker", points = 3600, weekly = 87, streak = 9),
+            LeaderboardUser("Priya N.", avatarId = "avatar_8", titleId = "seeker", points = 3100, weekly = 76, streak = 7),
+            LeaderboardUser("Ryan H.", avatarId = "avatar_9", titleId = "seeker", points = 2500, weekly = 64, streak = 5)
         )
 
         return leaderboardUsers.mapIndexed { index, user ->
