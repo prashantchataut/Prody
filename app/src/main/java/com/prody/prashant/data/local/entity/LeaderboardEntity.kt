@@ -10,7 +10,7 @@ data class LeaderboardEntryEntity(
     val displayName: String,
     val avatarId: String = "default",
     val titleId: String = "newcomer",
-    val bannerId: String = "default_dawn", // User's selected profile banner
+    val bannerId: String = "default_dawn", // Gamification 2.0: Banner next to name
     val totalPoints: Int = 0,
     val weeklyPoints: Int = 0,
     val currentStreak: Int = 0,
@@ -20,5 +20,9 @@ data class LeaderboardEntryEntity(
     val lastActiveAt: Long = System.currentTimeMillis(),
     val boostsReceived: Int = 0,
     val congratsReceived: Int = 0,
-    val respectsReceived: Int = 0 // New "Respect" interaction type
+    // Gamification 2.0 fields
+    val isDevBadgeHolder: Boolean = false, // DEV badge
+    val isBetaTester: Boolean = false, // Beta tester badge
+    val profileFrameRarity: String = "common", // Frame rarity for avatar
+    val lastBoostedByCurrentUser: Long? = null // Track when current user last boosted this person
 )

@@ -28,3 +28,4 @@ build_output.txt
 
 # Kotlin
 .kotlin/
+.env
