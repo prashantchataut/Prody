@@ -189,24 +189,62 @@ class StatsViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Creates realistic demo leaderboard data with human-like names.
+     * These represent typical users of a self-improvement app.
+     *
+     * In production, this would be replaced with actual backend data.
+     * The demo data serves to:
+     * 1. Show users how the leaderboard works
+     * 2. Provide social motivation even without a backend
+     * 3. Create a sense of community
+     */
     private fun createSampleLeaderboard(): List<LeaderboardEntryEntity> {
-        val names = listOf(
-            "GrowthSeeker", "MindfulMaster", "WisdomWanderer", "StoicSoul",
-            "ZenZealot", "ThoughtTracker", "ReflectiveRider", "InsightInquirer"
+        // Realistic, diverse names that feel authentic
+        val leaderboardUsers = listOf(
+            LeaderboardUser("Sarah M.", avatarId = "avatar_1", titleId = "sage", points = 1247, weekly = 189, streak = 34),
+            LeaderboardUser("Alex K.", avatarId = "avatar_2", titleId = "philosopher", points = 1156, weekly = 167, streak = 28),
+            LeaderboardUser("Jordan T.", avatarId = "avatar_3", titleId = "practitioner", points = 1089, weekly = 142, streak = 21),
+            LeaderboardUser("You", avatarId = "avatar_current", titleId = "student", points = 0, weekly = 0, streak = 0, isCurrentUser = true),
+            LeaderboardUser("Emma R.", avatarId = "avatar_4", titleId = "contemplative", points = 934, weekly = 128, streak = 19),
+            LeaderboardUser("Chris P.", avatarId = "avatar_5", titleId = "initiate", points = 867, weekly = 115, streak = 14),
+            LeaderboardUser("Maya S.", avatarId = "avatar_6", titleId = "seeker", points = 756, weekly = 98, streak = 12),
+            LeaderboardUser("Daniel L.", avatarId = "avatar_7", titleId = "seeker", points = 689, weekly = 87, streak = 9),
+            LeaderboardUser("Priya N.", avatarId = "avatar_8", titleId = "seeker", points = 612, weekly = 76, streak = 7),
+            LeaderboardUser("Ryan H.", avatarId = "avatar_9", titleId = "seeker", points = 534, weekly = 64, streak = 5)
         )
 
-        return names.mapIndexed { index, name ->
+        return leaderboardUsers.mapIndexed { index, user ->
             LeaderboardEntryEntity(
-                odId = UUID.randomUUID().toString(),
-                displayName = name,
-                totalPoints = (1000 - index * 100) + (0..50).random(),
-                weeklyPoints = (200 - index * 20) + (0..20).random(),
-                currentStreak = (30 - index * 3).coerceAtLeast(0),
+                odId = if (user.isCurrentUser) "current_user" else UUID.randomUUID().toString(),
+                displayName = user.name,
+                avatarId = user.avatarId,
+                titleId = user.titleId,
+                totalPoints = user.points,
+                weeklyPoints = user.weekly,
+                currentStreak = user.streak,
                 rank = index + 1,
-                isCurrentUser = index == 3 // User is 4th place initially
+                previousRank = if (user.isCurrentUser) index + 2 else index + 1 + (-1..1).random(),
+                isCurrentUser = user.isCurrentUser,
+                lastActiveAt = System.currentTimeMillis() - (0L..86400000L).random(), // Random time in last 24h
+                boostsReceived = if (user.isCurrentUser) 0 else (0..15).random(),
+                congratsReceived = if (user.isCurrentUser) 0 else (0..10).random()
             )
         }
     }
+
+    /**
+     * Helper data class for creating leaderboard entries
+     */
+    private data class LeaderboardUser(
+        val name: String,
+        val avatarId: String = "avatar_default",
+        val titleId: String = "seeker",
+        val points: Int,
+        val weekly: Int,
+        val streak: Int,
+        val isCurrentUser: Boolean = false
+    )
 
     private fun calculateWeeklyProgress(data: List<Int>): List<Int> {
         return if (data.size >= 7) {

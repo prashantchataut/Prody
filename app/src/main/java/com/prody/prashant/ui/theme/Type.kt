@@ -450,6 +450,14 @@ val LeaderboardNameStyle = TextStyle(
  * Leaderboard points style - For point displays
  */
 val LeaderboardPointsStyle = TextStyle(
+    fontFamily = PoppinsFamily,
+    fontWeight = FontWeight.SemiBold,
+    fontSize = 16.sp,
+    lineHeight = 20.sp,
+    letterSpacing = 0.1.sp
+)
+
+/**
  * Progress percentage style - For showing progress percentages
  */
 val ProgressPercentageStyle = TextStyle(
