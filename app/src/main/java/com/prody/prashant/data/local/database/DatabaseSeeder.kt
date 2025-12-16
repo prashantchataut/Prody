@@ -2,10 +2,15 @@ package com.prody.prashant.data.local.database
 
 import android.content.Context
 import android.util.Log
+import com.prody.prashant.data.local.entity.AchievementEntity
 import com.prody.prashant.data.local.entity.IdiomEntity
+import com.prody.prashant.data.local.entity.LeaderboardEntryEntity
 import com.prody.prashant.data.local.entity.PhraseEntity
 import com.prody.prashant.data.local.entity.ProverbEntity
 import com.prody.prashant.data.local.entity.QuoteEntity
+import com.prody.prashant.data.local.entity.UserProfileEntity
+import com.prody.prashant.data.local.entity.UserStatsEntity
+import com.prody.prashant.data.local.entity.VocabularyEntity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -43,6 +48,10 @@ object DatabaseSeeder {
                 launch { seedProverbs(database) }
                 launch { seedIdioms(database) }
                 launch { seedPhrases(database) }
+                launch { seedVocabulary(database) }
+                launch { seedLeaderboard(database) }
+                launch { seedUserProfile(database) }
+                launch { seedAchievements(database) }
 
                 Log.d(TAG, "Database seeding initiated successfully")
             } catch (e: Exception) {
@@ -1068,6 +1077,1277 @@ object DatabaseSeeder {
             exampleSentence = "The results look promising—I'm cautiously optimistic.",
             formality = "formal",
             category = "outlook"
+        )
+    )
+
+    // =========================================================================
+    // VOCABULARY - Curated words for vocabulary building
+    // =========================================================================
+
+    private suspend fun seedVocabulary(database: ProdyDatabase) {
+        try {
+            val vocabularyDao = database.vocabularyDao()
+            vocabularyDao.insertWords(getInitialVocabulary())
+            Log.d(TAG, "Seeded ${getInitialVocabulary().size} vocabulary words")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error seeding vocabulary", e)
+        }
+    }
+
+    private fun getInitialVocabulary(): List<VocabularyEntity> = listOf(
+        // Personal Growth & Development
+        VocabularyEntity(
+            word = "Resilience",
+            definition = "The capacity to recover quickly from difficulties; toughness and mental fortitude",
+            pronunciation = "ri-ZIL-yuhns",
+            partOfSpeech = "noun",
+            exampleSentence = "Her resilience in the face of adversity inspired everyone around her.",
+            synonyms = "toughness, flexibility, adaptability, strength, grit",
+            antonyms = "fragility, weakness, rigidity, brittleness",
+            origin = "From Latin 'resilire' meaning 'to spring back'",
+            difficulty = 2,
+            category = "personal_growth"
+        ),
+        VocabularyEntity(
+            word = "Equanimity",
+            definition = "Mental calmness and composure, especially in difficult situations",
+            pronunciation = "ee-kwuh-NIM-i-tee",
+            partOfSpeech = "noun",
+            exampleSentence = "The monk faced both praise and criticism with remarkable equanimity.",
+            synonyms = "composure, calmness, serenity, poise, tranquility",
+            antonyms = "anxiety, agitation, distress, turbulence",
+            origin = "From Latin 'aequanimitas', from 'aequus' (equal) + 'animus' (mind)",
+            difficulty = 4,
+            category = "mindfulness"
+        ),
+        VocabularyEntity(
+            word = "Perseverance",
+            definition = "Persistence in doing something despite difficulty or delay in achieving success",
+            pronunciation = "pur-suh-VEER-uhns",
+            partOfSpeech = "noun",
+            exampleSentence = "Through sheer perseverance, she completed the marathon despite her injury.",
+            synonyms = "persistence, determination, tenacity, steadfastness",
+            antonyms = "laziness, idleness, weakness, irresolution",
+            origin = "From Latin 'perseverare' meaning 'to persist'",
+            difficulty = 2,
+            category = "personal_growth"
+        ),
+        VocabularyEntity(
+            word = "Introspection",
+            definition = "The examination of one's own thoughts, feelings, and mental processes",
+            pronunciation = "in-truh-SPEK-shuhn",
+            partOfSpeech = "noun",
+            exampleSentence = "Regular introspection helps us understand ourselves better and grow.",
+            synonyms = "self-examination, reflection, contemplation, soul-searching",
+            antonyms = "distraction, thoughtlessness, inattention",
+            origin = "From Latin 'introspicere' meaning 'to look into'",
+            difficulty = 3,
+            category = "self_awareness"
+        ),
+        VocabularyEntity(
+            word = "Serendipity",
+            definition = "The occurrence of events by chance in a happy or beneficial way",
+            pronunciation = "ser-uhn-DIP-i-tee",
+            partOfSpeech = "noun",
+            exampleSentence = "Finding that old book at the garage sale was pure serendipity.",
+            synonyms = "chance, fortune, luck, fate, providence",
+            antonyms = "misfortune, design, intention",
+            origin = "Coined by Horace Walpole in 1754, from the Persian fairy tale 'The Three Princes of Serendip'",
+            difficulty = 3,
+            category = "literary"
+        ),
+        VocabularyEntity(
+            word = "Ephemeral",
+            definition = "Lasting for a very short time; transient and fleeting",
+            pronunciation = "ih-FEM-er-uhl",
+            partOfSpeech = "adjective",
+            exampleSentence = "The ephemeral beauty of cherry blossoms reminds us to appreciate the present moment.",
+            synonyms = "fleeting, transient, momentary, brief, short-lived",
+            antonyms = "permanent, lasting, enduring, eternal",
+            origin = "From Greek 'ephemeros' meaning 'lasting only a day'",
+            difficulty = 3,
+            category = "literary"
+        ),
+        VocabularyEntity(
+            word = "Sanguine",
+            definition = "Optimistic, especially in difficult situations; cheerfully confident",
+            pronunciation = "SANG-gwin",
+            partOfSpeech = "adjective",
+            exampleSentence = "Despite the setbacks, she remained sanguine about the project's success.",
+            synonyms = "optimistic, hopeful, confident, positive, buoyant",
+            antonyms = "pessimistic, gloomy, despairing, morose",
+            origin = "From Latin 'sanguineus' meaning 'blood-red', related to the medieval belief in humors",
+            difficulty = 3,
+            category = "emotional"
+        ),
+        VocabularyEntity(
+            word = "Magnanimous",
+            definition = "Generous or forgiving, especially toward a rival or less powerful person",
+            pronunciation = "mag-NAN-uh-muhs",
+            partOfSpeech = "adjective",
+            exampleSentence = "The magnanimous leader pardoned his defeated opponents.",
+            synonyms = "generous, noble, benevolent, charitable, gracious",
+            antonyms = "petty, mean-spirited, vindictive, spiteful",
+            origin = "From Latin 'magnus' (great) + 'animus' (soul)",
+            difficulty = 3,
+            category = "stoic"
+        ),
+        VocabularyEntity(
+            word = "Perspicacious",
+            definition = "Having a ready insight into things; shrewd and discerning",
+            pronunciation = "pur-spi-KAY-shuhs",
+            partOfSpeech = "adjective",
+            exampleSentence = "Her perspicacious analysis of the market trends saved the company millions.",
+            synonyms = "astute, shrewd, perceptive, insightful, sharp",
+            antonyms = "obtuse, dense, unperceptive, dull",
+            origin = "From Latin 'perspicax' meaning 'sharp-sighted'",
+            difficulty = 5,
+            category = "academic"
+        ),
+        VocabularyEntity(
+            word = "Eudaimonia",
+            definition = "A state of flourishing; human flourishing, prosperity, and well-being",
+            pronunciation = "yoo-dy-MOH-nee-uh",
+            partOfSpeech = "noun",
+            exampleSentence = "The philosopher argued that eudaimonia, not pleasure, should be our ultimate goal.",
+            synonyms = "flourishing, well-being, fulfillment, thriving",
+            antonyms = "misery, suffering, languishing, wretchedness",
+            origin = "Ancient Greek concept central to Aristotelian ethics",
+            difficulty = 5,
+            category = "philosophical"
+        ),
+        VocabularyEntity(
+            word = "Stoic",
+            definition = "A person who can endure pain or hardship without showing feelings or complaining",
+            pronunciation = "STOH-ik",
+            partOfSpeech = "noun/adjective",
+            exampleSentence = "He remained stoic throughout the difficult ordeal.",
+            synonyms = "impassive, unemotional, calm, phlegmatic",
+            antonyms = "emotional, expressive, demonstrative",
+            origin = "From the ancient Greek philosophical school of Stoicism, founded in Athens",
+            difficulty = 2,
+            category = "stoic"
+        ),
+        VocabularyEntity(
+            word = "Mellifluous",
+            definition = "Sweet-sounding; pleasant and smooth to hear",
+            pronunciation = "muh-LIF-loo-uhs",
+            partOfSpeech = "adjective",
+            exampleSentence = "The singer's mellifluous voice captivated the entire audience.",
+            synonyms = "dulcet, harmonious, melodious, honeyed, sweet",
+            antonyms = "harsh, grating, discordant, jarring",
+            origin = "From Latin 'mel' (honey) + 'fluere' (to flow)",
+            difficulty = 4,
+            category = "literary"
+        ),
+        VocabularyEntity(
+            word = "Laconic",
+            definition = "Using very few words; brief and to the point",
+            pronunciation = "luh-KON-ik",
+            partOfSpeech = "adjective",
+            exampleSentence = "His laconic response of 'If.' became legendary in Spartan history.",
+            synonyms = "concise, terse, succinct, pithy, brief",
+            antonyms = "verbose, wordy, loquacious, garrulous",
+            origin = "From Laconia, the region of Greece around Sparta, whose people were known for brevity",
+            difficulty = 3,
+            category = "academic"
+        ),
+        VocabularyEntity(
+            word = "Zeitgeist",
+            definition = "The defining spirit or mood of a particular period of history",
+            pronunciation = "ZITE-gyst",
+            partOfSpeech = "noun",
+            exampleSentence = "The music of the 1960s perfectly captured the zeitgeist of social revolution.",
+            synonyms = "spirit of the age, ethos, mood, atmosphere, climate",
+            antonyms = "N/A",
+            origin = "German: 'Zeit' (time) + 'Geist' (spirit)",
+            difficulty = 3,
+            category = "philosophical"
+        ),
+        VocabularyEntity(
+            word = "Ineffable",
+            definition = "Too great or extreme to be expressed in words; indescribable",
+            pronunciation = "in-EF-uh-buhl",
+            partOfSpeech = "adjective",
+            exampleSentence = "The beauty of the sunset was simply ineffable.",
+            synonyms = "indescribable, inexpressible, unspeakable, unutterable",
+            antonyms = "describable, expressible, definable",
+            origin = "From Latin 'ineffabilis' meaning 'unutterable'",
+            difficulty = 4,
+            category = "literary"
+        ),
+        VocabularyEntity(
+            word = "Sonder",
+            definition = "The realization that each passerby has a life as vivid and complex as your own",
+            pronunciation = "SON-der",
+            partOfSpeech = "noun",
+            exampleSentence = "Sitting in the busy cafe, she experienced a profound sense of sonder.",
+            synonyms = "empathy, awareness, realization, epiphany",
+            antonyms = "self-absorption, obliviousness, narcissism",
+            origin = "Neologism coined in 2012 by John Koenig for The Dictionary of Obscure Sorrows",
+            difficulty = 3,
+            category = "philosophical"
+        ),
+        VocabularyEntity(
+            word = "Efficacious",
+            definition = "Successful in producing a desired result; effective",
+            pronunciation = "ef-i-KAY-shuhs",
+            partOfSpeech = "adjective",
+            exampleSentence = "The new treatment proved highly efficacious in clinical trials.",
+            synonyms = "effective, productive, successful, potent, powerful",
+            antonyms = "ineffective, useless, futile, impotent",
+            origin = "From Latin 'efficax' meaning 'powerful, effectual'",
+            difficulty = 4,
+            category = "academic"
+        ),
+        VocabularyEntity(
+            word = "Prosaic",
+            definition = "Lacking poetic beauty; commonplace and unromantic",
+            pronunciation = "proh-ZAY-ik",
+            partOfSpeech = "adjective",
+            exampleSentence = "He described their adventure in prosaic terms that failed to capture its magic.",
+            synonyms = "mundane, ordinary, pedestrian, banal, dull",
+            antonyms = "poetic, imaginative, romantic, inspiring",
+            origin = "From Latin 'prosa' meaning 'straightforward discourse'",
+            difficulty = 3,
+            category = "literary"
+        ),
+        VocabularyEntity(
+            word = "Vicissitude",
+            definition = "A change of circumstances or fortune, typically one that is unwelcome",
+            pronunciation = "vih-SIS-ih-tood",
+            partOfSpeech = "noun",
+            exampleSentence = "The vicissitudes of life have taught me to be adaptable.",
+            synonyms = "change, alteration, shift, fluctuation, variation",
+            antonyms = "stability, constancy, permanence, steadiness",
+            origin = "From Latin 'vicissitudo' meaning 'change, alternation'",
+            difficulty = 4,
+            category = "academic"
+        ),
+        VocabularyEntity(
+            word = "Paradigm",
+            definition = "A typical example or pattern of something; a model",
+            pronunciation = "PAIR-uh-dime",
+            partOfSpeech = "noun",
+            exampleSentence = "The discovery shifted the scientific paradigm entirely.",
+            synonyms = "model, pattern, example, standard, prototype",
+            antonyms = "anomaly, exception, deviation",
+            origin = "From Greek 'paradeigma' meaning 'pattern, example'",
+            difficulty = 3,
+            category = "academic"
+        ),
+        VocabularyEntity(
+            word = "Catharsis",
+            definition = "The process of releasing strong emotions through a particular activity or experience",
+            pronunciation = "kuh-THAR-sis",
+            partOfSpeech = "noun",
+            exampleSentence = "Writing in her journal provided a much-needed catharsis after the stressful week.",
+            synonyms = "release, purging, cleansing, purification, relief",
+            antonyms = "suppression, repression, bottling up",
+            origin = "From Greek 'katharsis' meaning 'purification, cleansing'",
+            difficulty = 3,
+            category = "emotional"
+        ),
+        VocabularyEntity(
+            word = "Ubiquitous",
+            definition = "Present, appearing, or found everywhere",
+            pronunciation = "yoo-BIK-wi-tuhs",
+            partOfSpeech = "adjective",
+            exampleSentence = "Smartphones have become ubiquitous in modern society.",
+            synonyms = "omnipresent, everywhere, universal, pervasive",
+            antonyms = "rare, scarce, uncommon, localized",
+            origin = "From Latin 'ubique' meaning 'everywhere'",
+            difficulty = 3,
+            category = "academic"
+        ),
+        VocabularyEntity(
+            word = "Ephemeral",
+            definition = "Lasting for only a short time; transitory",
+            pronunciation = "ih-FEM-er-uhl",
+            partOfSpeech = "adjective",
+            exampleSentence = "Fame can be ephemeral, here today and gone tomorrow.",
+            synonyms = "fleeting, transient, short-lived, momentary",
+            antonyms = "permanent, enduring, lasting, eternal",
+            origin = "From Greek 'ephemeros' meaning 'lasting only a day'",
+            difficulty = 3,
+            category = "literary"
+        ),
+        VocabularyEntity(
+            word = "Sycophant",
+            definition = "A person who acts obsequiously toward someone important to gain advantage",
+            pronunciation = "SIK-uh-fant",
+            partOfSpeech = "noun",
+            exampleSentence = "The office sycophant was always agreeing with everything the boss said.",
+            synonyms = "flatterer, toady, yes-man, bootlicker",
+            antonyms = "critic, detractor, opponent",
+            origin = "From Greek 'sykophantes', originally meaning 'informer'",
+            difficulty = 4,
+            category = "social"
+        ),
+        VocabularyEntity(
+            word = "Pragmatic",
+            definition = "Dealing with things sensibly and realistically based on practical considerations",
+            pronunciation = "prag-MAT-ik",
+            partOfSpeech = "adjective",
+            exampleSentence = "We need a pragmatic approach to solve this problem.",
+            synonyms = "practical, realistic, sensible, matter-of-fact",
+            antonyms = "idealistic, impractical, unrealistic, theoretical",
+            origin = "From Greek 'pragmatikos' meaning 'fit for business'",
+            difficulty = 2,
+            category = "academic"
+        ),
+        VocabularyEntity(
+            word = "Altruistic",
+            definition = "Showing a selfless concern for the well-being of others",
+            pronunciation = "al-troo-IS-tik",
+            partOfSpeech = "adjective",
+            exampleSentence = "Her altruistic nature led her to volunteer at the homeless shelter.",
+            synonyms = "selfless, unselfish, philanthropic, charitable",
+            antonyms = "selfish, self-centered, egotistic, narcissistic",
+            origin = "From French 'altruisme', coined by Auguste Comte from Latin 'alter' (other)",
+            difficulty = 3,
+            category = "personal_growth"
+        ),
+        VocabularyEntity(
+            word = "Tenacious",
+            definition = "Tending to keep a firm hold of something; determined and persistent",
+            pronunciation = "tuh-NAY-shuhs",
+            partOfSpeech = "adjective",
+            exampleSentence = "Her tenacious pursuit of justice eventually paid off.",
+            synonyms = "persistent, determined, resolute, steadfast, dogged",
+            antonyms = "weak, irresolute, yielding, fickle",
+            origin = "From Latin 'tenax' meaning 'holding fast'",
+            difficulty = 3,
+            category = "personal_growth"
+        ),
+        VocabularyEntity(
+            word = "Eloquent",
+            definition = "Fluent or persuasive in speaking or writing",
+            pronunciation = "EL-uh-kwuhnt",
+            partOfSpeech = "adjective",
+            exampleSentence = "His eloquent speech moved the entire audience to tears.",
+            synonyms = "articulate, fluent, persuasive, expressive",
+            antonyms = "inarticulate, tongue-tied, halting, stumbling",
+            origin = "From Latin 'eloquens' meaning 'speaking out'",
+            difficulty = 2,
+            category = "communication"
+        ),
+        VocabularyEntity(
+            word = "Empathy",
+            definition = "The ability to understand and share the feelings of another",
+            pronunciation = "EM-puh-thee",
+            partOfSpeech = "noun",
+            exampleSentence = "Her empathy for the suffering of others made her an excellent counselor.",
+            synonyms = "understanding, compassion, sensitivity, insight",
+            antonyms = "apathy, indifference, coldness, callousness",
+            origin = "From Greek 'empatheia' meaning 'passion, state of emotion'",
+            difficulty = 2,
+            category = "emotional"
+        ),
+        VocabularyEntity(
+            word = "Verbose",
+            definition = "Using or expressed in more words than are needed",
+            pronunciation = "ver-BOHS",
+            partOfSpeech = "adjective",
+            exampleSentence = "His verbose explanations often confused rather than clarified.",
+            synonyms = "wordy, long-winded, prolix, garrulous",
+            antonyms = "concise, succinct, brief, terse, laconic",
+            origin = "From Latin 'verbosus' meaning 'full of words'",
+            difficulty = 2,
+            category = "communication"
+        ),
+        VocabularyEntity(
+            word = "Candid",
+            definition = "Truthful and straightforward; frank",
+            pronunciation = "KAN-did",
+            partOfSpeech = "adjective",
+            exampleSentence = "I appreciate your candid feedback on my presentation.",
+            synonyms = "frank, open, honest, sincere, forthright",
+            antonyms = "guarded, evasive, deceitful, dishonest",
+            origin = "From Latin 'candidus' meaning 'white, pure'",
+            difficulty = 2,
+            category = "communication"
+        ),
+        VocabularyEntity(
+            word = "Ambivalent",
+            definition = "Having mixed feelings or contradictory ideas about something",
+            pronunciation = "am-BIV-uh-luhnt",
+            partOfSpeech = "adjective",
+            exampleSentence = "She felt ambivalent about accepting the job offer in another city.",
+            synonyms = "uncertain, unsure, undecided, conflicted, torn",
+            antonyms = "certain, decisive, sure, resolved",
+            origin = "From Latin 'ambi' (both) + 'valere' (be strong)",
+            difficulty = 3,
+            category = "emotional"
+        ),
+        VocabularyEntity(
+            word = "Prudent",
+            definition = "Acting with or showing care and thought for the future",
+            pronunciation = "PROO-duhnt",
+            partOfSpeech = "adjective",
+            exampleSentence = "It would be prudent to save money for unexpected expenses.",
+            synonyms = "wise, sensible, careful, judicious, cautious",
+            antonyms = "reckless, imprudent, careless, foolish",
+            origin = "From Latin 'prudens' meaning 'foreseeing, skilled'",
+            difficulty = 2,
+            category = "wisdom"
+        ),
+        VocabularyEntity(
+            word = "Gregarious",
+            definition = "Fond of company; sociable",
+            pronunciation = "grih-GAIR-ee-uhs",
+            partOfSpeech = "adjective",
+            exampleSentence = "Her gregarious personality made her the life of every party.",
+            synonyms = "sociable, outgoing, friendly, convivial",
+            antonyms = "introverted, unsociable, antisocial, reclusive",
+            origin = "From Latin 'gregarius' meaning 'of a flock'",
+            difficulty = 3,
+            category = "social"
+        ),
+        VocabularyEntity(
+            word = "Frugal",
+            definition = "Sparing or economical with regard to money or food",
+            pronunciation = "FROO-guhl",
+            partOfSpeech = "adjective",
+            exampleSentence = "His frugal habits allowed him to retire early.",
+            synonyms = "thrifty, economical, sparing, careful",
+            antonyms = "extravagant, wasteful, profligate, lavish",
+            origin = "From Latin 'frugalis' meaning 'economical'",
+            difficulty = 2,
+            category = "lifestyle"
+        ),
+        VocabularyEntity(
+            word = "Enigmatic",
+            definition = "Difficult to interpret or understand; mysterious",
+            pronunciation = "en-ig-MAT-ik",
+            partOfSpeech = "adjective",
+            exampleSentence = "The Mona Lisa's enigmatic smile has fascinated viewers for centuries.",
+            synonyms = "mysterious, puzzling, inscrutable, cryptic",
+            antonyms = "straightforward, clear, obvious, transparent",
+            origin = "From Greek 'ainigma' meaning 'riddle'",
+            difficulty = 3,
+            category = "literary"
+        ),
+        VocabularyEntity(
+            word = "Astute",
+            definition = "Having or showing an ability to accurately assess situations and turn to advantage",
+            pronunciation = "uh-STOOT",
+            partOfSpeech = "adjective",
+            exampleSentence = "Her astute observations helped identify the problem quickly.",
+            synonyms = "shrewd, sharp, clever, intelligent, perceptive",
+            antonyms = "stupid, naive, foolish, obtuse",
+            origin = "From Latin 'astutus' meaning 'crafty'",
+            difficulty = 3,
+            category = "intelligence"
+        ),
+        VocabularyEntity(
+            word = "Diligent",
+            definition = "Having or showing care and conscientiousness in one's work or duties",
+            pronunciation = "DIL-ih-juhnt",
+            partOfSpeech = "adjective",
+            exampleSentence = "Her diligent work ethic earned her a promotion within a year.",
+            synonyms = "industrious, hardworking, assiduous, conscientious",
+            antonyms = "lazy, careless, negligent, idle",
+            origin = "From Latin 'diligere' meaning 'to value highly'",
+            difficulty = 2,
+            category = "personal_growth"
+        ),
+        VocabularyEntity(
+            word = "Meticulous",
+            definition = "Showing great attention to detail; very careful and precise",
+            pronunciation = "muh-TIK-yuh-luhs",
+            partOfSpeech = "adjective",
+            exampleSentence = "His meticulous planning ensured the event's success.",
+            synonyms = "careful, precise, thorough, painstaking, scrupulous",
+            antonyms = "careless, sloppy, negligent, haphazard",
+            origin = "From Latin 'meticulosus' meaning 'fearful'",
+            difficulty = 2,
+            category = "personal_growth"
+        ),
+        VocabularyEntity(
+            word = "Conundrum",
+            definition = "A confusing and difficult problem or question",
+            pronunciation = "kuh-NUN-drum",
+            partOfSpeech = "noun",
+            exampleSentence = "The ethical conundrum kept the committee debating for hours.",
+            synonyms = "puzzle, riddle, enigma, mystery, dilemma",
+            antonyms = "solution, answer, clarity",
+            origin = "Origin uncertain, possibly pseudo-Latin wordplay from 16th century",
+            difficulty = 3,
+            category = "academic"
+        ),
+        VocabularyEntity(
+            word = "Gratitude",
+            definition = "The quality of being thankful; readiness to show appreciation",
+            pronunciation = "GRAT-ih-tood",
+            partOfSpeech = "noun",
+            exampleSentence = "Practicing gratitude daily has been shown to improve mental health.",
+            synonyms = "thankfulness, appreciation, gratefulness, recognition",
+            antonyms = "ingratitude, ungratefulness, thanklessness",
+            origin = "From Latin 'gratitudo' meaning 'thankfulness'",
+            difficulty = 2,
+            category = "mindfulness"
+        ),
+        VocabularyEntity(
+            word = "Mindfulness",
+            definition = "A mental state achieved by focusing awareness on the present moment",
+            pronunciation = "MIND-fuhl-nis",
+            partOfSpeech = "noun",
+            exampleSentence = "Mindfulness meditation has helped her manage stress effectively.",
+            synonyms = "awareness, attention, consciousness, presence",
+            antonyms = "distraction, inattention, absent-mindedness",
+            origin = "From Pali 'sati', a Buddhist concept translated as 'mindfulness'",
+            difficulty = 2,
+            category = "mindfulness"
+        ),
+        VocabularyEntity(
+            word = "Humility",
+            definition = "A modest view of one's own importance; humbleness",
+            pronunciation = "hyoo-MIL-ih-tee",
+            partOfSpeech = "noun",
+            exampleSentence = "Despite his success, he approached life with genuine humility.",
+            synonyms = "modesty, humbleness, unpretentiousness, meekness",
+            antonyms = "arrogance, pride, conceit, vanity",
+            origin = "From Latin 'humilitas' meaning 'lowness, small stature'",
+            difficulty = 2,
+            category = "stoic"
+        ),
+        VocabularyEntity(
+            word = "Integrity",
+            definition = "The quality of being honest and having strong moral principles",
+            pronunciation = "in-TEG-rih-tee",
+            partOfSpeech = "noun",
+            exampleSentence = "Her integrity made her someone everyone could trust.",
+            synonyms = "honesty, honor, probity, righteousness, virtue",
+            antonyms = "dishonesty, corruption, deceitfulness",
+            origin = "From Latin 'integer' meaning 'whole, complete'",
+            difficulty = 2,
+            category = "personal_growth"
+        ),
+        VocabularyEntity(
+            word = "Auspicious",
+            definition = "Conducive to success; favorable",
+            pronunciation = "aw-SPISH-uhs",
+            partOfSpeech = "adjective",
+            exampleSentence = "The sunny weather seemed an auspicious start to their wedding day.",
+            synonyms = "favorable, propitious, promising, fortunate",
+            antonyms = "inauspicious, unfavorable, ominous, unpromising",
+            origin = "From Latin 'auspicium' meaning 'divination by observing birds'",
+            difficulty = 3,
+            category = "literary"
+        ),
+        VocabularyEntity(
+            word = "Quintessential",
+            definition = "Representing the most perfect or typical example of a quality or class",
+            pronunciation = "kwin-tuh-SEN-shuhl",
+            partOfSpeech = "adjective",
+            exampleSentence = "She is the quintessential example of a dedicated teacher.",
+            synonyms = "typical, classic, perfect, ideal, archetypal",
+            antonyms = "atypical, unusual, unrepresentative",
+            origin = "From Latin 'quinta essentia' meaning 'fifth essence'",
+            difficulty = 4,
+            category = "literary"
+        ),
+        VocabularyEntity(
+            word = "Benevolent",
+            definition = "Well meaning and kindly; charitable",
+            pronunciation = "buh-NEV-uh-luhnt",
+            partOfSpeech = "adjective",
+            exampleSentence = "The benevolent donor funded scholarships for underprivileged students.",
+            synonyms = "kind, charitable, generous, compassionate, philanthropic",
+            antonyms = "malevolent, unkind, cruel, selfish",
+            origin = "From Latin 'bene' (well) + 'volens' (wishing)",
+            difficulty = 3,
+            category = "personal_growth"
+        )
+    )
+
+    // =========================================================================
+    // LEADERBOARD - Initial peer entries with Prashant Chataut at #1
+    // =========================================================================
+
+    private suspend fun seedLeaderboard(database: ProdyDatabase) {
+        try {
+            val userDao = database.userDao()
+            userDao.insertLeaderboardEntries(getInitialLeaderboard())
+            Log.d(TAG, "Seeded ${getInitialLeaderboard().size} leaderboard entries")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error seeding leaderboard", e)
+        }
+    }
+
+    private fun getInitialLeaderboard(): List<LeaderboardEntryEntity> = listOf(
+        LeaderboardEntryEntity(
+            odId = "prashant_chataut",
+            displayName = "Prashant Chataut",
+            avatarId = "avatar_legendary",
+            titleId = "grandmaster",
+            totalPoints = 99999,
+            weeklyPoints = 2450,
+            currentStreak = 365,
+            rank = 1,
+            previousRank = 1,
+            isCurrentUser = false,
+            lastActiveAt = System.currentTimeMillis(),
+            boostsReceived = 1247,
+            congratsReceived = 892
+        ),
+        LeaderboardEntryEntity(
+            odId = "alex_m",
+            displayName = "Alex M.",
+            avatarId = "avatar_epic",
+            titleId = "sage",
+            totalPoints = 15420,
+            weeklyPoints = 890,
+            currentStreak = 45,
+            rank = 2,
+            previousRank = 3,
+            isCurrentUser = false,
+            lastActiveAt = System.currentTimeMillis() - 3600000,
+            boostsReceived = 234,
+            congratsReceived = 156
+        ),
+        LeaderboardEntryEntity(
+            odId = "sarah_k",
+            displayName = "Sarah K.",
+            avatarId = "avatar_rare",
+            titleId = "scholar",
+            totalPoints = 14850,
+            weeklyPoints = 780,
+            currentStreak = 38,
+            rank = 3,
+            previousRank = 2,
+            isCurrentUser = false,
+            lastActiveAt = System.currentTimeMillis() - 7200000,
+            boostsReceived = 198,
+            congratsReceived = 145
+        ),
+        LeaderboardEntryEntity(
+            odId = "jordan_t",
+            displayName = "Jordan T.",
+            avatarId = "avatar_rare",
+            titleId = "apprentice",
+            totalPoints = 12300,
+            weeklyPoints = 650,
+            currentStreak = 28,
+            rank = 4,
+            previousRank = 4,
+            isCurrentUser = false,
+            lastActiveAt = System.currentTimeMillis() - 10800000,
+            boostsReceived = 156,
+            congratsReceived = 112
+        ),
+        LeaderboardEntryEntity(
+            odId = "maya_r",
+            displayName = "Maya R.",
+            avatarId = "avatar_uncommon",
+            titleId = "seeker",
+            totalPoints = 11200,
+            weeklyPoints = 520,
+            currentStreak = 22,
+            rank = 5,
+            previousRank = 6,
+            isCurrentUser = false,
+            lastActiveAt = System.currentTimeMillis() - 14400000,
+            boostsReceived = 134,
+            congratsReceived = 98
+        ),
+        LeaderboardEntryEntity(
+            odId = "chris_p",
+            displayName = "Chris P.",
+            avatarId = "avatar_uncommon",
+            titleId = "learner",
+            totalPoints = 9800,
+            weeklyPoints = 480,
+            currentStreak = 18,
+            rank = 6,
+            previousRank = 5,
+            isCurrentUser = false,
+            lastActiveAt = System.currentTimeMillis() - 18000000,
+            boostsReceived = 112,
+            congratsReceived = 87
+        ),
+        LeaderboardEntryEntity(
+            odId = "emma_l",
+            displayName = "Emma L.",
+            avatarId = "avatar_common",
+            titleId = "newcomer",
+            totalPoints = 8500,
+            weeklyPoints = 420,
+            currentStreak = 15,
+            rank = 7,
+            previousRank = 8,
+            isCurrentUser = false,
+            lastActiveAt = System.currentTimeMillis() - 21600000,
+            boostsReceived = 98,
+            congratsReceived = 76
+        ),
+        LeaderboardEntryEntity(
+            odId = "david_w",
+            displayName = "David W.",
+            avatarId = "avatar_common",
+            titleId = "newcomer",
+            totalPoints = 7200,
+            weeklyPoints = 350,
+            currentStreak = 12,
+            rank = 8,
+            previousRank = 7,
+            isCurrentUser = false,
+            lastActiveAt = System.currentTimeMillis() - 25200000,
+            boostsReceived = 87,
+            congratsReceived = 65
+        ),
+        LeaderboardEntryEntity(
+            odId = "lisa_n",
+            displayName = "Lisa N.",
+            avatarId = "avatar_common",
+            titleId = "newcomer",
+            totalPoints = 6100,
+            weeklyPoints = 290,
+            currentStreak = 10,
+            rank = 9,
+            previousRank = 9,
+            isCurrentUser = false,
+            lastActiveAt = System.currentTimeMillis() - 28800000,
+            boostsReceived = 76,
+            congratsReceived = 54
+        ),
+        LeaderboardEntryEntity(
+            odId = "ryan_b",
+            displayName = "Ryan B.",
+            avatarId = "avatar_common",
+            titleId = "newcomer",
+            totalPoints = 5400,
+            weeklyPoints = 240,
+            currentStreak = 8,
+            rank = 10,
+            previousRank = 11,
+            isCurrentUser = false,
+            lastActiveAt = System.currentTimeMillis() - 32400000,
+            boostsReceived = 65,
+            congratsReceived = 43
+        ),
+        LeaderboardEntryEntity(
+            odId = "olivia_s",
+            displayName = "Olivia S.",
+            avatarId = "avatar_common",
+            titleId = "newcomer",
+            totalPoints = 4800,
+            weeklyPoints = 210,
+            currentStreak = 6,
+            rank = 11,
+            previousRank = 10,
+            isCurrentUser = false,
+            lastActiveAt = System.currentTimeMillis() - 36000000,
+            boostsReceived = 54,
+            congratsReceived = 32
+        ),
+        LeaderboardEntryEntity(
+            odId = "michael_j",
+            displayName = "Michael J.",
+            avatarId = "avatar_common",
+            titleId = "newcomer",
+            totalPoints = 4200,
+            weeklyPoints = 180,
+            currentStreak = 5,
+            rank = 12,
+            previousRank = 12,
+            isCurrentUser = false,
+            lastActiveAt = System.currentTimeMillis() - 39600000,
+            boostsReceived = 43,
+            congratsReceived = 28
+        ),
+        LeaderboardEntryEntity(
+            odId = "sophia_g",
+            displayName = "Sophia G.",
+            avatarId = "avatar_common",
+            titleId = "newcomer",
+            totalPoints = 3600,
+            weeklyPoints = 150,
+            currentStreak = 4,
+            rank = 13,
+            previousRank = 14,
+            isCurrentUser = false,
+            lastActiveAt = System.currentTimeMillis() - 43200000,
+            boostsReceived = 32,
+            congratsReceived = 21
+        ),
+        LeaderboardEntryEntity(
+            odId = "william_h",
+            displayName = "William H.",
+            avatarId = "avatar_common",
+            titleId = "newcomer",
+            totalPoints = 3100,
+            weeklyPoints = 120,
+            currentStreak = 3,
+            rank = 14,
+            previousRank = 13,
+            isCurrentUser = false,
+            lastActiveAt = System.currentTimeMillis() - 46800000,
+            boostsReceived = 21,
+            congratsReceived = 15
+        ),
+        LeaderboardEntryEntity(
+            odId = "ava_c",
+            displayName = "Ava C.",
+            avatarId = "avatar_common",
+            titleId = "newcomer",
+            totalPoints = 2600,
+            weeklyPoints = 90,
+            currentStreak = 2,
+            rank = 15,
+            previousRank = 15,
+            isCurrentUser = false,
+            lastActiveAt = System.currentTimeMillis() - 50400000,
+            boostsReceived = 15,
+            congratsReceived = 10
+        )
+    )
+
+    // =========================================================================
+    // USER PROFILE - Initial profile setup
+    // =========================================================================
+
+    private suspend fun seedUserProfile(database: ProdyDatabase) {
+        try {
+            val userDao = database.userDao()
+            // Only seed if no profile exists
+            val existingProfile = userDao.getUserProfileSync()
+            if (existingProfile == null) {
+                userDao.insertUserProfile(getInitialUserProfile())
+                userDao.insertUserStats(getInitialUserStats())
+                Log.d(TAG, "Seeded initial user profile")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error seeding user profile", e)
+        }
+    }
+
+    private fun getInitialUserProfile(): UserProfileEntity = UserProfileEntity(
+        id = 1,
+        displayName = "Prody User",
+        avatarId = "avatar_default",
+        bannerId = "banner_default",
+        titleId = "newcomer",
+        totalPoints = 0,
+        currentStreak = 0,
+        longestStreak = 0,
+        journalEntriesCount = 0,
+        wordsLearned = 0,
+        futureMessagesCount = 0,
+        lastActiveDate = System.currentTimeMillis(),
+        createdAt = System.currentTimeMillis()
+    )
+
+    private fun getInitialUserStats(): UserStatsEntity = UserStatsEntity(
+        id = 1,
+        dailyPointsEarned = 0,
+        weeklyPointsEarned = 0,
+        monthlyPointsEarned = 0,
+        totalJournalWords = 0,
+        averageMood = 5,
+        lastResetDate = System.currentTimeMillis()
+    )
+
+    // =========================================================================
+    // ACHIEVEMENTS - Comprehensive achievement definitions
+    // =========================================================================
+
+    private suspend fun seedAchievements(database: ProdyDatabase) {
+        try {
+            val userDao = database.userDao()
+            userDao.insertAchievements(getInitialAchievements())
+            Log.d(TAG, "Seeded ${getInitialAchievements().size} achievements")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error seeding achievements", e)
+        }
+    }
+
+    private fun getInitialAchievements(): List<AchievementEntity> = listOf(
+        // Streak Achievements - Consistency Category
+        AchievementEntity(
+            id = "streak_3",
+            title = "Getting Started",
+            description = "Maintain a 3-day streak",
+            icon = "fire",
+            category = "consistency",
+            rarity = "common",
+            xpReward = 25,
+            requiredProgress = 3
+        ),
+        AchievementEntity(
+            id = "streak_7",
+            title = "Week Warrior",
+            description = "Maintain a 7-day streak",
+            icon = "fire",
+            category = "consistency",
+            rarity = "uncommon",
+            xpReward = 50,
+            requiredProgress = 7
+        ),
+        AchievementEntity(
+            id = "streak_14",
+            title = "Fortnight Focus",
+            description = "Maintain a 14-day streak",
+            icon = "fire",
+            category = "consistency",
+            rarity = "rare",
+            xpReward = 100,
+            requiredProgress = 14
+        ),
+        AchievementEntity(
+            id = "streak_30",
+            title = "Month Master",
+            description = "Maintain a 30-day streak",
+            icon = "fire",
+            category = "consistency",
+            rarity = "epic",
+            xpReward = 200,
+            requiredProgress = 30
+        ),
+        AchievementEntity(
+            id = "streak_60",
+            title = "Two Month Champion",
+            description = "Maintain a 60-day streak",
+            icon = "fire",
+            category = "consistency",
+            rarity = "epic",
+            xpReward = 350,
+            requiredProgress = 60
+        ),
+        AchievementEntity(
+            id = "streak_100",
+            title = "Century Club",
+            description = "Maintain a 100-day streak",
+            icon = "fire",
+            category = "consistency",
+            rarity = "legendary",
+            xpReward = 500,
+            requiredProgress = 100
+        ),
+        AchievementEntity(
+            id = "streak_365",
+            title = "Year of Dedication",
+            description = "Maintain a 365-day streak",
+            icon = "crown",
+            category = "consistency",
+            rarity = "legendary",
+            xpReward = 2000,
+            requiredProgress = 365
+        ),
+
+        // Journal Achievements - Reflection Category
+        AchievementEntity(
+            id = "first_entry",
+            title = "First Words",
+            description = "Write your first journal entry",
+            icon = "edit",
+            category = "reflection",
+            rarity = "common",
+            xpReward = 20,
+            requiredProgress = 1
+        ),
+        AchievementEntity(
+            id = "journal_10",
+            title = "Regular Reflector",
+            description = "Write 10 journal entries",
+            icon = "edit",
+            category = "reflection",
+            rarity = "uncommon",
+            xpReward = 50,
+            requiredProgress = 10
+        ),
+        AchievementEntity(
+            id = "journal_25",
+            title = "Thoughtful Writer",
+            description = "Write 25 journal entries",
+            icon = "edit",
+            category = "reflection",
+            rarity = "rare",
+            xpReward = 100,
+            requiredProgress = 25
+        ),
+        AchievementEntity(
+            id = "journal_50",
+            title = "Prolific Journaler",
+            description = "Write 50 journal entries",
+            icon = "book_open",
+            category = "reflection",
+            rarity = "rare",
+            xpReward = 150,
+            requiredProgress = 50
+        ),
+        AchievementEntity(
+            id = "journal_100",
+            title = "Journaling Master",
+            description = "Write 100 journal entries",
+            icon = "book_open",
+            category = "reflection",
+            rarity = "epic",
+            xpReward = 300,
+            requiredProgress = 100
+        ),
+        AchievementEntity(
+            id = "journal_250",
+            title = "Chronicler",
+            description = "Write 250 journal entries",
+            icon = "library",
+            category = "reflection",
+            rarity = "legendary",
+            xpReward = 600,
+            requiredProgress = 250
+        ),
+
+        // Word Count Achievements - Reflection Category
+        AchievementEntity(
+            id = "words_1000",
+            title = "Wordsmith",
+            description = "Write 1,000 words total in your journal",
+            icon = "text",
+            category = "reflection",
+            rarity = "uncommon",
+            xpReward = 50,
+            requiredProgress = 1000
+        ),
+        AchievementEntity(
+            id = "words_5000",
+            title = "Storyteller",
+            description = "Write 5,000 words total in your journal",
+            icon = "text",
+            category = "reflection",
+            rarity = "rare",
+            xpReward = 150,
+            requiredProgress = 5000
+        ),
+        AchievementEntity(
+            id = "words_10000",
+            title = "Author",
+            description = "Write 10,000 words total in your journal",
+            icon = "text",
+            category = "reflection",
+            rarity = "epic",
+            xpReward = 300,
+            requiredProgress = 10000
+        ),
+        AchievementEntity(
+            id = "words_25000",
+            title = "Novelist",
+            description = "Write 25,000 words total in your journal",
+            icon = "text",
+            category = "reflection",
+            rarity = "legendary",
+            xpReward = 750,
+            requiredProgress = 25000
+        ),
+
+        // Vocabulary Achievements - Mastery Category
+        AchievementEntity(
+            id = "vocab_10",
+            title = "Word Collector",
+            description = "Learn 10 vocabulary words",
+            icon = "book",
+            category = "mastery",
+            rarity = "common",
+            xpReward = 30,
+            requiredProgress = 10
+        ),
+        AchievementEntity(
+            id = "vocab_25",
+            title = "Wordsmith Apprentice",
+            description = "Learn 25 vocabulary words",
+            icon = "book",
+            category = "mastery",
+            rarity = "uncommon",
+            xpReward = 75,
+            requiredProgress = 25
+        ),
+        AchievementEntity(
+            id = "vocab_50",
+            title = "Linguist",
+            description = "Learn 50 vocabulary words",
+            icon = "book",
+            category = "mastery",
+            rarity = "rare",
+            xpReward = 150,
+            requiredProgress = 50
+        ),
+        AchievementEntity(
+            id = "vocab_100",
+            title = "Lexicon Master",
+            description = "Learn 100 vocabulary words",
+            icon = "brain",
+            category = "mastery",
+            rarity = "epic",
+            xpReward = 300,
+            requiredProgress = 100
+        ),
+        AchievementEntity(
+            id = "vocab_200",
+            title = "Dictionary",
+            description = "Learn 200 vocabulary words",
+            icon = "brain",
+            category = "mastery",
+            rarity = "legendary",
+            xpReward = 600,
+            requiredProgress = 200
+        ),
+
+        // Level Achievements - Wisdom Category
+        AchievementEntity(
+            id = "level_5",
+            title = "Awakening",
+            description = "Reach level 5",
+            icon = "star",
+            category = "wisdom",
+            rarity = "common",
+            xpReward = 25,
+            requiredProgress = 5
+        ),
+        AchievementEntity(
+            id = "level_10",
+            title = "Rising Star",
+            description = "Reach level 10",
+            icon = "star",
+            category = "wisdom",
+            rarity = "uncommon",
+            xpReward = 100,
+            requiredProgress = 10
+        ),
+        AchievementEntity(
+            id = "level_25",
+            title = "Dedicated Seeker",
+            description = "Reach level 25",
+            icon = "star",
+            category = "wisdom",
+            rarity = "rare",
+            xpReward = 250,
+            requiredProgress = 25
+        ),
+        AchievementEntity(
+            id = "level_50",
+            title = "Elite",
+            description = "Reach level 50",
+            icon = "crown",
+            category = "wisdom",
+            rarity = "legendary",
+            xpReward = 500,
+            requiredProgress = 50
+        ),
+
+        // Future Messages - Temporal Category
+        AchievementEntity(
+            id = "future_first",
+            title = "Time Traveler",
+            description = "Send your first message to your future self",
+            icon = "mail",
+            category = "temporal",
+            rarity = "common",
+            xpReward = 25,
+            requiredProgress = 1
+        ),
+        AchievementEntity(
+            id = "future_5",
+            title = "Temporal Writer",
+            description = "Send 5 messages to your future self",
+            icon = "mail",
+            category = "temporal",
+            rarity = "uncommon",
+            xpReward = 75,
+            requiredProgress = 5
+        ),
+        AchievementEntity(
+            id = "future_10",
+            title = "Chronologist",
+            description = "Send 10 messages to your future self",
+            icon = "mail",
+            category = "temporal",
+            rarity = "rare",
+            xpReward = 150,
+            requiredProgress = 10
+        ),
+
+        // Special Achievements - Presence Category
+        AchievementEntity(
+            id = "comeback",
+            title = "Comeback Kid",
+            description = "Return after 7+ days away",
+            icon = "refresh",
+            category = "presence",
+            rarity = "rare",
+            xpReward = 75,
+            requiredProgress = 1
+        ),
+        AchievementEntity(
+            id = "night_owl",
+            title = "Night Owl",
+            description = "Journal after midnight 5 times",
+            icon = "moon",
+            category = "presence",
+            rarity = "uncommon",
+            xpReward = 50,
+            requiredProgress = 5
+        ),
+        AchievementEntity(
+            id = "early_bird",
+            title = "Early Bird",
+            description = "Journal before 6 AM 5 times",
+            icon = "sun",
+            category = "presence",
+            rarity = "uncommon",
+            xpReward = 50,
+            requiredProgress = 5
+        ),
+        AchievementEntity(
+            id = "weekend_warrior",
+            title = "Weekend Warrior",
+            description = "Journal every day of a weekend",
+            icon = "calendar",
+            category = "presence",
+            rarity = "common",
+            xpReward = 30,
+            requiredProgress = 2
+        ),
+
+        // XP Milestones - Wisdom Category
+        AchievementEntity(
+            id = "xp_1000",
+            title = "Point Collector",
+            description = "Earn 1,000 total XP",
+            icon = "star",
+            category = "wisdom",
+            rarity = "common",
+            xpReward = 50,
+            requiredProgress = 1000
+        ),
+        AchievementEntity(
+            id = "xp_5000",
+            title = "Point Hoarder",
+            description = "Earn 5,000 total XP",
+            icon = "star",
+            category = "wisdom",
+            rarity = "uncommon",
+            xpReward = 150,
+            requiredProgress = 5000
+        ),
+        AchievementEntity(
+            id = "xp_10000",
+            title = "Point Master",
+            description = "Earn 10,000 total XP",
+            icon = "star",
+            category = "wisdom",
+            rarity = "rare",
+            xpReward = 300,
+            requiredProgress = 10000
+        ),
+        AchievementEntity(
+            id = "xp_50000",
+            title = "Point Legend",
+            description = "Earn 50,000 total XP",
+            icon = "crown",
+            category = "wisdom",
+            rarity = "legendary",
+            xpReward = 1000,
+            requiredProgress = 50000
         )
     )
 }

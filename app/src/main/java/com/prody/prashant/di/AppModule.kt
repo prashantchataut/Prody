@@ -5,7 +5,7 @@ import android.util.Log
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.prody.prashant.data.ai.BuddhaAiRepository
+import com.prody.prashant.data.ai.BuddhaAiService
 import com.prody.prashant.data.ai.GeminiService
 import com.prody.prashant.data.ai.OpenRouterService
 import com.prody.prashant.data.local.dao.*
@@ -13,6 +13,7 @@ import com.prody.prashant.data.local.database.DatabaseSeeder
 import com.prody.prashant.data.local.database.ProdyDatabase
 import com.prody.prashant.data.local.preferences.PreferencesManager
 import com.prody.prashant.data.backup.BackupManager
+import com.prody.prashant.data.cache.AiCacheManager
 import com.prody.prashant.util.TextToSpeechManager
 import dagger.Module
 import dagger.Provides
@@ -188,12 +189,18 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideBuddhaAiRepository(
-        @ApplicationContext context: Context,
+    fun provideAiCacheManager(
+        @ApplicationContext context: Context
+    ): AiCacheManager {
+        return AiCacheManager(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideBuddhaAiService(
         geminiService: GeminiService,
-        openRouterService: OpenRouterService,
-        preferencesManager: PreferencesManager
-    ): BuddhaAiRepository {
-        return BuddhaAiRepository(context, geminiService, openRouterService, preferencesManager)
+        aiCacheManager: AiCacheManager
+    ): BuddhaAiService {
+        return BuddhaAiService(geminiService, aiCacheManager)
     }
 }
