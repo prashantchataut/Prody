@@ -255,28 +255,6 @@ class StatsViewModel @Inject constructor(
         }
     }
 
-    fun boostPeer(peerId: String) {
-        viewModelScope.launch {
-            try {
-                userDao.incrementBoosts(peerId)
-                // In a real app, this would also send a notification to the peer
-            } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error boosting peer: $peerId", e)
-            }
-        }
-    }
-
-    fun congratulatePeer(peerId: String) {
-        viewModelScope.launch {
-            try {
-                userDao.incrementCongrats(peerId)
-                // In a real app, this would also send a notification to the peer
-            } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error congratulating peer: $peerId", e)
-            }
-        }
-    }
-
     /**
      * Refresh all stats and leaderboard data
      */

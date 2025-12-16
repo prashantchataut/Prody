@@ -218,9 +218,7 @@ fun StatsScreen(
                         LeaderboardPodium(
                             first = displayedLeaderboard[0],
                             second = displayedLeaderboard[1],
-                            third = displayedLeaderboard[2],
-                            onBoost = { viewModel.boostPeer(it) },
-                            onCongrats = { viewModel.congratulatePeer(it) }
+                            third = displayedLeaderboard[2]
                         )
                     }
                 }
@@ -242,9 +240,7 @@ fun StatsScreen(
                 ) {
                     LeaderboardItem(
                         entry = entry,
-                        rank = startIndex + index + 1,
-                        onBoost = { viewModel.boostPeer(entry.odId) },
-                        onCongrats = { viewModel.congratulatePeer(entry.odId) }
+                        rank = startIndex + index + 1
                     )
                 }
             }
@@ -1153,9 +1149,7 @@ private fun StyledTabRow(
 @Composable
 private fun LeaderboardItem(
     entry: LeaderboardEntryEntity,
-    rank: Int,
-    onBoost: () -> Unit,
-    onCongrats: () -> Unit
+    rank: Int
 ) {
     val backgroundColor = when {
         entry.isCurrentUser -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
@@ -1262,34 +1256,6 @@ private fun LeaderboardItem(
                     }
                 }
             }
-
-            // Actions (only for other users)
-            if (!entry.isCurrentUser) {
-                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    IconButton(
-                        onClick = onBoost,
-                        modifier = Modifier.size(36.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.ThumbUp,
-                            contentDescription = stringResource(R.string.boost_peer),
-                            modifier = Modifier.size(18.dp),
-                            tint = MoodMotivated
-                        )
-                    }
-                    IconButton(
-                        onClick = onCongrats,
-                        modifier = Modifier.size(36.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Celebration,
-                            contentDescription = stringResource(R.string.congratulate),
-                            modifier = Modifier.size(18.dp),
-                            tint = MoodExcited
-                        )
-                    }
-                }
-            }
         }
     }
 }
@@ -1376,15 +1342,12 @@ private fun RankIndicator(rank: Int) {
  * - Animated glow effects for winners
  * - User avatars with rank badges
  * - Points and streak display
- * - Interaction buttons for boosting/congratulating
  */
 @Composable
 private fun LeaderboardPodium(
     first: LeaderboardEntryEntity,
     second: LeaderboardEntryEntity,
-    third: LeaderboardEntryEntity,
-    onBoost: (String) -> Unit,
-    onCongrats: (String) -> Unit
+    third: LeaderboardEntryEntity
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "podium_animation")
 
@@ -1453,9 +1416,7 @@ private fun LeaderboardPodium(
                     podiumHeight = 100.dp,
                     tierColor = SilverTier,
                     glowAlpha = 0.3f,
-                    shinePosition = shinePosition,
-                    onBoost = onBoost,
-                    onCongrats = onCongrats
+                    shinePosition = shinePosition
                 )
 
                 // 1st Place (Gold) - Center, tallest
@@ -1465,9 +1426,7 @@ private fun LeaderboardPodium(
                     podiumHeight = 130.dp,
                     tierColor = GoldTier,
                     glowAlpha = goldGlowAlpha,
-                    shinePosition = shinePosition,
-                    onBoost = onBoost,
-                    onCongrats = onCongrats
+                    shinePosition = shinePosition
                 )
 
                 // 3rd Place (Bronze) - Right
@@ -1477,9 +1436,7 @@ private fun LeaderboardPodium(
                     podiumHeight = 80.dp,
                     tierColor = BronzeTier,
                     glowAlpha = 0.25f,
-                    shinePosition = shinePosition,
-                    onBoost = onBoost,
-                    onCongrats = onCongrats
+                    shinePosition = shinePosition
                 )
             }
         }
@@ -1493,9 +1450,7 @@ private fun PodiumPlace(
     podiumHeight: Dp,
     tierColor: Color,
     glowAlpha: Float,
-    shinePosition: Float,
-    onBoost: (String) -> Unit,
-    onCongrats: (String) -> Unit
+    shinePosition: Float
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "podium_place_$rank")
 
@@ -1698,42 +1653,8 @@ private fun PodiumPlace(
                     }
                 }
 
-                // Action buttons (only for non-current user)
-                if (!entry.isCurrentUser) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        IconButton(
-                            onClick = { onBoost(entry.odId) },
-                            modifier = Modifier
-                                .size(28.dp)
-                                .clip(CircleShape)
-                                .background(Color.White.copy(alpha = 0.2f))
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.ThumbUp,
-                                contentDescription = "Boost",
-                                modifier = Modifier.size(14.dp),
-                                tint = Color.White
-                            )
-                        }
-                        IconButton(
-                            onClick = { onCongrats(entry.odId) },
-                            modifier = Modifier
-                                .size(28.dp)
-                                .clip(CircleShape)
-                                .background(Color.White.copy(alpha = 0.2f))
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.Celebration,
-                                contentDescription = "Congratulate",
-                                modifier = Modifier.size(14.dp),
-                                tint = Color.White
-                            )
-                        }
-                    }
-                } else {
-                    // "You" badge for current user
+                // "You" badge for current user
+                if (entry.isCurrentUser) {
                     Surface(
                         color = Color.White.copy(alpha = 0.2f),
                         shape = RoundedCornerShape(8.dp)
