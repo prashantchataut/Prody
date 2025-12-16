@@ -1677,11 +1677,13 @@ object DatabaseSeeder {
     }
 
     private fun getInitialLeaderboard(): List<LeaderboardEntryEntity> = listOf(
+        // #1 - Prashant Chataut (Developer with DEV badge)
         LeaderboardEntryEntity(
             odId = "prashant_chataut",
             displayName = "Prashant Chataut",
             avatarId = "avatar_legendary",
             titleId = "grandmaster",
+            bannerId = "aurora_dreams", // Premium banner for DEV
             totalPoints = 99999,
             weeklyPoints = 2450,
             currentStreak = 365,
@@ -1690,13 +1692,18 @@ object DatabaseSeeder {
             isCurrentUser = false,
             lastActiveAt = System.currentTimeMillis(),
             boostsReceived = 1247,
-            congratsReceived = 892
+            congratsReceived = 892,
+            isDevBadgeHolder = true, // DEV badge holder
+            isBetaTester = true,
+            profileFrameRarity = "legendary"
         ),
+        // #2 - Alex M. (Beta Tester)
         LeaderboardEntryEntity(
             odId = "alex_m",
             displayName = "Alex M.",
             avatarId = "avatar_epic",
             titleId = "sage",
+            bannerId = "cosmic_voyage",
             totalPoints = 15420,
             weeklyPoints = 890,
             currentStreak = 45,
@@ -1705,13 +1712,18 @@ object DatabaseSeeder {
             isCurrentUser = false,
             lastActiveAt = System.currentTimeMillis() - 3600000,
             boostsReceived = 234,
-            congratsReceived = 156
+            congratsReceived = 156,
+            isDevBadgeHolder = false,
+            isBetaTester = true, // Beta tester
+            profileFrameRarity = "epic"
         ),
+        // #3 - Sarah K. (Beta Tester)
         LeaderboardEntryEntity(
             odId = "sarah_k",
             displayName = "Sarah K.",
             avatarId = "avatar_rare",
             titleId = "scholar",
+            bannerId = "mystic_forest",
             totalPoints = 14850,
             weeklyPoints = 780,
             currentStreak = 38,
@@ -1720,13 +1732,18 @@ object DatabaseSeeder {
             isCurrentUser = false,
             lastActiveAt = System.currentTimeMillis() - 7200000,
             boostsReceived = 198,
-            congratsReceived = 145
+            congratsReceived = 145,
+            isDevBadgeHolder = false,
+            isBetaTester = true, // Beta tester
+            profileFrameRarity = "rare"
         ),
+        // #4 - Jordan T.
         LeaderboardEntryEntity(
             odId = "jordan_t",
             displayName = "Jordan T.",
             avatarId = "avatar_rare",
             titleId = "apprentice",
+            bannerId = "ocean_depths",
             totalPoints = 12300,
             weeklyPoints = 650,
             currentStreak = 28,
@@ -1735,13 +1752,18 @@ object DatabaseSeeder {
             isCurrentUser = false,
             lastActiveAt = System.currentTimeMillis() - 10800000,
             boostsReceived = 156,
-            congratsReceived = 112
+            congratsReceived = 112,
+            isDevBadgeHolder = false,
+            isBetaTester = false,
+            profileFrameRarity = "rare"
         ),
+        // #5 - Maya R.
         LeaderboardEntryEntity(
             odId = "maya_r",
             displayName = "Maya R.",
             avatarId = "avatar_uncommon",
             titleId = "seeker",
+            bannerId = "golden_hour",
             totalPoints = 11200,
             weeklyPoints = 520,
             currentStreak = 22,
@@ -1750,13 +1772,18 @@ object DatabaseSeeder {
             isCurrentUser = false,
             lastActiveAt = System.currentTimeMillis() - 14400000,
             boostsReceived = 134,
-            congratsReceived = 98
+            congratsReceived = 98,
+            isDevBadgeHolder = false,
+            isBetaTester = false,
+            profileFrameRarity = "uncommon"
         ),
+        // #6 - Chris P.
         LeaderboardEntryEntity(
             odId = "chris_p",
             displayName = "Chris P.",
             avatarId = "avatar_uncommon",
             titleId = "learner",
+            bannerId = "serene_meadow",
             totalPoints = 9800,
             weeklyPoints = 480,
             currentStreak = 18,
@@ -1765,13 +1792,18 @@ object DatabaseSeeder {
             isCurrentUser = false,
             lastActiveAt = System.currentTimeMillis() - 18000000,
             boostsReceived = 112,
-            congratsReceived = 87
+            congratsReceived = 87,
+            isDevBadgeHolder = false,
+            isBetaTester = false,
+            profileFrameRarity = "uncommon"
         ),
+        // #7 - Emma L.
         LeaderboardEntryEntity(
             odId = "emma_l",
             displayName = "Emma L.",
             avatarId = "avatar_common",
             titleId = "newcomer",
+            bannerId = "default_dawn",
             totalPoints = 8500,
             weeklyPoints = 420,
             currentStreak = 15,
@@ -1780,13 +1812,18 @@ object DatabaseSeeder {
             isCurrentUser = false,
             lastActiveAt = System.currentTimeMillis() - 21600000,
             boostsReceived = 98,
-            congratsReceived = 76
+            congratsReceived = 76,
+            isDevBadgeHolder = false,
+            isBetaTester = false,
+            profileFrameRarity = "common"
         ),
+        // #8 - David W.
         LeaderboardEntryEntity(
             odId = "david_w",
             displayName = "David W.",
             avatarId = "avatar_common",
             titleId = "newcomer",
+            bannerId = "default_dawn",
             totalPoints = 7200,
             weeklyPoints = 350,
             currentStreak = 12,
@@ -1795,13 +1832,18 @@ object DatabaseSeeder {
             isCurrentUser = false,
             lastActiveAt = System.currentTimeMillis() - 25200000,
             boostsReceived = 87,
-            congratsReceived = 65
+            congratsReceived = 65,
+            isDevBadgeHolder = false,
+            isBetaTester = false,
+            profileFrameRarity = "common"
         ),
+        // #9 - Lisa N.
         LeaderboardEntryEntity(
             odId = "lisa_n",
             displayName = "Lisa N.",
             avatarId = "avatar_common",
             titleId = "newcomer",
+            bannerId = "default_dawn",
             totalPoints = 6100,
             weeklyPoints = 290,
             currentStreak = 10,
@@ -1810,13 +1852,18 @@ object DatabaseSeeder {
             isCurrentUser = false,
             lastActiveAt = System.currentTimeMillis() - 28800000,
             boostsReceived = 76,
-            congratsReceived = 54
+            congratsReceived = 54,
+            isDevBadgeHolder = false,
+            isBetaTester = false,
+            profileFrameRarity = "common"
         ),
+        // #10 - Ryan B.
         LeaderboardEntryEntity(
             odId = "ryan_b",
             displayName = "Ryan B.",
             avatarId = "avatar_common",
             titleId = "newcomer",
+            bannerId = "default_dawn",
             totalPoints = 5400,
             weeklyPoints = 240,
             currentStreak = 8,
@@ -1825,13 +1872,18 @@ object DatabaseSeeder {
             isCurrentUser = false,
             lastActiveAt = System.currentTimeMillis() - 32400000,
             boostsReceived = 65,
-            congratsReceived = 43
+            congratsReceived = 43,
+            isDevBadgeHolder = false,
+            isBetaTester = false,
+            profileFrameRarity = "common"
         ),
+        // #11 - Olivia S.
         LeaderboardEntryEntity(
             odId = "olivia_s",
             displayName = "Olivia S.",
             avatarId = "avatar_common",
             titleId = "newcomer",
+            bannerId = "default_dawn",
             totalPoints = 4800,
             weeklyPoints = 210,
             currentStreak = 6,
@@ -1840,13 +1892,18 @@ object DatabaseSeeder {
             isCurrentUser = false,
             lastActiveAt = System.currentTimeMillis() - 36000000,
             boostsReceived = 54,
-            congratsReceived = 32
+            congratsReceived = 32,
+            isDevBadgeHolder = false,
+            isBetaTester = false,
+            profileFrameRarity = "common"
         ),
+        // #12 - Michael J.
         LeaderboardEntryEntity(
             odId = "michael_j",
             displayName = "Michael J.",
             avatarId = "avatar_common",
             titleId = "newcomer",
+            bannerId = "default_dawn",
             totalPoints = 4200,
             weeklyPoints = 180,
             currentStreak = 5,
@@ -1855,13 +1912,18 @@ object DatabaseSeeder {
             isCurrentUser = false,
             lastActiveAt = System.currentTimeMillis() - 39600000,
             boostsReceived = 43,
-            congratsReceived = 28
+            congratsReceived = 28,
+            isDevBadgeHolder = false,
+            isBetaTester = false,
+            profileFrameRarity = "common"
         ),
+        // #13 - Sophia G.
         LeaderboardEntryEntity(
             odId = "sophia_g",
             displayName = "Sophia G.",
             avatarId = "avatar_common",
             titleId = "newcomer",
+            bannerId = "default_dawn",
             totalPoints = 3600,
             weeklyPoints = 150,
             currentStreak = 4,
@@ -1870,13 +1932,18 @@ object DatabaseSeeder {
             isCurrentUser = false,
             lastActiveAt = System.currentTimeMillis() - 43200000,
             boostsReceived = 32,
-            congratsReceived = 21
+            congratsReceived = 21,
+            isDevBadgeHolder = false,
+            isBetaTester = false,
+            profileFrameRarity = "common"
         ),
+        // #14 - William H.
         LeaderboardEntryEntity(
             odId = "william_h",
             displayName = "William H.",
             avatarId = "avatar_common",
             titleId = "newcomer",
+            bannerId = "default_dawn",
             totalPoints = 3100,
             weeklyPoints = 120,
             currentStreak = 3,
@@ -1885,13 +1952,18 @@ object DatabaseSeeder {
             isCurrentUser = false,
             lastActiveAt = System.currentTimeMillis() - 46800000,
             boostsReceived = 21,
-            congratsReceived = 15
+            congratsReceived = 15,
+            isDevBadgeHolder = false,
+            isBetaTester = false,
+            profileFrameRarity = "common"
         ),
+        // #15 - Ava C.
         LeaderboardEntryEntity(
             odId = "ava_c",
             displayName = "Ava C.",
             avatarId = "avatar_common",
             titleId = "newcomer",
+            bannerId = "default_dawn",
             totalPoints = 2600,
             weeklyPoints = 90,
             currentStreak = 2,
@@ -1900,7 +1972,10 @@ object DatabaseSeeder {
             isCurrentUser = false,
             lastActiveAt = System.currentTimeMillis() - 50400000,
             boostsReceived = 15,
-            congratsReceived = 10
+            congratsReceived = 10,
+            isDevBadgeHolder = false,
+            isBetaTester = false,
+            profileFrameRarity = "common"
         )
     )
 
