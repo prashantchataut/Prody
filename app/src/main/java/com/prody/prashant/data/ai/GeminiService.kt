@@ -173,6 +173,147 @@ Based on the user's activity summary, provide an encouraging weekly reflection t
 - Offers specific encouragement for the coming week
 - Keeps it concise (3-5 sentences)
 """
+
+    fun getJournalPromptForMood(mood: Mood): String = """
+$CORE_IDENTITY
+
+Generate a thoughtful, inspiring journal prompt for someone currently feeling ${mood.displayName}.
+
+The prompt should:
+- Be relevant to their current emotional state
+- Encourage meaningful reflection
+- Be open-ended but focused
+- Draw from stoic or timeless wisdom
+- Be 1-3 sentences maximum
+
+Examples of good prompts:
+- "What small victory today deserves more of your attention?"
+- "If your future self could see this moment, what would they appreciate about how you're handling it?"
+- "What is one thing you're holding onto that no longer serves you?"
+
+Generate just the prompt itself, nothing else. No quotes or explanation.
+"""
+
+    fun getQuoteExplanationPrompt(quote: String, author: String): String = """
+$CORE_IDENTITY
+
+Explain this quote in a way that makes it personally relevant and actionable:
+
+Quote: "$quote"
+Author: $author
+
+Your explanation should:
+1. Briefly explain the core meaning (1-2 sentences)
+2. Give a practical example of applying this wisdom today
+3. End with a reflection question
+
+Keep the total response under 150 words. Be conversational, not academic.
+"""
+
+    fun getVocabularyContextPrompt(word: String, definition: String): String = """
+$CORE_IDENTITY
+
+Help the user understand and remember this vocabulary word:
+
+Word: $word
+Definition: $definition
+
+Provide:
+1. A memorable way to remember this word (mnemonic, etymology insight, or vivid association)
+2. Two short example sentences showing the word in different contexts
+3. A related quote or proverb that uses similar concepts
+
+Keep it concise and engaging - under 120 words total.
+"""
+
+    fun getStreakCelebrationPrompt(streakCount: Int, previousBest: Int): String = """
+$CORE_IDENTITY
+
+The user has achieved a $streakCount-day streak! ${if (streakCount > previousBest) "This is their new personal best (previous: $previousBest days)!" else ""}
+
+Generate a personalized, encouraging celebration message that:
+- Acknowledges their specific achievement ($streakCount days)
+- Connects consistency to their growth journey
+- Provides motivation to continue
+- ${if (streakCount > previousBest) "Celebrates this new milestone!" else "Encourages them toward their next goal"}
+
+Keep it warm and genuine, 2-4 sentences. Don't be generic or use cliches.
+"""
+
+    fun getMoodPatternInsightPrompt(
+        dominantMood: Mood,
+        moodDistribution: Map<String, Int>,
+        journalCount: Int
+    ): String = """
+$CORE_IDENTITY
+
+Based on the user's recent journal entries, provide insight about their emotional patterns:
+
+MOOD DATA:
+- Dominant mood: ${dominantMood.displayName}
+- Total entries analyzed: $journalCount
+- Distribution: ${moodDistribution.entries.joinToString(", ") { "${it.key}: ${it.value}" }}
+
+Provide a thoughtful observation that:
+1. Acknowledges patterns without judgment
+2. Offers stoic wisdom relevant to their emotional journey
+3. Suggests one small practice that might help
+4. Ends with encouragement
+
+Be specific to their data, not generic. Keep it under 150 words.
+"""
+
+    fun getJournalAnalysisPrompt(
+        entries: List<String>,
+        dateRange: String
+    ): String = """
+$CORE_IDENTITY
+
+Analyze these journal entries and provide meaningful insights:
+
+ENTRIES ($dateRange):
+${entries.mapIndexed { i, e -> "Entry ${i + 1}: \"${e.take(500)}...\"" }.joinToString("\n\n")}
+
+Your analysis should:
+1. Identify recurring themes or concerns
+2. Note any growth or shifts in perspective
+3. Highlight strengths you observe in their writing
+4. Offer one piece of wisdom relevant to their journey
+5. Suggest an area for deeper reflection
+
+Be insightful and personal, not clinical. Reference specific content from their entries.
+Keep the total response under 300 words.
+"""
+
+    const val MORNING_REFLECTION_PROMPT = """
+$CORE_IDENTITY
+
+Generate a brief morning reflection to start the day with intention.
+
+The reflection should:
+- Help the user set a positive, grounded intention
+- Include a practical mindfulness element
+- Reference the new day as an opportunity
+- Be 2-3 sentences maximum
+- Feel fresh and inspiring, not routine
+
+Just provide the reflection, no preamble.
+"""
+
+    const val EVENING_REFLECTION_PROMPT = """
+$CORE_IDENTITY
+
+Generate a brief evening reflection for winding down the day.
+
+The reflection should:
+- Encourage gratitude for the day's experiences
+- Promote self-compassion for any struggles
+- Help transition toward restful sleep
+- Be 2-3 sentences maximum
+- Feel calming and contemplative
+
+Just provide the reflection, no preamble.
+"""
 }
 
 /**
@@ -441,6 +582,296 @@ Provide an encouraging, personalized weekly reflection based on this activity.
             GeminiResult.Error(e, getErrorMessage(e))
         }
     }
+
+    /**
+     * Generates a journal prompt based on the user's current mood.
+     */
+    suspend fun generateJournalPrompt(mood: Mood): GeminiResult<String> = withContext(Dispatchers.IO) {
+        val model = generativeModel ?: return@withContext GeminiResult.ApiKeyNotSet
+
+        try {
+            val prompt = BuddhaSystemPrompt.getJournalPromptForMood(mood)
+            val response = model.generateContent(prompt)
+            val text = response.text
+
+            if (text.isNullOrBlank()) {
+                GeminiResult.Error(
+                    IllegalStateException("Empty response from AI"),
+                    "Buddha is contemplating a prompt for you..."
+                )
+            } else {
+                GeminiResult.Success(text.trim())
+            }
+        } catch (e: Exception) {
+            GeminiResult.Error(e, getErrorMessage(e))
+        }
+    }
+
+    /**
+     * Generates an explanation for a quote, making it actionable and relevant.
+     */
+    suspend fun generateQuoteExplanation(
+        quote: String,
+        author: String
+    ): GeminiResult<String> = withContext(Dispatchers.IO) {
+        val model = generativeModel ?: return@withContext GeminiResult.ApiKeyNotSet
+
+        try {
+            val prompt = BuddhaSystemPrompt.getQuoteExplanationPrompt(quote, author)
+            val response = model.generateContent(prompt)
+            val text = response.text
+
+            if (text.isNullOrBlank()) {
+                GeminiResult.Error(
+                    IllegalStateException("Empty response from AI"),
+                    "Buddha is reflecting on this wisdom..."
+                )
+            } else {
+                GeminiResult.Success(text.trim())
+            }
+        } catch (e: Exception) {
+            GeminiResult.Error(e, getErrorMessage(e))
+        }
+    }
+
+    /**
+     * Generates helpful context and examples for a vocabulary word.
+     */
+    suspend fun generateVocabularyContext(
+        word: String,
+        definition: String
+    ): GeminiResult<String> = withContext(Dispatchers.IO) {
+        val model = generativeModel ?: return@withContext GeminiResult.ApiKeyNotSet
+
+        try {
+            val prompt = BuddhaSystemPrompt.getVocabularyContextPrompt(word, definition)
+            val response = model.generateContent(prompt)
+            val text = response.text
+
+            if (text.isNullOrBlank()) {
+                GeminiResult.Error(
+                    IllegalStateException("Empty response from AI"),
+                    "Buddha is crafting a memorable explanation..."
+                )
+            } else {
+                GeminiResult.Success(text.trim())
+            }
+        } catch (e: Exception) {
+            GeminiResult.Error(e, getErrorMessage(e))
+        }
+    }
+
+    /**
+     * Generates a personalized streak celebration message.
+     */
+    suspend fun generateStreakCelebration(
+        streakCount: Int,
+        previousBest: Int = 0
+    ): GeminiResult<String> = withContext(Dispatchers.IO) {
+        val model = generativeModel ?: return@withContext GeminiResult.ApiKeyNotSet
+
+        try {
+            val prompt = BuddhaSystemPrompt.getStreakCelebrationPrompt(streakCount, previousBest)
+            val response = model.generateContent(prompt)
+            val text = response.text
+
+            if (text.isNullOrBlank()) {
+                GeminiResult.Error(
+                    IllegalStateException("Empty response from AI"),
+                    "Buddha is celebrating with you..."
+                )
+            } else {
+                GeminiResult.Success(text.trim())
+            }
+        } catch (e: Exception) {
+            GeminiResult.Error(e, getErrorMessage(e))
+        }
+    }
+
+    /**
+     * Generates insights based on mood patterns from journal entries.
+     */
+    suspend fun generateMoodPatternInsight(
+        dominantMood: Mood,
+        moodDistribution: Map<String, Int>,
+        journalCount: Int
+    ): GeminiResult<String> = withContext(Dispatchers.IO) {
+        val model = generativeModel ?: return@withContext GeminiResult.ApiKeyNotSet
+
+        try {
+            val prompt = BuddhaSystemPrompt.getMoodPatternInsightPrompt(
+                dominantMood,
+                moodDistribution,
+                journalCount
+            )
+            val response = model.generateContent(prompt)
+            val text = response.text
+
+            if (text.isNullOrBlank()) {
+                GeminiResult.Error(
+                    IllegalStateException("Empty response from AI"),
+                    "Buddha is analyzing your emotional journey..."
+                )
+            } else {
+                GeminiResult.Success(text.trim())
+            }
+        } catch (e: Exception) {
+            GeminiResult.Error(e, getErrorMessage(e))
+        }
+    }
+
+    /**
+     * Analyzes multiple journal entries and provides comprehensive insights.
+     */
+    suspend fun analyzeJournalEntries(
+        entries: List<String>,
+        dateRange: String
+    ): GeminiResult<String> = withContext(Dispatchers.IO) {
+        val model = generativeModel ?: return@withContext GeminiResult.ApiKeyNotSet
+
+        if (entries.isEmpty()) {
+            return@withContext GeminiResult.Error(
+                IllegalArgumentException("No entries to analyze"),
+                "Buddha needs journal entries to provide insights."
+            )
+        }
+
+        try {
+            val prompt = BuddhaSystemPrompt.getJournalAnalysisPrompt(entries, dateRange)
+            val response = model.generateContent(prompt)
+            val text = response.text
+
+            if (text.isNullOrBlank()) {
+                GeminiResult.Error(
+                    IllegalStateException("Empty response from AI"),
+                    "Buddha is deeply reflecting on your journey..."
+                )
+            } else {
+                GeminiResult.Success(text.trim())
+            }
+        } catch (e: Exception) {
+            GeminiResult.Error(e, getErrorMessage(e))
+        }
+    }
+
+    /**
+     * Generates a morning reflection to start the day.
+     */
+    suspend fun generateMorningReflection(): GeminiResult<String> = withContext(Dispatchers.IO) {
+        val model = generativeModel ?: return@withContext GeminiResult.ApiKeyNotSet
+
+        try {
+            val response = model.generateContent(BuddhaSystemPrompt.MORNING_REFLECTION_PROMPT)
+            val text = response.text
+
+            if (text.isNullOrBlank()) {
+                GeminiResult.Error(
+                    IllegalStateException("Empty response from AI"),
+                    "Buddha is preparing your morning wisdom..."
+                )
+            } else {
+                GeminiResult.Success(text.trim())
+            }
+        } catch (e: Exception) {
+            GeminiResult.Error(e, getErrorMessage(e))
+        }
+    }
+
+    /**
+     * Generates an evening reflection for winding down.
+     */
+    suspend fun generateEveningReflection(): GeminiResult<String> = withContext(Dispatchers.IO) {
+        val model = generativeModel ?: return@withContext GeminiResult.ApiKeyNotSet
+
+        try {
+            val response = model.generateContent(BuddhaSystemPrompt.EVENING_REFLECTION_PROMPT)
+            val text = response.text
+
+            if (text.isNullOrBlank()) {
+                GeminiResult.Error(
+                    IllegalStateException("Empty response from AI"),
+                    "Buddha is preparing your evening reflection..."
+                )
+            } else {
+                GeminiResult.Success(text.trim())
+            }
+        } catch (e: Exception) {
+            GeminiResult.Error(e, getErrorMessage(e))
+        }
+    }
+
+    /**
+     * Generates a custom prompt response for flexible AI interactions.
+     */
+    suspend fun generateCustomResponse(
+        prompt: String,
+        includeSystemPrompt: Boolean = true
+    ): GeminiResult<String> = withContext(Dispatchers.IO) {
+        val model = generativeModel ?: return@withContext GeminiResult.ApiKeyNotSet
+
+        try {
+            val fullPrompt = if (includeSystemPrompt) {
+                "${BuddhaSystemPrompt.CORE_IDENTITY}\n\n$prompt"
+            } else {
+                prompt
+            }
+
+            val response = model.generateContent(fullPrompt)
+            val text = response.text
+
+            if (text.isNullOrBlank()) {
+                GeminiResult.Error(
+                    IllegalStateException("Empty response from AI"),
+                    "Buddha is contemplating your request..."
+                )
+            } else {
+                GeminiResult.Success(text.trim())
+            }
+        } catch (e: Exception) {
+            GeminiResult.Error(e, getErrorMessage(e))
+        }
+    }
+
+    /**
+     * Generates a streaming custom response for flexible AI interactions.
+     */
+    fun generateCustomResponseStream(
+        prompt: String,
+        includeSystemPrompt: Boolean = true
+    ): Flow<GeminiResult<String>> = flow {
+        val model = generativeModel
+        if (model == null) {
+            emit(GeminiResult.ApiKeyNotSet)
+            return@flow
+        }
+
+        try {
+            emit(GeminiResult.Loading)
+
+            val fullPrompt = if (includeSystemPrompt) {
+                "${BuddhaSystemPrompt.CORE_IDENTITY}\n\n$prompt"
+            } else {
+                prompt
+            }
+
+            var fullResponse = ""
+            model.generateContentStream(fullPrompt).collect { chunk ->
+                chunk.text?.let { text ->
+                    fullResponse += text
+                    emit(GeminiResult.Success(fullResponse))
+                }
+            }
+
+            if (fullResponse.isBlank()) {
+                emit(GeminiResult.Error(
+                    IllegalStateException("Empty response"),
+                    "Buddha is contemplating..."
+                ))
+            }
+        } catch (e: Exception) {
+            emit(GeminiResult.Error(e, getErrorMessage(e)))
+        }
+    }.flowOn(Dispatchers.IO)
 
     private fun getErrorMessage(e: Exception): String {
         return when {
