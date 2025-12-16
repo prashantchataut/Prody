@@ -227,16 +227,16 @@ Upcoming features:
 
 ### Bug Reports & Feature Requests
 
-Please use [GitHub Issues](https://github.com/yourusername/prody/issues) for:
+Please use [GitHub Issues](https://github.com/prashantchataut/prody/issues) for:
 - Bug reports
 - Feature requests
 - Documentation improvements
 
 ### Developer Contact
 
-- **Email**: developer@prodyapp.com
-- **Twitter**: [@ProdyApp](https://twitter.com/prodyapp)
-- **Discord**: [Prody Community](https://discord.gg/prody)
+- **Email**: [http](https://knowprashant.vercel.app/)
+- **Instagram**: [@prashantchataut_](https://www.instagram.com/prashantchataut_/))
+- **Discord**: [Prody Community](doesn't exist yet sorry :( )
 
 ### FAQ
 
