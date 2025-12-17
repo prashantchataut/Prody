@@ -487,3 +487,72 @@ val SuccessGreenContainer = Color(0xFFE8F5E9)
 val WarningAmberContainer = Color(0xFFFFF8E1)
 val ErrorRedContainer = Color(0xFFFFEBEE)
 val InfoBlueContainer = Color(0xFFE3F2FD)
+
+// =============================================================================
+// ONBOARDING DESIGN SYSTEM COLORS
+// =============================================================================
+
+// Primary Accent - Vibrant Neon Green (buttons, progress indicators, highlights)
+val OnboardingAccent = Color(0xFF2ECC71)
+val OnboardingAccentDark = Color(0xFF27AE60)
+val OnboardingAccentLight = Color(0xFF58D68D)
+
+// Light Mode Colors
+val OnboardingBackgroundLight = Color(0xFFF8F9FA)
+val OnboardingSurfaceLight = Color(0xFFFFFFFF)
+val OnboardingSurfaceVariantLight = Color(0xFFF0F4F1)
+val OnboardingCardLight = Color(0xFFF5F7F6)
+val OnboardingTextPrimaryLight = Color(0xFF1A2B23)
+val OnboardingTextSecondaryLight = Color(0xFF5A6B63)
+val OnboardingTextTertiaryLight = Color(0xFF8A9B93)
+val OnboardingIconContainerLight = Color(0xFFE8F5ED)
+val OnboardingDividerLight = Color(0xFFE0E8E4)
+
+// Dark Mode Colors - Deep Forest Green Theme
+val OnboardingBackgroundDark = Color(0xFF0D1F14)
+val OnboardingSurfaceDark = Color(0xFF142318)
+val OnboardingSurfaceVariantDark = Color(0xFF1A2E21)
+val OnboardingCardDark = Color(0xFF1E3327)
+val OnboardingTextPrimaryDark = Color(0xFFFFFFFF)
+val OnboardingTextSecondaryDark = Color(0xFFB0C4B8)
+val OnboardingTextTertiaryDark = Color(0xFF708878)
+val OnboardingIconContainerDark = Color(0xFF1E3D28)
+val OnboardingDividerDark = Color(0xFF2A4033)
+
+// Button Colors
+val OnboardingButtonPrimary = Color(0xFF2ECC71)
+val OnboardingButtonPrimaryDark = Color(0xFF1A1F1C)
+val OnboardingButtonTextLight = Color(0xFF1A1F1C)
+val OnboardingButtonTextDark = Color(0xFF2ECC71)
+
+// Quote Card Colors
+val OnboardingQuoteCardLight = Color(0xFFFFFFFF)
+val OnboardingQuoteCardDark = Color(0xFF1A2E21)
+val OnboardingQuoteHighlight = Color(0xFF2ECC71)
+
+// Progress Indicator Colors
+val OnboardingProgressActive = Color(0xFF2ECC71)
+val OnboardingProgressInactiveLight = Color(0xFFD0DDD6)
+val OnboardingProgressInactiveDark = Color(0xFF2A4033)
+
+// XP Arc Colors
+val OnboardingXpArcBackground = Color(0xFFE8EBE9)
+val OnboardingXpArcBackgroundDark = Color(0xFF1E3327)
+val OnboardingXpArcFill = Color(0xFF2ECC71)
+val OnboardingXpArcGlow = Color(0x4D2ECC71)
+
+// Stat Card Colors
+val OnboardingStatCardLight = Color(0xFFF5F7F6)
+val OnboardingStatCardDark = Color(0xFF1A2E21)
+val OnboardingStatCardLockedLight = Color(0xFFF0F2F1)
+val OnboardingStatCardLockedDark = Color(0xFF1A2520)
+
+// Feature List Colors
+val OnboardingFeatureIconBgLight = Color(0xFFE8F5ED)
+val OnboardingFeatureIconBgDark = Color(0xFF1E3D28)
+
+// Leaderboard Colors
+val OnboardingLeaderboardRowLight = Color(0xFFFFFFFF)
+val OnboardingLeaderboardRowDark = Color(0xFF1A2E21)
+val OnboardingLeaderboardRowActiveLight = Color(0xFFF0FFF5)
+val OnboardingLeaderboardRowActiveDark = Color(0xFF1E3D28)
