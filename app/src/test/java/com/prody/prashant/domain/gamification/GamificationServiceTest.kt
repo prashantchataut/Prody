@@ -346,14 +346,14 @@ class GamificationServiceTest {
         lastActiveDate: Long = System.currentTimeMillis()
     ): UserProfileEntity {
         return UserProfileEntity(
-            odId = "test-user",
+            id = 1,
             displayName = "Test User",
-            avatarId = 0,
+            avatarId = "default",
             currentStreak = currentStreak,
             longestStreak = currentStreak,
             totalPoints = totalPoints,
             lastActiveDate = lastActiveDate,
-            createdAt = System.currentTimeMillis()
+            joinedAt = System.currentTimeMillis()
         )
     }
 
@@ -364,11 +364,16 @@ class GamificationServiceTest {
             id = 1,
             dailyPointsEarned = dailyPointsEarned,
             weeklyPointsEarned = 0,
-            totalJournalEntries = 0,
-            totalWordsLearned = 0,
-            totalQuotesRead = 0,
-            totalProverbsExplored = 0,
-            lastUpdated = System.currentTimeMillis()
+            monthlyPointsEarned = 0,
+            dailyWordsLearned = 0,
+            weeklyWordsLearned = 0,
+            monthlyWordsLearned = 0,
+            dailyJournalEntries = 0,
+            weeklyJournalEntries = 0,
+            monthlyJournalEntries = 0,
+            lastResetDate = System.currentTimeMillis(),
+            weekStartDate = System.currentTimeMillis(),
+            monthStartDate = System.currentTimeMillis()
         )
     }
 
