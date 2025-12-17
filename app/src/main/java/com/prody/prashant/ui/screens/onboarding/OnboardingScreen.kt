@@ -215,8 +215,8 @@ fun OnboardingScreen(
                         pagerState.animateScrollToPage(
                             pagerState.currentPage + 1,
                             animationSpec = spring(
-                                dampingRatio = Spring.DampingRatioMediumBouncy,
-                                stiffness = Spring.StiffnessLow
+                                dampingRatio = Spring.DampingRatioLowBouncy,
+                                stiffness = Spring.StiffnessMediumLow
                             )
                         )
                     }
@@ -226,8 +226,8 @@ fun OnboardingScreen(
                         pagerState.animateScrollToPage(
                             pagerState.currentPage - 1,
                             animationSpec = spring(
-                                dampingRatio = Spring.DampingRatioMediumBouncy,
-                                stiffness = Spring.StiffnessLow
+                                dampingRatio = Spring.DampingRatioLowBouncy,
+                                stiffness = Spring.StiffnessMediumLow
                             )
                         )
                     }
@@ -307,12 +307,12 @@ private fun OnboardingPageContent(
     isCurrentPage: Boolean,
     pagerState: PagerState
 ) {
-    // Animation states
+    // Animation states - refined for calmer feel
     val animatedScale by animateFloatAsState(
-        targetValue = if (isCurrentPage) 1f else 0.85f,
+        targetValue = if (isCurrentPage) 1f else 0.9f,
         animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessLow
+            dampingRatio = Spring.DampingRatioLowBouncy,
+            stiffness = Spring.StiffnessMediumLow
         ),
         label = "scale"
     )
@@ -358,13 +358,13 @@ private fun OnboardingPageContent(
                 isActive = isCurrentPage
             )
 
-            // Icon overlay
+            // Icon overlay - refined animation
             androidx.compose.animation.AnimatedVisibility(
                 visible = showContent,
                 enter = scaleIn(
                     animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioMediumBouncy,
-                        stiffness = Spring.StiffnessLow
+                        dampingRatio = Spring.DampingRatioLowBouncy,
+                        stiffness = Spring.StiffnessMediumLow
                     )
                 ) + fadeIn()
             ) {
@@ -394,16 +394,16 @@ private fun OnboardingPageContent(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Title with staggered animation
+        // Title with staggered animation - refined for calmer feel
         AnimatedVisibility(
             visible = showContent,
             enter = slideInVertically(
-                initialOffsetY = { 50 },
+                initialOffsetY = { 30 },
                 animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioMediumBouncy,
-                    stiffness = Spring.StiffnessLow
+                    dampingRatio = Spring.DampingRatioLowBouncy,
+                    stiffness = Spring.StiffnessMediumLow
                 )
-            ) + fadeIn(animationSpec = tween(400, delayMillis = 100))
+            ) + fadeIn(animationSpec = tween(300, delayMillis = 50))
         ) {
             Text(
                 text = stringResource(page.titleResId),
@@ -419,16 +419,16 @@ private fun OnboardingPageContent(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Description with staggered animation
+        // Description with staggered animation - refined for calmer feel
         AnimatedVisibility(
             visible = showContent,
             enter = slideInVertically(
-                initialOffsetY = { 50 },
+                initialOffsetY = { 30 },
                 animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioMediumBouncy,
-                    stiffness = Spring.StiffnessLow
+                    dampingRatio = Spring.DampingRatioLowBouncy,
+                    stiffness = Spring.StiffnessMediumLow
                 )
-            ) + fadeIn(animationSpec = tween(400, delayMillis = 200))
+            ) + fadeIn(animationSpec = tween(300, delayMillis = 100))
         ) {
             Text(
                 text = stringResource(page.descriptionResId),
@@ -935,11 +935,11 @@ private fun BottomSection(
                 Spacer(modifier = Modifier.weight(1f))
             }
 
-            // Next/Get Started button
+            // Next/Get Started button - subtle scale for last page
             val buttonScale by animateFloatAsState(
-                targetValue = if (isLastPage) 1.05f else 1f,
+                targetValue = if (isLastPage) 1.02f else 1f,
                 animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioMediumBouncy
+                    dampingRatio = Spring.DampingRatioNoBouncy
                 ),
                 label = "button_scale"
             )
@@ -993,6 +993,10 @@ private fun BottomSection(
     }
 }
 
+/**
+ * Refined Page Indicator - cleaner, calmer animation
+ * Uses subtle width change without bouncy spring
+ */
 @Composable
 private fun AnimatedPageIndicator(
     isSelected: Boolean,
@@ -1001,30 +1005,26 @@ private fun AnimatedPageIndicator(
 ) {
     val width by animateDpAsState(
         targetValue = when {
-            isSelected -> 32.dp
-            isPassed -> 12.dp
+            isSelected -> 28.dp
+            isPassed -> 10.dp
             else -> 8.dp
         },
         animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
+            dampingRatio = Spring.DampingRatioNoBouncy,
             stiffness = Spring.StiffnessMedium
         ),
         label = "indicator_width"
     )
 
-    val height by animateDpAsState(
-        targetValue = if (isSelected) 8.dp else 8.dp,
-        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
-        label = "indicator_height"
-    )
+    val height = 6.dp // Fixed height, cleaner look
 
     val color by animateColorAsState(
         targetValue = when {
             isSelected -> Color.White
-            isPassed -> accentColor.copy(alpha = 0.7f)
-            else -> Color.White.copy(alpha = 0.3f)
+            isPassed -> accentColor.copy(alpha = 0.6f)
+            else -> Color.White.copy(alpha = 0.25f)
         },
-        animationSpec = tween(300),
+        animationSpec = tween(250),
         label = "indicator_color"
     )
 
@@ -1032,7 +1032,7 @@ private fun AnimatedPageIndicator(
         modifier = Modifier
             .height(height)
             .width(width)
-            .clip(CircleShape)
+            .clip(RoundedCornerShape(3.dp))
             .background(color)
     )
 }

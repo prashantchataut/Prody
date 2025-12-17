@@ -543,17 +543,16 @@ private fun ProfileHeader(
         ) {
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Animated Avatar with glow
+            // Avatar with subtle accent
             Box(
                 contentAlignment = Alignment.Center
             ) {
-                // Outer glow
+                // Subtle gold ring (reduced from heavy blur glow)
                 Box(
                     modifier = Modifier
-                        .size(120.dp)
-                        .blur(20.dp)
-                        .alpha(glowAlpha)
-                        .background(GoldTier, CircleShape)
+                        .size(115.dp)
+                        .clip(CircleShape)
+                        .border(2.dp, GoldTier.copy(alpha = 0.3f), CircleShape)
                 )
 
                 // Avatar ring with progress
@@ -666,42 +665,20 @@ private fun ProfileHeader(
 
 @Composable
 private fun ProfileHeaderBackground() {
-    val infiniteTransition = rememberInfiniteTransition(label = "bg_animation")
-    val rotation by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 360f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(40000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "rotation"
-    )
-
-    Canvas(modifier = Modifier.fillMaxSize().alpha(0.2f)) {
+    // Simplified background - removed orbiting particles for cleaner look
+    // Static decorative rings only
+    Canvas(modifier = Modifier.fillMaxSize().alpha(0.15f)) {
         val center = Offset(size.width / 2, size.height / 2)
 
-        // Orbiting circles
-        for (i in 0 until 4) {
-            val angle = (rotation + i * 90f) * PI / 180
-            val radius = minOf(size.width, size.height) * 0.35f
-            val x = center.x + radius * cos(angle).toFloat()
-            val y = center.y + radius * sin(angle).toFloat()
-            drawCircle(
-                color = Color.White.copy(alpha = 0.15f - i * 0.03f),
-                radius = 40f - i * 8f,
-                center = Offset(x, y)
-            )
-        }
-
-        // Central decorative rings
+        // Subtle concentric rings (static, no animation)
         drawCircle(
             color = Color.White.copy(alpha = 0.05f),
             radius = minOf(size.width, size.height) * 0.3f,
             center = center,
-            style = Stroke(width = 2f)
+            style = Stroke(width = 1.5f)
         )
         drawCircle(
-            color = Color.White.copy(alpha = 0.08f),
+            color = Color.White.copy(alpha = 0.03f),
             radius = minOf(size.width, size.height) * 0.4f,
             center = center,
             style = Stroke(width = 1f)
@@ -786,39 +763,19 @@ private fun AnimatedStreakDisplay(
     currentStreak: Int,
     longestStreak: Int
 ) {
+    // Simplified streak display - removed heavy glow, kept subtle scale animation
     val infiniteTransition = rememberInfiniteTransition(label = "streak")
     val fireScale by infiniteTransition.animateFloat(
         initialValue = 1f,
-        targetValue = 1.15f,
+        targetValue = 1.08f, // Reduced from 1.15 for subtlety
         animationSpec = infiniteRepeatable(
-            animation = tween(500, easing = EaseInOutCubic),
+            animation = tween(1000, easing = EaseInOutCubic), // Slower for calmer feel
             repeatMode = RepeatMode.Reverse
         ),
         label = "fire_scale"
     )
-    val glowAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.4f,
-        targetValue = 0.8f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(800, easing = EaseInOutCubic),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "glow"
-    )
 
     Box(contentAlignment = Alignment.Center) {
-        // Fire glow
-        if (currentStreak > 0) {
-            Box(
-                modifier = Modifier
-                    .size(70.dp)
-                    .scale(fireScale)
-                    .blur(15.dp)
-                    .alpha(glowAlpha)
-                    .background(StreakFire, CircleShape)
-            )
-        }
-
         Column(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -829,8 +786,8 @@ private fun AnimatedStreakDisplay(
                         if (currentStreak > 0) {
                             Brush.horizontalGradient(
                                 colors = listOf(
-                                    StreakFire.copy(alpha = 0.6f),
-                                    StreakGlow.copy(alpha = 0.4f)
+                                    StreakFire.copy(alpha = 0.5f),
+                                    StreakGlow.copy(alpha = 0.3f)
                                 )
                             )
                         } else {

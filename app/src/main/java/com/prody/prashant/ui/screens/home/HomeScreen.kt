@@ -280,30 +280,24 @@ private fun EnhancedHomeHeader(
     }
 }
 
+/**
+ * Refined Streak Badge - cleaner design without heavy glow
+ */
 @Composable
 private fun AnimatedStreakBadge(streakDays: Int) {
     val fireScale by animateFloatAsState(
-        targetValue = if (streakDays > 0) 1.12f else 1f,
-        animationSpec = tween(600),
+        targetValue = if (streakDays > 0) 1.06f else 1f,
+        animationSpec = tween(800),
         label = "fire_scale"
     )
-    val glowAlpha by animateFloatAsState(
-        targetValue = if (streakDays > 0) 0.8f else 0f,
-        animationSpec = tween(800),
-        label = "glow"
-    )
-
 
     Box(contentAlignment = Alignment.Center) {
-        // Fire glow
+        // Subtle accent ring instead of heavy blur glow
         if (streakDays > 0) {
             Box(
                 modifier = Modifier
-                    .size(60.dp)
-                    .scale(fireScale)
-                    .blur(12.dp)
-                    .alpha(glowAlpha)
-                    .background(StreakFire, CircleShape)
+                    .size(58.dp)
+                    .border(2.dp, StreakFire.copy(alpha = 0.3f), RoundedCornerShape(16.dp))
             )
         }
 
@@ -376,20 +370,19 @@ private fun AnimatedPointsDisplay(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // Animated star icon
-        Box(contentAlignment = Alignment.Center) {
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .blur(10.dp)
-                    .alpha(glowAlpha)
-                    .background(GoldTier, CircleShape)
-            )
+        // Star icon with subtle accent - no heavy blur glow
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .clip(CircleShape)
+                .background(GoldTier.copy(alpha = 0.15f)),
+            contentAlignment = Alignment.Center
+        ) {
             Icon(
                 imageVector = Icons.Filled.Stars,
                 contentDescription = null,
                 tint = GoldTier,
-                modifier = Modifier.size(28.dp)
+                modifier = Modifier.size(24.dp)
             )
         }
 
@@ -483,37 +476,19 @@ private fun DailyFocusCard() {
     }
 }
 
+/**
+ * Community Challenges Card - cleaner design, no heavy glow
+ */
 @Composable
 private fun CommunityChallengesCard(onClick: () -> Unit) {
-    val infiniteTransition = rememberInfiniteTransition(label = "challenges_pulse")
-    val pulseAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.3f,
-        targetValue = 0.6f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1500, easing = EaseInOutCubic),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "pulse"
-    )
-
     ProdyCard(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp)
             .clickable(onClick = onClick),
-        backgroundColor = MoodExcited.copy(alpha = 0.15f)
+        backgroundColor = MoodExcited.copy(alpha = 0.12f)
     ) {
         Box {
-            // Glow effect
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .size(60.dp)
-                    .offset(x = 20.dp, y = (-10).dp)
-                    .blur(25.dp)
-                    .alpha(pulseAlpha)
-                    .background(MoodExcited, CircleShape)
-            )
 
             Row(
                 modifier = Modifier.padding(16.dp),
@@ -730,12 +705,12 @@ private fun EnhancedWordOfTheDayCard(
                     )
                 }
 
-                // Animated learn button
+                // Animated learn button - subtle scale feedback
                 val buttonScale by animateFloatAsState(
-                    targetValue = if (isLearned) 1.1f else 1f,
+                    targetValue = if (isLearned) 1.05f else 1f,
                     animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioMediumBouncy,
-                        stiffness = Spring.StiffnessLow
+                        dampingRatio = Spring.DampingRatioNoBouncy,
+                        stiffness = Spring.StiffnessMedium
                     ),
                     label = "button_scale"
                 )
@@ -926,11 +901,12 @@ private fun EnhancedQuickActionItem(
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
 
+    // Subtle press feedback - no bouncy spring
     val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.95f else 1f,
+        targetValue = if (isPressed) 0.97f else 1f,
         animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessMedium
+            dampingRatio = Spring.DampingRatioNoBouncy,
+            stiffness = Spring.StiffnessHigh
         ),
         label = "scale"
     )

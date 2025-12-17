@@ -1,7 +1,13 @@
 package com.prody.prashant.ui.screens.futuremessage
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -10,9 +16,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.R
@@ -146,85 +157,125 @@ fun WriteMessageScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Delivery date selector
+            // Delivery date selector - Enhanced button-like design
             ProdyCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        text = stringResource(R.string.delivery_date),
-                        style = MaterialTheme.typography.labelLarge,
-                        fontWeight = FontWeight.SemiBold
-                    )
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    // Quick select buttons
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        QuickDateChip(
-                            text = "1 Week",
-                            isSelected = uiState.selectedPreset == DatePreset.ONE_WEEK,
-                            onClick = { viewModel.selectDatePreset(DatePreset.ONE_WEEK) },
-                            modifier = Modifier.weight(1f)
-                        )
-                        QuickDateChip(
-                            text = "1 Month",
-                            isSelected = uiState.selectedPreset == DatePreset.ONE_MONTH,
-                            onClick = { viewModel.selectDatePreset(DatePreset.ONE_MONTH) },
-                            modifier = Modifier.weight(1f)
-                        )
-                        QuickDateChip(
-                            text = "6 Months",
-                            isSelected = uiState.selectedPreset == DatePreset.SIX_MONTHS,
-                            onClick = { viewModel.selectDatePreset(DatePreset.SIX_MONTHS) },
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        QuickDateChip(
-                            text = "1 Year",
-                            isSelected = uiState.selectedPreset == DatePreset.ONE_YEAR,
-                            onClick = { viewModel.selectDatePreset(DatePreset.ONE_YEAR) },
-                            modifier = Modifier.weight(1f)
-                        )
-                        QuickDateChip(
-                            text = "Custom",
-                            isSelected = uiState.selectedPreset == DatePreset.CUSTOM,
-                            onClick = { showDatePicker = true },
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Selected date display
-                    val dateFormat = remember { SimpleDateFormat("EEEE, MMMM d, yyyy", Locale.getDefault()) }
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Filled.Event,
+                            imageVector = Icons.Filled.Schedule,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(20.dp)
                         )
                         Text(
-                            text = "Delivers on ${dateFormat.format(Date(uiState.deliveryDate))}",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.primary
+                            text = stringResource(R.string.delivery_date),
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.SemiBold
                         )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Button-like date selection grid - 2x2 layout
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            TimeSelectionButton(
+                                icon = Icons.Filled.Today,
+                                label = "1 Week",
+                                description = "Quick reminder",
+                                isSelected = uiState.selectedPreset == DatePreset.ONE_WEEK,
+                                onClick = { viewModel.selectDatePreset(DatePreset.ONE_WEEK) },
+                                color = MoodCalm,
+                                modifier = Modifier.weight(1f)
+                            )
+                            TimeSelectionButton(
+                                icon = Icons.Filled.DateRange,
+                                label = "1 Month",
+                                description = "Short-term",
+                                isSelected = uiState.selectedPreset == DatePreset.ONE_MONTH,
+                                onClick = { viewModel.selectDatePreset(DatePreset.ONE_MONTH) },
+                                color = MoodMotivated,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            TimeSelectionButton(
+                                icon = Icons.Filled.CalendarMonth,
+                                label = "6 Months",
+                                description = "Mid-term",
+                                isSelected = uiState.selectedPreset == DatePreset.SIX_MONTHS,
+                                onClick = { viewModel.selectDatePreset(DatePreset.SIX_MONTHS) },
+                                color = MoodExcited,
+                                modifier = Modifier.weight(1f)
+                            )
+                            TimeSelectionButton(
+                                icon = Icons.Filled.Event,
+                                label = "1 Year",
+                                description = "Long-term",
+                                isSelected = uiState.selectedPreset == DatePreset.ONE_YEAR,
+                                onClick = { viewModel.selectDatePreset(DatePreset.ONE_YEAR) },
+                                color = MoodGrateful,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+
+                        // Custom date button - full width
+                        TimeSelectionButton(
+                            icon = Icons.Filled.EditCalendar,
+                            label = "Custom Date",
+                            description = "Choose any date",
+                            isSelected = uiState.selectedPreset == DatePreset.CUSTOM,
+                            onClick = { showDatePicker = true },
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Selected date display - prominent
+                    val dateFormat = remember { SimpleDateFormat("EEEE, MMMM d, yyyy", Locale.getDefault()) }
+                    Surface(
+                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Send,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Delivers ${dateFormat.format(Date(uiState.deliveryDate))}",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
                     }
                 }
             }
@@ -301,28 +352,95 @@ fun WriteMessageScreen(
     }
 }
 
+/**
+ * Button-Like Time Selection - Enhanced visual hierarchy
+ *
+ * Features:
+ * - Large touch target (min 56dp height)
+ * - Icon + label + description for context
+ * - Color-coded for visual scanning
+ * - Clear selected state with accent border
+ */
 @Composable
-private fun QuickDateChip(
-    text: String,
+private fun TimeSelectionButton(
+    icon: ImageVector,
+    label: String,
+    description: String,
     isSelected: Boolean,
     onClick: () -> Unit,
+    color: Color,
     modifier: Modifier = Modifier
 ) {
-    FilterChip(
-        selected = isSelected,
-        onClick = onClick,
-        label = {
-            Text(
-                text = text,
-                style = MaterialTheme.typography.labelMedium
-            )
-        },
-        modifier = modifier,
-        colors = FilterChipDefaults.filterChipColors(
-            selectedContainerColor = MaterialTheme.colorScheme.primary,
-            selectedLabelColor = MaterialTheme.colorScheme.onPrimary
-        )
+    val backgroundColor by animateColorAsState(
+        targetValue = if (isSelected) color.copy(alpha = 0.15f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        animationSpec = tween(200),
+        label = "bg_color"
     )
+    val borderColor by animateColorAsState(
+        targetValue = if (isSelected) color else Color.Transparent,
+        animationSpec = tween(200),
+        label = "border_color"
+    )
+
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(14.dp))
+            .background(backgroundColor)
+            .then(
+                if (isSelected) Modifier.border(2.dp, borderColor, RoundedCornerShape(14.dp))
+                else Modifier
+            )
+            .clickable(onClick = onClick)
+            .defaultMinSize(minHeight = 56.dp)
+            .padding(12.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            // Icon
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(color.copy(alpha = if (isSelected) 0.2f else 0.1f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = if (isSelected) color else color.copy(alpha = 0.7f),
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+
+            // Text content
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.SemiBold,
+                    color = if (isSelected) color else MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = description,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontSize = 10.sp
+                )
+            }
+
+            // Selected indicator
+            if (isSelected) {
+                Icon(
+                    imageVector = Icons.Filled.CheckCircle,
+                    contentDescription = null,
+                    tint = color,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+        }
+    }
 }
 
 enum class DatePreset {
