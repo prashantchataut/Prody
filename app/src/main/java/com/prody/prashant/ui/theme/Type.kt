@@ -34,7 +34,8 @@ private const val TAG = "ProdyTypography"
 
 /**
  * Creates a safe Font instance with proper error handling.
- * Returns null if the font fails to load, allowing the FontFamily to fall back gracefully.
+ * Uses Async loading strategy to prevent crash if font resource is unavailable.
+ * The system will fall back to default fonts gracefully.
  */
 private fun safeFont(
     resId: Int,
@@ -46,7 +47,7 @@ private fun safeFont(
             resId = resId,
             weight = weight,
             style = style,
-            loadingStrategy = FontLoadingStrategy.Blocking
+            loadingStrategy = FontLoadingStrategy.Async
         )
     } catch (e: Exception) {
         Log.w(TAG, "Failed to load font resource $resId with weight $weight", e)
@@ -57,11 +58,11 @@ private fun safeFont(
 /**
  * Primary font family - Poppins (for UI elements)
  *
- * Uses blocking loading strategy to ensure fonts are available synchronously,
- * preventing layout jank during scroll. Each font weight is loaded individually
+ * Uses async loading strategy to ensure fonts are loaded gracefully,
+ * falling back to system fonts if unavailable. Each font weight is loaded individually
  * with error handling to ensure partial font family availability.
  */
-val PoppinsFamily: FontFamily = run {
+val PoppinsFamily: FontFamily = try {
     val fonts = listOfNotNull(
         safeFont(R.font.poppins_thin, FontWeight.Thin),
         safeFont(R.font.poppins_extralight, FontWeight.ExtraLight),
@@ -83,6 +84,9 @@ val PoppinsFamily: FontFamily = run {
         }
         FontFamily(fonts)
     }
+} catch (e: Exception) {
+    Log.e(TAG, "Failed to initialize Poppins font family", e)
+    FontFamily.SansSerif
 }
 
 /**
@@ -91,7 +95,7 @@ val PoppinsFamily: FontFamily = run {
  * This elegant serif font contrasts with Poppins to separate "ancient wisdom"
  * from "modern interface". Uses the same safe loading strategy as Poppins.
  */
-val PlayfairFamily: FontFamily = run {
+val PlayfairFamily: FontFamily = try {
     val fonts = listOfNotNull(
         safeFont(R.font.playfairdisplay_regular, FontWeight.Normal),
         safeFont(R.font.playfairdisplay_medium, FontWeight.Medium),
@@ -109,6 +113,9 @@ val PlayfairFamily: FontFamily = run {
         }
         FontFamily(fonts)
     }
+} catch (e: Exception) {
+    Log.e(TAG, "Failed to initialize Playfair Display font family", e)
+    FontFamily.Serif
 }
 
 /**
