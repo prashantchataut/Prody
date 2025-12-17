@@ -391,32 +391,24 @@ private fun StatsHeader(
 
 @Composable
 private fun HeaderBackgroundAnimation() {
-    val infiniteTransition = rememberInfiniteTransition(label = "bg_particles")
-    val rotation by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 360f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(30000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "rotation"
-    )
-
-    Canvas(modifier = Modifier.fillMaxSize().alpha(0.3f)) {
+    // Simplified background - removed orbiting particles for cleaner look
+    // Uses subtle static decorative elements instead
+    Canvas(modifier = Modifier.fillMaxSize().alpha(0.15f)) {
         val center = Offset(size.width / 2, size.height / 2)
 
-        // Draw orbiting circles
-        for (i in 0 until 3) {
-            val angle = (rotation + i * 120f) * PI / 180
-            val radius = minOf(size.width, size.height) * 0.3f
-            val x = center.x + radius * cos(angle).toFloat()
-            val y = center.y + radius * sin(angle).toFloat()
-            drawCircle(
-                color = Color.White.copy(alpha = 0.1f),
-                radius = 30f + i * 10f,
-                center = Offset(x, y)
-            )
-        }
+        // Subtle concentric rings (static, no animation)
+        drawCircle(
+            color = Color.White.copy(alpha = 0.08f),
+            radius = minOf(size.width, size.height) * 0.25f,
+            center = center,
+            style = Stroke(width = 1f)
+        )
+        drawCircle(
+            color = Color.White.copy(alpha = 0.05f),
+            radius = minOf(size.width, size.height) * 0.35f,
+            center = center,
+            style = Stroke(width = 1f)
+        )
     }
 }
 
@@ -1430,30 +1422,7 @@ private fun LeaderboardPodium(
     second: LeaderboardEntryEntity,
     third: LeaderboardEntryEntity
 ) {
-    val infiniteTransition = rememberInfiniteTransition(label = "podium_animation")
-
-    // Gold glow for first place
-    val goldGlowAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.3f,
-        targetValue = 0.6f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(2000, easing = EaseInOutCubic),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "gold_glow"
-    )
-
-    // Shine sweep animation
-    val shinePosition by infiniteTransition.animateFloat(
-        initialValue = -0.5f,
-        targetValue = 1.5f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(3000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "shine"
-    )
-
+    // Simplified podium - removed shine animation for cleaner look
     ProdyCard(
         modifier = Modifier
             .fillMaxWidth()
@@ -1495,9 +1464,7 @@ private fun LeaderboardPodium(
                     entry = second,
                     rank = 2,
                     podiumHeight = 100.dp,
-                    tierColor = SilverTier,
-                    glowAlpha = 0.3f,
-                    shinePosition = shinePosition
+                    tierColor = SilverTier
                 )
 
                 // 1st Place (Gold) - Center, tallest
@@ -1505,9 +1472,7 @@ private fun LeaderboardPodium(
                     entry = first,
                     rank = 1,
                     podiumHeight = 130.dp,
-                    tierColor = GoldTier,
-                    glowAlpha = goldGlowAlpha,
-                    shinePosition = shinePosition
+                    tierColor = GoldTier
                 )
 
                 // 3rd Place (Bronze) - Right
@@ -1515,9 +1480,7 @@ private fun LeaderboardPodium(
                     entry = third,
                     rank = 3,
                     podiumHeight = 80.dp,
-                    tierColor = BronzeTier,
-                    glowAlpha = 0.25f,
-                    shinePosition = shinePosition
+                    tierColor = BronzeTier
                 )
             }
         }
@@ -1529,68 +1492,32 @@ private fun PodiumPlace(
     entry: LeaderboardEntryEntity,
     rank: Int,
     podiumHeight: Dp,
-    tierColor: Color,
-    glowAlpha: Float,
-    shinePosition: Float
+    tierColor: Color
 ) {
-    val infiniteTransition = rememberInfiniteTransition(label = "podium_place_$rank")
-
-    // Scale animation for the avatar
-    val avatarScale by infiniteTransition.animateFloat(
-        initialValue = 1f,
-        targetValue = if (rank == 1) 1.05f else 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1500, easing = EaseInOutCubic),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "avatar_scale"
-    )
-
+    // Simplified podium place - removed scale animation and shine for cleaner look
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.width(100.dp)
     ) {
-        // Avatar with glow
+        // Avatar with subtle border (no glow)
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier.padding(bottom = 8.dp)
         ) {
-            // Glow effect
-            Box(
-                modifier = Modifier
-                    .size(if (rank == 1) 70.dp else 60.dp)
-                    .blur(12.dp)
-                    .alpha(glowAlpha)
-                    .background(tierColor, CircleShape)
-            )
-
-            // Avatar container
+            // Avatar container - clean design with solid border
             Box(
                 modifier = Modifier
                     .size(if (rank == 1) 64.dp else 54.dp)
-                    .scale(avatarScale)
                     .clip(CircleShape)
-                    .background(
-                        Brush.linearGradient(
-                            colors = listOf(
-                                tierColor.copy(alpha = 0.3f),
-                                tierColor.copy(alpha = 0.15f)
-                            )
-                        )
-                    )
+                    .background(tierColor.copy(alpha = 0.15f))
                     .border(
                         width = if (rank == 1) 3.dp else 2.dp,
-                        brush = Brush.linearGradient(
-                            colors = listOf(
-                                tierColor,
-                                tierColor.copy(alpha = 0.6f)
-                            )
-                        ),
+                        color = tierColor,
                         shape = CircleShape
                     ),
                 contentAlignment = Alignment.Center
             ) {
-                // User initial or icon
+                // User initial
                 Text(
                     text = entry.displayName.firstOrNull()?.uppercase() ?: "?",
                     style = if (rank == 1) MaterialTheme.typography.headlineSmall
@@ -1647,7 +1574,7 @@ private fun PodiumPlace(
 
         Spacer(modifier = Modifier.height(4.dp))
 
-        // Podium base with gradient
+        // Podium base - clean gradient, no shine animation
         Box(
             modifier = Modifier
                 .width(80.dp)
@@ -1657,33 +1584,12 @@ private fun PodiumPlace(
                     Brush.verticalGradient(
                         colors = listOf(
                             tierColor,
-                            tierColor.copy(alpha = 0.7f),
-                            tierColor.copy(alpha = 0.5f)
+                            tierColor.copy(alpha = 0.8f)
                         )
                     )
                 )
         ) {
-            // Shine effect on podium
-            Canvas(modifier = Modifier.fillMaxSize()) {
-                val shineWidth = size.width * 0.4f
-                val shineX = shinePosition * (size.width + shineWidth) - shineWidth
-
-                drawRect(
-                    brush = Brush.horizontalGradient(
-                        colors = listOf(
-                            Color.Transparent,
-                            Color.White.copy(alpha = 0.2f),
-                            Color.White.copy(alpha = 0.4f),
-                            Color.White.copy(alpha = 0.2f),
-                            Color.Transparent
-                        ),
-                        startX = shineX,
-                        endX = shineX + shineWidth
-                    )
-                )
-            }
-
-            // Stats on podium
+            // Stats on podium (no shine effect)
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -1756,6 +1662,7 @@ private fun PodiumPlace(
 
 @Composable
 private fun EmptyLeaderboardCard() {
+    // Simplified empty state - static icon, no rotation animation
     ProdyCard(
         modifier = Modifier
             .fillMaxWidth()
@@ -1768,23 +1675,10 @@ private fun EmptyLeaderboardCard() {
                 .padding(32.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            val infiniteTransition = rememberInfiniteTransition(label = "empty_animation")
-            val rotation by infiniteTransition.animateFloat(
-                initialValue = -10f,
-                targetValue = 10f,
-                animationSpec = infiniteRepeatable(
-                    animation = tween(2000, easing = EaseInOutCubic),
-                    repeatMode = RepeatMode.Reverse
-                ),
-                label = "rotation"
-            )
-
             Icon(
                 imageVector = Icons.Filled.Groups,
                 contentDescription = null,
-                modifier = Modifier
-                    .size(64.dp)
-                    .rotate(rotation),
+                modifier = Modifier.size(64.dp),
                 tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
             )
 
