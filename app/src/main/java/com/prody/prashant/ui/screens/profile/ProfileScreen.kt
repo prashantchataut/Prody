@@ -2306,7 +2306,7 @@ private fun WeeklyPatternCard(
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Filled.Tips,
+                                imageVector = Icons.Filled.Lightbulb,
                                 contentDescription = null,
                                 tint = ProdyTertiary,
                                 modifier = Modifier.size(16.dp)

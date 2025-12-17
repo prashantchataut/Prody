@@ -54,6 +54,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -288,14 +289,16 @@ private fun WavesPattern(modifier: Modifier, progress: Float) {
 
 @Composable
 private fun ConstellationPattern(modifier: Modifier, progress: Float) {
+    // Generate star positions as relative values (0-1) - computed once
+    val starPositions = remember {
+        (0..15).map {
+            Pair(Math.random().toFloat(), Math.random().toFloat())
+        }
+    }
+
     Canvas(modifier = modifier.alpha(0.2f)) {
-        val stars = remember {
-            (0..15).map {
-                Offset(
-                    (Math.random() * size.width).toFloat(),
-                    (Math.random() * size.height).toFloat()
-                )
-            }
+        val stars = starPositions.map { (relX, relY) ->
+            Offset(relX * size.width, relY * size.height)
         }
 
         stars.forEachIndexed { index, star ->
@@ -389,17 +392,7 @@ private fun AuroraPattern(modifier: Modifier, progress: Float) {
 // SPECIAL BADGES (DEV / BETA TESTER)
 // =============================================================================
 
-/**
- * Badge type for special user identifications.
- */
-enum class SpecialBadgeType {
-    /** Developer badge - single holder */
-    DEV,
-    /** Beta tester badge - limited holders */
-    BETA_TESTER,
-    /** Founding user badge */
-    FOUNDER
-}
+// Note: SpecialBadgeType enum is defined in BannerRenderer.kt
 
 /**
  * Special badge display for Dev/Beta/Founder users.

@@ -210,7 +210,7 @@ fun ProdyLeaderboardRow(
                     // Banner badge (if not a special badge holder)
                     if (!entry.isDevBadgeHolder && !entry.isBetaTester && entry.bannerId != "default_dawn") {
                         Spacer(modifier = Modifier.width(6.dp))
-                        val banner = ProdyBanners.getBannerById(entry.bannerId)
+                        val banner = ProdyBanners.findById(entry.bannerId)
                         if (banner != null) {
                             ProdyBannerBadge(
                                 banner = banner,
