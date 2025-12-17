@@ -2,9 +2,7 @@ package com.prody.prashant.ui.screens.onboarding
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
@@ -12,183 +10,87 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.*
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.blur
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.*
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.prody.prashant.R
 import com.prody.prashant.ui.theme.*
-import kotlinx.coroutines.delay
-
-/**
- * Onboarding Screen - First-time user experience
- *
- * A visually engaging 5-page onboarding flow that introduces users to Prody's
- * core features. Each page features:
- * - Unique animated illustrations
- * - Smooth color transitions between pages
- * - Staggered content animations
- * - Proper accessibility support
- *
- * Design Principles:
- * - Calm, growth-focused color palette
- * - Engaging but not overwhelming animations
- * - Clear call-to-action progression
- * - Sufficient contrast for accessibility
- */
 import kotlinx.coroutines.launch
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
-import kotlin.random.Random
 
-data class OnboardingPage(
-    val icon: ImageVector,
-    val titleResId: Int,
-    val descriptionResId: Int,
-    val primaryColor: Color,
-    val secondaryColor: Color,
-    val accentColor: Color,
-    val illustrationType: IllustrationType
-)
-
-enum class IllustrationType {
-    GROWTH_SPIRAL,
-    WISDOM_RAYS,
-    JOURNAL_WAVES,
-    TIME_PORTAL,
-    ACHIEVEMENT_STARS
-}
-
+/**
+ * Onboarding Screen - Complete redesign based on provided Sketch designs
+ *
+ * A 6-page horizontal pager flow with pixel-perfect recreation of the designs:
+ * 1. Welcome Screen - Logo, app name, tagline, Get Started
+ * 2. Journaling/AI Feature - Daily insight card with abstract waves
+ * 3. Gamification Leaderboard - Trophy with rankings preview
+ * 4. XP Arc Screen - Circular progress with level display
+ * 5. Daily Wisdom Features - Feature list with icons
+ * 6. Personalized Insights - Quote card with notifications CTA
+ */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun OnboardingScreen(
     onComplete: () -> Unit,
     viewModel: OnboardingViewModel = hiltViewModel()
 ) {
-    val pages = listOf(
-        OnboardingPage(
-            icon = Icons.Filled.AutoAwesome,
-            titleResId = R.string.onboarding_welcome_title,
-            descriptionResId = R.string.onboarding_welcome_desc,
-            primaryColor = ProdyPrimary,
-            secondaryColor = ProdyTertiary,
-            accentColor = Color(0xFFFFD700),
-            illustrationType = IllustrationType.GROWTH_SPIRAL
-        ),
-        OnboardingPage(
-            icon = Icons.Filled.Lightbulb,
-            titleResId = R.string.onboarding_wisdom_title,
-            descriptionResId = R.string.onboarding_wisdom_desc,
-            primaryColor = Color(0xFF5E35B1),
-            secondaryColor = Color(0xFF9575CD),
-            accentColor = MoodMotivated,
-            illustrationType = IllustrationType.WISDOM_RAYS
-        ),
-        OnboardingPage(
-            icon = Icons.Filled.SelfImprovement,
-            titleResId = R.string.onboarding_journal_title,
-            descriptionResId = R.string.onboarding_journal_desc,
-            primaryColor = Color(0xFF00695C),
-            secondaryColor = Color(0xFF4DB6AC),
-            accentColor = MoodCalm,
-            illustrationType = IllustrationType.JOURNAL_WAVES
-        ),
-        OnboardingPage(
-            icon = Icons.Filled.Schedule,
-            titleResId = R.string.onboarding_future_title,
-            descriptionResId = R.string.onboarding_future_desc,
-            primaryColor = Color(0xFF1565C0),
-            secondaryColor = Color(0xFF64B5F6),
-            accentColor = MoodExcited,
-            illustrationType = IllustrationType.TIME_PORTAL
-        ),
-        OnboardingPage(
-            icon = Icons.AutoMirrored.Filled.TrendingUp,
-            titleResId = R.string.onboarding_growth_title,
-            descriptionResId = R.string.onboarding_growth_desc,
-            primaryColor = ProdyPrimary,
-            secondaryColor = ProdyTertiary,
-            accentColor = GoldTier,
-            illustrationType = IllustrationType.ACHIEVEMENT_STARS
-        )
-    )
-
-    val pagerState = rememberPagerState(pageCount = { pages.size })
+    val pagerState = rememberPagerState(pageCount = { 6 })
     val coroutineScope = rememberCoroutineScope()
-    val isLastPage = pagerState.currentPage == pages.size - 1
+    val isDarkTheme = isSystemInDarkTheme()
 
-    // Animated background color transition
-    val currentPage = pages[pagerState.currentPage]
-    val targetPage = if (pagerState.currentPageOffsetFraction > 0 && pagerState.currentPage < pages.size - 1) {
-        pages[pagerState.currentPage + 1]
-    } else if (pagerState.currentPageOffsetFraction < 0 && pagerState.currentPage > 0) {
-        pages[pagerState.currentPage - 1]
-    } else {
-        currentPage
-    }
-
-    val animatedPrimaryColor by animateColorAsState(
-        targetValue = currentPage.primaryColor,
-        animationSpec = tween(500),
-        label = "primary_color"
-    )
-    val animatedSecondaryColor by animateColorAsState(
-        targetValue = currentPage.secondaryColor,
-        animationSpec = tween(500),
-        label = "secondary_color"
-    )
+    // Theme colors based on system theme
+    val backgroundColor = if (isDarkTheme) OnboardingBackgroundDark else OnboardingBackgroundLight
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(
-                        animatedPrimaryColor,
-                        animatedPrimaryColor.copy(alpha = 0.9f),
-                        animatedSecondaryColor.copy(alpha = 0.7f)
-                    )
-                )
-            )
+            .background(backgroundColor)
+            .systemBarsPadding()
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .systemBarsPadding()
+            modifier = Modifier.fillMaxSize()
         ) {
-            // Top bar with skip button and progress
-            TopSection(
+            // Top bar with back button, progress indicator, and skip button
+            OnboardingTopBar(
                 pagerState = pagerState,
-                isLastPage = isLastPage,
-                pageCount = pages.size,
+                isDarkTheme = isDarkTheme,
+                onBack = {
+                    coroutineScope.launch {
+                        if (pagerState.currentPage > 0) {
+                            pagerState.animateScrollToPage(pagerState.currentPage - 1)
+                        }
+                    }
+                },
                 onSkip = {
                     viewModel.completeOnboarding()
                     onComplete()
                 }
             )
 
-            // Pager content
+            // Main pager content
             HorizontalPager(
                 state = pagerState,
                 modifier = Modifier
@@ -196,43 +98,31 @@ fun OnboardingScreen(
                     .weight(1f),
                 beyondViewportPageCount = 1
             ) { page ->
-                OnboardingPageContent(
-                    page = pages[page],
-                    pageIndex = page,
-                    isCurrentPage = page == pagerState.currentPage,
-                    pagerState = pagerState
-                )
+                when (page) {
+                    0 -> WelcomeScreen(isDarkTheme = isDarkTheme)
+                    1 -> JournalingFeatureScreen(isDarkTheme = isDarkTheme)
+                    2 -> GamificationLeaderboardScreen(isDarkTheme = isDarkTheme)
+                    3 -> XpArcScreen(isDarkTheme = isDarkTheme)
+                    4 -> DailyWisdomFeaturesScreen(isDarkTheme = isDarkTheme)
+                    5 -> PersonalizedInsightsScreen(isDarkTheme = isDarkTheme)
+                }
             }
 
-            // Bottom section with indicators and buttons
-            BottomSection(
+            // Bottom navigation section
+            OnboardingBottomSection(
                 pagerState = pagerState,
-                pageCount = pages.size,
-                isLastPage = isLastPage,
-                currentPageColor = currentPage.accentColor,
-                onNext = {
+                isDarkTheme = isDarkTheme,
+                onContinue = {
                     coroutineScope.launch {
-                        pagerState.animateScrollToPage(
-                            pagerState.currentPage + 1,
-                            animationSpec = spring(
-                                dampingRatio = Spring.DampingRatioLowBouncy,
-                                stiffness = Spring.StiffnessMediumLow
-                            )
-                        )
+                        if (pagerState.currentPage < 5) {
+                            pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                        } else {
+                            viewModel.completeOnboarding()
+                            onComplete()
+                        }
                     }
                 },
-                onBack = {
-                    coroutineScope.launch {
-                        pagerState.animateScrollToPage(
-                            pagerState.currentPage - 1,
-                            animationSpec = spring(
-                                dampingRatio = Spring.DampingRatioLowBouncy,
-                                stiffness = Spring.StiffnessMediumLow
-                            )
-                        )
-                    }
-                },
-                onComplete = {
+                onMaybeLater = {
                     viewModel.completeOnboarding()
                     onComplete()
                 }
@@ -243,150 +133,797 @@ fun OnboardingScreen(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun TopSection(
+private fun OnboardingTopBar(
     pagerState: PagerState,
-    isLastPage: Boolean,
-    pageCount: Int,
+    isDarkTheme: Boolean,
+    onBack: () -> Unit,
     onSkip: () -> Unit
 ) {
+    val showBackButton = pagerState.currentPage > 0
+    val showSkipButton = pagerState.currentPage < 5
+    val showProgressIndicator = pagerState.currentPage > 0
+
+    val textColor = if (isDarkTheme) OnboardingTextPrimaryDark else OnboardingTextPrimaryLight
+    val progressActive = OnboardingProgressActive
+    val progressInactive = if (isDarkTheme) OnboardingProgressInactiveDark else OnboardingProgressInactiveLight
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 16.dp),
+            .padding(horizontal = 16.dp, vertical = 12.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Progress indicator
-        Box(
-            modifier = Modifier
-                .clip(RoundedCornerShape(8.dp))
-                .background(Color.White.copy(alpha = 0.2f))
-                .padding(horizontal = 12.dp, vertical = 6.dp)
-        ) {
-            Text(
-                text = "${pagerState.currentPage + 1} / $pageCount",
-                style = MaterialTheme.typography.labelMedium,
-                color = Color.White,
-                fontWeight = FontWeight.Medium
-            )
+        // Back button (visible from page 1 onwards)
+        if (showBackButton) {
+            IconButton(
+                onClick = onBack,
+                modifier = Modifier.size(40.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                    contentDescription = "Back",
+                    tint = textColor,
+                    modifier = Modifier.size(28.dp)
+                )
+            }
+        } else {
+            Spacer(modifier = Modifier.size(40.dp))
+        }
+
+        // Progress indicator (segmented bar style - visible from page 1)
+        if (showProgressIndicator) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.weight(1f).padding(horizontal = 16.dp)
+            ) {
+                repeat(4) { index ->
+                    val isActive = index < pagerState.currentPage
+                    val isCurrent = index == pagerState.currentPage - 1
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(4.dp)
+                            .clip(RoundedCornerShape(2.dp))
+                            .background(
+                                when {
+                                    isActive || isCurrent -> progressActive
+                                    else -> progressInactive
+                                }
+                            )
+                    )
+                }
+            }
+        } else {
+            Spacer(modifier = Modifier.weight(1f))
         }
 
         // Skip button
-        AnimatedVisibility(
-            visible = !isLastPage,
-            enter = fadeIn() + slideInHorizontally { it },
-            exit = fadeOut() + slideOutHorizontally { it }
-        ) {
+        if (showSkipButton) {
             TextButton(
                 onClick = onSkip,
-                colors = ButtonDefaults.textButtonColors(
-                    contentColor = Color.White.copy(alpha = 0.8f)
-                )
+                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
             ) {
                 Text(
-                    text = stringResource(R.string.skip),
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.Medium
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                    contentDescription = null,
-                    modifier = Modifier.size(16.dp)
+                    text = stringResource(R.string.onboarding_skip),
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = OnboardingAccent
                 )
             }
+        } else {
+            Spacer(modifier = Modifier.size(40.dp))
         }
     }
 }
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun OnboardingPageContent(
-    page: OnboardingPage,
-    pageIndex: Int,
-    isCurrentPage: Boolean,
-    pagerState: PagerState
+private fun OnboardingBottomSection(
+    pagerState: PagerState,
+    isDarkTheme: Boolean,
+    onContinue: () -> Unit,
+    onMaybeLater: () -> Unit
 ) {
-    // Animation states - refined for calmer feel
-    val animatedScale by animateFloatAsState(
-        targetValue = if (isCurrentPage) 1f else 0.9f,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioLowBouncy,
-            stiffness = Spring.StiffnessMediumLow
-        ),
-        label = "scale"
-    )
+    val currentPage = pagerState.currentPage
+    val textSecondary = if (isDarkTheme) OnboardingTextSecondaryDark else OnboardingTextSecondaryLight
 
-    val animatedAlpha by animateFloatAsState(
-        targetValue = if (isCurrentPage) 1f else 0.5f,
-        animationSpec = tween(300),
-        label = "alpha"
-    )
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp)
+            .padding(bottom = 32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // Page indicator dots (only for pages 0 and 4/5)
+        if (currentPage == 0 || currentPage >= 4) {
+            OnboardingPageIndicator(
+                pageCount = if (currentPage == 0) 3 else 4,
+                currentPage = if (currentPage == 0) 0 else currentPage - 2,
+                isDarkTheme = isDarkTheme,
+                modifier = Modifier.padding(bottom = 24.dp)
+            )
+        }
 
-    // Staggered entrance animation
-    var showContent by remember { mutableStateOf(false) }
-    LaunchedEffect(isCurrentPage) {
-        if (isCurrentPage) {
-            delay(100)
-            showContent = true
-        } else {
-            showContent = false
+        // Main CTA button
+        OnboardingPrimaryButton(
+            text = when (currentPage) {
+                0 -> stringResource(R.string.onboarding_get_started)
+                1 -> stringResource(R.string.onboarding_continue)
+                2 -> stringResource(R.string.onboarding_continue)
+                3 -> stringResource(R.string.onboarding_start_quest)
+                4 -> stringResource(R.string.onboarding_continue)
+                5 -> stringResource(R.string.onboarding_enable_notifications)
+                else -> stringResource(R.string.onboarding_continue)
+            },
+            onClick = onContinue,
+            isDarkTheme = isDarkTheme,
+            showArrow = currentPage == 0 || currentPage == 1 || currentPage == 3 || currentPage == 5,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        // Secondary text/button
+        when (currentPage) {
+            0 -> {
+                // "Already have an account? Log in"
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(R.string.onboarding_already_have_account),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = textSecondary
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = stringResource(R.string.onboarding_log_in),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = if (isDarkTheme) OnboardingTextPrimaryDark else OnboardingTextPrimaryLight,
+                        textDecoration = TextDecoration.Underline,
+                        modifier = Modifier.clickable { /* Handle login */ }
+                    )
+                }
+            }
+            4, 5 -> {
+                // "Maybe Later" option
+                Spacer(modifier = Modifier.height(16.dp))
+                TextButton(onClick = onMaybeLater) {
+                    Text(
+                        text = stringResource(R.string.onboarding_maybe_later),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium,
+                        color = textSecondary
+                    )
+                }
+            }
         }
     }
+}
+
+@Composable
+private fun OnboardingPageIndicator(
+    pageCount: Int,
+    currentPage: Int,
+    isDarkTheme: Boolean,
+    modifier: Modifier = Modifier
+) {
+    val activeColor = OnboardingProgressActive
+    val inactiveColor = if (isDarkTheme) OnboardingProgressInactiveDark else OnboardingProgressInactiveLight
+
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier
+    ) {
+        repeat(pageCount) { index ->
+            val isActive = index == currentPage
+            Box(
+                modifier = Modifier
+                    .size(
+                        width = if (isActive) 24.dp else 8.dp,
+                        height = 8.dp
+                    )
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(if (isActive) activeColor else inactiveColor)
+            )
+        }
+    }
+}
+
+@Composable
+private fun OnboardingPrimaryButton(
+    text: String,
+    onClick: () -> Unit,
+    isDarkTheme: Boolean,
+    showArrow: Boolean = false,
+    modifier: Modifier = Modifier
+) {
+    val buttonColor = OnboardingButtonPrimary
+    val textColor = OnboardingButtonTextLight
+
+    Button(
+        onClick = onClick,
+        modifier = modifier.height(56.dp),
+        shape = RoundedCornerShape(28.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = buttonColor,
+            contentColor = textColor
+        ),
+        elevation = ButtonDefaults.buttonElevation(
+            defaultElevation = 0.dp,
+            pressedElevation = 2.dp
+        )
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = text,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
+            )
+            if (showArrow) {
+                Spacer(modifier = Modifier.width(8.dp))
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+        }
+    }
+}
+
+// =============================================================================
+// SCREEN 1: WELCOME SCREEN
+// =============================================================================
+
+@Composable
+private fun WelcomeScreen(isDarkTheme: Boolean) {
+    val textPrimary = if (isDarkTheme) OnboardingTextPrimaryDark else OnboardingTextPrimaryLight
+    val textSecondary = if (isDarkTheme) OnboardingTextSecondaryDark else OnboardingTextSecondaryLight
+    val logoContainerColor = if (isDarkTheme) OnboardingCardDark else OnboardingSurfaceLight
+
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        // Subtle concentric rings background (light mode only)
+        if (!isDarkTheme) {
+            ConcentricRingsBackground(
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 32.dp)
+        ) {
+            Spacer(modifier = Modifier.weight(0.3f))
+
+            // Logo container with leaf icon
+            Box(
+                modifier = Modifier
+                    .size(140.dp)
+                    .clip(RoundedCornerShape(32.dp))
+                    .background(logoContainerColor)
+                    .then(
+                        if (!isDarkTheme) {
+                            Modifier.shadow(
+                                elevation = 8.dp,
+                                shape = RoundedCornerShape(32.dp),
+                                ambientColor = Color.Black.copy(alpha = 0.05f)
+                            )
+                        } else Modifier
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                // Leaf icon with green dot
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Box(contentAlignment = Alignment.TopEnd) {
+                        Icon(
+                            imageVector = Icons.Filled.Spa,
+                            contentDescription = "Prody Logo",
+                            modifier = Modifier.size(64.dp),
+                            tint = if (isDarkTheme) OnboardingAccent else OnboardingTextPrimaryLight
+                        )
+                        // Small green notification dot
+                        Box(
+                            modifier = Modifier
+                                .size(12.dp)
+                                .offset(x = 4.dp, y = (-4).dp)
+                                .clip(CircleShape)
+                                .background(OnboardingAccent)
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // App name "Prody"
+            Text(
+                text = stringResource(R.string.onboarding_app_name),
+                style = MaterialTheme.typography.displaySmall.copy(
+                    fontFamily = PoppinsFontFamily,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = (-0.5).sp
+                ),
+                color = textPrimary
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Tagline
+            Text(
+                text = stringResource(R.string.onboarding_tagline),
+                style = MaterialTheme.typography.bodyLarge,
+                color = textSecondary,
+                textAlign = TextAlign.Center,
+                lineHeight = 24.sp
+            )
+
+            Spacer(modifier = Modifier.weight(0.5f))
+        }
+    }
+}
+
+@Composable
+private fun ConcentricRingsBackground(modifier: Modifier = Modifier) {
+    Canvas(modifier = modifier.alpha(0.08f)) {
+        val center = Offset(size.width / 2, size.height / 3)
+        val maxRadius = size.width * 0.8f
+        val ringCount = 4
+
+        repeat(ringCount) { index ->
+            val radius = maxRadius * (index + 1) / ringCount
+            drawCircle(
+                color = Color.Gray,
+                radius = radius,
+                center = center,
+                style = Stroke(width = 1.dp.toPx())
+            )
+        }
+    }
+}
+
+// =============================================================================
+// SCREEN 2: JOURNALING / AI FEATURE SCREEN
+// =============================================================================
+
+@Composable
+private fun JournalingFeatureScreen(isDarkTheme: Boolean) {
+    val cardColor = if (isDarkTheme) OnboardingCardDark else OnboardingSurfaceLight
+    val textPrimary = if (isDarkTheme) OnboardingTextPrimaryDark else OnboardingTextPrimaryLight
+    val textSecondary = if (isDarkTheme) OnboardingTextSecondaryDark else OnboardingTextSecondaryLight
+    val badgeColor = if (isDarkTheme) OnboardingFeatureIconBgDark else OnboardingFeatureIconBgLight
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 32.dp)
-            .scale(animatedScale)
-            .alpha(animatedAlpha),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+            .padding(horizontal = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Animated illustration
-        Box(
-            modifier = Modifier
-                .size(220.dp)
-                .padding(bottom = 24.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            AnimatedIllustration(
-                type = page.illustrationType,
-                primaryColor = page.primaryColor,
-                secondaryColor = page.secondaryColor,
-                accentColor = page.accentColor,
-                isActive = isCurrentPage
-            )
+        Spacer(modifier = Modifier.height(16.dp))
 
-            // Icon overlay - refined animation
-            androidx.compose.animation.AnimatedVisibility(
-                visible = showContent,
-                enter = scaleIn(
-                    animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioLowBouncy,
-                        stiffness = Spring.StiffnessMediumLow
-                    )
-                ) + fadeIn()
+        // Main card with abstract wave header
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(0.55f),
+            shape = RoundedCornerShape(24.dp),
+            colors = CardDefaults.cardColors(containerColor = cardColor),
+            elevation = CardDefaults.cardElevation(defaultElevation = if (isDarkTheme) 0.dp else 4.dp)
+        ) {
+            Column(
+                modifier = Modifier.fillMaxSize()
             ) {
+                // Abstract wave header
                 Box(
                     modifier = Modifier
-                        .size(80.dp)
-                        .clip(CircleShape)
-                        .background(
-                            Brush.radialGradient(
-                                colors = listOf(
-                                    Color.White.copy(alpha = 0.3f),
-                                    Color.White.copy(alpha = 0.1f)
-                                )
-                            )
-                        ),
-                    contentAlignment = Alignment.Center
+                        .fillMaxWidth()
+                        .weight(0.55f)
                 ) {
-                    Icon(
-                        imageVector = page.icon,
-                        contentDescription = null,
-                        modifier = Modifier.size(40.dp),
-                        tint = Color.White
+                    AbstractWaveBackground(
+                        isDarkTheme = isDarkTheme,
+                        modifier = Modifier.fillMaxSize()
+                    )
+
+                    // Analysis complete badge (dark mode variant)
+                    if (isDarkTheme) {
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .padding(bottom = 16.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(OnboardingSurfaceVariantDark)
+                                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(OnboardingFeatureIconBgDark),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.AutoAwesome,
+                                        contentDescription = null,
+                                        tint = OnboardingAccent,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                                Column {
+                                    Text(
+                                        text = stringResource(R.string.onboarding_journaling_analysis_complete),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = OnboardingAccent,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                    Text(
+                                        text = stringResource(R.string.onboarding_journaling_insight_generated),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = textPrimary,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Card content (light mode variant)
+                if (!isDarkTheme) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            // AI Generated badge
+                            Row(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(badgeColor)
+                                    .padding(horizontal = 10.dp, vertical = 6.dp),
+                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.AutoAwesome,
+                                    contentDescription = null,
+                                    tint = OnboardingAccent,
+                                    modifier = Modifier.size(14.dp)
+                                )
+                                Text(
+                                    text = stringResource(R.string.onboarding_journaling_badge),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = OnboardingAccent,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+
+                            Text(
+                                text = stringResource(R.string.onboarding_journaling_today),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = textSecondary
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Text(
+                            text = stringResource(R.string.onboarding_journaling_title),
+                            style = MaterialTheme.typography.titleLarge,
+                            color = textPrimary,
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Text(
+                            text = stringResource(R.string.onboarding_journaling_prompt),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = textSecondary
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // Input hint with left border
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .width(3.dp)
+                                    .height(24.dp)
+                                    .background(OnboardingAccent, RoundedCornerShape(1.5.dp))
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                text = stringResource(R.string.onboarding_journaling_hint),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = textSecondary.copy(alpha = 0.6f)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        // Headline text with highlight
+        val headline = buildAnnotatedString {
+            append("Unlock Your ")
+            withStyle(style = SpanStyle(color = OnboardingAccent)) {
+                append("Mind")
+            }
+        }
+        Text(
+            text = headline,
+            style = MaterialTheme.typography.headlineMedium.copy(
+                fontFamily = PoppinsFontFamily,
+                fontWeight = FontWeight.Bold
+            ),
+            color = textPrimary,
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Text(
+            text = if (isDarkTheme) {
+                stringResource(R.string.onboarding_journaling_desc_alt)
+            } else {
+                stringResource(R.string.onboarding_journaling_desc)
+            },
+            style = MaterialTheme.typography.bodyLarge,
+            color = textSecondary,
+            textAlign = TextAlign.Center,
+            lineHeight = 24.sp,
+            modifier = Modifier.padding(horizontal = 8.dp)
+        )
+
+        // Feature pills (dark mode)
+        if (isDarkTheme) {
+            Spacer(modifier = Modifier.height(20.dp))
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                FeaturePill(
+                    icon = Icons.Outlined.Psychology,
+                    text = stringResource(R.string.onboarding_journaling_feature_reflection),
+                    isDarkTheme = true
+                )
+                FeaturePill(
+                    icon = Icons.Outlined.TrendingUp,
+                    text = stringResource(R.string.onboarding_journaling_feature_growth),
+                    isDarkTheme = true
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.weight(0.1f))
+    }
+}
+
+@Composable
+private fun FeaturePill(
+    icon: ImageVector,
+    text: String,
+    isDarkTheme: Boolean
+) {
+    val backgroundColor = if (isDarkTheme) OnboardingSurfaceVariantDark else OnboardingFeatureIconBgLight
+    val textColor = if (isDarkTheme) OnboardingTextPrimaryDark else OnboardingTextPrimaryLight
+
+    Row(
+        modifier = Modifier
+            .clip(RoundedCornerShape(12.dp))
+            .background(backgroundColor)
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = OnboardingAccent,
+            modifier = Modifier.size(18.dp)
+        )
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodyMedium,
+            color = textColor,
+            fontWeight = FontWeight.Medium
+        )
+    }
+}
+
+@Composable
+private fun AbstractWaveBackground(
+    isDarkTheme: Boolean,
+    modifier: Modifier = Modifier
+) {
+    val baseColor = if (isDarkTheme) {
+        Color(0xFF2A3D30)
+    } else {
+        Color(0xFF8BA888)
+    }
+
+    Canvas(modifier = modifier.clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))) {
+        val width = size.width
+        val height = size.height
+
+        // Draw gradient background
+        drawRect(
+            brush = Brush.verticalGradient(
+                colors = if (isDarkTheme) {
+                    listOf(
+                        Color(0xFF1A2E21),
+                        Color(0xFF253D2C)
+                    )
+                } else {
+                    listOf(
+                        Color(0xFF9DB99A),
+                        Color(0xFFB8CAB5)
+                    )
+                }
+            )
+        )
+
+        // Draw flowing wave lines
+        val wavePaint = baseColor.copy(alpha = 0.4f)
+        val waveCount = 8
+
+        repeat(waveCount) { i ->
+            val yOffset = height * (0.1f + i * 0.12f)
+            val amplitude = height * 0.08f
+            val frequency = 0.008f + i * 0.002f
+
+            val path = Path().apply {
+                moveTo(0f, yOffset)
+                var x = 0f
+                while (x <= width) {
+                    val y = yOffset + amplitude * sin(x * frequency * PI.toFloat() + i * 0.5f)
+                    lineTo(x, y)
+                    x += 2f
+                }
+            }
+
+            drawPath(
+                path = path,
+                color = wavePaint,
+                style = Stroke(width = 1.5f)
+            )
+        }
+    }
+}
+
+// =============================================================================
+// SCREEN 3: GAMIFICATION LEADERBOARD SCREEN
+// =============================================================================
+
+@Composable
+private fun GamificationLeaderboardScreen(isDarkTheme: Boolean) {
+    val cardColor = if (isDarkTheme) OnboardingCardDark else OnboardingSurfaceLight
+    val textPrimary = if (isDarkTheme) OnboardingTextPrimaryDark else OnboardingTextPrimaryLight
+    val textSecondary = if (isDarkTheme) OnboardingTextSecondaryDark else OnboardingTextSecondaryLight
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Leaderboard card
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(0.45f),
+            shape = RoundedCornerShape(24.dp),
+            colors = CardDefaults.cardColors(containerColor = cardColor),
+            elevation = CardDefaults.cardElevation(defaultElevation = if (isDarkTheme) 0.dp else 4.dp)
+        ) {
+            Box(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                // Grid background (subtle)
+                if (isDarkTheme) {
+                    GridBackground(modifier = Modifier.fillMaxSize())
+                }
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(20.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    // Trophy icon with stars
+                    Box(
+                        modifier = Modifier.padding(top = 8.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        // Trophy circle
+                        Box(
+                            modifier = Modifier
+                                .size(80.dp)
+                                .clip(CircleShape)
+                                .background(OnboardingAccent),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.EmojiEvents,
+                                contentDescription = "Trophy",
+                                tint = if (isDarkTheme) OnboardingBackgroundDark else Color.White,
+                                modifier = Modifier.size(40.dp)
+                            )
+                        }
+
+                        // Decorative stars
+                        Icon(
+                            imageVector = Icons.Filled.Star,
+                            contentDescription = null,
+                            tint = OnboardingAccent,
+                            modifier = Modifier
+                                .size(20.dp)
+                                .offset(x = 50.dp, y = (-30).dp)
+                        )
+                        Icon(
+                            imageVector = Icons.Filled.Star,
+                            contentDescription = null,
+                            tint = OnboardingAccent.copy(alpha = 0.6f),
+                            modifier = Modifier
+                                .size(14.dp)
+                                .offset(x = (-45).dp, y = (-10).dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    // Leaderboard rows
+                    LeaderboardRow(
+                        rank = 1,
+                        xp = 2450,
+                        isHighlighted = true,
+                        isDarkTheme = isDarkTheme
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    LeaderboardRow(
+                        rank = 2,
+                        xp = 1820,
+                        isHighlighted = false,
+                        isDarkTheme = isDarkTheme
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    LeaderboardRow(
+                        rank = 3,
+                        xp = 1450,
+                        isHighlighted = false,
+                        isDarkTheme = isDarkTheme
                     )
                 }
             }
@@ -394,645 +931,904 @@ private fun OnboardingPageContent(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Title with staggered animation - refined for calmer feel
-        AnimatedVisibility(
-            visible = showContent,
-            enter = slideInVertically(
-                initialOffsetY = { 30 },
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioLowBouncy,
-                    stiffness = Spring.StiffnessMediumLow
-                )
-            ) + fadeIn(animationSpec = tween(300, delayMillis = 50))
+        // Headline
+        Text(
+            text = stringResource(R.string.onboarding_gamification_headline),
+            style = MaterialTheme.typography.headlineMedium.copy(
+                fontFamily = PoppinsFontFamily,
+                fontWeight = FontWeight.Bold
+            ),
+            color = textPrimary,
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Text(
+            text = stringResource(R.string.onboarding_gamification_desc),
+            style = MaterialTheme.typography.bodyLarge,
+            color = textSecondary,
+            textAlign = TextAlign.Center,
+            lineHeight = 24.sp,
+            modifier = Modifier.padding(horizontal = 8.dp)
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Feature bullets
+        Column(
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Text(
-                text = stringResource(page.titleResId),
-                style = MaterialTheme.typography.headlineMedium.copy(
-                    fontSize = 28.sp,
-                    letterSpacing = (-0.5).sp
-                ),
-                fontWeight = FontWeight.Bold,
-                color = Color.White,
-                textAlign = TextAlign.Center
+            FeatureBulletItem(
+                icon = Icons.Filled.Star,
+                title = stringResource(R.string.onboarding_gamification_earn_xp),
+                description = stringResource(R.string.onboarding_gamification_earn_xp_desc),
+                isDarkTheme = isDarkTheme
+            )
+            FeatureBulletItem(
+                icon = Icons.Filled.EmojiEvents,
+                title = stringResource(R.string.onboarding_gamification_badges),
+                description = stringResource(R.string.onboarding_gamification_badges_desc),
+                isDarkTheme = isDarkTheme
+            )
+            FeatureBulletItem(
+                icon = Icons.Filled.BarChart,
+                title = stringResource(R.string.onboarding_gamification_compete),
+                description = stringResource(R.string.onboarding_gamification_compete_desc),
+                isDarkTheme = isDarkTheme
             )
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Description with staggered animation - refined for calmer feel
-        AnimatedVisibility(
-            visible = showContent,
-            enter = slideInVertically(
-                initialOffsetY = { 30 },
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioLowBouncy,
-                    stiffness = Spring.StiffnessMediumLow
-                )
-            ) + fadeIn(animationSpec = tween(300, delayMillis = 100))
-        ) {
-            Text(
-                text = stringResource(page.descriptionResId),
-                style = MaterialTheme.typography.bodyLarge.copy(
-                    lineHeight = 26.sp
-                ),
-                color = Color.White.copy(alpha = 0.9f),
-                textAlign = TextAlign.Center
-            )
-        }
+        Spacer(modifier = Modifier.weight(0.1f))
     }
 }
 
 @Composable
-private fun AnimatedIllustration(
-    type: IllustrationType,
-    primaryColor: Color,
-    secondaryColor: Color,
-    accentColor: Color,
-    isActive: Boolean
-) {
-    when (type) {
-        IllustrationType.GROWTH_SPIRAL -> GrowthSpiralAnimation(accentColor, isActive)
-        IllustrationType.WISDOM_RAYS -> WisdomRaysAnimation(accentColor, isActive)
-        IllustrationType.JOURNAL_WAVES -> JournalWavesAnimation(secondaryColor, isActive)
-        IllustrationType.TIME_PORTAL -> TimePortalAnimation(accentColor, isActive)
-        IllustrationType.ACHIEVEMENT_STARS -> AchievementStarsAnimation(accentColor, isActive)
-    }
-}
+private fun GridBackground(modifier: Modifier = Modifier) {
+    Canvas(modifier = modifier.alpha(0.15f)) {
+        val gridSize = 30.dp.toPx()
+        val strokeWidth = 1.dp.toPx()
 
-@Composable
-private fun GrowthSpiralAnimation(accentColor: Color, isActive: Boolean) {
-    val rotation = remember { Animatable(0f) }
-    val pulseScale = remember { Animatable(0.95f) }
-
-    // Use LaunchedEffect to start/stop animations based on visibility
-    LaunchedEffect(isActive) {
-        if (isActive) {
-            launch {
-                rotation.animateTo(
-                    targetValue = 360f,
-                    animationSpec = infiniteRepeatable(
-                        animation = tween(20000, easing = LinearEasing),
-                        repeatMode = RepeatMode.Restart
-                    )
-                )
-            }
-            launch {
-                pulseScale.animateTo(
-                    targetValue = 1.05f,
-                    animationSpec = infiniteRepeatable(
-                        animation = tween(2000, easing = EaseInOutCubic),
-                        repeatMode = RepeatMode.Reverse
-                    )
-                )
-            }
-        } else {
-            // Stop animations and reset to initial values when not active
-            rotation.stop()
-            pulseScale.stop()
-            rotation.snapTo(0f)
-            pulseScale.snapTo(0.95f)
-        }
-    }
-
-    Canvas(
-        modifier = Modifier
-            .fillMaxSize()
-            .scale(pulseScale.value)
-            .rotate(rotation.value)
-    ) {
-        val center = Offset(size.width / 2, size.height / 2)
-        val maxRadius = minOf(size.width, size.height) / 2 * 0.9f
-
-        // Draw multiple spiral arms
-        for (arm in 0 until 3) {
-            val armOffset = arm * 120f
-            val path = Path()
-            var isFirst = true
-            for (angle in 0..720 step 5) {
-                val radians = (angle + armOffset) * PI / 180
-                val progress = angle / 720f
-                val radius = maxRadius * progress
-                val x = center.x + radius * cos(radians).toFloat()
-                val y = center.y + radius * sin(radians).toFloat()
-                if (isFirst) {
-                    path.moveTo(x, y)
-                    isFirst = false
-                } else {
-                    path.lineTo(x, y)
-                }
-            }
-            drawPath(
-                path = path,
-                color = if (arm == 0) accentColor else Color.White.copy(alpha = 0.4f - arm * 0.1f),
-                style = Stroke(width = 3f - arm * 0.5f, cap = StrokeCap.Round)
-            )
-        }
-
-        // Center glow
-        for (i in 3 downTo 0) {
-            drawCircle(
-                color = accentColor.copy(alpha = 0.15f - i * 0.03f),
-                radius = 40f + i * 15f,
-                center = center
-            )
-        }
-    }
-}
-
-@Composable
-private fun WisdomRaysAnimation(accentColor: Color, isActive: Boolean) {
-    val rayRotation = remember { Animatable(0f) }
-    val pulseAlpha = remember { Animatable(0.3f) }
-
-    LaunchedEffect(isActive) {
-        if (isActive) {
-            launch {
-                rayRotation.animateTo(
-                    targetValue = 360f,
-                    animationSpec = infiniteRepeatable(
-                        animation = tween(30000, easing = LinearEasing),
-                        repeatMode = RepeatMode.Restart
-                    )
-                )
-            }
-            launch {
-                pulseAlpha.animateTo(
-                    targetValue = 0.7f,
-                    animationSpec = infiniteRepeatable(
-                        animation = tween(1500, easing = EaseInOutCubic),
-                        repeatMode = RepeatMode.Reverse
-                    )
-                )
-            }
-        } else {
-            rayRotation.stop()
-            pulseAlpha.stop()
-            rayRotation.snapTo(0f)
-            pulseAlpha.snapTo(0.3f)
-        }
-    }
-
-    Canvas(
-        modifier = Modifier
-            .fillMaxSize()
-            .rotate(rayRotation.value)
-    ) {
-        val center = Offset(size.width / 2, size.height / 2)
-        val maxRadius = minOf(size.width, size.height) / 2 * 0.85f
-
-        // Draw sun rays
-        for (i in 0 until 12) {
-            val angle = i * 30f * PI / 180
-            val innerRadius = 50f
-            val outerRadius = maxRadius * (if (i % 2 == 0) 1f else 0.7f)
-
-            val startX = center.x + innerRadius * cos(angle).toFloat()
-            val startY = center.y + innerRadius * sin(angle).toFloat()
-            val endX = center.x + outerRadius * cos(angle).toFloat()
-            val endY = center.y + outerRadius * sin(angle).toFloat()
-
+        // Vertical lines
+        var x = 0f
+        while (x <= size.width) {
             drawLine(
-                color = if (i % 2 == 0) accentColor.copy(alpha = pulseAlpha.value)
-                else Color.White.copy(alpha = pulseAlpha.value * 0.5f),
-                start = Offset(startX, startY),
-                end = Offset(endX, endY),
-                strokeWidth = if (i % 2 == 0) 4f else 2f,
-                cap = StrokeCap.Round
+                color = OnboardingAccent,
+                start = Offset(x, 0f),
+                end = Offset(x, size.height),
+                strokeWidth = strokeWidth
             )
+            x += gridSize
         }
 
-        // Inner circles
-        for (i in 2 downTo 0) {
-            drawCircle(
-                color = Color.White.copy(alpha = 0.1f + i * 0.05f),
-                radius = 30f + i * 15f,
-                center = center
+        // Horizontal lines
+        var y = 0f
+        while (y <= size.height) {
+            drawLine(
+                color = OnboardingAccent,
+                start = Offset(0f, y),
+                end = Offset(size.width, y),
+                strokeWidth = strokeWidth
             )
+            y += gridSize
         }
     }
 }
 
 @Composable
-private fun JournalWavesAnimation(secondaryColor: Color, isActive: Boolean) {
-    val wavePhase = remember { Animatable(0f) }
-
-    LaunchedEffect(isActive) {
-        if (isActive) {
-            wavePhase.animateTo(
-                targetValue = 2 * PI.toFloat(),
-                animationSpec = infiniteRepeatable(
-                    animation = tween(3000, easing = LinearEasing),
-                    repeatMode = RepeatMode.Restart
-                )
-            )
-        } else {
-            wavePhase.stop()
-            wavePhase.snapTo(0f)
-        }
-    }
-
-    Canvas(modifier = Modifier.fillMaxSize()) {
-        val center = Offset(size.width / 2, size.height / 2)
-
-        // Draw multiple waves
-        for (wave in 0 until 4) {
-            val path = Path()
-            val waveY = center.y + (wave - 1.5f) * 35f
-            val amplitude = 20f - wave * 3f
-            val phase = wavePhase.value + wave * 0.5f
-
-            path.moveTo(0f, waveY)
-            for (x in 0..size.width.toInt() step 3) {
-                val y = waveY + amplitude * sin(x * 0.02f + phase)
-                path.lineTo(x.toFloat(), y.toFloat())
-            }
-
-            drawPath(
-                path = path,
-                color = if (wave == 0) secondaryColor.copy(alpha = 0.8f)
-                else Color.White.copy(alpha = 0.4f - wave * 0.08f),
-                style = Stroke(width = 3f - wave * 0.5f, cap = StrokeCap.Round)
-            )
-        }
-
-        // Floating dots
-        for (i in 0 until 8) {
-            val dotX = (size.width / 8) * (i + 0.5f)
-            val dotY = center.y + 20f * sin(wavePhase.value + i * 0.5f)
-            drawCircle(
-                color = Color.White.copy(alpha = 0.6f),
-                radius = 4f,
-                center = Offset(dotX, dotY.toFloat())
-            )
-        }
-    }
-}
-
-@Composable
-private fun TimePortalAnimation(accentColor: Color, isActive: Boolean) {
-    val ringRotation = remember { Animatable(0f) }
-    val innerRotation = remember { Animatable(360f) }
-    val pulseScale = remember { Animatable(0.9f) }
-
-    LaunchedEffect(isActive) {
-        if (isActive) {
-            launch {
-                ringRotation.animateTo(
-                    targetValue = 360f,
-                    animationSpec = infiniteRepeatable(
-                        animation = tween(8000, easing = LinearEasing),
-                        repeatMode = RepeatMode.Restart
-                    )
-                )
-            }
-            launch {
-                innerRotation.animateTo(
-                    targetValue = 0f,
-                    animationSpec = infiniteRepeatable(
-                        animation = tween(6000, easing = LinearEasing),
-                        repeatMode = RepeatMode.Restart
-                    )
-                )
-            }
-            launch {
-                pulseScale.animateTo(
-                    targetValue = 1.1f,
-                    animationSpec = infiniteRepeatable(
-                        animation = tween(2000, easing = EaseInOutCubic),
-                        repeatMode = RepeatMode.Reverse
-                    )
-                )
-            }
-        } else {
-            ringRotation.stop()
-            innerRotation.stop()
-            pulseScale.stop()
-            ringRotation.snapTo(0f)
-            innerRotation.snapTo(360f)
-            pulseScale.snapTo(0.9f)
-        }
-    }
-
-    Canvas(modifier = Modifier
-        .fillMaxSize()
-        .scale(pulseScale.value)) {
-        val center = Offset(size.width / 2, size.height / 2)
-        val maxRadius = minOf(size.width, size.height) / 2 * 0.8f
-
-        // Outer rotating ring
-        drawArc(
-            color = accentColor.copy(alpha = 0.4f),
-            startAngle = ringRotation.value,
-            sweepAngle = 270f,
-            useCenter = false,
-            style = Stroke(width = 4f, cap = StrokeCap.Round),
-            topLeft = Offset(center.x - maxRadius, center.y - maxRadius),
-            size = androidx.compose.ui.geometry.Size(maxRadius * 2, maxRadius * 2)
-        )
-
-        // Middle ring
-        val midRadius = maxRadius * 0.7f
-        drawArc(
-            color = Color.White.copy(alpha = 0.5f),
-            startAngle = innerRotation.value,
-            sweepAngle = 200f,
-            useCenter = false,
-            style = Stroke(width = 3f, cap = StrokeCap.Round),
-            topLeft = Offset(center.x - midRadius, center.y - midRadius),
-            size = androidx.compose.ui.geometry.Size(midRadius * 2, midRadius * 2)
-        )
-
-        // Inner ring
-        val innerRadius = maxRadius * 0.4f
-        drawArc(
-            color = accentColor.copy(alpha = 0.6f),
-            startAngle = ringRotation.value * 1.5f,
-            sweepAngle = 150f,
-            useCenter = false,
-            style = Stroke(width = 2f, cap = StrokeCap.Round),
-            topLeft = Offset(center.x - innerRadius, center.y - innerRadius),
-            size = androidx.compose.ui.geometry.Size(innerRadius * 2, innerRadius * 2)
-        )
-
-        // Center glow
-        for (i in 4 downTo 0) {
-            drawCircle(
-                color = accentColor.copy(alpha = 0.15f - i * 0.02f),
-                radius = 20f + i * 10f,
-                center = center
-            )
-        }
-    }
-}
-
-@Composable
-private fun AchievementStarsAnimation(accentColor: Color, isActive: Boolean) {
-    val mainRotation = remember { Animatable(0f) }
-    val twinkles = remember {
-        List(8) { Animatable(0.3f) }
-    }
-
-    LaunchedEffect(isActive) {
-        if (isActive) {
-            launch {
-                mainRotation.animateTo(
-                    targetValue = 360f,
-                    animationSpec = infiniteRepeatable(
-                        animation = tween(25000, easing = LinearEasing),
-                        repeatMode = RepeatMode.Restart
-                    )
-                )
-            }
-            twinkles.forEachIndexed { index, animatable ->
-                launch {
-                    animatable.animateTo(
-                        targetValue = 1f,
-                        animationSpec = infiniteRepeatable(
-                            animation = tween(1000 + index * 200, easing = EaseInOutCubic),
-                            repeatMode = RepeatMode.Reverse
-                        )
-                    )
-                }
-            }
-        } else {
-            mainRotation.stop()
-            twinkles.forEach { it.stop() }
-            mainRotation.snapTo(0f)
-            twinkles.forEach { it.snapTo(0.3f) }
-        }
-    }
-
-    val starAngles = remember {
-        List(8) { Random.nextFloat() * 360f }
-    }
-    val starDistances = remember {
-        List(8) { Random.nextFloat() * 0.3f + 0.5f }
-    }
-    val starSizes = remember {
-        List(8) { Random.nextFloat() * 6f + 4f }
-    }
-
-    Canvas(modifier = Modifier
-        .fillMaxSize()
-        .rotate(mainRotation.value * 0.1f)) {
-        val center = Offset(size.width / 2, size.height / 2)
-        val maxRadius = minOf(size.width, size.height) / 2 * 0.85f
-
-        // Draw stars
-        starAngles.forEachIndexed { index, baseAngle ->
-            val angle = (baseAngle + mainRotation.value * 0.2f) * PI / 180
-            val distance = starDistances[index] * maxRadius
-            val x = center.x + distance * cos(angle).toFloat()
-            val y = center.y + distance * sin(angle).toFloat()
-            val starSize = starSizes[index]
-            val alpha = twinkles[index].value
-
-            // Draw 4-point star
-            val starPath = Path().apply {
-                moveTo(x, y - starSize)
-                lineTo(x + starSize * 0.3f, y)
-                lineTo(x, y + starSize)
-                lineTo(x - starSize * 0.3f, y)
-                close()
-                moveTo(x - starSize, y)
-                lineTo(x, y + starSize * 0.3f)
-                lineTo(x + starSize, y)
-                lineTo(x, y - starSize * 0.3f)
-                close()
-            }
-
-            drawPath(
-                path = starPath,
-                color = if (index % 2 == 0) accentColor.copy(alpha = alpha)
-                else Color.White.copy(alpha = alpha * 0.8f)
-            )
-        }
-
-        // Center achievement badge glow
-        for (i in 3 downTo 0) {
-            drawCircle(
-                color = accentColor.copy(alpha = 0.1f + i * 0.03f),
-                radius = 35f + i * 12f,
-                center = center
-            )
-        }
-    }
-}
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-private fun BottomSection(
-    pagerState: PagerState,
-    pageCount: Int,
-    isLastPage: Boolean,
-    currentPageColor: Color,
-    onNext: () -> Unit,
-    onBack: () -> Unit,
-    onComplete: () -> Unit
+private fun LeaderboardRow(
+    rank: Int,
+    xp: Int,
+    isHighlighted: Boolean,
+    isDarkTheme: Boolean
 ) {
-    Column(
+    val backgroundColor = when {
+        isHighlighted && isDarkTheme -> OnboardingLeaderboardRowActiveDark
+        isHighlighted -> OnboardingLeaderboardRowActiveLight
+        else -> Color.Transparent
+    }
+    val borderColor = if (isHighlighted) OnboardingAccent else Color.Transparent
+    val secondaryTextColor = if (isDarkTheme) OnboardingTextSecondaryDark else OnboardingTextSecondaryLight
+
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .clip(RoundedCornerShape(12.dp))
+            .background(backgroundColor)
+            .then(
+                if (isHighlighted) {
+                    Modifier.border(1.dp, borderColor, RoundedCornerShape(12.dp))
+                } else {
+                    Modifier
+                }
+            )
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        // Animated page indicators
         Row(
-            modifier = Modifier.padding(bottom = 32.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            repeat(pageCount) { index ->
-                AnimatedPageIndicator(
-                    isSelected = index == pagerState.currentPage,
-                    isPassed = index < pagerState.currentPage,
-                    accentColor = currentPageColor
+            Text(
+                text = rank.toString(),
+                style = MaterialTheme.typography.bodyLarge,
+                color = if (isHighlighted) OnboardingAccent else secondaryTextColor,
+                fontWeight = FontWeight.SemiBold
+            )
+
+            // Avatar placeholder
+            Box(
+                modifier = Modifier
+                    .size(32.dp)
+                    .clip(CircleShape)
+                    .background(
+                        if (isHighlighted) OnboardingAccent.copy(alpha = 0.2f)
+                        else OnboardingProgressInactiveDark.copy(alpha = 0.5f)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Person,
+                    contentDescription = null,
+                    tint = if (isHighlighted) OnboardingAccent else secondaryTextColor,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+
+            // Progress bar
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(8.dp)
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(
+                        if (isDarkTheme) OnboardingProgressInactiveDark
+                        else OnboardingProgressInactiveLight
+                    )
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .fillMaxWidth(xp / 3000f)
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(OnboardingAccent)
                 )
             }
         }
 
-        // Navigation buttons
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+        Text(
+            text = if (isHighlighted) "$xp XP" else xp.toString(),
+            style = MaterialTheme.typography.bodyMedium,
+            color = if (isHighlighted) OnboardingAccent else secondaryTextColor,
+            fontWeight = if (isHighlighted) FontWeight.SemiBold else FontWeight.Normal
+        )
+    }
+}
+
+@Composable
+private fun FeatureBulletItem(
+    icon: ImageVector,
+    title: String,
+    description: String,
+    isDarkTheme: Boolean
+) {
+    val iconBgColor = if (isDarkTheme) OnboardingFeatureIconBgDark else OnboardingFeatureIconBgLight
+    val textPrimary = if (isDarkTheme) OnboardingTextPrimaryDark else OnboardingTextPrimaryLight
+    val textSecondary = if (isDarkTheme) OnboardingTextSecondaryDark else OnboardingTextSecondaryLight
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(iconBgColor),
+            contentAlignment = Alignment.Center
         ) {
-            // Back button
-            AnimatedVisibility(
-                visible = pagerState.currentPage > 0,
-                enter = fadeIn() + expandHorizontally(),
-                exit = fadeOut() + shrinkHorizontally()
-            ) {
-                OutlinedButton(
-                    onClick = onBack,
-                    modifier = Modifier
-                        .height(56.dp)
-                        .width(100.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = Color.White
-                    ),
-                    border = ButtonDefaults.outlinedButtonBorder(enabled = true).copy(
-                        width = 1.5.dp,
-                        brush = Brush.horizontalGradient(
-                            colors = listOf(
-                                Color.White.copy(alpha = 0.5f),
-                                Color.White.copy(alpha = 0.3f)
-                            )
-                        )
-                    ),
-                    shape = RoundedCornerShape(16.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-            }
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = OnboardingAccent,
+                modifier = Modifier.size(24.dp)
+            )
+        }
 
-            // Spacer when back button is hidden
-            if (pagerState.currentPage == 0) {
-                Spacer(modifier = Modifier.weight(1f))
-            }
+        Column {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                color = textPrimary,
+                fontWeight = FontWeight.SemiBold
+            )
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodyMedium,
+                color = textSecondary
+            )
+        }
+    }
+}
 
-            // Next/Get Started button - subtle scale for last page
-            val buttonScale by animateFloatAsState(
-                targetValue = if (isLastPage) 1.02f else 1f,
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioNoBouncy
-                ),
-                label = "button_scale"
+// =============================================================================
+// SCREEN 4: XP ARC SCREEN
+// =============================================================================
+
+@Composable
+private fun XpArcScreen(isDarkTheme: Boolean) {
+    val textPrimary = if (isDarkTheme) OnboardingTextPrimaryDark else OnboardingTextPrimaryLight
+    val textSecondary = if (isDarkTheme) OnboardingTextSecondaryDark else OnboardingTextSecondaryLight
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // XP Arc with level display
+        Box(
+            modifier = Modifier
+                .size(280.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            // Circular arc progress
+            XpArcIndicator(
+                progress = 0.75f,
+                isDarkTheme = isDarkTheme,
+                modifier = Modifier.fillMaxSize()
             )
 
-            Button(
-                onClick = { if (isLastPage) onComplete() else onNext() },
-                modifier = Modifier
-                    .height(56.dp)
-                    .weight(1f)
-                    .scale(buttonScale),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.White,
-                    contentColor = currentPageColor
-                ),
-                shape = RoundedCornerShape(16.dp),
-                elevation = ButtonDefaults.buttonElevation(
-                    defaultElevation = 8.dp,
-                    pressedElevation = 4.dp
-                )
+            // Center content
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                AnimatedContent(
-                    targetState = isLastPage,
-                    transitionSpec = {
-                        (slideInVertically { it } + fadeIn()) togetherWith
-                                (slideOutVertically { -it } + fadeOut())
-                    },
-                    label = "button_content"
-                ) { isLast ->
+                // Trophy icon
+                Box(
+                    modifier = Modifier
+                        .size(56.dp)
+                        .clip(CircleShape)
+                        .background(
+                            if (isDarkTheme) OnboardingFeatureIconBgDark
+                            else OnboardingFeatureIconBgLight
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.EmojiEvents,
+                        contentDescription = null,
+                        tint = OnboardingAccent,
+                        modifier = Modifier.size(28.dp)
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Level text
+                Text(
+                    text = String.format(stringResource(R.string.onboarding_xp_level), 3),
+                    style = MaterialTheme.typography.displaySmall.copy(
+                        fontFamily = PoppinsFontFamily,
+                        fontWeight = FontWeight.Bold
+                    ),
+                    color = textPrimary
+                )
+
+                // Rank subtitle
+                Text(
+                    text = stringResource(R.string.onboarding_xp_rank_initiate),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = textSecondary,
+                    letterSpacing = 2.sp
+                )
+            }
+
+            // Star badge (top right)
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .offset(x = (-20).dp, y = 40.dp)
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(
+                        if (isDarkTheme) OnboardingFeatureIconBgDark
+                        else OnboardingFeatureIconBgLight
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Star,
+                    contentDescription = null,
+                    tint = OnboardingAccent,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+
+            // Lightning bolt badge (bottom left)
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .offset(x = 20.dp, y = (-40).dp)
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(
+                        if (isDarkTheme) OnboardingFeatureIconBgDark
+                        else OnboardingFeatureIconBgLight
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Bolt,
+                    contentDescription = null,
+                    tint = OnboardingAccent,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        // Stats row
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            StatCard(
+                icon = Icons.Filled.LocalFireDepartment,
+                value = "7",
+                label = stringResource(R.string.onboarding_xp_day_streak),
+                isLocked = false,
+                isDarkTheme = isDarkTheme,
+                modifier = Modifier.weight(1f)
+            )
+            StatCard(
+                icon = Icons.Filled.CheckCircle,
+                value = "750",
+                label = stringResource(R.string.onboarding_xp_total_xp),
+                isLocked = false,
+                isDarkTheme = isDarkTheme,
+                modifier = Modifier.weight(1f)
+            )
+            StatCard(
+                icon = Icons.Filled.Lock,
+                value = "???",
+                label = stringResource(R.string.onboarding_xp_locked),
+                isLocked = true,
+                isDarkTheme = isDarkTheme,
+                modifier = Modifier.weight(1f)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(40.dp))
+
+        // Headline with highlight
+        val headline = buildAnnotatedString {
+            append("Turn Habits into ")
+            withStyle(style = SpanStyle(color = OnboardingAccent)) {
+                append("Quests")
+            }
+        }
+        Text(
+            text = headline,
+            style = MaterialTheme.typography.headlineMedium.copy(
+                fontFamily = PoppinsFontFamily,
+                fontWeight = FontWeight.Bold
+            ),
+            color = textPrimary,
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Text(
+            text = stringResource(R.string.onboarding_xp_desc),
+            style = MaterialTheme.typography.bodyLarge,
+            color = textSecondary,
+            textAlign = TextAlign.Center,
+            lineHeight = 24.sp,
+            modifier = Modifier.padding(horizontal = 8.dp)
+        )
+
+        Spacer(modifier = Modifier.weight(0.1f))
+    }
+}
+
+@Composable
+private fun XpArcIndicator(
+    progress: Float,
+    isDarkTheme: Boolean,
+    modifier: Modifier = Modifier
+) {
+    val arcBackground = if (isDarkTheme) OnboardingXpArcBackgroundDark else OnboardingXpArcBackground
+    val arcFill = OnboardingXpArcFill
+    val glowColor = OnboardingXpArcGlow
+
+    Canvas(modifier = modifier) {
+        val strokeWidth = 16.dp.toPx()
+        val radius = (size.minDimension - strokeWidth) / 2
+        val center = Offset(size.width / 2, size.height / 2)
+
+        // Arc angles: starts from bottom-left, sweeps to bottom-right (270 degree arc)
+        val startAngle = 135f
+        val sweepAngle = 270f
+
+        // Background arc
+        drawArc(
+            color = arcBackground,
+            startAngle = startAngle,
+            sweepAngle = sweepAngle,
+            useCenter = false,
+            topLeft = Offset(center.x - radius, center.y - radius),
+            size = Size(radius * 2, radius * 2),
+            style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
+        )
+
+        // Progress arc
+        val progressSweep = sweepAngle * progress
+        drawArc(
+            color = arcFill,
+            startAngle = startAngle,
+            sweepAngle = progressSweep,
+            useCenter = false,
+            topLeft = Offset(center.x - radius, center.y - radius),
+            size = Size(radius * 2, radius * 2),
+            style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
+        )
+
+        // Glow effect at the end of progress
+        val endAngle = Math.toRadians((startAngle + progressSweep).toDouble())
+        val glowX = center.x + radius * cos(endAngle).toFloat()
+        val glowY = center.y + radius * sin(endAngle).toFloat()
+
+        // Outer glow
+        drawCircle(
+            color = glowColor,
+            radius = strokeWidth * 1.5f,
+            center = Offset(glowX, glowY)
+        )
+    }
+}
+
+@Composable
+private fun StatCard(
+    icon: ImageVector,
+    value: String,
+    label: String,
+    isLocked: Boolean,
+    isDarkTheme: Boolean,
+    modifier: Modifier = Modifier
+) {
+    val cardColor = when {
+        isLocked && isDarkTheme -> OnboardingStatCardLockedDark
+        isLocked -> OnboardingStatCardLockedLight
+        isDarkTheme -> OnboardingStatCardDark
+        else -> OnboardingStatCardLight
+    }
+    val textPrimary = if (isDarkTheme) OnboardingTextPrimaryDark else OnboardingTextPrimaryLight
+    val textSecondary = if (isDarkTheme) OnboardingTextSecondaryDark else OnboardingTextSecondaryLight
+    val lockedTextColor = if (isDarkTheme) OnboardingTextTertiaryDark else OnboardingTextTertiaryLight
+
+    val borderModifier = if (isLocked) {
+        Modifier.border(
+            width = 1.dp,
+            color = if (isDarkTheme) OnboardingDividerDark else OnboardingDividerLight,
+            shape = RoundedCornerShape(16.dp)
+        )
+    } else {
+        if (!isDarkTheme) {
+            Modifier.border(
+                width = 1.dp,
+                color = OnboardingDividerLight,
+                shape = RoundedCornerShape(16.dp)
+            )
+        } else {
+            Modifier
+        }
+    }
+
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(16.dp))
+            .background(cardColor)
+            .then(borderModifier)
+            .padding(vertical = 16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = if (isLocked) lockedTextColor else OnboardingAccent,
+            modifier = Modifier.size(24.dp)
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = value,
+            style = MaterialTheme.typography.titleLarge.copy(
+                fontFamily = PoppinsFontFamily,
+                fontWeight = FontWeight.Bold
+            ),
+            color = if (isLocked) lockedTextColor else textPrimary
+        )
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = if (isLocked) lockedTextColor else textSecondary,
+            letterSpacing = 0.5.sp
+        )
+    }
+}
+
+// =============================================================================
+// SCREEN 5: DAILY WISDOM FEATURES SCREEN
+// =============================================================================
+
+@Composable
+private fun DailyWisdomFeaturesScreen(isDarkTheme: Boolean) {
+    val textPrimary = if (isDarkTheme) OnboardingTextPrimaryDark else OnboardingTextPrimaryLight
+    val textSecondary = if (isDarkTheme) OnboardingTextSecondaryDark else OnboardingTextSecondaryLight
+    val iconBgColor = if (isDarkTheme) OnboardingFeatureIconBgDark else OnboardingFeatureIconBgLight
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Icon header
+        Box(
+            modifier = Modifier
+                .size(100.dp)
+                .clip(CircleShape)
+                .background(iconBgColor),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = if (isDarkTheme) Icons.Filled.MenuBook else Icons.Filled.Lightbulb,
+                contentDescription = null,
+                tint = OnboardingAccent,
+                modifier = Modifier.size(48.dp)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        // Headline
+        Text(
+            text = stringResource(R.string.onboarding_wisdom_headline),
+            style = MaterialTheme.typography.headlineMedium.copy(
+                fontFamily = PoppinsFontFamily,
+                fontWeight = FontWeight.Bold
+            ),
+            color = textPrimary,
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Text(
+            text = if (isDarkTheme) {
+                stringResource(R.string.onboarding_wisdom_desc_alt)
+            } else {
+                stringResource(R.string.onboarding_wisdom_desc)
+            },
+            style = MaterialTheme.typography.bodyLarge,
+            color = textSecondary,
+            textAlign = TextAlign.Center,
+            lineHeight = 24.sp,
+            modifier = Modifier.padding(horizontal = 8.dp)
+        )
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        // Feature list
+        Column(
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            WisdomFeatureCard(
+                icon = Icons.Filled.TextFields,
+                iconText = if (isDarkTheme) "Aa" else null,
+                title = stringResource(R.string.onboarding_wisdom_word_title),
+                description = if (isDarkTheme) {
+                    stringResource(R.string.onboarding_wisdom_word_desc_alt)
+                } else {
+                    stringResource(R.string.onboarding_wisdom_word_desc)
+                },
+                isDarkTheme = isDarkTheme
+            )
+            WisdomFeatureCard(
+                icon = Icons.Filled.FormatQuote,
+                title = stringResource(R.string.onboarding_wisdom_quotes_title),
+                description = stringResource(R.string.onboarding_wisdom_quotes_desc),
+                isDarkTheme = isDarkTheme
+            )
+            WisdomFeatureCard(
+                icon = Icons.Filled.CollectionsBookmark,
+                title = stringResource(R.string.onboarding_wisdom_proverbs_title),
+                description = stringResource(R.string.onboarding_wisdom_proverbs_desc),
+                isDarkTheme = isDarkTheme
+            )
+            WisdomFeatureCard(
+                icon = Icons.Filled.Chat,
+                title = stringResource(R.string.onboarding_wisdom_phrases_title),
+                description = if (isDarkTheme) {
+                    stringResource(R.string.onboarding_wisdom_phrases_desc_alt)
+                } else {
+                    stringResource(R.string.onboarding_wisdom_phrases_desc)
+                },
+                isDarkTheme = isDarkTheme
+            )
+        }
+
+        Spacer(modifier = Modifier.weight(0.1f))
+    }
+}
+
+@Composable
+private fun WisdomFeatureCard(
+    icon: ImageVector,
+    iconText: String? = null,
+    title: String,
+    description: String,
+    isDarkTheme: Boolean
+) {
+    val cardColor = if (isDarkTheme) OnboardingCardDark else OnboardingSurfaceLight
+    val iconBgColor = if (isDarkTheme) OnboardingFeatureIconBgDark else OnboardingFeatureIconBgLight
+    val textPrimary = if (isDarkTheme) OnboardingTextPrimaryDark else OnboardingTextPrimaryLight
+    val textSecondary = if (isDarkTheme) OnboardingTextSecondaryDark else OnboardingTextSecondaryLight
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(cardColor)
+            .padding(16.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(iconBgColor),
+            contentAlignment = Alignment.Center
+        ) {
+            if (iconText != null) {
+                Text(
+                    text = iconText,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = OnboardingAccent,
+                    fontWeight = FontWeight.Bold
+                )
+            } else {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = OnboardingAccent,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+        }
+
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                color = textPrimary,
+                fontWeight = FontWeight.SemiBold
+            )
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodyMedium,
+                color = textSecondary
+            )
+        }
+    }
+}
+
+// =============================================================================
+// SCREEN 6: PERSONALIZED INSIGHTS / NOTIFICATIONS SCREEN
+// =============================================================================
+
+@Composable
+private fun PersonalizedInsightsScreen(isDarkTheme: Boolean) {
+    val textPrimary = if (isDarkTheme) OnboardingTextPrimaryDark else OnboardingTextPrimaryLight
+    val textSecondary = if (isDarkTheme) OnboardingTextSecondaryDark else OnboardingTextSecondaryLight
+    val cardColor = if (isDarkTheme) OnboardingQuoteCardDark else OnboardingQuoteCardLight
+    val iconBgColor = if (isDarkTheme) OnboardingFeatureIconBgDark else OnboardingFeatureIconBgLight
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Quote card
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(0.5f),
+            shape = RoundedCornerShape(24.dp),
+            colors = CardDefaults.cardColors(containerColor = cardColor),
+            elevation = CardDefaults.cardElevation(defaultElevation = if (isDarkTheme) 0.dp else 4.dp)
+        ) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(24.dp)
+                ) {
                     Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            text = if (isLast) stringResource(R.string.get_started)
-                            else stringResource(R.string.next),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                        if (!isLast) {
-                            Spacer(modifier = Modifier.width(8.dp))
+                        // Lightbulb icon
+                        Box(
+                            modifier = Modifier
+                                .size(44.dp)
+                                .clip(CircleShape)
+                                .background(iconBgColor),
+                            contentAlignment = Alignment.Center
+                        ) {
                             Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                imageVector = Icons.Filled.Lightbulb,
                                 contentDescription = null,
-                                modifier = Modifier.size(20.dp)
+                                tint = OnboardingAccent,
+                                modifier = Modifier.size(22.dp)
                             )
                         }
+
+                        // Daily Wisdom label
+                        Text(
+                            text = stringResource(R.string.onboarding_insights_label),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = textSecondary,
+                            letterSpacing = 1.5.sp
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.weight(0.3f))
+
+                    // Quote text with highlighted words
+                    val quoteText = buildAnnotatedString {
+                        append("\"The only way to do ")
+                        withStyle(
+                            style = SpanStyle(
+                                color = OnboardingAccent,
+                                textDecoration = TextDecoration.Underline
+                            )
+                        ) {
+                            append("great work")
+                        }
+                        append(" is to love what you do.\"")
+                    }
+                    Text(
+                        text = quoteText,
+                        style = MaterialTheme.typography.headlineSmall.copy(
+                            fontFamily = PoppinsFontFamily,
+                            fontWeight = FontWeight.Medium,
+                            lineHeight = 34.sp
+                        ),
+                        color = textPrimary
+                    )
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    // Divider
+                    Box(
+                        modifier = Modifier
+                            .width(48.dp)
+                            .height(2.dp)
+                            .background(
+                                if (isDarkTheme) OnboardingDividerDark
+                                else OnboardingDividerLight
+                            )
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Author with icon
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        if (!isDarkTheme) {
+                            Icon(
+                                imageVector = Icons.Filled.Person,
+                                contentDescription = null,
+                                tint = textSecondary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        } else {
+                            Text(
+                                text = "—",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = textSecondary
+                            )
+                        }
+                        Text(
+                            text = stringResource(R.string.onboarding_insights_author),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = textSecondary,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.weight(0.4f))
+
+                    // Bottom row with indicators and bookmark
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // Quote indicators
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            repeat(3) { index ->
+                                Box(
+                                    modifier = Modifier
+                                        .size(6.dp)
+                                        .clip(CircleShape)
+                                        .background(
+                                            if (index == 0) OnboardingAccent
+                                            else if (isDarkTheme) OnboardingProgressInactiveDark
+                                            else OnboardingProgressInactiveLight
+                                        )
+                                )
+                            }
+                        }
+
+                        // Bookmark icon
+                        Icon(
+                            imageVector = Icons.Outlined.BookmarkBorder,
+                            contentDescription = "Bookmark",
+                            tint = textSecondary,
+                            modifier = Modifier.size(24.dp)
+                        )
                     }
                 }
             }
         }
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        // Headline
+        Text(
+            text = stringResource(R.string.onboarding_insights_headline),
+            style = MaterialTheme.typography.headlineMedium.copy(
+                fontFamily = PoppinsFontFamily,
+                fontWeight = FontWeight.Bold
+            ),
+            color = textPrimary,
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Text(
+            text = stringResource(R.string.onboarding_insights_desc),
+            style = MaterialTheme.typography.bodyLarge,
+            color = textSecondary,
+            textAlign = TextAlign.Center,
+            lineHeight = 24.sp,
+            modifier = Modifier.padding(horizontal = 8.dp)
+        )
+
+        Spacer(modifier = Modifier.weight(0.1f))
     }
-}
-
-/**
- * Refined Page Indicator - cleaner, calmer animation
- * Uses subtle width change without bouncy spring
- */
-@Composable
-private fun AnimatedPageIndicator(
-    isSelected: Boolean,
-    isPassed: Boolean,
-    accentColor: Color
-) {
-    val width by animateDpAsState(
-        targetValue = when {
-            isSelected -> 28.dp
-            isPassed -> 10.dp
-            else -> 8.dp
-        },
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioNoBouncy,
-            stiffness = Spring.StiffnessMedium
-        ),
-        label = "indicator_width"
-    )
-
-    val height = 6.dp // Fixed height, cleaner look
-
-    val color by animateColorAsState(
-        targetValue = when {
-            isSelected -> Color.White
-            isPassed -> accentColor.copy(alpha = 0.6f)
-            else -> Color.White.copy(alpha = 0.25f)
-        },
-        animationSpec = tween(250),
-        label = "indicator_color"
-    )
-
-    Box(
-        modifier = Modifier
-            .height(height)
-            .width(width)
-            .clip(RoundedCornerShape(3.dp))
-            .background(color)
-    )
 }

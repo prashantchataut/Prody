@@ -468,21 +468,86 @@
     <!-- ==================== -->
     <!-- ONBOARDING -->
     <!-- ==================== -->
-    <string name="onboarding_welcome">Welcome to Prody</string>
-    <string name="onboarding_tagline">Your journey to self-improvement starts here</string>
-    <string name="onboarding_step1_title">Reflect Daily</string>
-    <string name="onboarding_step1_desc">Journal your thoughts and track your growth</string>
-    <string name="onboarding_step2_title">Gain Wisdom</string>
-    <string name="onboarding_step2_desc">Buddha shares personalized insights just for you</string>
-    <string name="onboarding_step3_title">Level Up</string>
-    <string name="onboarding_step3_desc">Earn XP, unlock badges, and climb the leaderboard</string>
-    <string name="onboarding_get_started">Get Started</string>
 
-    <!-- Onboarding Legacy -->
+    <!-- Screen 1: Welcome -->
+    <string name="onboarding_app_name">Prody</string>
+    <string name="onboarding_tagline">Your daily companion for growth, wisdom, and mindful living.</string>
+    <string name="onboarding_get_started">Get Started</string>
+    <string name="onboarding_already_have_account">Already have an account?</string>
+    <string name="onboarding_log_in">Log in</string>
+
+    <!-- Screen 2: Journaling / AI Insight -->
+    <string name="onboarding_journaling_badge">AI GENERATED</string>
+    <string name="onboarding_journaling_today">Today</string>
+    <string name="onboarding_journaling_title">Daily Insight</string>
+    <string name="onboarding_journaling_prompt">"What small moment brought you joy today?"</string>
+    <string name="onboarding_journaling_hint">Type your thoughts...</string>
+    <string name="onboarding_journaling_headline">Unlock Your Mind</string>
+    <string name="onboarding_journaling_desc">Experience journaling reinvented. Let AI-powered prompts guide your thoughts and discover emotional patterns.</string>
+    <string name="onboarding_journaling_desc_alt">Prody uses on-device AI to turn your daily ramblings into actionable wisdom and future insights, instantly.</string>
+    <string name="onboarding_journaling_feature_reflection">Deep Reflection</string>
+    <string name="onboarding_journaling_feature_growth">Growth Tracking</string>
+    <string name="onboarding_journaling_analysis_complete">ANALYSIS COMPLETE</string>
+    <string name="onboarding_journaling_insight_generated">Insight Generated</string>
+    <string name="onboarding_start_journaling">Start Journaling</string>
+
+    <!-- Screen 3: Gamification Leaderboard -->
+    <string name="onboarding_gamification_headline">Turn Habits into Quests</string>
+    <string name="onboarding_gamification_desc">Stay consistent to earn XP, unlock unique badges, and visualize your personal growth journey.</string>
+    <string name="onboarding_gamification_earn_xp">Earn XP</string>
+    <string name="onboarding_gamification_earn_xp_desc">Get rewarded for every journal entry you complete.</string>
+    <string name="onboarding_gamification_badges">Badges</string>
+    <string name="onboarding_gamification_badges_desc">Unlock exclusive milestones as you grow.</string>
+    <string name="onboarding_gamification_compete">Compete</string>
+    <string name="onboarding_gamification_compete_desc">See where you stand among peers.</string>
+
+    <!-- Screen 4: XP Arc / Level -->
+    <string name="onboarding_xp_level">Lvl %d</string>
+    <string name="onboarding_xp_rank_initiate">INITIATE</string>
+    <string name="onboarding_xp_day_streak">DAY STREAK</string>
+    <string name="onboarding_xp_total_xp">TOTAL XP</string>
+    <string name="onboarding_xp_locked">LOCKED</string>
+    <string name="onboarding_xp_headline">Turn Habits into Quests</string>
+    <string name="onboarding_xp_desc">Every entry earns you XP. Unlock wisdom badges and visualize your growth journey.</string>
+    <string name="onboarding_start_quest">Start My Quest</string>
+
+    <!-- Screen 5: Daily Wisdom Features -->
+    <string name="onboarding_wisdom_headline">Daily Wisdom</string>
+    <string name="onboarding_wisdom_desc">Start your day with intention. Personalized insights to articulate your thoughts.</string>
+    <string name="onboarding_wisdom_desc_alt">Start your day with intention. Prody delivers personalized insights to help you articulate your thoughts.</string>
+    <string name="onboarding_wisdom_word_title">Word of the Day</string>
+    <string name="onboarding_wisdom_word_desc">Expand your vocabulary daily</string>
+    <string name="onboarding_wisdom_word_desc_alt">Expand your vocabulary</string>
+    <string name="onboarding_wisdom_quotes_title">Quote Collection</string>
+    <string name="onboarding_wisdom_quotes_desc">Insights from great minds</string>
+    <string name="onboarding_wisdom_proverbs_title">Proverbs \u0026 Idioms</string>
+    <string name="onboarding_wisdom_proverbs_desc">Timeless cultural wisdom</string>
+    <string name="onboarding_wisdom_phrases_title">Essential Phrases</string>
+    <string name="onboarding_wisdom_phrases_desc">Master concise communication</string>
+    <string name="onboarding_wisdom_phrases_desc_alt">Communication masterclass</string>
+    <string name="onboarding_maybe_later">Maybe Later</string>
+
+    <!-- Screen 6: Personalized Insights / Notifications -->
+    <string name="onboarding_insights_label">DAILY WISDOM</string>
+    <string name="onboarding_insights_quote">"The only way to do </string>
+    <string name="onboarding_insights_quote_highlight">great work</string>
+    <string name="onboarding_insights_quote_end"> is to love what you do."</string>
+    <string name="onboarding_insights_author">Steve Jobs</string>
+    <string name="onboarding_insights_headline">Personalized Insights</string>
+    <string name="onboarding_insights_desc">Prody analyzes your daily entries to surface quotes, stoic principles, and mental models that match your current headspace.</string>
+    <string name="onboarding_enable_notifications">Enable Notifications</string>
+    <string name="onboarding_maybe_later_notifications">Maybe later</string>
+
+    <!-- Common -->
+    <string name="onboarding_continue">Continue</string>
+    <string name="onboarding_skip">Skip</string>
+
+    <!-- Legacy strings (kept for compatibility) -->
+    <string name="onboarding_welcome">Welcome to Prody</string>
     <string name="onboarding_welcome_title">Welcome to Prody</string>
     <string name="onboarding_welcome_desc">Your personal growth companion that transforms the way you think, learn, and evolve. Let\'s begin your journey to becoming the best version of yourself.</string>
     <string name="onboarding_wisdom_title">Daily Wisdom</string>
-    <string name="onboarding_wisdom_desc">Discover curated vocabulary, proverbs, idioms, and quotes that expand your mind and enrich your language every single day.</string>
+    <string name="onboarding_wisdom_desc_legacy">Discover curated vocabulary, proverbs, idioms, and quotes that expand your mind and enrich your language every single day.</string>
     <string name="onboarding_journal_title">Buddha - Your Stoic Guide</string>
     <string name="onboarding_journal_desc">Journal your thoughts and let Buddha, your AI mentor, listen, reflect, and guide you with timeless stoic wisdom. A safe space for your deepest thoughts.</string>
     <string name="onboarding_future_title">Message Your Future Self</string>
