@@ -556,3 +556,78 @@ val OnboardingLeaderboardRowLight = Color(0xFFFFFFFF)
 val OnboardingLeaderboardRowDark = Color(0xFF1A2E21)
 val OnboardingLeaderboardRowActiveLight = Color(0xFFF0FFF5)
 val OnboardingLeaderboardRowActiveDark = Color(0xFF1E3D28)
+
+// =============================================================================
+// JOURNEY ONBOARDING DESIGN SYSTEM - Premium Stoic Theme
+// =============================================================================
+
+// Background Colors - Minimalist & Premium
+val JourneyBackgroundDark = Color(0xFF121212)    // Deep black for dark mode
+val JourneyBackgroundLight = Color(0xFFF5F2E9)   // Warm cream for light mode
+
+// Primary Brand Color - Deep Forest Green (Stoic, grounded)
+val JourneyPrimary = Color(0xFF1A3C34)
+val JourneyPrimaryVariant = Color(0xFF0E2420)
+val JourneyOnPrimary = Color(0xFFFFFFFF)
+
+// Accent Color - Muted Gold (Premium, wisdom)
+val JourneyAccent = Color(0xFFC5A059)
+val JourneyAccentDark = Color(0xFFB08A3A)
+val JourneyAccentLight = Color(0xFFD4B978)
+
+// Surface Colors
+val JourneySurfaceLight = Color(0xFFFFFBF5)      // Warm white
+val JourneySurfaceDark = Color(0xFF1A1A1A)       // Slightly elevated from background
+val JourneyCardLight = Color(0xFFFFF8EE)         // Cream/paper-like for contract
+val JourneyCardDark = Color(0xFF2A2A2A)          // Dark grey for contract
+
+// Text Colors
+val JourneyTextPrimaryLight = Color(0xFF1A1A1A)
+val JourneyTextPrimaryDark = Color(0xFFF5F2E9)
+val JourneyTextSecondaryLight = Color(0xFF5A5A5A)
+val JourneyTextSecondaryDark = Color(0xFFB0A89C)
+val JourneyTextTertiaryLight = Color(0xFF8A8A8A)
+val JourneyTextTertiaryDark = Color(0xFF6A6A6A)
+
+// Button Colors
+val JourneyButtonPrimary = Color(0xFF1A3C34)     // Deep green button
+val JourneyButtonTextOnPrimary = Color(0xFFF5F2E9) // Cream text on green
+val JourneyButtonSecondary = Color(0xFFC5A059)   // Gold secondary button
+
+// Arc & Progress Colors
+val JourneyArcBackground = Color(0xFFE8E5DD)     // Light mode arc track
+val JourneyArcBackgroundDark = Color(0xFF2A2A2A) // Dark mode arc track
+val JourneyArcFill = Color(0xFFC5A059)           // Gold fill for arc
+val JourneyArcGlow = Color(0x4DC5A059)           // Subtle gold glow
+
+// Stat Card Colors
+val JourneyStatCardLight = Color(0xFFF5F2E9)
+val JourneyStatCardDark = Color(0xFF1E1E1E)
+val JourneyStatCardBorderLight = Color(0xFFE0DCD0)
+val JourneyStatCardBorderDark = Color(0xFF3A3A3A)
+val JourneyStatCardLockedLight = Color(0xFFF0EDE5)
+val JourneyStatCardLockedDark = Color(0xFF1A1A1A)
+
+// Icon Colors
+val JourneyIconFire = Color(0xFFE67E22)          // Streak fire orange
+val JourneyIconScroll = Color(0xFFC5A059)        // Wisdom scroll gold
+val JourneyIconLocked = Color(0xFF6A6A6A)        // Locked padlock grey
+val JourneyIconTrophy = Color(0xFFC5A059)        // Trophy gold
+
+// Contract/Letter Card Colors
+val JourneyContractPaperLight = Color(0xFFFFF8EE) // Cream paper
+val JourneyContractPaperDark = Color(0xFF2A2520)  // Dark parchment
+val JourneyContractTextLight = Color(0xFF2A2520)  // Brown ink
+val JourneyContractTextDark = Color(0xFFE8E0D4)   // Light ink
+val JourneyContractLineLight = Color(0xFFD4C4A8)  // Signature line
+val JourneyContractLineDark = Color(0xFF5A5046)
+
+// Seal Animation Colors
+val JourneySealRed = Color(0xFF8B2323)            // Wax seal red
+val JourneySealGold = Color(0xFFC5A059)           // Gold seal alternative
+val JourneySealComplete = Color(0xFF2D5A3D)       // Green checkmark
+
+// Page Indicator Colors
+val JourneyIndicatorActive = Color(0xFFC5A059)    // Gold active dot
+val JourneyIndicatorInactiveLight = Color(0xFFD4C4A8)
+val JourneyIndicatorInactiveDark = Color(0xFF3A3A3A)
