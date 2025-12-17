@@ -20,6 +20,7 @@ data class LeaderboardEntryEntity(
     val lastActiveAt: Long = System.currentTimeMillis(),
     val boostsReceived: Int = 0,
     val congratsReceived: Int = 0,
+    val respectsReceived: Int = 0,
     // Gamification 2.0 fields
     val isDevBadgeHolder: Boolean = false, // DEV badge
     val isBetaTester: Boolean = false, // Beta tester badge

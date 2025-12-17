@@ -1693,6 +1693,7 @@ object DatabaseSeeder {
             lastActiveAt = System.currentTimeMillis(),
             boostsReceived = 1247,
             congratsReceived = 892,
+            respectsReceived = 543,
             isDevBadgeHolder = true, // DEV badge holder
             isBetaTester = true,
             profileFrameRarity = "legendary"
@@ -1713,6 +1714,7 @@ object DatabaseSeeder {
             lastActiveAt = System.currentTimeMillis() - 3600000,
             boostsReceived = 234,
             congratsReceived = 156,
+            respectsReceived = 89,
             isDevBadgeHolder = false,
             isBetaTester = true, // Beta tester
             profileFrameRarity = "epic"
@@ -1733,6 +1735,7 @@ object DatabaseSeeder {
             lastActiveAt = System.currentTimeMillis() - 7200000,
             boostsReceived = 198,
             congratsReceived = 145,
+            respectsReceived = 76,
             isDevBadgeHolder = false,
             isBetaTester = true, // Beta tester
             profileFrameRarity = "rare"
@@ -1753,6 +1756,7 @@ object DatabaseSeeder {
             lastActiveAt = System.currentTimeMillis() - 10800000,
             boostsReceived = 156,
             congratsReceived = 112,
+            respectsReceived = 58,
             isDevBadgeHolder = false,
             isBetaTester = false,
             profileFrameRarity = "rare"
@@ -1773,6 +1777,7 @@ object DatabaseSeeder {
             lastActiveAt = System.currentTimeMillis() - 14400000,
             boostsReceived = 134,
             congratsReceived = 98,
+            respectsReceived = 45,
             isDevBadgeHolder = false,
             isBetaTester = false,
             profileFrameRarity = "uncommon"
@@ -1793,6 +1798,7 @@ object DatabaseSeeder {
             lastActiveAt = System.currentTimeMillis() - 18000000,
             boostsReceived = 112,
             congratsReceived = 87,
+            respectsReceived = 34,
             isDevBadgeHolder = false,
             isBetaTester = false,
             profileFrameRarity = "uncommon"
@@ -1813,6 +1819,7 @@ object DatabaseSeeder {
             lastActiveAt = System.currentTimeMillis() - 21600000,
             boostsReceived = 98,
             congratsReceived = 76,
+            respectsReceived = 28,
             isDevBadgeHolder = false,
             isBetaTester = false,
             profileFrameRarity = "common"
@@ -1833,6 +1840,7 @@ object DatabaseSeeder {
             lastActiveAt = System.currentTimeMillis() - 25200000,
             boostsReceived = 87,
             congratsReceived = 65,
+            respectsReceived = 21,
             isDevBadgeHolder = false,
             isBetaTester = false,
             profileFrameRarity = "common"
@@ -1853,6 +1861,7 @@ object DatabaseSeeder {
             lastActiveAt = System.currentTimeMillis() - 28800000,
             boostsReceived = 76,
             congratsReceived = 54,
+            respectsReceived = 17,
             isDevBadgeHolder = false,
             isBetaTester = false,
             profileFrameRarity = "common"
@@ -1873,6 +1882,7 @@ object DatabaseSeeder {
             lastActiveAt = System.currentTimeMillis() - 32400000,
             boostsReceived = 65,
             congratsReceived = 43,
+            respectsReceived = 14,
             isDevBadgeHolder = false,
             isBetaTester = false,
             profileFrameRarity = "common"
@@ -1893,6 +1903,7 @@ object DatabaseSeeder {
             lastActiveAt = System.currentTimeMillis() - 36000000,
             boostsReceived = 54,
             congratsReceived = 32,
+            respectsReceived = 11,
             isDevBadgeHolder = false,
             isBetaTester = false,
             profileFrameRarity = "common"
@@ -1913,6 +1924,7 @@ object DatabaseSeeder {
             lastActiveAt = System.currentTimeMillis() - 39600000,
             boostsReceived = 43,
             congratsReceived = 28,
+            respectsReceived = 9,
             isDevBadgeHolder = false,
             isBetaTester = false,
             profileFrameRarity = "common"
@@ -1933,6 +1945,7 @@ object DatabaseSeeder {
             lastActiveAt = System.currentTimeMillis() - 43200000,
             boostsReceived = 32,
             congratsReceived = 21,
+            respectsReceived = 7,
             isDevBadgeHolder = false,
             isBetaTester = false,
             profileFrameRarity = "common"
@@ -1953,6 +1966,7 @@ object DatabaseSeeder {
             lastActiveAt = System.currentTimeMillis() - 46800000,
             boostsReceived = 21,
             congratsReceived = 15,
+            respectsReceived = 5,
             isDevBadgeHolder = false,
             isBetaTester = false,
             profileFrameRarity = "common"
@@ -1973,6 +1987,7 @@ object DatabaseSeeder {
             lastActiveAt = System.currentTimeMillis() - 50400000,
             boostsReceived = 15,
             congratsReceived = 10,
+            respectsReceived = 3,
             isDevBadgeHolder = false,
             isBetaTester = false,
             profileFrameRarity = "common"
