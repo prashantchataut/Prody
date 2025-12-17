@@ -178,7 +178,7 @@ class ProfileViewModel @Inject constructor(
 
                 // Calculate mood trend (simple)
                 val moodTrend = when {
-                    dominantMood == Mood.JOYFUL || dominantMood == Mood.EXCITED -> "positive"
+                    dominantMood == Mood.HAPPY || dominantMood == Mood.EXCITED -> "positive"
                     dominantMood == Mood.SAD || dominantMood == Mood.ANXIOUS -> "challenging"
                     else -> "balanced"
                 }

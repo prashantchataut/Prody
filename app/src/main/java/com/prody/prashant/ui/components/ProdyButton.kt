@@ -77,7 +77,7 @@ enum class ProdyButtonSize {
     LARGE
 }
 
-private object ButtonDefaults {
+private object ProdyButtonDefaults {
     val SmallHeight = 36.dp
     val MediumHeight = 48.dp
     val LargeHeight = 56.dp
@@ -135,15 +135,15 @@ fun ProdyPrimaryButton(
     )
 
     val height = when (size) {
-        ProdyButtonSize.SMALL -> ButtonDefaults.SmallHeight
-        ProdyButtonSize.MEDIUM -> ButtonDefaults.MediumHeight
-        ProdyButtonSize.LARGE -> ButtonDefaults.LargeHeight
+        ProdyButtonSize.SMALL -> ProdyButtonDefaults.SmallHeight
+        ProdyButtonSize.MEDIUM -> ProdyButtonDefaults.MediumHeight
+        ProdyButtonSize.LARGE -> ProdyButtonDefaults.LargeHeight
     }
 
     val horizontalPadding = when (size) {
-        ProdyButtonSize.SMALL -> ButtonDefaults.SmallHorizontalPadding
-        ProdyButtonSize.MEDIUM -> ButtonDefaults.MediumHorizontalPadding
-        ProdyButtonSize.LARGE -> ButtonDefaults.LargeHorizontalPadding
+        ProdyButtonSize.SMALL -> ProdyButtonDefaults.SmallHorizontalPadding
+        ProdyButtonSize.MEDIUM -> ProdyButtonDefaults.MediumHorizontalPadding
+        ProdyButtonSize.LARGE -> ProdyButtonDefaults.LargeHorizontalPadding
     }
 
     Button(
@@ -158,7 +158,7 @@ fun ProdyPrimaryButton(
                 }
             },
         enabled = enabled && !loading,
-        shape = RoundedCornerShape(ButtonDefaults.CornerRadius),
+        shape = RoundedCornerShape(ProdyButtonDefaults.CornerRadius),
         contentPadding = PaddingValues(horizontal = horizontalPadding, vertical = 0.dp),
         interactionSource = interactionSource,
         colors = androidx.compose.material3.ButtonDefaults.buttonColors(
@@ -211,15 +211,15 @@ fun ProdySecondaryButton(
     )
 
     val height = when (size) {
-        ProdyButtonSize.SMALL -> ButtonDefaults.SmallHeight
-        ProdyButtonSize.MEDIUM -> ButtonDefaults.MediumHeight
-        ProdyButtonSize.LARGE -> ButtonDefaults.LargeHeight
+        ProdyButtonSize.SMALL -> ProdyButtonDefaults.SmallHeight
+        ProdyButtonSize.MEDIUM -> ProdyButtonDefaults.MediumHeight
+        ProdyButtonSize.LARGE -> ProdyButtonDefaults.LargeHeight
     }
 
     val horizontalPadding = when (size) {
-        ProdyButtonSize.SMALL -> ButtonDefaults.SmallHorizontalPadding
-        ProdyButtonSize.MEDIUM -> ButtonDefaults.MediumHorizontalPadding
-        ProdyButtonSize.LARGE -> ButtonDefaults.LargeHorizontalPadding
+        ProdyButtonSize.SMALL -> ProdyButtonDefaults.SmallHorizontalPadding
+        ProdyButtonSize.MEDIUM -> ProdyButtonDefaults.MediumHorizontalPadding
+        ProdyButtonSize.LARGE -> ProdyButtonDefaults.LargeHorizontalPadding
     }
 
     Button(
@@ -234,7 +234,7 @@ fun ProdySecondaryButton(
                 }
             },
         enabled = enabled && !loading,
-        shape = RoundedCornerShape(ButtonDefaults.CornerRadius),
+        shape = RoundedCornerShape(ProdyButtonDefaults.CornerRadius),
         contentPadding = PaddingValues(horizontal = horizontalPadding, vertical = 0.dp),
         interactionSource = interactionSource,
         colors = androidx.compose.material3.ButtonDefaults.buttonColors(
@@ -288,15 +288,15 @@ fun ProdyOutlinedButton(
     )
 
     val height = when (size) {
-        ProdyButtonSize.SMALL -> ButtonDefaults.SmallHeight
-        ProdyButtonSize.MEDIUM -> ButtonDefaults.MediumHeight
-        ProdyButtonSize.LARGE -> ButtonDefaults.LargeHeight
+        ProdyButtonSize.SMALL -> ProdyButtonDefaults.SmallHeight
+        ProdyButtonSize.MEDIUM -> ProdyButtonDefaults.MediumHeight
+        ProdyButtonSize.LARGE -> ProdyButtonDefaults.LargeHeight
     }
 
     val horizontalPadding = when (size) {
-        ProdyButtonSize.SMALL -> ButtonDefaults.SmallHorizontalPadding
-        ProdyButtonSize.MEDIUM -> ButtonDefaults.MediumHorizontalPadding
-        ProdyButtonSize.LARGE -> ButtonDefaults.LargeHorizontalPadding
+        ProdyButtonSize.SMALL -> ProdyButtonDefaults.SmallHorizontalPadding
+        ProdyButtonSize.MEDIUM -> ProdyButtonDefaults.MediumHorizontalPadding
+        ProdyButtonSize.LARGE -> ProdyButtonDefaults.LargeHorizontalPadding
     }
 
     OutlinedButton(
@@ -311,7 +311,7 @@ fun ProdyOutlinedButton(
                 }
             },
         enabled = enabled && !loading,
-        shape = RoundedCornerShape(ButtonDefaults.CornerRadius),
+        shape = RoundedCornerShape(ProdyButtonDefaults.CornerRadius),
         contentPadding = PaddingValues(horizontal = horizontalPadding, vertical = 0.dp),
         interactionSource = interactionSource,
         border = BorderStroke(
@@ -367,15 +367,15 @@ fun ProdyGhostButton(
     )
 
     val height = when (size) {
-        ProdyButtonSize.SMALL -> ButtonDefaults.SmallHeight
-        ProdyButtonSize.MEDIUM -> ButtonDefaults.MediumHeight
-        ProdyButtonSize.LARGE -> ButtonDefaults.LargeHeight
+        ProdyButtonSize.SMALL -> ProdyButtonDefaults.SmallHeight
+        ProdyButtonSize.MEDIUM -> ProdyButtonDefaults.MediumHeight
+        ProdyButtonSize.LARGE -> ProdyButtonDefaults.LargeHeight
     }
 
     val horizontalPadding = when (size) {
-        ProdyButtonSize.SMALL -> ButtonDefaults.SmallHorizontalPadding
-        ProdyButtonSize.MEDIUM -> ButtonDefaults.MediumHorizontalPadding
-        ProdyButtonSize.LARGE -> ButtonDefaults.LargeHorizontalPadding
+        ProdyButtonSize.SMALL -> ProdyButtonDefaults.SmallHorizontalPadding
+        ProdyButtonSize.MEDIUM -> ProdyButtonDefaults.MediumHorizontalPadding
+        ProdyButtonSize.LARGE -> ProdyButtonDefaults.LargeHorizontalPadding
     }
 
     TextButton(
@@ -390,7 +390,7 @@ fun ProdyGhostButton(
                 }
             },
         enabled = enabled && !loading,
-        shape = RoundedCornerShape(ButtonDefaults.CornerRadius),
+        shape = RoundedCornerShape(ProdyButtonDefaults.CornerRadius),
         contentPadding = PaddingValues(horizontal = horizontalPadding, vertical = 0.dp),
         interactionSource = interactionSource,
         colors = androidx.compose.material3.ButtonDefaults.textButtonColors(
@@ -434,11 +434,11 @@ private fun ButtonContent(
     ) {
         if (loading) {
             CircularProgressIndicator(
-                modifier = Modifier.size(ButtonDefaults.LoadingIndicatorSize),
+                modifier = Modifier.size(ProdyButtonDefaults.LoadingIndicatorSize),
                 color = contentColor,
                 strokeWidth = 2.dp
             )
-            Spacer(modifier = Modifier.width(ButtonDefaults.IconTextGap))
+            Spacer(modifier = Modifier.width(ProdyButtonDefaults.IconTextGap))
         } else if (leadingIcon != null) {
             Icon(
                 imageVector = leadingIcon,
@@ -446,7 +446,7 @@ private fun ButtonContent(
                 modifier = Modifier.size(ButtonDefaults.IconSize),
                 tint = contentColor
             )
-            Spacer(modifier = Modifier.width(ButtonDefaults.IconTextGap))
+            Spacer(modifier = Modifier.width(ProdyButtonDefaults.IconTextGap))
         }
 
         Text(
@@ -457,7 +457,7 @@ private fun ButtonContent(
         )
 
         if (trailingIcon != null && !loading) {
-            Spacer(modifier = Modifier.width(ButtonDefaults.IconTextGap))
+            Spacer(modifier = Modifier.width(ProdyButtonDefaults.IconTextGap))
             Icon(
                 imageVector = trailingIcon,
                 contentDescription = null,

@@ -2026,7 +2026,7 @@ object DatabaseSeeder {
         wordsLearned = 0,
         futureMessagesCount = 0,
         lastActiveDate = System.currentTimeMillis(),
-        createdAt = System.currentTimeMillis()
+        joinedAt = System.currentTimeMillis()
     )
 
     private fun getInitialUserStats(): UserStatsEntity = UserStatsEntity(
@@ -2034,8 +2034,6 @@ object DatabaseSeeder {
         dailyPointsEarned = 0,
         weeklyPointsEarned = 0,
         monthlyPointsEarned = 0,
-        totalJournalWords = 0,
-        averageMood = 5,
         lastResetDate = System.currentTimeMillis()
     )
 
@@ -2057,387 +2055,387 @@ object DatabaseSeeder {
         // Streak Achievements - Consistency Category
         AchievementEntity(
             id = "streak_3",
-            title = "Getting Started",
+            name = "Getting Started",
             description = "Maintain a 3-day streak",
-            icon = "fire",
+            iconId = "fire",
             category = "consistency",
             rarity = "common",
-            xpReward = 25,
-            requiredProgress = 3
+            rewardValue = "25",
+            requirement = 3
         ),
         AchievementEntity(
             id = "streak_7",
-            title = "Week Warrior",
+            name = "Week Warrior",
             description = "Maintain a 7-day streak",
-            icon = "fire",
+            iconId = "fire",
             category = "consistency",
             rarity = "uncommon",
-            xpReward = 50,
-            requiredProgress = 7
+            rewardValue = "50",
+            requirement = 7
         ),
         AchievementEntity(
             id = "streak_14",
-            title = "Fortnight Focus",
+            name = "Fortnight Focus",
             description = "Maintain a 14-day streak",
-            icon = "fire",
+            iconId = "fire",
             category = "consistency",
             rarity = "rare",
-            xpReward = 100,
-            requiredProgress = 14
+            rewardValue = "100",
+            requirement = 14
         ),
         AchievementEntity(
             id = "streak_30",
-            title = "Month Master",
+            name = "Month Master",
             description = "Maintain a 30-day streak",
-            icon = "fire",
+            iconId = "fire",
             category = "consistency",
             rarity = "epic",
-            xpReward = 200,
-            requiredProgress = 30
+            rewardValue = "200",
+            requirement = 30
         ),
         AchievementEntity(
             id = "streak_60",
-            title = "Two Month Champion",
+            name = "Two Month Champion",
             description = "Maintain a 60-day streak",
-            icon = "fire",
+            iconId = "fire",
             category = "consistency",
             rarity = "epic",
-            xpReward = 350,
-            requiredProgress = 60
+            rewardValue = "350",
+            requirement = 60
         ),
         AchievementEntity(
             id = "streak_100",
-            title = "Century Club",
+            name = "Century Club",
             description = "Maintain a 100-day streak",
-            icon = "fire",
+            iconId = "fire",
             category = "consistency",
             rarity = "legendary",
-            xpReward = 500,
-            requiredProgress = 100
+            rewardValue = "500",
+            requirement = 100
         ),
         AchievementEntity(
             id = "streak_365",
-            title = "Year of Dedication",
+            name = "Year of Dedication",
             description = "Maintain a 365-day streak",
-            icon = "crown",
+            iconId = "crown",
             category = "consistency",
             rarity = "legendary",
-            xpReward = 2000,
-            requiredProgress = 365
+            rewardValue = "2000",
+            requirement = 365
         ),
 
         // Journal Achievements - Reflection Category
         AchievementEntity(
             id = "first_entry",
-            title = "First Words",
+            name = "First Words",
             description = "Write your first journal entry",
-            icon = "edit",
+            iconId = "edit",
             category = "reflection",
             rarity = "common",
-            xpReward = 20,
-            requiredProgress = 1
+            rewardValue = "20",
+            requirement = 1
         ),
         AchievementEntity(
             id = "journal_10",
-            title = "Regular Reflector",
+            name = "Regular Reflector",
             description = "Write 10 journal entries",
-            icon = "edit",
+            iconId = "edit",
             category = "reflection",
             rarity = "uncommon",
-            xpReward = 50,
-            requiredProgress = 10
+            rewardValue = "50",
+            requirement = 10
         ),
         AchievementEntity(
             id = "journal_25",
-            title = "Thoughtful Writer",
+            name = "Thoughtful Writer",
             description = "Write 25 journal entries",
-            icon = "edit",
+            iconId = "edit",
             category = "reflection",
             rarity = "rare",
-            xpReward = 100,
-            requiredProgress = 25
+            rewardValue = "100",
+            requirement = 25
         ),
         AchievementEntity(
             id = "journal_50",
-            title = "Prolific Journaler",
+            name = "Prolific Journaler",
             description = "Write 50 journal entries",
-            icon = "book_open",
+            iconId = "book_open",
             category = "reflection",
             rarity = "rare",
-            xpReward = 150,
-            requiredProgress = 50
+            rewardValue = "150",
+            requirement = 50
         ),
         AchievementEntity(
             id = "journal_100",
-            title = "Journaling Master",
+            name = "Journaling Master",
             description = "Write 100 journal entries",
-            icon = "book_open",
+            iconId = "book_open",
             category = "reflection",
             rarity = "epic",
-            xpReward = 300,
-            requiredProgress = 100
+            rewardValue = "300",
+            requirement = 100
         ),
         AchievementEntity(
             id = "journal_250",
-            title = "Chronicler",
+            name = "Chronicler",
             description = "Write 250 journal entries",
-            icon = "library",
+            iconId = "library",
             category = "reflection",
             rarity = "legendary",
-            xpReward = 600,
-            requiredProgress = 250
+            rewardValue = "600",
+            requirement = 250
         ),
 
         // Word Count Achievements - Reflection Category
         AchievementEntity(
             id = "words_1000",
-            title = "Wordsmith",
+            name = "Wordsmith",
             description = "Write 1,000 words total in your journal",
-            icon = "text",
+            iconId = "text",
             category = "reflection",
             rarity = "uncommon",
-            xpReward = 50,
-            requiredProgress = 1000
+            rewardValue = "50",
+            requirement = 1000
         ),
         AchievementEntity(
             id = "words_5000",
-            title = "Storyteller",
+            name = "Storyteller",
             description = "Write 5,000 words total in your journal",
-            icon = "text",
+            iconId = "text",
             category = "reflection",
             rarity = "rare",
-            xpReward = 150,
-            requiredProgress = 5000
+            rewardValue = "150",
+            requirement = 5000
         ),
         AchievementEntity(
             id = "words_10000",
-            title = "Author",
+            name = "Author",
             description = "Write 10,000 words total in your journal",
-            icon = "text",
+            iconId = "text",
             category = "reflection",
             rarity = "epic",
-            xpReward = 300,
-            requiredProgress = 10000
+            rewardValue = "300",
+            requirement = 10000
         ),
         AchievementEntity(
             id = "words_25000",
-            title = "Novelist",
+            name = "Novelist",
             description = "Write 25,000 words total in your journal",
-            icon = "text",
+            iconId = "text",
             category = "reflection",
             rarity = "legendary",
-            xpReward = 750,
-            requiredProgress = 25000
+            rewardValue = "750",
+            requirement = 25000
         ),
 
         // Vocabulary Achievements - Mastery Category
         AchievementEntity(
             id = "vocab_10",
-            title = "Word Collector",
+            name = "Word Collector",
             description = "Learn 10 vocabulary words",
-            icon = "book",
+            iconId = "book",
             category = "mastery",
             rarity = "common",
-            xpReward = 30,
-            requiredProgress = 10
+            rewardValue = "30",
+            requirement = 10
         ),
         AchievementEntity(
             id = "vocab_25",
-            title = "Wordsmith Apprentice",
+            name = "Wordsmith Apprentice",
             description = "Learn 25 vocabulary words",
-            icon = "book",
+            iconId = "book",
             category = "mastery",
             rarity = "uncommon",
-            xpReward = 75,
-            requiredProgress = 25
+            rewardValue = "75",
+            requirement = 25
         ),
         AchievementEntity(
             id = "vocab_50",
-            title = "Linguist",
+            name = "Linguist",
             description = "Learn 50 vocabulary words",
-            icon = "book",
+            iconId = "book",
             category = "mastery",
             rarity = "rare",
-            xpReward = 150,
-            requiredProgress = 50
+            rewardValue = "150",
+            requirement = 50
         ),
         AchievementEntity(
             id = "vocab_100",
-            title = "Lexicon Master",
+            name = "Lexicon Master",
             description = "Learn 100 vocabulary words",
-            icon = "brain",
+            iconId = "brain",
             category = "mastery",
             rarity = "epic",
-            xpReward = 300,
-            requiredProgress = 100
+            rewardValue = "300",
+            requirement = 100
         ),
         AchievementEntity(
             id = "vocab_200",
-            title = "Dictionary",
+            name = "Dictionary",
             description = "Learn 200 vocabulary words",
-            icon = "brain",
+            iconId = "brain",
             category = "mastery",
             rarity = "legendary",
-            xpReward = 600,
-            requiredProgress = 200
+            rewardValue = "600",
+            requirement = 200
         ),
 
         // Level Achievements - Wisdom Category
         AchievementEntity(
             id = "level_5",
-            title = "Awakening",
+            name = "Awakening",
             description = "Reach level 5",
-            icon = "star",
+            iconId = "star",
             category = "wisdom",
             rarity = "common",
-            xpReward = 25,
-            requiredProgress = 5
+            rewardValue = "25",
+            requirement = 5
         ),
         AchievementEntity(
             id = "level_10",
-            title = "Rising Star",
+            name = "Rising Star",
             description = "Reach level 10",
-            icon = "star",
+            iconId = "star",
             category = "wisdom",
             rarity = "uncommon",
-            xpReward = 100,
-            requiredProgress = 10
+            rewardValue = "100",
+            requirement = 10
         ),
         AchievementEntity(
             id = "level_25",
-            title = "Dedicated Seeker",
+            name = "Dedicated Seeker",
             description = "Reach level 25",
-            icon = "star",
+            iconId = "star",
             category = "wisdom",
             rarity = "rare",
-            xpReward = 250,
-            requiredProgress = 25
+            rewardValue = "250",
+            requirement = 25
         ),
         AchievementEntity(
             id = "level_50",
-            title = "Elite",
+            name = "Elite",
             description = "Reach level 50",
-            icon = "crown",
+            iconId = "crown",
             category = "wisdom",
             rarity = "legendary",
-            xpReward = 500,
-            requiredProgress = 50
+            rewardValue = "500",
+            requirement = 50
         ),
 
         // Future Messages - Temporal Category
         AchievementEntity(
             id = "future_first",
-            title = "Time Traveler",
+            name = "Time Traveler",
             description = "Send your first message to your future self",
-            icon = "mail",
+            iconId = "mail",
             category = "temporal",
             rarity = "common",
-            xpReward = 25,
-            requiredProgress = 1
+            rewardValue = "25",
+            requirement = 1
         ),
         AchievementEntity(
             id = "future_5",
-            title = "Temporal Writer",
+            name = "Temporal Writer",
             description = "Send 5 messages to your future self",
-            icon = "mail",
+            iconId = "mail",
             category = "temporal",
             rarity = "uncommon",
-            xpReward = 75,
-            requiredProgress = 5
+            rewardValue = "75",
+            requirement = 5
         ),
         AchievementEntity(
             id = "future_10",
-            title = "Chronologist",
+            name = "Chronologist",
             description = "Send 10 messages to your future self",
-            icon = "mail",
+            iconId = "mail",
             category = "temporal",
             rarity = "rare",
-            xpReward = 150,
-            requiredProgress = 10
+            rewardValue = "150",
+            requirement = 10
         ),
 
         // Special Achievements - Presence Category
         AchievementEntity(
             id = "comeback",
-            title = "Comeback Kid",
+            name = "Comeback Kid",
             description = "Return after 7+ days away",
-            icon = "refresh",
+            iconId = "refresh",
             category = "presence",
             rarity = "rare",
-            xpReward = 75,
-            requiredProgress = 1
+            rewardValue = "75",
+            requirement = 1
         ),
         AchievementEntity(
             id = "night_owl",
-            title = "Night Owl",
+            name = "Night Owl",
             description = "Journal after midnight 5 times",
-            icon = "moon",
+            iconId = "moon",
             category = "presence",
             rarity = "uncommon",
-            xpReward = 50,
-            requiredProgress = 5
+            rewardValue = "50",
+            requirement = 5
         ),
         AchievementEntity(
             id = "early_bird",
-            title = "Early Bird",
+            name = "Early Bird",
             description = "Journal before 6 AM 5 times",
-            icon = "sun",
+            iconId = "sun",
             category = "presence",
             rarity = "uncommon",
-            xpReward = 50,
-            requiredProgress = 5
+            rewardValue = "50",
+            requirement = 5
         ),
         AchievementEntity(
             id = "weekend_warrior",
-            title = "Weekend Warrior",
+            name = "Weekend Warrior",
             description = "Journal every day of a weekend",
-            icon = "calendar",
+            iconId = "calendar",
             category = "presence",
             rarity = "common",
-            xpReward = 30,
-            requiredProgress = 2
+            rewardValue = "30",
+            requirement = 2
         ),
 
         // XP Milestones - Wisdom Category
         AchievementEntity(
             id = "xp_1000",
-            title = "Point Collector",
+            name = "Point Collector",
             description = "Earn 1,000 total XP",
-            icon = "star",
+            iconId = "star",
             category = "wisdom",
             rarity = "common",
-            xpReward = 50,
-            requiredProgress = 1000
+            rewardValue = "50",
+            requirement = 1000
         ),
         AchievementEntity(
             id = "xp_5000",
-            title = "Point Hoarder",
+            name = "Point Hoarder",
             description = "Earn 5,000 total XP",
-            icon = "star",
+            iconId = "star",
             category = "wisdom",
             rarity = "uncommon",
-            xpReward = 150,
-            requiredProgress = 5000
+            rewardValue = "150",
+            requirement = 5000
         ),
         AchievementEntity(
             id = "xp_10000",
-            title = "Point Master",
+            name = "Point Master",
             description = "Earn 10,000 total XP",
-            icon = "star",
+            iconId = "star",
             category = "wisdom",
             rarity = "rare",
-            xpReward = 300,
-            requiredProgress = 10000
+            rewardValue = "300",
+            requirement = 10000
         ),
         AchievementEntity(
             id = "xp_50000",
-            title = "Point Legend",
+            name = "Point Legend",
             description = "Earn 50,000 total XP",
-            icon = "crown",
+            iconId = "crown",
             category = "wisdom",
             rarity = "legendary",
-            xpReward = 1000,
-            requiredProgress = 50000
+            rewardValue = "1000",
+            requirement = 50000
         )
     )
 }

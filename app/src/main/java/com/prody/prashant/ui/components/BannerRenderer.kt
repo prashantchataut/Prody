@@ -298,8 +298,12 @@ fun BannerPreviewCard(
  * For now, can be previewed via debug settings.
  */
 enum class SpecialBadgeType {
-    DEV,        // Single holder - the developer
-    BETA        // 2-3 holders - beta testers
+    /** Developer badge - single holder */
+    DEV,
+    /** Beta tester badge - limited holders */
+    BETA_TESTER,
+    /** Founding user badge */
+    FOUNDER
 }
 
 /**
@@ -512,7 +516,8 @@ fun SpecialBadgeDisplay(
 ) {
     when (badgeType) {
         SpecialBadgeType.DEV -> DevBadge(modifier = modifier)
-        SpecialBadgeType.BETA -> BetaBadge(modifier = modifier)
+        SpecialBadgeType.BETA_TESTER -> BetaBadge(modifier = modifier)
+        SpecialBadgeType.FOUNDER -> BetaBadge(modifier = modifier) // Founder uses similar style
         null -> { /* No badge */ }
     }
 }
