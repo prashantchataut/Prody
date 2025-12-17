@@ -107,19 +107,19 @@ class MainActivity : ComponentActivity() {
         // Keep splash screen visible until preferences are loaded
         splashScreen.setKeepOnScreenCondition { isOnboardingCompleted == null }
 
-        // Load preferences asynchronously to avoid blocking main thread
+        // Load preferences asynchronously and concurrently to avoid blocking the main thread.
         lifecycleScope.launch {
             try {
-                val onboardingResult = withContext(Dispatchers.IO) {
-                    preferencesManager.onboardingCompleted.first()
-                }
-                val themeResult = withContext(Dispatchers.IO) {
-                    preferencesManager.themeMode.first()
-                }
+                // Concurrently collect the first emission from both flows. DataStore is main-safe.
+                val (onboardingResult, themeResult) = kotlinx.coroutines.flow.combine(
+                    preferencesManager.onboardingCompleted,
+                    preferencesManager.themeMode
+                ) { onboarding, theme -> onboarding to theme }.first()
                 initialThemeMode = themeResult
                 isOnboardingCompleted = onboardingResult
             } catch (e: Exception) {
                 // Default values if preferences can't be read
+                android.util.Log.e("MainActivity", "Failed to load preferences", e)
                 initialThemeMode = "system"
                 isOnboardingCompleted = false
             }
