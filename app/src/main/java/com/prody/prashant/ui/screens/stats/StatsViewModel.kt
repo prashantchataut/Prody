@@ -199,21 +199,56 @@ class StatsViewModel @Inject constructor(
      * 1. Show users how the leaderboard works
      * 2. Provide social motivation even without a backend
      * 3. Create a sense of community
+     *
+     * Full 40-entry leaderboard to match the redesigned Stats screen
      */
     private fun createSampleLeaderboard(): List<LeaderboardEntryEntity> {
         // Realistic, diverse names that feel authentic
-        // Prashant Chataut is #1 - the app creator and top performer
+        // Full leaderboard with 40 entries as per design spec
         val leaderboardUsers = listOf(
-            LeaderboardUser("Prashant Chataut", avatarId = "avatar_crown", titleId = "master", points = 99999, weekly = 500, streak = 365, isCurrentUser = true),
-            LeaderboardUser("Sarah M.", avatarId = "avatar_1", titleId = "sage", points = 8500, weekly = 189, streak = 34),
-            LeaderboardUser("Alex K.", avatarId = "avatar_2", titleId = "philosopher", points = 7200, weekly = 167, streak = 28),
-            LeaderboardUser("Jordan T.", avatarId = "avatar_3", titleId = "practitioner", points = 6100, weekly = 142, streak = 21),
-            LeaderboardUser("Emma R.", avatarId = "avatar_4", titleId = "contemplative", points = 5400, weekly = 128, streak = 19),
-            LeaderboardUser("Chris P.", avatarId = "avatar_5", titleId = "initiate", points = 4800, weekly = 115, streak = 14),
-            LeaderboardUser("Maya S.", avatarId = "avatar_6", titleId = "seeker", points = 4200, weekly = 98, streak = 12),
-            LeaderboardUser("Daniel L.", avatarId = "avatar_7", titleId = "seeker", points = 3600, weekly = 87, streak = 9),
-            LeaderboardUser("Priya N.", avatarId = "avatar_8", titleId = "seeker", points = 3100, weekly = 76, streak = 7),
-            LeaderboardUser("Ryan H.", avatarId = "avatar_9", titleId = "seeker", points = 2500, weekly = 64, streak = 5)
+            // Top 3 with animated banners
+            LeaderboardUser("Sarah Vance", avatarId = "avatar_1", titleId = "champion", points = 9240, weekly = 245, streak = 72),
+            LeaderboardUser("Marcus Jin", avatarId = "avatar_2", titleId = "sage", points = 8950, weekly = 220, streak = 65),
+            LeaderboardUser("Elara K.", avatarId = "avatar_3", titleId = "philosopher", points = 8720, weekly = 198, streak = 58),
+            // Rest of leaderboard
+            LeaderboardUser("David Chen", avatarId = "avatar_4", titleId = "practitioner", points = 8540, weekly = 185, streak = 52),
+            LeaderboardUser("Sophia L.", avatarId = "avatar_5", titleId = "contemplative", points = 8310, weekly = 172, streak = 48),
+            LeaderboardUser("Aiden Ross", avatarId = "avatar_6", titleId = "initiate", points = 8305, weekly = 168, streak = 45),
+            LeaderboardUser("Elena V.", avatarId = "avatar_7", titleId = "seeker", points = 7920, weekly = 156, streak = 42),
+            LeaderboardUser("Tom Hardy", avatarId = "avatar_8", titleId = "seeker", points = 7650, weekly = 148, streak = 38),
+            LeaderboardUser("Lila M.", avatarId = "avatar_9", titleId = "seeker", points = 7400, weekly = 142, streak = 35),
+            LeaderboardUser("Kenji S.", avatarId = "avatar_10", titleId = "seeker", points = 7320, weekly = 138, streak = 33),
+            LeaderboardUser("Olivia R.", avatarId = "avatar_11", titleId = "seeker", points = 6750, weekly = 132, streak = 30),
+            LeaderboardUser("Liam T.", avatarId = "avatar_12", titleId = "seeker", points = 6600, weekly = 126, streak = 28),
+            LeaderboardUser("Noah B.", avatarId = "avatar_13", titleId = "seeker", points = 6420, weekly = 118, streak = 25),
+            LeaderboardUser("Emma W.", avatarId = "avatar_14", titleId = "seeker", points = 6300, weekly = 112, streak = 22),
+            LeaderboardUser("James C.", avatarId = "avatar_15", titleId = "seeker", points = 6360, weekly = 108, streak = 20),
+            LeaderboardUser("Ava G.", avatarId = "avatar_16", titleId = "seeker", points = 6000, weekly = 102, streak = 18),
+            LeaderboardUser("Lucas M.", avatarId = "avatar_17", titleId = "seeker", points = 5850, weekly = 96, streak = 16),
+            LeaderboardUser("Mia H.", avatarId = "avatar_18", titleId = "seeker", points = 5706, weekly = 92, streak = 15),
+            LeaderboardUser("Ethan D.", avatarId = "avatar_19", titleId = "seeker", points = 5650, weekly = 88, streak = 14),
+            LeaderboardUser("Chloe B.", avatarId = "avatar_20", titleId = "seeker", points = 5520, weekly = 84, streak = 13),
+            LeaderboardUser("Daniel K.", avatarId = "avatar_21", titleId = "seeker", points = 5410, weekly = 80, streak = 12),
+            LeaderboardUser("Harper Y.", avatarId = "avatar_22", titleId = "seeker", points = 5350, weekly = 76, streak = 11),
+            LeaderboardUser("Jackson P.", avatarId = "avatar_23", titleId = "seeker", points = 5200, weekly = 72, streak = 10),
+            LeaderboardUser("Lily N.", avatarId = "avatar_24", titleId = "seeker", points = 5080, weekly = 68, streak = 9),
+            LeaderboardUser("Mason R.", avatarId = "avatar_25", titleId = "seeker", points = 4950, weekly = 64, streak = 8),
+            LeaderboardUser("Zoe F.", avatarId = "avatar_26", titleId = "seeker", points = 4820, weekly = 60, streak = 7),
+            LeaderboardUser("Caleb S.", avatarId = "avatar_27", titleId = "seeker", points = 4750, weekly = 56, streak = 6),
+            LeaderboardUser("Aria W.", avatarId = "avatar_28", titleId = "seeker", points = 4600, weekly = 52, streak = 5),
+            LeaderboardUser("Leo G.", avatarId = "avatar_29", titleId = "seeker", points = 4550, weekly = 48, streak = 5),
+            LeaderboardUser("Stella J.", avatarId = "avatar_30", titleId = "seeker", points = 4400, weekly = 44, streak = 4),
+            LeaderboardUser("Ryan Q.", avatarId = "avatar_31", titleId = "seeker", points = 4350, weekly = 42, streak = 4),
+            LeaderboardUser("Nora V.", avatarId = "avatar_32", titleId = "seeker", points = 4280, weekly = 40, streak = 3),
+            LeaderboardUser("Eli T.", avatarId = "avatar_33", titleId = "seeker", points = 4350, weekly = 38, streak = 3),
+            LeaderboardUser("Grace L.", avatarId = "avatar_34", titleId = "seeker", points = 4000, weekly = 36, streak = 3),
+            LeaderboardUser("Isaac M.", avatarId = "avatar_35", titleId = "seeker", points = 3850, weekly = 34, streak = 2),
+            LeaderboardUser("Hannah K.", avatarId = "avatar_36", titleId = "seeker", points = 3800, weekly = 32, streak = 2),
+            LeaderboardUser("Dylan O.", avatarId = "avatar_37", titleId = "seeker", points = 3750, weekly = 30, streak = 2),
+            LeaderboardUser("Samantha E.", avatarId = "avatar_38", titleId = "seeker", points = 3600, weekly = 28, streak = 1),
+            LeaderboardUser("Owen Z.", avatarId = "avatar_39", titleId = "seeker", points = 3550, weekly = 26, streak = 1),
+            // Current User - Alex Morgan at position 40 with 8,450 points
+            LeaderboardUser("Alex Morgan", avatarId = "avatar_user", titleId = "seeker", points = 8450, weekly = 175, streak = 45, isCurrentUser = true)
         )
 
         return leaderboardUsers.mapIndexed { index, user ->
