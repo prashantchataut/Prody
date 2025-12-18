@@ -37,51 +37,14 @@ import com.prody.prashant.ui.theme.PoppinsFamily
 import kotlinx.coroutines.launch
 
 // =============================================================================
-// PRODY ONBOARDING - PIXEL-PERFECT IMPLEMENTATION
+// PRODY ONBOARDING - THEME-ALIGNED IMPLEMENTATION
 // =============================================================================
 // A sophisticated 6-screen onboarding flow featuring:
-// - Dark & Energetic Minimalism aesthetic
+// - A design that adapts to the app's official ProdyTheme
 // - Custom components: Logo, Pager Indicator, Buttons
 // - Canvas-drawn concentric circles background
-// - Full Light/Dark mode support
+// - Full Light/Dark mode support via MaterialTheme
 // =============================================================================
-
-// =============================================================================
-// COLOR PALETTE - Exact hex values from design specifications
-// =============================================================================
-
-// Light Mode Colors
-private val LightBackground = Color(0xFFF0F4F3)
-private val LightCardBackground = Color(0xFFE0E7E6)
-private val LightIconCircleBackground = Color(0xFFE6F0EE)
-private val LightTextPrimary = Color(0xFF1A1A1A)
-private val LightTextSecondary = Color(0xFF6C757D)
-private val LightTextTertiary = Color(0xFF8A9493)
-private val LightInactiveDot = Color(0xFFB0B8B7)
-private val LightProgressBarInactive = Color(0xFFA0A8A7)
-private val LightDivider = Color(0xFFCCCCCC)
-private val LightSubtleLines = Color(0xFFD0D8D6)
-
-// Dark Mode Colors
-private val DarkBackground = Color(0xFF0A1D1C)
-private val DarkCardBackground = Color(0xFF2A4240)
-private val DarkIconCircleBackground = Color(0xFF3F5857)
-private val DarkTextPrimary = Color(0xFFFFFFFF)
-private val DarkTextSecondary = Color(0xFFD3D8D7)
-private val DarkTextTertiary = Color(0xFF8A9493)
-private val DarkInactiveDot = Color(0xFF404B4A)
-private val DarkProgressBarInactive = Color(0xFF5A706F)
-private val DarkDivider = Color(0xFF404B4A)
-private val DarkSubtleLines = Color(0xFF2A3A38)
-
-// Shared Accent Color - Vibrant Neon Green
-private val AccentGreen = Color(0xFF36F97F)
-private val ButtonTextDark = Color(0xFF000000)
-
-// Logo Container Colors
-private val LogoContainerDark = Color(0xFF1C3533)
-private val LogoContainerLight = Color(0xFFFFFFFF)
-private val LogoContainerStroke = Color(0xFF2A4240)
 
 // =============================================================================
 // DATA MODEL
@@ -108,14 +71,11 @@ fun OnboardingScreen(
 ) {
     val pagerState = rememberPagerState(pageCount = { 6 })
     val coroutineScope = rememberCoroutineScope()
-    val isDarkTheme = isSystemInDarkTheme()
-
-    val backgroundColor = if (isDarkTheme) DarkBackground else LightBackground
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(backgroundColor)
+            .background(MaterialTheme.colorScheme.background)
             .systemBarsPadding()
     ) {
         HorizontalPager(
@@ -126,7 +86,6 @@ fun OnboardingScreen(
             val pageType = OnboardingPageType.entries[page]
             when (pageType) {
                 OnboardingPageType.WELCOME -> WelcomeScreen(
-                    isDarkTheme = isDarkTheme,
                     currentPage = page,
                     totalPages = 6,
                     onNext = {
@@ -137,7 +96,6 @@ fun OnboardingScreen(
                     onLogin = { /* Navigate to login */ }
                 )
                 OnboardingPageType.JOURNALING -> JournalingScreen(
-                    isDarkTheme = isDarkTheme,
                     currentPage = page,
                     totalPages = 6,
                     onSkip = {
@@ -157,7 +115,6 @@ fun OnboardingScreen(
                     }
                 )
                 OnboardingPageType.GAMIFICATION_LEADERBOARD -> GamificationLeaderboardScreen(
-                    isDarkTheme = isDarkTheme,
                     currentPage = page,
                     totalPages = 6,
                     onSkip = {
@@ -172,7 +129,6 @@ fun OnboardingScreen(
                     }
                 )
                 OnboardingPageType.GAMIFICATION_XP -> GamificationXpScreen(
-                    isDarkTheme = isDarkTheme,
                     currentPage = page,
                     totalPages = 6,
                     onStartQuest = {
@@ -182,7 +138,6 @@ fun OnboardingScreen(
                     }
                 )
                 OnboardingPageType.DAILY_WISDOM -> DailyWisdomFeaturesScreen(
-                    isDarkTheme = isDarkTheme,
                     currentPage = page,
                     totalPages = 6,
                     onSkip = {
@@ -202,7 +157,6 @@ fun OnboardingScreen(
                     }
                 )
                 OnboardingPageType.PERSONALIZED_INSIGHTS -> PersonalizedInsightsScreen(
-                    isDarkTheme = isDarkTheme,
                     currentPage = page,
                     totalPages = 6,
                     onSkip = {
@@ -229,26 +183,20 @@ fun OnboardingScreen(
 
 @Composable
 private fun WelcomeScreen(
-    isDarkTheme: Boolean,
     currentPage: Int,
     totalPages: Int,
     onNext: () -> Unit,
     onLogin: () -> Unit
 ) {
-    val backgroundColor = if (isDarkTheme) DarkBackground else LightBackground
-    val textPrimary = if (isDarkTheme) DarkTextPrimary else LightTextPrimary
-    val textSecondary = if (isDarkTheme) DarkTextSecondary else LightTextSecondary
-    val subtleLines = if (isDarkTheme) DarkSubtleLines else LightSubtleLines
-
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(backgroundColor)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         // Background concentric circles - centered behind logo
         ConcentricCirclesBackground(
             modifier = Modifier.fillMaxSize(),
-            color = subtleLines
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
         )
 
         Column(
@@ -261,7 +209,6 @@ private fun WelcomeScreen(
 
             // Prody Logo with green accent dot
             ProdyLogo(
-                isDarkTheme = isDarkTheme,
                 modifier = Modifier.size(100.dp)
             )
 
@@ -270,13 +217,11 @@ private fun WelcomeScreen(
             // Brand Title "Prody."
             Text(
                 text = "Prody.",
-                style = TextStyle(
-                    fontFamily = PoppinsFamily,
+                style = MaterialTheme.typography.displayMedium.copy(
                     fontWeight = FontWeight.Bold,
-                    fontSize = 42.sp,
                     letterSpacing = (-0.5).sp
                 ),
-                color = textPrimary
+                color = MaterialTheme.colorScheme.onBackground
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -284,13 +229,10 @@ private fun WelcomeScreen(
             // Tagline
             Text(
                 text = "Your daily companion for growth,\nwisdom, and mindful living.",
-                style = TextStyle(
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Normal,
-                    fontSize = 16.sp,
+                style = MaterialTheme.typography.bodyLarge.copy(
                     lineHeight = 26.sp
                 ),
-                color = textSecondary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
             )
 
@@ -300,7 +242,6 @@ private fun WelcomeScreen(
             ProdyPagerIndicator(
                 totalPages = totalPages,
                 currentPage = currentPage,
-                isDarkTheme = isDarkTheme
             )
 
             Spacer(modifier = Modifier.height(28.dp))
@@ -322,21 +263,15 @@ private fun WelcomeScreen(
             ) {
                 Text(
                     text = "Already have an account? ",
-                    style = TextStyle(
-                        fontFamily = PoppinsFamily,
-                        fontWeight = FontWeight.Normal,
-                        fontSize = 14.sp
-                    ),
-                    color = textSecondary
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
                     text = "Log in",
-                    style = TextStyle(
-                        fontFamily = PoppinsFamily,
+                    style = MaterialTheme.typography.bodyMedium.copy(
                         fontWeight = FontWeight.SemiBold,
-                        fontSize = 14.sp
+                        color = MaterialTheme.colorScheme.primary
                     ),
-                    color = AccentGreen,
                     modifier = Modifier.clickable { onLogin() }
                 )
             }
@@ -352,22 +287,16 @@ private fun WelcomeScreen(
 
 @Composable
 private fun JournalingScreen(
-    isDarkTheme: Boolean,
     currentPage: Int,
     totalPages: Int,
     onSkip: () -> Unit,
     onBack: () -> Unit,
     onContinue: () -> Unit
 ) {
-    val backgroundColor = if (isDarkTheme) DarkBackground else LightBackground
-    val cardBackground = if (isDarkTheme) DarkCardBackground else LightCardBackground
-    val textPrimary = if (isDarkTheme) DarkTextPrimary else LightTextPrimary
-    val textSecondary = if (isDarkTheme) DarkTextSecondary else LightTextSecondary
-
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(backgroundColor)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         Column(
             modifier = Modifier
@@ -380,7 +309,6 @@ private fun JournalingScreen(
             JournalingTopHeader(
                 currentPage = currentPage,
                 totalPages = totalPages,
-                isDarkTheme = isDarkTheme,
                 onBack = onBack,
                 onSkip = onSkip
             )
@@ -389,7 +317,6 @@ private fun JournalingScreen(
 
             // Main Journaling Card with gradient image
             JournalingInsightCard(
-                isDarkTheme = isDarkTheme,
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -399,17 +326,15 @@ private fun JournalingScreen(
             Text(
                 text = buildAnnotatedString {
                     append("Unlock Your ")
-                    withStyle(SpanStyle(color = AccentGreen)) {
+                    withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary)) {
                         append("Mind")
                     }
                 },
-                style = TextStyle(
-                    fontFamily = PoppinsFamily,
+                style = MaterialTheme.typography.headlineMedium.copy(
                     fontWeight = FontWeight.Bold,
-                    fontSize = 28.sp,
                     lineHeight = 36.sp
                 ),
-                color = textPrimary,
+                color = MaterialTheme.colorScheme.onBackground,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -419,13 +344,10 @@ private fun JournalingScreen(
             // Body text
             Text(
                 text = "Prody uses on-device AI to turn your daily ramblings into actionable wisdom and future insights, instantly.",
-                style = TextStyle(
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Normal,
-                    fontSize = 15.sp,
+                style = MaterialTheme.typography.bodyMedium.copy(
                     lineHeight = 24.sp
                 ),
-                color = textSecondary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
             )
 
@@ -439,14 +361,12 @@ private fun JournalingScreen(
             ) {
                 FeatureChip(
                     icon = Icons.Outlined.Psychology,
-                    label = "Deep Reflection",
-                    isDarkTheme = isDarkTheme
+                    label = "Deep Reflection"
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 FeatureChip(
                     icon = Icons.Outlined.TrendingUp,
-                    label = "Growth Tracking",
-                    isDarkTheme = isDarkTheme
+                    label = "Growth Tracking"
                 )
             }
 
@@ -470,21 +390,15 @@ private fun JournalingScreen(
             ) {
                 Text(
                     text = "Already have an account? ",
-                    style = TextStyle(
-                        fontFamily = PoppinsFamily,
-                        fontWeight = FontWeight.Normal,
-                        fontSize = 14.sp
-                    ),
-                    color = textSecondary
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
                     text = "Log in",
-                    style = TextStyle(
-                        fontFamily = PoppinsFamily,
+                    style = MaterialTheme.typography.bodyMedium.copy(
                         fontWeight = FontWeight.SemiBold,
-                        fontSize = 14.sp
+                        color = MaterialTheme.colorScheme.primary
                     ),
-                    color = AccentGreen,
                     modifier = Modifier.clickable { }
                 )
             }
@@ -498,14 +412,10 @@ private fun JournalingScreen(
 private fun JournalingTopHeader(
     currentPage: Int,
     totalPages: Int,
-    isDarkTheme: Boolean,
     onBack: () -> Unit,
     onSkip: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val textSecondary = if (isDarkTheme) DarkTextSecondary else LightTextSecondary
-    val progressBarBg = if (isDarkTheme) DarkInactiveDot else LightInactiveDot
-
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -515,7 +425,7 @@ private fun JournalingTopHeader(
         Icon(
             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
             contentDescription = "Back",
-            tint = textSecondary,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier
                 .size(24.dp)
                 .clickable { onBack() }
@@ -534,7 +444,8 @@ private fun JournalingTopHeader(
                         .height(4.dp)
                         .clip(RoundedCornerShape(2.dp))
                         .background(
-                            if (index <= currentPage) AccentGreen else progressBarBg
+                            if (index <= currentPage) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.surfaceVariant
                         )
                 )
             }
@@ -543,12 +454,8 @@ private fun JournalingTopHeader(
         // Skip button
         Text(
             text = "Skip",
-            style = TextStyle(
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.Medium,
-                fontSize = 14.sp
-            ),
-            color = textSecondary,
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.clickable { onSkip() }
         )
     }
@@ -556,15 +463,12 @@ private fun JournalingTopHeader(
 
 @Composable
 private fun JournalingInsightCard(
-    isDarkTheme: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val cardBackground = if (isDarkTheme) DarkCardBackground else LightCardBackground
-
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(20.dp))
-            .background(cardBackground)
+            .background(MaterialTheme.colorScheme.surfaceVariant)
     ) {
         // Abstract wavy gradient image
         Box(
@@ -615,7 +519,7 @@ private fun JournalingInsightCard(
                     .align(Alignment.BottomCenter)
                     .padding(bottom = 16.dp)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(if (isDarkTheme) DarkCardBackground.copy(alpha = 0.9f) else LightCardBackground.copy(alpha = 0.95f))
+                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f))
                     .padding(horizontal = 16.dp, vertical = 10.dp)
             ) {
                 Row(
@@ -627,35 +531,28 @@ private fun JournalingInsightCard(
                         modifier = Modifier
                             .size(36.dp)
                             .clip(RoundedCornerShape(10.dp))
-                            .background(AccentGreen.copy(alpha = 0.15f)),
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Default.AutoAwesome,
                             contentDescription = null,
-                            tint = AccentGreen,
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(20.dp)
                         )
                     }
                     Column {
                         Text(
                             text = "ANALYSIS COMPLETE",
-                            style = TextStyle(
-                                fontFamily = PoppinsFamily,
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 10.sp,
+                            style = MaterialTheme.typography.labelSmall.copy(
                                 letterSpacing = 0.5.sp
                             ),
-                            color = AccentGreen
+                            color = MaterialTheme.colorScheme.primary
                         )
                         Text(
                             text = "Insight Generated",
-                            style = TextStyle(
-                                fontFamily = PoppinsFamily,
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 14.sp
-                            ),
-                            color = if (isDarkTheme) DarkTextPrimary else LightTextPrimary
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                     }
                 }
@@ -667,15 +564,11 @@ private fun JournalingInsightCard(
 @Composable
 private fun FeatureChip(
     icon: ImageVector,
-    label: String,
-    isDarkTheme: Boolean
+    label: String
 ) {
-    val chipBg = if (isDarkTheme) DarkCardBackground else LightCardBackground
-    val textColor = if (isDarkTheme) DarkTextPrimary else LightTextPrimary
-
     Surface(
         shape = RoundedCornerShape(24.dp),
-        color = chipBg
+        color = MaterialTheme.colorScheme.surfaceVariant
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
@@ -685,17 +578,15 @@ private fun FeatureChip(
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = AccentGreen,
+                tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(18.dp)
             )
             Text(
                 text = label,
-                style = TextStyle(
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 13.sp
+                style = MaterialTheme.typography.bodySmall.copy(
+                    fontWeight = FontWeight.Medium
                 ),
-                color = textColor
+                color = MaterialTheme.colorScheme.onSurface
             )
         }
     }
@@ -707,20 +598,15 @@ private fun FeatureChip(
 
 @Composable
 private fun GamificationLeaderboardScreen(
-    isDarkTheme: Boolean,
     currentPage: Int,
     totalPages: Int,
     onSkip: () -> Unit,
     onContinue: () -> Unit
 ) {
-    val backgroundColor = if (isDarkTheme) DarkBackground else LightBackground
-    val textPrimary = if (isDarkTheme) DarkTextPrimary else LightTextPrimary
-    val textSecondary = if (isDarkTheme) DarkTextSecondary else LightTextSecondary
-
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(backgroundColor)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         Column(
             modifier = Modifier
@@ -734,7 +620,6 @@ private fun GamificationLeaderboardScreen(
             OnboardingTopHeader(
                 currentPage = currentPage,
                 totalPages = totalPages,
-                isDarkTheme = isDarkTheme,
                 onSkip = onSkip
             )
 
@@ -742,7 +627,6 @@ private fun GamificationLeaderboardScreen(
 
             // Gamification Graphic Container with grid and leaderboard
             LeaderboardGraphicCard(
-                isDarkTheme = isDarkTheme,
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -751,13 +635,11 @@ private fun GamificationLeaderboardScreen(
             // Headline
             Text(
                 text = "Turn Habits into Quests",
-                style = TextStyle(
-                    fontFamily = PoppinsFamily,
+                style = MaterialTheme.typography.headlineSmall.copy(
                     fontWeight = FontWeight.Bold,
-                    fontSize = 26.sp,
                     lineHeight = 34.sp
                 ),
-                color = textPrimary,
+                color = MaterialTheme.colorScheme.onBackground,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -767,13 +649,10 @@ private fun GamificationLeaderboardScreen(
             // Body
             Text(
                 text = "Stay consistent to earn XP, unlock unique badges, and visualize your personal growth journey.",
-                style = TextStyle(
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Normal,
-                    fontSize = 15.sp,
+                style = MaterialTheme.typography.bodyMedium.copy(
                     lineHeight = 24.sp
                 ),
-                color = textSecondary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
             )
 
@@ -783,8 +662,7 @@ private fun GamificationLeaderboardScreen(
             FeatureListItem(
                 icon = Icons.Default.Star,
                 title = "Earn XP",
-                description = "Get rewarded for every journal entry you complete.",
-                isDarkTheme = isDarkTheme
+                description = "Get rewarded for every journal entry you complete."
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -792,8 +670,7 @@ private fun GamificationLeaderboardScreen(
             FeatureListItem(
                 icon = Icons.Default.EmojiEvents,
                 title = "Badges",
-                description = "Unlock exclusive milestones as you grow.",
-                isDarkTheme = isDarkTheme
+                description = "Unlock exclusive milestones as you grow."
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -801,8 +678,7 @@ private fun GamificationLeaderboardScreen(
             FeatureListItem(
                 icon = Icons.Default.BarChart,
                 title = "Compete",
-                description = "See where you stand among peers.",
-                isDarkTheme = isDarkTheme
+                description = "See where you stand among peers."
             )
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -822,11 +698,10 @@ private fun GamificationLeaderboardScreen(
 
 @Composable
 private fun LeaderboardGraphicCard(
-    isDarkTheme: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val cardBackground = if (isDarkTheme) Color(0xFF1F3A38) else Color(0xFFE8EFEE)
-    val gridColor = if (isDarkTheme) Color(0xFF2A4A48) else Color(0xFFD8E0DE)
+    val cardBackground = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp)
+    val gridColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
 
     Column(
         modifier = modifier
@@ -868,13 +743,13 @@ private fun LeaderboardGraphicCard(
                 modifier = Modifier
                     .size(72.dp)
                     .clip(CircleShape)
-                    .background(AccentGreen),
+                    .background(MaterialTheme.colorScheme.primary),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Default.EmojiEvents,
                     contentDescription = "Trophy",
-                    tint = ButtonTextDark,
+                    tint = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier.size(40.dp)
                 )
             }
@@ -887,7 +762,7 @@ private fun LeaderboardGraphicCard(
                 Icon(
                     imageVector = Icons.Default.Star,
                     contentDescription = null,
-                    tint = AccentGreen,
+                    tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -896,11 +771,11 @@ private fun LeaderboardGraphicCard(
         Spacer(modifier = Modifier.height(20.dp))
 
         // Mini Leaderboard rows
-        LeaderboardRow(rank = 1, score = "2,450 XP", isActive = true, isDarkTheme = isDarkTheme)
+        LeaderboardRow(rank = 1, score = "2,450 XP", isActive = true)
         Spacer(modifier = Modifier.height(8.dp))
-        LeaderboardRow(rank = 2, score = "1,820", isActive = false, isDarkTheme = isDarkTheme)
+        LeaderboardRow(rank = 2, score = "1,820", isActive = false)
         Spacer(modifier = Modifier.height(8.dp))
-        LeaderboardRow(rank = 3, score = "1,450", isActive = false, isDarkTheme = isDarkTheme)
+        LeaderboardRow(rank = 3, score = "1,450", isActive = false)
     }
 }
 
@@ -909,19 +784,18 @@ private fun LeaderboardRow(
     rank: Int,
     score: String,
     isActive: Boolean,
-    isDarkTheme: Boolean,
     modifier: Modifier = Modifier
 ) {
     val rowBackground = if (isActive) {
-        if (isDarkTheme) Color(0xFF2A4A48) else Color(0xFFD0E0DD)
+        MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
     } else {
         Color.Transparent
     }
-    val textColor = if (isDarkTheme) DarkTextSecondary else LightTextSecondary
-    val progressColor = if (isActive) AccentGreen else (if (isDarkTheme) DarkProgressBarInactive else LightProgressBarInactive)
-    val progressBg = if (isDarkTheme) Color(0xFF3A5A58) else Color(0xFFBBC8C6)
+    val textColor = MaterialTheme.colorScheme.onSurfaceVariant
+    val progressColor = if (isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
+    val progressBg = MaterialTheme.colorScheme.surfaceColorAtElevation(4.dp)
     val progressFraction = when (rank) { 1 -> 0.85f; 2 -> 0.65f; else -> 0.45f }
-    val scoreColor = if (isActive) AccentGreen else textColor
+    val scoreColor = if (isActive) MaterialTheme.colorScheme.primary else textColor
 
     Row(
         modifier = modifier
@@ -931,7 +805,7 @@ private fun LeaderboardRow(
             .then(
                 if (isActive) Modifier.border(
                     width = 1.dp,
-                    color = AccentGreen.copy(alpha = 0.3f),
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
                     shape = RoundedCornerShape(12.dp)
                 ) else Modifier
             )
@@ -941,12 +815,8 @@ private fun LeaderboardRow(
         // Rank number
         Text(
             text = rank.toString(),
-            style = TextStyle(
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.Bold,
-                fontSize = 14.sp
-            ),
-            color = if (isActive) AccentGreen else textColor,
+            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+            color = if (isActive) MaterialTheme.colorScheme.primary else textColor,
             modifier = Modifier.width(24.dp)
         )
 
@@ -982,11 +852,7 @@ private fun LeaderboardRow(
         // Score
         Text(
             text = score,
-            style = TextStyle(
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 14.sp
-            ),
+            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
             color = scoreColor
         )
     }
@@ -997,13 +863,8 @@ private fun FeatureListItem(
     icon: ImageVector,
     title: String,
     description: String,
-    isDarkTheme: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val iconCircleBg = if (isDarkTheme) DarkIconCircleBackground else LightIconCircleBackground
-    val textPrimary = if (isDarkTheme) DarkTextPrimary else LightTextPrimary
-    val textSecondary = if (isDarkTheme) DarkTextSecondary else LightTextSecondary
-
     Row(
         modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.Top
@@ -1013,13 +874,13 @@ private fun FeatureListItem(
             modifier = Modifier
                 .size(44.dp)
                 .clip(RoundedCornerShape(12.dp))
-                .background(iconCircleBg),
+                .background(MaterialTheme.colorScheme.primaryContainer),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = AccentGreen,
+                tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(22.dp)
             )
         }
@@ -1029,23 +890,16 @@ private fun FeatureListItem(
         Column {
             Text(
                 text = title,
-                style = TextStyle(
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 16.sp
-                ),
-                color = textPrimary
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface
             )
             Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = description,
-                style = TextStyle(
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Normal,
-                    fontSize = 14.sp,
+                style = MaterialTheme.typography.bodyMedium.copy(
                     lineHeight = 20.sp
                 ),
-                color = textSecondary
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
@@ -1057,19 +911,14 @@ private fun FeatureListItem(
 
 @Composable
 private fun GamificationXpScreen(
-    isDarkTheme: Boolean,
     currentPage: Int,
     totalPages: Int,
     onStartQuest: () -> Unit
 ) {
-    val backgroundColor = if (isDarkTheme) DarkBackground else LightBackground
-    val textPrimary = if (isDarkTheme) DarkTextPrimary else LightTextPrimary
-    val textSecondary = if (isDarkTheme) DarkTextSecondary else LightTextSecondary
-
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(backgroundColor)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         Column(
             modifier = Modifier
@@ -1083,7 +932,6 @@ private fun GamificationXpScreen(
             // Circular Progress Ring with Level
             XpProgressRing(
                 progress = 0.75f,
-                isDarkTheme = isDarkTheme,
                 modifier = Modifier.size(220.dp)
             )
 
@@ -1096,29 +944,26 @@ private fun GamificationXpScreen(
             ) {
                 StatCard(
                     icon = Icons.Default.LocalFireDepartment,
-                    iconTint = AccentGreen,
+                    iconTint = MaterialTheme.colorScheme.primary,
                     value = "7",
                     label = "DAY STREAK",
                     isLocked = false,
-                    isDarkTheme = isDarkTheme,
                     modifier = Modifier.weight(1f)
                 )
                 StatCard(
                     icon = Icons.Default.Verified,
-                    iconTint = AccentGreen,
+                    iconTint = MaterialTheme.colorScheme.primary,
                     value = "750",
                     label = "TOTAL XP",
                     isLocked = false,
-                    isDarkTheme = isDarkTheme,
                     modifier = Modifier.weight(1f)
                 )
                 StatCard(
                     icon = Icons.Default.Lock,
-                    iconTint = if (isDarkTheme) Color(0xFF707A79) else Color(0xFF909998),
+                    iconTint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
                     value = "???",
                     label = "LOCKED",
                     isLocked = true,
-                    isDarkTheme = isDarkTheme,
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -1129,17 +974,15 @@ private fun GamificationXpScreen(
             Text(
                 text = buildAnnotatedString {
                     append("Turn Habits into ")
-                    withStyle(SpanStyle(color = AccentGreen)) {
+                    withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary)) {
                         append("Quests")
                     }
                 },
-                style = TextStyle(
-                    fontFamily = PoppinsFamily,
+                style = MaterialTheme.typography.headlineSmall.copy(
                     fontWeight = FontWeight.Bold,
-                    fontSize = 26.sp,
                     lineHeight = 34.sp
                 ),
-                color = textPrimary,
+                color = MaterialTheme.colorScheme.onBackground,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -1149,13 +992,10 @@ private fun GamificationXpScreen(
             // Body
             Text(
                 text = "Every entry earns you XP. Unlock wisdom badges and visualize your growth journey.",
-                style = TextStyle(
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Normal,
-                    fontSize = 15.sp,
+                style = MaterialTheme.typography.bodyMedium.copy(
                     lineHeight = 24.sp
                 ),
-                color = textSecondary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
             )
 
@@ -1164,8 +1004,7 @@ private fun GamificationXpScreen(
             // Pagination
             ProdyPagerIndicator(
                 totalPages = totalPages,
-                currentPage = currentPage,
-                isDarkTheme = isDarkTheme
+                currentPage = currentPage
             )
 
             Spacer(modifier = Modifier.height(28.dp))
@@ -1186,14 +1025,8 @@ private fun GamificationXpScreen(
 @Composable
 private fun XpProgressRing(
     progress: Float,
-    isDarkTheme: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val progressInactive = if (isDarkTheme) Color(0xFF3F5857) else Color(0xFFA0A8A7)
-    val innerCircleBg = if (isDarkTheme) DarkCardBackground else LightCardBackground
-    val textPrimary = if (isDarkTheme) DarkTextPrimary else LightTextPrimary
-    val textSecondary = if (isDarkTheme) DarkTextSecondary else LightTextSecondary
-
     Box(
         modifier = modifier,
         contentAlignment = Alignment.Center
@@ -1208,7 +1041,7 @@ private fun XpProgressRing(
 
             // Background ring
             drawArc(
-                color = progressInactive,
+                color = MaterialTheme.colorScheme.surfaceVariant,
                 startAngle = startAngle,
                 sweepAngle = sweepAngle,
                 useCenter = false,
@@ -1220,7 +1053,7 @@ private fun XpProgressRing(
             // Progress ring
             if (progress > 0f) {
                 drawArc(
-                    color = AccentGreen,
+                    color = MaterialTheme.colorScheme.primary,
                     startAngle = startAngle,
                     sweepAngle = sweepAngle * progress.coerceIn(0f, 1f),
                     useCenter = false,
@@ -1240,13 +1073,13 @@ private fun XpProgressRing(
                 modifier = Modifier
                     .size(44.dp)
                     .clip(CircleShape)
-                    .background(innerCircleBg),
+                    .background(MaterialTheme.colorScheme.surface),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Default.EmojiEvents,
                     contentDescription = null,
-                    tint = textPrimary,
+                    tint = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.size(24.dp)
                 )
             }
@@ -1255,23 +1088,18 @@ private fun XpProgressRing(
 
             Text(
                 text = "Lvl 3",
-                style = TextStyle(
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 36.sp
+                style = MaterialTheme.typography.displaySmall.copy(
+                    fontWeight = FontWeight.Bold
                 ),
-                color = textPrimary
+                color = MaterialTheme.colorScheme.onBackground
             )
 
             Text(
                 text = "INITIATE",
-                style = TextStyle(
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 12.sp,
+                style = MaterialTheme.typography.labelSmall.copy(
                     letterSpacing = 2.sp
                 ),
-                color = textSecondary
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
 
@@ -1282,13 +1110,13 @@ private fun XpProgressRing(
                 .offset(x = 32.dp, y = (-24).dp)
                 .size(28.dp)
                 .clip(CircleShape)
-                .background(AccentGreen),
+                .background(MaterialTheme.colorScheme.primary),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Default.Bolt,
                 contentDescription = null,
-                tint = ButtonTextDark,
+                tint = MaterialTheme.colorScheme.onPrimary,
                 modifier = Modifier.size(16.dp)
             )
         }
@@ -1302,7 +1130,7 @@ private fun XpProgressRing(
             Icon(
                 imageVector = Icons.Default.Star,
                 contentDescription = null,
-                tint = AccentGreen,
+                tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(24.dp)
             )
         }
@@ -1316,17 +1144,16 @@ private fun StatCard(
     value: String,
     label: String,
     isLocked: Boolean,
-    isDarkTheme: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val cardBg = if (isDarkTheme) DarkCardBackground else LightCardBackground
-    val lockedBorderColor = if (isDarkTheme) Color(0xFF3A4540) else Color(0xFFD0D8D4)
+    val cardBg = MaterialTheme.colorScheme.surfaceVariant
+    val lockedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
     val textColor = if (isLocked) {
-        if (isDarkTheme) Color(0xFF707A79) else Color(0xFF909998)
+        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
     } else {
-        if (isDarkTheme) DarkTextPrimary else LightTextPrimary
+        MaterialTheme.colorScheme.onSurface
     }
-    val labelColor = if (isDarkTheme) DarkTextSecondary else LightTextSecondary
+    val labelColor = MaterialTheme.colorScheme.onSurfaceVariant
 
     Column(
         modifier = modifier
@@ -1343,7 +1170,7 @@ private fun StatCard(
                     Modifier.drawBehind {
                         // Green accent line at top
                         drawRoundRect(
-                            color = AccentGreen,
+                            color = MaterialTheme.colorScheme.primary,
                             topLeft = Offset(16.dp.toPx(), 0f),
                             size = Size(size.width - 32.dp.toPx(), 3.dp.toPx()),
                             cornerRadius = CornerRadius(2.dp.toPx())
@@ -1365,10 +1192,8 @@ private fun StatCard(
 
         Text(
             text = value,
-            style = TextStyle(
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.Bold,
-                fontSize = 24.sp
+            style = MaterialTheme.typography.headlineSmall.copy(
+                fontWeight = FontWeight.Bold
             ),
             color = textColor
         )
@@ -1377,10 +1202,7 @@ private fun StatCard(
 
         Text(
             text = label,
-            style = TextStyle(
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.Medium,
-                fontSize = 9.sp,
+            style = MaterialTheme.typography.labelSmall.copy(
                 letterSpacing = 0.5.sp
             ),
             color = labelColor
@@ -1394,23 +1216,16 @@ private fun StatCard(
 
 @Composable
 private fun DailyWisdomFeaturesScreen(
-    isDarkTheme: Boolean,
     currentPage: Int,
     totalPages: Int,
     onSkip: () -> Unit,
     onContinue: () -> Unit,
     onMaybeLater: () -> Unit
 ) {
-    val backgroundColor = if (isDarkTheme) DarkBackground else Color(0xFFFFFFFF)
-    val iconCircleBg = if (isDarkTheme) DarkIconCircleBackground else Color(0xFFE6F0EE)
-    val textPrimary = if (isDarkTheme) DarkTextPrimary else LightTextPrimary
-    val textSecondary = if (isDarkTheme) DarkTextSecondary else LightTextSecondary
-    val textTertiary = if (isDarkTheme) DarkTextTertiary else LightTextTertiary
-
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(backgroundColor)
+            .background(MaterialTheme.colorScheme.surface)
     ) {
         Column(
             modifier = Modifier
@@ -1425,7 +1240,6 @@ private fun DailyWisdomFeaturesScreen(
             OnboardingTopHeader(
                 currentPage = currentPage,
                 totalPages = totalPages,
-                isDarkTheme = isDarkTheme,
                 onSkip = onSkip
             )
 
@@ -1436,13 +1250,13 @@ private fun DailyWisdomFeaturesScreen(
                 modifier = Modifier
                     .size(88.dp)
                     .clip(RoundedCornerShape(24.dp))
-                    .background(iconCircleBg),
+                    .background(MaterialTheme.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Outlined.MenuBook,
                     contentDescription = null,
-                    tint = AccentGreen,
+                    tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(44.dp)
                 )
             }
@@ -1452,12 +1266,8 @@ private fun DailyWisdomFeaturesScreen(
             // Headline
             Text(
                 text = "Daily Wisdom",
-                style = TextStyle(
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 30.sp
-                ),
-                color = textPrimary
+                style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Bold),
+                color = MaterialTheme.colorScheme.onSurface
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -1465,13 +1275,10 @@ private fun DailyWisdomFeaturesScreen(
             // Body
             Text(
                 text = "Start your day with intention. Prody delivers personalized insights to help you articulate your thoughts.",
-                style = TextStyle(
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Normal,
-                    fontSize = 15.sp,
+                style = MaterialTheme.typography.bodyMedium.copy(
                     lineHeight = 24.sp
                 ),
-                color = textSecondary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
             )
 
@@ -1481,8 +1288,7 @@ private fun DailyWisdomFeaturesScreen(
             WisdomFeatureCard(
                 icon = Icons.Outlined.TextFormat,
                 title = "Word of the Day",
-                description = "Expand your vocabulary",
-                isDarkTheme = isDarkTheme
+                description = "Expand your vocabulary"
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -1490,8 +1296,7 @@ private fun DailyWisdomFeaturesScreen(
             WisdomFeatureCard(
                 icon = Icons.Outlined.FormatQuote,
                 title = "Quote Collection",
-                description = "Insights from great minds",
-                isDarkTheme = isDarkTheme
+                description = "Insights from great minds"
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -1499,8 +1304,7 @@ private fun DailyWisdomFeaturesScreen(
             WisdomFeatureCard(
                 icon = Icons.Outlined.School,
                 title = "Proverbs & Idioms",
-                description = "Timeless cultural wisdom",
-                isDarkTheme = isDarkTheme
+                description = "Timeless cultural wisdom"
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -1508,8 +1312,7 @@ private fun DailyWisdomFeaturesScreen(
             WisdomFeatureCard(
                 icon = Icons.Outlined.ChatBubble,
                 title = "Essential Phrases",
-                description = "Communication masterclass",
-                isDarkTheme = isDarkTheme
+                description = "Communication masterclass"
             )
 
             Spacer(modifier = Modifier.weight(1f))
@@ -1527,12 +1330,8 @@ private fun DailyWisdomFeaturesScreen(
             // Maybe Later
             Text(
                 text = "Maybe Later",
-                style = TextStyle(
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 14.sp
-                ),
-                color = textTertiary,
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.clickable { onMaybeLater() }
             )
 
@@ -1546,19 +1345,13 @@ private fun WisdomFeatureCard(
     icon: ImageVector,
     title: String,
     description: String,
-    isDarkTheme: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val cardBg = if (isDarkTheme) DarkCardBackground else Color(0xFFF5F7F6)
-    val iconCircleBg = if (isDarkTheme) DarkIconCircleBackground else Color(0xFFE6F0EE)
-    val textPrimary = if (isDarkTheme) DarkTextPrimary else LightTextPrimary
-    val textSecondary = if (isDarkTheme) DarkTextSecondary else LightTextSecondary
-
     Row(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
-            .background(cardBg)
+            .background(MaterialTheme.colorScheme.surfaceVariant)
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -1567,13 +1360,13 @@ private fun WisdomFeatureCard(
             modifier = Modifier
                 .size(44.dp)
                 .clip(CircleShape)
-                .background(iconCircleBg),
+                .background(MaterialTheme.colorScheme.primaryContainer),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = AccentGreen,
+                tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(22.dp)
             )
         }
@@ -1583,21 +1376,13 @@ private fun WisdomFeatureCard(
         Column {
             Text(
                 text = title,
-                style = TextStyle(
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 16.sp
-                ),
-                color = textPrimary
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface
             )
             Text(
                 text = description,
-                style = TextStyle(
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Normal,
-                    fontSize = 13.sp
-                ),
-                color = textSecondary
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
@@ -1609,22 +1394,16 @@ private fun WisdomFeatureCard(
 
 @Composable
 private fun PersonalizedInsightsScreen(
-    isDarkTheme: Boolean,
     currentPage: Int,
     totalPages: Int,
     onSkip: () -> Unit,
     onEnableNotifications: () -> Unit,
     onMaybeLater: () -> Unit
 ) {
-    val backgroundColor = if (isDarkTheme) DarkBackground else LightBackground
-    val textPrimary = if (isDarkTheme) DarkTextPrimary else LightTextPrimary
-    val textSecondary = if (isDarkTheme) DarkTextSecondary else LightTextSecondary
-    val textTertiary = if (isDarkTheme) DarkTextTertiary else LightTextTertiary
-
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(backgroundColor)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         Column(
             modifier = Modifier
@@ -1637,7 +1416,6 @@ private fun PersonalizedInsightsScreen(
             OnboardingTopHeader(
                 currentPage = currentPage,
                 totalPages = totalPages,
-                isDarkTheme = isDarkTheme,
                 onSkip = onSkip
             )
 
@@ -1645,7 +1423,6 @@ private fun PersonalizedInsightsScreen(
 
             // Quote Card
             QuoteCard(
-                isDarkTheme = isDarkTheme,
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -1654,13 +1431,11 @@ private fun PersonalizedInsightsScreen(
             // Headline
             Text(
                 text = "Personalized Insights",
-                style = TextStyle(
-                    fontFamily = PoppinsFamily,
+                style = MaterialTheme.typography.headlineSmall.copy(
                     fontWeight = FontWeight.Bold,
-                    fontSize = 26.sp,
                     lineHeight = 34.sp
                 ),
-                color = textPrimary,
+                color = MaterialTheme.colorScheme.onBackground,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -1670,13 +1445,10 @@ private fun PersonalizedInsightsScreen(
             // Body
             Text(
                 text = "Prody analyzes your daily entries to surface quotes, stoic principles, and mental models that match your current headspace.",
-                style = TextStyle(
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Normal,
-                    fontSize = 15.sp,
+                style = MaterialTheme.typography.bodyMedium.copy(
                     lineHeight = 24.sp
                 ),
-                color = textSecondary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
             )
 
@@ -1695,12 +1467,8 @@ private fun PersonalizedInsightsScreen(
             // Maybe Later
             Text(
                 text = "Maybe later",
-                style = TextStyle(
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 14.sp
-                ),
-                color = textTertiary,
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -1714,19 +1482,12 @@ private fun PersonalizedInsightsScreen(
 
 @Composable
 private fun QuoteCard(
-    isDarkTheme: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val cardBackground = if (isDarkTheme) Color(0xFF2D4240) else Color(0xFFE8EFEE)
-    val textPrimary = if (isDarkTheme) DarkTextPrimary else LightTextPrimary
-    val textSecondary = if (isDarkTheme) DarkTextSecondary else LightTextSecondary
-    val dividerColor = if (isDarkTheme) DarkDivider else LightDivider
-    val iconCircleBg = if (isDarkTheme) DarkIconCircleBackground else LightIconCircleBackground
-
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(20.dp))
-            .background(cardBackground)
+            .background(MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp))
             .padding(24.dp)
     ) {
         // Header row - lightbulb icon and DAILY WISDOM label
@@ -1740,13 +1501,13 @@ private fun QuoteCard(
                 modifier = Modifier
                     .size(40.dp)
                     .clip(CircleShape)
-                    .background(iconCircleBg),
+                    .background(MaterialTheme.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Default.Lightbulb,
                     contentDescription = null,
-                    tint = AccentGreen,
+                    tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -1754,13 +1515,10 @@ private fun QuoteCard(
             // DAILY WISDOM label
             Text(
                 text = "DAILY WISDOM",
-                style = TextStyle(
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 11.sp,
+                style = MaterialTheme.typography.labelSmall.copy(
                     letterSpacing = 1.5.sp
                 ),
-                color = textSecondary
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
 
@@ -1770,28 +1528,24 @@ private fun QuoteCard(
         Text(
             text = buildAnnotatedString {
                 append("\"The only way to do ")
-                withStyle(SpanStyle(color = AccentGreen)) {
+                withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary)) {
                     append("great work")
                 }
                 append(" is to love what you do.\"")
             },
-            style = TextStyle(
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.Normal,
-                fontSize = 20.sp,
+            style = MaterialTheme.typography.titleLarge.copy(
                 lineHeight = 32.sp
             ),
-            color = textPrimary
+            color = MaterialTheme.colorScheme.onSurface
         )
 
         Spacer(modifier = Modifier.height(20.dp))
 
         // Divider
-        Box(
-            modifier = Modifier
-                .width(48.dp)
-                .height(1.dp)
-                .background(dividerColor)
+        HorizontalDivider(
+            modifier = Modifier.width(48.dp),
+            thickness = 1.dp,
+            color = MaterialTheme.colorScheme.outline
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -1804,17 +1558,13 @@ private fun QuoteCard(
             Icon(
                 imageVector = Icons.Default.Person,
                 contentDescription = null,
-                tint = textSecondary,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(16.dp)
             )
             Text(
                 text = "Steve Jobs",
-                style = TextStyle(
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 14.sp
-                ),
-                color = textSecondary
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
 
@@ -1835,14 +1585,14 @@ private fun QuoteCard(
                         .width(18.dp)
                         .height(6.dp)
                         .clip(RoundedCornerShape(3.dp))
-                        .background(AccentGreen)
+                        .background(MaterialTheme.colorScheme.primary)
                 )
                 repeat(2) {
                     Box(
                         modifier = Modifier
                             .size(6.dp)
                             .clip(CircleShape)
-                            .background(if (isDarkTheme) DarkInactiveDot else LightInactiveDot)
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
                     )
                 }
             }
@@ -1851,7 +1601,7 @@ private fun QuoteCard(
             Icon(
                 imageVector = Icons.Default.BookmarkBorder,
                 contentDescription = "Bookmark",
-                tint = textPrimary,
+                tint = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.size(22.dp)
             )
         }
@@ -1867,12 +1617,11 @@ private fun QuoteCard(
  */
 @Composable
 private fun ProdyLogo(
-    isDarkTheme: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val containerColor = if (isDarkTheme) LogoContainerDark else LogoContainerLight
-    val strokeColor = if (isDarkTheme) LogoContainerStroke else Color(0xFFE0E7E6)
-    val leafColor = if (isDarkTheme) Color.White else Color(0xFF1A1A1A)
+    val containerColor = MaterialTheme.colorScheme.surface
+    val strokeColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
+    val leafColor = MaterialTheme.colorScheme.onSurface
 
     Box(modifier = modifier) {
         // Squircle container with subtle border
@@ -1953,7 +1702,7 @@ private fun ProdyLogo(
                 .align(Alignment.TopEnd)
                 .offset(x = 2.dp, y = (-2).dp)
                 .clip(CircleShape)
-                .background(AccentGreen)
+                .background(MaterialTheme.colorScheme.primary)
         )
     }
 }
@@ -1965,11 +1714,8 @@ private fun ProdyLogo(
 private fun ProdyPagerIndicator(
     totalPages: Int,
     currentPage: Int,
-    isDarkTheme: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val inactiveColor = if (isDarkTheme) DarkInactiveDot else LightInactiveDot
-
     Row(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -1991,7 +1737,10 @@ private fun ProdyPagerIndicator(
                     .width(width)
                     .height(8.dp)
                     .clip(RoundedCornerShape(4.dp))
-                    .background(if (isActive) AccentGreen else inactiveColor)
+                    .background(
+                        if (isActive) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.surfaceVariant
+                    )
             )
         }
     }
@@ -2007,11 +1756,14 @@ private fun ProdyOnboardingButton(
     showArrow: Boolean = false,
     modifier: Modifier = Modifier
 ) {
-    Surface(
+    Button(
         onClick = onClick,
         modifier = modifier.height(58.dp),
         shape = RoundedCornerShape(29.dp),
-        color = AccentGreen
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary
+        )
     ) {
         Row(
             modifier = Modifier
@@ -2022,19 +1774,15 @@ private fun ProdyOnboardingButton(
         ) {
             Text(
                 text = text,
-                style = TextStyle(
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 16.sp
-                ),
-                color = ButtonTextDark
+                style = MaterialTheme.typography.labelLarge.copy(
+                    fontWeight = FontWeight.SemiBold
+                )
             )
 
             if (showArrow) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                     contentDescription = null,
-                    tint = ButtonTextDark,
                     modifier = Modifier.size(22.dp)
                 )
             }
@@ -2049,7 +1797,6 @@ private fun ProdyOnboardingButton(
 private fun OnboardingTopHeader(
     currentPage: Int,
     totalPages: Int,
-    isDarkTheme: Boolean,
     onSkip: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -2061,19 +1808,16 @@ private fun OnboardingTopHeader(
         // Pagination on left
         ProdyPagerIndicator(
             totalPages = totalPages,
-            currentPage = currentPage,
-            isDarkTheme = isDarkTheme
+            currentPage = currentPage
         )
 
         // Skip button on right
         Text(
             text = "Skip",
-            style = TextStyle(
-                fontFamily = PoppinsFamily,
+            style = MaterialTheme.typography.labelLarge.copy(
                 fontWeight = FontWeight.Medium,
-                fontSize = 14.sp
+                color = MaterialTheme.colorScheme.primary
             ),
-            color = AccentGreen,
             modifier = Modifier.clickable { onSkip() }
         )
     }
