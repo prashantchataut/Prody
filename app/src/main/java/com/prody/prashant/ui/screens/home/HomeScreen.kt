@@ -1,42 +1,29 @@
 package com.prody.prashant.ui.screens.home
 
-import androidx.compose.animation.*
-import androidx.compose.animation.core.*
-import androidx.compose.foundation.Canvas
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.EaseOutCubic
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.*
-import androidx.compose.material.icons.automirrored.filled.TrendingUp
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.outlined.MenuBook
+import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -46,38 +33,29 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.R
-import com.prody.prashant.ui.components.ProdyCard
-import com.prody.prashant.ui.theme.*
-import com.prody.prashant.ui.theme.WisdomHeroStyle
+import com.prody.prashant.ui.theme.PlayfairFamily
 import kotlinx.coroutines.delay
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
 /**
- * Home Screen - Main Dashboard
+ * Home Screen - Redesigned Dashboard
  *
- * The central hub of the Prody app featuring:
- * - Personalized greeting with streak and points display
- * - Daily wisdom content (quotes, words, proverbs, idioms)
- * - Quick action shortcuts to core features
- * - Weekly progress tracking
- * - AI-powered Buddha's daily thought
- *
- * UI/UX Features:
- * - Staggered entrance animations for visual delight
- * - Animated background elements for engagement
- * - Interactive cards with press feedback
- * - Progress animations for stats
- * - Proper accessibility support with content descriptions
+ * A clean, minimal, modern interface featuring:
+ * - Personalized greeting with streak and points badge
+ * - Gratitude and Challenges reflection cards
+ * - Quick action buttons for core features
+ * - Daily Wisdom section with Quote, Word, Idiom, and Proverb cards
  *
  * Design Principles:
- * - Clear visual hierarchy with card-based layout
- * - Color-coded sections for easy scanning
- * - Celebratory animations for achievements
- * - Sufficient touch targets (min 48dp)
+ * - Flat, shadow-free design
+ * - Clear visual hierarchy
+ * - 8dp spacing grid
+ * - Green accents for interactivity
+ * - Elegant typography with Poppins + Playfair Display
  */
-import java.util.Calendar
-import kotlin.math.PI
-import kotlin.math.cos
-import kotlin.math.sin
 
 @Composable
 fun HomeScreen(
@@ -101,8 +79,8 @@ fun HomeScreen(
 
     AnimatedVisibility(
         visible = isVisible,
-        enter = fadeIn(animationSpec = tween(600, easing = EaseOutCubic)),
-        exit = fadeOut(animationSpec = tween(600, easing = EaseOutCubic))
+        enter = fadeIn(animationSpec = tween(500, easing = EaseOutCubic)),
+        exit = fadeOut(animationSpec = tween(300, easing = EaseOutCubic))
     ) {
         LazyColumn(
             modifier = Modifier
@@ -110,9 +88,9 @@ fun HomeScreen(
                 .background(MaterialTheme.colorScheme.background),
             contentPadding = PaddingValues(bottom = 100.dp)
         ) {
-            // Animated header with greeting and streak
+            // Header with greeting and stats
             item {
-                EnhancedHomeHeader(
+                HomeHeader(
                     greeting = greeting,
                     userName = uiState.userName,
                     currentStreak = uiState.currentStreak,
@@ -120,992 +98,732 @@ fun HomeScreen(
                 )
             }
 
-            // Daily focus card
+            // Gratitude and Challenges cards row
             item {
-                DailyFocusCard()
-            }
-
-            // Community Challenges card
-            item {
-                CommunityChallengesCard(onClick = onNavigateToChallenges)
-            }
-
-            // Daily wisdom card
-            item {
-                EnhancedDailyWisdomCard(
-                    quote = uiState.dailyQuote,
-                    author = uiState.dailyQuoteAuthor,
-                    onQuoteTap = onNavigateToQuotes
+                ReflectionCardsRow(
+                    onGratitudeClick = onNavigateToJournal,
+                    onChallengesClick = onNavigateToChallenges
                 )
             }
 
-            // Word of the day
+            // Quick Actions bar
             item {
-                EnhancedWordOfTheDayCard(
-                    word = uiState.wordOfTheDay,
-                    definition = uiState.wordDefinition,
-                    pronunciation = uiState.wordPronunciation,
-                    onWordTap = onNavigateToVocabulary,
-                    onMarkLearned = { viewModel.markWordAsLearned() }
-                )
-            }
-
-            // Quick actions grid
-            item {
-                EnhancedQuickActionsSection(
+                QuickActionsBar(
                     onJournalClick = onNavigateToJournal,
-                    onFutureMessageClick = onNavigateToFutureMessage,
-                    onVocabularyClick = onNavigateToVocabulary,
+                    onFutureClick = onNavigateToFutureMessage,
                     onQuotesClick = onNavigateToQuotes
                 )
             }
 
-            // Proverb of the day
+            // Daily Wisdom section header
+            item {
+                DailyWisdomHeader()
+            }
+
+            // Quote of the Day card
+            item {
+                QuoteOfTheDayCard(
+                    quote = uiState.dailyQuote,
+                    author = uiState.dailyQuoteAuthor,
+                    onShareClick = { /* Share functionality */ }
+                )
+            }
+
+            // Word and Idiom side-by-side cards
+            item {
+                WordAndIdiomRow(
+                    word = uiState.wordOfTheDay,
+                    pronunciation = uiState.wordPronunciation,
+                    wordDefinition = uiState.wordDefinition,
+                    idiom = uiState.dailyIdiom,
+                    idiomMeaning = uiState.idiomMeaning,
+                    idiomExample = uiState.idiomExample,
+                    onLearnClick = { viewModel.markWordAsLearned() }
+                )
+            }
+
+            // Proverb card
             if (uiState.dailyProverb.isNotBlank()) {
                 item {
-                    EnhancedProverbCard(
+                    ProverbCard(
                         proverb = uiState.dailyProverb,
-                        meaning = uiState.proverbMeaning,
                         origin = uiState.proverbOrigin
                     )
                 }
             }
+        }
+    }
+}
 
-            // Idiom of the day
-            if (uiState.dailyIdiom.isNotBlank()) {
-                item {
-                    EnhancedIdiomCard(
-                        idiom = uiState.dailyIdiom,
-                        meaning = uiState.idiomMeaning,
-                        example = uiState.idiomExample
-                    )
-                }
-            }
-
-            // Buddha's daily thought
-            item {
-                EnhancedBuddhaThoughtCard(
-                    thought = uiState.buddhaThought,
-                    explanation = uiState.buddhaThoughtExplanation,
-                    isAiGenerated = uiState.isBuddhaThoughtAiGenerated,
-                    isLoading = uiState.isBuddhaThoughtLoading,
-                    canRefresh = uiState.canRefreshBuddhaThought,
-                    onRefresh = { viewModel.refreshBuddhaThought() }
+/**
+ * Clean header with greeting and stats badge
+ */
+@Composable
+private fun HomeHeader(
+    greeting: String,
+    userName: String,
+    currentStreak: Int,
+    totalPoints: Int
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .statusBarsPadding()
+            .padding(horizontal = 20.dp, vertical = 16.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.Top
+        ) {
+            // Greeting column
+            Column {
+                Text(
+                    text = greeting.uppercase(),
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Normal,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    letterSpacing = 1.sp
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = userName,
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
                 )
             }
 
-            // Weekly progress card
-            item {
-                WeeklyProgressCard(
-                    journalEntriesThisWeek = uiState.journalEntriesThisWeek,
-                    wordsLearnedThisWeek = uiState.wordsLearnedThisWeek,
-                    daysActiveThisWeek = uiState.daysActiveThisWeek
+            // Stats badge
+            StatsBadge(
+                streak = currentStreak,
+                points = totalPoints
+            )
+        }
+    }
+}
+
+/**
+ * Compact stats badge showing streak and points
+ */
+@Composable
+private fun StatsBadge(
+    streak: Int,
+    points: Int
+) {
+    Surface(
+        shape = RoundedCornerShape(24.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant,
+        tonalElevation = 0.dp
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            // Streak
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    text = "\uD83D\uDD25",
+                    fontSize = 14.sp
+                )
+                Text(
+                    text = streak.toString(),
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+
+            // Divider
+            Box(
+                modifier = Modifier
+                    .width(1.dp)
+                    .height(16.dp)
+                    .background(MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
+            )
+
+            // Points
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    text = "\u2B50",
+                    fontSize = 14.sp
+                )
+                Text(
+                    text = points.toString(),
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
         }
     }
 }
 
+/**
+ * Reflection cards row - Gratitude and Challenges
+ */
 @Composable
-private fun EnhancedHomeHeader(
-    greeting: String,
-    userName: String,
-    currentStreak: Int,
-    totalPoints: Int
+private fun ReflectionCardsRow(
+    onGratitudeClick: () -> Unit,
+    onChallengesClick: () -> Unit
 ) {
-    val infiniteTransition = rememberInfiniteTransition(label = "header_animation")
-    val glowAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.3f,
-        targetValue = 0.6f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(2000, easing = EaseInOutCubic),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "glow"
-    )
+    val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+    val reflectionText = when {
+        hour < 12 -> "Morning reflection"
+        hour < 17 -> "Afternoon reflection"
+        else -> "Evening reflection"
+    }
 
-    Box(
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(
-                        MaterialTheme.colorScheme.primary,
-                        MaterialTheme.colorScheme.primary.copy(alpha = 0.9f),
-                        MaterialTheme.colorScheme.primary.copy(alpha = 0.75f)
-                    )
-                )
-            )
+            .padding(horizontal = 20.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        // Gratitude card
+        ReflectionCard(
+            modifier = Modifier.weight(1f),
+            icon = Icons.Outlined.NightsStay,
+            iconTint = Color(0xFF5B8DEF),
+            title = "Gratitude",
+            subtitle = reflectionText,
+            onClick = onGratitudeClick
+        )
+
+        // Challenges card
+        ReflectionCard(
+            modifier = Modifier.weight(1f),
+            icon = Icons.Filled.EmojiEvents,
+            iconTint = Color(0xFFFF9500),
+            title = "Challenges",
+            subtitle = "Compete now",
+            showNewBadge = true,
+            onClick = onChallengesClick
+        )
+    }
+}
+
+/**
+ * Individual reflection card
+ */
+@Composable
+private fun ReflectionCard(
+    modifier: Modifier = Modifier,
+    icon: ImageVector,
+    iconTint: Color,
+    title: String,
+    subtitle: String,
+    showNewBadge: Boolean = false,
+    onClick: () -> Unit
+) {
+    Surface(
+        modifier = modifier
+            .clip(RoundedCornerShape(16.dp))
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        tonalElevation = 0.dp
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .statusBarsPadding()
-                .padding(20.dp)
+            modifier = Modifier.padding(16.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.Top
             ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = greeting,
-                        style = MaterialTheme.typography.titleMedium,
-                        color = Color.White.copy(alpha = 0.9f)
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = userName,
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-                }
-
-                // Animated streak badge
-                AnimatedStreakBadge(
-                    streakDays = currentStreak
-                )
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // Points display with animation
-            AnimatedPointsDisplay(
-                totalPoints = totalPoints,
-                glowAlpha = glowAlpha
-            )
-        }
-    }
-}
-
-/**
- * Refined Streak Badge - cleaner design without heavy glow
- */
-@Composable
-private fun AnimatedStreakBadge(streakDays: Int) {
-    val fireScale by animateFloatAsState(
-        targetValue = if (streakDays > 0) 1.06f else 1f,
-        animationSpec = tween(800),
-        label = "fire_scale"
-    )
-
-    Box(contentAlignment = Alignment.Center) {
-        // Subtle accent ring instead of heavy blur glow
-        if (streakDays > 0) {
-            Box(
-                modifier = Modifier
-                    .size(58.dp)
-                    .border(2.dp, StreakFire.copy(alpha = 0.3f), RoundedCornerShape(16.dp))
-            )
-        }
-
-        Row(
-            modifier = Modifier
-                .clip(RoundedCornerShape(14.dp))
-                .background(
-                    if (streakDays > 0) {
-                        Brush.horizontalGradient(
-                            colors = listOf(
-                                StreakFire.copy(alpha = 0.7f),
-                                StreakGlow.copy(alpha = 0.5f)
-                            )
-                        )
-                    } else {
-                        Brush.horizontalGradient(
-                            colors = listOf(
-                                Color.Gray.copy(alpha = 0.3f),
-                                Color.Gray.copy(alpha = 0.2f)
-                            )
-                        )
-                    }
-                )
-                .padding(horizontal = 14.dp, vertical = 10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Filled.LocalFireDepartment,
-                contentDescription = null,
-                tint = if (streakDays > 0) StreakFire else Color.Gray,
-                modifier = Modifier
-                    .size(24.dp)
-                    .scale(if (streakDays > 0) fireScale else 1f)
-            )
-            Column {
-                Text(
-                    text = streakDays.toString(),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-                Text(
-                    text = "day streak",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = Color.White.copy(alpha = 0.8f),
-                    fontSize = 9.sp
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun AnimatedPointsDisplay(
-    totalPoints: Int,
-    glowAlpha: Float
-) {
-    val animatedPoints by animateIntAsState(
-        targetValue = totalPoints,
-        animationSpec = tween(1500, easing = FastOutSlowInEasing),
-        label = "points"
-    )
-
-    Row(
-        modifier = Modifier
-            .clip(RoundedCornerShape(16.dp))
-            .background(Color.White.copy(alpha = 0.15f))
-            .padding(horizontal = 20.dp, vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        // Star icon with subtle accent - no heavy blur glow
-        Box(
-            modifier = Modifier
-                .size(40.dp)
-                .clip(CircleShape)
-                .background(GoldTier.copy(alpha = 0.15f)),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = Icons.Filled.Stars,
-                contentDescription = null,
-                tint = GoldTier,
-                modifier = Modifier.size(24.dp)
-            )
-        }
-
-        Column {
-            Text(
-                text = formatNumber(animatedPoints),
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
-            Text(
-                text = "Total Points",
-                style = MaterialTheme.typography.labelSmall,
-                color = Color.White.copy(alpha = 0.8f)
-            )
-        }
-
-        Spacer(modifier = Modifier.weight(1f))
-
-        // Level indicator
-        Surface(
-            color = GoldTier.copy(alpha = 0.3f),
-            shape = RoundedCornerShape(8.dp)
-        ) {
-            Text(
-                text = "Lvl ${getLevelFromPoints(totalPoints)}",
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.Bold,
-                color = GoldTier,
-                modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
-            )
-        }
-    }
-}
-
-@Composable
-private fun DailyFocusCard() {
-    val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
-    val (focusText, focusIcon) = when {
-        hour < 12 -> "Morning Reflection" to Icons.Filled.WbSunny
-        hour < 17 -> "Afternoon Growth" to Icons.AutoMirrored.Filled.TrendingUp
-        else -> "Evening Gratitude" to Icons.Filled.NightsStay
-    }
-
-    ProdyCard(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        backgroundColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
-    ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(44.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = focusIcon,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(22.dp)
-                )
-            }
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = focusText,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Text(
-                    text = "Take a moment to center yourself",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-    }
-}
-
-/**
- * Community Challenges Card - cleaner design, no heavy glow
- */
-@Composable
-private fun CommunityChallengesCard(onClick: () -> Unit) {
-    ProdyCard(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-            .clickable(onClick = onClick),
-        backgroundColor = MoodExcited.copy(alpha = 0.12f)
-    ) {
-        Box {
-
-            Row(
-                modifier = Modifier.padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
+                // Icon
                 Box(
                     modifier = Modifier
-                        .size(48.dp)
-                        .clip(CircleShape)
-                        .background(MoodExcited.copy(alpha = 0.2f)),
+                        .size(40.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(iconTint.copy(alpha = 0.15f)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.EmojiEvents,
+                        imageVector = icon,
                         contentDescription = null,
-                        tint = MoodExcited,
-                        modifier = Modifier.size(26.dp)
+                        tint = iconTint,
+                        modifier = Modifier.size(22.dp)
                     )
                 }
 
-                Column(modifier = Modifier.weight(1f)) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                // NEW badge
+                if (showNewBadge) {
+                    Surface(
+                        shape = RoundedCornerShape(4.dp),
+                        color = Color(0xFFFF3B30)
                     ) {
                         Text(
-                            text = "Community Challenges",
-                            style = MaterialTheme.typography.titleSmall,
+                            text = "NEW",
+                            style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
+                            color = Color.White,
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                            fontSize = 9.sp
                         )
-                        Surface(
-                            color = AchievementUnlocked.copy(alpha = 0.2f),
-                            shape = RoundedCornerShape(4.dp)
-                        ) {
-                            Text(
-                                text = "NEW",
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.Bold,
-                                color = AchievementUnlocked,
-                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                                fontSize = 9.sp
-                            )
-                        }
                     }
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = "Join monthly challenges and compete with the community",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
                 }
-
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                    contentDescription = null,
-                    tint = MoodExcited
-                )
             }
-        }
-    }
-}
 
-@Composable
-private fun EnhancedDailyWisdomCard(
-    quote: String,
-    author: String,
-    onQuoteTap: () -> Unit
-) {
-    ProdyCard(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-            .clickable(onClick = onQuoteTap),
-        backgroundColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.7f)
-    ) {
-        Box {
-            // Decorative quote mark
+            Spacer(modifier = Modifier.height(12.dp))
+
             Text(
-                text = "\"",
-                style = MaterialTheme.typography.displayLarge,
-                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(end = 16.dp)
-                    .offset(y = (-10).dp)
+                text = title,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface
             )
 
-            Column(modifier = Modifier.padding(20.dp)) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(32.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.FormatQuote,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
-                    Text(
-                        text = stringResource(R.string.quote_of_the_day),
-                        style = MaterialTheme.typography.labelLarge,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
+            Spacer(modifier = Modifier.height(2.dp))
 
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text(
-                    text = "\"$quote\"",
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontStyle = FontStyle.Italic,
-                    color = MaterialTheme.colorScheme.onSecondaryContainer,
-                    lineHeight = 26.sp
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "— $author",
-                        style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f)
-                    )
-
-                    Surface(
-                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            Text(
-                                text = "More",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(14.dp)
-                            )
-                        }
-                    }
-                }
-            }
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }
 
+/**
+ * Quick actions bar with Journal, Future, Quotes
+ */
 @Composable
-private fun EnhancedWordOfTheDayCard(
-    word: String,
-    definition: String,
-    pronunciation: String,
-    onWordTap: () -> Unit,
-    onMarkLearned: () -> Unit
+private fun QuickActionsBar(
+    onJournalClick: () -> Unit,
+    onFutureClick: () -> Unit,
+    onQuotesClick: () -> Unit
 ) {
-    var isLearned by remember { mutableStateOf(false) }
-
-    ProdyCard(
+    Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-            .clickable(onClick = onWordTap)
+            .padding(horizontal = 20.dp, vertical = 8.dp),
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        tonalElevation = 0.dp
     ) {
-        Column(modifier = Modifier.padding(20.dp)) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 12.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Journal
+            QuickActionItem(
+                icon = Icons.Outlined.Book,
+                label = "Journal",
+                onClick = onJournalClick
+            )
+
+            // Divider
+            Box(
+                modifier = Modifier
+                    .width(1.dp)
+                    .height(32.dp)
+                    .background(MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+            )
+
+            // Future
+            QuickActionItem(
+                icon = Icons.Outlined.Send,
+                label = "Future",
+                onClick = onFutureClick
+            )
+
+            // Divider
+            Box(
+                modifier = Modifier
+                    .width(1.dp)
+                    .height(32.dp)
+                    .background(MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+            )
+
+            // Quotes
+            QuickActionItem(
+                icon = Icons.Outlined.FormatQuote,
+                label = "Quotes",
+                onClick = onQuotesClick
+            )
+        }
+    }
+}
+
+/**
+ * Individual quick action item
+ */
+@Composable
+private fun QuickActionItem(
+    icon: ImageVector,
+    label: String,
+    onClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .clip(RoundedCornerShape(8.dp))
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onClick
+            )
+            .padding(horizontal = 16.dp, vertical = 4.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = label,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(22.dp)
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+/**
+ * Daily Wisdom section header with date
+ */
+@Composable
+private fun DailyWisdomHeader() {
+    val dateFormat = SimpleDateFormat("MMM d", Locale.getDefault())
+    val currentDate = dateFormat.format(Date()).uppercase()
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp)
+            .padding(top = 24.dp, bottom = 12.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = "Daily Wisdom",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onBackground
+        )
+
+        Surface(
+            shape = RoundedCornerShape(8.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant
+        ) {
+            Text(
+                text = currentDate,
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+            )
+        }
+    }
+}
+
+/**
+ * Quote of the Day card
+ */
+@Composable
+private fun QuoteOfTheDayCard(
+    quote: String,
+    author: String,
+    onShareClick: () -> Unit
+) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp, vertical = 8.dp),
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        tonalElevation = 0.dp
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp)
+        ) {
+            // Header with green dot
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(8.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary)
+                )
+                Text(
+                    text = "QUOTE OF THE DAY",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.primary,
+                    letterSpacing = 1.sp
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Quote text with Playfair-like styling
+            Text(
+                text = "\"$quote\"",
+                style = MaterialTheme.typography.bodyLarge.copy(
+                    fontFamily = PlayfairFamily,
+                    fontStyle = FontStyle.Italic,
+                    fontSize = 18.sp,
+                    lineHeight = 28.sp
+                ),
+                color = MaterialTheme.colorScheme.onSurface
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Divider
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(1.dp)
+                    .background(MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Author and Share
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(32.dp)
-                            .clip(CircleShape)
-                            .background(MoodMotivated.copy(alpha = 0.15f)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.School,
-                            contentDescription = null,
-                            tint = MoodMotivated,
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
-                    Text(
-                        text = stringResource(R.string.word_of_the_day),
-                        style = MaterialTheme.typography.labelLarge,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MoodMotivated
-                    )
-                }
-
-                // Animated learn button - subtle scale feedback
-                val buttonScale by animateFloatAsState(
-                    targetValue = if (isLearned) 1.05f else 1f,
-                    animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioNoBouncy,
-                        stiffness = Spring.StiffnessMedium
-                    ),
-                    label = "button_scale"
-                )
-
-                Surface(
-                    modifier = Modifier
-                        .scale(buttonScale)
-                        .clickable {
-                            if (!isLearned) {
-                                isLearned = true
-                                onMarkLearned()
-                            }
-                        },
-                    color = if (isLearned) AchievementUnlocked.copy(alpha = 0.15f)
-                    else MaterialTheme.colorScheme.surfaceVariant,
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Icon(
-                            imageVector = if (isLearned) Icons.Filled.CheckCircle else Icons.Outlined.CheckCircle,
-                            contentDescription = stringResource(R.string.mark_learned),
-                            tint = if (isLearned) AchievementUnlocked else MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Text(
-                            text = if (isLearned) "Learned!" else "Learn",
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.Medium,
-                            color = if (isLearned) AchievementUnlocked else MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Word display with pronunciation
-            Row(
-                verticalAlignment = Alignment.Bottom,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
                 Text(
-                    text = word,
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
+                    text = "— $author",
+                    style = MaterialTheme.typography.bodySmall,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                if (pronunciation.isNotBlank()) {
-                    Text(
-                        text = "/$pronunciation/",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(bottom = 2.dp)
-                    )
-                }
-            }
 
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Text(
-                text = definition,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.85f),
-                lineHeight = 22.sp
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Point reward indicator
-            Surface(
-                color = GoldTier.copy(alpha = 0.1f),
-                shape = RoundedCornerShape(8.dp)
-            ) {
                 Row(
-                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(4.dp))
+                        .clickable(onClick = onShareClick)
+                        .padding(4.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.Filled.Stars,
-                        contentDescription = null,
-                        tint = GoldTier,
-                        modifier = Modifier.size(14.dp)
-                    )
                     Text(
-                        text = "+25 points when learned",
+                        text = "SHARE",
                         style = MaterialTheme.typography.labelSmall,
-                        color = GoldTier,
-                        fontWeight = FontWeight.Medium
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.primary,
+                        letterSpacing = 0.5.sp
+                    )
+                    Icon(
+                        imageVector = Icons.Outlined.OpenInNew,
+                        contentDescription = "Share",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(14.dp)
                     )
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun EnhancedQuickActionsSection(
-    onJournalClick: () -> Unit,
-    onFutureMessageClick: () -> Unit,
-    onVocabularyClick: () -> Unit,
-    onQuotesClick: () -> Unit
-) {
-    Column(
-        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "Quick Actions",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold
-            )
-            Text(
-                text = "Your daily tools",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            EnhancedQuickActionItem(
-                icon = Icons.Filled.Book,
-                label = "Journal",
-                subtitle = "Reflect",
-                color = MoodCalm,
-                onClick = onJournalClick,
-                modifier = Modifier.weight(1f)
-            )
-            EnhancedQuickActionItem(
-                icon = Icons.Filled.Schedule,
-                label = "Future",
-                subtitle = "Message",
-                color = MoodExcited,
-                onClick = onFutureMessageClick,
-                modifier = Modifier.weight(1f)
-            )
-            EnhancedQuickActionItem(
-                icon = Icons.AutoMirrored.Filled.MenuBook,
-                label = "Words",
-                subtitle = "Learn",
-                color = MoodMotivated,
-                onClick = onVocabularyClick,
-                modifier = Modifier.weight(1f)
-            )
-            EnhancedQuickActionItem(
-                icon = Icons.Filled.FormatQuote,
-                label = "Quotes",
-                subtitle = "Inspire",
-                color = MoodGrateful,
-                onClick = onQuotesClick,
-                modifier = Modifier.weight(1f)
-            )
         }
     }
 }
 
 /**
- * Enhanced Quick Action Item - Improved visual hierarchy
- *
- * Features:
- * - Clear size/weight differential between primary and secondary text
- * - Subtle press animation for tactile feedback
- * - Color-coded accent for category indication
- * - Minimum 48dp touch target
+ * Word and Idiom cards side by side
  */
 @Composable
-private fun EnhancedQuickActionItem(
-    icon: ImageVector,
-    label: String,
-    subtitle: String,
-    color: Color,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
+private fun WordAndIdiomRow(
+    word: String,
+    pronunciation: String,
+    wordDefinition: String,
+    idiom: String,
+    idiomMeaning: String,
+    idiomExample: String,
+    onLearnClick: () -> Unit
 ) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isPressed by interactionSource.collectIsPressedAsState()
-
-    // Subtle press feedback - no bouncy spring
-    val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.97f else 1f,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioNoBouncy,
-            stiffness = Spring.StiffnessHigh
-        ),
-        label = "scale"
-    )
-
-    val elevation by animateDpAsState(
-        targetValue = if (isPressed) 1.dp else 2.dp,
-        animationSpec = tween(100),
-        label = "elevation"
-    )
-
-    Card(
-        onClick = onClick,
-        modifier = modifier
-            .scale(scale)
-            .semantics {
-                contentDescription = "$label: $subtitle"
-            },
-        colors = CardDefaults.cardColors(
-            containerColor = color.copy(alpha = 0.08f)
-        ),
-        shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = elevation),
-        interactionSource = interactionSource
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .defaultMinSize(minHeight = 48.dp)
-                .padding(vertical = 14.dp, horizontal = 8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            // Icon with subtle glow effect
-            Box(
-                modifier = Modifier
-                    .size(46.dp)
-                    .clip(CircleShape)
-                    .background(
-                        Brush.radialGradient(
-                            colors = listOf(
-                                color.copy(alpha = 0.25f),
-                                color.copy(alpha = 0.1f)
-                            )
-                        )
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = color,
-                    modifier = Modifier.size(24.dp)
-                )
-            }
+        // Word card
+        WordCard(
+            modifier = Modifier.weight(1f),
+            word = word,
+            pronunciation = pronunciation,
+            definition = wordDefinition,
+            onLearnClick = onLearnClick
+        )
 
-            Spacer(modifier = Modifier.height(10.dp))
-
-            // Primary label - larger, bolder
-            Text(
-                text = label,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface,
-                maxLines = 1
-            )
-
-            Spacer(modifier = Modifier.height(2.dp))
-
-            // Secondary label - smaller, muted opacity
-            Text(
-                text = subtitle,
-                style = MaterialTheme.typography.labelSmall,
-                color = color.copy(alpha = 0.8f),
-                fontWeight = FontWeight.Normal,
-                fontSize = 10.sp,
-                maxLines = 1
-            )
-        }
+        // Idiom card
+        IdiomCard(
+            modifier = Modifier.weight(1f),
+            idiom = idiom,
+            meaning = idiomMeaning,
+            example = idiomExample
+        )
     }
 }
 
+/**
+ * Word of the Day card
+ */
 @Composable
-private fun EnhancedProverbCard(
-    proverb: String,
-    meaning: String,
-    origin: String
+private fun WordCard(
+    modifier: Modifier = Modifier,
+    word: String,
+    pronunciation: String,
+    definition: String,
+    onLearnClick: () -> Unit
 ) {
-    ProdyCard(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        backgroundColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.4f)
+    var isLearned by remember { mutableStateOf(false) }
+
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        tonalElevation = 0.dp
     ) {
-        Column(modifier = Modifier.padding(20.dp)) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            // Header
             Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(32.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.tertiary.copy(alpha = 0.15f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Psychology,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.tertiary,
-                        modifier = Modifier.size(18.dp)
-                    )
-                }
                 Text(
-                    text = stringResource(R.string.proverb_of_the_day),
-                    style = MaterialTheme.typography.labelLarge,
+                    text = "WORD",
+                    style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.tertiary
+                    color = Color(0xFFE6B422),
+                    letterSpacing = 1.sp
+                )
+                Icon(
+                    imageVector = Icons.AutoMirrored.Outlined.MenuBook,
+                    contentDescription = null,
+                    tint = Color(0xFFE6B422).copy(alpha = 0.7f),
+                    modifier = Modifier.size(16.dp)
                 )
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
+            // Word
             Text(
-                text = proverb,
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onTertiaryContainer,
-                lineHeight = 24.sp
+                text = word,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+
+            // Pronunciation
+            if (pronunciation.isNotBlank()) {
+                Text(
+                    text = "/$pronunciation/",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 2.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Definition
+            Text(
+                text = definition,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Meaning in a highlighted box
-            Box(
+            // Learn button
+            Surface(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(MaterialTheme.colorScheme.tertiary.copy(alpha = 0.08f))
-                    .padding(12.dp)
+                    .clip(RoundedCornerShape(20.dp))
+                    .clickable {
+                        if (!isLearned) {
+                            isLearned = true
+                            onLearnClick()
+                        }
+                    },
+                shape = RoundedCornerShape(20.dp),
+                color = if (isLearned)
+                    MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
+                else
+                    MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                tonalElevation = 0.dp
             ) {
                 Text(
-                    text = meaning,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.9f)
-                )
-            }
-
-            if (origin.isNotBlank()) {
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "— $origin",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.6f),
-                    modifier = Modifier.align(Alignment.End)
+                    text = if (isLearned) "LEARNED!" else "LEARN +25",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(vertical = 10.dp),
+                    textAlign = TextAlign.Center
                 )
             }
         }
     }
 }
 
+/**
+ * Idiom of the Day card
+ */
 @Composable
-private fun EnhancedIdiomCard(
+private fun IdiomCard(
+    modifier: Modifier = Modifier,
     idiom: String,
     meaning: String,
     example: String
 ) {
-    ProdyCard(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        tonalElevation = 0.dp
     ) {
-        Column(modifier = Modifier.padding(20.dp)) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            // Header
             Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(32.dp)
-                        .clip(CircleShape)
-                        .background(MoodConfused.copy(alpha = 0.15f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Translate,
-                        contentDescription = null,
-                        tint = MoodConfused,
-                        modifier = Modifier.size(18.dp)
-                    )
-                }
                 Text(
-                    text = stringResource(R.string.idiom_of_the_day),
-                    style = MaterialTheme.typography.labelLarge,
+                    text = "IDIOM",
+                    style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.SemiBold,
-                    color = MoodConfused
+                    color = Color(0xFFB39DDB),
+                    letterSpacing = 1.sp
+                )
+                Icon(
+                    imageVector = Icons.Outlined.Translate,
+                    contentDescription = null,
+                    tint = Color(0xFFB39DDB).copy(alpha = 0.7f),
+                    modifier = Modifier.size(16.dp)
                 )
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
+            // Idiom
             Text(
                 text = idiom,
                 style = MaterialTheme.typography.titleMedium,
@@ -1115,608 +833,104 @@ private fun EnhancedIdiomCard(
 
             Spacer(modifier = Modifier.height(8.dp))
 
+            // Meaning
             Text(
                 text = meaning,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.85f)
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis
             )
 
+            // Example
             if (example.isNotBlank()) {
-                Spacer(modifier = Modifier.height(12.dp))
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-                        .padding(12.dp)
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "\"$example\"",
+                    style = MaterialTheme.typography.labelSmall,
+                    fontStyle = FontStyle.Italic,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        }
+    }
+}
+
+/**
+ * Proverb of the Day card
+ */
+@Composable
+private fun ProverbCard(
+    proverb: String,
+    origin: String
+) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp, vertical = 8.dp),
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        tonalElevation = 0.dp
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            // Icon container
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(Color(0xFF26A69A).copy(alpha = 0.15f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Psychology,
+                    contentDescription = null,
+                    tint = Color(0xFF26A69A),
+                    modifier = Modifier.size(22.dp)
+                )
+            }
+
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                // Header with origin
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.LightbulbCircle,
-                            contentDescription = null,
-                            tint = MoodMotivated,
-                            modifier = Modifier.size(16.dp)
-                        )
+                    Text(
+                        text = "PROVERB",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color(0xFF26A69A),
+                        letterSpacing = 1.sp
+                    )
+                    if (origin.isNotBlank()) {
                         Text(
-                            text = "\"$example\"",
-                            style = MaterialTheme.typography.bodySmall,
-                            fontStyle = FontStyle.Italic,
+                            text = origin,
+                            style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
-            }
-        }
-    }
-}
 
-/**
- * Premium Buddha's Thought Card - Hero-level wisdom display
- *
- * This is the unique selling point of Prody, featuring:
- * - Elegant serif typography (Playfair Display) for philosophical content
- * - Animated gradient background with subtle movement
- * - Decorative quote marks and visual hierarchy
- * - Share and save actions readily accessible
- * - Breathing/pulsing glow effect for meditative feel
- * - AI-generated wisdom with refresh capability
- * - "Why this" explanation (subtle, non-botty)
- */
-@Composable
-private fun EnhancedBuddhaThoughtCard(
-    thought: String,
-    explanation: String = "",
-    isAiGenerated: Boolean = false,
-    isLoading: Boolean = false,
-    canRefresh: Boolean = true,
-    onRefresh: () -> Unit = {}
-) {
-    val glowAlpha by animateFloatAsState(
-        targetValue = 0.45f,
-        animationSpec = tween(3500),
-        label = "glow_primary"
-    )
+                Spacer(modifier = Modifier.height(8.dp))
 
-    // Secondary accent glow - offset timing for depth
-    val accentGlowAlpha by animateFloatAsState(
-        targetValue = 0.35f,
-        animationSpec = tween(4000),
-        label = "glow_accent"
-    )
-
-    // Subtle scale breathing effect
-    val breathScale by animateFloatAsState(
-        targetValue = 1.02f,
-        animationSpec = tween(4000),
-        label = "breath_scale"
-    )
-
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp)
-    ) {
-        // Main card with gradient background
-        ProdyCard(
-            modifier = Modifier.fillMaxWidth(),
-            backgroundColor = Color.Transparent
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(
-                        Brush.linearGradient(
-                            colors = listOf(
-                                ProdyPrimary.copy(alpha = 0.12f),
-                                ProdyTertiary.copy(alpha = 0.08f),
-                                ProdyPrimary.copy(alpha = 0.06f)
-                            )
-                        )
-                    )
-            ) {
-                // Top-right decorative glow orb
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .size(120.dp)
-                        .offset(x = 40.dp, y = (-30).dp)
-                        .blur(40.dp)
-                        .alpha(glowAlpha)
-                        .background(ProdyTertiary, CircleShape)
-                )
-
-                // Bottom-left accent glow
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.BottomStart)
-                        .size(80.dp)
-                        .offset(x = (-20).dp, y = 20.dp)
-                        .blur(30.dp)
-                        .alpha(accentGlowAlpha)
-                        .background(GoldTier.copy(alpha = 0.6f), CircleShape)
-                )
-
-                // Decorative large quote mark (background)
+                // Proverb text
                 Text(
-                    text = "\u201C",
-                    style = MaterialTheme.typography.displayLarge.copy(
-                        fontSize = 120.sp,
-                        fontWeight = FontWeight.Light
+                    text = "\"$proverb\"",
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        fontFamily = PlayfairFamily,
+                        fontStyle = FontStyle.Italic
                     ),
-                    color = ProdyPrimary.copy(alpha = 0.06f),
-                    modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .offset(x = (-8).dp, y = (-40).dp)
-                )
-
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(24.dp)
-                ) {
-                    // Header with icon and title
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            // Animated icon container with glow
-                            Box(contentAlignment = Alignment.Center) {
-                                // Glow behind icon
-                                Box(
-                                    modifier = Modifier
-                                        .size(48.dp)
-                                        .scale(breathScale)
-                                        .blur(12.dp)
-                                        .alpha(glowAlpha * 0.8f)
-                                        .background(ProdyPrimary, CircleShape)
-                                )
-                                // Icon background
-                                Box(
-                                    modifier = Modifier
-                                        .size(44.dp)
-                                        .clip(CircleShape)
-                                        .background(
-                                            Brush.linearGradient(
-                                                colors = listOf(
-                                                    ProdyPrimary.copy(alpha = 0.25f),
-                                                    ProdyPrimary.copy(alpha = 0.15f)
-                                                )
-                                            )
-                                        )
-                                        .border(
-                                            width = 1.dp,
-                                            brush = Brush.linearGradient(
-                                                colors = listOf(
-                                                    ProdyPrimary.copy(alpha = 0.4f),
-                                                    ProdyPrimary.copy(alpha = 0.1f)
-                                                )
-                                            ),
-                                            shape = CircleShape
-                                        ),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Filled.SelfImprovement,
-                                        contentDescription = null,
-                                        tint = ProdyPrimary,
-                                        modifier = Modifier.size(24.dp)
-                                    )
-                                }
-                            }
-
-                            Column {
-                                Text(
-                                    text = "Buddha's Thought",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color = ProdyPrimary
-                                )
-                                Text(
-                                    text = "Daily Wisdom",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
-                                    letterSpacing = 1.sp
-                                )
-                            }
-                        }
-
-                        // Action buttons
-                        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                            // Refresh button with cooldown
-                            val refreshRotation by animateFloatAsState(
-                                targetValue = if (isLoading) 360f else 0f,
-                                animationSpec = if (isLoading) infiniteRepeatable(
-                                    animation = tween(1000, easing = LinearEasing),
-                                    repeatMode = RepeatMode.Restart
-                                ) else tween(0),
-                                label = "refresh_rotation"
-                            )
-
-                            IconButton(
-                                onClick = onRefresh,
-                                enabled = canRefresh && !isLoading,
-                                modifier = Modifier
-                                    .size(36.dp)
-                                    .clip(CircleShape)
-                                    .background(
-                                        if (canRefresh && !isLoading)
-                                            MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
-                                        else
-                                            MaterialTheme.colorScheme.surface.copy(alpha = 0.3f)
-                                    )
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.Refresh,
-                                    contentDescription = "Refresh wisdom",
-                                    tint = if (canRefresh && !isLoading)
-                                        MaterialTheme.colorScheme.primary
-                                    else
-                                        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                                    modifier = Modifier
-                                        .size(18.dp)
-                                        .rotate(refreshRotation)
-                                )
-                            }
-                            // Share button
-                            IconButton(
-                                onClick = { /* Share functionality */ },
-                                modifier = Modifier
-                                    .size(36.dp)
-                                    .clip(CircleShape)
-                                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.5f))
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Outlined.Share,
-                                    contentDescription = "Share thought",
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.size(18.dp)
-                                )
-                            }
-                            // Save/bookmark button
-                            IconButton(
-                                onClick = { /* Save functionality */ },
-                                modifier = Modifier
-                                    .size(36.dp)
-                                    .clip(CircleShape)
-                                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.5f))
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Outlined.BookmarkBorder,
-                                    contentDescription = "Save thought",
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.size(18.dp)
-                                )
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    // Main wisdom text with serif typography
-                    Text(
-                        text = thought,
-                        style = WisdomHeroStyle,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        textAlign = TextAlign.Start,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    Spacer(modifier = Modifier.height(20.dp))
-
-                    // "Why this" explanation (subtle, non-botty)
-                    if (explanation.isNotBlank()) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f))
-                                .padding(10.dp)
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Outlined.Lightbulb,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                                    modifier = Modifier.size(14.dp)
-                                )
-                                Text(
-                                    text = explanation,
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
-                                )
-                            }
-                        }
-                        Spacer(modifier = Modifier.height(12.dp))
-                    }
-
-                    // Decorative bottom divider with gradient
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(2.dp)
-                            .background(
-                                Brush.horizontalGradient(
-                                    colors = listOf(
-                                        Color.Transparent,
-                                        ProdyPrimary.copy(alpha = 0.3f),
-                                        GoldTier.copy(alpha = 0.4f),
-                                        ProdyPrimary.copy(alpha = 0.3f),
-                                        Color.Transparent
-                                    )
-                                )
-                            )
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Bottom attribution and meditation prompt
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        // Meditation timer suggestion
-                        Surface(
-                            color = ProdyPrimary.copy(alpha = 0.08f),
-                            shape = RoundedCornerShape(12.dp)
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(6.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Outlined.Timer,
-                                    contentDescription = null,
-                                    tint = ProdyPrimary,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Text(
-                                    text = "Reflect for 2 min",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = ProdyPrimary,
-                                    fontWeight = FontWeight.Medium
-                                )
-                            }
-                        }
-
-                        // Point reward
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.Stars,
-                                contentDescription = null,
-                                tint = GoldTier,
-                                modifier = Modifier.size(14.dp)
-                            )
-                            Text(
-                                text = "+15 XP daily",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = GoldTier.copy(alpha = 0.9f),
-                                fontWeight = FontWeight.Medium
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-/**
- * Compact Weekly Progress Strip - Condensed horizontal stat display
- *
- * Features:
- * - Horizontal layout saves vertical space
- * - Animated counters with smooth entry
- * - Color-coded stats for quick scanning
- * - Progress indicator for weekly goal
- */
-@Composable
-private fun WeeklyProgressCard(
-    journalEntriesThisWeek: Int,
-    wordsLearnedThisWeek: Int,
-    daysActiveThisWeek: Int
-) {
-    var isAnimated by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) {
-        delay(400)
-        isAnimated = true
-    }
-
-    val weekProgress = daysActiveThisWeek / 7f
-    val animatedProgress by animateFloatAsState(
-        targetValue = if (isAnimated) weekProgress else 0f,
-        animationSpec = tween(1200, easing = FastOutSlowInEasing),
-        label = "week_progress"
-    )
-
-    ProdyCard(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        backgroundColor = MaterialTheme.colorScheme.surface
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            // Header with compact progress bar
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Insights,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Text(
-                        text = "This Week",
-                        style = MaterialTheme.typography.labelLarge,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-
-                // Compact progress indicator
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .width(60.dp)
-                            .height(6.dp)
-                            .clip(RoundedCornerShape(3.dp))
-                            .background(MaterialTheme.colorScheme.surfaceVariant)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth(animatedProgress)
-                                .fillMaxHeight()
-                                .clip(RoundedCornerShape(3.dp))
-                                .background(
-                                    Brush.horizontalGradient(
-                                        colors = listOf(
-                                            MaterialTheme.colorScheme.primary,
-                                            MoodGrateful
-                                        )
-                                    )
-                                )
-                        )
-                    }
-                    Text(
-                        text = "$daysActiveThisWeek/7",
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Horizontal stat strip - compact single row
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                CompactStatItem(
-                    value = journalEntriesThisWeek,
-                    label = "Entries",
-                    icon = Icons.Outlined.Book,
-                    color = MoodCalm,
-                    isAnimated = isAnimated
-                )
-
-                // Subtle divider
-                Box(
-                    modifier = Modifier
-                        .width(1.dp)
-                        .height(32.dp)
-                        .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                )
-
-                CompactStatItem(
-                    value = wordsLearnedThisWeek,
-                    label = "Words",
-                    icon = Icons.Outlined.School,
-                    color = MoodMotivated,
-                    isAnimated = isAnimated
-                )
-
-                // Subtle divider
-                Box(
-                    modifier = Modifier
-                        .width(1.dp)
-                        .height(32.dp)
-                        .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                )
-
-                CompactStatItem(
-                    value = daysActiveThisWeek,
-                    label = "Active",
-                    icon = Icons.Outlined.CalendarMonth,
-                    color = MoodGrateful,
-                    isAnimated = isAnimated
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
-        }
-    }
-}
-
-/**
- * Compact Stat Item - Horizontal inline stat display
- */
-@Composable
-private fun CompactStatItem(
-    value: Int,
-    label: String,
-    icon: ImageVector,
-    color: Color,
-    isAnimated: Boolean
-) {
-    val animatedValue by animateIntAsState(
-        targetValue = if (isAnimated) value else 0,
-        animationSpec = tween(1000, easing = FastOutSlowInEasing),
-        label = "stat_value"
-    )
-
-    val alpha by animateFloatAsState(
-        targetValue = if (isAnimated) 1f else 0f,
-        animationSpec = tween(600),
-        label = "alpha"
-    )
-
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier.alpha(alpha)
-    ) {
-        Box(
-            modifier = Modifier
-                .size(32.dp)
-                .clip(CircleShape)
-                .background(color.copy(alpha = 0.12f)),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = color,
-                modifier = Modifier.size(16.dp)
-            )
-        }
-
-        Column {
-            Text(
-                text = animatedValue.toString(),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = color
-            )
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontSize = 10.sp
-            )
         }
     }
 }
@@ -1729,28 +943,5 @@ private fun getGreeting(): String {
         hour < 12 -> stringResource(R.string.good_morning)
         hour < 17 -> stringResource(R.string.good_afternoon)
         else -> stringResource(R.string.good_evening)
-    }
-}
-
-private fun formatNumber(number: Int): String {
-    return when {
-        number >= 1000000 -> String.format("%.1fM", number / 1000000.0)
-        number >= 1000 -> String.format("%.1fK", number / 1000.0)
-        else -> number.toString()
-    }
-}
-
-private fun getLevelFromPoints(points: Int): Int {
-    return when {
-        points >= 10000 -> 10
-        points >= 7500 -> 9
-        points >= 5000 -> 8
-        points >= 3500 -> 7
-        points >= 2500 -> 6
-        points >= 1500 -> 5
-        points >= 1000 -> 4
-        points >= 500 -> 3
-        points >= 200 -> 2
-        else -> 1
     }
 }
