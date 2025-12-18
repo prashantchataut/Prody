@@ -102,39 +102,35 @@ class MainActivity : ComponentActivity() {
 
         // Use mutable state to update UI when preferences are loaded
         var isOnboardingCompleted by mutableStateOf<Boolean?>(null)
-        var initialThemeMode by mutableStateOf("system")
 
-        // Keep splash screen visible until preferences are loaded
+        // Keep splash screen visible until the essential onboarding status is loaded.
         splashScreen.setKeepOnScreenCondition { isOnboardingCompleted == null }
 
-        // Load preferences asynchronously and concurrently to avoid blocking the main thread.
+        // Load ONLY the essential preference to unblock the splash screen.
+        // The theme is loaded asynchronously in setContent and will update when ready.
         lifecycleScope.launch {
             try {
-                // Concurrently collect the first emission from both flows. DataStore is main-safe.
-                val (onboardingResult, themeResult) = kotlinx.coroutines.flow.combine(
-                    preferencesManager.onboardingCompleted,
-                    preferencesManager.themeMode
-                ) { onboarding, theme -> onboarding to theme }.first()
-                initialThemeMode = themeResult
-                isOnboardingCompleted = onboardingResult
+                isOnboardingCompleted = preferencesManager.onboardingCompleted.first()
             } catch (e: Exception) {
-                // Default values if preferences can't be read
-                android.util.Log.e("MainActivity", "Failed to load preferences", e)
-                initialThemeMode = "system"
+                // If preferences fail, default to showing onboarding.
+                android.util.Log.e("MainActivity", "Failed to load onboarding status", e)
                 isOnboardingCompleted = false
             }
         }
 
         setContent {
-            // Wait until preferences are loaded
+            // Wait until the onboarding status is loaded before showing the UI.
             val onboardingDone = isOnboardingCompleted
             if (onboardingDone == null) {
-                // Show nothing while loading (splash screen is still visible)
+                // While this is null, the splash screen is kept visible.
+                // We return here to prevent the UI from composing unnecessarily.
                 return@setContent
             }
 
+            // Asynchronously collect the theme mode. It will default to "system" and then
+            // update the UI automatically when the actual preference is loaded.
             val currentThemeModeString by preferencesManager.themeMode.collectAsStateWithLifecycle(
-                initialValue = initialThemeMode
+                initialValue = "system"
             )
 
             val themeModeState = when (currentThemeModeString.lowercase()) {
