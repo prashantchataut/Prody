@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.LocalFireDepartment
 import androidx.compose.material.icons.filled.Stars
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -800,7 +801,7 @@ fun StreakCounter(
                         .background(StreakFire, CircleShape)
                 )
 
-                // Flame icon would go here
+                // Flame icon
                 Box(
                     modifier = Modifier
                         .size(32.dp)
@@ -813,9 +814,11 @@ fun StreakCounter(
                         ),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = "🔥",
-                        fontSize = 18.sp
+                    Icon(
+                        imageVector = Icons.Filled.LocalFireDepartment,
+                        contentDescription = "Streak fire",
+                        tint = Color.White,
+                        modifier = Modifier.size(18.dp)
                     )
                 }
             }
