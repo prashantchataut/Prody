@@ -8,38 +8,46 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.*
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.prody.prashant.ui.theme.PoppinsFamily
 import kotlinx.coroutines.launch
-import kotlin.math.PI
-import kotlin.math.cos
-import kotlin.math.sin
 
 // =============================================================================
-// COLOR PALETTE - Prody Onboarding Design System
+// PRODY ONBOARDING - PIXEL-PERFECT IMPLEMENTATION
+// =============================================================================
+// A sophisticated 6-screen onboarding flow featuring:
+// - Dark & Energetic Minimalism aesthetic
+// - Custom components: Logo, Pager Indicator, Buttons
+// - Canvas-drawn concentric circles background
+// - Full Light/Dark mode support
+// =============================================================================
+
+// =============================================================================
+// COLOR PALETTE - Exact hex values from design specifications
 // =============================================================================
 
 // Light Mode Colors
@@ -66,21 +74,19 @@ private val DarkProgressBarInactive = Color(0xFF5A706F)
 private val DarkDivider = Color(0xFF404B4A)
 private val DarkSubtleLines = Color(0xFF2A3A38)
 
-// Shared Accent Color
+// Shared Accent Color - Vibrant Neon Green
 private val AccentGreen = Color(0xFF36F97F)
 private val ButtonTextDark = Color(0xFF000000)
 
-// Logo Colors
-private val LogoContainerDark = Color(0xFF1C1C1E)
-private val LogoContainerLight = Color(0xFFE8EBE9)
+// Logo Container Colors
+private val LogoContainerDark = Color(0xFF1C3533)
+private val LogoContainerLight = Color(0xFFFFFFFF)
+private val LogoContainerStroke = Color(0xFF2A4240)
 
 // =============================================================================
 // DATA MODEL
 // =============================================================================
 
-/**
- * Represents a single onboarding page with its content
- */
 private enum class OnboardingPageType {
     WELCOME,
     JOURNALING,
@@ -104,7 +110,6 @@ fun OnboardingScreen(
     val coroutineScope = rememberCoroutineScope()
     val isDarkTheme = isSystemInDarkTheme()
 
-    // Theme-aware colors
     val backgroundColor = if (isDarkTheme) DarkBackground else LightBackground
 
     Box(
@@ -140,6 +145,11 @@ fun OnboardingScreen(
                             pagerState.animateScrollToPage(5)
                         }
                     },
+                    onBack = {
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(page - 1)
+                        }
+                    },
                     onContinue = {
                         coroutineScope.launch {
                             pagerState.animateScrollToPage(page + 1)
@@ -165,11 +175,6 @@ fun OnboardingScreen(
                     isDarkTheme = isDarkTheme,
                     currentPage = page,
                     totalPages = 6,
-                    onSkip = {
-                        coroutineScope.launch {
-                            pagerState.animateScrollToPage(5)
-                        }
-                    },
                     onStartQuest = {
                         coroutineScope.launch {
                             pagerState.animateScrollToPage(page + 1)
@@ -240,7 +245,7 @@ private fun WelcomeScreen(
             .fillMaxSize()
             .background(backgroundColor)
     ) {
-        // Background concentric circles
+        // Background concentric circles - centered behind logo
         ConcentricCirclesBackground(
             modifier = Modifier.fillMaxSize(),
             color = subtleLines
@@ -252,15 +257,15 @@ private fun WelcomeScreen(
                 .padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.weight(0.15f))
+            Spacer(modifier = Modifier.weight(0.18f))
 
-            // Logo with green dot
+            // Prody Logo with green accent dot
             ProdyLogo(
                 isDarkTheme = isDarkTheme,
-                modifier = Modifier.size(68.dp)
+                modifier = Modifier.size(100.dp)
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(28.dp))
 
             // Brand Title "Prody."
             Text(
@@ -268,13 +273,13 @@ private fun WelcomeScreen(
                 style = TextStyle(
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 36.sp,
+                    fontSize = 42.sp,
                     letterSpacing = (-0.5).sp
                 ),
                 color = textPrimary
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             // Tagline
             Text(
@@ -283,13 +288,13 @@ private fun WelcomeScreen(
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Normal,
                     fontSize = 16.sp,
-                    lineHeight = 24.sp
+                    lineHeight = 26.sp
                 ),
                 color = textSecondary,
                 textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.weight(0.35f))
+            Spacer(modifier = Modifier.weight(0.38f))
 
             // Pagination Indicators
             ProdyPagerIndicator(
@@ -298,9 +303,9 @@ private fun WelcomeScreen(
                 isDarkTheme = isDarkTheme
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(28.dp))
 
-            // Get Started Button
+            // Get Started Button - Full width pill with arrow
             ProdyOnboardingButton(
                 text = "Get Started",
                 onClick = onNext,
@@ -308,7 +313,7 @@ private fun WelcomeScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             // Already have an account? Log in
             Row(
@@ -336,7 +341,7 @@ private fun WelcomeScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(40.dp))
         }
     }
 }
@@ -351,13 +356,13 @@ private fun JournalingScreen(
     currentPage: Int,
     totalPages: Int,
     onSkip: () -> Unit,
+    onBack: () -> Unit,
     onContinue: () -> Unit
 ) {
     val backgroundColor = if (isDarkTheme) DarkBackground else LightBackground
     val cardBackground = if (isDarkTheme) DarkCardBackground else LightCardBackground
     val textPrimary = if (isDarkTheme) DarkTextPrimary else LightTextPrimary
     val textSecondary = if (isDarkTheme) DarkTextSecondary else LightTextSecondary
-    val textTertiary = if (isDarkTheme) DarkTextTertiary else LightTextTertiary
 
     Box(
         modifier = Modifier
@@ -371,17 +376,18 @@ private fun JournalingScreen(
         ) {
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Top Header with pagination and Skip
-            OnboardingTopHeader(
+            // Top Header with back arrow, progress bar, and Skip
+            JournalingTopHeader(
                 currentPage = currentPage,
                 totalPages = totalPages,
                 isDarkTheme = isDarkTheme,
+                onBack = onBack,
                 onSkip = onSkip
             )
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Main Journaling Card
+            // Main Journaling Card with gradient image
             JournalingInsightCard(
                 isDarkTheme = isDarkTheme,
                 modifier = Modifier.fillMaxWidth()
@@ -389,44 +395,162 @@ private fun JournalingScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Headline
+            // Headline with "Mind" highlighted in green
             Text(
-                text = "Unlock Your Mind",
+                text = buildAnnotatedString {
+                    append("Unlock Your ")
+                    withStyle(SpanStyle(color = AccentGreen)) {
+                        append("Mind")
+                    }
+                },
                 style = TextStyle(
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Bold,
                     fontSize = 28.sp,
                     lineHeight = 36.sp
                 ),
-                color = textPrimary
+                color = textPrimary,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
             // Body text
             Text(
-                text = "Experience journaling reinvented. Let AI-powered prompts guide your thoughts and discover emotional patterns.",
+                text = "Prody uses on-device AI to turn your daily ramblings into actionable wisdom and future insights, instantly.",
                 style = TextStyle(
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Normal,
-                    fontSize = 16.sp,
+                    fontSize = 15.sp,
                     lineHeight = 24.sp
                 ),
-                color = textSecondary
+                color = textSecondary,
+                textAlign = TextAlign.Center
             )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Feature chips
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                FeatureChip(
+                    icon = Icons.Outlined.Psychology,
+                    label = "Deep Reflection",
+                    isDarkTheme = isDarkTheme
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                FeatureChip(
+                    icon = Icons.Outlined.TrendingUp,
+                    label = "Growth Tracking",
+                    isDarkTheme = isDarkTheme
+                )
+            }
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // Continue Button
+            // Start Journaling Button
             ProdyOnboardingButton(
-                text = "Continue",
+                text = "Start Journaling",
                 onClick = onContinue,
                 showArrow = true,
                 modifier = Modifier.fillMaxWidth()
             )
 
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Already have an account? Log in
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Already have an account? ",
+                    style = TextStyle(
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.Normal,
+                        fontSize = 14.sp
+                    ),
+                    color = textSecondary
+                )
+                Text(
+                    text = "Log in",
+                    style = TextStyle(
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 14.sp
+                    ),
+                    color = AccentGreen,
+                    modifier = Modifier.clickable { }
+                )
+            }
+
             Spacer(modifier = Modifier.height(32.dp))
         }
+    }
+}
+
+@Composable
+private fun JournalingTopHeader(
+    currentPage: Int,
+    totalPages: Int,
+    isDarkTheme: Boolean,
+    onBack: () -> Unit,
+    onSkip: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val textSecondary = if (isDarkTheme) DarkTextSecondary else LightTextSecondary
+    val progressBarBg = if (isDarkTheme) DarkInactiveDot else LightInactiveDot
+
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // Back arrow
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+            contentDescription = "Back",
+            tint = textSecondary,
+            modifier = Modifier
+                .size(24.dp)
+                .clickable { onBack() }
+        )
+
+        // Progress bar
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.weight(1f).padding(horizontal = 16.dp)
+        ) {
+            repeat(totalPages) { index ->
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(4.dp)
+                        .clip(RoundedCornerShape(2.dp))
+                        .background(
+                            if (index <= currentPage) AccentGreen else progressBarBg
+                        )
+                )
+            }
+        }
+
+        // Skip button
+        Text(
+            text = "Skip",
+            style = TextStyle(
+                fontFamily = PoppinsFamily,
+                fontWeight = FontWeight.Medium,
+                fontSize = 14.sp
+            ),
+            color = textSecondary,
+            modifier = Modifier.clickable { onSkip() }
+        )
     }
 }
 
@@ -436,153 +560,143 @@ private fun JournalingInsightCard(
     modifier: Modifier = Modifier
 ) {
     val cardBackground = if (isDarkTheme) DarkCardBackground else LightCardBackground
-    val textPrimary = if (isDarkTheme) DarkTextPrimary else LightTextPrimary
-    val textSecondary = if (isDarkTheme) DarkTextSecondary else LightTextSecondary
-    val textTertiary = if (isDarkTheme) DarkTextTertiary else LightTextTertiary
 
     Column(
         modifier = modifier
-            .clip(RoundedCornerShape(16.dp))
+            .clip(RoundedCornerShape(20.dp))
             .background(cardBackground)
     ) {
-        // Abstract wavy image placeholder (drawn as gradient)
+        // Abstract wavy gradient image
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(140.dp)
+                .height(200.dp)
                 .drawBehind {
-                    val colors = listOf(
-                        Color(0xFF4A7C59),
-                        Color(0xFF8FBC8F),
-                        Color(0xFFFFFFFF),
-                        Color(0xFF98D8AA)
-                    )
-                    drawRect(
-                        brush = Brush.linearGradient(
-                            colors = colors,
-                            start = Offset(0f, size.height),
-                            end = Offset(size.width, 0f)
+                    // Dark mode: brownish diagonal lines pattern
+                    // Light mode: greenish wavy gradient
+                    if (isDarkTheme) {
+                        // Dark diagonal streaks
+                        val colors = listOf(
+                            Color(0xFF1A2E2C),
+                            Color(0xFF2A3E3C),
+                            Color(0xFF3A4E4C),
+                            Color(0xFF2A3E3C),
+                            Color(0xFF1A2E2C)
                         )
-                    )
-                }
-        )
-
-        // Card Content
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            // AI Generated tag and Today
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // AI Generated Tag
-                Row(
-                    modifier = Modifier
-                        .background(
-                            color = Color(0xFFE0F8E5),
-                            shape = RoundedCornerShape(4.dp)
+                        drawRect(
+                            brush = Brush.linearGradient(
+                                colors = colors,
+                                start = Offset(0f, size.height),
+                                end = Offset(size.width, 0f)
+                            )
                         )
-                        .padding(horizontal = 8.dp, vertical = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Bolt,
-                        contentDescription = null,
-                        tint = AccentGreen,
-                        modifier = Modifier.size(12.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = "AI GENERATED",
-                        style = TextStyle(
-                            fontFamily = PoppinsFamily,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 10.sp,
-                            letterSpacing = 0.5.sp
-                        ),
-                        color = AccentGreen
-                    )
-                }
-
-                Text(
-                    text = "Today",
-                    style = TextStyle(
-                        fontFamily = PoppinsFamily,
-                        fontWeight = FontWeight.Normal,
-                        fontSize = 12.sp
-                    ),
-                    color = textTertiary
-                )
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Daily Insight Title
-            Text(
-                text = "Daily Insight",
-                style = TextStyle(
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 16.sp
-                ),
-                color = textPrimary
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Quote
-            Text(
-                text = "What small moment brought you joy today?",
-                style = TextStyle(
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Normal,
-                    fontSize = 14.sp,
-                    lineHeight = 20.sp,
-                    fontStyle = FontStyle.Italic
-                ),
-                color = textSecondary
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Input field placeholder
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .drawBehind {
-                        drawLine(
-                            color = Color(0xFFD0D8D6),
-                            start = Offset(0f, size.height),
-                            end = Offset(size.width, size.height),
-                            strokeWidth = 1.dp.toPx()
+                    } else {
+                        // Light wavy greens
+                        val colors = listOf(
+                            Color(0xFF4A7C59),
+                            Color(0xFF8FBC8F),
+                            Color(0xFFD4E5D4),
+                            Color(0xFFFFFFFF),
+                            Color(0xFF98D8AA)
+                        )
+                        drawRect(
+                            brush = Brush.linearGradient(
+                                colors = colors,
+                                start = Offset(0f, size.height),
+                                end = Offset(size.width, 0f)
+                            )
                         )
                     }
+                }
+        ) {
+            // Analysis Complete badge at bottom
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 16.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(if (isDarkTheme) DarkCardBackground.copy(alpha = 0.9f) else LightCardBackground.copy(alpha = 0.95f))
+                    .padding(horizontal = 16.dp, vertical = 10.dp)
             ) {
                 Row(
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
+                    // Sparkle icon in green circle
                     Box(
                         modifier = Modifier
-                            .width(2.dp)
-                            .height(20.dp)
-                            .background(AccentGreen)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = "Type your thoughts...",
-                        style = TextStyle(
-                            fontFamily = PoppinsFamily,
-                            fontWeight = FontWeight.Normal,
-                            fontSize = 14.sp,
-                            fontStyle = FontStyle.Italic
-                        ),
-                        color = textTertiary,
-                        modifier = Modifier.padding(vertical = 8.dp)
-                    )
+                            .size(36.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(AccentGreen.copy(alpha = 0.15f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.AutoAwesome,
+                            contentDescription = null,
+                            tint = AccentGreen,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                    Column {
+                        Text(
+                            text = "ANALYSIS COMPLETE",
+                            style = TextStyle(
+                                fontFamily = PoppinsFamily,
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 10.sp,
+                                letterSpacing = 0.5.sp
+                            ),
+                            color = AccentGreen
+                        )
+                        Text(
+                            text = "Insight Generated",
+                            style = TextStyle(
+                                fontFamily = PoppinsFamily,
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 14.sp
+                            ),
+                            color = if (isDarkTheme) DarkTextPrimary else LightTextPrimary
+                        )
+                    }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun FeatureChip(
+    icon: ImageVector,
+    label: String,
+    isDarkTheme: Boolean
+) {
+    val chipBg = if (isDarkTheme) DarkCardBackground else LightCardBackground
+    val textColor = if (isDarkTheme) DarkTextPrimary else LightTextPrimary
+
+    Surface(
+        shape = RoundedCornerShape(24.dp),
+        color = chipBg
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = AccentGreen,
+                modifier = Modifier.size(18.dp)
+            )
+            Text(
+                text = label,
+                style = TextStyle(
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 13.sp
+                ),
+                color = textColor
+            )
         }
     }
 }
@@ -600,10 +714,8 @@ private fun GamificationLeaderboardScreen(
     onContinue: () -> Unit
 ) {
     val backgroundColor = if (isDarkTheme) DarkBackground else LightBackground
-    val cardBackground = if (isDarkTheme) DarkCardBackground else LightCardBackground
     val textPrimary = if (isDarkTheme) DarkTextPrimary else LightTextPrimary
     val textSecondary = if (isDarkTheme) DarkTextSecondary else LightTextSecondary
-    val iconCircleBg = if (isDarkTheme) DarkIconCircleBackground else LightIconCircleBackground
 
     Box(
         modifier = Modifier
@@ -628,7 +740,7 @@ private fun GamificationLeaderboardScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Gamification Graphic Container
+            // Gamification Graphic Container with grid and leaderboard
             LeaderboardGraphicCard(
                 isDarkTheme = isDarkTheme,
                 modifier = Modifier.fillMaxWidth()
@@ -645,7 +757,9 @@ private fun GamificationLeaderboardScreen(
                     fontSize = 26.sp,
                     lineHeight = 34.sp
                 ),
-                color = textPrimary
+                color = textPrimary,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -659,10 +773,11 @@ private fun GamificationLeaderboardScreen(
                     fontSize = 15.sp,
                     lineHeight = 24.sp
                 ),
-                color = textSecondary
+                color = textSecondary,
+                textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(28.dp))
 
             // Feature List
             FeatureListItem(
@@ -676,8 +791,8 @@ private fun GamificationLeaderboardScreen(
 
             FeatureListItem(
                 icon = Icons.Default.EmojiEvents,
-                title = "Unlock Badges",
-                description = "Collect achievements and show off your progress.",
+                title = "Badges",
+                description = "Unlock exclusive milestones as you grow.",
                 isDarkTheme = isDarkTheme
             )
 
@@ -685,8 +800,8 @@ private fun GamificationLeaderboardScreen(
 
             FeatureListItem(
                 icon = Icons.Default.BarChart,
-                title = "Track Growth",
-                description = "Visualize your journey with detailed analytics.",
+                title = "Compete",
+                description = "See where you stand among peers.",
                 isDarkTheme = isDarkTheme
             )
 
@@ -710,60 +825,82 @@ private fun LeaderboardGraphicCard(
     isDarkTheme: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val cardBackground = if (isDarkTheme) Color(0xFF1F3A38) else Color(0xFFE0E7E6)
-    val gridColor = if (isDarkTheme) Color(0xFF2A4A48) else Color(0xFFD0D8D6)
-    val textPrimary = if (isDarkTheme) DarkTextPrimary else LightTextPrimary
-    val textSecondary = if (isDarkTheme) DarkTextSecondary else LightTextSecondary
-    val progressInactive = if (isDarkTheme) DarkProgressBarInactive else LightProgressBarInactive
+    val cardBackground = if (isDarkTheme) Color(0xFF1F3A38) else Color(0xFFE8EFEE)
+    val gridColor = if (isDarkTheme) Color(0xFF2A4A48) else Color(0xFFD8E0DE)
 
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(24.dp))
             .background(cardBackground)
+            .drawBehind {
+                // Draw subtle grid pattern
+                val gridSize = 40.dp.toPx()
+                val strokeWidth = 1.dp.toPx()
+                // Horizontal lines
+                var y = gridSize
+                while (y < size.height) {
+                    drawLine(
+                        color = gridColor,
+                        start = Offset(0f, y),
+                        end = Offset(size.width, y),
+                        strokeWidth = strokeWidth
+                    )
+                    y += gridSize
+                }
+                // Vertical lines
+                var x = gridSize
+                while (x < size.width) {
+                    drawLine(
+                        color = gridColor,
+                        start = Offset(x, 0f),
+                        end = Offset(x, size.height),
+                        strokeWidth = strokeWidth
+                    )
+                    x += gridSize
+                }
+            }
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Trophy Icon in circle
-        Box(
-            modifier = Modifier
-                .size(68.dp)
-                .clip(CircleShape)
-                .background(AccentGreen),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = Icons.Default.EmojiEvents,
-                contentDescription = "Trophy",
-                tint = ButtonTextDark,
-                modifier = Modifier.size(36.dp)
-            )
+        // Trophy Icon in green circle with star
+        Box(contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier
+                    .size(72.dp)
+                    .clip(CircleShape)
+                    .background(AccentGreen),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.EmojiEvents,
+                    contentDescription = "Trophy",
+                    tint = ButtonTextDark,
+                    modifier = Modifier.size(40.dp)
+                )
+            }
+            // Small star badge at top-right
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .offset(x = 4.dp, y = (-4).dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Star,
+                    contentDescription = null,
+                    tint = AccentGreen,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
         }
 
-        // Small star badge
-        Box(
-            modifier = Modifier
-                .offset(x = 28.dp, y = (-60).dp)
-                .size(20.dp)
-                .clip(CircleShape)
-                .background(AccentGreen),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = Icons.Default.Star,
-                contentDescription = null,
-                tint = ButtonTextDark,
-                modifier = Modifier.size(12.dp)
-            )
-        }
+        Spacer(modifier = Modifier.height(20.dp))
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Mini Leaderboard
-        LeaderboardRow(rank = 1, score = "2450", isActive = true, isDarkTheme = isDarkTheme)
+        // Mini Leaderboard rows
+        LeaderboardRow(rank = 1, score = "2,450 XP", isActive = true, isDarkTheme = isDarkTheme)
         Spacer(modifier = Modifier.height(8.dp))
-        LeaderboardRow(rank = 2, score = "1820", isActive = false, isDarkTheme = isDarkTheme)
+        LeaderboardRow(rank = 2, score = "1,820", isActive = false, isDarkTheme = isDarkTheme)
         Spacer(modifier = Modifier.height(8.dp))
-        LeaderboardRow(rank = 3, score = "1450", isActive = false, isDarkTheme = isDarkTheme)
+        LeaderboardRow(rank = 3, score = "1,450", isActive = false, isDarkTheme = isDarkTheme)
     }
 }
 
@@ -775,17 +912,30 @@ private fun LeaderboardRow(
     isDarkTheme: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val rowBackground = if (isDarkTheme) Color(0xFF2A4A48) else Color(0xFFD0E0DD)
+    val rowBackground = if (isActive) {
+        if (isDarkTheme) Color(0xFF2A4A48) else Color(0xFFD0E0DD)
+    } else {
+        Color.Transparent
+    }
     val textColor = if (isDarkTheme) DarkTextSecondary else LightTextSecondary
     val progressColor = if (isActive) AccentGreen else (if (isDarkTheme) DarkProgressBarInactive else LightProgressBarInactive)
-    val progressFraction = when (rank) { 1 -> 0.9f; 2 -> 0.7f; else -> 0.5f }
+    val progressBg = if (isDarkTheme) Color(0xFF3A5A58) else Color(0xFFBBC8C6)
+    val progressFraction = when (rank) { 1 -> 0.85f; 2 -> 0.65f; else -> 0.45f }
+    val scoreColor = if (isActive) AccentGreen else textColor
 
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(8.dp))
+            .clip(RoundedCornerShape(12.dp))
             .background(rowBackground)
-            .padding(horizontal = 12.dp, vertical = 8.dp),
+            .then(
+                if (isActive) Modifier.border(
+                    width = 1.dp,
+                    color = AccentGreen.copy(alpha = 0.3f),
+                    shape = RoundedCornerShape(12.dp)
+                ) else Modifier
+            )
+            .padding(horizontal = 14.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         // Rank number
@@ -796,8 +946,8 @@ private fun LeaderboardRow(
                 fontWeight = FontWeight.Bold,
                 fontSize = 14.sp
             ),
-            color = textColor,
-            modifier = Modifier.width(20.dp)
+            color = if (isActive) AccentGreen else textColor,
+            modifier = Modifier.width(24.dp)
         )
 
         // Person icon
@@ -805,10 +955,10 @@ private fun LeaderboardRow(
             imageVector = Icons.Default.Person,
             contentDescription = null,
             tint = textColor,
-            modifier = Modifier.size(16.dp)
+            modifier = Modifier.size(18.dp)
         )
 
-        Spacer(modifier = Modifier.width(8.dp))
+        Spacer(modifier = Modifier.width(12.dp))
 
         // Progress bar
         Box(
@@ -816,7 +966,7 @@ private fun LeaderboardRow(
                 .weight(1f)
                 .height(8.dp)
                 .clip(RoundedCornerShape(4.dp))
-                .background(if (isDarkTheme) Color(0xFF3A5A58) else Color(0xFFBBC8C6))
+                .background(progressBg)
         ) {
             Box(
                 modifier = Modifier
@@ -827,7 +977,7 @@ private fun LeaderboardRow(
             )
         }
 
-        Spacer(modifier = Modifier.width(8.dp))
+        Spacer(modifier = Modifier.width(12.dp))
 
         // Score
         Text(
@@ -835,9 +985,9 @@ private fun LeaderboardRow(
             style = TextStyle(
                 fontFamily = PoppinsFamily,
                 fontWeight = FontWeight.SemiBold,
-                fontSize = 12.sp
+                fontSize = 14.sp
             ),
-            color = textColor
+            color = scoreColor
         )
     }
 }
@@ -861,8 +1011,8 @@ private fun FeatureListItem(
         // Icon in rounded square
         Box(
             modifier = Modifier
-                .size(40.dp)
-                .clip(RoundedCornerShape(10.dp))
+                .size(44.dp)
+                .clip(RoundedCornerShape(12.dp))
                 .background(iconCircleBg),
             contentAlignment = Alignment.Center
         ) {
@@ -870,11 +1020,11 @@ private fun FeatureListItem(
                 imageVector = icon,
                 contentDescription = null,
                 tint = AccentGreen,
-                modifier = Modifier.size(20.dp)
+                modifier = Modifier.size(22.dp)
             )
         }
 
-        Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(14.dp))
 
         Column {
             Text(
@@ -882,7 +1032,7 @@ private fun FeatureListItem(
                 style = TextStyle(
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.SemiBold,
-                    fontSize = 15.sp
+                    fontSize = 16.sp
                 ),
                 color = textPrimary
             )
@@ -892,8 +1042,8 @@ private fun FeatureListItem(
                 style = TextStyle(
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Normal,
-                    fontSize = 13.sp,
-                    lineHeight = 18.sp
+                    fontSize = 14.sp,
+                    lineHeight = 20.sp
                 ),
                 color = textSecondary
             )
@@ -910,14 +1060,11 @@ private fun GamificationXpScreen(
     isDarkTheme: Boolean,
     currentPage: Int,
     totalPages: Int,
-    onSkip: () -> Unit,
     onStartQuest: () -> Unit
 ) {
-    val backgroundColor = if (isDarkTheme) Color(0xFF0F2423) else LightBackground
-    val cardBackground = if (isDarkTheme) DarkCardBackground else LightCardBackground
+    val backgroundColor = if (isDarkTheme) DarkBackground else LightBackground
     val textPrimary = if (isDarkTheme) DarkTextPrimary else LightTextPrimary
     val textSecondary = if (isDarkTheme) DarkTextSecondary else LightTextSecondary
-    val progressInactive = if (isDarkTheme) Color(0xFF3F5857) else Color(0xFFA0A8A7)
 
     Box(
         modifier = Modifier
@@ -931,25 +1078,25 @@ private fun GamificationXpScreen(
                 .padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(48.dp))
 
-            // Circular Progress Ring
+            // Circular Progress Ring with Level
             XpProgressRing(
-                progress = 0.4f,
+                progress = 0.75f,
                 isDarkTheme = isDarkTheme,
-                modifier = Modifier.size(200.dp)
+                modifier = Modifier.size(220.dp)
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(28.dp))
 
-            // Statistics Cards
+            // Statistics Cards Row
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 StatCard(
                     icon = Icons.Default.LocalFireDepartment,
-                    iconTint = Color(0xFFFF6B35),
+                    iconTint = AccentGreen,
                     value = "7",
                     label = "DAY STREAK",
                     isLocked = false,
@@ -957,7 +1104,7 @@ private fun GamificationXpScreen(
                     modifier = Modifier.weight(1f)
                 )
                 StatCard(
-                    icon = Icons.Default.Star,
+                    icon = Icons.Default.Verified,
                     iconTint = AccentGreen,
                     value = "750",
                     label = "TOTAL XP",
@@ -976,14 +1123,14 @@ private fun GamificationXpScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(36.dp))
 
             // Headline with highlighted word
             Text(
                 text = buildAnnotatedString {
-                    append("Level Up Your ")
+                    append("Turn Habits into ")
                     withStyle(SpanStyle(color = AccentGreen)) {
-                        append("Mindset")
+                        append("Quests")
                     }
                 },
                 style = TextStyle(
@@ -993,7 +1140,7 @@ private fun GamificationXpScreen(
                     lineHeight = 34.sp
                 ),
                 color = textPrimary,
-                textAlign = TextAlign.Start,
+                textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -1009,10 +1156,10 @@ private fun GamificationXpScreen(
                     lineHeight = 24.sp
                 ),
                 color = textSecondary,
-                modifier = Modifier.fillMaxWidth()
+                textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(28.dp))
 
             // Pagination
             ProdyPagerIndicator(
@@ -1021,7 +1168,7 @@ private fun GamificationXpScreen(
                 isDarkTheme = isDarkTheme
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(28.dp))
 
             // Start My Quest Button
             ProdyOnboardingButton(
@@ -1053,7 +1200,7 @@ private fun XpProgressRing(
     ) {
         // Ring Canvas
         Canvas(modifier = Modifier.fillMaxSize()) {
-            val strokeWidth = 14.dp.toPx()
+            val strokeWidth = 16.dp.toPx()
             val radius = (size.minDimension - strokeWidth) / 2
             val center = Offset(size.width / 2, size.height / 2)
             val startAngle = 135f
@@ -1088,10 +1235,10 @@ private fun XpProgressRing(
         Column(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Trophy icon
+            // Trophy icon in circle
             Box(
                 modifier = Modifier
-                    .size(36.dp)
+                    .size(44.dp)
                     .clip(CircleShape)
                     .background(innerCircleBg),
                 contentAlignment = Alignment.Center
@@ -1100,18 +1247,18 @@ private fun XpProgressRing(
                     imageVector = Icons.Default.EmojiEvents,
                     contentDescription = null,
                     tint = textPrimary,
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(24.dp)
                 )
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             Text(
                 text = "Lvl 3",
                 style = TextStyle(
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 32.sp
+                    fontSize = 36.sp
                 ),
                 color = textPrimary
             )
@@ -1122,18 +1269,18 @@ private fun XpProgressRing(
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Medium,
                     fontSize = 12.sp,
-                    letterSpacing = 1.sp
+                    letterSpacing = 2.sp
                 ),
                 color = textSecondary
             )
         }
 
-        // Lightning icon on ring
+        // Lightning icon on ring (bottom-left)
         Box(
             modifier = Modifier
                 .align(Alignment.BottomStart)
-                .offset(x = 30.dp, y = (-20).dp)
-                .size(24.dp)
+                .offset(x = 32.dp, y = (-24).dp)
+                .size(28.dp)
                 .clip(CircleShape)
                 .background(AccentGreen),
             contentAlignment = Alignment.Center
@@ -1142,7 +1289,21 @@ private fun XpProgressRing(
                 imageVector = Icons.Default.Bolt,
                 contentDescription = null,
                 tint = ButtonTextDark,
-                modifier = Modifier.size(14.dp)
+                modifier = Modifier.size(16.dp)
+            )
+        }
+
+        // Star icon on ring (top-right)
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .offset(x = (-32).dp, y = 24.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Star,
+                contentDescription = null,
+                tint = AccentGreen,
+                modifier = Modifier.size(24.dp)
             )
         }
     }
@@ -1158,14 +1319,8 @@ private fun StatCard(
     isDarkTheme: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val cardBg = if (isLocked) {
-        if (isDarkTheme) Color(0xFF1A2520) else Color(0xFFF0F2F1)
-    } else {
-        if (isDarkTheme) DarkCardBackground else LightCardBackground
-    }
-    val borderColor = if (isLocked) {
-        if (isDarkTheme) Color(0xFF3A4540) else Color(0xFFD0D8D4)
-    } else AccentGreen.copy(alpha = 0.5f)
+    val cardBg = if (isDarkTheme) DarkCardBackground else LightCardBackground
+    val lockedBorderColor = if (isDarkTheme) Color(0xFF3A4540) else Color(0xFFD0D8D4)
     val textColor = if (isLocked) {
         if (isDarkTheme) Color(0xFF707A79) else Color(0xFF909998)
     } else {
@@ -1175,23 +1330,23 @@ private fun StatCard(
 
     Column(
         modifier = modifier
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(14.dp))
             .background(cardBg)
             .then(
                 if (isLocked) {
                     Modifier.border(
                         width = 1.dp,
-                        color = borderColor,
-                        shape = RoundedCornerShape(12.dp)
+                        color = lockedBorderColor,
+                        shape = RoundedCornerShape(14.dp)
                     )
                 } else {
                     Modifier.drawBehind {
-                        drawLine(
+                        // Green accent line at top
+                        drawRoundRect(
                             color = AccentGreen,
-                            start = Offset(16.dp.toPx(), 0f),
-                            end = Offset(size.width - 16.dp.toPx(), 0f),
-                            strokeWidth = 2.dp.toPx(),
-                            cap = StrokeCap.Round
+                            topLeft = Offset(16.dp.toPx(), 0f),
+                            size = Size(size.width - 32.dp.toPx(), 3.dp.toPx()),
+                            cornerRadius = CornerRadius(2.dp.toPx())
                         )
                     }
                 }
@@ -1203,17 +1358,17 @@ private fun StatCard(
             imageVector = icon,
             contentDescription = null,
             tint = iconTint,
-            modifier = Modifier.size(24.dp)
+            modifier = Modifier.size(26.dp)
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
         Text(
             text = value,
             style = TextStyle(
                 fontFamily = PoppinsFamily,
                 fontWeight = FontWeight.Bold,
-                fontSize = 22.sp
+                fontSize = 24.sp
             ),
             color = textColor
         )
@@ -1247,7 +1402,6 @@ private fun DailyWisdomFeaturesScreen(
     onMaybeLater: () -> Unit
 ) {
     val backgroundColor = if (isDarkTheme) DarkBackground else Color(0xFFFFFFFF)
-    val cardBackground = if (isDarkTheme) DarkCardBackground else Color(0xFFF0F3F2)
     val iconCircleBg = if (isDarkTheme) DarkIconCircleBackground else Color(0xFFE6F0EE)
     val textPrimary = if (isDarkTheme) DarkTextPrimary else LightTextPrimary
     val textSecondary = if (isDarkTheme) DarkTextSecondary else LightTextSecondary
@@ -1275,25 +1429,25 @@ private fun DailyWisdomFeaturesScreen(
                 onSkip = onSkip
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(36.dp))
 
-            // Lightbulb Icon Container
+            // Book/Lightbulb Icon Container
             Box(
                 modifier = Modifier
-                    .size(80.dp)
-                    .clip(RoundedCornerShape(20.dp))
+                    .size(88.dp)
+                    .clip(RoundedCornerShape(24.dp))
                     .background(iconCircleBg),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Default.Lightbulb,
+                    imageVector = Icons.AutoMirrored.Outlined.MenuBook,
                     contentDescription = null,
                     tint = AccentGreen,
-                    modifier = Modifier.size(40.dp)
+                    modifier = Modifier.size(44.dp)
                 )
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(28.dp))
 
             // Headline
             Text(
@@ -1301,21 +1455,21 @@ private fun DailyWisdomFeaturesScreen(
                 style = TextStyle(
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 28.sp
+                    fontSize = 30.sp
                 ),
                 color = textPrimary
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             // Body
             Text(
-                text = "Start your day with intention. Personalized insights to articulate your thoughts.",
+                text = "Start your day with intention. Prody delivers personalized insights to help you articulate your thoughts.",
                 style = TextStyle(
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Normal,
                     fontSize = 15.sp,
-                    lineHeight = 22.sp
+                    lineHeight = 24.sp
                 ),
                 color = textSecondary,
                 textAlign = TextAlign.Center
@@ -1325,36 +1479,36 @@ private fun DailyWisdomFeaturesScreen(
 
             // Feature Cards
             WisdomFeatureCard(
-                icon = Icons.Default.TextFormat,
+                icon = Icons.Outlined.TextFormat,
                 title = "Word of the Day",
-                description = "Expand your vocabulary daily",
+                description = "Expand your vocabulary",
                 isDarkTheme = isDarkTheme
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
             WisdomFeatureCard(
-                icon = Icons.Default.FormatQuote,
+                icon = Icons.Outlined.FormatQuote,
                 title = "Quote Collection",
-                description = "Curated wisdom from great minds",
+                description = "Insights from great minds",
                 isDarkTheme = isDarkTheme
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
             WisdomFeatureCard(
-                icon = Icons.Default.School,
+                icon = Icons.Outlined.School,
                 title = "Proverbs & Idioms",
-                description = "Timeless expressions explained",
+                description = "Timeless cultural wisdom",
                 isDarkTheme = isDarkTheme
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
             WisdomFeatureCard(
-                icon = Icons.Default.ChatBubble,
+                icon = Icons.Outlined.ChatBubble,
                 title = "Essential Phrases",
-                description = "Useful expressions for daily life",
+                description = "Communication masterclass",
                 isDarkTheme = isDarkTheme
             )
 
@@ -1368,7 +1522,7 @@ private fun DailyWisdomFeaturesScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             // Maybe Later
             Text(
@@ -1395,7 +1549,7 @@ private fun WisdomFeatureCard(
     isDarkTheme: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val cardBg = if (isDarkTheme) DarkCardBackground else Color(0xFFF0F3F2)
+    val cardBg = if (isDarkTheme) DarkCardBackground else Color(0xFFF5F7F6)
     val iconCircleBg = if (isDarkTheme) DarkIconCircleBackground else Color(0xFFE6F0EE)
     val textPrimary = if (isDarkTheme) DarkTextPrimary else LightTextPrimary
     val textSecondary = if (isDarkTheme) DarkTextSecondary else LightTextSecondary
@@ -1403,7 +1557,7 @@ private fun WisdomFeatureCard(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(14.dp))
             .background(cardBg)
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -1411,7 +1565,7 @@ private fun WisdomFeatureCard(
         // Icon circle
         Box(
             modifier = Modifier
-                .size(40.dp)
+                .size(44.dp)
                 .clip(CircleShape)
                 .background(iconCircleBg),
             contentAlignment = Alignment.Center
@@ -1420,11 +1574,11 @@ private fun WisdomFeatureCard(
                 imageVector = icon,
                 contentDescription = null,
                 tint = AccentGreen,
-                modifier = Modifier.size(20.dp)
+                modifier = Modifier.size(22.dp)
             )
         }
 
-        Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(14.dp))
 
         Column {
             Text(
@@ -1432,7 +1586,7 @@ private fun WisdomFeatureCard(
                 style = TextStyle(
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.SemiBold,
-                    fontSize = 15.sp
+                    fontSize = 16.sp
                 ),
                 color = textPrimary
             )
@@ -1462,12 +1616,10 @@ private fun PersonalizedInsightsScreen(
     onEnableNotifications: () -> Unit,
     onMaybeLater: () -> Unit
 ) {
-    val backgroundColor = if (isDarkTheme) Color(0xFF1A2E2C) else LightBackground
-    val cardBackground = if (isDarkTheme) Color(0xFF2D4240) else Color(0xFFE0E7E6)
+    val backgroundColor = if (isDarkTheme) DarkBackground else LightBackground
     val textPrimary = if (isDarkTheme) DarkTextPrimary else LightTextPrimary
     val textSecondary = if (isDarkTheme) DarkTextSecondary else LightTextSecondary
     val textTertiary = if (isDarkTheme) DarkTextTertiary else LightTextTertiary
-    val dividerColor = if (isDarkTheme) DarkDivider else LightDivider
 
     Box(
         modifier = Modifier
@@ -1508,7 +1660,9 @@ private fun PersonalizedInsightsScreen(
                     fontSize = 26.sp,
                     lineHeight = 34.sp
                 ),
-                color = textPrimary
+                color = textPrimary,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -1522,7 +1676,8 @@ private fun PersonalizedInsightsScreen(
                     fontSize = 15.sp,
                     lineHeight = 24.sp
                 ),
-                color = textSecondary
+                color = textSecondary,
+                textAlign = TextAlign.Center
             )
 
             Spacer(modifier = Modifier.weight(1f))
@@ -1535,7 +1690,7 @@ private fun PersonalizedInsightsScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             // Maybe Later
             Text(
@@ -1562,7 +1717,7 @@ private fun QuoteCard(
     isDarkTheme: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val cardBackground = if (isDarkTheme) Color(0xFF2D4240) else Color(0xFFE0E7E6)
+    val cardBackground = if (isDarkTheme) Color(0xFF2D4240) else Color(0xFFE8EFEE)
     val textPrimary = if (isDarkTheme) DarkTextPrimary else LightTextPrimary
     val textSecondary = if (isDarkTheme) DarkTextSecondary else LightTextSecondary
     val dividerColor = if (isDarkTheme) DarkDivider else LightDivider
@@ -1570,11 +1725,11 @@ private fun QuoteCard(
 
     Column(
         modifier = modifier
-            .clip(RoundedCornerShape(16.dp))
+            .clip(RoundedCornerShape(20.dp))
             .background(cardBackground)
             .padding(24.dp)
     ) {
-        // Header row
+        // Header row - lightbulb icon and DAILY WISDOM label
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -1583,7 +1738,7 @@ private fun QuoteCard(
             // Lightbulb icon
             Box(
                 modifier = Modifier
-                    .size(36.dp)
+                    .size(40.dp)
                     .clip(CircleShape)
                     .background(iconCircleBg),
                 contentAlignment = Alignment.Center
@@ -1592,7 +1747,7 @@ private fun QuoteCard(
                     imageVector = Icons.Default.Lightbulb,
                     contentDescription = null,
                     tint = AccentGreen,
-                    modifier = Modifier.size(18.dp)
+                    modifier = Modifier.size(20.dp)
                 )
             }
 
@@ -1603,7 +1758,61 @@ private fun QuoteCard(
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Medium,
                     fontSize = 11.sp,
-                    letterSpacing = 1.sp
+                    letterSpacing = 1.5.sp
+                ),
+                color = textSecondary
+            )
+        }
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        // Quote text with "great work" highlighted
+        Text(
+            text = buildAnnotatedString {
+                append("\"The only way to do ")
+                withStyle(SpanStyle(color = AccentGreen)) {
+                    append("great work")
+                }
+                append(" is to love what you do.\"")
+            },
+            style = TextStyle(
+                fontFamily = PoppinsFamily,
+                fontWeight = FontWeight.Normal,
+                fontSize = 20.sp,
+                lineHeight = 32.sp
+            ),
+            color = textPrimary
+        )
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // Divider
+        Box(
+            modifier = Modifier
+                .width(48.dp)
+                .height(1.dp)
+                .background(dividerColor)
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Author with icon
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Person,
+                contentDescription = null,
+                tint = textSecondary,
+                modifier = Modifier.size(16.dp)
+            )
+            Text(
+                text = "Steve Jobs",
+                style = TextStyle(
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 14.sp
                 ),
                 color = textSecondary
             )
@@ -1611,59 +1820,7 @@ private fun QuoteCard(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Quote text with highlights
-        Text(
-            text = buildAnnotatedString {
-                append("The only way to do ")
-                withStyle(SpanStyle(color = AccentGreen)) {
-                    append("great")
-                }
-                append(" ")
-                withStyle(SpanStyle(color = AccentGreen)) {
-                    append("work")
-                }
-                append(" is to love what you do.")
-            },
-            style = TextStyle(
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.Normal,
-                fontSize = 20.sp,
-                lineHeight = 30.sp
-            ),
-            color = textPrimary,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Divider
-        Box(
-            modifier = Modifier
-                .width(60.dp)
-                .height(1.dp)
-                .background(dividerColor)
-                .align(Alignment.CenterHorizontally)
-        )
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // Author
-        Text(
-            text = "- Steve Jobs",
-            style = TextStyle(
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.Normal,
-                fontSize = 14.sp
-            ),
-            color = textPrimary,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        // Bottom row: pagination and bookmark
+        // Bottom row: mini pagination and bookmark
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -1675,7 +1832,7 @@ private fun QuoteCard(
             ) {
                 Box(
                     modifier = Modifier
-                        .width(16.dp)
+                        .width(18.dp)
                         .height(6.dp)
                         .clip(RoundedCornerShape(3.dp))
                         .background(AccentGreen)
@@ -1695,7 +1852,7 @@ private fun QuoteCard(
                 imageVector = Icons.Default.BookmarkBorder,
                 contentDescription = "Bookmark",
                 tint = textPrimary,
-                modifier = Modifier.size(20.dp)
+                modifier = Modifier.size(22.dp)
             )
         }
     }
@@ -1706,7 +1863,7 @@ private fun QuoteCard(
 // =============================================================================
 
 /**
- * Custom Prody Logo - Seedling/Leaf icon in a squircle container
+ * Prody Logo - Seedling/Leaf icon in a squircle container with green accent dot
  */
 @Composable
 private fun ProdyLogo(
@@ -1714,70 +1871,74 @@ private fun ProdyLogo(
     modifier: Modifier = Modifier
 ) {
     val containerColor = if (isDarkTheme) LogoContainerDark else LogoContainerLight
+    val strokeColor = if (isDarkTheme) LogoContainerStroke else Color(0xFFE0E7E6)
+    val leafColor = if (isDarkTheme) Color.White else Color(0xFF1A1A1A)
 
     Box(modifier = modifier) {
-        // Squircle container
+        // Squircle container with subtle border
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .clip(RoundedCornerShape(18.dp))
-                .background(containerColor),
+                .clip(RoundedCornerShape(24.dp))
+                .background(containerColor)
+                .border(
+                    width = 1.dp,
+                    color = strokeColor,
+                    shape = RoundedCornerShape(24.dp)
+                ),
             contentAlignment = Alignment.Center
         ) {
-            // Seedling/Leaf icon (drawn with Canvas)
-            Canvas(modifier = Modifier.size(36.dp)) {
+            // Seedling/Leaf icon drawn with Canvas
+            Canvas(modifier = Modifier.size(48.dp)) {
                 val centerX = size.width / 2
                 val centerY = size.height / 2
 
-                // Draw three leaves
-                val leafColor = AccentGreen
-
-                // Center leaf (largest, pointing up)
+                // Center leaf (pointing up)
                 val centerLeaf = Path().apply {
-                    moveTo(centerX, centerY + 12.dp.toPx())  // Stem base
+                    moveTo(centerX, centerY + 16.dp.toPx())
                     cubicTo(
-                        centerX - 8.dp.toPx(), centerY,     // Left control
-                        centerX - 6.dp.toPx(), centerY - 14.dp.toPx(),  // Left top
-                        centerX, centerY - 16.dp.toPx()     // Top point
+                        centerX - 10.dp.toPx(), centerY + 4.dp.toPx(),
+                        centerX - 8.dp.toPx(), centerY - 16.dp.toPx(),
+                        centerX, centerY - 20.dp.toPx()
                     )
                     cubicTo(
-                        centerX + 6.dp.toPx(), centerY - 14.dp.toPx(),  // Right top
-                        centerX + 8.dp.toPx(), centerY,     // Right control
-                        centerX, centerY + 12.dp.toPx()     // Back to base
+                        centerX + 8.dp.toPx(), centerY - 16.dp.toPx(),
+                        centerX + 10.dp.toPx(), centerY + 4.dp.toPx(),
+                        centerX, centerY + 16.dp.toPx()
                     )
                     close()
                 }
                 drawPath(centerLeaf, leafColor)
 
-                // Left leaf (smaller, curved left)
+                // Left leaf
                 val leftLeaf = Path().apply {
-                    moveTo(centerX - 2.dp.toPx(), centerY + 8.dp.toPx())
+                    moveTo(centerX - 2.dp.toPx(), centerY + 10.dp.toPx())
                     cubicTo(
-                        centerX - 12.dp.toPx(), centerY + 2.dp.toPx(),
-                        centerX - 16.dp.toPx(), centerY - 6.dp.toPx(),
-                        centerX - 10.dp.toPx(), centerY - 10.dp.toPx()
+                        centerX - 14.dp.toPx(), centerY + 2.dp.toPx(),
+                        centerX - 18.dp.toPx(), centerY - 8.dp.toPx(),
+                        centerX - 12.dp.toPx(), centerY - 12.dp.toPx()
                     )
                     cubicTo(
-                        centerX - 8.dp.toPx(), centerY - 4.dp.toPx(),
-                        centerX - 6.dp.toPx(), centerY + 2.dp.toPx(),
-                        centerX - 2.dp.toPx(), centerY + 8.dp.toPx()
+                        centerX - 10.dp.toPx(), centerY - 4.dp.toPx(),
+                        centerX - 8.dp.toPx(), centerY + 4.dp.toPx(),
+                        centerX - 2.dp.toPx(), centerY + 10.dp.toPx()
                     )
                     close()
                 }
                 drawPath(leftLeaf, leafColor)
 
-                // Right leaf (smaller, curved right)
+                // Right leaf
                 val rightLeaf = Path().apply {
-                    moveTo(centerX + 2.dp.toPx(), centerY + 8.dp.toPx())
+                    moveTo(centerX + 2.dp.toPx(), centerY + 10.dp.toPx())
                     cubicTo(
-                        centerX + 12.dp.toPx(), centerY + 2.dp.toPx(),
-                        centerX + 16.dp.toPx(), centerY - 6.dp.toPx(),
-                        centerX + 10.dp.toPx(), centerY - 10.dp.toPx()
+                        centerX + 14.dp.toPx(), centerY + 2.dp.toPx(),
+                        centerX + 18.dp.toPx(), centerY - 8.dp.toPx(),
+                        centerX + 12.dp.toPx(), centerY - 12.dp.toPx()
                     )
                     cubicTo(
-                        centerX + 8.dp.toPx(), centerY - 4.dp.toPx(),
-                        centerX + 6.dp.toPx(), centerY + 2.dp.toPx(),
-                        centerX + 2.dp.toPx(), centerY + 8.dp.toPx()
+                        centerX + 10.dp.toPx(), centerY - 4.dp.toPx(),
+                        centerX + 8.dp.toPx(), centerY + 4.dp.toPx(),
+                        centerX + 2.dp.toPx(), centerY + 10.dp.toPx()
                     )
                     close()
                 }
@@ -1785,10 +1946,10 @@ private fun ProdyLogo(
             }
         }
 
-        // Green dot at top-right
+        // Green accent dot at top-right
         Box(
             modifier = Modifier
-                .size(12.dp)
+                .size(14.dp)
                 .align(Alignment.TopEnd)
                 .offset(x = 2.dp, y = (-2).dp)
                 .clip(CircleShape)
@@ -1837,7 +1998,7 @@ private fun ProdyPagerIndicator(
 }
 
 /**
- * Primary onboarding button with vibrant green background
+ * Primary onboarding button - vibrant green with optional arrow
  */
 @Composable
 private fun ProdyOnboardingButton(
@@ -1848,14 +2009,14 @@ private fun ProdyOnboardingButton(
 ) {
     Surface(
         onClick = onClick,
-        modifier = modifier.height(56.dp),
-        shape = RoundedCornerShape(28.dp),
+        modifier = modifier.height(58.dp),
+        shape = RoundedCornerShape(29.dp),
         color = AccentGreen
     ) {
         Row(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 24.dp),
+                .padding(horizontal = 28.dp),
             horizontalArrangement = if (showArrow) Arrangement.SpaceBetween else Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -1874,7 +2035,7 @@ private fun ProdyOnboardingButton(
                     imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                     contentDescription = null,
                     tint = ButtonTextDark,
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(22.dp)
                 )
             }
         }
@@ -1927,17 +2088,18 @@ private fun ConcentricCirclesBackground(
     color: Color
 ) {
     Canvas(modifier = modifier) {
-        val centerX = size.width * 0.3f
-        val centerY = size.height * 0.6f
-        val maxRadius = size.width * 0.8f
+        val centerX = size.width * 0.5f
+        val centerY = size.height * 0.35f
+        val maxRadius = size.width * 0.7f
         val strokeWidth = 1.dp.toPx()
 
         // Draw multiple concentric circles
-        val circleCount = 6
+        val circleCount = 5
         for (i in 1..circleCount) {
             val radius = maxRadius * i / circleCount
+            val alpha = 0.25f - (i * 0.03f)
             drawCircle(
-                color = color.copy(alpha = 0.3f - (i * 0.04f)),
+                color = color.copy(alpha = alpha.coerceAtLeast(0.05f)),
                 radius = radius,
                 center = Offset(centerX, centerY),
                 style = Stroke(width = strokeWidth)

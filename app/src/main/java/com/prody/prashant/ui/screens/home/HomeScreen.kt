@@ -226,9 +226,11 @@ private fun StatsBadge(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                Text(
-                    text = "\uD83D\uDD25",
-                    fontSize = 14.sp
+                Icon(
+                    imageVector = Icons.Outlined.LocalFireDepartment,
+                    contentDescription = "Streak",
+                    tint = Color(0xFFFF6B35),
+                    modifier = Modifier.size(16.dp)
                 )
                 Text(
                     text = streak.toString(),
@@ -251,9 +253,11 @@ private fun StatsBadge(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                Text(
-                    text = "\u2B50",
-                    fontSize = 14.sp
+                Icon(
+                    imageVector = Icons.Outlined.Star,
+                    contentDescription = "Points",
+                    tint = Color(0xFFE6B422),
+                    modifier = Modifier.size(16.dp)
                 )
                 Text(
                     text = points.toString(),
