@@ -42,6 +42,10 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import com.prody.prashant.R
 import com.prody.prashant.data.ai.WeeklyPatternResult
 import com.prody.prashant.data.local.entity.AchievementEntity
+import com.prody.prashant.ui.components.AmbientBackground
+import com.prody.prashant.ui.components.FloatingParticles
+import com.prody.prashant.ui.components.MoodBreathingHalo
+import com.prody.prashant.ui.components.getCurrentTimeOfDay
 import com.prody.prashant.ui.theme.*
 import kotlinx.coroutines.delay
 
@@ -124,6 +128,20 @@ fun ProfileScreen(
                 else IdentityRoomColors.BackgroundLight
             )
     ) {
+        // Magical ambient background for immersive profile experience
+        AmbientBackground(
+            modifier = Modifier.fillMaxSize(),
+            timeOfDay = getCurrentTimeOfDay(),
+            intensity = 0.1f
+        )
+
+        // Premium floating particles celebrating achievements
+        FloatingParticles(
+            modifier = Modifier.fillMaxSize(),
+            particleCount = 12,
+            particleColor = IdentityRoomColors.AccentGreen.copy(alpha = 0.25f)
+        )
+
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(bottom = 100.dp)
@@ -338,64 +356,78 @@ private fun HeroSection(
             .padding(horizontal = 20.dp, vertical = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Avatar with Progress Ring
+        // Avatar with Progress Ring and Magical Breathing Halo
         Box(
             contentAlignment = Alignment.Center,
-            modifier = Modifier.size(140.dp)
+            modifier = Modifier.size(160.dp) // Slightly larger to accommodate halo
         ) {
-            // Animated Progress Ring
-            NeonProgressRing(
-                progress = levelProgress,
-                modifier = Modifier.fillMaxSize(),
-                accentColor = if (isDarkMode) IdentityRoomColors.AccentGreen
-                              else IdentityRoomColors.AccentGreenLight
+            // Magical breathing halo effect around the avatar
+            MoodBreathingHalo(
+                modifier = Modifier.size(156.dp),
+                baseColor = if (isDarkMode) IdentityRoomColors.AccentGreen.copy(alpha = 0.3f)
+                            else IdentityRoomColors.AccentGreenLight.copy(alpha = 0.25f),
+                pulseIntensity = 0.15f
             )
 
-            // Avatar Circle
+            // Avatar container
             Box(
-                modifier = Modifier
-                    .size(110.dp)
-                    .clip(CircleShape)
-                    .background(
-                        if (isDarkMode) IdentityRoomColors.CardBackgroundDark
-                        else IdentityRoomColors.CardBackgroundLight
-                    )
-                    .border(
-                        width = 3.dp,
-                        color = if (isDarkMode) IdentityRoomColors.BorderDark
-                                else IdentityRoomColors.BorderLight,
-                        shape = CircleShape
-                    ),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.size(140.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Filled.Person,
-                    contentDescription = null,
-                    modifier = Modifier.size(56.dp),
-                    tint = if (isDarkMode) IdentityRoomColors.TextSecondaryDark
-                           else IdentityRoomColors.TextSecondaryLight
+                // Animated Progress Ring
+                NeonProgressRing(
+                    progress = levelProgress,
+                    modifier = Modifier.fillMaxSize(),
+                    accentColor = if (isDarkMode) IdentityRoomColors.AccentGreen
+                                  else IdentityRoomColors.AccentGreenLight
                 )
-            }
 
-            // Level Badge
-            Box(
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .offset(x = (-8).dp, y = (-8).dp)
-                    .size(36.dp)
-                    .clip(CircleShape)
-                    .background(
-                        if (isDarkMode) IdentityRoomColors.AccentGreen
-                        else IdentityRoomColors.AccentGreenLight
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = level.toString(),
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black
-                )
+                // Avatar Circle
+                Box(
+                    modifier = Modifier
+                        .size(110.dp)
+                        .clip(CircleShape)
+                        .background(
+                            if (isDarkMode) IdentityRoomColors.CardBackgroundDark
+                            else IdentityRoomColors.CardBackgroundLight
+                        )
+                        .border(
+                            width = 3.dp,
+                            color = if (isDarkMode) IdentityRoomColors.BorderDark
+                                    else IdentityRoomColors.BorderLight,
+                            shape = CircleShape
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Person,
+                        contentDescription = null,
+                        modifier = Modifier.size(56.dp),
+                        tint = if (isDarkMode) IdentityRoomColors.TextSecondaryDark
+                               else IdentityRoomColors.TextSecondaryLight
+                    )
+                }
+
+                // Level Badge
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .offset(x = (-8).dp, y = (-8).dp)
+                        .size(36.dp)
+                        .clip(CircleShape)
+                        .background(
+                            if (isDarkMode) IdentityRoomColors.AccentGreen
+                            else IdentityRoomColors.AccentGreenLight
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = level.toString(),
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Black
+                    )
+                }
             }
         }
 

@@ -33,6 +33,10 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.R
+import com.prody.prashant.ui.components.AmbientBackground
+import com.prody.prashant.ui.components.StreakFlame
+import com.prody.prashant.ui.components.WisdomTextReveal
+import com.prody.prashant.ui.components.getCurrentTimeOfDay
 import com.prody.prashant.ui.theme.PlayfairFamily
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
@@ -82,12 +86,22 @@ fun HomeScreen(
         enter = fadeIn(animationSpec = tween(500, easing = EaseOutCubic)),
         exit = fadeOut(animationSpec = tween(300, easing = EaseOutCubic))
     ) {
-        LazyColumn(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background),
-            contentPadding = PaddingValues(bottom = 100.dp)
+                .background(MaterialTheme.colorScheme.background)
         ) {
+            // Magical Ambient Background - subtle, organic animation
+            AmbientBackground(
+                modifier = Modifier.fillMaxSize(),
+                timeOfDay = getCurrentTimeOfDay(),
+                intensity = 0.2f
+            )
+
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(bottom = 100.dp)
+            ) {
             // Header with greeting and stats
             item {
                 HomeHeader(
@@ -151,6 +165,7 @@ fun HomeScreen(
                     )
                 }
             }
+            }
         }
     }
 }
@@ -204,7 +219,7 @@ private fun HomeHeader(
 }
 
 /**
- * Compact stats badge showing streak and points
+ * Compact stats badge showing streak and points with animated flame
  */
 @Composable
 private fun StatsBadge(
@@ -221,17 +236,18 @@ private fun StatsBadge(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Streak
+            // Streak with animated flame
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Outlined.LocalFireDepartment,
-                    contentDescription = "Streak",
-                    tint = Color(0xFFFF6B35),
-                    modifier = Modifier.size(16.dp)
-                )
+                // Animated streak flame that grows with streak length
+                Box(modifier = Modifier.size(20.dp)) {
+                    StreakFlame(
+                        streakDays = streak,
+                        size = 20.dp
+                    )
+                }
                 Text(
                     text = streak.toString(),
                     style = MaterialTheme.typography.labelLarge,
@@ -535,7 +551,7 @@ private fun DailyWisdomHeader() {
 }
 
 /**
- * Quote of the Day card
+ * Quote of the Day card with wisdom reveal animation
  */
 @Composable
 private fun QuoteOfTheDayCard(
@@ -543,6 +559,15 @@ private fun QuoteOfTheDayCard(
     author: String,
     onShareClick: () -> Unit
 ) {
+    // Track if the quote has been revealed
+    var isQuoteVisible by remember { mutableStateOf(false) }
+
+    // Trigger reveal animation after a short delay
+    LaunchedEffect(quote) {
+        delay(300)
+        isQuoteVisible = true
+    }
+
     Surface(
         modifier = Modifier
             .fillMaxWidth()
@@ -576,16 +601,11 @@ private fun QuoteOfTheDayCard(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Quote text with Playfair-like styling
-            Text(
+            // Quote text with wisdom reveal animation - unfurls elegantly
+            WisdomTextReveal(
                 text = "\"$quote\"",
-                style = MaterialTheme.typography.bodyLarge.copy(
-                    fontFamily = PlayfairFamily,
-                    fontStyle = FontStyle.Italic,
-                    fontSize = 18.sp,
-                    lineHeight = 28.sp
-                ),
-                color = MaterialTheme.colorScheme.onSurface
+                isVisible = isQuoteVisible,
+                modifier = Modifier.fillMaxWidth()
             )
 
             Spacer(modifier = Modifier.height(16.dp))

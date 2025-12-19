@@ -19,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.core.content.ContextCompat
@@ -51,6 +52,8 @@ import com.prody.prashant.ui.screens.quotes.QuotesScreen
 import com.prody.prashant.ui.screens.stats.StatsScreen
 import com.prody.prashant.ui.screens.vocabulary.VocabularyDetailScreen
 import com.prody.prashant.ui.screens.vocabulary.VocabularyListScreen
+import com.prody.prashant.ui.components.NavigationBreathingGlow
+import com.prody.prashant.ui.theme.ProdyPrimary
 import com.prody.prashant.ui.theme.ProdyTheme
 import com.prody.prashant.ui.theme.ThemeMode
 import dagger.hilt.android.AndroidEntryPoint
@@ -233,10 +236,16 @@ fun ProdyApp(
 
                         NavigationBarItem(
                             icon = {
-                                Icon(
-                                    imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
-                                    contentDescription = null
-                                )
+                                // Wrap icon with magical breathing glow effect
+                                NavigationBreathingGlow(
+                                    isActive = selected,
+                                    color = ProdyPrimary
+                                ) {
+                                    Icon(
+                                        imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
+                                        contentDescription = null
+                                    )
+                                }
                             },
                             label = { Text(stringResource(item.labelResId)) },
                             selected = selected,

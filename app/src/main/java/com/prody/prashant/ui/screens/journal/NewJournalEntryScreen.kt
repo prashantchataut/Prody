@@ -40,6 +40,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.R
 import com.prody.prashant.domain.model.Mood
+import com.prody.prashant.ui.components.AmbientBackground
+import com.prody.prashant.ui.components.MoodSuggestionHint
+import com.prody.prashant.ui.components.rememberMoodSuggestionState
+import com.prody.prashant.ui.components.getCurrentTimeOfDay
+import com.prody.prashant.ui.components.mapMoodToAmbient
 import com.prody.prashant.ui.theme.*
 
 /**
@@ -62,8 +67,20 @@ fun NewJournalEntryScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 
+    // Mood suggestion state for AI-powered hints
+    val moodSuggestionState = rememberMoodSuggestionState()
+
     // Determine if dark mode is active
     val isDarkTheme = LocalJournalThemeColors.current.isDark
+
+    // Analyze content for mood suggestions when content changes
+    LaunchedEffect(uiState.content) {
+        if (uiState.content.length > 50 && uiState.selectedMood == null) {
+            moodSuggestionState.analyzeText(uiState.content)
+        } else {
+            moodSuggestionState.clearSuggestion()
+        }
+    }
 
     LaunchedEffect(uiState.isSaved) {
         if (uiState.isSaved) {
@@ -98,49 +115,72 @@ fun NewJournalEntryScreen(
                 )
             }
         ) { padding ->
-            Column(
+            Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding)
-                    .verticalScroll(rememberScrollState())
             ) {
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Use Template Section
-                UseTemplateSection(
-                    onTemplateSelected = { viewModel.selectTemplate(it) },
-                    colors = colors
+                // Magical ambient background that responds to mood selection
+                AmbientBackground(
+                    modifier = Modifier.fillMaxSize(),
+                    timeOfDay = getCurrentTimeOfDay(),
+                    mood = uiState.selectedMood?.let { mapMoodToAmbient(it.name) },
+                    intensity = 0.12f
                 )
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    Spacer(modifier = Modifier.height(8.dp))
 
-                // How are you feeling? Section
-                MoodSelectionSection(
-                    selectedMood = uiState.selectedMood,
-                    onMoodSelected = { viewModel.updateMood(it) },
-                    colors = colors
-                )
+                    // Use Template Section
+                    UseTemplateSection(
+                        onTemplateSelected = { viewModel.selectTemplate(it) },
+                        colors = colors
+                    )
 
-                Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(24.dp))
 
-                // Intensity Section
-                IntensitySection(
-                    intensity = uiState.moodIntensity,
-                    onIntensityChanged = { viewModel.updateMoodIntensity(it) },
-                    colors = colors
-                )
+                    // How are you feeling? Section with mood suggestion hint
+                    Box {
+                        MoodSelectionSection(
+                            selectedMood = uiState.selectedMood,
+                            onMoodSelected = { viewModel.updateMood(it) },
+                            colors = colors
+                        )
 
-                Spacer(modifier = Modifier.height(24.dp))
+                        // Subtle AI-powered mood suggestion hint
+                        MoodSuggestionHint(
+                            state = moodSuggestionState,
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .padding(end = 20.dp, top = 4.dp)
+                        )
+                    }
 
-                // Main Input Field
-                JournalInputField(
-                    content = uiState.content,
-                    wordCount = uiState.wordCount,
-                    onContentChanged = { viewModel.updateContent(it) },
-                    colors = colors
-                )
+                    Spacer(modifier = Modifier.height(24.dp))
 
-                Spacer(modifier = Modifier.height(100.dp))
+                    // Intensity Section
+                    IntensitySection(
+                        intensity = uiState.moodIntensity,
+                        onIntensityChanged = { viewModel.updateMoodIntensity(it) },
+                        colors = colors
+                    )
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    // Main Input Field
+                    JournalInputField(
+                        content = uiState.content,
+                        wordCount = uiState.wordCount,
+                        onContentChanged = { viewModel.updateContent(it) },
+                        colors = colors
+                    )
+
+                    Spacer(modifier = Modifier.height(100.dp))
+                }
             }
         }
     }
@@ -869,3 +909,4 @@ private fun JournalInputField(
         }
     }
 }
+
