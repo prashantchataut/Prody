@@ -455,6 +455,35 @@ val FutureMotivation = Color(0xFFFF7043)        // Orange - motivation
 val FuturePromise = Color(0xFF5C6BC0)           // Indigo - commitments
 val FutureGeneral = Color(0xFF90A4AE)           // Gray - general thoughts
 
+// =============================================================================
+// TIME CAPSULE DESIGN SYSTEM - Premium Minimalist Theme
+// =============================================================================
+
+// Accent Color - Vibrant Neon Green (key interactive elements, highlights)
+val TimeCapsuleAccent = Color(0xFF36F97F)
+
+// Dark Mode Colors - Immersive, Premium Aesthetic
+val TimeCapsuleBackgroundDark = Color(0xFF000000)         // Pure black background
+val TimeCapsuleTabContainerDark = Color(0xFF1A3331)       // Deep dark muted green for tab container
+val TimeCapsuleEmptyCircleBgDark = Color(0xFF212121)      // Dark gray for inner circle
+val TimeCapsuleDashedCircleDark = Color(0xFF404040)       // Very dark gray for dashed outer circle
+val TimeCapsuleTextPrimaryDark = Color(0xFFFFFFFF)        // Pure white for primary text
+val TimeCapsuleTextSecondaryDark = Color(0xFFD3D8D7)      // Light subtle gray for descriptions
+val TimeCapsuleIconDark = Color(0xFFFFFFFF)               // Pure white for header icons
+
+// Light Mode Colors - Luminous, Accessible Variant
+val TimeCapsuleBackgroundLight = Color(0xFFF9FAFB)        // Very light off-white background
+val TimeCapsuleTabContainerLight = Color(0xFFE0E7E6)      // Light subtle gray for tab container
+val TimeCapsuleEmptyCircleBgLight = Color(0xFFFFFFFF)     // Pure white for inner circle
+val TimeCapsuleDashedCircleLight = Color(0xFFDEE2E6)      // Light gray for dashed outer circle
+val TimeCapsuleTextPrimaryLight = Color(0xFF212529)       // Dark gray/black for primary text
+val TimeCapsuleTextSecondaryLight = Color(0xFF6C757D)     // Subtle dark gray for descriptions
+val TimeCapsuleIconLight = Color(0xFF212529)              // Dark gray/black for header icons
+
+// Active Tab Text Colors
+val TimeCapsuleActiveTabTextDark = Color(0xFFFFFFFF)      // Pure white for dark mode active tab
+val TimeCapsuleActiveTabTextLight = Color(0xFF212529)     // Dark for light mode active tab (on green bg)
+
 //Brand/Containers were redundant I believe?
 //Step 310 lines 262 and 284 showed Text/Status/Notification.
 //What about Brand ProdyGreen etc?
