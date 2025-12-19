@@ -8,23 +8,46 @@ import android.os.Build
 import android.util.Log
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
+import android.app.Application
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import com.prody.prashant.debug.CrashHandler
+import com.prody.prashant.data.local.preferences.PreferencesManager
 import com.prody.prashant.domain.gamification.GamificationService
+import com.prody.prashant.ui.navigation.Screen
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltAndroidApp
 class ProdyApplication : Application(), Configuration.Provider {
 
+    private val _isReady = MutableStateFlow(false)
+    val isReady = _isReady.asStateFlow()
+
+    val themeMode = preferencesManager.themeMode.stateIn(
+        scope = applicationScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = "system"
+    )
+
+    lateinit var startDestination: String
+
     @Inject
     lateinit var workerFactory: HiltWorkerFactory
 
     @Inject
     lateinit var gamificationService: GamificationService
+
+    @Inject
+    lateinit var preferencesManager: PreferencesManager
 
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
@@ -144,23 +167,33 @@ class ProdyApplication : Application(), Configuration.Provider {
     }
 
     private fun initializeApp() {
-        try {
-            createNotificationChannels()
-        } catch (e: Exception) {
-            // Log error but don't crash the app - notifications are not critical for launch
-            Log.e(TAG, "Failed to create notification channels", e)
-        }
-
-        // Initialize gamification data (user profile, achievements) asynchronously
         applicationScope.launch {
             try {
+                // Determine start destination based on onboarding status
+                val onboardingCompleted = preferencesManager.onboardingCompleted.first()
+                startDestination = if (onboardingCompleted) {
+                    Screen.Home.route
+                } else {
+                    Screen.Onboarding.route
+                }
+
+                // Create notification channels in the background
+                createNotificationChannels()
+
+                // Initialize gamification data
                 if (::gamificationService.isInitialized) {
                     gamificationService.initializeUserData()
                     gamificationService.checkAndResetDailyStats()
                     Log.d(TAG, "Gamification data initialized")
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Failed to initialize gamification data", e)
+                // If anything fails, default to showing onboarding and log the error.
+                // The app can still start in a degraded state.
+                Log.e(TAG, "Failed during async initialization, defaulting to onboarding", e)
+                startDestination = Screen.Onboarding.route
+            } finally {
+                // Signal that the app is ready to display the UI.
+                _isReady.value = true
             }
         }
     }
