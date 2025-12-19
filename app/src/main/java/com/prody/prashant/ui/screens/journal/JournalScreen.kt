@@ -49,6 +49,7 @@ import java.util.*
 fun JournalListScreen(
     onNavigateToNewEntry: () -> Unit,
     onNavigateToDetail: (Long) -> Unit,
+    onNavigateToHistory: () -> Unit = {},
     viewModel: JournalViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -71,6 +72,13 @@ fun JournalListScreen(
                     }
                 },
                 actions = {
+                    IconButton(onClick = onNavigateToHistory) {
+                        Icon(
+                            imageVector = Icons.Filled.History,
+                            contentDescription = "View journal history",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                     IconButton(onClick = { viewModel.toggleBookmarkFilter() }) {
                         Icon(
                             imageVector = if (uiState.showBookmarkedOnly) Icons.Filled.Bookmark
