@@ -25,7 +25,15 @@ data class SettingsUiState(
     val buddhaVocabularyContextEnabled: Boolean = true,
     val buddhaMessageHelperEnabled: Boolean = true,
     val buddhaPlayfulMode: Boolean = false,
-    val buddhaReduceAiUsage: Boolean = false
+    val buddhaReduceAiUsage: Boolean = false,
+    // Data management
+    val isExporting: Boolean = false,
+    val isImporting: Boolean = false,
+    val exportSuccess: Boolean = false,
+    val importSuccess: Boolean = false,
+    val dataError: String? = null,
+    val showClearDataDialog: Boolean = false,
+    val isClearingData: Boolean = false
 )
 
 @HiltViewModel
@@ -317,6 +325,63 @@ class SettingsViewModel @Inject constructor(
                 preferencesManager.setBuddhaReduceAiUsage(enabled)
             } catch (e: Exception) {
                 android.util.Log.e(TAG, "Error setting Buddha reduce AI usage", e)
+            }
+        }
+    }
+
+    // Data Management functions
+
+    fun setExporting(exporting: Boolean) {
+        _uiState.update { it.copy(isExporting = exporting) }
+    }
+
+    fun setExportSuccess(success: Boolean) {
+        _uiState.update { it.copy(exportSuccess = success, isExporting = false) }
+    }
+
+    fun setImporting(importing: Boolean) {
+        _uiState.update { it.copy(isImporting = importing) }
+    }
+
+    fun setImportSuccess(success: Boolean) {
+        _uiState.update { it.copy(importSuccess = success, isImporting = false) }
+    }
+
+    fun setDataError(error: String?) {
+        _uiState.update { it.copy(dataError = error, isExporting = false, isImporting = false) }
+    }
+
+    fun clearDataError() {
+        _uiState.update { it.copy(dataError = null) }
+    }
+
+    fun clearExportSuccess() {
+        _uiState.update { it.copy(exportSuccess = false) }
+    }
+
+    fun clearImportSuccess() {
+        _uiState.update { it.copy(importSuccess = false) }
+    }
+
+    fun showClearDataDialog() {
+        _uiState.update { it.copy(showClearDataDialog = true) }
+    }
+
+    fun hideClearDataDialog() {
+        _uiState.update { it.copy(showClearDataDialog = false) }
+    }
+
+    fun clearAllData(onComplete: () -> Unit) {
+        viewModelScope.launch {
+            try {
+                _uiState.update { it.copy(isClearingData = true, showClearDataDialog = false) }
+                // Clear preferences
+                preferencesManager.clearAllPreferences()
+                _uiState.update { it.copy(isClearingData = false) }
+                onComplete()
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error clearing data", e)
+                _uiState.update { it.copy(isClearingData = false, dataError = "Failed to clear data") }
             }
         }
     }

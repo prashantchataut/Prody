@@ -1,6 +1,10 @@
 package com.prody.prashant.ui.screens.journal
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -24,12 +28,15 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -38,6 +45,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.prody.prashant.R
 import com.prody.prashant.domain.model.Mood
 import com.prody.prashant.ui.theme.*
@@ -61,6 +70,24 @@ fun NewJournalEntryScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
+
+    // Photo/Video picker launcher
+    val mediaPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetMultipleContents()
+    ) { uris: List<Uri> ->
+        if (uris.isNotEmpty()) {
+            val photoUris = uris.filter { uri ->
+                context.contentResolver.getType(uri)?.startsWith("image/") == true
+            }.map { it.toString() }
+            val videoUris = uris.filter { uri ->
+                context.contentResolver.getType(uri)?.startsWith("video/") == true
+            }.map { it.toString() }
+
+            if (photoUris.isNotEmpty()) viewModel.addPhotos(photoUris)
+            if (videoUris.isNotEmpty()) viewModel.addVideos(videoUris)
+        }
+    }
 
     // Determine if dark mode is active
     val isDarkTheme = LocalJournalThemeColors.current.isDark
@@ -81,15 +108,34 @@ fun NewJournalEntryScreen(
         }
     }
 
+    // Handle back navigation with unsaved changes check
+    val handleBack: () -> Unit = {
+        if (viewModel.handleBackNavigation()) {
+            onNavigateBack()
+        }
+    }
+
     JournalTheme {
         val colors = LocalJournalThemeColors.current
+
+        // Discard Changes Dialog
+        if (uiState.showDiscardDialog) {
+            DiscardChangesDialog(
+                onDismiss = { viewModel.hideDiscardDialog() },
+                onDiscard = {
+                    viewModel.hideDiscardDialog()
+                    onNavigateBack()
+                },
+                colors = colors
+            )
+        }
 
         Scaffold(
             snackbarHost = { SnackbarHost(snackbarHostState) },
             containerColor = colors.background,
             topBar = {
                 JournalTopBar(
-                    onBackClick = onNavigateBack,
+                    onBackClick = handleBack,
                     onSaveClick = { viewModel.saveEntry() },
                     isSaveEnabled = uiState.content.isNotBlank() && !uiState.isSaving,
                     isSaving = uiState.isSaving,
@@ -105,6 +151,15 @@ fun NewJournalEntryScreen(
                     .verticalScroll(rememberScrollState())
             ) {
                 Spacer(modifier = Modifier.height(8.dp))
+
+                // Title Input Field (NEW)
+                TitleInputField(
+                    title = uiState.title,
+                    onTitleChanged = { viewModel.updateTitle(it) },
+                    colors = colors
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
 
                 // Use Template Section
                 UseTemplateSection(
@@ -132,13 +187,60 @@ fun NewJournalEntryScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Main Input Field
+                // Main Input Field with media actions
                 JournalInputField(
                     content = uiState.content,
                     wordCount = uiState.wordCount,
                     onContentChanged = { viewModel.updateContent(it) },
+                    onMediaClick = { mediaPickerLauncher.launch("*/*") },
+                    onVoiceClick = {
+                        if (uiState.isRecording) {
+                            viewModel.cancelRecording()
+                        } else {
+                            viewModel.startRecording()
+                        }
+                    },
+                    isRecording = uiState.isRecording,
+                    recordingTimeElapsed = uiState.recordingTimeElapsed,
                     colors = colors
                 )
+
+                // Attached Media Preview Section (NEW)
+                if (uiState.attachedPhotos.isNotEmpty() || uiState.attachedVideos.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    AttachedMediaSection(
+                        photos = uiState.attachedPhotos,
+                        videos = uiState.attachedVideos,
+                        onRemovePhoto = { viewModel.removePhoto(it) },
+                        onRemoveVideo = { viewModel.removeVideo(it) },
+                        colors = colors
+                    )
+                }
+
+                // Voice Recording Preview Section (NEW)
+                if (uiState.voiceRecordingUri != null) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    VoiceRecordingPreview(
+                        duration = uiState.voiceRecordingDuration,
+                        isPlaying = uiState.isPlayingVoice,
+                        onPlayToggle = { viewModel.toggleVoicePlayback() },
+                        onRemove = { viewModel.removeVoiceRecording() },
+                        colors = colors
+                    )
+                }
+
+                // Recording Indicator (NEW)
+                if (uiState.isRecording) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    RecordingIndicator(
+                        timeElapsed = uiState.recordingTimeElapsed,
+                        onStop = { uri, duration ->
+                            viewModel.stopRecording(uri, duration)
+                        },
+                        onCancel = { viewModel.cancelRecording() },
+                        colors = colors
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(100.dp))
             }
@@ -749,6 +851,51 @@ private fun CustomIntensitySlider(
 }
 
 // =============================================================================
+// TITLE INPUT FIELD (NEW)
+// =============================================================================
+
+@Composable
+private fun TitleInputField(
+    title: String,
+    onTitleChanged: (String) -> Unit,
+    colors: JournalThemeColors
+) {
+    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+        BasicTextField(
+            value = title,
+            onValueChange = onTitleChanged,
+            modifier = Modifier.fillMaxWidth(),
+            textStyle = TextStyle(
+                fontFamily = PoppinsFamily,
+                fontWeight = FontWeight.Bold,
+                fontSize = 24.sp,
+                lineHeight = 32.sp,
+                color = colors.primaryText
+            ),
+            cursorBrush = SolidColor(colors.accent),
+            singleLine = true,
+            decorationBox = { innerTextField ->
+                Box {
+                    if (title.isEmpty()) {
+                        Text(
+                            text = "Entry Title (optional)",
+                            style = TextStyle(
+                                fontFamily = PoppinsFamily,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 24.sp,
+                                lineHeight = 32.sp,
+                                color = colors.placeholderText
+                            )
+                        )
+                    }
+                    innerTextField()
+                }
+            }
+        )
+    }
+}
+
+// =============================================================================
 // JOURNAL INPUT FIELD
 // =============================================================================
 
@@ -757,6 +904,10 @@ private fun JournalInputField(
     content: String,
     wordCount: Int,
     onContentChanged: (String) -> Unit,
+    onMediaClick: () -> Unit,
+    onVoiceClick: () -> Unit,
+    isRecording: Boolean,
+    recordingTimeElapsed: Long,
     colors: JournalThemeColors
 ) {
     Column(modifier = Modifier.padding(horizontal = 16.dp)) {
@@ -820,25 +971,39 @@ private fun JournalInputField(
                         horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         IconButton(
-                            onClick = { /* Gallery action */ },
+                            onClick = onMediaClick,
                             modifier = Modifier.size(48.dp)
                         ) {
                             Icon(
                                 imageVector = Icons.Filled.Image,
-                                contentDescription = "Add image",
+                                contentDescription = "Add photo/video",
                                 tint = colors.primaryText,
                                 modifier = Modifier.size(24.dp)
                             )
                         }
                         IconButton(
-                            onClick = { /* Microphone action */ },
+                            onClick = onVoiceClick,
                             modifier = Modifier.size(48.dp)
                         ) {
+                            // Pulsating animation when recording
+                            val infiniteTransition = rememberInfiniteTransition(label = "mic_pulse")
+                            val scale by infiniteTransition.animateFloat(
+                                initialValue = 1f,
+                                targetValue = if (isRecording) 1.2f else 1f,
+                                animationSpec = infiniteRepeatable(
+                                    animation = tween(500, easing = FastOutSlowInEasing),
+                                    repeatMode = RepeatMode.Reverse
+                                ),
+                                label = "mic_scale"
+                            )
+
                             Icon(
-                                imageVector = Icons.Filled.Mic,
-                                contentDescription = "Voice input",
-                                tint = colors.primaryText,
-                                modifier = Modifier.size(24.dp)
+                                imageVector = if (isRecording) Icons.Filled.Stop else Icons.Filled.Mic,
+                                contentDescription = if (isRecording) "Stop recording" else "Voice input",
+                                tint = if (isRecording) colors.accent else colors.primaryText,
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .scale(if (isRecording) scale else 1f)
                             )
                         }
                         IconButton(
@@ -868,4 +1033,390 @@ private fun JournalInputField(
             }
         }
     }
+}
+
+// =============================================================================
+// ATTACHED MEDIA SECTION (NEW)
+// =============================================================================
+
+@Composable
+private fun AttachedMediaSection(
+    photos: List<String>,
+    videos: List<String>,
+    onRemovePhoto: (String) -> Unit,
+    onRemoveVideo: (String) -> Unit,
+    colors: JournalThemeColors
+) {
+    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+        Text(
+            text = "Attached Media",
+            style = MaterialTheme.typography.labelMedium.copy(
+                fontFamily = PoppinsFamily,
+                fontWeight = FontWeight.SemiBold
+            ),
+            color = colors.secondaryText
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            // Photos
+            items(photos) { photoUri ->
+                MediaThumbnail(
+                    uri = photoUri,
+                    isVideo = false,
+                    onRemove = { onRemovePhoto(photoUri) },
+                    colors = colors
+                )
+            }
+            // Videos
+            items(videos) { videoUri ->
+                MediaThumbnail(
+                    uri = videoUri,
+                    isVideo = true,
+                    onRemove = { onRemoveVideo(videoUri) },
+                    colors = colors
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun MediaThumbnail(
+    uri: String,
+    isVideo: Boolean,
+    onRemove: () -> Unit,
+    colors: JournalThemeColors
+) {
+    val context = LocalContext.current
+
+    Box(
+        modifier = Modifier
+            .size(80.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(colors.surface)
+    ) {
+        AsyncImage(
+            model = ImageRequest.Builder(context)
+                .data(uri)
+                .crossfade(true)
+                .build(),
+            contentDescription = if (isVideo) "Video thumbnail" else "Photo",
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
+        )
+
+        // Video indicator overlay
+        if (isVideo) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.3f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.PlayArrow,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(32.dp)
+                )
+            }
+        }
+
+        // Remove button
+        IconButton(
+            onClick = onRemove,
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .size(24.dp)
+                .padding(2.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(CircleShape)
+                    .background(Color.Black.copy(alpha = 0.6f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Close,
+                    contentDescription = "Remove",
+                    tint = Color.White,
+                    modifier = Modifier.size(14.dp)
+                )
+            }
+        }
+    }
+}
+
+// =============================================================================
+// VOICE RECORDING COMPONENTS (NEW)
+// =============================================================================
+
+@Composable
+private fun VoiceRecordingPreview(
+    duration: Long,
+    isPlaying: Boolean,
+    onPlayToggle: () -> Unit,
+    onRemove: () -> Unit,
+    colors: JournalThemeColors
+) {
+    val durationText = formatDuration(duration)
+
+    Box(
+        modifier = Modifier
+            .padding(horizontal = 16.dp)
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(colors.surface)
+            .padding(12.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            // Play/Pause button
+            IconButton(
+                onClick = onPlayToggle,
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(colors.accent)
+            ) {
+                Icon(
+                    imageVector = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
+                    contentDescription = if (isPlaying) "Pause" else "Play",
+                    tint = Color.White,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+
+            // Waveform visualization (simplified)
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(32.dp)
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(colors.accent.copy(alpha = 0.1f))
+            ) {
+                // Simple waveform bars
+                Row(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(2.dp)
+                ) {
+                    repeat(20) { index ->
+                        val height = (8 + (index * 17) % 20).dp
+                        Box(
+                            modifier = Modifier
+                                .width(3.dp)
+                                .height(height)
+                                .clip(RoundedCornerShape(1.dp))
+                                .background(colors.accent.copy(alpha = 0.6f))
+                        )
+                    }
+                }
+            }
+
+            // Duration text
+            Text(
+                text = durationText,
+                style = MaterialTheme.typography.labelMedium.copy(
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Medium
+                ),
+                color = colors.secondaryText
+            )
+
+            // Remove button
+            IconButton(
+                onClick = onRemove,
+                modifier = Modifier.size(32.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Delete,
+                    contentDescription = "Remove voice recording",
+                    tint = colors.secondaryText,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun RecordingIndicator(
+    timeElapsed: Long,
+    onStop: (String, Long) -> Unit,
+    onCancel: () -> Unit,
+    colors: JournalThemeColors
+) {
+    val infiniteTransition = rememberInfiniteTransition(label = "recording")
+    val alpha by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 0.3f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(500),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "recording_alpha"
+    )
+
+    Box(
+        modifier = Modifier
+            .padding(horizontal = 16.dp)
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(colors.accent.copy(alpha = 0.1f))
+            .padding(16.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                // Pulsating red dot
+                Box(
+                    modifier = Modifier
+                        .size(12.dp)
+                        .clip(CircleShape)
+                        .background(Color.Red.copy(alpha = alpha))
+                )
+
+                Text(
+                    text = "Recording...",
+                    style = MaterialTheme.typography.labelLarge.copy(
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.SemiBold
+                    ),
+                    color = colors.primaryText
+                )
+
+                Text(
+                    text = formatDuration(timeElapsed),
+                    style = MaterialTheme.typography.labelMedium.copy(
+                        fontFamily = PoppinsFamily
+                    ),
+                    color = colors.secondaryText
+                )
+            }
+
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                // Cancel button
+                IconButton(
+                    onClick = onCancel,
+                    modifier = Modifier.size(40.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Close,
+                        contentDescription = "Cancel recording",
+                        tint = colors.secondaryText
+                    )
+                }
+
+                // Stop button - This would need actual recording implementation
+                IconButton(
+                    onClick = {
+                        // In a real implementation, this would get the actual URI from the recorder
+                        // For now, we'll simulate with a placeholder
+                        onStop("voice_recording_${System.currentTimeMillis()}.m4a", timeElapsed)
+                    },
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(colors.accent)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Stop,
+                        contentDescription = "Stop recording",
+                        tint = Color.White
+                    )
+                }
+            }
+        }
+    }
+}
+
+// =============================================================================
+// DISCARD CHANGES DIALOG (NEW)
+// =============================================================================
+
+@Composable
+private fun DiscardChangesDialog(
+    onDismiss: () -> Unit,
+    onDiscard: () -> Unit,
+    colors: JournalThemeColors
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = colors.surface,
+        title = {
+            Text(
+                text = "Discard Entry?",
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Bold
+                ),
+                color = colors.primaryText
+            )
+        },
+        text = {
+            Text(
+                text = "You have unsaved changes. Are you sure you want to discard this entry?",
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    fontFamily = PoppinsFamily
+                ),
+                color = colors.secondaryText
+            )
+        },
+        confirmButton = {
+            TextButton(
+                onClick = onDiscard
+            ) {
+                Text(
+                    text = "Discard",
+                    style = MaterialTheme.typography.labelLarge.copy(
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.SemiBold
+                    ),
+                    color = Color(0xFFE53935) // Red color for destructive action
+                )
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = onDismiss
+            ) {
+                Text(
+                    text = "Keep Editing",
+                    style = MaterialTheme.typography.labelLarge.copy(
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.SemiBold
+                    ),
+                    color = colors.accent
+                )
+            }
+        }
+    )
+}
+
+// =============================================================================
+// HELPER FUNCTIONS
+// =============================================================================
+
+private fun formatDuration(milliseconds: Long): String {
+    val seconds = (milliseconds / 1000) % 60
+    val minutes = (milliseconds / (1000 * 60)) % 60
+    return String.format("%d:%02d", minutes, seconds)
 }

@@ -102,6 +102,8 @@ private object IdentityRoomColors {
 @Composable
 fun ProfileScreen(
     onNavigateToSettings: () -> Unit,
+    onNavigateToEditProfile: () -> Unit = {},
+    onNavigateToAchievements: () -> Unit = {},
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -132,7 +134,7 @@ fun ProfileScreen(
             item {
                 IdentityRoomHeader(
                     onSettingsClick = onNavigateToSettings,
-                    onEditClick = { /* TODO: Edit profile */ },
+                    onEditClick = onNavigateToEditProfile,
                     isDarkMode = isDarkMode
                 )
             }
@@ -148,11 +150,13 @@ fun ProfileScreen(
                 ) {
                     HeroSection(
                         displayName = uiState.displayName,
+                        bio = uiState.bio,
                         level = getLevelFromPoints(uiState.totalPoints),
                         levelProgress = calculateLevelProgress(uiState.totalPoints),
                         isDev = true, // TODO: Get from user state
                         isBetaPioneer = true, // TODO: Get from user state
-                        isDarkMode = isDarkMode
+                        isDarkMode = isDarkMode,
+                        onEditClick = onNavigateToEditProfile
                     )
                 }
             }
@@ -223,7 +227,8 @@ fun ProfileScreen(
                     TrophyRoomHeader(
                         unlockedCount = uiState.unlockedAchievements.size,
                         totalCount = uiState.unlockedAchievements.size + uiState.lockedAchievements.size,
-                        isDarkMode = isDarkMode
+                        isDarkMode = isDarkMode,
+                        onClick = onNavigateToAchievements
                     )
                 }
             }
@@ -326,11 +331,13 @@ private fun IdentityRoomHeader(
 @Composable
 private fun HeroSection(
     displayName: String,
+    bio: String,
     level: Int,
     levelProgress: Float,
     isDev: Boolean,
     isBetaPioneer: Boolean,
-    isDarkMode: Boolean
+    isDarkMode: Boolean,
+    onEditClick: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -423,6 +430,61 @@ private fun HeroSection(
             if (isBetaPioneer) {
                 BetaPioneerBadge()
             }
+        }
+
+        // Bio Section
+        if (bio.isNotBlank()) {
+            Spacer(modifier = Modifier.height(16.dp))
+            BioSection(
+                bio = bio,
+                isDarkMode = isDarkMode,
+                onEditClick = onEditClick
+            )
+        }
+    }
+}
+
+@Composable
+private fun BioSection(
+    bio: String,
+    isDarkMode: Boolean,
+    onEditClick: () -> Unit
+) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onEditClick() },
+        color = if (isDarkMode) IdentityRoomColors.CardBackgroundDark.copy(alpha = 0.5f)
+                else IdentityRoomColors.CardBackgroundLight.copy(alpha = 0.8f),
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.Top,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.FormatQuote,
+                contentDescription = null,
+                tint = if (isDarkMode) IdentityRoomColors.AccentGreen
+                       else IdentityRoomColors.AccentGreenLight,
+                modifier = Modifier.size(20.dp)
+            )
+            Text(
+                text = bio,
+                style = MaterialTheme.typography.bodyMedium,
+                color = if (isDarkMode) IdentityRoomColors.TextSecondaryDark
+                        else IdentityRoomColors.TextSecondaryLight,
+                modifier = Modifier.weight(1f),
+                lineHeight = 22.sp
+            )
+            Icon(
+                imageVector = Icons.Outlined.Edit,
+                contentDescription = "Edit bio",
+                tint = if (isDarkMode) IdentityRoomColors.TextTertiaryDark
+                       else IdentityRoomColors.TextTertiaryLight,
+                modifier = Modifier.size(16.dp)
+            )
         }
     }
 }
@@ -1010,11 +1072,13 @@ private fun WeeklyPatternSection(
 private fun TrophyRoomHeader(
     unlockedCount: Int,
     totalCount: Int,
-    isDarkMode: Boolean
+    isDarkMode: Boolean,
+    onClick: () -> Unit
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .clickable { onClick() }
             .padding(horizontal = 20.dp, vertical = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
@@ -1038,18 +1102,30 @@ private fun TrophyRoomHeader(
             )
         }
 
-        Surface(
-            color = if (isDarkMode) IdentityRoomColors.CardBackgroundDark
-                    else IdentityRoomColors.CardBackgroundLight,
-            shape = RoundedCornerShape(12.dp)
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(
-                text = "$unlockedCount / $totalCount",
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.Medium,
-                color = if (isDarkMode) IdentityRoomColors.TextSecondaryDark
-                        else IdentityRoomColors.TextSecondaryLight,
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+            Surface(
+                color = if (isDarkMode) IdentityRoomColors.CardBackgroundDark
+                        else IdentityRoomColors.CardBackgroundLight,
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text(
+                    text = "$unlockedCount / $totalCount",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Medium,
+                    color = if (isDarkMode) IdentityRoomColors.TextSecondaryDark
+                            else IdentityRoomColors.TextSecondaryLight,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                )
+            }
+            Icon(
+                imageVector = Icons.Filled.ChevronRight,
+                contentDescription = "View all achievements",
+                tint = if (isDarkMode) IdentityRoomColors.TextTertiaryDark
+                       else IdentityRoomColors.TextTertiaryLight,
+                modifier = Modifier.size(20.dp)
             )
         }
     }
