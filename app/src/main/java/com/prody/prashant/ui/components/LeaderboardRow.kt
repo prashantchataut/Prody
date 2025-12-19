@@ -56,6 +56,17 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.prody.prashant.data.local.entity.LeaderboardEntryEntity
 import com.prody.prashant.domain.identity.ProdyBanners
+import com.prody.prashant.ui.theme.LeaderboardBronze
+import com.prody.prashant.ui.theme.LeaderboardBronzeDark
+import com.prody.prashant.ui.theme.LeaderboardBronzeLight
+import com.prody.prashant.ui.theme.LeaderboardGold
+import com.prody.prashant.ui.theme.LeaderboardGoldDark
+import com.prody.prashant.ui.theme.LeaderboardGoldLight
+import com.prody.prashant.ui.theme.LeaderboardSilver
+import com.prody.prashant.ui.theme.LeaderboardSilverDark
+import com.prody.prashant.ui.theme.LeaderboardSilverLight
+import com.prody.prashant.ui.theme.ProdySuccess
+import com.prody.prashant.ui.theme.ProdyError
 import com.prody.prashant.ui.theme.ProdyTokens
 import kotlin.math.sin
 
@@ -76,27 +87,27 @@ import kotlin.math.sin
  */
 
 // =============================================================================
-// TOP 3 RANK COLORS - Premium Podium Theme
+// TOP 3 RANK COLORS - Using Theme Colors from Color.kt
 // =============================================================================
 
 private object LeaderboardRankColors {
-    // Gold - 1st Place
-    val GoldPrimary = Color(0xFFFFD700)
-    val GoldSecondary = Color(0xFFFFC400)
-    val GoldTertiary = Color(0xFFFFE066)
-    val GoldGlow = Color(0x40FFD700)
+    // Gold - 1st Place (using theme colors)
+    val GoldPrimary = LeaderboardGold
+    val GoldSecondary = LeaderboardGoldDark
+    val GoldTertiary = LeaderboardGoldLight
+    val GoldGlow = LeaderboardGold.copy(alpha = 0.25f)
 
-    // Silver - 2nd Place
-    val SilverPrimary = Color(0xFFC0C0C0)
-    val SilverSecondary = Color(0xFFD4D4D4)
-    val SilverTertiary = Color(0xFFE8E8E8)
-    val SilverGlow = Color(0x40C0C0C0)
+    // Silver - 2nd Place (using theme colors)
+    val SilverPrimary = LeaderboardSilver
+    val SilverSecondary = LeaderboardSilverDark
+    val SilverTertiary = LeaderboardSilverLight
+    val SilverGlow = LeaderboardSilver.copy(alpha = 0.25f)
 
-    // Bronze - 3rd Place
-    val BronzePrimary = Color(0xFFCD7F32)
-    val BronzeSecondary = Color(0xFFB8722C)
-    val BronzeTertiary = Color(0xFFE6A55A)
-    val BronzeGlow = Color(0x40CD7F32)
+    // Bronze - 3rd Place (using theme colors)
+    val BronzePrimary = LeaderboardBronze
+    val BronzeSecondary = LeaderboardBronzeDark
+    val BronzeTertiary = LeaderboardBronzeLight
+    val BronzeGlow = LeaderboardBronze.copy(alpha = 0.25f)
 }
 
 /**
@@ -333,9 +344,9 @@ fun ProdyLeaderboardRow(
     val isHighlighted = entry.rank in 1..3 || entry.isCurrentUser
     val backgroundColor = when {
         entry.isCurrentUser -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
-        entry.rank == 1 -> Color(0xFFFFD700).copy(alpha = 0.08f)
-        entry.rank == 2 -> Color(0xFFC0C0C0).copy(alpha = 0.08f)
-        entry.rank == 3 -> Color(0xFFCD7F32).copy(alpha = 0.08f)
+        entry.rank == 1 -> LeaderboardGold.copy(alpha = 0.08f)
+        entry.rank == 2 -> LeaderboardSilver.copy(alpha = 0.08f)
+        entry.rank == 3 -> LeaderboardBronze.copy(alpha = 0.08f)
         else -> MaterialTheme.colorScheme.surface
     }
 
@@ -529,12 +540,12 @@ private fun RankChangeIndicator(
                     imageVector = Icons.Default.TrendingUp,
                     contentDescription = "Rank up",
                     modifier = Modifier.size(14.dp),
-                    tint = Color(0xFF4CAF50)
+                    tint = ProdySuccess
                 )
                 Text(
                     text = "+$change",
                     style = MaterialTheme.typography.labelSmall,
-                    color = Color(0xFF4CAF50),
+                    color = ProdySuccess,
                     fontWeight = FontWeight.Medium
                 )
             }
@@ -548,12 +559,12 @@ private fun RankChangeIndicator(
                     imageVector = Icons.Default.TrendingDown,
                     contentDescription = "Rank down",
                     modifier = Modifier.size(14.dp),
-                    tint = Color(0xFFE57373)
+                    tint = ProdyError
                 )
                 Text(
                     text = "$change",
                     style = MaterialTheme.typography.labelSmall,
-                    color = Color(0xFFE57373),
+                    color = ProdyError,
                     fontWeight = FontWeight.Medium
                 )
             }
@@ -612,9 +623,9 @@ fun ProdyCompactLeaderboardRow(
                 style = MaterialTheme.typography.labelMedium,
                 fontWeight = FontWeight.Bold,
                 color = when (entry.rank) {
-                    1 -> Color(0xFFFFD700)
-                    2 -> Color(0xFFC0C0C0)
-                    3 -> Color(0xFFCD7F32)
+                    1 -> LeaderboardGold
+                    2 -> LeaderboardSilver
+                    3 -> LeaderboardBronze
                     else -> MaterialTheme.colorScheme.onSurfaceVariant
                 },
                 modifier = Modifier.width(32.dp)
@@ -663,7 +674,7 @@ fun ProdyLeaderboardPodium(
                 entry = it,
                 place = 2,
                 height = 100.dp,
-                color = Color(0xFFC0C0C0),
+                color = LeaderboardSilver,
                 onClick = { onUserClick(it) }
             )
         }
@@ -674,7 +685,7 @@ fun ProdyLeaderboardPodium(
                 entry = it,
                 place = 1,
                 height = 120.dp,
-                color = Color(0xFFFFD700),
+                color = LeaderboardGold,
                 onClick = { onUserClick(it) }
             )
         }
@@ -685,7 +696,7 @@ fun ProdyLeaderboardPodium(
                 entry = it,
                 place = 3,
                 height = 80.dp,
-                color = Color(0xFFCD7F32),
+                color = LeaderboardBronze,
                 onClick = { onUserClick(it) }
             )
         }

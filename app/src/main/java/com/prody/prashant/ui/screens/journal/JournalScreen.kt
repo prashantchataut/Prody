@@ -88,7 +88,10 @@ fun JournalListScreen(
                             else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background
+                )
             )
         },
         floatingActionButton = {

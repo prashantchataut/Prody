@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -42,72 +41,80 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.prody.prashant.ui.theme.PoppinsFamily
+import com.prody.prashant.ui.theme.*
 import kotlinx.coroutines.launch
 
 // =============================================================================
-// PRODY ONBOARDING - PIXEL-PERFECT IMPLEMENTATION
+// PRODY ONBOARDING - REDESIGNED WITH FLAT DESIGN SYSTEM
 // =============================================================================
-// A sophisticated 6-screen onboarding flow featuring:
-// - Dark & Energetic Minimalism aesthetic
-// - Custom components: Logo, Pager Indicator, Buttons
-// - Canvas-drawn concentric circles background
+// A sophisticated 7-screen onboarding flow featuring:
+// - Flat, minimalist design with NO shadows or gradients
+// - Deep dark teal (#0D2826) for dark mode
+// - Clean off-white (#F0F4F3) for light mode
+// - Vibrant neon green (#36F97F) accent
+// - Exclusively Poppins typography
 // - Full Light/Dark mode support
 // =============================================================================
 
 // =============================================================================
-// COLOR PALETTE - Exact hex values from design specifications
+// COLOR PALETTE - Using Prody Design System Colors
 // =============================================================================
 
-// Light Mode Colors
-private val LightBackground = Color(0xFFF0F4F3)
-private val LightCardBackground = Color(0xFFE0E7E6)
-private val LightIconCircleBackground = Color(0xFFE6F0EE)
-private val LightTextPrimary = Color(0xFF1A1A1A)
-private val LightTextSecondary = Color(0xFF6C757D)
-private val LightTextTertiary = Color(0xFF8A9493)
-private val LightInactiveDot = Color(0xFFB0B8B7)
-private val LightProgressBarInactive = Color(0xFFA0A8A7)
-private val LightDivider = Color(0xFFCCCCCC)
-private val LightSubtleLines = Color(0xFFD0D8D6)
+// Light Mode Colors - From Color.kt
+private val LightBackground = OnboardingBackgroundLight
+private val LightCardBackground = OnboardingSurfaceVariantLight
+private val LightIconCircleBackground = OnboardingIconContainerLight
+private val LightTextPrimary = OnboardingTextPrimaryLight
+private val LightTextSecondary = OnboardingTextSecondaryLight
+private val LightTextTertiary = OnboardingTextTertiaryLight
+private val LightInactiveDot = OnboardingProgressInactiveLight
+private val LightProgressBarInactive = OnboardingProgressInactiveLight
+private val LightDivider = OnboardingDividerLight
+private val LightSubtleLines = ProdyOutlineLight
 
-// Dark Mode Colors
-private val DarkBackground = Color(0xFF0A1D1C)
-private val DarkCardBackground = Color(0xFF2A4240)
-private val DarkIconCircleBackground = Color(0xFF3F5857)
-private val DarkTextPrimary = Color(0xFFFFFFFF)
-private val DarkTextSecondary = Color(0xFFD3D8D7)
-private val DarkTextTertiary = Color(0xFF8A9493)
-private val DarkInactiveDot = Color(0xFF404B4A)
-private val DarkProgressBarInactive = Color(0xFF5A706F)
-private val DarkDivider = Color(0xFF404B4A)
-private val DarkSubtleLines = Color(0xFF2A3A38)
+// Dark Mode Colors - From Color.kt
+private val DarkBackground = OnboardingBackgroundDark
+private val DarkCardBackground = OnboardingSurfaceVariantDark
+private val DarkIconCircleBackground = OnboardingIconContainerDark
+private val DarkTextPrimary = OnboardingTextPrimaryDark
+private val DarkTextSecondary = OnboardingTextSecondaryDark
+private val DarkTextTertiary = OnboardingTextTertiaryDark
+private val DarkInactiveDot = OnboardingProgressInactiveDark
+private val DarkProgressBarInactive = OnboardingProgressInactiveDark
+private val DarkDivider = OnboardingDividerDark
+private val DarkSubtleLines = ProdyOutlineDark
 
 // Shared Accent Color - Vibrant Neon Green
-private val AccentGreen = Color(0xFF36F97F)
-private val ButtonTextDark = Color(0xFF000000)
+private val AccentGreen = OnboardingAccent
+private val ButtonTextDark = OnboardingButtonTextLight
 
 // Logo Container Colors
-private val LogoContainerDark = Color(0xFF1C3533)
-private val LogoContainerLight = Color(0xFFFFFFFF)
-private val LogoContainerStroke = Color(0xFF2A4240)
+private val LogoContainerDark = ProdySurfaceVariantDark
+private val LogoContainerLight = ProdySurfaceLight
+private val LogoContainerStroke = ProdyOutlineDark
+
+// Card & Component Colors
+private val CardBackgroundDark = ProdySurfaceContainerDark
+private val CardBackgroundLight = ProdySurfaceContainerLight
+private val GridColorDark = ProdyOutlineDark
+private val GridColorLight = ProdyOutlineLight
 
 // Login/Signup Screen Colors - Dark Mode
-private val LoginDarkBackground = Color(0xFF1C1C1E)
-private val LoginDarkInputBackground = Color(0xFF2A2A2E)
-private val LoginDarkInputIcon = Color(0xFF8A8A8A)
-private val LoginDarkPlaceholder = Color(0xFF8A8A8A)
-private val LoginDarkSubtleText = Color(0xFFD3D8D7)
-private val LoginDarkLogoContainer = Color(0xFF2A2A2E)
+private val LoginDarkBackground = ProdyBackgroundDark
+private val LoginDarkInputBackground = ProdySurfaceVariantDark
+private val LoginDarkInputIcon = ProdyTextTertiaryDark
+private val LoginDarkPlaceholder = ProdyTextTertiaryDark
+private val LoginDarkSubtleText = ProdyTextSecondaryDark
+private val LoginDarkLogoContainer = ProdySurfaceVariantDark
 
 // Login/Signup Screen Colors - Light Mode
-private val LoginLightBackground = Color(0xFFF0F4F3)
-private val LoginLightInputBackground = Color(0xFFFFFFFF)
-private val LoginLightInputIcon = Color(0xFF6C757D)
-private val LoginLightPlaceholder = Color(0xFF6C757D)
-private val LoginLightSubtleText = Color(0xFF6C757D)
-private val LoginLightLogoContainer = Color(0xFFFFFFFF)
-private val LoginLightLogoLeaf = Color(0xFF1A1A1A)
+private val LoginLightBackground = ProdyBackgroundLight
+private val LoginLightInputBackground = ProdySurfaceLight
+private val LoginLightInputIcon = ProdyTextSecondaryLight
+private val LoginLightPlaceholder = ProdyTextSecondaryLight
+private val LoginLightSubtleText = ProdyTextSecondaryLight
+private val LoginLightLogoContainer = ProdySurfaceLight
+private val LoginLightLogoLeaf = ProdyTextPrimaryLight
 
 // =============================================================================
 // DATA MODEL
@@ -877,8 +884,8 @@ private fun LeaderboardGraphicCard(
     isDarkTheme: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val cardBackground = if (isDarkTheme) Color(0xFF1F3A38) else Color(0xFFE8EFEE)
-    val gridColor = if (isDarkTheme) Color(0xFF2A4A48) else Color(0xFFD8E0DE)
+    val cardBackground = if (isDarkTheme) CardBackgroundDark else CardBackgroundLight
+    val gridColor = if (isDarkTheme) GridColorDark else GridColorLight
 
     Column(
         modifier = modifier
@@ -965,13 +972,13 @@ private fun LeaderboardRow(
     modifier: Modifier = Modifier
 ) {
     val rowBackground = if (isActive) {
-        if (isDarkTheme) Color(0xFF2A4A48) else Color(0xFFD0E0DD)
+        if (isDarkTheme) ProdySurfaceContainerDark else ProdySurfaceContainerLight
     } else {
         Color.Transparent
     }
     val textColor = if (isDarkTheme) DarkTextSecondary else LightTextSecondary
     val progressColor = if (isActive) AccentGreen else (if (isDarkTheme) DarkProgressBarInactive else LightProgressBarInactive)
-    val progressBg = if (isDarkTheme) Color(0xFF3A5A58) else Color(0xFFBBC8C6)
+    val progressBg = if (isDarkTheme) ProdyOutlineDark else ProdyOutlineLight
     val progressFraction = when (rank) { 1 -> 0.85f; 2 -> 0.65f; else -> 0.45f }
     val scoreColor = if (isActive) AccentGreen else textColor
 
@@ -1166,7 +1173,7 @@ private fun GamificationXpScreen(
                 )
                 StatCard(
                     icon = Icons.Default.Lock,
-                    iconTint = if (isDarkTheme) Color(0xFF707A79) else Color(0xFF909998),
+                    iconTint = if (isDarkTheme) DarkTextTertiary else LightTextTertiary,
                     value = "???",
                     label = "LOCKED",
                     isLocked = true,
@@ -1241,7 +1248,7 @@ private fun XpProgressRing(
     isDarkTheme: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val progressInactive = if (isDarkTheme) Color(0xFF3F5857) else Color(0xFFA0A8A7)
+    val progressInactive = if (isDarkTheme) OnboardingXpArcBackgroundDark else OnboardingXpArcBackgroundLight
     val innerCircleBg = if (isDarkTheme) DarkCardBackground else LightCardBackground
     val textPrimary = if (isDarkTheme) DarkTextPrimary else LightTextPrimary
     val textSecondary = if (isDarkTheme) DarkTextSecondary else LightTextSecondary
@@ -1372,9 +1379,9 @@ private fun StatCard(
     modifier: Modifier = Modifier
 ) {
     val cardBg = if (isDarkTheme) DarkCardBackground else LightCardBackground
-    val lockedBorderColor = if (isDarkTheme) Color(0xFF3A4540) else Color(0xFFD0D8D4)
+    val lockedBorderColor = if (isDarkTheme) ProdyOutlineDark else ProdyOutlineLight
     val textColor = if (isLocked) {
-        if (isDarkTheme) Color(0xFF707A79) else Color(0xFF909998)
+        if (isDarkTheme) DarkTextTertiary else LightTextTertiary
     } else {
         if (isDarkTheme) DarkTextPrimary else LightTextPrimary
     }
@@ -1769,7 +1776,7 @@ private fun QuoteCard(
     isDarkTheme: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val cardBackground = if (isDarkTheme) Color(0xFF2D4240) else Color(0xFFE8EFEE)
+    val cardBackground = if (isDarkTheme) ProdySurfaceContainerDark else ProdySurfaceContainerLight
     val textPrimary = if (isDarkTheme) DarkTextPrimary else LightTextPrimary
     val textSecondary = if (isDarkTheme) DarkTextSecondary else LightTextSecondary
     val dividerColor = if (isDarkTheme) DarkDivider else LightDivider
@@ -1931,8 +1938,8 @@ private fun LoginSignupScreen(
     val logoContainerColor = if (isDarkTheme) LoginDarkLogoContainer else LoginLightLogoContainer
     val logoLeafColor = if (isDarkTheme) Color.White else LoginLightLogoLeaf
     val textPrimary = if (isDarkTheme) Color.White else LoginLightLogoLeaf
-    val dividerLineColor = if (isDarkTheme) Color(0xFF404B4A) else Color(0xFFCCCCCC)
-    val socialButtonAddingSoonColor = if (isDarkTheme) Color(0xFF8A8A8A) else Color(0xFF6C757D)
+    val dividerLineColor = if (isDarkTheme) ProdyOutlineDark else ProdyOutlineLight
+    val socialButtonAddingSoonColor = if (isDarkTheme) DarkTextTertiary else LightTextTertiary
 
     // State for input fields
     var email by remember { mutableStateOf("") }

@@ -77,7 +77,10 @@ fun VocabularyDetailScreen(
                             else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background
+                )
             )
         }
     ) { padding ->
