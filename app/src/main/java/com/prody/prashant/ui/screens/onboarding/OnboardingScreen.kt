@@ -7,6 +7,9 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
@@ -18,16 +21,22 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.*
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
@@ -83,6 +92,23 @@ private val LogoContainerDark = Color(0xFF1C3533)
 private val LogoContainerLight = Color(0xFFFFFFFF)
 private val LogoContainerStroke = Color(0xFF2A4240)
 
+// Login/Signup Screen Colors - Dark Mode
+private val LoginDarkBackground = Color(0xFF1C1C1E)
+private val LoginDarkInputBackground = Color(0xFF2A2A2E)
+private val LoginDarkInputIcon = Color(0xFF8A8A8A)
+private val LoginDarkPlaceholder = Color(0xFF8A8A8A)
+private val LoginDarkSubtleText = Color(0xFFD3D8D7)
+private val LoginDarkLogoContainer = Color(0xFF2A2A2E)
+
+// Login/Signup Screen Colors - Light Mode
+private val LoginLightBackground = Color(0xFFF0F4F3)
+private val LoginLightInputBackground = Color(0xFFFFFFFF)
+private val LoginLightInputIcon = Color(0xFF6C757D)
+private val LoginLightPlaceholder = Color(0xFF6C757D)
+private val LoginLightSubtleText = Color(0xFF6C757D)
+private val LoginLightLogoContainer = Color(0xFFFFFFFF)
+private val LoginLightLogoLeaf = Color(0xFF1A1A1A)
+
 // =============================================================================
 // DATA MODEL
 // =============================================================================
@@ -93,7 +119,8 @@ private enum class OnboardingPageType {
     GAMIFICATION_LEADERBOARD,
     GAMIFICATION_XP,
     DAILY_WISDOM,
-    PERSONALIZED_INSIGHTS
+    PERSONALIZED_INSIGHTS,
+    LOGIN_SIGNUP
 }
 
 // =============================================================================
@@ -106,7 +133,7 @@ fun OnboardingScreen(
     onComplete: () -> Unit,
     viewModel: OnboardingViewModel = hiltViewModel()
 ) {
-    val pagerState = rememberPagerState(pageCount = { 6 })
+    val pagerState = rememberPagerState(pageCount = { 7 })
     val coroutineScope = rememberCoroutineScope()
     val isDarkTheme = isSystemInDarkTheme()
 
@@ -128,21 +155,25 @@ fun OnboardingScreen(
                 OnboardingPageType.WELCOME -> WelcomeScreen(
                     isDarkTheme = isDarkTheme,
                     currentPage = page,
-                    totalPages = 6,
+                    totalPages = 7,
                     onNext = {
                         coroutineScope.launch {
                             pagerState.animateScrollToPage(page + 1)
                         }
                     },
-                    onLogin = { /* Navigate to login */ }
+                    onLogin = {
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(6) // Navigate to login screen
+                        }
+                    }
                 )
                 OnboardingPageType.JOURNALING -> JournalingScreen(
                     isDarkTheme = isDarkTheme,
                     currentPage = page,
-                    totalPages = 6,
+                    totalPages = 7,
                     onSkip = {
                         coroutineScope.launch {
-                            pagerState.animateScrollToPage(5)
+                            pagerState.animateScrollToPage(6) // Skip to login screen
                         }
                     },
                     onBack = {
@@ -159,10 +190,10 @@ fun OnboardingScreen(
                 OnboardingPageType.GAMIFICATION_LEADERBOARD -> GamificationLeaderboardScreen(
                     isDarkTheme = isDarkTheme,
                     currentPage = page,
-                    totalPages = 6,
+                    totalPages = 7,
                     onSkip = {
                         coroutineScope.launch {
-                            pagerState.animateScrollToPage(5)
+                            pagerState.animateScrollToPage(6) // Skip to login screen
                         }
                     },
                     onContinue = {
@@ -174,7 +205,7 @@ fun OnboardingScreen(
                 OnboardingPageType.GAMIFICATION_XP -> GamificationXpScreen(
                     isDarkTheme = isDarkTheme,
                     currentPage = page,
-                    totalPages = 6,
+                    totalPages = 7,
                     onStartQuest = {
                         coroutineScope.launch {
                             pagerState.animateScrollToPage(page + 1)
@@ -184,10 +215,10 @@ fun OnboardingScreen(
                 OnboardingPageType.DAILY_WISDOM -> DailyWisdomFeaturesScreen(
                     isDarkTheme = isDarkTheme,
                     currentPage = page,
-                    totalPages = 6,
+                    totalPages = 7,
                     onSkip = {
                         coroutineScope.launch {
-                            pagerState.animateScrollToPage(5)
+                            pagerState.animateScrollToPage(6) // Skip to login screen
                         }
                     },
                     onContinue = {
@@ -204,18 +235,39 @@ fun OnboardingScreen(
                 OnboardingPageType.PERSONALIZED_INSIGHTS -> PersonalizedInsightsScreen(
                     isDarkTheme = isDarkTheme,
                     currentPage = page,
-                    totalPages = 6,
+                    totalPages = 7,
                     onSkip = {
-                        viewModel.completeOnboarding()
-                        onComplete()
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(6) // Skip to login screen
+                        }
                     },
                     onEnableNotifications = {
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(page + 1) // Navigate to login screen
+                        }
+                    },
+                    onMaybeLater = {
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(page + 1) // Navigate to login screen
+                        }
+                    }
+                )
+                OnboardingPageType.LOGIN_SIGNUP -> LoginSignupScreen(
+                    isDarkTheme = isDarkTheme,
+                    onLogin = {
                         viewModel.completeOnboarding()
                         onComplete()
                     },
-                    onMaybeLater = {
+                    onCreateAccount = {
                         viewModel.completeOnboarding()
                         onComplete()
+                    },
+                    onGoogleLogin = {
+                        viewModel.completeOnboarding()
+                        onComplete()
+                    },
+                    onForgotPassword = {
+                        // Handle forgot password - for now just navigate to onComplete
                     }
                 )
             }
@@ -1854,6 +1906,562 @@ private fun QuoteCard(
                 tint = textPrimary,
                 modifier = Modifier.size(22.dp)
             )
+        }
+    }
+}
+
+// =============================================================================
+// SCREEN 7: LOGIN/SIGNUP SCREEN
+// =============================================================================
+
+@Composable
+private fun LoginSignupScreen(
+    isDarkTheme: Boolean,
+    onLogin: () -> Unit,
+    onCreateAccount: () -> Unit,
+    onGoogleLogin: () -> Unit,
+    onForgotPassword: () -> Unit
+) {
+    // Colors based on theme
+    val backgroundColor = if (isDarkTheme) LoginDarkBackground else LoginLightBackground
+    val inputBackground = if (isDarkTheme) LoginDarkInputBackground else LoginLightInputBackground
+    val inputIconColor = if (isDarkTheme) LoginDarkInputIcon else LoginLightInputIcon
+    val placeholderColor = if (isDarkTheme) LoginDarkPlaceholder else LoginLightPlaceholder
+    val subtleTextColor = if (isDarkTheme) LoginDarkSubtleText else LoginLightSubtleText
+    val logoContainerColor = if (isDarkTheme) LoginDarkLogoContainer else LoginLightLogoContainer
+    val logoLeafColor = if (isDarkTheme) Color.White else LoginLightLogoLeaf
+    val textPrimary = if (isDarkTheme) Color.White else LoginLightLogoLeaf
+    val dividerLineColor = if (isDarkTheme) Color(0xFF404B4A) else Color(0xFFCCCCCC)
+    val socialButtonAddingSoonColor = if (isDarkTheme) Color(0xFF8A8A8A) else Color(0xFF6C757D)
+
+    // State for input fields
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var emailFocused by remember { mutableStateOf(false) }
+    var passwordFocused by remember { mutableStateOf(false) }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(backgroundColor)
+            .systemBarsPadding()
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Spacer(modifier = Modifier.height(48.dp))
+
+            // Prody Logo with green accent dot - Login specific version
+            LoginProdyLogo(
+                isDarkTheme = isDarkTheme,
+                logoContainerColor = logoContainerColor,
+                logoLeafColor = logoLeafColor,
+                modifier = Modifier.size(100.dp)
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Brand Title "Prody."
+            Text(
+                text = "Prody.",
+                style = TextStyle(
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 36.sp,
+                    letterSpacing = (-0.5).sp
+                ),
+                color = textPrimary
+            )
+
+            Spacer(modifier = Modifier.height(40.dp))
+
+            // Email Input Field
+            LoginInputField(
+                value = email,
+                onValueChange = { email = it },
+                placeholder = "Email Address",
+                icon = Icons.Outlined.Email,
+                isFocused = emailFocused,
+                onFocusChange = { emailFocused = it },
+                backgroundColor = inputBackground,
+                iconColor = inputIconColor,
+                placeholderColor = placeholderColor,
+                textColor = textPrimary
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Password Input Field
+            LoginInputField(
+                value = password,
+                onValueChange = { password = it },
+                placeholder = "Password",
+                icon = Icons.Outlined.Lock,
+                isPassword = true,
+                isFocused = passwordFocused,
+                onFocusChange = { passwordFocused = it },
+                backgroundColor = inputBackground,
+                iconColor = inputIconColor,
+                placeholderColor = placeholderColor,
+                textColor = textPrimary
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Forgot Password link - right aligned
+            Text(
+                text = "Forgot Password?",
+                style = TextStyle(
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Normal,
+                    fontSize = 14.sp
+                ),
+                color = subtleTextColor,
+                modifier = Modifier
+                    .align(Alignment.End)
+                    .clickable { onForgotPassword() }
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Log In Button
+            LoginButton(
+                text = "Log In",
+                onClick = onLogin,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // OR CONTINUE WITH Divider
+            OrContinueWithDivider(
+                textColor = subtleTextColor,
+                lineColor = dividerLineColor
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Social Login Buttons Row
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Google Button
+                SocialLoginButton(
+                    onClick = onGoogleLogin,
+                    backgroundColor = inputBackground,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    // Google logo using Canvas
+                    Canvas(modifier = Modifier.size(24.dp)) {
+                        val centerX = size.width / 2
+                        val centerY = size.height / 2
+                        val radius = size.minDimension / 2 - 2.dp.toPx()
+
+                        // Google 'G' colors
+                        val googleBlue = Color(0xFF4285F4)
+                        val googleRed = Color(0xFFEA4335)
+                        val googleYellow = Color(0xFFFBBC05)
+                        val googleGreen = Color(0xFF34A853)
+
+                        // Draw the colored arcs of the Google logo
+                        // Blue arc (right side)
+                        drawArc(
+                            color = googleBlue,
+                            startAngle = -45f,
+                            sweepAngle = 90f,
+                            useCenter = true,
+                            topLeft = Offset(centerX - radius, centerY - radius),
+                            size = Size(radius * 2, radius * 2)
+                        )
+                        // Red arc (top)
+                        drawArc(
+                            color = googleRed,
+                            startAngle = -135f,
+                            sweepAngle = 90f,
+                            useCenter = true,
+                            topLeft = Offset(centerX - radius, centerY - radius),
+                            size = Size(radius * 2, radius * 2)
+                        )
+                        // Yellow arc (bottom-left)
+                        drawArc(
+                            color = googleYellow,
+                            startAngle = 135f,
+                            sweepAngle = 90f,
+                            useCenter = true,
+                            topLeft = Offset(centerX - radius, centerY - radius),
+                            size = Size(radius * 2, radius * 2)
+                        )
+                        // Green arc (bottom)
+                        drawArc(
+                            color = googleGreen,
+                            startAngle = 45f,
+                            sweepAngle = 90f,
+                            useCenter = true,
+                            topLeft = Offset(centerX - radius, centerY - radius),
+                            size = Size(radius * 2, radius * 2)
+                        )
+                        // White center circle to create the G shape
+                        drawCircle(
+                            color = if (isDarkTheme) LoginDarkInputBackground else Color.White,
+                            radius = radius * 0.55f,
+                            center = Offset(centerX, centerY)
+                        )
+                        // Blue horizontal bar for the G
+                        drawRect(
+                            color = googleBlue,
+                            topLeft = Offset(centerX - 1.dp.toPx(), centerY - 2.dp.toPx()),
+                            size = Size(radius + 2.dp.toPx(), 4.dp.toPx())
+                        )
+                    }
+                }
+
+                // Adding soon Button
+                SocialLoginButton(
+                    onClick = { },
+                    backgroundColor = inputBackground,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        text = "Adding soon",
+                        style = TextStyle(
+                            fontFamily = PoppinsFamily,
+                            fontWeight = FontWeight.Normal,
+                            fontSize = 14.sp
+                        ),
+                        color = socialButtonAddingSoonColor
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // New to Prody? Create an Account
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "New to Prody? ",
+                    style = TextStyle(
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.Normal,
+                        fontSize = 14.sp
+                    ),
+                    color = subtleTextColor
+                )
+                Text(
+                    text = "Create an Account",
+                    style = TextStyle(
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.Normal,
+                        fontSize = 14.sp,
+                        textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline
+                    ),
+                    color = AccentGreen,
+                    modifier = Modifier.clickable { onCreateAccount() }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(40.dp))
+        }
+    }
+}
+
+/**
+ * Login-specific Prody Logo - Circular container with leaf icon and green accent dot
+ */
+@Composable
+private fun LoginProdyLogo(
+    isDarkTheme: Boolean,
+    logoContainerColor: Color,
+    logoLeafColor: Color,
+    modifier: Modifier = Modifier
+) {
+    Box(modifier = modifier) {
+        // Circular container
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .clip(CircleShape)
+                .background(logoContainerColor),
+            contentAlignment = Alignment.Center
+        ) {
+            // Seedling/Leaf icon drawn with Canvas
+            Canvas(modifier = Modifier.size(48.dp)) {
+                val centerX = size.width / 2
+                val centerY = size.height / 2
+
+                // Center leaf (pointing up)
+                val centerLeaf = Path().apply {
+                    moveTo(centerX, centerY + 16.dp.toPx())
+                    cubicTo(
+                        centerX - 10.dp.toPx(), centerY + 4.dp.toPx(),
+                        centerX - 8.dp.toPx(), centerY - 16.dp.toPx(),
+                        centerX, centerY - 20.dp.toPx()
+                    )
+                    cubicTo(
+                        centerX + 8.dp.toPx(), centerY - 16.dp.toPx(),
+                        centerX + 10.dp.toPx(), centerY + 4.dp.toPx(),
+                        centerX, centerY + 16.dp.toPx()
+                    )
+                    close()
+                }
+                drawPath(centerLeaf, logoLeafColor)
+
+                // Left leaf
+                val leftLeaf = Path().apply {
+                    moveTo(centerX - 2.dp.toPx(), centerY + 10.dp.toPx())
+                    cubicTo(
+                        centerX - 14.dp.toPx(), centerY + 2.dp.toPx(),
+                        centerX - 18.dp.toPx(), centerY - 8.dp.toPx(),
+                        centerX - 12.dp.toPx(), centerY - 12.dp.toPx()
+                    )
+                    cubicTo(
+                        centerX - 10.dp.toPx(), centerY - 4.dp.toPx(),
+                        centerX - 8.dp.toPx(), centerY + 4.dp.toPx(),
+                        centerX - 2.dp.toPx(), centerY + 10.dp.toPx()
+                    )
+                    close()
+                }
+                drawPath(leftLeaf, logoLeafColor)
+
+                // Right leaf
+                val rightLeaf = Path().apply {
+                    moveTo(centerX + 2.dp.toPx(), centerY + 10.dp.toPx())
+                    cubicTo(
+                        centerX + 14.dp.toPx(), centerY + 2.dp.toPx(),
+                        centerX + 18.dp.toPx(), centerY - 8.dp.toPx(),
+                        centerX + 12.dp.toPx(), centerY - 12.dp.toPx()
+                    )
+                    cubicTo(
+                        centerX + 10.dp.toPx(), centerY - 4.dp.toPx(),
+                        centerX + 8.dp.toPx(), centerY + 4.dp.toPx(),
+                        centerX + 2.dp.toPx(), centerY + 10.dp.toPx()
+                    )
+                    close()
+                }
+                drawPath(rightLeaf, logoLeafColor)
+            }
+        }
+
+        // Green accent dot at top-right
+        Box(
+            modifier = Modifier
+                .size(12.dp)
+                .align(Alignment.TopEnd)
+                .offset(x = 0.dp, y = 4.dp)
+                .clip(CircleShape)
+                .background(AccentGreen)
+        )
+    }
+}
+
+/**
+ * Login Input Field - Pill-shaped input with icon
+ */
+@Composable
+private fun LoginInputField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    placeholder: String,
+    icon: ImageVector,
+    isPassword: Boolean = false,
+    isFocused: Boolean,
+    onFocusChange: (Boolean) -> Unit,
+    backgroundColor: Color,
+    iconColor: Color,
+    placeholderColor: Color,
+    textColor: Color,
+    modifier: Modifier = Modifier
+) {
+    val focusManager = LocalFocusManager.current
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(58.dp)
+            .clip(RoundedCornerShape(29.dp))
+            .background(backgroundColor)
+            .then(
+                if (isFocused) {
+                    Modifier.border(
+                        width = 1.5.dp,
+                        color = AccentGreen,
+                        shape = RoundedCornerShape(29.dp)
+                    )
+                } else {
+                    Modifier
+                }
+            )
+            .padding(horizontal = 20.dp),
+        contentAlignment = Alignment.CenterStart
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = iconColor,
+                modifier = Modifier.size(22.dp)
+            )
+
+            Spacer(modifier = Modifier.width(14.dp))
+
+            BasicTextField(
+                value = value,
+                onValueChange = onValueChange,
+                modifier = Modifier
+                    .weight(1f)
+                    .onFocusChanged { onFocusChange(it.isFocused) },
+                textStyle = TextStyle(
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Normal,
+                    fontSize = 15.sp,
+                    color = textColor
+                ),
+                singleLine = true,
+                visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None,
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = if (isPassword) KeyboardType.Password else KeyboardType.Email,
+                    imeAction = ImeAction.Done
+                ),
+                keyboardActions = KeyboardActions(
+                    onDone = { focusManager.clearFocus() }
+                ),
+                decorationBox = { innerTextField ->
+                    Box {
+                        if (value.isEmpty()) {
+                            Text(
+                                text = placeholder,
+                                style = TextStyle(
+                                    fontFamily = PoppinsFamily,
+                                    fontWeight = FontWeight.Normal,
+                                    fontSize = 15.sp
+                                ),
+                                color = placeholderColor
+                            )
+                        }
+                        innerTextField()
+                    }
+                }
+            )
+        }
+    }
+}
+
+/**
+ * Login Button - Vibrant green pill button with arrow
+ */
+@Composable
+private fun LoginButton(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        onClick = onClick,
+        modifier = modifier.height(58.dp),
+        shape = RoundedCornerShape(29.dp),
+        color = AccentGreen
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 28.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = text,
+                style = TextStyle(
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 16.sp
+                ),
+                color = ButtonTextDark
+            )
+
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                contentDescription = null,
+                tint = ButtonTextDark,
+                modifier = Modifier.size(22.dp)
+            )
+        }
+    }
+}
+
+/**
+ * OR CONTINUE WITH Divider
+ */
+@Composable
+private fun OrContinueWithDivider(
+    textColor: Color,
+    lineColor: Color,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .height(1.dp)
+                .background(lineColor)
+        )
+
+        Text(
+            text = "OR CONTINUE WITH",
+            style = TextStyle(
+                fontFamily = PoppinsFamily,
+                fontWeight = FontWeight.Medium,
+                fontSize = 11.sp,
+                letterSpacing = 1.sp
+            ),
+            color = textColor,
+            modifier = Modifier.padding(horizontal = 16.dp)
+        )
+
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .height(1.dp)
+                .background(lineColor)
+        )
+    }
+}
+
+/**
+ * Social Login Button - Pill-shaped button for social login options
+ */
+@Composable
+private fun SocialLoginButton(
+    onClick: () -> Unit,
+    backgroundColor: Color,
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit
+) {
+    Surface(
+        onClick = onClick,
+        modifier = modifier.height(58.dp),
+        shape = RoundedCornerShape(29.dp),
+        color = backgroundColor
+    ) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            content()
         }
     }
 }
