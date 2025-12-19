@@ -55,59 +55,9 @@ import kotlinx.coroutines.launch
 // - Full Light/Dark mode support
 // =============================================================================
 
-// =============================================================================
-// COLOR PALETTE - Exact hex values from design specifications
-// =============================================================================
-
-// Light Mode Colors
-private val LightBackground = Color(0xFFF0F4F3)
-private val LightCardBackground = Color(0xFFE0E7E6)
-private val LightIconCircleBackground = Color(0xFFE6F0EE)
-private val LightTextPrimary = Color(0xFF1A1A1A)
-private val LightTextSecondary = Color(0xFF6C757D)
-private val LightTextTertiary = Color(0xFF8A9493)
-private val LightInactiveDot = Color(0xFFB0B8B7)
-private val LightProgressBarInactive = Color(0xFFA0A8A7)
-private val LightDivider = Color(0xFFCCCCCC)
-private val LightSubtleLines = Color(0xFFD0D8D6)
-
-// Dark Mode Colors
-private val DarkBackground = Color(0xFF0A1D1C)
-private val DarkCardBackground = Color(0xFF2A4240)
-private val DarkIconCircleBackground = Color(0xFF3F5857)
-private val DarkTextPrimary = Color(0xFFFFFFFF)
-private val DarkTextSecondary = Color(0xFFD3D8D7)
-private val DarkTextTertiary = Color(0xFF8A9493)
-private val DarkInactiveDot = Color(0xFF404B4A)
-private val DarkProgressBarInactive = Color(0xFF5A706F)
-private val DarkDivider = Color(0xFF404B4A)
-private val DarkSubtleLines = Color(0xFF2A3A38)
-
 // Shared Accent Color - Vibrant Neon Green
 private val AccentGreen = Color(0xFF36F97F)
 private val ButtonTextDark = Color(0xFF000000)
-
-// Logo Container Colors
-private val LogoContainerDark = Color(0xFF1C3533)
-private val LogoContainerLight = Color(0xFFFFFFFF)
-private val LogoContainerStroke = Color(0xFF2A4240)
-
-// Login/Signup Screen Colors - Dark Mode
-private val LoginDarkBackground = Color(0xFF1C1C1E)
-private val LoginDarkInputBackground = Color(0xFF2A2A2E)
-private val LoginDarkInputIcon = Color(0xFF8A8A8A)
-private val LoginDarkPlaceholder = Color(0xFF8A8A8A)
-private val LoginDarkSubtleText = Color(0xFFD3D8D7)
-private val LoginDarkLogoContainer = Color(0xFF2A2A2E)
-
-// Login/Signup Screen Colors - Light Mode
-private val LoginLightBackground = Color(0xFFF0F4F3)
-private val LoginLightInputBackground = Color(0xFFFFFFFF)
-private val LoginLightInputIcon = Color(0xFF6C757D)
-private val LoginLightPlaceholder = Color(0xFF6C757D)
-private val LoginLightSubtleText = Color(0xFF6C757D)
-private val LoginLightLogoContainer = Color(0xFFFFFFFF)
-private val LoginLightLogoLeaf = Color(0xFF1A1A1A)
 
 // =============================================================================
 // DATA MODEL
@@ -135,14 +85,11 @@ fun OnboardingScreen(
 ) {
     val pagerState = rememberPagerState(pageCount = { 7 })
     val coroutineScope = rememberCoroutineScope()
-    val isDarkTheme = isSystemInDarkTheme()
-
-    val backgroundColor = if (isDarkTheme) DarkBackground else LightBackground
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(backgroundColor)
+            .background(MaterialTheme.colorScheme.background)
             .systemBarsPadding()
     ) {
         HorizontalPager(
@@ -153,7 +100,6 @@ fun OnboardingScreen(
             val pageType = OnboardingPageType.entries[page]
             when (pageType) {
                 OnboardingPageType.WELCOME -> WelcomeScreen(
-                    isDarkTheme = isDarkTheme,
                     currentPage = page,
                     totalPages = 7,
                     onNext = {
@@ -168,7 +114,6 @@ fun OnboardingScreen(
                     }
                 )
                 OnboardingPageType.JOURNALING -> JournalingScreen(
-                    isDarkTheme = isDarkTheme,
                     currentPage = page,
                     totalPages = 7,
                     onSkip = {
@@ -188,7 +133,6 @@ fun OnboardingScreen(
                     }
                 )
                 OnboardingPageType.GAMIFICATION_LEADERBOARD -> GamificationLeaderboardScreen(
-                    isDarkTheme = isDarkTheme,
                     currentPage = page,
                     totalPages = 7,
                     onSkip = {
@@ -203,7 +147,6 @@ fun OnboardingScreen(
                     }
                 )
                 OnboardingPageType.GAMIFICATION_XP -> GamificationXpScreen(
-                    isDarkTheme = isDarkTheme,
                     currentPage = page,
                     totalPages = 7,
                     onStartQuest = {
@@ -213,7 +156,6 @@ fun OnboardingScreen(
                     }
                 )
                 OnboardingPageType.DAILY_WISDOM -> DailyWisdomFeaturesScreen(
-                    isDarkTheme = isDarkTheme,
                     currentPage = page,
                     totalPages = 7,
                     onSkip = {
@@ -233,7 +175,6 @@ fun OnboardingScreen(
                     }
                 )
                 OnboardingPageType.PERSONALIZED_INSIGHTS -> PersonalizedInsightsScreen(
-                    isDarkTheme = isDarkTheme,
                     currentPage = page,
                     totalPages = 7,
                     onSkip = {
@@ -253,7 +194,6 @@ fun OnboardingScreen(
                     }
                 )
                 OnboardingPageType.LOGIN_SIGNUP -> LoginSignupScreen(
-                    isDarkTheme = isDarkTheme,
                     onLogin = {
                         viewModel.completeOnboarding()
                         onComplete()
@@ -281,26 +221,20 @@ fun OnboardingScreen(
 
 @Composable
 private fun WelcomeScreen(
-    isDarkTheme: Boolean,
     currentPage: Int,
     totalPages: Int,
     onNext: () -> Unit,
     onLogin: () -> Unit
 ) {
-    val backgroundColor = if (isDarkTheme) DarkBackground else LightBackground
-    val textPrimary = if (isDarkTheme) DarkTextPrimary else LightTextPrimary
-    val textSecondary = if (isDarkTheme) DarkTextSecondary else LightTextSecondary
-    val subtleLines = if (isDarkTheme) DarkSubtleLines else LightSubtleLines
-
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(backgroundColor)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         // Background concentric circles - centered behind logo
         ConcentricCirclesBackground(
             modifier = Modifier.fillMaxSize(),
-            color = subtleLines
+            color = MaterialTheme.colorScheme.outlineVariant
         )
 
         Column(
@@ -313,7 +247,6 @@ private fun WelcomeScreen(
 
             // Prody Logo with green accent dot
             ProdyLogo(
-                isDarkTheme = isDarkTheme,
                 modifier = Modifier.size(100.dp)
             )
 
@@ -328,7 +261,7 @@ private fun WelcomeScreen(
                     fontSize = 42.sp,
                     letterSpacing = (-0.5).sp
                 ),
-                color = textPrimary
+                color = MaterialTheme.colorScheme.onBackground
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -342,7 +275,7 @@ private fun WelcomeScreen(
                     fontSize = 16.sp,
                     lineHeight = 26.sp
                 ),
-                color = textSecondary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
             )
 
@@ -351,8 +284,7 @@ private fun WelcomeScreen(
             // Pagination Indicators
             ProdyPagerIndicator(
                 totalPages = totalPages,
-                currentPage = currentPage,
-                isDarkTheme = isDarkTheme
+                currentPage = currentPage
             )
 
             Spacer(modifier = Modifier.height(28.dp))
@@ -379,7 +311,7 @@ private fun WelcomeScreen(
                         fontWeight = FontWeight.Normal,
                         fontSize = 14.sp
                     ),
-                    color = textSecondary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
                     text = "Log in",
@@ -404,22 +336,16 @@ private fun WelcomeScreen(
 
 @Composable
 private fun JournalingScreen(
-    isDarkTheme: Boolean,
     currentPage: Int,
     totalPages: Int,
     onSkip: () -> Unit,
     onBack: () -> Unit,
     onContinue: () -> Unit
 ) {
-    val backgroundColor = if (isDarkTheme) DarkBackground else LightBackground
-    val cardBackground = if (isDarkTheme) DarkCardBackground else LightCardBackground
-    val textPrimary = if (isDarkTheme) DarkTextPrimary else LightTextPrimary
-    val textSecondary = if (isDarkTheme) DarkTextSecondary else LightTextSecondary
-
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(backgroundColor)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         Column(
             modifier = Modifier
@@ -432,7 +358,6 @@ private fun JournalingScreen(
             JournalingTopHeader(
                 currentPage = currentPage,
                 totalPages = totalPages,
-                isDarkTheme = isDarkTheme,
                 onBack = onBack,
                 onSkip = onSkip
             )
@@ -441,7 +366,6 @@ private fun JournalingScreen(
 
             // Main Journaling Card with gradient image
             JournalingInsightCard(
-                isDarkTheme = isDarkTheme,
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -461,7 +385,7 @@ private fun JournalingScreen(
                     fontSize = 28.sp,
                     lineHeight = 36.sp
                 ),
-                color = textPrimary,
+                color = MaterialTheme.colorScheme.onBackground,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -477,7 +401,7 @@ private fun JournalingScreen(
                     fontSize = 15.sp,
                     lineHeight = 24.sp
                 ),
-                color = textSecondary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
             )
 
@@ -491,14 +415,12 @@ private fun JournalingScreen(
             ) {
                 FeatureChip(
                     icon = Icons.Outlined.Psychology,
-                    label = "Deep Reflection",
-                    isDarkTheme = isDarkTheme
+                    label = "Deep Reflection"
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 FeatureChip(
                     icon = Icons.Outlined.TrendingUp,
-                    label = "Growth Tracking",
-                    isDarkTheme = isDarkTheme
+                    label = "Growth Tracking"
                 )
             }
 
@@ -550,14 +472,10 @@ private fun JournalingScreen(
 private fun JournalingTopHeader(
     currentPage: Int,
     totalPages: Int,
-    isDarkTheme: Boolean,
     onBack: () -> Unit,
     onSkip: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val textSecondary = if (isDarkTheme) DarkTextSecondary else LightTextSecondary
-    val progressBarBg = if (isDarkTheme) DarkInactiveDot else LightInactiveDot
-
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -567,7 +485,7 @@ private fun JournalingTopHeader(
         Icon(
             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
             contentDescription = "Back",
-            tint = textSecondary,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier
                 .size(24.dp)
                 .clickable { onBack() }
@@ -586,7 +504,7 @@ private fun JournalingTopHeader(
                         .height(4.dp)
                         .clip(RoundedCornerShape(2.dp))
                         .background(
-                            if (index <= currentPage) AccentGreen else progressBarBg
+                            if (index <= currentPage) AccentGreen else MaterialTheme.colorScheme.outline
                         )
                 )
             }
@@ -600,7 +518,7 @@ private fun JournalingTopHeader(
                 fontWeight = FontWeight.Medium,
                 fontSize = 14.sp
             ),
-            color = textSecondary,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.clickable { onSkip() }
         )
     }
@@ -608,15 +526,14 @@ private fun JournalingTopHeader(
 
 @Composable
 private fun JournalingInsightCard(
-    isDarkTheme: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val cardBackground = if (isDarkTheme) DarkCardBackground else LightCardBackground
+    val isDarkTheme = isSystemInDarkTheme()
 
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(20.dp))
-            .background(cardBackground)
+            .background(MaterialTheme.colorScheme.surfaceVariant)
     ) {
         // Abstract wavy gradient image
         Box(
@@ -624,41 +541,26 @@ private fun JournalingInsightCard(
                 .fillMaxWidth()
                 .height(200.dp)
                 .drawBehind {
-                    // Dark mode: brownish diagonal lines pattern
-                    // Light mode: greenish wavy gradient
-                    if (isDarkTheme) {
-                        // Dark diagonal streaks
-                        val colors = listOf(
+                    val gradientColors = if (isDarkTheme) {
+                        listOf(
                             Color(0xFF1A2E2C),
-                            Color(0xFF2A3E3C),
-                            Color(0xFF3A4E4C),
-                            Color(0xFF2A3E3C),
+                            MaterialTheme.colorScheme.surfaceVariant,
                             Color(0xFF1A2E2C)
                         )
-                        drawRect(
-                            brush = Brush.linearGradient(
-                                colors = colors,
-                                start = Offset(0f, size.height),
-                                end = Offset(size.width, 0f)
-                            )
-                        )
                     } else {
-                        // Light wavy greens
-                        val colors = listOf(
-                            Color(0xFF4A7C59),
-                            Color(0xFF8FBC8F),
-                            Color(0xFFD4E5D4),
-                            Color(0xFFFFFFFF),
-                            Color(0xFF98D8AA)
-                        )
-                        drawRect(
-                            brush = Brush.linearGradient(
-                                colors = colors,
-                                start = Offset(0f, size.height),
-                                end = Offset(size.width, 0f)
-                            )
+                        listOf(
+                            MaterialTheme.colorScheme.tertiaryContainer,
+                            MaterialTheme.colorScheme.surface,
+                            MaterialTheme.colorScheme.primaryContainer
                         )
                     }
+                    drawRect(
+                        brush = Brush.linearGradient(
+                            colors = gradientColors,
+                            start = Offset(0f, size.height),
+                            end = Offset(size.width, 0f)
+                        )
+                    )
                 }
         ) {
             // Analysis Complete badge at bottom
@@ -667,7 +569,7 @@ private fun JournalingInsightCard(
                     .align(Alignment.BottomCenter)
                     .padding(bottom = 16.dp)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(if (isDarkTheme) DarkCardBackground.copy(alpha = 0.9f) else LightCardBackground.copy(alpha = 0.95f))
+                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f))
                     .padding(horizontal = 16.dp, vertical = 10.dp)
             ) {
                 Row(
@@ -707,7 +609,7 @@ private fun JournalingInsightCard(
                                 fontWeight = FontWeight.SemiBold,
                                 fontSize = 14.sp
                             ),
-                            color = if (isDarkTheme) DarkTextPrimary else LightTextPrimary
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                     }
                 }
@@ -719,15 +621,11 @@ private fun JournalingInsightCard(
 @Composable
 private fun FeatureChip(
     icon: ImageVector,
-    label: String,
-    isDarkTheme: Boolean
+    label: String
 ) {
-    val chipBg = if (isDarkTheme) DarkCardBackground else LightCardBackground
-    val textColor = if (isDarkTheme) DarkTextPrimary else LightTextPrimary
-
     Surface(
         shape = RoundedCornerShape(24.dp),
-        color = chipBg
+        color = MaterialTheme.colorScheme.surfaceVariant
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
@@ -747,7 +645,7 @@ private fun FeatureChip(
                     fontWeight = FontWeight.Medium,
                     fontSize = 13.sp
                 ),
-                color = textColor
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
@@ -759,20 +657,15 @@ private fun FeatureChip(
 
 @Composable
 private fun GamificationLeaderboardScreen(
-    isDarkTheme: Boolean,
     currentPage: Int,
     totalPages: Int,
     onSkip: () -> Unit,
     onContinue: () -> Unit
 ) {
-    val backgroundColor = if (isDarkTheme) DarkBackground else LightBackground
-    val textPrimary = if (isDarkTheme) DarkTextPrimary else LightTextPrimary
-    val textSecondary = if (isDarkTheme) DarkTextSecondary else LightTextSecondary
-
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(backgroundColor)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         Column(
             modifier = Modifier
@@ -786,7 +679,6 @@ private fun GamificationLeaderboardScreen(
             OnboardingTopHeader(
                 currentPage = currentPage,
                 totalPages = totalPages,
-                isDarkTheme = isDarkTheme,
                 onSkip = onSkip
             )
 
@@ -794,7 +686,6 @@ private fun GamificationLeaderboardScreen(
 
             // Gamification Graphic Container with grid and leaderboard
             LeaderboardGraphicCard(
-                isDarkTheme = isDarkTheme,
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -809,7 +700,7 @@ private fun GamificationLeaderboardScreen(
                     fontSize = 26.sp,
                     lineHeight = 34.sp
                 ),
-                color = textPrimary,
+                color = MaterialTheme.colorScheme.onBackground,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -825,7 +716,7 @@ private fun GamificationLeaderboardScreen(
                     fontSize = 15.sp,
                     lineHeight = 24.sp
                 ),
-                color = textSecondary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
             )
 
@@ -835,8 +726,7 @@ private fun GamificationLeaderboardScreen(
             FeatureListItem(
                 icon = Icons.Default.Star,
                 title = "Earn XP",
-                description = "Get rewarded for every journal entry you complete.",
-                isDarkTheme = isDarkTheme
+                description = "Get rewarded for every journal entry you complete."
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -844,8 +734,7 @@ private fun GamificationLeaderboardScreen(
             FeatureListItem(
                 icon = Icons.Default.EmojiEvents,
                 title = "Badges",
-                description = "Unlock exclusive milestones as you grow.",
-                isDarkTheme = isDarkTheme
+                description = "Unlock exclusive milestones as you grow."
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -853,8 +742,7 @@ private fun GamificationLeaderboardScreen(
             FeatureListItem(
                 icon = Icons.Default.BarChart,
                 title = "Compete",
-                description = "See where you stand among peers.",
-                isDarkTheme = isDarkTheme
+                description = "See where you stand among peers."
             )
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -874,20 +762,17 @@ private fun GamificationLeaderboardScreen(
 
 @Composable
 private fun LeaderboardGraphicCard(
-    isDarkTheme: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val cardBackground = if (isDarkTheme) Color(0xFF1F3A38) else Color(0xFFE8EFEE)
-    val gridColor = if (isDarkTheme) Color(0xFF2A4A48) else Color(0xFFD8E0DE)
-
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(24.dp))
-            .background(cardBackground)
+            .background(MaterialTheme.colorScheme.surfaceVariant)
             .drawBehind {
                 // Draw subtle grid pattern
                 val gridSize = 40.dp.toPx()
                 val strokeWidth = 1.dp.toPx()
+                val gridColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
                 // Horizontal lines
                 var y = gridSize
                 while (y < size.height) {
@@ -948,11 +833,11 @@ private fun LeaderboardGraphicCard(
         Spacer(modifier = Modifier.height(20.dp))
 
         // Mini Leaderboard rows
-        LeaderboardRow(rank = 1, score = "2,450 XP", isActive = true, isDarkTheme = isDarkTheme)
+        LeaderboardRow(rank = 1, score = "2,450 XP", isActive = true)
         Spacer(modifier = Modifier.height(8.dp))
-        LeaderboardRow(rank = 2, score = "1,820", isActive = false, isDarkTheme = isDarkTheme)
+        LeaderboardRow(rank = 2, score = "1,820", isActive = false)
         Spacer(modifier = Modifier.height(8.dp))
-        LeaderboardRow(rank = 3, score = "1,450", isActive = false, isDarkTheme = isDarkTheme)
+        LeaderboardRow(rank = 3, score = "1,450", isActive = false)
     }
 }
 
@@ -961,17 +846,16 @@ private fun LeaderboardRow(
     rank: Int,
     score: String,
     isActive: Boolean,
-    isDarkTheme: Boolean,
     modifier: Modifier = Modifier
 ) {
     val rowBackground = if (isActive) {
-        if (isDarkTheme) Color(0xFF2A4A48) else Color(0xFFD0E0DD)
+        MaterialTheme.colorScheme.secondaryContainer
     } else {
         Color.Transparent
     }
-    val textColor = if (isDarkTheme) DarkTextSecondary else LightTextSecondary
-    val progressColor = if (isActive) AccentGreen else (if (isDarkTheme) DarkProgressBarInactive else LightProgressBarInactive)
-    val progressBg = if (isDarkTheme) Color(0xFF3A5A58) else Color(0xFFBBC8C6)
+    val textColor = MaterialTheme.colorScheme.onSurfaceVariant
+    val progressColor = if (isActive) AccentGreen else MaterialTheme.colorScheme.outline
+    val progressBg = MaterialTheme.colorScheme.surface
     val progressFraction = when (rank) { 1 -> 0.85f; 2 -> 0.65f; else -> 0.45f }
     val scoreColor = if (isActive) AccentGreen else textColor
 
@@ -1049,13 +933,8 @@ private fun FeatureListItem(
     icon: ImageVector,
     title: String,
     description: String,
-    isDarkTheme: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val iconCircleBg = if (isDarkTheme) DarkIconCircleBackground else LightIconCircleBackground
-    val textPrimary = if (isDarkTheme) DarkTextPrimary else LightTextPrimary
-    val textSecondary = if (isDarkTheme) DarkTextSecondary else LightTextSecondary
-
     Row(
         modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.Top
@@ -1065,7 +944,7 @@ private fun FeatureListItem(
             modifier = Modifier
                 .size(44.dp)
                 .clip(RoundedCornerShape(12.dp))
-                .background(iconCircleBg),
+                .background(MaterialTheme.colorScheme.secondaryContainer),
             contentAlignment = Alignment.Center
         ) {
             Icon(
@@ -1086,7 +965,7 @@ private fun FeatureListItem(
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 16.sp
                 ),
-                color = textPrimary
+                color = MaterialTheme.colorScheme.onSurface
             )
             Spacer(modifier = Modifier.height(2.dp))
             Text(
@@ -1097,7 +976,7 @@ private fun FeatureListItem(
                     fontSize = 14.sp,
                     lineHeight = 20.sp
                 ),
-                color = textSecondary
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
@@ -1109,19 +988,14 @@ private fun FeatureListItem(
 
 @Composable
 private fun GamificationXpScreen(
-    isDarkTheme: Boolean,
     currentPage: Int,
     totalPages: Int,
     onStartQuest: () -> Unit
 ) {
-    val backgroundColor = if (isDarkTheme) DarkBackground else LightBackground
-    val textPrimary = if (isDarkTheme) DarkTextPrimary else LightTextPrimary
-    val textSecondary = if (isDarkTheme) DarkTextSecondary else LightTextSecondary
-
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(backgroundColor)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         Column(
             modifier = Modifier
@@ -1135,7 +1009,6 @@ private fun GamificationXpScreen(
             // Circular Progress Ring with Level
             XpProgressRing(
                 progress = 0.75f,
-                isDarkTheme = isDarkTheme,
                 modifier = Modifier.size(220.dp)
             )
 
@@ -1152,7 +1025,6 @@ private fun GamificationXpScreen(
                     value = "7",
                     label = "DAY STREAK",
                     isLocked = false,
-                    isDarkTheme = isDarkTheme,
                     modifier = Modifier.weight(1f)
                 )
                 StatCard(
@@ -1161,16 +1033,14 @@ private fun GamificationXpScreen(
                     value = "750",
                     label = "TOTAL XP",
                     isLocked = false,
-                    isDarkTheme = isDarkTheme,
                     modifier = Modifier.weight(1f)
                 )
                 StatCard(
                     icon = Icons.Default.Lock,
-                    iconTint = if (isDarkTheme) Color(0xFF707A79) else Color(0xFF909998),
+                    iconTint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                     value = "???",
                     label = "LOCKED",
                     isLocked = true,
-                    isDarkTheme = isDarkTheme,
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -1191,7 +1061,7 @@ private fun GamificationXpScreen(
                     fontSize = 26.sp,
                     lineHeight = 34.sp
                 ),
-                color = textPrimary,
+                color = MaterialTheme.colorScheme.onBackground,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -1207,7 +1077,7 @@ private fun GamificationXpScreen(
                     fontSize = 15.sp,
                     lineHeight = 24.sp
                 ),
-                color = textSecondary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
             )
 
@@ -1216,8 +1086,7 @@ private fun GamificationXpScreen(
             // Pagination
             ProdyPagerIndicator(
                 totalPages = totalPages,
-                currentPage = currentPage,
-                isDarkTheme = isDarkTheme
+                currentPage = currentPage
             )
 
             Spacer(modifier = Modifier.height(28.dp))
@@ -1238,14 +1107,8 @@ private fun GamificationXpScreen(
 @Composable
 private fun XpProgressRing(
     progress: Float,
-    isDarkTheme: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val progressInactive = if (isDarkTheme) Color(0xFF3F5857) else Color(0xFFA0A8A7)
-    val innerCircleBg = if (isDarkTheme) DarkCardBackground else LightCardBackground
-    val textPrimary = if (isDarkTheme) DarkTextPrimary else LightTextPrimary
-    val textSecondary = if (isDarkTheme) DarkTextSecondary else LightTextSecondary
-
     Box(
         modifier = modifier,
         contentAlignment = Alignment.Center
@@ -1260,7 +1123,7 @@ private fun XpProgressRing(
 
             // Background ring
             drawArc(
-                color = progressInactive,
+                color = MaterialTheme.colorScheme.outline,
                 startAngle = startAngle,
                 sweepAngle = sweepAngle,
                 useCenter = false,
@@ -1292,13 +1155,13 @@ private fun XpProgressRing(
                 modifier = Modifier
                     .size(44.dp)
                     .clip(CircleShape)
-                    .background(innerCircleBg),
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Default.EmojiEvents,
                     contentDescription = null,
-                    tint = textPrimary,
+                    tint = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.size(24.dp)
                 )
             }
@@ -1312,7 +1175,7 @@ private fun XpProgressRing(
                     fontWeight = FontWeight.Bold,
                     fontSize = 36.sp
                 ),
-                color = textPrimary
+                color = MaterialTheme.colorScheme.onBackground
             )
 
             Text(
@@ -1323,7 +1186,7 @@ private fun XpProgressRing(
                     fontSize = 12.sp,
                     letterSpacing = 2.sp
                 ),
-                color = textSecondary
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
 
@@ -1368,27 +1231,23 @@ private fun StatCard(
     value: String,
     label: String,
     isLocked: Boolean,
-    isDarkTheme: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val cardBg = if (isDarkTheme) DarkCardBackground else LightCardBackground
-    val lockedBorderColor = if (isDarkTheme) Color(0xFF3A4540) else Color(0xFFD0D8D4)
     val textColor = if (isLocked) {
-        if (isDarkTheme) Color(0xFF707A79) else Color(0xFF909998)
+        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
     } else {
-        if (isDarkTheme) DarkTextPrimary else LightTextPrimary
+        MaterialTheme.colorScheme.onSurface
     }
-    val labelColor = if (isDarkTheme) DarkTextSecondary else LightTextSecondary
 
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(14.dp))
-            .background(cardBg)
+            .background(MaterialTheme.colorScheme.surfaceVariant)
             .then(
                 if (isLocked) {
                     Modifier.border(
                         width = 1.dp,
-                        color = lockedBorderColor,
+                        color = MaterialTheme.colorScheme.outline,
                         shape = RoundedCornerShape(14.dp)
                     )
                 } else {
@@ -1435,7 +1294,7 @@ private fun StatCard(
                 fontSize = 9.sp,
                 letterSpacing = 0.5.sp
             ),
-            color = labelColor
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }
@@ -1446,23 +1305,16 @@ private fun StatCard(
 
 @Composable
 private fun DailyWisdomFeaturesScreen(
-    isDarkTheme: Boolean,
     currentPage: Int,
     totalPages: Int,
     onSkip: () -> Unit,
     onContinue: () -> Unit,
     onMaybeLater: () -> Unit
 ) {
-    val backgroundColor = if (isDarkTheme) DarkBackground else Color(0xFFFFFFFF)
-    val iconCircleBg = if (isDarkTheme) DarkIconCircleBackground else Color(0xFFE6F0EE)
-    val textPrimary = if (isDarkTheme) DarkTextPrimary else LightTextPrimary
-    val textSecondary = if (isDarkTheme) DarkTextSecondary else LightTextSecondary
-    val textTertiary = if (isDarkTheme) DarkTextTertiary else LightTextTertiary
-
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(backgroundColor)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         Column(
             modifier = Modifier
@@ -1477,7 +1329,6 @@ private fun DailyWisdomFeaturesScreen(
             OnboardingTopHeader(
                 currentPage = currentPage,
                 totalPages = totalPages,
-                isDarkTheme = isDarkTheme,
                 onSkip = onSkip
             )
 
@@ -1488,7 +1339,7 @@ private fun DailyWisdomFeaturesScreen(
                 modifier = Modifier
                     .size(88.dp)
                     .clip(RoundedCornerShape(24.dp))
-                    .background(iconCircleBg),
+                    .background(MaterialTheme.colorScheme.secondaryContainer),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
@@ -1509,7 +1360,7 @@ private fun DailyWisdomFeaturesScreen(
                     fontWeight = FontWeight.Bold,
                     fontSize = 30.sp
                 ),
-                color = textPrimary
+                color = MaterialTheme.colorScheme.onBackground
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -1523,7 +1374,7 @@ private fun DailyWisdomFeaturesScreen(
                     fontSize = 15.sp,
                     lineHeight = 24.sp
                 ),
-                color = textSecondary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
             )
 
@@ -1533,8 +1384,7 @@ private fun DailyWisdomFeaturesScreen(
             WisdomFeatureCard(
                 icon = Icons.Outlined.TextFormat,
                 title = "Word of the Day",
-                description = "Expand your vocabulary",
-                isDarkTheme = isDarkTheme
+                description = "Expand your vocabulary"
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -1542,8 +1392,7 @@ private fun DailyWisdomFeaturesScreen(
             WisdomFeatureCard(
                 icon = Icons.Outlined.FormatQuote,
                 title = "Quote Collection",
-                description = "Insights from great minds",
-                isDarkTheme = isDarkTheme
+                description = "Insights from great minds"
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -1551,8 +1400,7 @@ private fun DailyWisdomFeaturesScreen(
             WisdomFeatureCard(
                 icon = Icons.Outlined.School,
                 title = "Proverbs & Idioms",
-                description = "Timeless cultural wisdom",
-                isDarkTheme = isDarkTheme
+                description = "Timeless cultural wisdom"
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -1560,8 +1408,7 @@ private fun DailyWisdomFeaturesScreen(
             WisdomFeatureCard(
                 icon = Icons.Outlined.ChatBubble,
                 title = "Essential Phrases",
-                description = "Communication masterclass",
-                isDarkTheme = isDarkTheme
+                description = "Communication masterclass"
             )
 
             Spacer(modifier = Modifier.weight(1f))
@@ -1584,7 +1431,7 @@ private fun DailyWisdomFeaturesScreen(
                     fontWeight = FontWeight.Medium,
                     fontSize = 14.sp
                 ),
-                color = textTertiary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.clickable { onMaybeLater() }
             )
 
@@ -1598,19 +1445,13 @@ private fun WisdomFeatureCard(
     icon: ImageVector,
     title: String,
     description: String,
-    isDarkTheme: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val cardBg = if (isDarkTheme) DarkCardBackground else Color(0xFFF5F7F6)
-    val iconCircleBg = if (isDarkTheme) DarkIconCircleBackground else Color(0xFFE6F0EE)
-    val textPrimary = if (isDarkTheme) DarkTextPrimary else LightTextPrimary
-    val textSecondary = if (isDarkTheme) DarkTextSecondary else LightTextSecondary
-
     Row(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
-            .background(cardBg)
+            .background(MaterialTheme.colorScheme.surfaceVariant)
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -1619,7 +1460,7 @@ private fun WisdomFeatureCard(
             modifier = Modifier
                 .size(44.dp)
                 .clip(CircleShape)
-                .background(iconCircleBg),
+                .background(MaterialTheme.colorScheme.secondaryContainer),
             contentAlignment = Alignment.Center
         ) {
             Icon(
@@ -1640,7 +1481,7 @@ private fun WisdomFeatureCard(
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 16.sp
                 ),
-                color = textPrimary
+                color = MaterialTheme.colorScheme.onSurface
             )
             Text(
                 text = description,
@@ -1649,7 +1490,7 @@ private fun WisdomFeatureCard(
                     fontWeight = FontWeight.Normal,
                     fontSize = 13.sp
                 ),
-                color = textSecondary
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
@@ -1661,22 +1502,16 @@ private fun WisdomFeatureCard(
 
 @Composable
 private fun PersonalizedInsightsScreen(
-    isDarkTheme: Boolean,
     currentPage: Int,
     totalPages: Int,
     onSkip: () -> Unit,
     onEnableNotifications: () -> Unit,
     onMaybeLater: () -> Unit
 ) {
-    val backgroundColor = if (isDarkTheme) DarkBackground else LightBackground
-    val textPrimary = if (isDarkTheme) DarkTextPrimary else LightTextPrimary
-    val textSecondary = if (isDarkTheme) DarkTextSecondary else LightTextSecondary
-    val textTertiary = if (isDarkTheme) DarkTextTertiary else LightTextTertiary
-
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(backgroundColor)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         Column(
             modifier = Modifier
@@ -1689,7 +1524,6 @@ private fun PersonalizedInsightsScreen(
             OnboardingTopHeader(
                 currentPage = currentPage,
                 totalPages = totalPages,
-                isDarkTheme = isDarkTheme,
                 onSkip = onSkip
             )
 
@@ -1697,7 +1531,6 @@ private fun PersonalizedInsightsScreen(
 
             // Quote Card
             QuoteCard(
-                isDarkTheme = isDarkTheme,
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -1712,7 +1545,7 @@ private fun PersonalizedInsightsScreen(
                     fontSize = 26.sp,
                     lineHeight = 34.sp
                 ),
-                color = textPrimary,
+                color = MaterialTheme.colorScheme.onBackground,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -1728,7 +1561,7 @@ private fun PersonalizedInsightsScreen(
                     fontSize = 15.sp,
                     lineHeight = 24.sp
                 ),
-                color = textSecondary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
             )
 
@@ -1752,7 +1585,7 @@ private fun PersonalizedInsightsScreen(
                     fontWeight = FontWeight.Medium,
                     fontSize = 14.sp
                 ),
-                color = textTertiary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -1766,19 +1599,12 @@ private fun PersonalizedInsightsScreen(
 
 @Composable
 private fun QuoteCard(
-    isDarkTheme: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val cardBackground = if (isDarkTheme) Color(0xFF2D4240) else Color(0xFFE8EFEE)
-    val textPrimary = if (isDarkTheme) DarkTextPrimary else LightTextPrimary
-    val textSecondary = if (isDarkTheme) DarkTextSecondary else LightTextSecondary
-    val dividerColor = if (isDarkTheme) DarkDivider else LightDivider
-    val iconCircleBg = if (isDarkTheme) DarkIconCircleBackground else LightIconCircleBackground
-
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(20.dp))
-            .background(cardBackground)
+            .background(MaterialTheme.colorScheme.surfaceVariant)
             .padding(24.dp)
     ) {
         // Header row - lightbulb icon and DAILY WISDOM label
@@ -1792,7 +1618,7 @@ private fun QuoteCard(
                 modifier = Modifier
                     .size(40.dp)
                     .clip(CircleShape)
-                    .background(iconCircleBg),
+                    .background(MaterialTheme.colorScheme.secondaryContainer),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
@@ -1812,7 +1638,7 @@ private fun QuoteCard(
                     fontSize = 11.sp,
                     letterSpacing = 1.5.sp
                 ),
-                color = textSecondary
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
 
@@ -1833,7 +1659,7 @@ private fun QuoteCard(
                 fontSize = 20.sp,
                 lineHeight = 32.sp
             ),
-            color = textPrimary
+            color = MaterialTheme.colorScheme.onSurface
         )
 
         Spacer(modifier = Modifier.height(20.dp))
@@ -1843,7 +1669,7 @@ private fun QuoteCard(
             modifier = Modifier
                 .width(48.dp)
                 .height(1.dp)
-                .background(dividerColor)
+                .background(MaterialTheme.colorScheme.outline)
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -1856,7 +1682,7 @@ private fun QuoteCard(
             Icon(
                 imageVector = Icons.Default.Person,
                 contentDescription = null,
-                tint = textSecondary,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(16.dp)
             )
             Text(
@@ -1866,7 +1692,7 @@ private fun QuoteCard(
                     fontWeight = FontWeight.Medium,
                     fontSize = 14.sp
                 ),
-                color = textSecondary
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
 
@@ -1894,7 +1720,7 @@ private fun QuoteCard(
                         modifier = Modifier
                             .size(6.dp)
                             .clip(CircleShape)
-                            .background(if (isDarkTheme) DarkInactiveDot else LightInactiveDot)
+                            .background(MaterialTheme.colorScheme.outline)
                     )
                 }
             }
@@ -1903,7 +1729,7 @@ private fun QuoteCard(
             Icon(
                 imageVector = Icons.Default.BookmarkBorder,
                 contentDescription = "Bookmark",
-                tint = textPrimary,
+                tint = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.size(22.dp)
             )
         }
@@ -1916,24 +1742,11 @@ private fun QuoteCard(
 
 @Composable
 private fun LoginSignupScreen(
-    isDarkTheme: Boolean,
     onLogin: () -> Unit,
     onCreateAccount: () -> Unit,
     onGoogleLogin: () -> Unit,
     onForgotPassword: () -> Unit
 ) {
-    // Colors based on theme
-    val backgroundColor = if (isDarkTheme) LoginDarkBackground else LoginLightBackground
-    val inputBackground = if (isDarkTheme) LoginDarkInputBackground else LoginLightInputBackground
-    val inputIconColor = if (isDarkTheme) LoginDarkInputIcon else LoginLightInputIcon
-    val placeholderColor = if (isDarkTheme) LoginDarkPlaceholder else LoginLightPlaceholder
-    val subtleTextColor = if (isDarkTheme) LoginDarkSubtleText else LoginLightSubtleText
-    val logoContainerColor = if (isDarkTheme) LoginDarkLogoContainer else LoginLightLogoContainer
-    val logoLeafColor = if (isDarkTheme) Color.White else LoginLightLogoLeaf
-    val textPrimary = if (isDarkTheme) Color.White else LoginLightLogoLeaf
-    val dividerLineColor = if (isDarkTheme) Color(0xFF404B4A) else Color(0xFFCCCCCC)
-    val socialButtonAddingSoonColor = if (isDarkTheme) Color(0xFF8A8A8A) else Color(0xFF6C757D)
-
     // State for input fields
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -1943,7 +1756,7 @@ private fun LoginSignupScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(backgroundColor)
+            .background(MaterialTheme.colorScheme.background)
             .systemBarsPadding()
     ) {
         Column(
@@ -1957,9 +1770,6 @@ private fun LoginSignupScreen(
 
             // Prody Logo with green accent dot - Login specific version
             LoginProdyLogo(
-                isDarkTheme = isDarkTheme,
-                logoContainerColor = logoContainerColor,
-                logoLeafColor = logoLeafColor,
                 modifier = Modifier.size(100.dp)
             )
 
@@ -1974,7 +1784,7 @@ private fun LoginSignupScreen(
                     fontSize = 36.sp,
                     letterSpacing = (-0.5).sp
                 ),
-                color = textPrimary
+                color = MaterialTheme.colorScheme.onBackground
             )
 
             Spacer(modifier = Modifier.height(40.dp))
@@ -1986,11 +1796,7 @@ private fun LoginSignupScreen(
                 placeholder = "Email Address",
                 icon = Icons.Outlined.Email,
                 isFocused = emailFocused,
-                onFocusChange = { emailFocused = it },
-                backgroundColor = inputBackground,
-                iconColor = inputIconColor,
-                placeholderColor = placeholderColor,
-                textColor = textPrimary
+                onFocusChange = { emailFocused = it }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -2003,11 +1809,7 @@ private fun LoginSignupScreen(
                 icon = Icons.Outlined.Lock,
                 isPassword = true,
                 isFocused = passwordFocused,
-                onFocusChange = { passwordFocused = it },
-                backgroundColor = inputBackground,
-                iconColor = inputIconColor,
-                placeholderColor = placeholderColor,
-                textColor = textPrimary
+                onFocusChange = { passwordFocused = it }
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -2020,7 +1822,7 @@ private fun LoginSignupScreen(
                     fontWeight = FontWeight.Normal,
                     fontSize = 14.sp
                 ),
-                color = subtleTextColor,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier
                     .align(Alignment.End)
                     .clickable { onForgotPassword() }
@@ -2039,8 +1841,8 @@ private fun LoginSignupScreen(
 
             // OR CONTINUE WITH Divider
             OrContinueWithDivider(
-                textColor = subtleTextColor,
-                lineColor = dividerLineColor
+                textColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                lineColor = MaterialTheme.colorScheme.outline
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -2053,7 +1855,7 @@ private fun LoginSignupScreen(
                 // Google Button
                 SocialLoginButton(
                     onClick = onGoogleLogin,
-                    backgroundColor = inputBackground,
+                    backgroundColor = MaterialTheme.colorScheme.surfaceVariant,
                     modifier = Modifier.weight(1f)
                 ) {
                     // Google logo using Canvas
@@ -2107,7 +1909,7 @@ private fun LoginSignupScreen(
                         )
                         // White center circle to create the G shape
                         drawCircle(
-                            color = if (isDarkTheme) LoginDarkInputBackground else Color.White,
+                            color = MaterialTheme.colorScheme.surfaceVariant,
                             radius = radius * 0.55f,
                             center = Offset(centerX, centerY)
                         )
@@ -2123,7 +1925,7 @@ private fun LoginSignupScreen(
                 // Adding soon Button
                 SocialLoginButton(
                     onClick = { },
-                    backgroundColor = inputBackground,
+                    backgroundColor = MaterialTheme.colorScheme.surfaceVariant,
                     modifier = Modifier.weight(1f)
                 ) {
                     Text(
@@ -2133,7 +1935,7 @@ private fun LoginSignupScreen(
                             fontWeight = FontWeight.Normal,
                             fontSize = 14.sp
                         ),
-                        color = socialButtonAddingSoonColor
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -2154,7 +1956,7 @@ private fun LoginSignupScreen(
                         fontWeight = FontWeight.Normal,
                         fontSize = 14.sp
                     ),
-                    color = subtleTextColor
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
                     text = "Create an Account",
@@ -2179,9 +1981,6 @@ private fun LoginSignupScreen(
  */
 @Composable
 private fun LoginProdyLogo(
-    isDarkTheme: Boolean,
-    logoContainerColor: Color,
-    logoLeafColor: Color,
     modifier: Modifier = Modifier
 ) {
     Box(modifier = modifier) {
@@ -2190,13 +1989,14 @@ private fun LoginProdyLogo(
             modifier = Modifier
                 .fillMaxSize()
                 .clip(CircleShape)
-                .background(logoContainerColor),
+                .background(MaterialTheme.colorScheme.surfaceVariant),
             contentAlignment = Alignment.Center
         ) {
             // Seedling/Leaf icon drawn with Canvas
             Canvas(modifier = Modifier.size(48.dp)) {
                 val centerX = size.width / 2
                 val centerY = size.height / 2
+                val logoLeafColor = MaterialTheme.colorScheme.onSurfaceVariant
 
                 // Center leaf (pointing up)
                 val centerLeaf = Path().apply {
@@ -2275,10 +2075,6 @@ private fun LoginInputField(
     isPassword: Boolean = false,
     isFocused: Boolean,
     onFocusChange: (Boolean) -> Unit,
-    backgroundColor: Color,
-    iconColor: Color,
-    placeholderColor: Color,
-    textColor: Color,
     modifier: Modifier = Modifier
 ) {
     val focusManager = LocalFocusManager.current
@@ -2288,7 +2084,7 @@ private fun LoginInputField(
             .fillMaxWidth()
             .height(58.dp)
             .clip(RoundedCornerShape(29.dp))
-            .background(backgroundColor)
+            .background(MaterialTheme.colorScheme.surfaceVariant)
             .then(
                 if (isFocused) {
                     Modifier.border(
@@ -2310,7 +2106,7 @@ private fun LoginInputField(
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = iconColor,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(22.dp)
             )
 
@@ -2326,7 +2122,7 @@ private fun LoginInputField(
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Normal,
                     fontSize = 15.sp,
-                    color = textColor
+                    color = MaterialTheme.colorScheme.onSurface
                 ),
                 singleLine = true,
                 visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None,
@@ -2347,7 +2143,7 @@ private fun LoginInputField(
                                     fontWeight = FontWeight.Normal,
                                     fontSize = 15.sp
                                 ),
-                                color = placeholderColor
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                         innerTextField()
@@ -2475,23 +2271,18 @@ private fun SocialLoginButton(
  */
 @Composable
 private fun ProdyLogo(
-    isDarkTheme: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val containerColor = if (isDarkTheme) LogoContainerDark else LogoContainerLight
-    val strokeColor = if (isDarkTheme) LogoContainerStroke else Color(0xFFE0E7E6)
-    val leafColor = if (isDarkTheme) Color.White else Color(0xFF1A1A1A)
-
     Box(modifier = modifier) {
         // Squircle container with subtle border
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .clip(RoundedCornerShape(24.dp))
-                .background(containerColor)
+                .background(MaterialTheme.colorScheme.surface)
                 .border(
                     width = 1.dp,
-                    color = strokeColor,
+                    color = MaterialTheme.colorScheme.outline,
                     shape = RoundedCornerShape(24.dp)
                 ),
             contentAlignment = Alignment.Center
@@ -2500,6 +2291,7 @@ private fun ProdyLogo(
             Canvas(modifier = Modifier.size(48.dp)) {
                 val centerX = size.width / 2
                 val centerY = size.height / 2
+                val leafColor = MaterialTheme.colorScheme.onSurface
 
                 // Center leaf (pointing up)
                 val centerLeaf = Path().apply {
@@ -2573,11 +2365,8 @@ private fun ProdyLogo(
 private fun ProdyPagerIndicator(
     totalPages: Int,
     currentPage: Int,
-    isDarkTheme: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val inactiveColor = if (isDarkTheme) DarkInactiveDot else LightInactiveDot
-
     Row(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -2599,7 +2388,7 @@ private fun ProdyPagerIndicator(
                     .width(width)
                     .height(8.dp)
                     .clip(RoundedCornerShape(4.dp))
-                    .background(if (isActive) AccentGreen else inactiveColor)
+                    .background(if (isActive) AccentGreen else MaterialTheme.colorScheme.outline)
             )
         }
     }
@@ -2657,7 +2446,6 @@ private fun ProdyOnboardingButton(
 private fun OnboardingTopHeader(
     currentPage: Int,
     totalPages: Int,
-    isDarkTheme: Boolean,
     onSkip: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -2669,8 +2457,7 @@ private fun OnboardingTopHeader(
         // Pagination on left
         ProdyPagerIndicator(
             totalPages = totalPages,
-            currentPage = currentPage,
-            isDarkTheme = isDarkTheme
+            currentPage = currentPage
         )
 
         // Skip button on right
