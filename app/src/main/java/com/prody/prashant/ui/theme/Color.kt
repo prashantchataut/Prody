@@ -476,6 +476,15 @@ val TimeCapsuleInactiveTagBgLight = Color(0xFFF0F3F2)   // Very light gray inact
 val TimeCapsuleInactiveTagTextLight = Color(0xFF212529) // Very dark gray inactive tag text
 val TimeCapsuleButtonTextLight = Color(0xFF000000)      // Pure black for button text
 
+// Time Capsule List Screen Colors - Light Mode
+val TimeCapsuleTextPrimaryLight = Color(0xFF212529)     // Primary text color (dark gray)
+val TimeCapsuleTextSecondaryLight = Color(0xFF6C757D)   // Secondary text color (medium gray)
+val TimeCapsuleIconLight = Color(0xFF212529)            // Icon color (dark gray)
+val TimeCapsuleTabContainerLight = Color(0xFFF0F3F2)    // Tab container background
+val TimeCapsuleActiveTabTextLight = Color(0xFF000000)   // Active tab text (black on accent)
+val TimeCapsuleEmptyCircleBgLight = Color(0xFFF0F3F2)   // Empty state inner circle background
+val TimeCapsuleDashedCircleLight = Color(0xFFE0E7E6)    // Dashed circle color
+
 // Dark Mode Colors
 val TimeCapsuleBackgroundDark = Color(0xFF0D2826)       // Deep dark teal/green background
 val TimeCapsuleTitleTextDark = Color(0xFFFFFFFF)        // Pure white for header title
@@ -489,6 +498,15 @@ val TimeCapsuleSectionTitleDark = Color(0xFFFFFFFF)     // Pure white for sectio
 val TimeCapsuleInactiveTagBgDark = Color(0xFF2A4240)    // Dark muted green inactive tag bg
 val TimeCapsuleInactiveTagTextDark = Color(0xFFD3D8D7)  // Light subtle gray inactive tag text
 val TimeCapsuleButtonTextDark = Color(0xFF000000)       // Pure black for button text
+
+// Time Capsule List Screen Colors - Dark Mode
+val TimeCapsuleTextPrimaryDark = Color(0xFFFFFFFF)      // Primary text color (white)
+val TimeCapsuleTextSecondaryDark = Color(0xFFD3D8D7)    // Secondary text color (light gray)
+val TimeCapsuleIconDark = Color(0xFFFFFFFF)             // Icon color (white)
+val TimeCapsuleTabContainerDark = Color(0xFF1A3331)     // Tab container background
+val TimeCapsuleActiveTabTextDark = Color(0xFF000000)    // Active tab text (black on accent)
+val TimeCapsuleEmptyCircleBgDark = Color(0xFF1A3331)    // Empty state inner circle background
+val TimeCapsuleDashedCircleDark = Color(0xFF3A5250)     // Dashed circle color
 
 //Brand/Containers were redundant I believe?
 //Step 310 lines 262 and 284 showed Text/Status/Notification.
