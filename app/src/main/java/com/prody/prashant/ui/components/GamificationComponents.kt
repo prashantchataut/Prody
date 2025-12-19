@@ -15,7 +15,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.blur
+// blur import removed - flat design with no blur effects
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.CornerRadius
@@ -267,14 +267,13 @@ fun PremiumXPBar(
                 .height(height),
             contentAlignment = Alignment.CenterStart
         ) {
-            // Glow effect behind bar
+            // Flat design - subtle alpha pulse instead of blur glow
             if (showGlow && animatedProgress > 0.05f) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth(animatedProgress)
-                        .height(height + 8.dp)
-                        .blur(8.dp)
-                        .alpha(glowAlpha * animatedProgress)
+                        .height(height)
+                        .alpha(glowAlpha * animatedProgress * 0.3f)
                         .background(
                             Brush.horizontalGradient(
                                 colors = listOf(primaryColor, secondaryColor)
@@ -486,13 +485,12 @@ fun LevelProgressRing(
         modifier = modifier.size(size),
         contentAlignment = Alignment.Center
     ) {
-        // Glow behind ring
+        // Flat design - subtle alpha pulse instead of blur glow
         if (showGlow) {
             Box(
                 modifier = Modifier
-                    .size(size + 16.dp)
-                    .blur(12.dp)
-                    .alpha(glowAlpha * animatedProgress)
+                    .size(size)
+                    .alpha(glowAlpha * animatedProgress * 0.2f)
                     .background(primaryColor, CircleShape)
             )
         }
@@ -583,12 +581,11 @@ fun RankBadge(
         modifier = modifier.size(size),
         contentAlignment = Alignment.Center
     ) {
-        // Glow
+        // Flat design - subtle background accent instead of blur glow
         Box(
             modifier = Modifier
-                .size(size + 8.dp)
-                .blur(10.dp)
-                .alpha(0.4f)
+                .size(size)
+                .alpha(0.2f)
                 .background(tierColor, CircleShape)
         )
 
@@ -714,13 +711,7 @@ fun PointBurst(
             .alpha(alpha),
         contentAlignment = Alignment.Center
     ) {
-        // Glow
-        Box(
-            modifier = Modifier
-                .size(60.dp)
-                .blur(15.dp)
-                .background(GoldTier, CircleShape)
-        )
+        // Flat design - removed blur glow, using just the surface below
 
         // Points text
         Surface(
@@ -791,13 +782,12 @@ fun StreakCounter(
     ) {
         if (showFlame && streak > 0) {
             Box(contentAlignment = Alignment.Center) {
-                // Fire glow
+                // Flat design - subtle alpha pulse instead of blur glow
                 Box(
                     modifier = Modifier
-                        .size(40.dp)
+                        .size(32.dp)
                         .scale(flameScale)
-                        .blur(12.dp)
-                        .alpha(glowAlpha)
+                        .alpha(glowAlpha * 0.3f)
                         .background(StreakFire, CircleShape)
                 )
 

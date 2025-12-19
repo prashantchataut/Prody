@@ -66,7 +66,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.draw.shadow
+// shadow import removed - flat design with no shadows
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -77,6 +77,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.prody.prashant.ui.theme.ProdyTokens
+import com.prody.prashant.ui.theme.SupportBoost
+import com.prody.prashant.ui.theme.SupportRespect
+import com.prody.prashant.ui.theme.SupportEncourage
+import com.prody.prashant.ui.theme.LeaderboardGold
+import com.prody.prashant.ui.theme.LeaderboardSilver
+import com.prody.prashant.ui.theme.LeaderboardBronze
+import com.prody.prashant.ui.theme.StreakMilestone365
+import com.prody.prashant.ui.theme.StreakMilestone100
+import com.prody.prashant.ui.theme.StreakMilestone30
+import com.prody.prashant.ui.theme.StreakMilestone7
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -127,21 +137,21 @@ private val supportActions = listOf(
         icon = Icons.Outlined.Bolt,
         label = "Boost",
         description = "Give them an energy boost",
-        color = Color(0xFFFFB300)
+        color = SupportBoost
     ),
     SupportAction(
         type = SupportType.RESPECT,
         icon = Icons.Outlined.EmojiEvents,
         label = "Respect",
         description = "Show respect for their work",
-        color = Color(0xFF7C4DFF)
+        color = SupportRespect
     ),
     SupportAction(
         type = SupportType.ENCOURAGE,
         icon = Icons.Outlined.Handshake,
         label = "Encourage",
         description = "Send encouragement their way",
-        color = Color(0xFF00BFA5)
+        color = SupportEncourage
     )
 )
 
@@ -178,7 +188,7 @@ fun ProdySupportIconButton(
     )
 
     val iconColor = when {
-        hasSupported -> Color(0xFFFFB300)
+        hasSupported -> SupportBoost
         enabled -> MaterialTheme.colorScheme.onSurfaceVariant
         else -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
     }
@@ -447,16 +457,8 @@ fun ProdySupportFeedback(
             modifier = Modifier
                 .scale(scale.value)
                 .alpha(alpha.value)
-                .shadow(8.dp, CircleShape, ambientColor = action.color)
                 .clip(CircleShape)
-                .background(
-                    Brush.radialGradient(
-                        colors = listOf(
-                            action.color,
-                            action.color.copy(alpha = 0.8f)
-                        )
-                    )
-                )
+                .background(action.color)
                 .padding(ProdyTokens.Spacing.lg),
             contentAlignment = Alignment.Center
         ) {
@@ -508,7 +510,7 @@ fun ProdyBoostCounter(
         Icon(
             imageVector = Icons.Filled.Bolt,
             contentDescription = null,
-            tint = Color(0xFFFFB300),
+            tint = SupportBoost,
             modifier = Modifier.size(14.dp)
         )
 
@@ -560,30 +562,18 @@ fun ProdyTopRankIndicator(
     )
 
     val (color, emoji) = when (rank) {
-        1 -> Color(0xFFFFD700) to "1st"
-        2 -> Color(0xFFC0C0C0) to "2nd"
-        3 -> Color(0xFFCD7F32) to "3rd"
+        1 -> LeaderboardGold to "1st"
+        2 -> LeaderboardSilver to "2nd"
+        3 -> LeaderboardBronze to "3rd"
         else -> Color.Gray to ""
     }
 
+    // Flat design - use subtle alpha pulse instead of shadow
     Box(
         modifier = modifier
-            .shadow(
-                elevation = (4.dp * glowPulse),
-                shape = CircleShape,
-                ambientColor = color.copy(alpha = 0.3f * glowPulse),
-                spotColor = color.copy(alpha = 0.3f * glowPulse)
-            )
             .size(28.dp)
             .clip(CircleShape)
-            .background(
-                Brush.linearGradient(
-                    colors = listOf(
-                        color,
-                        color.copy(alpha = 0.7f)
-                    )
-                )
-            ),
+            .background(color.copy(alpha = 0.85f + (0.15f * glowPulse))),
         contentAlignment = Alignment.Center
     ) {
         Text(
@@ -611,10 +601,10 @@ fun ProdyStreakMilestoneIndicator(
     modifier: Modifier = Modifier
 ) {
     val (color, label) = when {
-        streakDays >= 365 -> Color(0xFFFF6B6B) to "365"
-        streakDays >= 100 -> Color(0xFFFFD93D) to "100"
-        streakDays >= 30 -> Color(0xFF6BCB77) to "30"
-        streakDays >= 7 -> Color(0xFF4D96FF) to "7"
+        streakDays >= 365 -> StreakMilestone365 to "365"
+        streakDays >= 100 -> StreakMilestone100 to "100"
+        streakDays >= 30 -> StreakMilestone30 to "30"
+        streakDays >= 7 -> StreakMilestone7 to "7"
         else -> return
     }
 

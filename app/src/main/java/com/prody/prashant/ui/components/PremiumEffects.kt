@@ -11,7 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.blur
+// blur import removed - flat design with no blur effects
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
@@ -662,24 +662,24 @@ private data class AchievementParticle(
 
 /**
  * Glass-morphism background modifier
- * Creates a frosted glass effect with blur and subtle transparency
+ * Flat design version: Creates a subtle semi-transparent overlay without blur
  *
- * @param blurRadius Amount of background blur
+ * @param blurRadius Unused - kept for API compatibility (flat design has no blur)
  * @param tintColor Overlay tint color
  * @param tintAlpha Opacity of the tint overlay
  */
 @Composable
 fun Modifier.glassMorphism(
-    blurRadius: Dp = 20.dp,
+    blurRadius: Dp = 20.dp, // Kept for API compatibility, not used in flat design
     tintColor: Color = Color.White,
     tintAlpha: Float = 0.15f,
     borderColor: Color = Color.White.copy(alpha = 0.2f),
     borderWidth: Dp = 1.dp,
     cornerRadius: Dp = 16.dp
 ): Modifier {
+    // Flat design - no blur, just semi-transparent background
     return this
         .clip(RoundedCornerShape(cornerRadius))
-        .blur(blurRadius)
         .background(
             brush = Brush.verticalGradient(
                 colors = listOf(
@@ -735,23 +735,24 @@ fun GlassCard(
 
 /**
  * Pulsing glow effect wrapper for any composable
+ * Flat design version: Uses alpha pulse instead of blur for subtle effect
  *
  * @param glowColor Color of the glow
- * @param glowRadius Maximum blur radius
+ * @param glowRadius Unused - kept for API compatibility (flat design has no blur)
  * @param pulseSpeed Speed of the pulse animation
  */
 @Composable
 fun AnimatedGlow(
     modifier: Modifier = Modifier,
     glowColor: Color = ProdyPrimary,
-    glowRadius: Dp = 16.dp,
+    glowRadius: Dp = 16.dp, // Kept for API compatibility, not used in flat design
     pulseSpeed: Int = 1500,
     content: @Composable () -> Unit
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "glow_pulse")
     val glowAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.4f,
-        targetValue = 0.8f,
+        initialValue = 0.1f,
+        targetValue = 0.25f,
         animationSpec = infiniteRepeatable(
             animation = tween(pulseSpeed, easing = EaseInOutCubic),
             repeatMode = RepeatMode.Reverse
@@ -761,7 +762,7 @@ fun AnimatedGlow(
 
     val glowScale by infiniteTransition.animateFloat(
         initialValue = 1f,
-        targetValue = 1.1f,
+        targetValue = 1.05f,
         animationSpec = infiniteRepeatable(
             animation = tween(pulseSpeed, easing = EaseInOutCubic),
             repeatMode = RepeatMode.Reverse
@@ -769,12 +770,12 @@ fun AnimatedGlow(
         label = "glow_scale"
     )
 
+    // Flat design - subtle alpha pulse instead of blur glow
     Box(modifier = modifier, contentAlignment = Alignment.Center) {
         Box(
             modifier = Modifier
                 .matchParentSize()
                 .scale(glowScale)
-                .blur(glowRadius)
                 .alpha(glowAlpha)
                 .background(glowColor, CircleShape)
         )

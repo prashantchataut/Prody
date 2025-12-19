@@ -44,7 +44,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.draw.shadow
+// shadow import removed - flat design with no shadows
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -63,6 +63,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.prody.prashant.domain.identity.ProdyBanners
 import com.prody.prashant.ui.theme.ProdyTokens
+import com.prody.prashant.ui.theme.ProdyAccentGreen
+import com.prody.prashant.ui.theme.ProdyAccentGreenDark
+import com.prody.prashant.ui.theme.ProdyPremiumViolet
+import com.prody.prashant.ui.theme.ProdyPremiumVioletDark
+import com.prody.prashant.ui.theme.LeaderboardGold
+import com.prody.prashant.ui.theme.LeaderboardGoldDark
+import com.prody.prashant.ui.theme.RarityLegendary
+import com.prody.prashant.ui.theme.RarityEpic
+import com.prody.prashant.ui.theme.RarityRare
+import com.prody.prashant.ui.theme.RarityUncommon
+import com.prody.prashant.ui.theme.RarityCommon
+import com.prody.prashant.ui.theme.ProdyBackgroundDark
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
@@ -425,23 +437,20 @@ fun ProdySpecialBadge(
         SpecialBadgeType.DEV -> BadgeConfig(
             icon = Icons.Filled.Code,
             label = "DEV",
-            primaryColor = Color(0xFF00E676),
-            secondaryColor = Color(0xFF00C853),
-            glowColor = Color(0xFF00E676)
+            primaryColor = ProdyAccentGreen,
+            secondaryColor = ProdyAccentGreenDark
         )
         SpecialBadgeType.BETA_TESTER -> BadgeConfig(
             icon = Icons.Filled.VerifiedUser,
             label = "BETA",
-            primaryColor = Color(0xFF7C4DFF),
-            secondaryColor = Color(0xFF651FFF),
-            glowColor = Color(0xFF7C4DFF)
+            primaryColor = ProdyPremiumViolet,
+            secondaryColor = ProdyPremiumVioletDark
         )
         SpecialBadgeType.FOUNDER -> BadgeConfig(
             icon = Icons.Filled.Star,
             label = "FOUNDER",
-            primaryColor = Color(0xFFFFD700),
-            secondaryColor = Color(0xFFFFC107),
-            glowColor = Color(0xFFFFD700)
+            primaryColor = LeaderboardGold,
+            secondaryColor = LeaderboardGoldDark
         )
     }
 
@@ -450,21 +459,12 @@ fun ProdySpecialBadge(
         horizontalArrangement = Arrangement.Center,
         modifier = modifier
     ) {
+        // Flat design - use alpha pulse instead of shadow
         Box(
             modifier = Modifier
                 .size(size)
-                .shadow(
-                    elevation = (4.dp * glowPulse),
-                    shape = CircleShape,
-                    ambientColor = badgeConfig.glowColor.copy(alpha = 0.4f * glowPulse),
-                    spotColor = badgeConfig.glowColor.copy(alpha = 0.4f * glowPulse)
-                )
                 .clip(CircleShape)
-                .background(
-                    Brush.linearGradient(
-                        colors = listOf(badgeConfig.primaryColor, badgeConfig.secondaryColor)
-                    )
-                )
+                .background(badgeConfig.primaryColor.copy(alpha = 0.85f + (0.15f * glowPulse)))
                 .border(1.dp, badgeConfig.primaryColor.copy(alpha = 0.5f), CircleShape),
             contentAlignment = Alignment.Center
         ) {
@@ -492,8 +492,7 @@ private data class BadgeConfig(
     val icon: ImageVector,
     val label: String,
     val primaryColor: Color,
-    val secondaryColor: Color,
-    val glowColor: Color
+    val secondaryColor: Color
 )
 
 // =============================================================================
@@ -536,15 +535,7 @@ fun ProdyDevBanner(
             .fillMaxWidth()
             .height(height)
             .clip(RoundedCornerShape(ProdyTokens.Radius.md))
-            .background(
-                Brush.horizontalGradient(
-                    colors = listOf(
-                        Color(0xFF1A1A2E),
-                        Color(0xFF16213E),
-                        Color(0xFF0F3460)
-                    )
-                )
-            )
+            .background(ProdyBackgroundDark)
     ) {
         // Flowing code effect
         Canvas(modifier = Modifier.fillMaxSize()) {
@@ -563,9 +554,9 @@ fun ProdyDevBanner(
                     android.graphics.Paint().apply {
                         color = android.graphics.Color.argb(
                             (alpha * 255).toInt(),
-                            0,
-                            230,
-                            118
+                            54,  // R from #36F97F
+                            249, // G from #36F97F
+                            127  // B from #36F97F
                         )
                         textSize = 12f
                     }
@@ -573,17 +564,12 @@ fun ProdyDevBanner(
             }
         }
 
-        // Glow overlay
+        // Subtle accent overlay (flat design - no glow)
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(
-                    Brush.radialGradient(
-                        colors = listOf(
-                            Color(0xFF00E676).copy(alpha = glowPulse * 0.3f),
-                            Color.Transparent
-                        )
-                    )
+                    ProdyAccentGreen.copy(alpha = glowPulse * 0.08f)
                 )
         )
 
@@ -619,11 +605,11 @@ fun ProdyRarityFrame(
     content: @Composable () -> Unit
 ) {
     val frameColors = when (rarity.lowercase()) {
-        "legendary" -> listOf(Color(0xFFFFD700), Color(0xFFFFA500), Color(0xFFFF8C00))
-        "epic" -> listOf(Color(0xFF9C27B0), Color(0xFF7B1FA2), Color(0xFF6A1B9A))
-        "rare" -> listOf(Color(0xFF2196F3), Color(0xFF1976D2), Color(0xFF1565C0))
-        "uncommon" -> listOf(Color(0xFF4CAF50), Color(0xFF388E3C), Color(0xFF2E7D32))
-        else -> listOf(Color(0xFF9E9E9E), Color(0xFF757575), Color(0xFF616161))
+        "legendary" -> listOf(RarityLegendary, RarityLegendary.copy(alpha = 0.8f), RarityLegendary.copy(alpha = 0.6f))
+        "epic" -> listOf(RarityEpic, RarityEpic.copy(alpha = 0.8f), RarityEpic.copy(alpha = 0.6f))
+        "rare" -> listOf(RarityRare, RarityRare.copy(alpha = 0.8f), RarityRare.copy(alpha = 0.6f))
+        "uncommon" -> listOf(RarityUncommon, RarityUncommon.copy(alpha = 0.8f), RarityUncommon.copy(alpha = 0.6f))
+        else -> listOf(RarityCommon, RarityCommon.copy(alpha = 0.8f), RarityCommon.copy(alpha = 0.6f))
     }
 
     val infiniteTransition = rememberInfiniteTransition(label = "frame_animation")

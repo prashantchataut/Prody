@@ -27,7 +27,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.blur
+// blur import removed - flat design with no blur effects
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -155,14 +155,13 @@ fun StreakDisplay(
             }
         }
     ) {
-        // Ambient glow effect
+        // Flat design - subtle alpha pulse instead of blur glow
         if (isActive) {
             Box(
                 modifier = Modifier
-                    .size(dimensions.glowSize)
+                    .size(dimensions.glowSize * 0.8f)
                     .scale(fireScale)
-                    .blur(15.dp)
-                    .alpha(glowAlpha)
+                    .alpha(glowAlpha * 0.2f)
                     .background(primaryColor, CircleShape)
             )
         }
@@ -385,22 +384,20 @@ fun StreakMilestoneCelebration(
             contentDescription = "$milestoneName: $streakDays day streak achieved"
         }
     ) {
-        // Multi-layer glow effect
+        // Flat design - subtle layered alpha effect instead of blur glow
         Box(
             modifier = Modifier
-                .size(120.dp)
-                .scale(glowScale * 1.3f)
-                .blur(25.dp)
-                .alpha(glowAlpha * 0.4f)
+                .size(100.dp)
+                .scale(glowScale * 1.1f)
+                .alpha(glowAlpha * 0.15f)
                 .background(secondaryColor, CircleShape)
         )
 
         Box(
             modifier = Modifier
-                .size(100.dp)
+                .size(80.dp)
                 .scale(glowScale)
-                .blur(15.dp)
-                .alpha(glowAlpha)
+                .alpha(glowAlpha * 0.25f)
                 .background(primaryColor, CircleShape)
         )
 

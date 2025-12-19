@@ -63,11 +63,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.blur
+// blur import removed - flat design with no blur effects
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.draw.shadow
+// shadow import removed - flat design with no shadows
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -220,18 +220,14 @@ fun ProdyNotificationBanner(
             animationSpec = tween(200, easing = EaseInOutCubic)
         ) + fadeOut(animationSpec = tween(200))
     ) {
+        // Flat design - no shadow, just clean surface with border accent
         Box(
             modifier = modifier
                 .fillMaxWidth()
                 .padding(ProdyTokens.Spacing.lg)
-                .shadow(
-                    elevation = 8.dp,
-                    shape = RoundedCornerShape(ProdyTokens.Radius.xl),
-                    ambientColor = type.primaryColor.copy(alpha = 0.3f),
-                    spotColor = type.primaryColor.copy(alpha = 0.4f)
-                )
                 .clip(RoundedCornerShape(ProdyTokens.Radius.xl))
                 .background(MaterialTheme.colorScheme.surface)
+                .border(1.dp, type.primaryColor.copy(alpha = 0.2f), RoundedCornerShape(ProdyTokens.Radius.xl))
                 .semantics { contentDescription = "$title. $message" }
         ) {
             // Subtle gradient accent at top
@@ -249,15 +245,14 @@ fun ProdyNotificationBanner(
                 verticalAlignment = Alignment.Top,
                 horizontalArrangement = Arrangement.spacedBy(ProdyTokens.Spacing.md)
             ) {
-                // Animated icon with glow
+                // Animated icon with subtle pulse
                 Box(contentAlignment = Alignment.Center) {
-                    // Glow effect
+                    // Flat design - subtle alpha pulse instead of blur glow
                     Box(
                         modifier = Modifier
                             .size(48.dp)
                             .scale(iconScale)
-                            .blur(12.dp)
-                            .alpha(glowAlpha)
+                            .alpha(glowAlpha * 0.2f)
                             .background(type.primaryColor, CircleShape)
                     )
 
@@ -406,16 +401,12 @@ fun StreakNotification(
         exit = scaleOut(targetScale = 0.8f) + fadeOut()
     ) {
         Box(
+            // Flat design - no shadow, just clean surface with border accent
             modifier = modifier
                 .fillMaxWidth()
                 .padding(ProdyTokens.Spacing.lg)
-                .shadow(
-                    elevation = 12.dp,
-                    shape = RoundedCornerShape(ProdyTokens.Radius.xxl),
-                    ambientColor = StreakFire.copy(alpha = 0.4f),
-                    spotColor = StreakFire.copy(alpha = 0.5f)
-                )
                 .clip(RoundedCornerShape(ProdyTokens.Radius.xxl))
+                .border(1.dp, StreakFire.copy(alpha = 0.3f), RoundedCornerShape(ProdyTokens.Radius.xxl))
                 .background(
                     Brush.verticalGradient(
                         colors = listOf(
@@ -440,27 +431,25 @@ fun StreakNotification(
                     .padding(ProdyTokens.Spacing.xl),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Animated fire icon with glow
+                // Animated fire icon with subtle pulse
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier.padding(bottom = ProdyTokens.Spacing.md)
                 ) {
-                    // Multi-layer glow
+                    // Flat design - subtle layered alpha instead of blur glow
                     Box(
                         modifier = Modifier
-                            .size(80.dp)
-                            .scale(fireScale * 1.2f)
-                            .blur(20.dp)
-                            .alpha(glowAlpha * 0.5f)
+                            .size(64.dp)
+                            .scale(fireScale * 1.1f)
+                            .alpha(glowAlpha * 0.15f)
                             .background(StreakFire.copy(alpha = 0.5f), CircleShape)
                     )
 
                     Box(
                         modifier = Modifier
-                            .size(64.dp)
+                            .size(52.dp)
                             .scale(fireScale)
-                            .blur(12.dp)
-                            .alpha(glowAlpha)
+                            .alpha(glowAlpha * 0.25f)
                             .background(StreakFire, CircleShape)
                     )
 
@@ -609,16 +598,12 @@ fun AchievementNotification(
         exit = scaleOut(targetScale = 0.8f) + fadeOut()
     ) {
         Box(
+            // Flat design - no shadow, just clean surface with border accent
             modifier = modifier
                 .fillMaxWidth()
                 .padding(ProdyTokens.Spacing.lg)
-                .shadow(
-                    elevation = 16.dp,
-                    shape = RoundedCornerShape(ProdyTokens.Radius.xxl),
-                    ambientColor = GoldTier.copy(alpha = 0.4f),
-                    spotColor = GoldTier.copy(alpha = 0.5f)
-                )
                 .clip(RoundedCornerShape(ProdyTokens.Radius.xxl))
+                .border(1.dp, GoldTier.copy(alpha = 0.3f), RoundedCornerShape(ProdyTokens.Radius.xxl))
                 .background(MaterialTheme.colorScheme.surface)
                 .border(
                     width = 2.dp,
@@ -651,12 +636,11 @@ fun AchievementNotification(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier.padding(bottom = ProdyTokens.Spacing.md)
                 ) {
-                    // Glow effect
+                    // Flat design - subtle alpha effect instead of blur glow
                     Box(
                         modifier = Modifier
-                            .size(100.dp)
-                            .blur(25.dp)
-                            .alpha(glowAlpha)
+                            .size(80.dp)
+                            .alpha(glowAlpha * 0.2f)
                             .background(GoldTier, CircleShape)
                     )
 
@@ -813,15 +797,12 @@ fun MotivationalNotification(
         ) + fadeOut()
     ) {
         Box(
+            // Flat design - no shadow, just clean surface with border accent
             modifier = modifier
                 .fillMaxWidth()
                 .padding(ProdyTokens.Spacing.lg)
-                .shadow(
-                    elevation = 6.dp,
-                    shape = RoundedCornerShape(ProdyTokens.Radius.xl),
-                    ambientColor = NotificationMotivation.copy(alpha = 0.2f)
-                )
                 .clip(RoundedCornerShape(ProdyTokens.Radius.xl))
+                .border(1.dp, NotificationMotivation.copy(alpha = 0.2f), RoundedCornerShape(ProdyTokens.Radius.xl))
                 .background(
                     Brush.horizontalGradient(
                         colors = listOf(
@@ -906,13 +887,10 @@ fun ProdyToast(
             animationSpec = tween(200)
         ) + fadeOut()
     ) {
+        // Flat design - no shadow, just clean surface
         Box(
             modifier = modifier
                 .padding(ProdyTokens.Spacing.lg)
-                .shadow(
-                    elevation = 4.dp,
-                    shape = RoundedCornerShape(ProdyTokens.Radius.full)
-                )
                 .clip(RoundedCornerShape(ProdyTokens.Radius.full))
                 .background(MaterialTheme.colorScheme.inverseSurface)
                 .clickable { onDismiss() }

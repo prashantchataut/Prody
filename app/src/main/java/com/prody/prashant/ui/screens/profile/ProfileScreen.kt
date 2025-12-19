@@ -60,43 +60,43 @@ import kotlinx.coroutines.delay
  */
 
 // ============================================================================
-// DESIGN SYSTEM COLORS - Identity Room Theme
+// DESIGN SYSTEM COLORS - Identity Room Theme (Using Theme Colors)
 // ============================================================================
 
 private object IdentityRoomColors {
-    // Dark Mode
-    val BackgroundDark = Color(0xFF0D2826)
-    val CardBackgroundDark = Color(0xFF1A3331)
-    val CardBackgroundElevatedDark = Color(0xFF223D3A)
-    val AccentGreen = Color(0xFF36F97F)
-    val AccentGreenDim = Color(0xFF2BC968)
-    val TextPrimaryDark = Color(0xFFFFFFFF)
-    val TextSecondaryDark = Color(0xFFB8C5C3)
-    val TextTertiaryDark = Color(0xFF6B7F7C)
-    val BorderDark = Color(0xFF2A4744)
+    // Dark Mode - Using theme colors
+    val BackgroundDark = ProdyBackgroundDark
+    val CardBackgroundDark = ProdySurfaceVariantDark
+    val CardBackgroundElevatedDark = ProdySurfaceContainerDark
+    val AccentGreen = ProdyAccentGreen
+    val AccentGreenDim = ProdyAccentGreenDark
+    val TextPrimaryDark = ProdyTextPrimaryDark
+    val TextSecondaryDark = ProdyTextSecondaryDark
+    val TextTertiaryDark = ProdyTextTertiaryDark
+    val BorderDark = ProdyOutlineDark
 
-    // Light Mode
-    val BackgroundLight = Color(0xFFF5F8F7)
-    val CardBackgroundLight = Color(0xFFFFFFFF)
-    val CardBackgroundElevatedLight = Color(0xFFF0F5F4)
-    val AccentGreenLight = Color(0xFF2ECC71)
-    val TextPrimaryLight = Color(0xFF1A2B23)
-    val TextSecondaryLight = Color(0xFF5A6B63)
-    val TextTertiaryLight = Color(0xFF8A9B93)
-    val BorderLight = Color(0xFFE0E8E4)
+    // Light Mode - Using theme colors
+    val BackgroundLight = ProdyBackgroundLight
+    val CardBackgroundLight = ProdySurfaceLight
+    val CardBackgroundElevatedLight = ProdySurfaceContainerLight
+    val AccentGreenLight = ProdyAccentGreen
+    val TextPrimaryLight = ProdyTextPrimaryLight
+    val TextSecondaryLight = ProdyTextSecondaryLight
+    val TextTertiaryLight = ProdyTextTertiaryLight
+    val BorderLight = ProdyOutlineLight
 
-    // Badge Colors
-    val DevBadgeBackground = Color(0xFF1A3331)
-    val DevBadgeText = Color(0xFF36F97F)
-    val BetaBadgeBackground = Color(0xFF2A1F3D)
-    val BetaBadgeText = Color(0xFFB57EDC)
+    // Badge Colors - Using theme colors
+    val DevBadgeBackground = ProdySurfaceVariantDark
+    val DevBadgeText = ProdyAccentGreen
+    val BetaBadgeBackground = ProdyPremiumVioletContainer
+    val BetaBadgeText = ProdyPremiumViolet
 
-    // Achievement Rarity
-    val RarityCommon = Color(0xFF78909C)
-    val RarityUncommon = Color(0xFF66BB6A)
-    val RarityRare = Color(0xFF42A5F5)
-    val RarityEpic = Color(0xFFAB47BC)
-    val RarityLegendary = Color(0xFFD4AF37)
+    // Achievement Rarity - Using theme colors
+    val RarityCommon = com.prody.prashant.ui.theme.RarityCommon
+    val RarityUncommon = com.prody.prashant.ui.theme.RarityUncommon
+    val RarityRare = com.prody.prashant.ui.theme.RarityRare
+    val RarityEpic = com.prody.prashant.ui.theme.RarityEpic
+    val RarityLegendary = com.prody.prashant.ui.theme.RarityLegendary
 }
 
 @Composable
