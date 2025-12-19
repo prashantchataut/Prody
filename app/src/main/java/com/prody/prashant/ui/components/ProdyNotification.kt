@@ -91,7 +91,7 @@ import com.prody.prashant.ui.theme.StreakFire
 import kotlinx.coroutines.delay
 
 /**
- * Prody Design System - Lively Notification Components
+ * Prody Design System - Lively Notification Components (Phase 2 Redesign)
  *
  * Fun, engaging notification components inspired by Duolingo's playful style
  * but adapted to fit Prody's calming, mature aesthetic.
@@ -100,7 +100,7 @@ import kotlinx.coroutines.delay
  * - Celebratory without being overwhelming
  * - Playful animations that feel earned
  * - Encouraging language, not pushy
- * - Premium feel with subtle effects
+ * - Premium feel with flat design (NO shadows)
  */
 
 // =============================================================================
@@ -224,12 +224,6 @@ fun ProdyNotificationBanner(
             modifier = modifier
                 .fillMaxWidth()
                 .padding(ProdyTokens.Spacing.lg)
-                .shadow(
-                    elevation = 8.dp,
-                    shape = RoundedCornerShape(ProdyTokens.Radius.xl),
-                    ambientColor = type.primaryColor.copy(alpha = 0.3f),
-                    spotColor = type.primaryColor.copy(alpha = 0.4f)
-                )
                 .clip(RoundedCornerShape(ProdyTokens.Radius.xl))
                 .background(MaterialTheme.colorScheme.surface)
                 .semantics { contentDescription = "$title. $message" }
@@ -409,21 +403,8 @@ fun StreakNotification(
             modifier = modifier
                 .fillMaxWidth()
                 .padding(ProdyTokens.Spacing.lg)
-                .shadow(
-                    elevation = 12.dp,
-                    shape = RoundedCornerShape(ProdyTokens.Radius.xxl),
-                    ambientColor = StreakFire.copy(alpha = 0.4f),
-                    spotColor = StreakFire.copy(alpha = 0.5f)
-                )
                 .clip(RoundedCornerShape(ProdyTokens.Radius.xxl))
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            MaterialTheme.colorScheme.surface,
-                            MaterialTheme.colorScheme.surface.copy(alpha = 0.95f)
-                        )
-                    )
-                )
+                .background(MaterialTheme.colorScheme.surface)
                 .semantics { contentDescription = "$title. $message. $streakDays day streak" }
         ) {
             // Fire gradient accent
@@ -612,12 +593,6 @@ fun AchievementNotification(
             modifier = modifier
                 .fillMaxWidth()
                 .padding(ProdyTokens.Spacing.lg)
-                .shadow(
-                    elevation = 16.dp,
-                    shape = RoundedCornerShape(ProdyTokens.Radius.xxl),
-                    ambientColor = GoldTier.copy(alpha = 0.4f),
-                    spotColor = GoldTier.copy(alpha = 0.5f)
-                )
                 .clip(RoundedCornerShape(ProdyTokens.Radius.xxl))
                 .background(MaterialTheme.colorScheme.surface)
                 .border(
@@ -816,20 +791,8 @@ fun MotivationalNotification(
             modifier = modifier
                 .fillMaxWidth()
                 .padding(ProdyTokens.Spacing.lg)
-                .shadow(
-                    elevation = 6.dp,
-                    shape = RoundedCornerShape(ProdyTokens.Radius.xl),
-                    ambientColor = NotificationMotivation.copy(alpha = 0.2f)
-                )
                 .clip(RoundedCornerShape(ProdyTokens.Radius.xl))
-                .background(
-                    Brush.horizontalGradient(
-                        colors = listOf(
-                            MaterialTheme.colorScheme.surface,
-                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
-                        )
-                    )
-                )
+                .background(MaterialTheme.colorScheme.surface)
                 .clickable { onDismiss() }
                 .semantics { contentDescription = "Daily inspiration: $quote" }
         ) {
@@ -909,10 +872,6 @@ fun ProdyToast(
         Box(
             modifier = modifier
                 .padding(ProdyTokens.Spacing.lg)
-                .shadow(
-                    elevation = 4.dp,
-                    shape = RoundedCornerShape(ProdyTokens.Radius.full)
-                )
                 .clip(RoundedCornerShape(ProdyTokens.Radius.full))
                 .background(MaterialTheme.colorScheme.inverseSurface)
                 .clickable { onDismiss() }

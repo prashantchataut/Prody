@@ -24,7 +24,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
@@ -40,14 +39,15 @@ import com.prody.prashant.ui.theme.FeaturedCardShape
 import com.prody.prashant.ui.theme.ProdyTokens
 
 /**
- * Prody Design System - Card Components
+ * Prody Design System - Card Components (Phase 2 Redesign)
  *
- * A collection of card components with various styles for different use cases.
+ * A collection of card components with flat, minimalist design.
  * All cards feature:
  * - Smooth press animations
  * - Proper accessibility semantics
- * - Consistent elevation and shadow
- * - Support for custom backgrounds including gradients
+ * - Flat design (NO shadows, tonalElevation = 0.dp)
+ * - Support for custom backgrounds
+ * - 20dp corner radius standard
  */
 
 // =============================================================================
@@ -56,11 +56,11 @@ import com.prody.prashant.ui.theme.ProdyTokens
 
 /**
  * Standard card component for content containers.
+ * Phase 2: Flat design with no shadows.
  *
  * @param modifier Modifier for the card
- * @param shape Shape of the card corners
+ * @param shape Shape of the card corners (default 20dp radius)
  * @param backgroundColor Background color of the card
- * @param elevation Shadow elevation
  * @param contentDescription Accessibility description
  * @param content Content to display inside the card
  */
@@ -69,19 +69,11 @@ fun ProdyCard(
     modifier: Modifier = Modifier,
     shape: Shape = CardShape,
     backgroundColor: Color = MaterialTheme.colorScheme.surface,
-    elevation: Dp = 2.dp,
     contentDescription: String? = null,
     content: @Composable BoxScope.() -> Unit
 ) {
     Box(
         modifier = modifier
-            .shadow(
-                elevation = elevation,
-                shape = shape,
-                clip = false,
-                ambientColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
-                spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
-            )
             .clip(shape)
             .background(backgroundColor)
             .then(
@@ -99,13 +91,13 @@ fun ProdyCard(
 
 /**
  * Interactive card with press feedback animation.
+ * Phase 2: Flat design with scale animation only.
  *
  * @param onClick Callback when card is clicked
  * @param modifier Modifier for the card
  * @param enabled Whether the card is clickable
- * @param shape Shape of the card corners
+ * @param shape Shape of the card corners (default 20dp radius)
  * @param backgroundColor Background color of the card
- * @param elevation Shadow elevation (animates on press)
  * @param contentDescription Accessibility description for screen readers
  * @param content Content to display inside the card
  */
@@ -116,7 +108,6 @@ fun ProdyClickableCard(
     enabled: Boolean = true,
     shape: Shape = CardShape,
     backgroundColor: Color = MaterialTheme.colorScheme.surface,
-    elevation: Dp = 2.dp,
     contentDescription: String? = null,
     content: @Composable BoxScope.() -> Unit
 ) {
@@ -130,23 +121,9 @@ fun ProdyClickableCard(
         label = "card_scale"
     )
 
-    // Animate elevation on press
-    val animatedElevation by animateDpAsState(
-        targetValue = if (isPressed && enabled) elevation * 0.5f else elevation,
-        animationSpec = tween(durationMillis = 100),
-        label = "card_elevation"
-    )
-
     Box(
         modifier = modifier
             .scale(scale)
-            .shadow(
-                elevation = animatedElevation,
-                shape = shape,
-                clip = false,
-                ambientColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
-                spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
-            )
             .clip(shape)
             .background(backgroundColor)
             .clickable(
@@ -170,14 +147,14 @@ fun ProdyClickableCard(
 // =============================================================================
 
 /**
- * Card with higher elevation for prominent content.
+ * Card for prominent content (now flat design, same as ProdyCard).
+ * Phase 2: Flat design - elevated appearance achieved via surfaceColor.
  */
 @Composable
 fun ProdyElevatedCard(
     modifier: Modifier = Modifier,
     shape: Shape = ElevatedCardShape,
     backgroundColor: Color = MaterialTheme.colorScheme.surface,
-    elevation: Dp = 4.dp,
     contentDescription: String? = null,
     content: @Composable BoxScope.() -> Unit
 ) {
@@ -185,7 +162,6 @@ fun ProdyElevatedCard(
         modifier = modifier,
         shape = shape,
         backgroundColor = backgroundColor,
-        elevation = elevation,
         contentDescription = contentDescription,
         content = content
     )
@@ -197,11 +173,11 @@ fun ProdyElevatedCard(
 
 /**
  * Card with gradient background for visual emphasis.
+ * Phase 2: Flat design with no shadows.
  *
  * @param gradientColors List of colors for the gradient
  * @param modifier Modifier for the card
  * @param shape Shape of the card corners
- * @param elevation Shadow elevation
  * @param contentDescription Accessibility description
  * @param content Content to display inside the card
  */
@@ -210,21 +186,11 @@ fun ProdyGradientCard(
     gradientColors: List<Color>,
     modifier: Modifier = Modifier,
     shape: Shape = FeaturedCardShape,
-    elevation: Dp = 4.dp,
     contentDescription: String? = null,
     content: @Composable BoxScope.() -> Unit
 ) {
     Box(
         modifier = modifier
-            .shadow(
-                elevation = elevation,
-                shape = shape,
-                clip = false,
-                ambientColor = gradientColors.firstOrNull()?.copy(alpha = 0.2f)
-                    ?: MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
-                spotColor = gradientColors.firstOrNull()?.copy(alpha = 0.3f)
-                    ?: MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
-            )
             .clip(shape)
             .background(Brush.linearGradient(gradientColors))
             .then(
@@ -272,29 +238,21 @@ fun ProdyOutlinedCard(
 // =============================================================================
 
 /**
- * Featured card for hero content with extra visual emphasis.
+ * Featured card for hero content with visual emphasis.
+ * Phase 2: Flat design with no shadows.
  */
 @Composable
 fun ProdyFeaturedCard(
     modifier: Modifier = Modifier,
     shape: Shape = FeaturedCardShape,
     backgroundColor: Color = MaterialTheme.colorScheme.primaryContainer,
-    elevation: Dp = 6.dp,
     contentDescription: String? = null,
     content: @Composable BoxScope.() -> Unit
 ) {
     Box(
         modifier = modifier
-            .shadow(
-                elevation = elevation,
-                shape = shape,
-                clip = false,
-                ambientColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
-                spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
-            )
             .clip(shape)
             .background(backgroundColor)
-            .padding(1.dp) // Subtle inner padding for refined look
             .then(
                 if (contentDescription != null) {
                     Modifier.semantics { this.contentDescription = contentDescription }
@@ -309,12 +267,12 @@ fun ProdyFeaturedCard(
 // =============================================================================
 
 /**
- * Premium card component with optional glow effect for highlighted states.
+ * Premium card component with flat design.
+ * Phase 2: No shadows or glow effects.
  *
  * Features:
  * - Subtle press animation with spring physics
- * - Gradient background support
- * - Glow effect for highlighted states
+ * - Flat design (tonalElevation = 0.dp)
  * - Full accessibility support
  *
  * @param modifier Modifier for the card
@@ -322,10 +280,8 @@ fun ProdyFeaturedCard(
  * @param backgroundColor Background color of the card
  * @param contentColor Content color for text/icons inside the card
  * @param shape Shape of the card corners
- * @param elevation Shadow elevation
  * @param borderColor Optional border color
  * @param borderWidth Border width when borderColor is specified
- * @param glowColor Optional glow color for highlighting - null disables glow
  * @param contentDescription Accessibility description
  * @param content Content to display inside the card
  */
@@ -336,10 +292,8 @@ fun ProdyPremiumCard(
     backgroundColor: Color = MaterialTheme.colorScheme.surface,
     contentColor: Color = MaterialTheme.colorScheme.onSurface,
     shape: Shape = RoundedCornerShape(ProdyTokens.Radius.lg),
-    elevation: Dp = ProdyTokens.Elevation.sm,
     borderColor: Color? = null,
     borderWidth: Dp = 1.dp,
-    glowColor: Color? = null,
     contentDescription: String? = null,
     content: @Composable ColumnScope.() -> Unit
 ) {
@@ -355,25 +309,8 @@ fun ProdyPremiumCard(
         label = "premium_card_scale"
     )
 
-    val animatedElevation by animateDpAsState(
-        targetValue = if (isPressed && onClick != null) elevation / 2 else elevation,
-        animationSpec = tween(ProdyTokens.Animation.fast),
-        label = "premium_card_elevation"
-    )
-
     Box(
-        modifier = modifier
-            .scale(scale)
-            .then(
-                if (glowColor != null) {
-                    Modifier.shadow(
-                        elevation = 12.dp,
-                        shape = shape,
-                        ambientColor = glowColor.copy(alpha = 0.3f),
-                        spotColor = glowColor.copy(alpha = 0.3f)
-                    )
-                } else Modifier
-            )
+        modifier = modifier.scale(scale)
     ) {
         Surface(
             modifier = Modifier
@@ -402,7 +339,7 @@ fun ProdyPremiumCard(
             shape = shape,
             color = backgroundColor,
             contentColor = contentColor,
-            shadowElevation = animatedElevation
+            tonalElevation = 0.dp // Flat design
         ) {
             Column(content = content)
         }
@@ -414,15 +351,14 @@ fun ProdyPremiumCard(
 // =============================================================================
 
 /**
- * Premium gradient card with enhanced visual effects.
+ * Premium gradient card with flat design.
+ * Phase 2: No shadows or glow effects.
  *
  * @param gradientColors List of colors for the gradient background
  * @param modifier Modifier for the card
  * @param onClick Optional click callback
  * @param contentColor Content color for text/icons (defaults to white for gradient visibility)
  * @param shape Shape of the card corners
- * @param elevation Shadow elevation
- * @param glowEnabled Whether to show glow effect using the first gradient color
  * @param contentDescription Accessibility description
  * @param content Content to display inside the card
  */
@@ -433,8 +369,6 @@ fun ProdyPremiumGradientCard(
     onClick: (() -> Unit)? = null,
     contentColor: Color = Color.White,
     shape: Shape = RoundedCornerShape(ProdyTokens.Radius.lg),
-    elevation: Dp = ProdyTokens.Elevation.md,
-    glowEnabled: Boolean = false,
     contentDescription: String? = null,
     content: @Composable ColumnScope.() -> Unit
 ) {
@@ -450,22 +384,9 @@ fun ProdyPremiumGradientCard(
         label = "premium_gradient_card_scale"
     )
 
-    val glowColor = if (glowEnabled) gradientColors.firstOrNull() else null
-
     Box(
         modifier = modifier
             .scale(scale)
-            .then(
-                if (glowColor != null) {
-                    Modifier.shadow(
-                        elevation = 16.dp,
-                        shape = shape,
-                        ambientColor = glowColor.copy(alpha = 0.4f),
-                        spotColor = glowColor.copy(alpha = 0.4f)
-                    )
-                } else Modifier
-            )
-            .shadow(elevation, shape)
             .clip(shape)
             .background(Brush.linearGradient(gradientColors))
             .then(
@@ -499,12 +420,12 @@ fun ProdyPremiumGradientCard(
 
 /**
  * Card styled for notification-like content with engaging visuals.
+ * Phase 2: Flat design with no shadows.
  *
- * @param accentColor Accent color for the left border and subtle glow
+ * @param accentColor Accent color for the left border
  * @param modifier Modifier for the card
  * @param onClick Optional click callback
  * @param backgroundColor Background color
- * @param elevation Shadow elevation
  * @param contentDescription Accessibility description
  * @param content Content to display inside the card
  */
@@ -514,7 +435,6 @@ fun ProdyNotificationCard(
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
     backgroundColor: Color = MaterialTheme.colorScheme.surface,
-    elevation: Dp = ProdyTokens.Elevation.md,
     contentDescription: String? = null,
     content: @Composable BoxScope.() -> Unit
 ) {
@@ -533,12 +453,6 @@ fun ProdyNotificationCard(
     Box(
         modifier = modifier
             .scale(scale)
-            .shadow(
-                elevation = elevation,
-                shape = RoundedCornerShape(ProdyTokens.Radius.lg),
-                ambientColor = accentColor.copy(alpha = 0.15f),
-                spotColor = accentColor.copy(alpha = 0.2f)
-            )
             .clip(RoundedCornerShape(ProdyTokens.Radius.lg))
             .background(backgroundColor)
             .then(

@@ -267,23 +267,6 @@ fun PremiumXPBar(
                 .height(height),
             contentAlignment = Alignment.CenterStart
         ) {
-            // Glow effect behind bar
-            if (showGlow && animatedProgress > 0.05f) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth(animatedProgress)
-                        .height(height + 8.dp)
-                        .blur(8.dp)
-                        .alpha(glowAlpha * animatedProgress)
-                        .background(
-                            Brush.horizontalGradient(
-                                colors = listOf(primaryColor, secondaryColor)
-                            ),
-                            RoundedCornerShape(height / 2)
-                        )
-                )
-            }
-
             // Background track
             Box(
                 modifier = Modifier
@@ -486,17 +469,6 @@ fun LevelProgressRing(
         modifier = modifier.size(size),
         contentAlignment = Alignment.Center
     ) {
-        // Glow behind ring
-        if (showGlow) {
-            Box(
-                modifier = Modifier
-                    .size(size + 16.dp)
-                    .blur(12.dp)
-                    .alpha(glowAlpha * animatedProgress)
-                    .background(primaryColor, CircleShape)
-            )
-        }
-
         Canvas(modifier = Modifier.size(size)) {
             val stroke = strokeWidth.toPx()
             val radius = (this.size.minDimension - stroke) / 2
@@ -583,15 +555,6 @@ fun RankBadge(
         modifier = modifier.size(size),
         contentAlignment = Alignment.Center
     ) {
-        // Glow
-        Box(
-            modifier = Modifier
-                .size(size + 8.dp)
-                .blur(10.dp)
-                .alpha(0.4f)
-                .background(tierColor, CircleShape)
-        )
-
         // Badge background with metallic gradient
         Canvas(modifier = Modifier.fillMaxSize()) {
             val center = Offset(this.size.width / 2, this.size.height / 2)
@@ -714,14 +677,6 @@ fun PointBurst(
             .alpha(alpha),
         contentAlignment = Alignment.Center
     ) {
-        // Glow
-        Box(
-            modifier = Modifier
-                .size(60.dp)
-                .blur(15.dp)
-                .background(GoldTier, CircleShape)
-        )
-
         // Points text
         Surface(
             color = GoldTier,
@@ -791,27 +746,13 @@ fun StreakCounter(
     ) {
         if (showFlame && streak > 0) {
             Box(contentAlignment = Alignment.Center) {
-                // Fire glow
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .scale(flameScale)
-                        .blur(12.dp)
-                        .alpha(glowAlpha)
-                        .background(StreakFire, CircleShape)
-                )
-
                 // Flame icon
                 Box(
                     modifier = Modifier
                         .size(32.dp)
                         .scale(flameScale)
                         .clip(CircleShape)
-                        .background(
-                            Brush.verticalGradient(
-                                colors = listOf(StreakGlow, StreakFire)
-                            )
-                        ),
+                        .background(StreakFire),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(

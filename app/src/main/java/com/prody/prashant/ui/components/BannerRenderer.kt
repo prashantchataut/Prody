@@ -254,7 +254,7 @@ fun BannerPreviewCard(
                 shape = RoundedCornerShape(12.dp)
             ),
         shape = RoundedCornerShape(12.dp),
-        tonalElevation = if (isSelected) 4.dp else 1.dp
+        tonalElevation = 0.dp // Flat design
     ) {
         Column {
             Box(modifier = Modifier.alpha(if (isUnlocked) 1f else 0.5f)) {
@@ -353,22 +353,6 @@ fun DevBadge(
             .clip(RoundedCornerShape(4.dp)),
         contentAlignment = Alignment.Center
     ) {
-        // Glowing background
-        Box(
-            modifier = Modifier
-                .matchParentSize()
-                .blur(4.dp)
-                .alpha(glowAlpha)
-                .background(
-                    Brush.horizontalGradient(
-                        colors = listOf(
-                            Color(0xFF00FF00).copy(alpha = 0.3f),
-                            Color(0xFF00BFFF).copy(alpha = 0.3f)
-                        )
-                    )
-                )
-        )
-
         // Main background with code pattern
         Box(
             modifier = Modifier

@@ -101,19 +101,6 @@ fun StreakBadge(
         modifier = modifier.semantics { contentDescription = description },
         contentAlignment = Alignment.Center
     ) {
-        // Glow effect behind badge (only when active)
-        if (streakDays > 0 && showAnimation) {
-            Box(
-                modifier = Modifier
-                    .matchParentSize()
-                    .scale(scale * 1.2f)
-                    .blur(12.dp)
-                    .alpha(glowAlpha * 0.5f)
-                    .clip(StreakBadgeShape)
-                    .background(primaryColor)
-            )
-        }
-
         // Main badge
         Row(
             modifier = Modifier

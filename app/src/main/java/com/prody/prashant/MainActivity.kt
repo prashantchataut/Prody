@@ -9,8 +9,15 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
@@ -18,11 +25,21 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import com.prody.prashant.ui.theme.PoppinsFamily
+import com.prody.prashant.ui.theme.ProdyAccent
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -225,33 +242,19 @@ fun ProdyApp(
                 enter = slideInVertically(initialOffsetY = { it }),
                 exit = slideOutVertically(targetOffsetY = { it })
             ) {
-                NavigationBar {
-                    bottomNavItems.forEach { item ->
-                        val selected = currentDestination?.hierarchy?.any {
-                            it.route == item.route
-                        } == true
-
-                        NavigationBarItem(
-                            icon = {
-                                Icon(
-                                    imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
-                                    contentDescription = null
-                                )
-                            },
-                            label = { Text(stringResource(item.labelResId)) },
-                            selected = selected,
-                            onClick = {
-                                navController.navigate(item.route) {
-                                    popUpTo(navController.graph.findStartDestination().id) {
-                                        saveState = true
-                                    }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
+                ProdyBottomNavigationBar(
+                    items = bottomNavItems,
+                    currentRoute = currentDestination?.route,
+                    onItemClick = { route ->
+                        navController.navigate(route) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
                             }
-                        )
+                            launchSingleTop = true
+                            restoreState = true
+                        }
                     }
-                }
+                )
             }
         }
     ) { innerPadding ->
@@ -407,5 +410,134 @@ fun ProdyApp(
                 )
             }
         }
+    }
+}
+
+/**
+ * Premium Bottom Navigation Bar - Redesigned for Prody UI/UX Phase 2
+ *
+ * Design Principles:
+ * - Sleek, minimal, flat design (no shadows)
+ * - Neon green accent (#36F97F) for active states
+ * - Green circular background for active icon
+ * - Poppins typography for labels
+ * - Smooth micro-interactions
+ * - 8dp grid spacing system
+ */
+@Composable
+private fun ProdyBottomNavigationBar(
+    items: List<BottomNavItem>,
+    currentRoute: String?,
+    onItemClick: (String) -> Unit
+) {
+    val isDarkTheme = isSystemInDarkTheme()
+
+    // Theme-aware colors
+    val backgroundColor = if (isDarkTheme) {
+        Color(0xFF0D2826) // Deep dark teal/green
+    } else {
+        Color(0xFFF0F4F3) // Clean off-white
+    }
+
+    val inactiveColor = if (isDarkTheme) {
+        Color(0xFFD3D8D7) // Subtle gray for dark mode
+    } else {
+        Color(0xFF6C757D) // Medium gray for light mode
+    }
+
+    val accentColor = ProdyAccent // Vibrant neon green (#36F97F)
+    val accentBackground = accentColor.copy(alpha = 0.15f)
+
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .navigationBarsPadding(),
+        color = backgroundColor,
+        tonalElevation = 0.dp // Flat design - no elevation
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(72.dp) // Comfortable touch target height
+                .padding(horizontal = 8.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            items.forEach { item ->
+                val selected = currentRoute == item.route
+
+                ProdyNavItem(
+                    item = item,
+                    selected = selected,
+                    accentColor = accentColor,
+                    accentBackground = accentBackground,
+                    inactiveColor = inactiveColor,
+                    onClick = { onItemClick(item.route) }
+                )
+            }
+        }
+    }
+}
+
+/**
+ * Individual navigation item with premium styling
+ */
+@Composable
+private fun ProdyNavItem(
+    item: BottomNavItem,
+    selected: Boolean,
+    accentColor: Color,
+    accentBackground: Color,
+    inactiveColor: Color,
+    onClick: () -> Unit
+) {
+    val scale by animateFloatAsState(
+        targetValue = if (selected) 1.05f else 1f,
+        animationSpec = tween(durationMillis = 200),
+        label = "scale"
+    )
+
+    Column(
+        modifier = Modifier
+            .clip(RoundedCornerShape(16.dp))
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null, // No ripple for cleaner look
+                onClick = onClick
+            )
+            .padding(horizontal = 16.dp, vertical = 4.dp)
+            .scale(scale),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        // Icon with optional green circular background for active state
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .clip(CircleShape)
+                .background(
+                    if (selected) accentBackground else Color.Transparent
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
+                contentDescription = stringResource(item.contentDescriptionResId),
+                modifier = Modifier.size(24.dp),
+                tint = if (selected) accentColor else inactiveColor
+            )
+        }
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        // Label with Poppins typography
+        Text(
+            text = stringResource(item.labelResId),
+            fontFamily = PoppinsFamily,
+            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+            fontSize = 11.sp,
+            color = if (selected) accentColor else inactiveColor,
+            letterSpacing = 0.2.sp
+        )
     }
 }

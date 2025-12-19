@@ -1,13 +1,19 @@
 package com.prody.prashant.ui.screens.journal
 
 import androidx.compose.animation.*
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -18,7 +24,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -36,22 +47,26 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 /**
- * Journal History Screen
+ * Journal History Screen - Premium Phase 2 Redesign
  *
- * A premium, minimalist screen displaying journal entries in chronological sections.
- * Features:
- * - Chronological grouping (This Week, Last Week, Older)
- * - Dark/Light mode support with exact design spec compliance
- * - Mood indicators with custom colors
- * - Intensity display
- * - Load more functionality for older entries
- * - Filter/Sort capabilities
+ * A completely redesigned screen with an innovative visual timeline that connects
+ * journal entries chronologically. Features the new Prody design system with:
  *
  * Design Philosophy:
- * - Flat, modern, compact, extremely clean
- * - No shadows, gradients, or hi-fi visual elements
- * - Premium, professional feel
- * - Poppins font family throughout
+ * - Extreme minimalism, flat design - NO shadows, gradients, or hi-fi elements
+ * - Deep teal dark (#0D2826), clean off-white light (#F0F4F3)
+ * - Vibrant neon green accent (#36F97F) for interactive elements
+ * - Poppins typography throughout
+ * - 8dp grid spacing system
+ * - Innovative timeline visual connecting entries with green-accented lines/dots
+ *
+ * Features:
+ * - Chronological timeline with connected entry dots
+ * - Section headers (This Week, Last Week, Older)
+ * - Premium entry cards with mood/intensity display
+ * - Filter/Sort bottom sheet
+ * - Load more functionality
+ * - Empty state with elegant design
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -63,22 +78,25 @@ fun JournalHistoryScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isDarkTheme = isSystemInDarkTheme()
 
-    // Theme colors based on mode
-    val backgroundColor = if (isDarkTheme) JournalHistoryBackgroundDark else JournalHistoryBackgroundLight
-    val textPrimary = if (isDarkTheme) JournalHistoryTextPrimaryDark else JournalHistoryTextPrimaryLight
-    val textSecondary = if (isDarkTheme) JournalHistoryTextSecondaryDark else JournalHistoryTextSecondaryLight
-    val dividerColor = if (isDarkTheme) JournalHistoryDividerDark.copy(alpha = 0.3f) else JournalHistoryDividerLight.copy(alpha = 0.3f)
-    val buttonBorderColor = if (isDarkTheme) JournalHistoryButtonBorderDark else JournalHistoryButtonBorderLight
+    // Premium theme-aware colors
+    val backgroundColor = if (isDarkTheme) Color(0xFF0D2826) else Color(0xFFF0F4F3)
+    val surfaceColor = if (isDarkTheme) Color(0xFF1A3331) else Color(0xFFFFFFFF)
+    val textPrimary = if (isDarkTheme) Color.White else Color(0xFF1A1A1A)
+    val textSecondary = if (isDarkTheme) Color(0xFFD3D8D7) else Color(0xFF6C757D)
+    val accentColor = Color(0xFF36F97F) // Vibrant neon green
+    val dividerColor = if (isDarkTheme) Color(0xFF3A5250) else Color(0xFFDEE2E6)
+    val timelineColor = accentColor.copy(alpha = 0.4f)
 
     var showFilterSheet by remember { mutableStateOf(false) }
 
     Scaffold(
         containerColor = backgroundColor,
         topBar = {
-            JournalHistoryTopBar(
+            PremiumJournalHistoryTopBar(
                 onNavigateBack = onNavigateBack,
                 onFilterClick = { showFilterSheet = true },
                 textColor = textPrimary,
+                accentColor = accentColor,
                 backgroundColor = backgroundColor
             )
         }
@@ -90,7 +108,11 @@ fun JournalHistoryScreen(
                     .padding(padding),
                 contentAlignment = Alignment.Center
             ) {
-                CircularProgressIndicator(color = JournalHistoryAccent)
+                CircularProgressIndicator(
+                    color = accentColor,
+                    strokeWidth = 3.dp,
+                    modifier = Modifier.size(40.dp)
+                )
             }
         } else {
             LazyColumn(
@@ -98,81 +120,110 @@ fun JournalHistoryScreen(
                     .fillMaxSize()
                     .padding(padding)
                     .background(backgroundColor),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                contentPadding = PaddingValues(horizontal = 24.dp, vertical = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(0.dp) // Timeline handles spacing
             ) {
-                // This Week Section
+                // This Week Section with Timeline
                 if (uiState.thisWeekEntries.isNotEmpty()) {
                     item {
-                        SectionHeader(
-                            title = "THIS WEEK",
-                            textColor = textPrimary,
-                            dividerColor = dividerColor
+                        TimelineSectionHeader(
+                            title = "This Week",
+                            entryCount = uiState.thisWeekEntries.size,
+                            textPrimary = textPrimary,
+                            textSecondary = textSecondary,
+                            accentColor = accentColor
                         )
                     }
-                    items(
+                    itemsIndexed(
                         items = uiState.thisWeekEntries,
-                        key = { "thisweek_${it.id}" }
-                    ) { entry ->
-                        JournalHistoryEntryCard(
+                        key = { _, entry -> "thisweek_${entry.id}" }
+                    ) { index, entry ->
+                        TimelineEntryRow(
                             entry = entry,
                             onClick = { onNavigateToDetail(entry.id) },
-                            isDarkTheme = isDarkTheme
+                            isFirst = index == 0,
+                            isLast = index == uiState.thisWeekEntries.lastIndex,
+                            isDarkTheme = isDarkTheme,
+                            accentColor = accentColor,
+                            timelineColor = timelineColor,
+                            surfaceColor = surfaceColor,
+                            textPrimary = textPrimary,
+                            textSecondary = textSecondary
                         )
                     }
                 }
 
-                // Last Week Section
+                // Last Week Section with Timeline
                 if (uiState.lastWeekEntries.isNotEmpty()) {
                     item {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        SectionHeader(
-                            title = "LAST WEEK",
-                            textColor = textPrimary,
-                            dividerColor = dividerColor
+                        Spacer(modifier = Modifier.height(24.dp))
+                        TimelineSectionHeader(
+                            title = "Last Week",
+                            entryCount = uiState.lastWeekEntries.size,
+                            textPrimary = textPrimary,
+                            textSecondary = textSecondary,
+                            accentColor = accentColor
                         )
                     }
-                    items(
+                    itemsIndexed(
                         items = uiState.lastWeekEntries,
-                        key = { "lastweek_${it.id}" }
-                    ) { entry ->
-                        JournalHistoryEntryCard(
+                        key = { _, entry -> "lastweek_${entry.id}" }
+                    ) { index, entry ->
+                        TimelineEntryRow(
                             entry = entry,
                             onClick = { onNavigateToDetail(entry.id) },
-                            isDarkTheme = isDarkTheme
+                            isFirst = index == 0,
+                            isLast = index == uiState.lastWeekEntries.lastIndex,
+                            isDarkTheme = isDarkTheme,
+                            accentColor = accentColor,
+                            timelineColor = timelineColor,
+                            surfaceColor = surfaceColor,
+                            textPrimary = textPrimary,
+                            textSecondary = textSecondary
                         )
                     }
                 }
 
-                // Older Section
+                // Older Section with Timeline
                 if (uiState.olderEntries.isNotEmpty()) {
                     item {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        SectionHeader(
-                            title = "OLDER",
-                            textColor = textPrimary,
-                            dividerColor = dividerColor
+                        Spacer(modifier = Modifier.height(24.dp))
+                        TimelineSectionHeader(
+                            title = "Earlier",
+                            entryCount = uiState.totalOlderCount,
+                            textPrimary = textPrimary,
+                            textSecondary = textSecondary,
+                            accentColor = accentColor
                         )
                     }
-                    items(
-                        items = uiState.olderEntries.take(uiState.displayedOlderCount),
-                        key = { "older_${it.id}" }
-                    ) { entry ->
-                        JournalHistoryEntryCard(
+                    val displayedOlder = uiState.olderEntries.take(uiState.displayedOlderCount)
+                    itemsIndexed(
+                        items = displayedOlder,
+                        key = { _, entry -> "older_${entry.id}" }
+                    ) { index, entry ->
+                        TimelineEntryRow(
                             entry = entry,
                             onClick = { onNavigateToDetail(entry.id) },
-                            isDarkTheme = isDarkTheme
+                            isFirst = index == 0,
+                            isLast = index == displayedOlder.lastIndex && uiState.displayedOlderCount >= uiState.totalOlderCount,
+                            isDarkTheme = isDarkTheme,
+                            accentColor = accentColor,
+                            timelineColor = timelineColor,
+                            surfaceColor = surfaceColor,
+                            textPrimary = textPrimary,
+                            textSecondary = textSecondary
                         )
                     }
 
                     // Load More Button
                     if (uiState.displayedOlderCount < uiState.totalOlderCount) {
                         item {
-                            Spacer(modifier = Modifier.height(16.dp))
-                            LoadMoreButton(
+                            PremiumLoadMoreButton(
                                 onClick = { viewModel.loadMoreOlderEntries() },
+                                remainingCount = uiState.totalOlderCount - uiState.displayedOlderCount,
                                 textColor = textPrimary,
-                                borderColor = buttonBorderColor
+                                accentColor = accentColor,
+                                timelineColor = timelineColor
                             )
                         }
                     }
@@ -184,16 +235,18 @@ fun JournalHistoryScreen(
                     uiState.olderEntries.isEmpty()
                 ) {
                     item {
-                        EmptyHistoryState(
+                        PremiumEmptyHistoryState(
                             textPrimary = textPrimary,
-                            textSecondary = textSecondary
+                            textSecondary = textSecondary,
+                            accentColor = accentColor,
+                            dividerColor = dividerColor
                         )
                     }
                 }
 
                 // Bottom spacing
                 item {
-                    Spacer(modifier = Modifier.height(32.dp))
+                    Spacer(modifier = Modifier.height(40.dp))
                 }
             }
         }
@@ -201,7 +254,7 @@ fun JournalHistoryScreen(
 
     // Filter/Sort Bottom Sheet
     if (showFilterSheet) {
-        FilterSortBottomSheet(
+        PremiumFilterSortBottomSheet(
             currentSortOrder = uiState.sortOrder,
             currentFilterMood = uiState.selectedFilterMood,
             onSortOrderChange = { viewModel.setSortOrder(it) },
@@ -212,27 +265,34 @@ fun JournalHistoryScreen(
     }
 }
 
+/**
+ * Premium Top Bar with minimal design
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun JournalHistoryTopBar(
+private fun PremiumJournalHistoryTopBar(
     onNavigateBack: () -> Unit,
     onFilterClick: () -> Unit,
     textColor: Color,
+    accentColor: Color,
     backgroundColor: Color
 ) {
     TopAppBar(
         title = {
             Text(
                 text = "Journal History",
-                style = MaterialTheme.typography.titleLarge,
+                fontFamily = PoppinsFamily,
                 fontWeight = FontWeight.Bold,
+                fontSize = 24.sp,
                 color = textColor
             )
         },
         navigationIcon = {
             IconButton(
                 onClick = onNavigateBack,
-                modifier = Modifier.size(48.dp)
+                modifier = Modifier
+                    .size(48.dp)
+                    .padding(4.dp)
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -245,12 +305,14 @@ private fun JournalHistoryTopBar(
         actions = {
             IconButton(
                 onClick = onFilterClick,
-                modifier = Modifier.size(48.dp)
+                modifier = Modifier
+                    .size(48.dp)
+                    .padding(4.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Filled.Tune,
+                    imageVector = Icons.Outlined.FilterList,
                     contentDescription = "Filter and sort",
-                    tint = textColor,
+                    tint = accentColor,
                     modifier = Modifier.size(24.dp)
                 )
             }
@@ -259,285 +321,453 @@ private fun JournalHistoryTopBar(
             containerColor = backgroundColor,
             titleContentColor = textColor,
             navigationIconContentColor = textColor,
-            actionIconContentColor = textColor
+            actionIconContentColor = accentColor
         )
     )
 }
 
+/**
+ * Timeline Section Header with entry count badge
+ */
 @Composable
-private fun SectionHeader(
+private fun TimelineSectionHeader(
     title: String,
-    textColor: Color,
-    dividerColor: Color
+    entryCount: Int,
+    textPrimary: Color,
+    textSecondary: Color,
+    accentColor: Color
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .padding(vertical = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
             text = title,
-            style = MaterialTheme.typography.labelMedium,
-            fontWeight = FontWeight.Medium,
-            color = textColor,
-            letterSpacing = 1.sp
+            fontFamily = PoppinsFamily,
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 18.sp,
+            color = textPrimary
         )
-        Spacer(modifier = Modifier.width(12.dp))
-        HorizontalDivider(
-            modifier = Modifier.weight(1f),
-            color = dividerColor,
-            thickness = 1.dp
+
+        // Entry count badge
+        Surface(
+            shape = RoundedCornerShape(12.dp),
+            color = accentColor.copy(alpha = 0.15f)
+        ) {
+            Text(
+                text = "$entryCount entries",
+                fontFamily = PoppinsFamily,
+                fontWeight = FontWeight.Medium,
+                fontSize = 12.sp,
+                color = accentColor,
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+            )
+        }
+    }
+}
+
+/**
+ * Timeline Entry Row with connected dot and line visual
+ */
+@Composable
+private fun TimelineEntryRow(
+    entry: JournalEntryEntity,
+    onClick: () -> Unit,
+    isFirst: Boolean,
+    isLast: Boolean,
+    isDarkTheme: Boolean,
+    accentColor: Color,
+    timelineColor: Color,
+    surfaceColor: Color,
+    textPrimary: Color,
+    textSecondary: Color
+) {
+    var isPressed by remember { mutableStateOf(false) }
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.98f else 1f,
+        animationSpec = tween(150),
+        label = "scale"
+    )
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .scale(scale),
+        verticalAlignment = Alignment.Top
+    ) {
+        // Timeline column (dot + line)
+        Box(
+            modifier = Modifier
+                .width(40.dp)
+                .height(IntrinsicSize.Max),
+            contentAlignment = Alignment.TopCenter
+        ) {
+            // Timeline vertical line
+            Canvas(
+                modifier = Modifier
+                    .width(2.dp)
+                    .fillMaxHeight()
+            ) {
+                val lineTop = if (isFirst) size.height / 2 else 0f
+                val lineBottom = if (isLast) size.height / 2 else size.height
+
+                drawLine(
+                    color = timelineColor,
+                    start = Offset(size.width / 2, lineTop),
+                    end = Offset(size.width / 2, lineBottom),
+                    strokeWidth = 2.dp.toPx(),
+                    cap = StrokeCap.Round
+                )
+            }
+
+            // Timeline dot - accent green for current entry
+            Box(
+                modifier = Modifier
+                    .padding(top = 20.dp)
+                    .size(12.dp)
+                    .clip(CircleShape)
+                    .background(accentColor)
+            )
+        }
+
+        Spacer(modifier = Modifier.width(8.dp))
+
+        // Entry Card
+        PremiumEntryCard(
+            entry = entry,
+            onClick = onClick,
+            onPressChange = { isPressed = it },
+            surfaceColor = surfaceColor,
+            textPrimary = textPrimary,
+            textSecondary = textSecondary,
+            accentColor = accentColor,
+            isDarkTheme = isDarkTheme,
+            modifier = Modifier
+                .weight(1f)
+                .padding(bottom = 16.dp)
         )
     }
 }
 
+/**
+ * Premium Entry Card with flat design
+ */
 @Composable
-private fun JournalHistoryEntryCard(
+private fun PremiumEntryCard(
     entry: JournalEntryEntity,
     onClick: () -> Unit,
-    isDarkTheme: Boolean
+    onPressChange: (Boolean) -> Unit,
+    surfaceColor: Color,
+    textPrimary: Color,
+    textSecondary: Color,
+    accentColor: Color,
+    isDarkTheme: Boolean,
+    modifier: Modifier = Modifier
 ) {
-    val cardBackground = if (isDarkTheme) JournalHistoryCardDark else JournalHistoryCardLight
-    val textPrimary = if (isDarkTheme) JournalHistoryTextPrimaryDark else JournalHistoryTextPrimaryLight
-    val textSecondary = if (isDarkTheme) JournalHistoryTextSecondaryDark else JournalHistoryTextSecondaryLight
-    val intensityBg = if (isDarkTheme) JournalHistoryIntensityBgDark else JournalHistoryIntensityBgLight
-    val dateBlockBg = if (isDarkTheme) JournalHistoryDateBlockBgDark else JournalHistoryDateBlockBgLight
-    val dateBlockText = if (isDarkTheme) JournalHistoryDateBlockTextDark else JournalHistoryDateBlockTextLight
-
-    val dateFormat = remember { SimpleDateFormat("MMM", Locale.getDefault()) }
-    val dayFormat = remember { SimpleDateFormat("d", Locale.getDefault()) }
-    val dayOfWeekFormat = remember { SimpleDateFormat("EEE", Locale.getDefault()) }
+    val dateFormat = remember { SimpleDateFormat("MMM d", Locale.getDefault()) }
+    val dayOfWeekFormat = remember { SimpleDateFormat("EEEE", Locale.getDefault()) }
     val timeFormat = remember { SimpleDateFormat("h:mm a", Locale.getDefault()) }
     val date = remember(entry.createdAt) { Date(entry.createdAt) }
 
     val mood = remember(entry.mood) { Mood.fromString(entry.mood) }
-    val moodColor = getMoodColorForHistory(mood)
-    val moodIcon = getMoodIconForHistory(mood)
+    val moodColor = getMoodColorPremium(mood)
+    val moodIcon = getMoodIconPremium(mood)
 
-    // Get entry type label based on tags or default
+    // Get entry type based on tags
     val entryType = remember(entry.tags) {
         when {
-            entry.tags.contains("reflection", ignoreCase = true) -> "REFLECTION"
-            entry.tags.contains("gratitude", ignoreCase = true) -> "GRATITUDE"
-            entry.tags.contains("free", ignoreCase = true) -> "FREE WRITE"
-            entry.tags.contains("goal", ignoreCase = true) -> "GOALS"
-            else -> "REFLECTION"
-        }
-    }
-
-    val entryTypeIcon = remember(entryType) {
-        when (entryType) {
-            "GRATITUDE" -> Icons.Filled.Favorite
-            "FREE WRITE" -> Icons.Filled.EditNote
-            "GOALS" -> Icons.Filled.Flag
-            else -> Icons.Filled.Psychology
+            entry.tags.contains("reflection", ignoreCase = true) -> "Reflection"
+            entry.tags.contains("gratitude", ignoreCase = true) -> "Gratitude"
+            entry.tags.contains("free", ignoreCase = true) -> "Free Write"
+            entry.tags.contains("goal", ignoreCase = true) -> "Goals"
+            else -> "Entry"
         }
     }
 
     Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .clickable(onClick = onClick),
-        color = cardBackground,
-        shape = RoundedCornerShape(16.dp)
+        modifier = modifier
+            .clip(RoundedCornerShape(20.dp))
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onClick
+            ),
+        color = surfaceColor,
+        shape = RoundedCornerShape(20.dp),
+        tonalElevation = 0.dp // Flat design - no elevation
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(20.dp)
         ) {
+            // Top row: Date and mood
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.Top
             ) {
-                // Left side: Date and entry info
-                Row(
-                    verticalAlignment = Alignment.Top
-                ) {
-                    // Date display - formatted like "Nov 23 SAT"
-                    Column {
-                        Text(
-                            text = buildAnnotatedString {
-                                withStyle(SpanStyle(fontWeight = FontWeight.Bold, fontSize = 20.sp)) {
-                                    append(dateFormat.format(date))
-                                }
-                                append(" ")
-                                withStyle(SpanStyle(fontWeight = FontWeight.Bold, fontSize = 20.sp)) {
-                                    append(dayFormat.format(date))
-                                }
-                                append(" ")
-                                withStyle(SpanStyle(fontWeight = FontWeight.Normal, fontSize = 14.sp, color = textSecondary)) {
-                                    append(dayOfWeekFormat.format(date).uppercase())
-                                }
-                            },
-                            color = textPrimary
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        // Entry type with icon
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            Icon(
-                                imageVector = entryTypeIcon,
-                                contentDescription = null,
-                                tint = textSecondary,
-                                modifier = Modifier.size(14.dp)
-                            )
-                            Text(
-                                text = entryType,
-                                style = MaterialTheme.typography.labelSmall,
-                                color = textSecondary,
-                                letterSpacing = 1.sp
-                            )
-                        }
-                    }
+                // Date display
+                Column {
+                    Text(
+                        text = dateFormat.format(date),
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
+                        color = textPrimary
+                    )
+                    Text(
+                        text = "${dayOfWeekFormat.format(date)} · ${timeFormat.format(date)}",
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.Normal,
+                        fontSize = 13.sp,
+                        color = textSecondary
+                    )
                 }
 
-                // Right side: Mood and Intensity
-                Column(
-                    horizontalAlignment = Alignment.End,
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                // Mood chip
+                Surface(
+                    shape = RoundedCornerShape(16.dp),
+                    color = moodColor.copy(alpha = 0.12f)
                 ) {
-                    // Mood chip
-                    Surface(
-                        shape = RoundedCornerShape(20.dp),
-                        color = moodColor.copy(alpha = 0.15f)
+                    Row(
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            Icon(
-                                imageVector = moodIcon,
-                                contentDescription = null,
-                                tint = moodColor,
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Text(
-                                text = mood.displayName,
-                                style = MaterialTheme.typography.labelMedium,
-                                color = moodColor,
-                                fontWeight = FontWeight.Medium
-                            )
-                        }
-                    }
-
-                    // Intensity tag
-                    Surface(
-                        shape = RoundedCornerShape(16.dp),
-                        color = intensityBg
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "Intensity ",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = textPrimary
-                            )
-                            Text(
-                                text = buildAnnotatedString {
-                                    withStyle(SpanStyle(color = JournalHistoryAccent, fontWeight = FontWeight.Bold)) {
-                                        append("${entry.moodIntensity}")
-                                    }
-                                    withStyle(SpanStyle(color = textPrimary)) {
-                                        append("/10")
-                                    }
-                                }
-                            )
-                        }
+                        Icon(
+                            imageVector = moodIcon,
+                            contentDescription = null,
+                            tint = moodColor,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Text(
+                            text = mood.displayName,
+                            fontFamily = PoppinsFamily,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 12.sp,
+                            color = moodColor
+                        )
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // Entry snippet
+            // Content preview
             Text(
                 text = entry.content,
-                style = MaterialTheme.typography.bodyMedium,
+                fontFamily = PoppinsFamily,
+                fontWeight = FontWeight.Normal,
+                fontSize = 14.sp,
                 color = textSecondary,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
                 lineHeight = 22.sp
             )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Bottom row: Entry type and intensity
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Entry type tag
+                Text(
+                    text = entryType.uppercase(),
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 10.sp,
+                    color = textSecondary,
+                    letterSpacing = 1.sp
+                )
+
+                // Intensity indicator
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Text(
+                        text = "Intensity",
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.Normal,
+                        fontSize = 12.sp,
+                        color = textSecondary
+                    )
+                    Text(
+                        text = buildAnnotatedString {
+                            withStyle(SpanStyle(color = accentColor, fontWeight = FontWeight.Bold)) {
+                                append("${entry.moodIntensity}")
+                            }
+                            withStyle(SpanStyle(color = textSecondary)) {
+                                append("/10")
+                            }
+                        },
+                        fontFamily = PoppinsFamily,
+                        fontSize = 12.sp
+                    )
+                }
+            }
         }
     }
 }
 
+/**
+ * Premium Load More Button with timeline continuation
+ */
 @Composable
-private fun LoadMoreButton(
+private fun PremiumLoadMoreButton(
     onClick: () -> Unit,
+    remainingCount: Int,
     textColor: Color,
-    borderColor: Color
+    accentColor: Color,
+    timelineColor: Color
 ) {
-    Box(
+    Row(
         modifier = Modifier.fillMaxWidth(),
-        contentAlignment = Alignment.Center
+        verticalAlignment = Alignment.Top
     ) {
+        // Timeline continuation
+        Box(
+            modifier = Modifier
+                .width(40.dp)
+                .height(80.dp),
+            contentAlignment = Alignment.TopCenter
+        ) {
+            Canvas(
+                modifier = Modifier
+                    .width(2.dp)
+                    .height(40.dp)
+            ) {
+                val pathEffect = PathEffect.dashPathEffect(floatArrayOf(8f, 8f), 0f)
+                drawLine(
+                    color = timelineColor,
+                    start = Offset(size.width / 2, 0f),
+                    end = Offset(size.width / 2, size.height),
+                    strokeWidth = 2.dp.toPx(),
+                    pathEffect = pathEffect
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.width(8.dp))
+
+        // Load More Button
         Surface(
             modifier = Modifier
-                .clip(RoundedCornerShape(12.dp))
+                .weight(1f)
+                .padding(top = 8.dp)
+                .clip(RoundedCornerShape(16.dp))
                 .border(
-                    width = 1.dp,
-                    color = borderColor,
-                    shape = RoundedCornerShape(12.dp)
+                    width = 1.5.dp,
+                    color = accentColor.copy(alpha = 0.5f),
+                    shape = RoundedCornerShape(16.dp)
                 )
                 .clickable(onClick = onClick),
             color = Color.Transparent
         ) {
-            Text(
-                text = "Load More Entries",
-                style = MaterialTheme.typography.labelLarge,
-                color = textColor,
-                fontWeight = FontWeight.Medium,
-                modifier = Modifier.padding(horizontal = 24.dp, vertical = 14.dp)
-            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.ExpandMore,
+                    contentDescription = null,
+                    tint = accentColor,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Load $remainingCount More",
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 14.sp,
+                    color = accentColor
+                )
+            }
         }
     }
 }
 
+/**
+ * Premium Empty State with elegant design
+ */
 @Composable
-private fun EmptyHistoryState(
+private fun PremiumEmptyHistoryState(
     textPrimary: Color,
-    textSecondary: Color
+    textSecondary: Color,
+    accentColor: Color,
+    dividerColor: Color
 ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 64.dp),
+            .padding(vertical = 80.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Icon(
-            imageVector = Icons.Outlined.AutoStories,
-            contentDescription = null,
-            modifier = Modifier.size(64.dp),
-            tint = textSecondary.copy(alpha = 0.5f)
-        )
-        Spacer(modifier = Modifier.height(16.dp))
+        // Decorative empty state icon
+        Box(
+            modifier = Modifier
+                .size(100.dp)
+                .clip(CircleShape)
+                .background(accentColor.copy(alpha = 0.08f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(72.dp)
+                    .clip(CircleShape)
+                    .border(
+                        width = 2.dp,
+                        color = accentColor.copy(alpha = 0.3f),
+                        shape = CircleShape
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.AutoStories,
+                    contentDescription = null,
+                    modifier = Modifier.size(36.dp),
+                    tint = accentColor.copy(alpha = 0.7f)
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(32.dp))
+
         Text(
             text = "No Journal Entries Yet",
-            style = MaterialTheme.typography.titleMedium,
+            fontFamily = PoppinsFamily,
             fontWeight = FontWeight.SemiBold,
+            fontSize = 20.sp,
             color = textPrimary
         )
+
         Spacer(modifier = Modifier.height(8.dp))
+
         Text(
-            text = "Start writing to build your journal history",
-            style = MaterialTheme.typography.bodyMedium,
+            text = "Start writing to build your timeline",
+            fontFamily = PoppinsFamily,
+            fontWeight = FontWeight.Normal,
+            fontSize = 14.sp,
             color = textSecondary
         )
     }
 }
 
+/**
+ * Premium Filter/Sort Bottom Sheet
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun FilterSortBottomSheet(
+private fun PremiumFilterSortBottomSheet(
     currentSortOrder: SortOrder,
     currentFilterMood: String?,
     onSortOrderChange: (SortOrder) -> Unit,
@@ -545,9 +775,11 @@ private fun FilterSortBottomSheet(
     onDismiss: () -> Unit,
     isDarkTheme: Boolean
 ) {
-    val sheetBackground = if (isDarkTheme) JournalHistoryCardDark else JournalHistoryCardLight
-    val textPrimary = if (isDarkTheme) JournalHistoryTextPrimaryDark else JournalHistoryTextPrimaryLight
-    val textSecondary = if (isDarkTheme) JournalHistoryTextSecondaryDark else JournalHistoryTextSecondaryLight
+    val sheetBackground = if (isDarkTheme) Color(0xFF1A3331) else Color(0xFFFFFFFF)
+    val textPrimary = if (isDarkTheme) Color.White else Color(0xFF1A1A1A)
+    val textSecondary = if (isDarkTheme) Color(0xFFD3D8D7) else Color(0xFF6C757D)
+    val accentColor = Color(0xFF36F97F)
+    val dividerColor = if (isDarkTheme) Color(0xFF3A5250) else Color(0xFFDEE2E6)
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -555,8 +787,8 @@ private fun FilterSortBottomSheet(
         dragHandle = {
             Box(
                 modifier = Modifier
-                    .padding(vertical = 12.dp)
-                    .width(40.dp)
+                    .padding(vertical = 16.dp)
+                    .width(48.dp)
                     .height(4.dp)
                     .clip(RoundedCornerShape(2.dp))
                     .background(textSecondary.copy(alpha = 0.3f))
@@ -567,18 +799,20 @@ private fun FilterSortBottomSheet(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp)
-                .padding(bottom = 32.dp)
+                .padding(bottom = 40.dp)
         ) {
             // Sort Section
             Text(
-                text = "SORT BY",
-                style = MaterialTheme.typography.labelMedium,
-                color = textSecondary,
-                letterSpacing = 1.sp
+                text = "Sort By",
+                fontFamily = PoppinsFamily,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 16.sp,
+                color = textPrimary
             )
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+
             SortOrder.entries.forEach { sortOrder ->
-                FilterSortOption(
+                PremiumFilterOption(
                     label = when (sortOrder) {
                         SortOrder.NEWEST_FIRST -> "Newest First"
                         SortOrder.OLDEST_FIRST -> "Oldest First"
@@ -591,23 +825,26 @@ private fun FilterSortBottomSheet(
                         onDismiss()
                     },
                     textPrimary = textPrimary,
-                    accentColor = JournalHistoryAccent
+                    accentColor = accentColor
                 )
             }
 
             Spacer(modifier = Modifier.height(24.dp))
+            HorizontalDivider(color = dividerColor, thickness = 1.dp)
+            Spacer(modifier = Modifier.height(24.dp))
 
             // Filter Section
             Text(
-                text = "FILTER BY MOOD",
-                style = MaterialTheme.typography.labelMedium,
-                color = textSecondary,
-                letterSpacing = 1.sp
+                text = "Filter by Mood",
+                fontFamily = PoppinsFamily,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 16.sp,
+                color = textPrimary
             )
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             // All moods option
-            FilterSortOption(
+            PremiumFilterOption(
                 label = "All Moods",
                 isSelected = currentFilterMood == null,
                 onClick = {
@@ -615,12 +852,12 @@ private fun FilterSortBottomSheet(
                     onDismiss()
                 },
                 textPrimary = textPrimary,
-                accentColor = JournalHistoryAccent
+                accentColor = accentColor
             )
 
             // Individual mood options
             Mood.entries.forEach { mood ->
-                FilterSortOption(
+                PremiumFilterOption(
                     label = mood.displayName,
                     isSelected = currentFilterMood?.equals(mood.name, ignoreCase = true) == true,
                     onClick = {
@@ -628,15 +865,18 @@ private fun FilterSortBottomSheet(
                         onDismiss()
                     },
                     textPrimary = textPrimary,
-                    accentColor = getMoodColorForHistory(mood)
+                    accentColor = getMoodColorPremium(mood)
                 )
             }
         }
     }
 }
 
+/**
+ * Premium Filter Option Row
+ */
 @Composable
-private fun FilterSortOption(
+private fun PremiumFilterOption(
     label: String,
     isSelected: Boolean,
     onClick: () -> Unit,
@@ -646,17 +886,18 @@ private fun FilterSortOption(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(8.dp))
+            .clip(RoundedCornerShape(12.dp))
             .clickable(onClick = onClick)
-            .padding(vertical = 12.dp, horizontal = 8.dp),
+            .padding(vertical = 14.dp, horizontal = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text = label,
-            style = MaterialTheme.typography.bodyLarge,
-            color = if (isSelected) accentColor else textPrimary,
-            fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal
+            fontFamily = PoppinsFamily,
+            fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal,
+            fontSize = 15.sp,
+            color = if (isSelected) accentColor else textPrimary
         )
         if (isSelected) {
             Icon(
@@ -670,25 +911,25 @@ private fun FilterSortOption(
 }
 
 /**
- * Maps Mood to the Journal History specific colors as per design spec
+ * Premium mood color mapping - using neon green accent and updated palette
  */
-private fun getMoodColorForHistory(mood: Mood): Color {
+private fun getMoodColorPremium(mood: Mood): Color {
     return when (mood) {
-        Mood.HAPPY -> JournalHistoryMoodEcstatic    // Vibrant neon green
-        Mood.EXCITED -> JournalHistoryMoodEcstatic  // Also vibrant green for high energy
-        Mood.CALM -> JournalHistoryMoodCalm         // Muted light green
-        Mood.GRATEFUL -> JournalHistoryMoodCalm     // Also calm green
-        Mood.ANXIOUS -> JournalHistoryMoodAnxious   // Orange
-        Mood.CONFUSED -> JournalHistoryMoodAnxious  // Also orange
-        Mood.SAD -> JournalHistoryMoodMelancholy    // Light blue
-        Mood.MOTIVATED -> JournalHistoryAccent      // Neon green for positive energy
+        Mood.HAPPY -> Color(0xFF36F97F)      // Neon green
+        Mood.EXCITED -> Color(0xFFFFD166)    // Energetic amber
+        Mood.CALM -> Color(0xFF6CB4D4)       // Serene blue
+        Mood.GRATEFUL -> Color(0xFF7EC8A3)   // Soft sage
+        Mood.ANXIOUS -> Color(0xFFE8A87C)    // Soft coral
+        Mood.CONFUSED -> Color(0xFFB39DDB)   // Soft lavender
+        Mood.SAD -> Color(0xFF8BA8B9)        // Muted slate
+        Mood.MOTIVATED -> Color(0xFF36F97F)  // Neon green
     }
 }
 
 /**
- * Maps Mood to appropriate icons for Journal History
+ * Premium mood icon mapping
  */
-private fun getMoodIconForHistory(mood: Mood): ImageVector {
+private fun getMoodIconPremium(mood: Mood): ImageVector {
     return when (mood) {
         Mood.HAPPY -> Icons.Filled.SentimentVerySatisfied
         Mood.CALM -> Icons.Filled.SelfImprovement

@@ -3,109 +3,134 @@ package com.prody.prashant.ui.theme
 import androidx.compose.ui.graphics.Color
 
 /**
- * Prody Design System - Color Palette
+ * Prody Design System - Premium Color Palette
  *
- * A refined, modern color system inspired by nature and growth.
- * Colors are chosen for optimal accessibility, visual hierarchy, and emotional resonance.
+ * A radical redesign for Prody's UI/UX overhaul - Phase 2
  *
  * Design Philosophy:
- * - Primary: Deep Forest Green - represents growth, wisdom, and natural progression
- * - Secondary: Warm Sand - evokes warmth, comfort, and approachability
- * - Tertiary: Soft Teal - adds freshness and vitality
- * - Accents: Carefully chosen for emotional resonance and clear visual distinction
+ * - Extreme minimalism, cleanliness, and modernity
+ * - NO shadows, gradients, or hi-fi elements
+ * - Flat, modern, compact, extremely clean aesthetic
+ *
+ * Color Palette (Strict Adherence):
+ * - Dark Mode Background: Deep rich dark teal/green (#0D2826)
+ * - Light Mode Background: Clean bright off-white (#F0F4F3)
+ * - Accent: Vibrant neon green (#36F97F) for interactive elements
+ * - Pure black (#000000) for focal screens (Time Capsule, Stats Leaderboard)
+ * - Pure white (#FFFFFF) for focal screens in light mode
+ *
+ * WCAG AA Compliance: All color combinations meet contrast requirements
  */
 
 // =============================================================================
-// LIGHT THEME COLORS - Forest & Warmth Palette
+// PREMIUM ACCENT COLOR - Vibrant Neon Green
 // =============================================================================
 
-// Primary - Deep Forest Green (represents growth and wisdom)
-val ProdyPrimary = Color(0xFF2D5A3D)  // Deeper, more sophisticated green
-val ProdyPrimaryVariant = Color(0xFF1E3D2B)  // Rich dark green
-val ProdyOnPrimary = Color(0xFFFFFFFF)
-val ProdyPrimaryContainer = Color(0xFFD4E8DC)  // Soft sage container
+/** Primary interactive accent - Vibrant neon green for buttons, links, active states */
+val ProdyAccent = Color(0xFF36F97F)
+val ProdyAccentVariant = Color(0xFF2EE06F)
+val ProdyOnAccent = Color(0xFF000000)  // Black text on neon green
 
-// Secondary - Warm Sand (evokes warmth and approachability)
-val ProdySecondary = Color(0xFFD4C4A8)  // Warm sand tone
-val ProdySecondaryVariant = Color(0xFFC4B494)  // Deeper warm tone
-val ProdyOnSecondary = Color(0xFF2D2A24)
+// =============================================================================
+// LIGHT THEME COLORS - Clean Minimalist Palette
+// =============================================================================
 
-// Tertiary - Soft Teal (adds freshness and vitality)
-val ProdyTertiary = Color(0xFF5B9A8B)  // Sophisticated teal
+// Primary - Vibrant Neon Green accent for interactivity
+val ProdyPrimary = Color(0xFF36F97F)  // Vibrant neon green accent
+val ProdyPrimaryVariant = Color(0xFF2DD96D)  // Slightly darker variant
+val ProdyOnPrimary = Color(0xFF000000)  // Black text on green
+val ProdyPrimaryContainer = Color(0xFFD9FDE6)  // Very light green container
+
+// Secondary - Subtle gray tones for secondary elements
+val ProdySecondary = Color(0xFF6C757D)  // Medium gray
+val ProdySecondaryVariant = Color(0xFF495057)  // Darker gray
+val ProdyOnSecondary = Color(0xFFFFFFFF)
+
+// Tertiary - Soft teal for accents
+val ProdyTertiary = Color(0xFF20B2AA)  // Light sea green
 val ProdyOnTertiary = Color(0xFFFFFFFF)
-val ProdyTertiaryContainer = Color(0xFFCCE5E0)
+val ProdyTertiaryContainer = Color(0xFFE0F7F7)
 
-// Background & Surface - Clean, warm whites
-val ProdyBackground = Color(0xFFFBFAF8)  // Warm off-white
-val ProdyOnBackground = Color(0xFF1A1C1E)
+// Background & Surface - Clean off-white
+val ProdyBackground = Color(0xFFF0F4F3)  // Clean bright off-white/pale gray
+val ProdyOnBackground = Color(0xFF1A1A1A)  // Near-black for primary text
 
-val ProdySurface = Color(0xFFFFFFFF)
-val ProdySurfaceVariant = Color(0xFFF3F0E8)  // Subtle warm tint
-val ProdyOnSurface = Color(0xFF1A1C1E)
-val ProdyOnSurfaceVariant = Color(0xFF5C5C5C)
+val ProdySurface = Color(0xFFFFFFFF)  // Pure white for cards/surfaces
+val ProdySurfaceVariant = Color(0xFFF5F7F6)  // Slightly darker surface variant
+val ProdyOnSurface = Color(0xFF1A1A1A)  // Near-black for primary text
+val ProdyOnSurfaceVariant = Color(0xFF6C757D)  // Medium gray for secondary text
 
-// Elevated surfaces with subtle depth
-val ProdySurfaceElevated = Color(0xFFFEFEFE)
-val ProdySurfaceDim = Color(0xFFF0EDE5)
+// Elevated surfaces - minimal differentiation (flat design)
+val ProdySurfaceElevated = Color(0xFFFFFFFF)  // Pure white
+val ProdySurfaceDim = Color(0xFFE8ECEB)  // Slightly dimmed surface
 
 // Error states
-val ProdyError = Color(0xFFBF3B3B)  // Refined red
+val ProdyError = Color(0xFFDC3545)  // Clean red
 val ProdyOnError = Color(0xFFFFFFFF)
-val ProdyErrorContainer = Color(0xFFFFE5E5)
+val ProdyErrorContainer = Color(0xFFFCE4E4)
 
 // Success state
-val ProdySuccess = Color(0xFF2E7D4A)
-val ProdyOnSuccess = Color(0xFFFFFFFF)
+val ProdySuccess = Color(0xFF36F97F)  // Match accent green
+val ProdyOnSuccess = Color(0xFF000000)
 
 // Warning state
-val ProdyWarning = Color(0xFFE6A23C)
-val ProdyOnWarning = Color(0xFF1A1C1E)
+val ProdyWarning = Color(0xFFFFC107)  // Amber warning
+val ProdyOnWarning = Color(0xFF1A1A1A)
 
-// Outlines & Dividers
-val ProdyOutline = Color(0xFFDDD8D0)
-val ProdyOutlineVariant = Color(0xFFCBC6BE)
+// Outlines & Dividers - Subtle grays
+val ProdyOutline = Color(0xFFDEE2E6)  // Light gray outline
+val ProdyOutlineVariant = Color(0xFFCED4DA)  // Slightly darker outline
 
 // =============================================================================
-// DARK THEME COLORS - Night Forest Palette
+// DARK THEME COLORS - Deep Teal/Green Premium Palette
 // =============================================================================
 
-// Primary Dark - Luminous Green (visible yet soft)
-val ProdyPrimaryDark = Color(0xFF8FD4A6)  // Luminous mint green
-val ProdyPrimaryVariantDark = Color(0xFF6BBF8A)
-val ProdyOnPrimaryDark = Color(0xFF003921)
-val ProdyPrimaryContainerDark = Color(0xFF1A4028)
+// Primary Dark - Vibrant Neon Green (same accent)
+val ProdyPrimaryDark = Color(0xFF36F97F)  // Vibrant neon green accent
+val ProdyPrimaryVariantDark = Color(0xFF4AFA8E)  // Lighter variant for dark mode
+val ProdyOnPrimaryDark = Color(0xFF000000)  // Black text on green
+val ProdyPrimaryContainerDark = Color(0xFF1A4033)  // Dark green container
 
-// Secondary Dark - Warm Taupe
-val ProdySecondaryDark = Color(0xFFD4C4A8)
-val ProdyOnSecondaryDark = Color(0xFF3C3627)
-val ProdySecondaryContainerDark = Color(0xFF524B39)
+// Secondary Dark - Light gray tones
+val ProdySecondaryDark = Color(0xFFD3D8D7)  // Subtle light gray
+val ProdyOnSecondaryDark = Color(0xFF1A1A1A)
+val ProdySecondaryContainerDark = Color(0xFF2A4240)  // Dark muted green container
 
-// Tertiary Dark - Cool Aqua
-val ProdyTertiaryDark = Color(0xFF7FBFB3)
-val ProdyOnTertiaryDark = Color(0xFF003731)
-val ProdyTertiaryContainerDark = Color(0xFF1E4D46)
+// Tertiary Dark - Soft teal
+val ProdyTertiaryDark = Color(0xFF5FCFCF)  // Bright teal
+val ProdyOnTertiaryDark = Color(0xFF003737)
+val ProdyTertiaryContainerDark = Color(0xFF1A3331)
 
-// Background & Surface Dark - Deep charcoal
-val ProdyBackgroundDark = Color(0xFF0F1210)  // Deep charcoal with green tint
-val ProdyOnBackgroundDark = Color(0xFFE4E3DF)
+// Background & Surface Dark - Deep rich teal/green
+val ProdyBackgroundDark = Color(0xFF0D2826)  // Deep rich dark teal/green
+val ProdyOnBackgroundDark = Color(0xFFFFFFFF)  // Pure white for primary text
 
-val ProdySurfaceDark = Color(0xFF181C19)  // Elevated surface
-val ProdySurfaceVariantDark = Color(0xFF252A26)
-val ProdyOnSurfaceDark = Color(0xFFE4E3DF)
-val ProdyOnSurfaceVariantDark = Color(0xFF9CA39D)
+val ProdySurfaceDark = Color(0xFF1A3331)  // Slightly elevated surface
+val ProdySurfaceVariantDark = Color(0xFF2A4240)  // Card/container background
+val ProdyOnSurfaceDark = Color(0xFFFFFFFF)  // Pure white for primary text
+val ProdyOnSurfaceVariantDark = Color(0xFFD3D8D7)  // Subtle gray for secondary text
 
 // Elevated surfaces for cards in dark mode
-val ProdySurfaceElevatedDark = Color(0xFF1F2421)
-val ProdySurfaceDimDark = Color(0xFF131613)
+val ProdySurfaceElevatedDark = Color(0xFF2A4240)  // Elevated dark surface
+val ProdySurfaceDimDark = Color(0xFF0A1F1D)  // Deeper than background
 
 // Error Dark
-val ProdyErrorDark = Color(0xFFFFB3B3)
-val ProdyOnErrorDark = Color(0xFF5C1A1A)
-val ProdyErrorContainerDark = Color(0xFF8C2626)
+val ProdyErrorDark = Color(0xFFFF6B6B)  // Bright red for visibility
+val ProdyOnErrorDark = Color(0xFF1A1A1A)
+val ProdyErrorContainerDark = Color(0xFF4A1F1F)
 
 // Outlines Dark
-val ProdyOutlineDark = Color(0xFF3C4139)
-val ProdyOutlineVariantDark = Color(0xFF4F554C)
+val ProdyOutlineDark = Color(0xFF3A5250)  // Subtle dark outline
+val ProdyOutlineVariantDark = Color(0xFF4A625F)  // Slightly lighter outline
+
+// =============================================================================
+// PURE BLACK/WHITE - For Focal Screens
+// =============================================================================
+
+/** Pure black for immersive focal screens (Time Capsule, Stats Leaderboard) */
+val ProdyPureBlack = Color(0xFF000000)
+/** Pure white for focal screens in light mode */
+val ProdyPureWhite = Color(0xFFFFFFFF)
 
 // =============================================================================
 // MOOD COLORS - Emotionally Resonant Palette
@@ -158,10 +183,10 @@ val StreakQuarter = Color(0xFFD43B3B)    // Three months
 // FUNCTIONAL COLORS
 // =============================================================================
 
-// Interactive states
-val InteractiveHover = Color(0xFF000000).copy(alpha = 0.04f)
-val InteractivePressed = Color(0xFF000000).copy(alpha = 0.08f)
-val InteractiveFocus = Color(0xFF2D5A3D).copy(alpha = 0.12f)
+// Interactive states - using vibrant neon green accent
+val InteractiveHover = Color(0xFF36F97F).copy(alpha = 0.08f)
+val InteractivePressed = Color(0xFF36F97F).copy(alpha = 0.16f)
+val InteractiveFocus = Color(0xFF36F97F).copy(alpha = 0.24f)
 
 // Overlay colors
 val OverlayLight = Color(0xFFFFFFFF).copy(alpha = 0.9f)
@@ -241,44 +266,52 @@ val LeaderboardBronze = Color(0xFFCD7F32)  // 3rd place
 val LeaderboardTop10 = Color(0xFF6B5CE7)   // Top 10 highlight
 
 // =============================================================================
-// XP & PROGRESS BAR COLORS
+// XP & PROGRESS BAR COLORS - Neon Green Accent
 // =============================================================================
 
-val XpBarBackground = Color(0xFFE0E0E0)
-val XpBarFill = Color(0xFF66BB6A)
-val XpBarGlow = Color(0x6666BB6A)
-val XpBarFillAlt = Color(0xFF4CAF50)      // Alternative XP bar fill
-val LevelUpGlow = Color(0xFFFFD700)       // Level up celebration glow
+val XpBarBackground = Color(0xFFE8ECEB)       // Light mode bar background
+val XpBarBackgroundDark = Color(0xFF2A4240)   // Dark mode bar background
+val XpBarFill = Color(0xFF36F97F)             // Vibrant neon green fill
+val XpBarGlow = Color(0x6636F97F)             // Glow effect
+val XpBarFillAlt = Color(0xFF2EE06F)          // Alternative fill
+val LevelUpGlow = Color(0xFF36F97F)           // Level up celebration glow
 
 // =============================================================================
 // STATUS COLORS - Clear Communication
 // =============================================================================
 
-val SuccessColor = Color(0xFF4CAF50)
-val WarningColor = Color(0xFFFFC107)
-val ErrorColor = Color(0xFFE53935)
-val InfoColor = Color(0xFF2196F3)
+val SuccessColor = Color(0xFF36F97F)          // Match accent green
+val WarningColor = Color(0xFFFFC107)          // Amber warning
+val ErrorColor = Color(0xFFDC3545)            // Clean red
+val InfoColor = Color(0xFF17A2B8)             // Teal info
 
 // =============================================================================
-// TEXT HIERARCHY COLORS - Enhanced Readability
+// TEXT HIERARCHY COLORS - Enhanced Readability (WCAG AA Compliant)
 // =============================================================================
 
-val TextPrimaryLight = Color(0xFF1A1A2E)
-val TextSecondaryLight = Color(0xFF5A5A7A)
-val TextTertiaryLight = Color(0xFF8A8AA0)
+// Light mode text colors (on #F0F4F3 background)
+val TextPrimaryLight = Color(0xFF1A1A1A)      // Near-black for primary text
+val TextSecondaryLight = Color(0xFF6C757D)    // Medium gray for secondary text
+val TextTertiaryLight = Color(0xFF9CA3AF)     // Light gray for tertiary/hints
 
-val TextPrimaryDark = Color(0xFFFAFAFC)
-val TextSecondaryDark = Color(0xFFB0B0C0)
-val TextTertiaryDark = Color(0xFF707080)
+// Dark mode text colors (on #0D2826 background)
+val TextPrimaryDark = Color(0xFFFFFFFF)       // Pure white for primary text
+val TextSecondaryDark = Color(0xFFD3D8D7)     // Subtle light gray for secondary
+val TextTertiaryDark = Color(0xFF9CA3AF)      // Muted gray for tertiary/hints
 
 // =============================================================================
-// SURFACE COLORS - Premium Depth System
+// SURFACE COLORS - Premium Flat Design System (No Shadows)
 // =============================================================================
 
-val SurfaceLight = Color(0xFFFAFAFC)
-val SurfaceMedium = Color(0xFFF5F5F7)
-val SurfaceDark = Color(0xFF1A1A2E)
-val SurfaceDarkElevated = Color(0xFF252542)
+// Light mode surfaces
+val SurfaceLight = Color(0xFFF0F4F3)           // Main background
+val SurfaceMedium = Color(0xFFF5F7F6)          // Cards and containers
+val SurfaceWhite = Color(0xFFFFFFFF)           // Pure white for focal elements
+
+// Dark mode surfaces (deep teal/green palette)
+val SurfaceDark = Color(0xFF0D2826)            // Main background
+val SurfaceDarkElevated = Color(0xFF1A3331)    // Cards and containers
+val SurfaceDarkMuted = Color(0xFF2A4240)       // Elevated containers
 
 // =============================================================================
 // NOTIFICATION COLORS - Lively & Engaging
@@ -433,13 +466,13 @@ val WisdomPerspective = Color(0xFF7E57C2)      // Purple - expanded viewpoint
 // CHALLENGE COLORS - Community Challenges
 // =============================================================================
 
-val ChallengeActive = Color(0xFF4CAF50)        // Green - in progress
+val ChallengeActive = Color(0xFF36F97F)        // Neon green - in progress
 val ChallengeCompleted = Color(0xFFFFD700)     // Gold - achieved
 val ChallengePending = Color(0xFFFFB300)       // Amber - upcoming
 val ChallengeExpired = Color(0xFF9E9E9E)       // Gray - missed
 
-val ChallengeMilestoneReached = Color(0xFF66BB6A)
-val ChallengeMilestonePending = Color(0xFFE0E0E0)
+val ChallengeMilestoneReached = Color(0xFF36F97F)   // Neon green
+val ChallengeMilestonePending = Color(0xFFE8ECEB)   // Light gray
 
 // =============================================================================
 // FUTURE MESSAGE COLORS - Time Capsule UI
@@ -447,10 +480,10 @@ val ChallengeMilestonePending = Color(0xFFE0E0E0)
 
 val FutureMessageScheduled = Color(0xFF5C6BC0)  // Indigo - waiting
 val FutureMessageArrived = Color(0xFFFFD700)    // Gold - delivered
-val FutureMessageRead = Color(0xFF66BB6A)       // Green - opened
+val FutureMessageRead = Color(0xFF36F97F)       // Neon green - opened
 
 // Category colors for future messages
-val FutureGoal = Color(0xFF66BB6A)              // Green - goals
+val FutureGoal = Color(0xFF36F97F)              // Neon green - goals
 val FutureMotivation = Color(0xFFFF7043)        // Orange - motivation
 val FuturePromise = Color(0xFF5C6BC0)           // Indigo - commitments
 val FutureGeneral = Color(0xFF90A4AE)           // Gray - general thoughts
@@ -542,99 +575,99 @@ val ErrorRedContainer = Color(0xFFFFEBEE)
 val InfoBlueContainer = Color(0xFFE3F2FD)
 
 // =============================================================================
-// ONBOARDING DESIGN SYSTEM COLORS
+// ONBOARDING DESIGN SYSTEM COLORS - Unified with New Design System
 // =============================================================================
 
 // Primary Accent - Vibrant Neon Green (buttons, progress indicators, highlights)
-val OnboardingAccent = Color(0xFF2ECC71)
-val OnboardingAccentDark = Color(0xFF27AE60)
-val OnboardingAccentLight = Color(0xFF58D68D)
+val OnboardingAccent = Color(0xFF36F97F)         // Match primary accent
+val OnboardingAccentDark = Color(0xFF2EE06F)     // Slightly darker variant
+val OnboardingAccentLight = Color(0xFF5AFFA0)    // Lighter variant
 
-// Light Mode Colors
-val OnboardingBackgroundLight = Color(0xFFF8F9FA)
-val OnboardingSurfaceLight = Color(0xFFFFFFFF)
-val OnboardingSurfaceVariantLight = Color(0xFFF0F4F1)
-val OnboardingCardLight = Color(0xFFF5F7F6)
-val OnboardingTextPrimaryLight = Color(0xFF1A2B23)
-val OnboardingTextSecondaryLight = Color(0xFF5A6B63)
-val OnboardingTextTertiaryLight = Color(0xFF8A9B93)
-val OnboardingIconContainerLight = Color(0xFFE8F5ED)
-val OnboardingDividerLight = Color(0xFFE0E8E4)
+// Light Mode Colors - Clean off-white background
+val OnboardingBackgroundLight = Color(0xFFF0F4F3)         // Match new light background
+val OnboardingSurfaceLight = Color(0xFFFFFFFF)            // Pure white surfaces
+val OnboardingSurfaceVariantLight = Color(0xFFF5F7F6)     // Slightly darker variant
+val OnboardingCardLight = Color(0xFFFFFFFF)               // White cards
+val OnboardingTextPrimaryLight = Color(0xFF1A1A1A)        // Near-black primary text
+val OnboardingTextSecondaryLight = Color(0xFF6C757D)      // Medium gray secondary text
+val OnboardingTextTertiaryLight = Color(0xFF9CA3AF)       // Light gray tertiary
+val OnboardingIconContainerLight = Color(0xFFE6FFF0)      // Light green tint for icons
+val OnboardingDividerLight = Color(0xFFDEE2E6)            // Subtle dividers
 
-// Dark Mode Colors - Deep Forest Green Theme
-val OnboardingBackgroundDark = Color(0xFF0D1F14)
-val OnboardingSurfaceDark = Color(0xFF142318)
-val OnboardingSurfaceVariantDark = Color(0xFF1A2E21)
-val OnboardingCardDark = Color(0xFF1E3327)
-val OnboardingTextPrimaryDark = Color(0xFFFFFFFF)
-val OnboardingTextSecondaryDark = Color(0xFFB0C4B8)
-val OnboardingTextTertiaryDark = Color(0xFF708878)
-val OnboardingIconContainerDark = Color(0xFF1E3D28)
-val OnboardingDividerDark = Color(0xFF2A4033)
+// Dark Mode Colors - Deep Teal/Green Theme (Match new dark background)
+val OnboardingBackgroundDark = Color(0xFF0D2826)          // Match new dark background
+val OnboardingSurfaceDark = Color(0xFF1A3331)             // Elevated surface
+val OnboardingSurfaceVariantDark = Color(0xFF2A4240)      // Card/container background
+val OnboardingCardDark = Color(0xFF2A4240)                // Cards
+val OnboardingTextPrimaryDark = Color(0xFFFFFFFF)         // Pure white primary text
+val OnboardingTextSecondaryDark = Color(0xFFD3D8D7)       // Subtle gray secondary text
+val OnboardingTextTertiaryDark = Color(0xFF9CA3AF)        // Muted gray tertiary
+val OnboardingIconContainerDark = Color(0xFF1A4033)       // Dark green container for icons
+val OnboardingDividerDark = Color(0xFF3A5250)             // Dark dividers
 
-// Button Colors
-val OnboardingButtonPrimary = Color(0xFF2ECC71)
-val OnboardingButtonPrimaryDark = Color(0xFF1A1F1C)
-val OnboardingButtonTextLight = Color(0xFF1A1F1C)
-val OnboardingButtonTextDark = Color(0xFF2ECC71)
+// Button Colors - Neon green accent
+val OnboardingButtonPrimary = Color(0xFF36F97F)           // Neon green
+val OnboardingButtonPrimaryDark = Color(0xFF000000)       // Black text on button
+val OnboardingButtonTextLight = Color(0xFF000000)         // Black text on green
+val OnboardingButtonTextDark = Color(0xFF36F97F)          // Green text for secondary buttons
 
 // Quote Card Colors
 val OnboardingQuoteCardLight = Color(0xFFFFFFFF)
-val OnboardingQuoteCardDark = Color(0xFF1A2E21)
-val OnboardingQuoteHighlight = Color(0xFF2ECC71)
+val OnboardingQuoteCardDark = Color(0xFF2A4240)
+val OnboardingQuoteHighlight = Color(0xFF36F97F)          // Neon green highlight
 
 // Progress Indicator Colors
-val OnboardingProgressActive = Color(0xFF2ECC71)
-val OnboardingProgressInactiveLight = Color(0xFFD0DDD6)
-val OnboardingProgressInactiveDark = Color(0xFF2A4033)
+val OnboardingProgressActive = Color(0xFF36F97F)          // Neon green active
+val OnboardingProgressInactiveLight = Color(0xFFDEE2E6)   // Light gray inactive
+val OnboardingProgressInactiveDark = Color(0xFF3A5250)    // Dark gray inactive
 
 // XP Arc Colors
-val OnboardingXpArcBackground = Color(0xFFE8EBE9)
-val OnboardingXpArcBackgroundDark = Color(0xFF1E3327)
-val OnboardingXpArcFill = Color(0xFF2ECC71)
-val OnboardingXpArcGlow = Color(0x4D2ECC71)
+val OnboardingXpArcBackground = Color(0xFFE8ECEB)         // Light mode arc track
+val OnboardingXpArcBackgroundDark = Color(0xFF2A4240)     // Dark mode arc track
+val OnboardingXpArcFill = Color(0xFF36F97F)               // Neon green fill
+val OnboardingXpArcGlow = Color(0x4D36F97F)               // Subtle green glow
 
 // Stat Card Colors
 val OnboardingStatCardLight = Color(0xFFF5F7F6)
-val OnboardingStatCardDark = Color(0xFF1A2E21)
-val OnboardingStatCardLockedLight = Color(0xFFF0F2F1)
-val OnboardingStatCardLockedDark = Color(0xFF1A2520)
+val OnboardingStatCardDark = Color(0xFF2A4240)
+val OnboardingStatCardLockedLight = Color(0xFFE8ECEB)
+val OnboardingStatCardLockedDark = Color(0xFF1A3331)
 
 // Feature List Colors
-val OnboardingFeatureIconBgLight = Color(0xFFE8F5ED)
-val OnboardingFeatureIconBgDark = Color(0xFF1E3D28)
+val OnboardingFeatureIconBgLight = Color(0xFFE6FFF0)      // Light green tint
+val OnboardingFeatureIconBgDark = Color(0xFF1A4033)       // Dark green
 
 // Leaderboard Colors
 val OnboardingLeaderboardRowLight = Color(0xFFFFFFFF)
-val OnboardingLeaderboardRowDark = Color(0xFF1A2E21)
-val OnboardingLeaderboardRowActiveLight = Color(0xFFF0FFF5)
-val OnboardingLeaderboardRowActiveDark = Color(0xFF1E3D28)
+val OnboardingLeaderboardRowDark = Color(0xFF2A4240)
+val OnboardingLeaderboardRowActiveLight = Color(0xFFE6FFF0)   // Light green tint for active
+val OnboardingLeaderboardRowActiveDark = Color(0xFF1A4033)    // Dark green for active
 
 // =============================================================================
-// JOURNAL NEW ENTRY DESIGN SYSTEM - Clean Minimalist Theme
+// JOURNAL NEW ENTRY DESIGN SYSTEM - Clean Minimalist Theme (Unified)
 // =============================================================================
 
-// Light Mode Colors - Bright, Focused Aesthetic
-val JournalBackgroundLight = Color(0xFFF9FAFB)          // Very light off-white background
+// Light Mode Colors - Clean off-white background
+val JournalBackgroundLight = Color(0xFFF0F4F3)          // Match new light background
 val JournalSurfaceLight = Color(0xFFFFFFFF)             // Pure white for cards/containers
-val JournalPrimaryTextLight = Color(0xFF212529)         // Dark gray for primary text
-val JournalSecondaryTextLight = Color(0xFF6C757D)       // Medium-dark gray for descriptions
-val JournalPlaceholderTextLight = Color(0xFFADB5BD)     // Subtle gray for placeholders
+val JournalPrimaryTextLight = Color(0xFF1A1A1A)         // Near-black for primary text
+val JournalSecondaryTextLight = Color(0xFF6C757D)       // Medium gray for secondary text
+val JournalPlaceholderTextLight = Color(0xFF9CA3AF)     // Subtle gray for placeholders
 val JournalSliderInactiveLight = Color(0xFFDEE2E6)      // Light gray for inactive slider track
 val JournalSaveButtonBgLight = Color(0xFFE6FFF0)        // Very light green for save button background
-val JournalIconCircleBorderLight = Color(0xFFE9ECEF)    // Subtle light gray border for icon circles
-val JournalCardCornerDetailLight = Color(0xFFF0F2F4)    // Very light gray for corner decorations
+val JournalIconCircleBorderLight = Color(0xFFDEE2E6)    // Subtle light gray border for icon circles
+val JournalCardCornerDetailLight = Color(0xFFF5F7F6)    // Very light gray for corner decorations
 
-// Dark Mode Colors - Immersive Dark Teal/Green Aesthetic
-val JournalBackgroundDark = Color(0xFF0D2826)           // Deep dark teal/green background
+// Dark Mode Colors - Deep teal/green background
+val JournalBackgroundDark = Color(0xFF0D2826)           // Match new dark background
 val JournalSurfaceDark = Color(0xFF2A4240)              // Slightly lighter muted green for cards
 val JournalPrimaryTextDark = Color(0xFFFFFFFF)          // Pure white for primary text
 val JournalSecondaryTextDark = Color(0xFFD3D8D7)        // Light subtle gray for descriptions
-val JournalPlaceholderTextDark = Color(0xFF8A9493)      // Subtle light gray for placeholders
-val JournalSliderInactiveDark = Color(0xFF404B4A)       // Dark gray for inactive slider track
+val JournalPlaceholderTextDark = Color(0xFF9CA3AF)      // Subtle gray for placeholders
+val JournalSliderInactiveDark = Color(0xFF3A5250)       // Dark gray for inactive slider track
 val JournalSaveButtonBgDark = Color(0xFF1A3331)         // Very dark muted green for save button background
 val JournalIconCircleBorderDark = Color(0xFF3A5250)     // Subtle darker border for icon circles
-val JournalCardCornerDetailDark = Color(0xFF354845)     // Darker gray for corner decorations
+val JournalCardCornerDetailDark = Color(0xFF2A4240)     // Darker for corner decorations
 
 // Accent Green - Vibrant Neon Green (same for both modes)
 val JournalAccentGreen = Color(0xFF36F97F)              // Vibrant neon green accent

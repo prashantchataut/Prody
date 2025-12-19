@@ -59,29 +59,29 @@ import kotlinx.coroutines.launch
 // COLOR PALETTE - Exact hex values from design specifications
 // =============================================================================
 
-// Light Mode Colors
-private val LightBackground = Color(0xFFF0F4F3)
-private val LightCardBackground = Color(0xFFE0E7E6)
-private val LightIconCircleBackground = Color(0xFFE6F0EE)
+// Light Mode Colors - Phase 2 Design System
+private val LightBackground = Color(0xFFF0F4F3)          // Clean off-white
+private val LightCardBackground = Color(0xFFFFFFFF)      // Pure white cards
+private val LightIconCircleBackground = Color(0xFFF5F7F6) // Subtle elevated surface
 private val LightTextPrimary = Color(0xFF1A1A1A)
 private val LightTextSecondary = Color(0xFF6C757D)
-private val LightTextTertiary = Color(0xFF8A9493)
-private val LightInactiveDot = Color(0xFFB0B8B7)
-private val LightProgressBarInactive = Color(0xFFA0A8A7)
-private val LightDivider = Color(0xFFCCCCCC)
-private val LightSubtleLines = Color(0xFFD0D8D6)
+private val LightTextTertiary = Color(0xFF9CA3AF)
+private val LightInactiveDot = Color(0xFFDEE2E6)
+private val LightProgressBarInactive = Color(0xFFDEE2E6)
+private val LightDivider = Color(0xFFDEE2E6)
+private val LightSubtleLines = Color(0xFFE5E7EB)
 
-// Dark Mode Colors
-private val DarkBackground = Color(0xFF0A1D1C)
-private val DarkCardBackground = Color(0xFF2A4240)
-private val DarkIconCircleBackground = Color(0xFF3F5857)
+// Dark Mode Colors - Phase 2 Design System
+private val DarkBackground = Color(0xFF0D2826)           // Deep teal dark (exact match)
+private val DarkCardBackground = Color(0xFF1A3331)       // Elevated surface
+private val DarkIconCircleBackground = Color(0xFF2A4240) // Icon backgrounds
 private val DarkTextPrimary = Color(0xFFFFFFFF)
 private val DarkTextSecondary = Color(0xFFD3D8D7)
 private val DarkTextTertiary = Color(0xFF8A9493)
-private val DarkInactiveDot = Color(0xFF404B4A)
-private val DarkProgressBarInactive = Color(0xFF5A706F)
-private val DarkDivider = Color(0xFF404B4A)
-private val DarkSubtleLines = Color(0xFF2A3A38)
+private val DarkInactiveDot = Color(0xFF3A5250)
+private val DarkProgressBarInactive = Color(0xFF3A5250)
+private val DarkDivider = Color(0xFF3A5250)
+private val DarkSubtleLines = Color(0xFF1A3331)
 
 // Shared Accent Color - Vibrant Neon Green
 private val AccentGreen = Color(0xFF36F97F)
@@ -727,7 +727,8 @@ private fun FeatureChip(
 
     Surface(
         shape = RoundedCornerShape(24.dp),
-        color = chipBg
+        color = chipBg,
+        tonalElevation = 0.dp // Flat design
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
@@ -2371,7 +2372,8 @@ private fun LoginButton(
         onClick = onClick,
         modifier = modifier.height(58.dp),
         shape = RoundedCornerShape(29.dp),
-        color = AccentGreen
+        color = AccentGreen,
+        tonalElevation = 0.dp // Flat design
     ) {
         Row(
             modifier = Modifier
@@ -2455,7 +2457,8 @@ private fun SocialLoginButton(
         onClick = onClick,
         modifier = modifier.height(58.dp),
         shape = RoundedCornerShape(29.dp),
-        color = backgroundColor
+        color = backgroundColor,
+        tonalElevation = 0.dp // Flat design
     ) {
         Box(
             modifier = Modifier.fillMaxSize(),
@@ -2619,7 +2622,8 @@ private fun ProdyOnboardingButton(
         onClick = onClick,
         modifier = modifier.height(58.dp),
         shape = RoundedCornerShape(29.dp),
-        color = AccentGreen
+        color = AccentGreen,
+        tonalElevation = 0.dp // Flat design
     ) {
         Row(
             modifier = Modifier

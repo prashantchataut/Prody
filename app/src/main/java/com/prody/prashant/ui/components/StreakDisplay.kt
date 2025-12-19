@@ -155,18 +155,6 @@ fun StreakDisplay(
             }
         }
     ) {
-        // Ambient glow effect
-        if (isActive) {
-            Box(
-                modifier = Modifier
-                    .size(dimensions.glowSize)
-                    .scale(fireScale)
-                    .blur(15.dp)
-                    .alpha(glowAlpha)
-                    .background(primaryColor, CircleShape)
-            )
-        }
-
         Column(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -385,25 +373,6 @@ fun StreakMilestoneCelebration(
             contentDescription = "$milestoneName: $streakDays day streak achieved"
         }
     ) {
-        // Multi-layer glow effect
-        Box(
-            modifier = Modifier
-                .size(120.dp)
-                .scale(glowScale * 1.3f)
-                .blur(25.dp)
-                .alpha(glowAlpha * 0.4f)
-                .background(secondaryColor, CircleShape)
-        )
-
-        Box(
-            modifier = Modifier
-                .size(100.dp)
-                .scale(glowScale)
-                .blur(15.dp)
-                .alpha(glowAlpha)
-                .background(primaryColor, CircleShape)
-        )
-
         Column(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {

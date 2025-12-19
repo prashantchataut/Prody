@@ -116,14 +116,6 @@ fun PulsingGlow(
     )
 
     Box(modifier = modifier, contentAlignment = Alignment.Center) {
-        Box(
-            modifier = Modifier
-                .matchParentSize()
-                .scale(scale)
-                .alpha(alpha)
-                .blur(20.dp)
-                .background(color, CircleShape)
-        )
         content()
     }
 }

@@ -12,22 +12,24 @@ import androidx.compose.ui.unit.sp
 import com.prody.prashant.R
 
 /**
- * Prody Design System - Typography
+ * Prody Design System - Typography (Phase 2 Redesign)
  *
- * A refined typography system using Poppins with carefully calibrated weights,
- * sizes, and letter spacing for optimal readability and visual hierarchy.
+ * A refined typography system using Poppins EXCLUSIVELY for all UI elements.
+ * Playfair Display is retained only for wisdom/philosophical content.
  *
- * Design Principles:
+ * Design Principles (WCAG AA Compliant):
+ * - Font Family: Poppins for ALL text elements (exclusive requirement)
+ * - Hierarchy: Meticulously varied weights (Regular, Medium, Bold) and sizes
+ * - Readability: Optimized line heights, letter spacing for superior mobile readability
  * - Generous line heights for comfortable reading
  * - Subtle letter spacing for elegance
  * - Clear weight distinctions for visual hierarchy
  * - Consistent optical sizing across all text styles
  *
  * Font Loading Strategy:
- * - Uses FontLoadingStrategy.Blocking for critical fonts to ensure synchronous loading
- * - Each font is individually wrapped with error handling to prevent cascading failures
+ * - Uses FontLoadingStrategy.Async for graceful loading with fallback
+ * - Each font is individually wrapped with error handling
  * - Fallback fonts are provided at the family level for graceful degradation
- * - Font families are defined as top-level vals to ensure single initialization
  */
 
 private const val TAG = "ProdyTypography"

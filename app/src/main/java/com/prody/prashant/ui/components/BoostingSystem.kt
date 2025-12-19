@@ -447,16 +447,8 @@ fun ProdySupportFeedback(
             modifier = Modifier
                 .scale(scale.value)
                 .alpha(alpha.value)
-                .shadow(8.dp, CircleShape, ambientColor = action.color)
                 .clip(CircleShape)
-                .background(
-                    Brush.radialGradient(
-                        colors = listOf(
-                            action.color,
-                            action.color.copy(alpha = 0.8f)
-                        )
-                    )
-                )
+                .background(action.color)
                 .padding(ProdyTokens.Spacing.lg),
             contentAlignment = Alignment.Center
         ) {
@@ -568,22 +560,9 @@ fun ProdyTopRankIndicator(
 
     Box(
         modifier = modifier
-            .shadow(
-                elevation = (4.dp * glowPulse),
-                shape = CircleShape,
-                ambientColor = color.copy(alpha = 0.3f * glowPulse),
-                spotColor = color.copy(alpha = 0.3f * glowPulse)
-            )
             .size(28.dp)
             .clip(CircleShape)
-            .background(
-                Brush.linearGradient(
-                    colors = listOf(
-                        color,
-                        color.copy(alpha = 0.7f)
-                    )
-                )
-            ),
+            .background(color),
         contentAlignment = Alignment.Center
     ) {
         Text(

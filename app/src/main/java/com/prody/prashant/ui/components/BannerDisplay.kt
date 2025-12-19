@@ -44,7 +44,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -453,12 +452,6 @@ fun ProdySpecialBadge(
         Box(
             modifier = Modifier
                 .size(size)
-                .shadow(
-                    elevation = (4.dp * glowPulse),
-                    shape = CircleShape,
-                    ambientColor = badgeConfig.glowColor.copy(alpha = 0.4f * glowPulse),
-                    spotColor = badgeConfig.glowColor.copy(alpha = 0.4f * glowPulse)
-                )
                 .clip(CircleShape)
                 .background(
                     Brush.linearGradient(

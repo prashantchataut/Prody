@@ -357,7 +357,7 @@ fun ProdyLeaderboardRow(
             ),
         shape = RoundedCornerShape(ProdyTokens.Radius.md),
         color = backgroundColor,
-        tonalElevation = if (isHighlighted) 1.dp else 0.dp
+        tonalElevation = 0.dp // Flat design
     ) {
         Box(modifier = Modifier.fillMaxWidth()) {
             // Flowing animated banner for top 3 positions
