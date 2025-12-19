@@ -456,33 +456,39 @@ val FuturePromise = Color(0xFF5C6BC0)           // Indigo - commitments
 val FutureGeneral = Color(0xFF90A4AE)           // Gray - general thoughts
 
 // =============================================================================
-// TIME CAPSULE DESIGN SYSTEM - Premium Minimalist Theme
+// TIME CAPSULE WRITE SCREEN - Clean Minimalist Design System
 // =============================================================================
 
-// Accent Color - Vibrant Neon Green (key interactive elements, highlights)
-val TimeCapsuleAccent = Color(0xFF36F97F)
+// Vibrant Neon Green Accent (shared between light and dark modes)
+val TimeCapsuleAccent = Color(0xFF36F97F)       // Vibrant neon green accent
 
-// Dark Mode Colors - Immersive, Premium Aesthetic
-val TimeCapsuleBackgroundDark = Color(0xFF000000)         // Pure black background
-val TimeCapsuleTabContainerDark = Color(0xFF1A3331)       // Deep dark muted green for tab container
-val TimeCapsuleEmptyCircleBgDark = Color(0xFF212121)      // Dark gray for inner circle
-val TimeCapsuleDashedCircleDark = Color(0xFF404040)       // Very dark gray for dashed outer circle
-val TimeCapsuleTextPrimaryDark = Color(0xFFFFFFFF)        // Pure white for primary text
-val TimeCapsuleTextSecondaryDark = Color(0xFFD3D8D7)      // Light subtle gray for descriptions
-val TimeCapsuleIconDark = Color(0xFFFFFFFF)               // Pure white for header icons
+// Light Mode Colors
+val TimeCapsuleBackgroundLight = Color(0xFFFFFFFF)      // Pure white background
+val TimeCapsuleTitleTextLight = Color(0xFF212529)       // Very dark gray for header title
+val TimeCapsuleDiscardTextLight = Color(0xFF212529)     // Very dark gray for discard
+val TimeCapsulePlaceholderLight = Color(0xFFADB5BD)     // Subtle light gray for placeholders
+val TimeCapsuleActiveTextLight = Color(0xFF212529)      // Very dark gray for active input text
+val TimeCapsuleMultimediaIconLight = Color(0xFF6C757D)  // Medium-dark gray for camera/mic icons
+val TimeCapsuleAttachTextLight = Color(0xFF6C757D)      // Medium-dark gray for "Attach memories"
+val TimeCapsuleDividerLight = Color(0xFFE0E7E6)         // Very light gray for dividers
+val TimeCapsuleSectionTitleLight = Color(0xFF212529)    // Very dark gray for section titles
+val TimeCapsuleInactiveTagBgLight = Color(0xFFF0F3F2)   // Very light gray inactive tag bg
+val TimeCapsuleInactiveTagTextLight = Color(0xFF212529) // Very dark gray inactive tag text
+val TimeCapsuleButtonTextLight = Color(0xFF000000)      // Pure black for button text
 
-// Light Mode Colors - Luminous, Accessible Variant
-val TimeCapsuleBackgroundLight = Color(0xFFF9FAFB)        // Very light off-white background
-val TimeCapsuleTabContainerLight = Color(0xFFE0E7E6)      // Light subtle gray for tab container
-val TimeCapsuleEmptyCircleBgLight = Color(0xFFFFFFFF)     // Pure white for inner circle
-val TimeCapsuleDashedCircleLight = Color(0xFFDEE2E6)      // Light gray for dashed outer circle
-val TimeCapsuleTextPrimaryLight = Color(0xFF212529)       // Dark gray/black for primary text
-val TimeCapsuleTextSecondaryLight = Color(0xFF6C757D)     // Subtle dark gray for descriptions
-val TimeCapsuleIconLight = Color(0xFF212529)              // Dark gray/black for header icons
-
-// Active Tab Text Colors
-val TimeCapsuleActiveTabTextDark = Color(0xFFFFFFFF)      // Pure white for dark mode active tab
-val TimeCapsuleActiveTabTextLight = Color(0xFF212529)     // Dark for light mode active tab (on green bg)
+// Dark Mode Colors
+val TimeCapsuleBackgroundDark = Color(0xFF0D2826)       // Deep dark teal/green background
+val TimeCapsuleTitleTextDark = Color(0xFFFFFFFF)        // Pure white for header title
+val TimeCapsuleDiscardTextDark = Color(0xFFD3D8D7)      // Light subtle gray for discard
+val TimeCapsulePlaceholderDark = Color(0xFF8A9493)      // Subtle light gray for placeholders
+val TimeCapsuleActiveTextDark = Color(0xFFFFFFFF)       // Pure white for active input text
+val TimeCapsuleMultimediaIconDark = Color(0xFFFFFFFF)   // Pure white for camera/mic icons
+val TimeCapsuleAttachTextDark = Color(0xFFD3D8D7)       // Light subtle gray for "Attach memories"
+val TimeCapsuleDividerDark = Color(0xFF404040)          // Very dark gray for dividers
+val TimeCapsuleSectionTitleDark = Color(0xFFFFFFFF)     // Pure white for section titles
+val TimeCapsuleInactiveTagBgDark = Color(0xFF2A4240)    // Dark muted green inactive tag bg
+val TimeCapsuleInactiveTagTextDark = Color(0xFFD3D8D7)  // Light subtle gray inactive tag text
+val TimeCapsuleButtonTextDark = Color(0xFF000000)       // Pure black for button text
 
 //Brand/Containers were redundant I believe?
 //Step 310 lines 262 and 284 showed Text/Status/Notification.
