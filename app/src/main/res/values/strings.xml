@@ -177,6 +177,24 @@
     <string name="future_message_hint">What do you want your future self to know?</string>
     <string name="delivery_date">Delivery Date</string>
     <string name="send_message">Send to Future</string>
+
+    <!-- Time Capsule Write Screen - Redesigned UI -->
+    <string name="write_to_time_capsule">Write to Time Capsule</string>
+    <string name="discard">Discard</string>
+    <string name="capsule_title_placeholder">Your Message\'s Title</string>
+    <string name="capsule_message_placeholder">Dear Future Me, right now I\'m feeling...</string>
+    <string name="attach_memories">Attach memories</string>
+    <string name="time_travel">TIME TRAVEL</string>
+    <string name="essence">ESSENCE</string>
+    <string name="seal_and_schedule">Seal &amp; Schedule</string>
+    <string name="one_week">1 Week</string>
+    <string name="one_month">1 Month</string>
+    <string name="six_months">6 Months</string>
+    <string name="one_year">1 Year</string>
+    <string name="goal">Goal</string>
+    <string name="motivation">Motivation</string>
+    <string name="promise">Promise</string>
+    <string name="prediction">Prediction</string>
     <string name="message_scheduled">Message scheduled for your future self</string>
     <string name="past_messages">Messages from Past You</string>
     <string name="pending_messages">Waiting to be Delivered</string>
