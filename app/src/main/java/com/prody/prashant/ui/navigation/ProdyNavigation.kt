@@ -15,6 +15,7 @@ import com.prody.prashant.ui.screens.futuremessage.FutureMessageListScreen
 import com.prody.prashant.ui.screens.futuremessage.WriteMessageScreen
 import com.prody.prashant.ui.screens.home.HomeScreen
 import com.prody.prashant.ui.screens.journal.JournalDetailScreen
+import com.prody.prashant.ui.screens.journal.JournalHistoryScreen
 import com.prody.prashant.ui.screens.journal.JournalListScreen
 import com.prody.prashant.ui.screens.journal.NewJournalEntryScreen
 import com.prody.prashant.ui.screens.meditation.MeditationTimerScreen
@@ -59,6 +60,7 @@ sealed class Screen(val route: String) {
     data object Onboarding : Screen("onboarding")
     data object Home : Screen("home")
     data object JournalList : Screen("journal")
+    data object JournalHistory : Screen("journal/history")
     data object NewJournalEntry : Screen("journal/new")
     data object JournalDetail : Screen("journal/{entryId}") {
         fun createRoute(entryId: Long) = "journal/$entryId"
@@ -207,6 +209,18 @@ fun ProdyNavHost(
                 onNavigateToNewEntry = {
                     navController.navigate(Screen.NewJournalEntry.route)
                 },
+                onNavigateToDetail = { entryId ->
+                    navController.navigate(Screen.JournalDetail.createRoute(entryId))
+                },
+                onNavigateToHistory = {
+                    navController.navigate(Screen.JournalHistory.route)
+                }
+            )
+        }
+
+        composable(Screen.JournalHistory.route) {
+            JournalHistoryScreen(
+                onNavigateBack = { navController.popBackStack() },
                 onNavigateToDetail = { entryId ->
                     navController.navigate(Screen.JournalDetail.createRoute(entryId))
                 }

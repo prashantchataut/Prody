@@ -631,3 +631,38 @@ val JourneySealComplete = Color(0xFF2D5A3D)       // Green checkmark
 val JourneyIndicatorActive = Color(0xFFC5A059)    // Gold active dot
 val JourneyIndicatorInactiveLight = Color(0xFFD4C4A8)
 val JourneyIndicatorInactiveDark = Color(0xFF3A3A3A)
+
+// =============================================================================
+// JOURNAL HISTORY DESIGN SYSTEM - Premium Minimalist Theme
+// =============================================================================
+
+// Accent Color - Vibrant Neon Green (key interactive elements, highlights)
+val JournalHistoryAccent = Color(0xFF36F97F)
+
+// Dark Mode Colors - Chronological, Organized Minimalism
+val JournalHistoryBackgroundDark = Color(0xFF000000)      // Pure black
+val JournalHistoryCardDark = Color(0xFF212121)            // Dark gray with hint of green
+val JournalHistoryTextPrimaryDark = Color(0xFFFFFFFF)     // Pure white
+val JournalHistoryTextSecondaryDark = Color(0xFFD3D8D7)   // Subtle gray
+val JournalHistoryIntensityBgDark = Color(0xFF404040)     // Intensity tag background
+val JournalHistoryDividerDark = Color(0xFFFFFFFF)         // Section divider
+val JournalHistoryDateBlockBgDark = Color(0xFFFFFFFF)     // White date block
+val JournalHistoryDateBlockTextDark = Color(0xFF000000)   // Black text on date block
+val JournalHistoryButtonBorderDark = Color(0xFFFFFFFF)    // Load more button border
+
+// Light Mode Colors - Luminous, Accessible Variant
+val JournalHistoryBackgroundLight = Color(0xFFFFFFFF)     // Pure white
+val JournalHistoryCardLight = Color(0xFFF0F0F0)           // Very light gray
+val JournalHistoryTextPrimaryLight = Color(0xFF1A1A1A)    // Near-black
+val JournalHistoryTextSecondaryLight = Color(0xFF6C757D)  // Subtle dark gray
+val JournalHistoryIntensityBgLight = Color(0xFFB0B0B0)    // Medium gray
+val JournalHistoryDividerLight = Color(0xFF1A1A1A)        // Dark divider
+val JournalHistoryDateBlockBgLight = Color(0xFFFFFFFF)    // White date block
+val JournalHistoryDateBlockTextLight = Color(0xFF1A1A1A)  // Dark text on date block
+val JournalHistoryButtonBorderLight = Color(0xFF1A1A1A)   // Dark button border
+
+// Mood Colors for Journal History (matching the design spec)
+val JournalHistoryMoodEcstatic = Color(0xFF36F97F)        // Vibrant neon green
+val JournalHistoryMoodCalm = Color(0xFF7ED321)            // Muted light green
+val JournalHistoryMoodAnxious = Color(0xFFF5A623)         // Orange
+val JournalHistoryMoodMelancholy = Color(0xFF4A90E2)      // Light blue
