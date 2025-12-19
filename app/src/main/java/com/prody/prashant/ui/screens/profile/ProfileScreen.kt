@@ -9,12 +9,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
@@ -22,18 +20,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -44,45 +38,66 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.foundation.isSystemInDarkTheme
 import com.prody.prashant.R
 import com.prody.prashant.data.ai.WeeklyPatternResult
 import com.prody.prashant.data.local.entity.AchievementEntity
-import com.prody.prashant.domain.identity.ProdyBanners
-import com.prody.prashant.ui.components.BannerRenderer
-import com.prody.prashant.ui.components.CompactBannerStrip
-import com.prody.prashant.ui.components.ProdyCard
 import com.prody.prashant.ui.theme.*
-import com.prody.prashant.util.ShareProfileUtil
 import kotlinx.coroutines.delay
 
 /**
- * Profile Screen - User Profile & Achievement Showcase
+ * Profile Screen - Identity Room
  *
- * A comprehensive profile view featuring:
- * - Animated header with avatar, streak, and points
- * - Level progress with visual indicator
- * - Statistics cards with animated counters
- * - Achievement showcase with filtering
- * - Journey milestones tracking
- * - Motivational growth quotes
+ * A premium gamified profile experience featuring:
+ * - Clean minimalist design with neon green accents
+ * - Avatar with animated progress ring
+ * - DEV and BETA PIONEER badges
+ * - Key metrics (Level, Streak, Words)
+ * - Story of Growth narrative section
+ * - Trophy Room achievement showcase
  *
- * UI/UX Features:
- * - Staggered entrance animations for visual delight
- * - Animated glow effects for achievements
- * - Progress rings and bars with smooth animations
- * - Category filtering with animated state changes
- * - Proper accessibility with content descriptions
- *
- * Design Principles:
- * - Celebratory visual language for achievements
- * - Clear hierarchy with card-based sections
- * - Color-coded rarity system for badges
- * - Generous touch targets (min 48dp)
+ * Design: Gamified minimalism - no shadows, subtle gradients, clean typography
  */
 
-import kotlin.math.PI
-import kotlin.math.cos
-import kotlin.math.sin
+// ============================================================================
+// DESIGN SYSTEM COLORS - Identity Room Theme
+// ============================================================================
+
+private object IdentityRoomColors {
+    // Dark Mode
+    val BackgroundDark = Color(0xFF0D2826)
+    val CardBackgroundDark = Color(0xFF1A3331)
+    val CardBackgroundElevatedDark = Color(0xFF223D3A)
+    val AccentGreen = Color(0xFF36F97F)
+    val AccentGreenDim = Color(0xFF2BC968)
+    val TextPrimaryDark = Color(0xFFFFFFFF)
+    val TextSecondaryDark = Color(0xFFB8C5C3)
+    val TextTertiaryDark = Color(0xFF6B7F7C)
+    val BorderDark = Color(0xFF2A4744)
+
+    // Light Mode
+    val BackgroundLight = Color(0xFFF5F8F7)
+    val CardBackgroundLight = Color(0xFFFFFFFF)
+    val CardBackgroundElevatedLight = Color(0xFFF0F5F4)
+    val AccentGreenLight = Color(0xFF2ECC71)
+    val TextPrimaryLight = Color(0xFF1A2B23)
+    val TextSecondaryLight = Color(0xFF5A6B63)
+    val TextTertiaryLight = Color(0xFF8A9B93)
+    val BorderLight = Color(0xFFE0E8E4)
+
+    // Badge Colors
+    val DevBadgeBackground = Color(0xFF1A3331)
+    val DevBadgeText = Color(0xFF36F97F)
+    val BetaBadgeBackground = Color(0xFF2A1F3D)
+    val BetaBadgeText = Color(0xFFB57EDC)
+
+    // Achievement Rarity
+    val RarityCommon = Color(0xFF78909C)
+    val RarityUncommon = Color(0xFF66BB6A)
+    val RarityRare = Color(0xFF42A5F5)
+    val RarityEpic = Color(0xFFAB47BC)
+    val RarityLegendary = Color(0xFFD4AF37)
+}
 
 @Composable
 fun ProfileScreen(
@@ -91,322 +106,341 @@ fun ProfileScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    // Entry animations
+    // Determine if dark mode based on system theme
+    val isDarkMode = isSystemInDarkTheme()
+
+    // Entry animation
     var isVisible by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
-        delay(100)
+        delay(50)
         isVisible = true
     }
 
-    // Achievement category filter
-    var selectedCategory by remember { mutableStateOf<AchievementCategory?>(null) }
-
-    LazyColumn(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
-        contentPadding = PaddingValues(bottom = 100.dp)
+            .background(
+                if (isDarkMode) IdentityRoomColors.BackgroundDark
+                else IdentityRoomColors.BackgroundLight
+            )
     ) {
-        // Animated Profile Header
-        item {
-            AnimatedVisibility(
-                visible = isVisible,
-                enter = fadeIn(tween(600)) + slideInVertically(
-                    initialOffsetY = { -it },
-                    animationSpec = tween(600, easing = EaseOutCubic)
-                )
-            ) {
-                ProfileHeader(
-                    displayName = uiState.displayName,
-                    title = uiState.title,
-                    bannerId = uiState.bannerId,
-                    totalPoints = uiState.totalPoints,
-                    currentStreak = uiState.currentStreak,
-                    longestStreak = uiState.longestStreak,
-                    daysOnPrody = uiState.daysOnPrody,
-                    wordsLearned = uiState.wordsLearned,
-                    journalEntries = uiState.journalEntries,
-                    achievementsUnlocked = uiState.achievementsUnlocked,
-                    onSettingsClick = onNavigateToSettings
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(bottom = 100.dp)
+        ) {
+            // Header with title and actions
+            item {
+                IdentityRoomHeader(
+                    onSettingsClick = onNavigateToSettings,
+                    onEditClick = { /* TODO: Edit profile */ },
+                    isDarkMode = isDarkMode
                 )
             }
-        }
 
-        // Level progress section
-        item {
-            AnimatedVisibility(
-                visible = isVisible,
-                enter = fadeIn(tween(600, delayMillis = 150)) + slideInVertically(
-                    initialOffsetY = { it / 2 },
-                    animationSpec = tween(600, delayMillis = 150, easing = EaseOutCubic)
-                )
-            ) {
-                LevelProgressSection(
-                    totalPoints = uiState.totalPoints,
-                    title = uiState.title
-                )
-            }
-        }
-
-        // Animated stats cards
-        item {
-            AnimatedVisibility(
-                visible = isVisible,
-                enter = fadeIn(tween(600, delayMillis = 200)) + slideInVertically(
-                    initialOffsetY = { it / 2 },
-                    animationSpec = tween(600, delayMillis = 200, easing = EaseOutCubic)
-                )
-            ) {
-                ProfileStatsSection(
-                    wordsLearned = uiState.wordsLearned,
-                    journalEntries = uiState.journalEntries,
-                    achievementsUnlocked = uiState.achievementsUnlocked,
-                    daysOnPrody = uiState.daysOnPrody
-                )
-            }
-        }
-
-        // Stats storytelling - narrative insights
-        item {
-            AnimatedVisibility(
-                visible = isVisible,
-                enter = fadeIn(tween(600, delayMillis = 250)) + slideInVertically(
-                    initialOffsetY = { it / 2 },
-                    animationSpec = tween(600, delayMillis = 250, easing = EaseOutCubic)
-                )
-            ) {
-                StatsStorytellingCard(
-                    wordsLearned = uiState.wordsLearned,
-                    journalEntries = uiState.journalEntries,
-                    daysOnPrody = uiState.daysOnPrody,
-                    currentStreak = uiState.currentStreak,
-                    longestStreak = uiState.longestStreak,
-                    totalPoints = uiState.totalPoints
-                )
-            }
-        }
-
-        // Weekly AI Pattern Card
-        item {
-            AnimatedVisibility(
-                visible = isVisible && (uiState.weeklyPattern != null || uiState.isLoadingWeeklyPattern),
-                enter = fadeIn(tween(600, delayMillis = 275)) + slideInVertically(
-                    initialOffsetY = { it / 2 },
-                    animationSpec = tween(600, delayMillis = 275, easing = EaseOutCubic)
-                )
-            ) {
-                WeeklyPatternCard(
-                    weeklyPattern = uiState.weeklyPattern,
-                    isLoading = uiState.isLoadingWeeklyPattern,
-                    hasEnoughData = uiState.hasEnoughDataForPattern
-                )
-            }
-        }
-
-        // Achievements section header
-        item {
-            AnimatedVisibility(
-                visible = isVisible,
-                enter = fadeIn(tween(600, delayMillis = 300))
-            ) {
-                AchievementsSectionHeader(
-                    unlockedCount = uiState.unlockedAchievements.size,
-                    totalCount = uiState.unlockedAchievements.size + uiState.lockedAchievements.size
-                )
-            }
-        }
-
-        // Achievement category filter
-        item {
-            AnimatedVisibility(
-                visible = isVisible,
-                enter = fadeIn(tween(600, delayMillis = 350))
-            ) {
-                AchievementCategoryFilter(
-                    selectedCategory = selectedCategory,
-                    onCategorySelected = { selectedCategory = it }
-                )
-            }
-        }
-
-        // Unlocked achievements showcase
-        val filteredUnlocked = if (selectedCategory != null) {
-            uiState.unlockedAchievements.filter {
-                val achievement = Achievements.getAchievementById(it.id)
-                achievement?.category == selectedCategory
-            }
-        } else {
-            uiState.unlockedAchievements
-        }
-
-        if (filteredUnlocked.isNotEmpty()) {
+            // Hero Section - Avatar, Name, Badges
             item {
                 AnimatedVisibility(
                     visible = isVisible,
-                    enter = fadeIn(tween(600, delayMillis = 400))
+                    enter = fadeIn(tween(400)) + slideInVertically(
+                        initialOffsetY = { -it / 4 },
+                        animationSpec = tween(400, easing = EaseOutCubic)
+                    )
                 ) {
-                    Column {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.Verified,
-                                contentDescription = null,
-                                tint = AchievementUnlocked,
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Text(
-                                text = "${stringResource(R.string.unlocked)} (${filteredUnlocked.size})",
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.SemiBold,
-                                color = AchievementUnlocked
-                            )
-                        }
-                    }
+                    HeroSection(
+                        displayName = uiState.displayName,
+                        level = getLevelFromPoints(uiState.totalPoints),
+                        levelProgress = calculateLevelProgress(uiState.totalPoints),
+                        isDev = true, // TODO: Get from user state
+                        isBetaPioneer = true, // TODO: Get from user state
+                        isDarkMode = isDarkMode
+                    )
                 }
             }
 
-            item {
-                LazyRow(
-                    contentPadding = PaddingValues(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    itemsIndexed(
-                        items = filteredUnlocked,
-                        key = { _, item -> item.id }
-                    ) { index, achievement ->
-                        AnimatedVisibility(
-                            visible = isVisible,
-                            enter = fadeIn(tween(300, delayMillis = 450 + index * 50)) +
-                                    slideInHorizontally(
-                                        initialOffsetX = { it },
-                                        animationSpec = tween(400, delayMillis = 450 + index * 50)
-                                    )
-                        ) {
-                            EnhancedAchievementCard(
-                                achievement = achievement,
-                                isUnlocked = true
-                            )
-                        }
-                    }
-                }
-            }
-        }
-
-        // Locked achievements (in progress)
-        val filteredLocked = if (selectedCategory != null) {
-            uiState.lockedAchievements.filter {
-                val achievement = Achievements.getAchievementById(it.id)
-                achievement?.category == selectedCategory
-            }
-        } else {
-            uiState.lockedAchievements
-        }
-
-        if (filteredLocked.isNotEmpty()) {
+            // Key Metrics Row
             item {
                 AnimatedVisibility(
                     visible = isVisible,
-                    enter = fadeIn(tween(600, delayMillis = 500))
+                    enter = fadeIn(tween(400, delayMillis = 100)) + slideInVertically(
+                        initialOffsetY = { it / 3 },
+                        animationSpec = tween(400, delayMillis = 100, easing = EaseOutCubic)
+                    )
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 12.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    KeyMetricsRow(
+                        level = getLevelFromPoints(uiState.totalPoints),
+                        streak = uiState.currentStreak,
+                        wordsLearned = uiState.wordsLearned,
+                        isDarkMode = isDarkMode
+                    )
+                }
+            }
+
+            // Story of Growth Section
+            item {
+                AnimatedVisibility(
+                    visible = isVisible,
+                    enter = fadeIn(tween(400, delayMillis = 200)) + slideInVertically(
+                        initialOffsetY = { it / 3 },
+                        animationSpec = tween(400, delayMillis = 200, easing = EaseOutCubic)
+                    )
+                ) {
+                    StoryOfGrowthSection(
+                        currentStreak = uiState.currentStreak,
+                        longestStreak = uiState.longestStreak,
+                        totalPoints = uiState.totalPoints,
+                        journalEntries = uiState.journalEntries,
+                        wordsLearned = uiState.wordsLearned,
+                        daysOnPrody = uiState.daysOnPrody,
+                        isDarkMode = isDarkMode
+                    )
+                }
+            }
+
+            // Weekly AI Pattern Card
+            item {
+                AnimatedVisibility(
+                    visible = isVisible && (uiState.weeklyPattern != null || uiState.isLoadingWeeklyPattern),
+                    enter = fadeIn(tween(400, delayMillis = 250)) + slideInVertically(
+                        initialOffsetY = { it / 3 },
+                        animationSpec = tween(400, delayMillis = 250, easing = EaseOutCubic)
+                    )
+                ) {
+                    WeeklyPatternSection(
+                        weeklyPattern = uiState.weeklyPattern,
+                        isLoading = uiState.isLoadingWeeklyPattern,
+                        hasEnoughData = uiState.hasEnoughDataForPattern,
+                        isDarkMode = isDarkMode
+                    )
+                }
+            }
+
+            // Trophy Room Section
+            item {
+                AnimatedVisibility(
+                    visible = isVisible,
+                    enter = fadeIn(tween(400, delayMillis = 300))
+                ) {
+                    TrophyRoomHeader(
+                        unlockedCount = uiState.unlockedAchievements.size,
+                        totalCount = uiState.unlockedAchievements.size + uiState.lockedAchievements.size,
+                        isDarkMode = isDarkMode
+                    )
+                }
+            }
+
+            // Featured Achievements
+            if (uiState.unlockedAchievements.isNotEmpty()) {
+                item {
+                    AnimatedVisibility(
+                        visible = isVisible,
+                        enter = fadeIn(tween(400, delayMillis = 350))
                     ) {
-                        Icon(
-                            imageVector = Icons.Filled.Lock,
-                            contentDescription = null,
-                            tint = AchievementLocked,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Text(
-                            text = "${stringResource(R.string.locked)} (${filteredLocked.size})",
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.Medium,
-                            color = AchievementLocked
+                        FeaturedAchievementsRow(
+                            achievements = uiState.unlockedAchievements.take(4),
+                            isDarkMode = isDarkMode
                         )
                     }
                 }
             }
 
+            // Recent Unlocks Section
             item {
-                LazyRow(
-                    contentPadding = PaddingValues(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                AnimatedVisibility(
+                    visible = isVisible,
+                    enter = fadeIn(tween(400, delayMillis = 400))
                 ) {
-                    itemsIndexed(
-                        items = filteredLocked.take(8),
-                        key = { _, item -> item.id }
-                    ) { index, achievement ->
-                        AnimatedVisibility(
-                            visible = isVisible,
-                            enter = fadeIn(tween(300, delayMillis = 550 + index * 50)) +
-                                    slideInHorizontally(
-                                        initialOffsetX = { it },
-                                        animationSpec = tween(400, delayMillis = 550 + index * 50)
-                                    )
-                        ) {
-                            EnhancedAchievementCard(
-                                achievement = achievement,
-                                isUnlocked = false
-                            )
-                        }
-                    }
+                    RecentUnlocksSection(
+                        unlockedAchievements = uiState.unlockedAchievements,
+                        lockedAchievements = uiState.lockedAchievements.take(4),
+                        isDarkMode = isDarkMode
+                    )
+                }
+            }
+
+            // Growth Quote
+            item {
+                AnimatedVisibility(
+                    visible = isVisible,
+                    enter = fadeIn(tween(400, delayMillis = 500))
+                ) {
+                    GrowthQuoteCard(isDarkMode = isDarkMode)
                 }
             }
         }
+    }
+}
 
-        // Journey milestone card
-        item {
-            AnimatedVisibility(
-                visible = isVisible,
-                enter = fadeIn(tween(600, delayMillis = 700))
+// ============================================================================
+// HEADER COMPONENT
+// ============================================================================
+
+@Composable
+private fun IdentityRoomHeader(
+    onSettingsClick: () -> Unit,
+    onEditClick: () -> Unit,
+    isDarkMode: Boolean
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .statusBarsPadding()
+            .padding(horizontal = 20.dp, vertical = 16.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = "Identity Room",
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold,
+            color = if (isDarkMode) IdentityRoomColors.TextPrimaryDark
+                    else IdentityRoomColors.TextPrimaryLight
+        )
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            IconButton(onClick = onEditClick) {
+                Icon(
+                    imageVector = Icons.Outlined.Edit,
+                    contentDescription = "Edit Profile",
+                    tint = if (isDarkMode) IdentityRoomColors.TextSecondaryDark
+                           else IdentityRoomColors.TextSecondaryLight
+                )
+            }
+            IconButton(onClick = onSettingsClick) {
+                Icon(
+                    imageVector = Icons.Outlined.Settings,
+                    contentDescription = stringResource(R.string.settings),
+                    tint = if (isDarkMode) IdentityRoomColors.TextSecondaryDark
+                           else IdentityRoomColors.TextSecondaryLight
+                )
+            }
+        }
+    }
+}
+
+// ============================================================================
+// HERO SECTION - Avatar, Name, Badges
+// ============================================================================
+
+@Composable
+private fun HeroSection(
+    displayName: String,
+    level: Int,
+    levelProgress: Float,
+    isDev: Boolean,
+    isBetaPioneer: Boolean,
+    isDarkMode: Boolean
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp, vertical = 16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // Avatar with Progress Ring
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.size(140.dp)
+        ) {
+            // Animated Progress Ring
+            NeonProgressRing(
+                progress = levelProgress,
+                modifier = Modifier.fillMaxSize(),
+                accentColor = if (isDarkMode) IdentityRoomColors.AccentGreen
+                              else IdentityRoomColors.AccentGreenLight
+            )
+
+            // Avatar Circle
+            Box(
+                modifier = Modifier
+                    .size(110.dp)
+                    .clip(CircleShape)
+                    .background(
+                        if (isDarkMode) IdentityRoomColors.CardBackgroundDark
+                        else IdentityRoomColors.CardBackgroundLight
+                    )
+                    .border(
+                        width = 3.dp,
+                        color = if (isDarkMode) IdentityRoomColors.BorderDark
+                                else IdentityRoomColors.BorderLight,
+                        shape = CircleShape
+                    ),
+                contentAlignment = Alignment.Center
             ) {
-                JourneyMilestoneCard(
-                    daysOnPrody = uiState.daysOnPrody,
-                    totalPoints = uiState.totalPoints,
-                    achievementsUnlocked = uiState.achievementsUnlocked
+                Icon(
+                    imageVector = Icons.Filled.Person,
+                    contentDescription = null,
+                    modifier = Modifier.size(56.dp),
+                    tint = if (isDarkMode) IdentityRoomColors.TextSecondaryDark
+                           else IdentityRoomColors.TextSecondaryLight
+                )
+            }
+
+            // Level Badge
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .offset(x = (-8).dp, y = (-8).dp)
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(
+                        if (isDarkMode) IdentityRoomColors.AccentGreen
+                        else IdentityRoomColors.AccentGreenLight
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = level.toString(),
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
                 )
             }
         }
 
-        // Motivational growth journey hint
-        item {
-            AnimatedVisibility(
-                visible = isVisible,
-                enter = fadeIn(tween(600, delayMillis = 800))
-            ) {
-                GrowthJourneyCard()
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // Display Name
+        Text(
+            text = displayName,
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold,
+            color = if (isDarkMode) IdentityRoomColors.TextPrimaryDark
+                    else IdentityRoomColors.TextPrimaryLight
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Badges Row
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (isDev) {
+                DevBadge()
+            }
+            if (isBetaPioneer) {
+                BetaPioneerBadge()
             }
         }
     }
 }
 
 @Composable
-private fun ProfileHeader(
-    displayName: String,
-    title: String,
-    bannerId: String,
-    totalPoints: Int,
-    currentStreak: Int,
-    longestStreak: Int,
-    daysOnPrody: Int,
-    wordsLearned: Int = 0,
-    journalEntries: Int = 0,
-    achievementsUnlocked: Int = 0,
-    onSettingsClick: () -> Unit
+private fun NeonProgressRing(
+    progress: Float,
+    modifier: Modifier = Modifier,
+    accentColor: Color
 ) {
-    val context = LocalContext.current
-    var showShareMenu by remember { mutableStateOf(false) }
+    val animatedProgress by animateFloatAsState(
+        targetValue = progress,
+        animationSpec = tween(1500, easing = FastOutSlowInEasing),
+        label = "progress_ring"
+    )
 
-    val infiniteTransition = rememberInfiniteTransition(label = "header_animation")
+    // Subtle glow animation
+    val infiniteTransition = rememberInfiniteTransition(label = "glow")
     val glowAlpha by infiniteTransition.animateFloat(
         initialValue = 0.3f,
         targetValue = 0.6f,
@@ -414,303 +448,33 @@ private fun ProfileHeader(
             animation = tween(2000, easing = EaseInOutCubic),
             repeatMode = RepeatMode.Reverse
         ),
-        label = "glow"
-    )
-
-    // Get banner for rendering
-    val banner = remember(bannerId) {
-        ProdyBanners.findById(bannerId) ?: ProdyBanners.getDefaultBanner()
-    }
-
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-    ) {
-        // Banner background with pattern
-        BannerRenderer(
-            banner = banner,
-            modifier = Modifier.fillMaxWidth().height(280.dp),
-            showAnimation = true,
-            cornerRadius = 0.dp
-        )
-
-        // Overlay gradient for text readability
-        Box(
-            modifier = Modifier
-                .matchParentSize()
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            Color.Black.copy(alpha = 0.1f),
-                            Color.Black.copy(alpha = 0.3f),
-                            Color.Black.copy(alpha = 0.5f)
-                        )
-                    )
-                )
-        )
-
-        // Animated background particles
-        ProfileHeaderBackground()
-
-        // Top action buttons row
-        Row(
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .statusBarsPadding()
-                .padding(8.dp),
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            // Share button
-            Box {
-                IconButton(onClick = { showShareMenu = true }) {
-                    Icon(
-                        imageVector = Icons.Filled.Share,
-                        contentDescription = "Share Profile",
-                        tint = Color.White
-                    )
-                }
-
-                // Share dropdown menu
-                DropdownMenu(
-                    expanded = showShareMenu,
-                    onDismissRequest = { showShareMenu = false }
-                ) {
-                    DropdownMenuItem(
-                        text = { Text("Share Profile Card") },
-                        onClick = {
-                            showShareMenu = false
-                            ShareProfileUtil.shareProfile(
-                                context = context,
-                                userName = displayName,
-                                title = title,
-                                level = getLevelFromPoints(totalPoints),
-                                totalPoints = totalPoints,
-                                currentStreak = currentStreak,
-                                longestStreak = longestStreak,
-                                wordsLearned = wordsLearned,
-                                journalEntries = journalEntries,
-                                achievementsUnlocked = achievementsUnlocked,
-                                isDarkMode = false,
-                                shareAsStory = false
-                            )
-                        },
-                        leadingIcon = {
-                            Icon(Icons.Filled.Image, contentDescription = null)
-                        }
-                    )
-                    DropdownMenuItem(
-                        text = { Text("Share as Story") },
-                        onClick = {
-                            showShareMenu = false
-                            ShareProfileUtil.shareProfile(
-                                context = context,
-                                userName = displayName,
-                                title = title,
-                                level = getLevelFromPoints(totalPoints),
-                                totalPoints = totalPoints,
-                                currentStreak = currentStreak,
-                                longestStreak = longestStreak,
-                                wordsLearned = wordsLearned,
-                                journalEntries = journalEntries,
-                                achievementsUnlocked = achievementsUnlocked,
-                                isDarkMode = false,
-                                shareAsStory = true
-                            )
-                        },
-                        leadingIcon = {
-                            Icon(Icons.Filled.Slideshow, contentDescription = null)
-                        }
-                    )
-                }
-            }
-
-            // Settings button
-            IconButton(onClick = onSettingsClick) {
-                Icon(
-                    imageVector = Icons.Filled.Settings,
-                    contentDescription = stringResource(R.string.settings),
-                    tint = Color.White
-                )
-            }
-        }
-
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .statusBarsPadding()
-                .padding(20.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Avatar with subtle accent
-            Box(
-                contentAlignment = Alignment.Center
-            ) {
-                // Subtle gold ring (reduced from heavy blur glow)
-                Box(
-                    modifier = Modifier
-                        .size(115.dp)
-                        .clip(CircleShape)
-                        .border(2.dp, GoldTier.copy(alpha = 0.3f), CircleShape)
-                )
-
-                // Avatar ring with progress
-                AvatarProgressRing(
-                    progress = (totalPoints % 1000) / 1000f,
-                    modifier = Modifier.size(110.dp)
-                )
-
-                // Avatar
-                Box(
-                    modifier = Modifier
-                        .size(90.dp)
-                        .clip(CircleShape)
-                        .background(
-                            Brush.radialGradient(
-                                colors = listOf(
-                                    Color.White.copy(alpha = 0.3f),
-                                    Color.White.copy(alpha = 0.1f)
-                                )
-                            )
-                        )
-                        .border(3.dp, GoldTier.copy(alpha = 0.5f), CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Person,
-                        contentDescription = null,
-                        modifier = Modifier.size(50.dp),
-                        tint = Color.White
-                    )
-                }
-
-                // Level badge
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .size(32.dp)
-                        .clip(CircleShape)
-                        .background(GoldTier)
-                        .border(2.dp, Color.White, CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = getLevelFromPoints(totalPoints).toString(),
-                        style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Name and title
-            Text(
-                text = displayName,
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.WorkspacePremium,
-                    contentDescription = null,
-                    tint = GoldTier,
-                    modifier = Modifier.size(16.dp)
-                )
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.labelLarge,
-                    color = GoldTier,
-                    fontWeight = FontWeight.Medium
-                )
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // Stats row with animations
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                AnimatedHeaderStat(
-                    value = totalPoints,
-                    label = "Points",
-                    icon = Icons.Filled.Stars,
-                    iconColor = GoldTier
-                )
-
-                AnimatedStreakDisplay(
-                    currentStreak = currentStreak,
-                    longestStreak = longestStreak
-                )
-
-                AnimatedHeaderStat(
-                    value = daysOnPrody,
-                    label = "Days",
-                    icon = Icons.Filled.CalendarMonth,
-                    iconColor = MoodCalm
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun ProfileHeaderBackground() {
-    // Simplified background - removed orbiting particles for cleaner look
-    // Static decorative rings only
-    Canvas(modifier = Modifier.fillMaxSize().alpha(0.15f)) {
-        val center = Offset(size.width / 2, size.height / 2)
-
-        // Subtle concentric rings (static, no animation)
-        drawCircle(
-            color = Color.White.copy(alpha = 0.05f),
-            radius = minOf(size.width, size.height) * 0.3f,
-            center = center,
-            style = Stroke(width = 1.5f)
-        )
-        drawCircle(
-            color = Color.White.copy(alpha = 0.03f),
-            radius = minOf(size.width, size.height) * 0.4f,
-            center = center,
-            style = Stroke(width = 1f)
-        )
-    }
-}
-
-@Composable
-private fun AvatarProgressRing(
-    progress: Float,
-    modifier: Modifier = Modifier
-) {
-    val animatedProgress by animateFloatAsState(
-        targetValue = progress,
-        animationSpec = tween(1500, easing = FastOutSlowInEasing),
-        label = "avatar_progress"
+        label = "glow_alpha"
     )
 
     Canvas(modifier = modifier) {
-        val strokeWidth = 4.dp.toPx()
-        val radius = (minOf(size.width, size.height) - strokeWidth) / 2
+        val strokeWidth = 6.dp.toPx()
+        val radius = (size.minDimension - strokeWidth) / 2
+        val center = Offset(size.width / 2, size.height / 2)
 
         // Background ring
         drawCircle(
-            color = Color.White.copy(alpha = 0.2f),
+            color = accentColor.copy(alpha = 0.15f),
             radius = radius,
+            center = center,
             style = Stroke(width = strokeWidth)
+        )
+
+        // Glow effect (subtle)
+        drawCircle(
+            color = accentColor.copy(alpha = glowAlpha * 0.2f),
+            radius = radius + 4.dp.toPx(),
+            center = center,
+            style = Stroke(width = 8.dp.toPx())
         )
 
         // Progress arc
         drawArc(
-            color = GoldTier,
+            color = accentColor,
             startAngle = -90f,
             sweepAngle = animatedProgress * 360f,
             useCenter = false,
@@ -722,697 +486,387 @@ private fun AvatarProgressRing(
 }
 
 @Composable
-private fun AnimatedHeaderStat(
-    value: Int,
-    label: String,
-    icon: ImageVector,
-    iconColor: Color
-) {
-    val animatedValue by animateIntAsState(
-        targetValue = value,
-        animationSpec = tween(1500, easing = FastOutSlowInEasing),
-        label = "stat_value"
-    )
-
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally
+private fun DevBadge() {
+    Surface(
+        color = IdentityRoomColors.DevBadgeBackground,
+        shape = RoundedCornerShape(6.dp)
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = iconColor,
-            modifier = Modifier.size(24.dp)
-        )
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(
-            text = formatNumber(animatedValue),
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold,
-            color = Color.White
-        )
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelSmall,
-            color = Color.White.copy(alpha = 0.8f)
-        )
-    }
-}
-
-@Composable
-private fun AnimatedStreakDisplay(
-    currentStreak: Int,
-    longestStreak: Int
-) {
-    // Simplified streak display - removed heavy glow, kept subtle scale animation
-    val infiniteTransition = rememberInfiniteTransition(label = "streak")
-    val fireScale by infiniteTransition.animateFloat(
-        initialValue = 1f,
-        targetValue = 1.08f, // Reduced from 1.15 for subtlety
-        animationSpec = infiniteRepeatable(
-            animation = tween(1000, easing = EaseInOutCubic), // Slower for calmer feel
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "fire_scale"
-    )
-
-    Box(contentAlignment = Alignment.Center) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally
+        Row(
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            Row(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(
-                        if (currentStreak > 0) {
-                            Brush.horizontalGradient(
-                                colors = listOf(
-                                    StreakFire.copy(alpha = 0.5f),
-                                    StreakGlow.copy(alpha = 0.3f)
-                                )
-                            )
-                        } else {
-                            Brush.horizontalGradient(
-                                colors = listOf(
-                                    Color.Gray.copy(alpha = 0.3f),
-                                    Color.Gray.copy(alpha = 0.2f)
-                                )
-                            )
-                        }
-                    )
-                    .padding(horizontal = 16.dp, vertical = 10.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.LocalFireDepartment,
-                    contentDescription = null,
-                    tint = if (currentStreak > 0) StreakFire else Color.Gray,
-                    modifier = Modifier
-                        .size(28.dp)
-                        .scale(if (currentStreak > 0) fireScale else 1f)
-                )
-                Text(
-                    text = currentStreak.toString(),
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-            }
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            Text(
-                text = "Streak",
-                style = MaterialTheme.typography.labelSmall,
-                color = Color.White.copy(alpha = 0.8f)
+            Icon(
+                imageVector = Icons.Filled.Code,
+                contentDescription = null,
+                tint = IdentityRoomColors.DevBadgeText,
+                modifier = Modifier.size(14.dp)
             )
-
-            if (longestStreak > currentStreak) {
-                Text(
-                    text = "Best: $longestStreak",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = GoldTier.copy(alpha = 0.8f),
-                    fontSize = 10.sp
-                )
-            }
+            Text(
+                text = "DEV",
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.Bold,
+                color = IdentityRoomColors.DevBadgeText,
+                letterSpacing = 1.sp
+            )
         }
     }
 }
 
 @Composable
-private fun LevelProgressSection(
-    totalPoints: Int,
-    title: String
-) {
-    val level = getLevelFromPoints(totalPoints)
-    val currentLevelPoints = getLevelThreshold(level)
-    val nextLevelPoints = getLevelThreshold(level + 1)
-    val progress = if (nextLevelPoints > currentLevelPoints) {
-        (totalPoints - currentLevelPoints).toFloat() / (nextLevelPoints - currentLevelPoints)
-    } else {
-        1f
+private fun BetaPioneerBadge() {
+    Surface(
+        color = IdentityRoomColors.BetaBadgeBackground,
+        shape = RoundedCornerShape(6.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Rocket,
+                contentDescription = null,
+                tint = IdentityRoomColors.BetaBadgeText,
+                modifier = Modifier.size(14.dp)
+            )
+            Text(
+                text = "BETA PIONEER",
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.Bold,
+                color = IdentityRoomColors.BetaBadgeText,
+                letterSpacing = 0.5.sp
+            )
+        }
     }
+}
 
+// ============================================================================
+// KEY METRICS ROW
+// ============================================================================
+
+@Composable
+private fun KeyMetricsRow(
+    level: Int,
+    streak: Int,
+    wordsLearned: Int,
+    isDarkMode: Boolean
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp, vertical = 12.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        MetricCard(
+            label = "Level",
+            value = level.toString(),
+            icon = Icons.Filled.TrendingUp,
+            iconColor = IdentityRoomColors.AccentGreen,
+            isDarkMode = isDarkMode,
+            modifier = Modifier.weight(1f)
+        )
+        MetricCard(
+            label = "Streak",
+            value = streak.toString(),
+            icon = Icons.Filled.LocalFireDepartment,
+            iconColor = StreakFire,
+            isDarkMode = isDarkMode,
+            modifier = Modifier.weight(1f)
+        )
+        MetricCard(
+            label = "Words",
+            value = formatCompactNumber(wordsLearned),
+            icon = Icons.Filled.School,
+            iconColor = MoodMotivated,
+            isDarkMode = isDarkMode,
+            modifier = Modifier.weight(1f)
+        )
+    }
+}
+
+@Composable
+private fun MetricCard(
+    label: String,
+    value: String,
+    icon: ImageVector,
+    iconColor: Color,
+    isDarkMode: Boolean,
+    modifier: Modifier = Modifier
+) {
     var isAnimated by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
-        delay(300)
+        delay(200)
         isAnimated = true
     }
 
-    val animatedProgress by animateFloatAsState(
-        targetValue = if (isAnimated) progress else 0f,
-        animationSpec = tween(1500, easing = FastOutSlowInEasing),
-        label = "level_progress"
+    val scale by animateFloatAsState(
+        targetValue = if (isAnimated) 1f else 0.9f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
+        label = "metric_scale"
     )
 
-    ProdyCard(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
+    Surface(
+        modifier = modifier.scale(scale),
+        color = if (isDarkMode) IdentityRoomColors.CardBackgroundDark
+                else IdentityRoomColors.CardBackgroundLight,
+        shape = RoundedCornerShape(16.dp)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = iconColor,
+                modifier = Modifier.size(24.dp)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = value,
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                color = if (isDarkMode) IdentityRoomColors.TextPrimaryDark
+                        else IdentityRoomColors.TextPrimaryLight
+            )
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelSmall,
+                color = if (isDarkMode) IdentityRoomColors.TextTertiaryDark
+                        else IdentityRoomColors.TextTertiaryLight
+            )
+        }
+    }
+}
+
+// ============================================================================
+// STORY OF GROWTH SECTION
+// ============================================================================
+
+@Composable
+private fun StoryOfGrowthSection(
+    currentStreak: Int,
+    longestStreak: Int,
+    totalPoints: Int,
+    journalEntries: Int,
+    wordsLearned: Int,
+    daysOnPrody: Int,
+    isDarkMode: Boolean
+) {
+    // Determine the highlight achievement
+    val highlight = remember(currentStreak, longestStreak, journalEntries, wordsLearned, totalPoints) {
+        when {
+            currentStreak >= longestStreak && currentStreak >= 7 -> GrowthHighlight(
+                title = "Consistency Master",
+                description = "You're on your longest streak ever!",
+                icon = Icons.Filled.LocalFireDepartment,
+                color = StreakFire
+            )
+            journalEntries >= 30 -> GrowthHighlight(
+                title = "Dedicated Writer",
+                description = "$journalEntries journal entries and counting",
+                icon = Icons.Filled.AutoStories,
+                color = MoodCalm
+            )
+            wordsLearned >= 100 -> GrowthHighlight(
+                title = "Word Collector",
+                description = "Over $wordsLearned words mastered",
+                icon = Icons.Filled.School,
+                color = MoodMotivated
+            )
+            totalPoints >= 500 -> GrowthHighlight(
+                title = "Rising Star",
+                description = "Earned ${formatCompactNumber(totalPoints)} XP",
+                icon = Icons.Filled.Stars,
+                color = GoldTier
+            )
+            currentStreak >= 3 -> GrowthHighlight(
+                title = "Building Momentum",
+                description = "$currentStreak day streak going strong",
+                icon = Icons.Filled.LocalFireDepartment,
+                color = StreakFire
+            )
+            else -> GrowthHighlight(
+                title = "New Journey",
+                description = "Every expert was once a beginner",
+                icon = Icons.Filled.EmojiNature,
+                color = MoodGrateful
+            )
+        }
+    }
+
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp, vertical = 8.dp),
+        color = if (isDarkMode) IdentityRoomColors.CardBackgroundDark
+                else IdentityRoomColors.CardBackgroundLight,
+        shape = RoundedCornerShape(20.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp)
+        ) {
+            // Section Header
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.TrendingUp,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Text(
-                        text = "Level Progress",
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
-
-                Surface(
-                    color = MaterialTheme.colorScheme.primaryContainer,
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text(
-                        text = "Lvl $level",
-                        style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Progress bar with gradient
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(12.dp)
-                    .clip(RoundedCornerShape(6.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 Box(
                     modifier = Modifier
-                        .fillMaxWidth(animatedProgress)
-                        .fillMaxHeight()
-                        .clip(RoundedCornerShape(6.dp))
+                        .size(36.dp)
+                        .clip(CircleShape)
                         .background(
-                            Brush.horizontalGradient(
-                                colors = listOf(
-                                    MaterialTheme.colorScheme.primary,
-                                    MoodMotivated,
-                                    GoldTier
-                                )
-                            )
-                        )
+                            if (isDarkMode) IdentityRoomColors.AccentGreen.copy(alpha = 0.15f)
+                            else IdentityRoomColors.AccentGreenLight.copy(alpha = 0.15f)
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.AutoGraph,
+                        contentDescription = null,
+                        tint = if (isDarkMode) IdentityRoomColors.AccentGreen
+                               else IdentityRoomColors.AccentGreenLight,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+                Text(
+                    text = "Story of Growth",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = if (isDarkMode) IdentityRoomColors.TextPrimaryDark
+                            else IdentityRoomColors.TextPrimaryLight
                 )
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
+            // Highlight Card
+            Surface(
+                color = highlight.color.copy(alpha = 0.1f),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(44.dp)
+                            .clip(CircleShape)
+                            .background(highlight.color.copy(alpha = 0.2f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = highlight.icon,
+                            contentDescription = null,
+                            tint = highlight.color,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = highlight.title,
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = highlight.color
+                        )
+                        Text(
+                            text = highlight.description,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = if (isDarkMode) IdentityRoomColors.TextSecondaryDark
+                                    else IdentityRoomColors.TextSecondaryLight
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Stats Grid
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                Text(
-                    text = "${totalPoints - currentLevelPoints} XP",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                MiniStat(
+                    value = daysOnPrody.toString(),
+                    label = "Days Active",
+                    isDarkMode = isDarkMode
                 )
-                Text(
-                    text = "${nextLevelPoints - currentLevelPoints} XP to next level",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.primary
+                MiniStat(
+                    value = journalEntries.toString(),
+                    label = "Entries",
+                    isDarkMode = isDarkMode
+                )
+                MiniStat(
+                    value = longestStreak.toString(),
+                    label = "Best Streak",
+                    isDarkMode = isDarkMode
                 )
             }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = "Next: ${getNextTitle(title)}",
-                style = MaterialTheme.typography.labelMedium,
-                color = GoldTier,
-                fontWeight = FontWeight.Medium
-            )
         }
     }
 }
 
-@Composable
-private fun ProfileStatsSection(
-    wordsLearned: Int,
-    journalEntries: Int,
-    achievementsUnlocked: Int,
-    daysOnPrody: Int
-) {
-    val stats = listOf(
-        ProfileStat("Words", wordsLearned, Icons.Outlined.School, MoodMotivated),
-        ProfileStat("Entries", journalEntries, Icons.Outlined.Book, MoodCalm),
-        ProfileStat("Badges", achievementsUnlocked, Icons.Outlined.EmojiEvents, GoldTier),
-        ProfileStat("Days", daysOnPrody, Icons.Outlined.CalendarMonth, MoodGrateful)
-    )
-
-    LazyRow(
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        items(
-            count = stats.size,
-            key = { index -> stats[index].label }
-        ) { index ->
-            ProfileStatCard(
-                stat = stats[index],
-                delayMillis = index * 100
-            )
-        }
-    }
-}
-
-private data class ProfileStat(
-    val label: String,
-    val value: Int,
+private data class GrowthHighlight(
+    val title: String,
+    val description: String,
     val icon: ImageVector,
     val color: Color
 )
 
 @Composable
-private fun ProfileStatCard(
-    stat: ProfileStat,
-    delayMillis: Int
+private fun MiniStat(
+    value: String,
+    label: String,
+    isDarkMode: Boolean
 ) {
-    var isVisible by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) {
-        delay(delayMillis.toLong())
-        isVisible = true
-    }
-
-    val animatedValue by animateIntAsState(
-        targetValue = if (isVisible) stat.value else 0,
-        animationSpec = tween(1000, easing = FastOutSlowInEasing),
-        label = "stat_value"
-    )
-
-    val scale by animateFloatAsState(
-        targetValue = if (isVisible) 1f else 0.8f,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessLow
-        ),
-        label = "scale"
-    )
-
-    ProdyCard(
-        modifier = Modifier
-            .width(95.dp)
-            .scale(scale),
-        backgroundColor = stat.color.copy(alpha = 0.1f)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(14.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(36.dp)
-                    .clip(CircleShape)
-                    .background(stat.color.copy(alpha = 0.2f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = stat.icon,
-                    contentDescription = null,
-                    tint = stat.color,
-                    modifier = Modifier.size(18.dp)
-                )
-            }
-            Spacer(modifier = Modifier.height(10.dp))
-            Text(
-                text = formatNumber(animatedValue),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = stat.color
-            )
-            Text(
-                text = stat.label,
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-    }
-}
-
-@Composable
-private fun AchievementsSectionHeader(
-    unlockedCount: Int,
-    totalCount: Int
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Filled.EmojiEvents,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(24.dp)
-            )
-            Text(
-                text = stringResource(R.string.achievements),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold
-            )
-        }
-
-        Surface(
-            color = MaterialTheme.colorScheme.primaryContainer,
-            shape = RoundedCornerShape(12.dp)
-        ) {
-            Text(
-                text = "$unlockedCount / $totalCount",
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
-            )
-        }
-    }
-}
-
-@Composable
-private fun AchievementCategoryFilter(
-    selectedCategory: AchievementCategory?,
-    onCategorySelected: (AchievementCategory?) -> Unit
-) {
-    val categories = listOf(
-        null to "All",
-        AchievementCategory.STREAK to "Streak",
-        AchievementCategory.LEARNING to "Learning",
-        AchievementCategory.JOURNAL to "Journal",
-        AchievementCategory.SOCIAL to "Social",
-        AchievementCategory.SPECIAL to "Special"
-    )
-
-    LazyRow(
-        contentPadding = PaddingValues(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        items(
-            items = categories,
-            key = { (category, _) -> category?.name ?: "all" }
-        ) { (category, label) ->
-            val isSelected = selectedCategory == category
-            val backgroundColor by animateColorAsState(
-                targetValue = if (isSelected) MaterialTheme.colorScheme.primary
-                else MaterialTheme.colorScheme.surfaceVariant,
-                animationSpec = tween(200),
-                label = "filter_bg"
-            )
-            val textColor by animateColorAsState(
-                targetValue = if (isSelected) Color.White
-                else MaterialTheme.colorScheme.onSurfaceVariant,
-                animationSpec = tween(200),
-                label = "filter_text"
-            )
-
-            Surface(
-                modifier = Modifier.clickable { onCategorySelected(category) },
-                color = backgroundColor,
-                shape = RoundedCornerShape(20.dp)
-            ) {
-                Text(
-                    text = label,
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                    color = textColor,
-                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun EnhancedAchievementCard(
-    achievement: AchievementEntity,
-    isUnlocked: Boolean
-) {
-    val rarity = try {
-        AchievementRarity.valueOf(achievement.rarity.uppercase())
-    } catch (e: Exception) {
-        AchievementRarity.COMMON
-    }
-
-    val achievementData = Achievements.getAchievementById(achievement.id)
-
-    val infiniteTransition = rememberInfiniteTransition(label = "achievement_glow")
-    val glowScale by infiniteTransition.animateFloat(
-        initialValue = 1f,
-        targetValue = if (isUnlocked && rarity.ordinal >= AchievementRarity.RARE.ordinal) 1.05f else 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1500, easing = EaseInOutCubic),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "glow"
-    )
-
-    ProdyCard(
-        modifier = Modifier
-            .width(150.dp)
-            .scale(glowScale)
-            .clickable { },
-        backgroundColor = if (isUnlocked)
-            rarity.color.copy(alpha = 0.12f)
-        else
-            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-        elevation = if (isUnlocked) 4.dp else 2.dp
-    ) {
-        Column(
-            modifier = Modifier.padding(14.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            // Icon with animated background
-            Box(contentAlignment = Alignment.Center) {
-                if (isUnlocked && rarity.ordinal >= AchievementRarity.RARE.ordinal) {
-                    Box(
-                        modifier = Modifier
-                            .size(56.dp)
-                            .blur(12.dp)
-                            .alpha(0.4f)
-                            .background(rarity.color, CircleShape)
-                    )
-                }
-
-                Box(
-                    modifier = Modifier
-                        .size(52.dp)
-                        .clip(CircleShape)
-                        .background(
-                            if (isUnlocked) {
-                                Brush.radialGradient(
-                                    colors = listOf(
-                                        rarity.color.copy(alpha = 0.3f),
-                                        rarity.color.copy(alpha = 0.1f)
-                                    )
-                                )
-                            } else {
-                                Brush.radialGradient(
-                                    colors = listOf(
-                                        AchievementLocked.copy(alpha = 0.2f),
-                                        AchievementLocked.copy(alpha = 0.1f)
-                                    )
-                                )
-                            }
-                        )
-                        .then(
-                            if (isUnlocked) {
-                                Modifier.border(2.dp, rarity.color.copy(alpha = 0.5f), CircleShape)
-                            } else {
-                                Modifier
-                            }
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = achievementData?.icon ?: Icons.Filled.EmojiEvents,
-                        contentDescription = null,
-                        tint = if (isUnlocked) rarity.color else AchievementLocked,
-                        modifier = Modifier.size(26.dp)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            Text(
-                text = achievement.name,
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = if (isUnlocked) MaterialTheme.colorScheme.onSurface
-                else MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
-            )
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            // Progress bar for locked achievements
-            if (!isUnlocked && achievement.requirement > 0) {
-                val progress = achievement.currentProgress.toFloat() / achievement.requirement
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(6.dp)
-                        .clip(RoundedCornerShape(3.dp))
-                        .background(MaterialTheme.colorScheme.surfaceVariant)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth(progress.coerceIn(0f, 1f))
-                            .fillMaxHeight()
-                            .clip(RoundedCornerShape(3.dp))
-                            .background(rarity.color)
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                Text(
-                    text = "${achievement.currentProgress}/${achievement.requirement}",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-
-            // Rarity badge
-            Surface(
-                color = if (isUnlocked) rarity.color.copy(alpha = 0.15f)
-                else AchievementLocked.copy(alpha = 0.1f),
-                shape = RoundedCornerShape(6.dp)
-            ) {
-                Text(
-                    text = rarity.displayName,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = if (isUnlocked) rarity.color else AchievementLocked,
-                    fontWeight = FontWeight.Medium,
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
-                )
-            }
-        }
-    }
-}
-
-/**
- * Journey Milestones Card - Premium Achievement-Style Display
- *
- * Features:
- * - Achievement-style milestone cards instead of radio buttons
- * - Completed milestones: Golden accent, checkmark, subtle glow
- * - Locked milestones: Dimmed with padlock, progress indicator
- * - In-progress milestones: Animated progress ring
- * - Proper visual hierarchy and state management
- */
-@Composable
-private fun JourneyMilestoneCard(
-    daysOnPrody: Int,
-    totalPoints: Int,
-    achievementsUnlocked: Int
-) {
-    // Define milestones with name, target, current progress, and achievement status
-    data class Milestone(
-        val name: String,
-        val description: String,
-        val target: Int,
-        val current: Int,
-        val icon: ImageVector,
-        val color: Color,
-        val xpReward: Int
-    )
-
-    val milestones = listOf(
-        Milestone(
-            name = "First Week",
-            description = "Active for 7 days",
-            target = 7,
-            current = daysOnPrody.coerceAtMost(7),
-            icon = Icons.Filled.CalendarMonth,
-            color = MoodCalm,
-            xpReward = 50
-        ),
-        Milestone(
-            name = "Century",
-            description = "Earn 100 points",
-            target = 100,
-            current = totalPoints.coerceAtMost(100),
-            icon = Icons.Filled.Stars,
-            color = GoldTier,
-            xpReward = 25
-        ),
-        Milestone(
-            name = "First Badge",
-            description = "Unlock an achievement",
-            target = 1,
-            current = achievementsUnlocked.coerceAtMost(1),
-            icon = Icons.Filled.EmojiEvents,
-            color = MoodExcited,
-            xpReward = 30
-        ),
-        Milestone(
-            name = "Monthly",
-            description = "Active for 30 days",
-            target = 30,
-            current = daysOnPrody.coerceAtMost(30),
-            icon = Icons.Filled.Event,
-            color = MoodMotivated,
-            xpReward = 150
-        ),
-        Milestone(
-            name = "Half K",
-            description = "Earn 500 points",
-            target = 500,
-            current = totalPoints.coerceAtMost(500),
-            icon = Icons.Filled.Bolt,
-            color = MoodGrateful,
-            xpReward = 75
-        ),
-        Milestone(
-            name = "Collector",
-            description = "Unlock 5 badges",
-            target = 5,
-            current = achievementsUnlocked.coerceAtMost(5),
-            icon = Icons.Filled.Diamond,
-            color = SilverTier,
-            xpReward = 100
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            text = value,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = if (isDarkMode) IdentityRoomColors.TextPrimaryDark
+                    else IdentityRoomColors.TextPrimaryLight
         )
-    )
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = if (isDarkMode) IdentityRoomColors.TextTertiaryDark
+                    else IdentityRoomColors.TextTertiaryLight
+        )
+    }
+}
 
-    ProdyCard(
+// ============================================================================
+// WEEKLY PATTERN SECTION
+// ============================================================================
+
+@Composable
+private fun WeeklyPatternSection(
+    weeklyPattern: WeeklyPatternResult?,
+    isLoading: Boolean,
+    hasEnoughData: Boolean,
+    isDarkMode: Boolean
+) {
+    Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
+            .padding(horizontal = 20.dp, vertical = 8.dp),
+        color = if (isDarkMode) IdentityRoomColors.CardBackgroundDark
+                else IdentityRoomColors.CardBackgroundLight,
+        shape = RoundedCornerShape(20.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(20.dp)
-        ) {
-            // Section header
+        Column(modifier = Modifier.padding(20.dp)) {
+            // Header
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -1426,360 +880,121 @@ private fun JourneyMilestoneCard(
                         modifier = Modifier
                             .size(36.dp)
                             .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)),
+                            .background(ProdyPremiumViolet.copy(alpha = 0.15f)),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = Icons.Filled.Flag,
+                            imageVector = Icons.Filled.Psychology,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
+                            tint = ProdyPremiumViolet,
                             modifier = Modifier.size(20.dp)
                         )
                     }
                     Column {
                         Text(
-                            text = "Journey Milestones",
+                            text = "Weekly Insights",
                             style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            color = if (isDarkMode) IdentityRoomColors.TextPrimaryDark
+                                    else IdentityRoomColors.TextPrimaryLight
                         )
                         Text(
-                            text = "Track your growth path",
+                            text = "AI-powered analysis",
                             style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = if (isDarkMode) IdentityRoomColors.TextTertiaryDark
+                                    else IdentityRoomColors.TextTertiaryLight
                         )
                     }
                 }
 
-                // Completion counter
-                val completedCount = milestones.count { it.current >= it.target }
-                Surface(
-                    color = if (completedCount == milestones.size)
-                        GoldTier.copy(alpha = 0.2f)
-                    else
-                        MaterialTheme.colorScheme.primaryContainer,
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Text(
-                        text = "$completedCount / ${milestones.size}",
-                        style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = if (completedCount == milestones.size)
-                            GoldTier
-                        else
-                            MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // Milestone grid - 2 columns
-            Column(
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                milestones.chunked(2).forEach { rowMilestones ->
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                if (weeklyPattern?.isAiGenerated == true) {
+                    Surface(
+                        color = ProdyPremiumViolet.copy(alpha = 0.15f),
+                        shape = RoundedCornerShape(6.dp)
                     ) {
-                        rowMilestones.forEach { milestone ->
-                            MilestoneCard(
-                                name = milestone.name,
-                                description = milestone.description,
-                                target = milestone.target,
-                                current = milestone.current,
-                                icon = milestone.icon,
-                                color = milestone.color,
-                                xpReward = milestone.xpReward,
-                                modifier = Modifier.weight(1f)
-                            )
-                        }
-                        // Fill remaining space if odd number
-                        if (rowMilestones.size == 1) {
-                            Spacer(modifier = Modifier.weight(1f))
-                        }
+                        Text(
+                            text = "AI",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = ProdyPremiumViolet,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        )
                     }
                 }
             }
-        }
-    }
-}
 
-/**
- * Individual Milestone Card - Achievement-Style Display
- *
- * States:
- * - COMPLETED: Golden glow, checkmark icon, celebration styling
- * - IN_PROGRESS: Animated progress ring, percentage display
- * - LOCKED: Dimmed, padlock icon overlay
- */
+            Spacer(modifier = Modifier.height(16.dp))
 
-@Composable
-private fun MilestoneCard(
-    name: String,
-    description: String,
-    target: Int,
-    current: Int,
-    icon: ImageVector,
-    color: Color,
-    xpReward: Int,
-    modifier: Modifier = Modifier
-) {
-    val isCompleted = current >= target
-    val progress = (current.toFloat() / target).coerceIn(0f, 1f)
-    val isInProgress = !isCompleted && current > 0
-
-    val infiniteTransition = rememberInfiniteTransition(label = "milestone_anim")
-
-    // Glow animation for completed milestones
-    val glowAlpha by infiniteTransition.animateFloat(
-        initialValue = if (isCompleted) 0.3f else 0f,
-        targetValue = if (isCompleted) 0.6f else 0f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(2000, easing = EaseInOutCubic),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "glow"
-    )
-
-    // Progress ring animation for in-progress milestones
-    val progressRotation by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = if (isInProgress) 360f else 0f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(3000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "progress_rotation"
-    )
-
-    val animatedProgress by animateFloatAsState(
-        targetValue = progress,
-        animationSpec = tween(1000, easing = FastOutSlowInEasing),
-        label = "progress"
-    )
-
-    val scale by animateFloatAsState(
-        targetValue = if (isCompleted) 1f else 0.98f,
-        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
-        label = "scale"
-    )
-
-    Box(modifier = modifier.scale(scale)) {
-        // Card background
-        ProdyCard(
-            modifier = Modifier.fillMaxWidth(),
-            backgroundColor = when {
-                isCompleted -> color.copy(alpha = 0.12f)
-                isInProgress -> MaterialTheme.colorScheme.surface
-                else -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-            },
-            elevation = if (isCompleted) 4.dp else 2.dp
-        ) {
-            Box {
-                // Glow effect for completed
-                if (isCompleted) {
+            when {
+                isLoading -> {
                     Box(
                         modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .size(60.dp)
-                            .offset(x = 15.dp, y = (-15).dp)
-                            .blur(20.dp)
-                            .alpha(glowAlpha)
-                            .background(color, CircleShape)
-                    )
-                }
-
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(14.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    // Icon with status indicator
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier.size(56.dp)
+                            .fillMaxWidth()
+                            .height(60.dp),
+                        contentAlignment = Alignment.Center
                     ) {
-                        // Progress ring background
-                        if (isInProgress || isCompleted) {
-                            Canvas(modifier = Modifier.fillMaxSize()) {
-                                val strokeWidth = 3.dp.toPx()
-                                val radius = (size.minDimension - strokeWidth) / 2
-
-                                // Background ring
-                                drawCircle(
-                                    color = color.copy(alpha = 0.2f),
-                                    radius = radius,
-                                    style = Stroke(width = strokeWidth)
-                                )
-
-                                // Progress arc
-                                drawArc(
-                                    color = color,
-                                    startAngle = -90f,
-                                    sweepAngle = animatedProgress * 360f,
-                                    useCenter = false,
-                                    style = Stroke(width = strokeWidth, cap = StrokeCap.Round),
-                                    topLeft = Offset(strokeWidth / 2, strokeWidth / 2),
-                                    size = Size(size.width - strokeWidth, size.height - strokeWidth)
-                                )
-                            }
-                        }
-
-                        // Icon background
-                        Box(
-                            modifier = Modifier
-                                .size(44.dp)
-                                .clip(CircleShape)
-                                .background(
-                                    when {
-                                        isCompleted -> Brush.radialGradient(
-                                            colors = listOf(
-                                                color.copy(alpha = 0.3f),
-                                                color.copy(alpha = 0.15f)
-                                            )
-                                        )
-                                        else -> Brush.radialGradient(
-                                            colors = listOf(
-                                                AchievementLocked.copy(alpha = 0.15f),
-                                                AchievementLocked.copy(alpha = 0.08f)
-                                            )
-                                        )
-                                    }
-                                )
-                                .then(
-                                    if (isCompleted) {
-                                        Modifier.border(2.dp, color.copy(alpha = 0.5f), CircleShape)
-                                    } else {
-                                        Modifier.border(
-                                            1.dp,
-                                            MaterialTheme.colorScheme.outline.copy(alpha = 0.2f),
-                                            CircleShape
-                                        )
-                                    }
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            if (isCompleted) {
-                                // Checkmark overlay for completed
-                                Icon(
-                                    imageVector = Icons.Filled.CheckCircle,
-                                    contentDescription = "Completed",
-                                    tint = color,
-                                    modifier = Modifier.size(24.dp)
-                                )
-                            } else if (!isInProgress) {
-                                // Lock icon for locked milestones
-                                Icon(
-                                    imageVector = Icons.Filled.Lock,
-                                    contentDescription = "Locked",
-                                    tint = AchievementLocked,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                            } else {
-                                // Original icon for in-progress
-                                Icon(
-                                    imageVector = icon,
-                                    contentDescription = null,
-                                    tint = color,
-                                    modifier = Modifier.size(22.dp)
-                                )
-                            }
-                        }
-
-                        // Completed badge
-                        if (isCompleted) {
-                            Box(
-                                modifier = Modifier
-                                    .align(Alignment.BottomEnd)
-                                    .size(18.dp)
-                                    .clip(CircleShape)
-                                    .background(AchievementUnlocked)
-                                    .border(1.5.dp, Color.White, CircleShape),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.Check,
-                                    contentDescription = null,
-                                    tint = Color.White,
-                                    modifier = Modifier.size(10.dp)
-                                )
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                    // Milestone name
-                    Text(
-                        text = name,
-                        style = MaterialTheme.typography.labelMedium,
-                        fontWeight = if (isCompleted) FontWeight.Bold else FontWeight.SemiBold,
-                        color = when {
-                            isCompleted -> color
-                            isInProgress -> MaterialTheme.colorScheme.onSurface
-                            else -> MaterialTheme.colorScheme.onSurfaceVariant
-                        },
-                        textAlign = TextAlign.Center,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-
-                    Spacer(modifier = Modifier.height(2.dp))
-
-                    // Description
-                    Text(
-                        text = description,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(
-                            alpha = if (isCompleted) 0.9f else 0.7f
-                        ),
-                        textAlign = TextAlign.Center,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        fontSize = 10.sp
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    // Progress indicator or completion badge
-                    if (isCompleted) {
-                        // XP reward badge
-                        Surface(
-                            color = GoldTier.copy(alpha = 0.15f),
-                            shape = RoundedCornerShape(8.dp)
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(3.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.Stars,
-                                    contentDescription = null,
-                                    tint = GoldTier,
-                                    modifier = Modifier.size(12.dp)
-                                )
-                                Text(
-                                    text = "+$xpReward XP",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = GoldTier,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 10.sp
-                                )
-                            }
-                        }
-                    } else {
-                        // Progress text
-                        Text(
-                            text = "$current / $target",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = if (isInProgress) color else AchievementLocked,
-                            fontWeight = FontWeight.Medium,
-                            fontSize = 11.sp
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            color = ProdyPremiumViolet,
+                            strokeWidth = 2.dp
                         )
+                    }
+                }
+                !hasEnoughData -> {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "Write 3+ entries this week",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = if (isDarkMode) IdentityRoomColors.TextSecondaryDark
+                                    else IdentityRoomColors.TextSecondaryLight
+                        )
+                        Text(
+                            text = "to unlock AI insights",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = if (isDarkMode) IdentityRoomColors.TextTertiaryDark
+                                    else IdentityRoomColors.TextTertiaryLight
+                        )
+                    }
+                }
+                weeklyPattern != null -> {
+                    Text(
+                        text = weeklyPattern.summary,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (isDarkMode) IdentityRoomColors.TextSecondaryDark
+                                else IdentityRoomColors.TextSecondaryLight,
+                        lineHeight = 20.sp
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Surface(
+                        color = ProdyTertiary.copy(alpha = 0.1f),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp),
+                            verticalAlignment = Alignment.Top,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Lightbulb,
+                                contentDescription = null,
+                                tint = ProdyTertiary,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Text(
+                                text = weeklyPattern.suggestion,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = if (isDarkMode) IdentityRoomColors.TextPrimaryDark
+                                        else IdentityRoomColors.TextPrimaryLight,
+                                lineHeight = 18.sp
+                            )
+                        }
                     }
                 }
             }
@@ -1787,8 +1002,287 @@ private fun MilestoneCard(
     }
 }
 
+// ============================================================================
+// TROPHY ROOM SECTION
+// ============================================================================
+
 @Composable
-private fun GrowthJourneyCard() {
+private fun TrophyRoomHeader(
+    unlockedCount: Int,
+    totalCount: Int,
+    isDarkMode: Boolean
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp, vertical = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Filled.EmojiEvents,
+                contentDescription = null,
+                tint = GoldTier,
+                modifier = Modifier.size(24.dp)
+            )
+            Text(
+                text = "Trophy Room",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = if (isDarkMode) IdentityRoomColors.TextPrimaryDark
+                        else IdentityRoomColors.TextPrimaryLight
+            )
+        }
+
+        Surface(
+            color = if (isDarkMode) IdentityRoomColors.CardBackgroundDark
+                    else IdentityRoomColors.CardBackgroundLight,
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Text(
+                text = "$unlockedCount / $totalCount",
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.Medium,
+                color = if (isDarkMode) IdentityRoomColors.TextSecondaryDark
+                        else IdentityRoomColors.TextSecondaryLight,
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+            )
+        }
+    }
+}
+
+@Composable
+private fun FeaturedAchievementsRow(
+    achievements: List<AchievementEntity>,
+    isDarkMode: Boolean
+) {
+    LazyRow(
+        contentPadding = PaddingValues(horizontal = 20.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        itemsIndexed(
+            items = achievements,
+            key = { _, item -> item.id }
+        ) { index, achievement ->
+            FeaturedAchievementCard(
+                achievement = achievement,
+                isDarkMode = isDarkMode,
+                index = index
+            )
+        }
+    }
+}
+
+@Composable
+private fun FeaturedAchievementCard(
+    achievement: AchievementEntity,
+    isDarkMode: Boolean,
+    index: Int
+) {
+    val rarity = try {
+        AchievementRarity.valueOf(achievement.rarity.uppercase())
+    } catch (e: Exception) {
+        AchievementRarity.COMMON
+    }
+
+    val achievementData = Achievements.getAchievementById(achievement.id)
+
+    var isVisible by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        delay((index * 80).toLong())
+        isVisible = true
+    }
+
+    val scale by animateFloatAsState(
+        targetValue = if (isVisible) 1f else 0.8f,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+        label = "achievement_scale"
+    )
+
+    Surface(
+        modifier = Modifier
+            .width(100.dp)
+            .scale(scale),
+        color = if (isDarkMode) IdentityRoomColors.CardBackgroundElevatedDark
+                else IdentityRoomColors.CardBackgroundElevatedLight,
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // Icon Circle
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(rarity.color.copy(alpha = 0.15f))
+                    .border(2.dp, rarity.color.copy(alpha = 0.4f), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = achievementData?.icon ?: Icons.Filled.EmojiEvents,
+                    contentDescription = null,
+                    tint = rarity.color,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = achievement.name,
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.Medium,
+                color = if (isDarkMode) IdentityRoomColors.TextPrimaryDark
+                        else IdentityRoomColors.TextPrimaryLight,
+                textAlign = TextAlign.Center,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                lineHeight = 14.sp
+            )
+        }
+    }
+}
+
+@Composable
+private fun RecentUnlocksSection(
+    unlockedAchievements: List<AchievementEntity>,
+    lockedAchievements: List<AchievementEntity>,
+    isDarkMode: Boolean
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp, vertical = 8.dp)
+    ) {
+        Text(
+            text = "Recent Unlocks",
+            style = MaterialTheme.typography.labelLarge,
+            fontWeight = FontWeight.SemiBold,
+            color = if (isDarkMode) IdentityRoomColors.TextSecondaryDark
+                    else IdentityRoomColors.TextSecondaryLight,
+            modifier = Modifier.padding(bottom = 12.dp)
+        )
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            // Show recent unlocked (last 2) and next locked (first 2)
+            val recentUnlocked = unlockedAchievements.takeLast(2)
+            val nextLocked = lockedAchievements.take(2)
+
+            recentUnlocked.forEach { achievement ->
+                CompactBadge(
+                    achievement = achievement,
+                    isUnlocked = true,
+                    isDarkMode = isDarkMode,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+
+            nextLocked.forEach { achievement ->
+                CompactBadge(
+                    achievement = achievement,
+                    isUnlocked = false,
+                    isDarkMode = isDarkMode,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun CompactBadge(
+    achievement: AchievementEntity,
+    isUnlocked: Boolean,
+    isDarkMode: Boolean,
+    modifier: Modifier = Modifier
+) {
+    val rarity = try {
+        AchievementRarity.valueOf(achievement.rarity.uppercase())
+    } catch (e: Exception) {
+        AchievementRarity.COMMON
+    }
+
+    val achievementData = Achievements.getAchievementById(achievement.id)
+
+    Surface(
+        modifier = modifier,
+        color = if (isDarkMode) {
+            if (isUnlocked) IdentityRoomColors.CardBackgroundElevatedDark
+            else IdentityRoomColors.CardBackgroundDark.copy(alpha = 0.5f)
+        } else {
+            if (isUnlocked) IdentityRoomColors.CardBackgroundLight
+            else IdentityRoomColors.CardBackgroundElevatedLight.copy(alpha = 0.5f)
+        },
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(10.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(
+                        if (isUnlocked) rarity.color.copy(alpha = 0.15f)
+                        else AchievementLocked.copy(alpha = 0.1f)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                if (isUnlocked) {
+                    Icon(
+                        imageVector = achievementData?.icon ?: Icons.Filled.EmojiEvents,
+                        contentDescription = null,
+                        tint = rarity.color,
+                        modifier = Modifier.size(18.dp)
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Filled.Lock,
+                        contentDescription = null,
+                        tint = AchievementLocked,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            Text(
+                text = achievement.name,
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.Medium,
+                color = if (isUnlocked) {
+                    if (isDarkMode) IdentityRoomColors.TextPrimaryDark
+                    else IdentityRoomColors.TextPrimaryLight
+                } else {
+                    if (isDarkMode) IdentityRoomColors.TextTertiaryDark
+                    else IdentityRoomColors.TextTertiaryLight
+                },
+                textAlign = TextAlign.Center,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                fontSize = 10.sp
+            )
+        }
+    }
+}
+
+// ============================================================================
+// GROWTH QUOTE CARD
+// ============================================================================
+
+@Composable
+private fun GrowthQuoteCard(isDarkMode: Boolean) {
     val quotes = remember {
         listOf(
             "Every step forward is progress.",
@@ -1798,49 +1292,50 @@ private fun GrowthJourneyCard() {
             "You're building something remarkable."
         )
     }
-    // Use randomOrNull with fallback for defensive programming
-    val quote = remember { quotes.randomOrNull() ?: "Every step forward is progress." }
+    val quote = remember { quotes.random() }
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
+            .padding(horizontal = 20.dp, vertical = 16.dp)
             .clip(RoundedCornerShape(16.dp))
             .background(
-                Brush.horizontalGradient(
-                    colors = listOf(
-                        ProdyPrimary.copy(alpha = 0.1f),
-                        ProdyTertiary.copy(alpha = 0.1f)
-                    )
-                )
+                if (isDarkMode) IdentityRoomColors.AccentGreen.copy(alpha = 0.08f)
+                else IdentityRoomColors.AccentGreenLight.copy(alpha = 0.1f)
             )
             .padding(20.dp)
     ) {
         Row(
-            verticalAlignment = Alignment.CenterVertically,
+            verticalAlignment = Alignment.Top,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Icon(
                 imageVector = Icons.Filled.FormatQuote,
                 contentDescription = null,
-                tint = ProdyPrimary,
+                tint = if (isDarkMode) IdentityRoomColors.AccentGreen
+                       else IdentityRoomColors.AccentGreenLight,
                 modifier = Modifier.size(24.dp)
             )
             Text(
                 text = quote,
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-                fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+                color = if (isDarkMode) IdentityRoomColors.TextSecondaryDark
+                        else IdentityRoomColors.TextSecondaryLight,
+                fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
+                lineHeight = 22.sp
             )
         }
     }
 }
 
-// Helper functions
-private fun formatNumber(number: Int): String {
+// ============================================================================
+// HELPER FUNCTIONS
+// ============================================================================
+
+private fun formatCompactNumber(number: Int): String {
     return when {
         number >= 1000000 -> String.format("%.1fM", number / 1000000.0)
-        number >= 1000 -> String.format("%.1fK", number / 1000.0)
+        number >= 1000 -> String.format("%.1fk", number / 1000.0)
         else -> number.toString()
     }
 }
@@ -1860,6 +1355,18 @@ private fun getLevelFromPoints(points: Int): Int {
     }
 }
 
+private fun calculateLevelProgress(points: Int): Float {
+    val level = getLevelFromPoints(points)
+    val currentThreshold = getLevelThreshold(level)
+    val nextThreshold = getLevelThreshold(level + 1)
+
+    return if (nextThreshold > currentThreshold) {
+        (points - currentThreshold).toFloat() / (nextThreshold - currentThreshold)
+    } else {
+        1f
+    }
+}
+
 private fun getLevelThreshold(level: Int): Int {
     return when (level) {
         1 -> 0
@@ -1873,490 +1380,5 @@ private fun getLevelThreshold(level: Int): Int {
         9 -> 7500
         10 -> 10000
         else -> 15000
-    }
-}
-
-private fun getNextTitle(currentTitle: String): String {
-    val titles = listOf("Newcomer", "Apprentice", "Scholar", "Sage", "Master", "Grandmaster", "Legend")
-    val currentIndex = titles.indexOf(currentTitle)
-    return if (currentIndex >= 0 && currentIndex < titles.size - 1) {
-        titles[currentIndex + 1]
-    } else {
-        "Ascended"
-    }
-}
-
-/**
- * Stats Storytelling Card - Narrative insights about user progress
- *
- * Features:
- * - Dynamic insights based on actual user data
- * - Celebratory messaging for achievements
- * - Motivational context for growth
- * - Animated entry for visual delight
- */
-@Composable
-private fun StatsStorytellingCard(
-    wordsLearned: Int,
-    journalEntries: Int,
-    daysOnPrody: Int,
-    currentStreak: Int,
-    longestStreak: Int,
-    totalPoints: Int
-) {
-    // Generate dynamic insights based on user data
-    val insights = remember(wordsLearned, journalEntries, daysOnPrody, currentStreak, longestStreak, totalPoints) {
-        buildList {
-            // Words learned insight
-            if (wordsLearned >= 100) {
-                add(StoryInsight(
-                    icon = Icons.Filled.School,
-                    color = MoodMotivated,
-                    headline = "Vocabulary Champion",
-                    message = "You've learned $wordsLearned words! That's like reading a small dictionary."
-                ))
-            } else if (wordsLearned >= 10) {
-                add(StoryInsight(
-                    icon = Icons.Filled.School,
-                    color = MoodMotivated,
-                    headline = "Growing Vocabulary",
-                    message = "${100 - wordsLearned} more words to reach your first hundred!"
-                ))
-            }
-
-            // Streak insight
-            if (currentStreak >= longestStreak && currentStreak > 0) {
-                add(StoryInsight(
-                    icon = Icons.Filled.LocalFireDepartment,
-                    color = StreakFire,
-                    headline = "Personal Best!",
-                    message = "You're on your longest streak ever - $currentStreak days strong!"
-                ))
-            } else if (currentStreak > 0) {
-                add(StoryInsight(
-                    icon = Icons.Filled.LocalFireDepartment,
-                    color = StreakFire,
-                    headline = "Keep the Fire Burning",
-                    message = "${longestStreak - currentStreak} more days to beat your record of $longestStreak!"
-                ))
-            }
-
-            // Journal entries insight
-            if (journalEntries >= 30) {
-                add(StoryInsight(
-                    icon = Icons.Filled.AutoStories,
-                    color = MoodCalm,
-                    headline = "Dedicated Journaler",
-                    message = "$journalEntries entries and counting! Your story is being written."
-                ))
-            } else if (journalEntries >= 7) {
-                add(StoryInsight(
-                    icon = Icons.Filled.AutoStories,
-                    color = MoodCalm,
-                    headline = "Building a Habit",
-                    message = "A week's worth of reflections! Keep documenting your journey."
-                ))
-            }
-
-            // Days active insight
-            if (daysOnPrody >= 30) {
-                val months = daysOnPrody / 30
-                add(StoryInsight(
-                    icon = Icons.Filled.CalendarMonth,
-                    color = MoodGrateful,
-                    headline = "Loyal Companion",
-                    message = if (months >= 2) "Over $months months of growth with Prody!"
-                              else "$daysOnPrody days of consistent self-improvement!"
-                ))
-            } else if (daysOnPrody >= 7) {
-                add(StoryInsight(
-                    icon = Icons.Filled.CalendarMonth,
-                    color = MoodGrateful,
-                    headline = "One Week In",
-                    message = "You've been growing with Prody for $daysOnPrody days!"
-                ))
-            }
-
-            // Points milestone insight
-            when {
-                totalPoints >= 1000 -> add(StoryInsight(
-                    icon = Icons.Filled.Stars,
-                    color = GoldTier,
-                    headline = "Rising Star",
-                    message = "Over ${totalPoints / 1000}K points earned! Your dedication is inspiring."
-                ))
-                totalPoints >= 100 -> add(StoryInsight(
-                    icon = Icons.Filled.Stars,
-                    color = GoldTier,
-                    headline = "Steady Progress",
-                    message = "${1000 - totalPoints} points to your first thousand!"
-                ))
-            }
-        }.take(2) // Show at most 2 insights
-    }
-
-    if (insights.isEmpty()) return
-
-    ProdyCard(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            // Header
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.TrendingUp,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(20.dp)
-                )
-                Text(
-                    text = "Your Growth Story",
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
-
-            // Insight cards
-            insights.forEachIndexed { index, insight ->
-                StoryInsightRow(insight = insight, index = index)
-            }
-        }
-    }
-}
-
-private data class StoryInsight(
-    val icon: ImageVector,
-    val color: Color,
-    val headline: String,
-    val message: String
-)
-
-@Composable
-private fun StoryInsightRow(
-    insight: StoryInsight,
-    index: Int
-) {
-    var isVisible by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) {
-        delay((index * 150).toLong())
-        isVisible = true
-    }
-
-    val alpha by animateFloatAsState(
-        targetValue = if (isVisible) 1f else 0f,
-        animationSpec = tween(500),
-        label = "insight_alpha"
-    )
-
-    val offsetX by animateFloatAsState(
-        targetValue = if (isVisible) 0f else 20f,
-        animationSpec = tween(500, easing = EaseOutCubic),
-        label = "insight_offset"
-    )
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .alpha(alpha)
-            .offset(x = offsetX.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(insight.color.copy(alpha = 0.08f))
-            .padding(12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        // Icon
-        Box(
-            modifier = Modifier
-                .size(40.dp)
-                .clip(CircleShape)
-                .background(insight.color.copy(alpha = 0.15f)),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = insight.icon,
-                contentDescription = null,
-                tint = insight.color,
-                modifier = Modifier.size(20.dp)
-            )
-        }
-
-        // Text content
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = insight.headline,
-                style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.SemiBold,
-                color = insight.color
-            )
-            Text(
-                text = insight.message,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                lineHeight = 16.sp
-            )
-        }
-    }
-}
-
-/**
- * Weekly Pattern Card - AI-Generated Insights
- *
- * Displays weekly patterns and insights from AI analysis.
- * Shows loading state, empty state (not enough data), or actual patterns.
- */
-@Composable
-private fun WeeklyPatternCard(
-    weeklyPattern: WeeklyPatternResult?,
-    isLoading: Boolean,
-    hasEnoughData: Boolean
-) {
-    ProdyCard(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            // Header
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(32.dp)
-                            .clip(CircleShape)
-                            .background(ProdyPremiumViolet.copy(alpha = 0.15f)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Psychology,
-                            contentDescription = null,
-                            tint = ProdyPremiumViolet,
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
-                    Column {
-                        Text(
-                            text = "Weekly Patterns",
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                        Text(
-                            text = "AI-powered insights",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-
-                if (weeklyPattern?.isAiGenerated == true) {
-                    Surface(
-                        color = ProdyPremiumViolet.copy(alpha = 0.1f),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Text(
-                            text = "AI",
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = ProdyPremiumViolet,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            when {
-                isLoading -> {
-                    // Loading state
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(80.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(24.dp),
-                            color = ProdyPremiumViolet,
-                            strokeWidth = 2.dp
-                        )
-                    }
-                }
-                !hasEnoughData -> {
-                    // Not enough data state
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.EditNote,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                            modifier = Modifier.size(32.dp)
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "Write 3+ journal entries this week",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            textAlign = TextAlign.Center
-                        )
-                        Text(
-                            text = "to unlock AI pattern analysis",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                            textAlign = TextAlign.Center
-                        )
-                    }
-                }
-                weeklyPattern != null -> {
-                    // Pattern content
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        // Key Pattern
-                        PatternInsightRow(
-                            icon = Icons.Filled.Lightbulb,
-                            color = MoodMotivated,
-                            label = "Key Pattern",
-                            value = weeklyPattern.keyPattern
-                        )
-
-                        // Summary
-                        Text(
-                            text = weeklyPattern.summary,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            lineHeight = 18.sp
-                        )
-
-                        HorizontalDivider(
-                            modifier = Modifier.padding(vertical = 4.dp),
-                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                        )
-
-                        // Suggestion
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(ProdyTertiary.copy(alpha = 0.1f))
-                                .padding(12.dp),
-                            verticalAlignment = Alignment.Top,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.Lightbulb,
-                                contentDescription = null,
-                                tint = ProdyTertiary,
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Text(
-                                text = weeklyPattern.suggestion,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                lineHeight = 16.sp
-                            )
-                        }
-
-                        // Stats row
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceEvenly
-                        ) {
-                            PatternStatItem(
-                                value = weeklyPattern.journalCount.toString(),
-                                label = "Entries",
-                                color = MoodCalm
-                            )
-                            weeklyPattern.dominantMood?.let { mood ->
-                                PatternStatItem(
-                                    value = mood.replaceFirstChar { it.uppercase() },
-                                    label = "Mood",
-                                    color = MoodHappy
-                                )
-                            }
-                            PatternStatItem(
-                                value = "${weeklyPattern.streakDays}d",
-                                label = "Streak",
-                                color = StreakFire
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun PatternInsightRow(
-    icon: ImageVector,
-    color: Color,
-    label: String,
-    value: String
-) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = color,
-            modifier = Modifier.size(18.dp)
-        )
-        Text(
-            text = "$label:",
-            style = MaterialTheme.typography.labelMedium,
-            fontWeight = FontWeight.Medium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Text(
-            text = value,
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.onSurface
-        )
-    }
-}
-
-@Composable
-private fun PatternStatItem(
-    value: String,
-    label: String,
-    color: Color
-) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = value,
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            color = color
-        )
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
     }
 }
