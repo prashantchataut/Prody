@@ -8,11 +8,17 @@ import android.os.Build
 import android.util.Log
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
+import com.prody.prashant.data.local.preferences.PreferencesManager
+import com.prody.prashant.data.security.SecureStorageManager
 import com.prody.prashant.debug.CrashHandler
 import com.prody.prashant.domain.gamification.GamificationService
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -25,6 +31,12 @@ class ProdyApplication : Application(), Configuration.Provider {
 
     @Inject
     lateinit var gamificationService: GamificationService
+
+    @Inject
+    lateinit var preferencesManager: PreferencesManager
+
+    @Inject
+    lateinit var secureStorageManager: SecureStorageManager
 
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
@@ -144,6 +156,10 @@ class ProdyApplication : Application(), Configuration.Provider {
     }
 
     private fun initializeApp() {
+        applicationScope.launch {
+            migrateApiKey()
+        }
+
         try {
             createNotificationChannels()
         } catch (e: Exception) {
@@ -161,6 +177,26 @@ class ProdyApplication : Application(), Configuration.Provider {
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to initialize gamification data", e)
+            }
+        }
+    }
+
+    private suspend fun migrateApiKey() {
+        // This is the only place where we directly access the old, insecure key.
+        // We do this to migrate it to secure storage, and then we clear it.
+        val insecureApiKey = preferencesManager.dataStore.data.map { preferences ->
+            preferences[stringPreferencesKey("gemini_api_key")] ?: ""
+        }.first()
+
+        if (insecureApiKey.isNotBlank()) {
+            try {
+                secureStorageManager.saveApiKey(insecureApiKey)
+                preferencesManager.dataStore.edit { preferences ->
+                    preferences.remove(stringPreferencesKey("gemini_api_key"))
+                }
+                Log.d(TAG, "Successfully migrated API key to secure storage.")
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to migrate API key.", e)
             }
         }
     }

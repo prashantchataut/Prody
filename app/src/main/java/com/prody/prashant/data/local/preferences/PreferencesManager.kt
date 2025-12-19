@@ -42,7 +42,6 @@ class PreferencesManager @Inject constructor(
         val USER_ID = stringPreferencesKey("user_id")
 
         // Gemini AI Settings
-        val GEMINI_API_KEY = stringPreferencesKey("gemini_api_key")
         val GEMINI_MODEL = stringPreferencesKey("gemini_model")
         val BUDDHA_AI_ENABLED = booleanPreferencesKey("buddha_ai_enabled")
 
@@ -59,6 +58,10 @@ class PreferencesManager @Inject constructor(
         // Debug: Special Badge Preview Toggles
         val DEBUG_PREVIEW_DEV_BADGE = booleanPreferencesKey("debug_preview_dev_badge")
         val DEBUG_PREVIEW_BETA_BADGE = booleanPreferencesKey("debug_preview_beta_badge")
+
+        // Secure storage
+        val ENCRYPTED_API_KEY = stringPreferencesKey("encrypted_api_key")
+        val ENCRYPTION_IV = stringPreferencesKey("encryption_iv")
     }
 
     // Onboarding
@@ -341,21 +344,6 @@ class PreferencesManager @Inject constructor(
     }
 
     // Gemini AI Settings
-    val geminiApiKey: Flow<String> = dataStore.data
-        .catch { exception ->
-            if (exception is IOException) emit(emptyPreferences())
-            else throw exception
-        }
-        .map { preferences ->
-            preferences[PreferencesKeys.GEMINI_API_KEY] ?: ""
-        }
-
-    suspend fun setGeminiApiKey(apiKey: String) {
-        dataStore.edit { preferences ->
-            preferences[PreferencesKeys.GEMINI_API_KEY] = apiKey
-        }
-    }
-
     val geminiModel: Flow<String> = dataStore.data
         .catch { exception ->
             if (exception is IOException) emit(emptyPreferences())
@@ -545,6 +533,37 @@ class PreferencesManager @Inject constructor(
     suspend fun clearAllPreferences() {
         dataStore.edit { preferences ->
             preferences.clear()
+        }
+    }
+
+    // Secure storage
+    val encryptedApiKey: Flow<String> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.ENCRYPTED_API_KEY] ?: ""
+        }
+
+    suspend fun setEncryptedApiKey(apiKey: String) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.ENCRYPTED_API_KEY] = apiKey
+        }
+    }
+
+    val encryptionIv: Flow<String> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.ENCRYPTION_IV] ?: ""
+        }
+
+    suspend fun setEncryptionIv(iv: String) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.ENCRYPTION_IV] = iv
         }
     }
 }
