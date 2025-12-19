@@ -17,6 +17,7 @@ import javax.inject.Inject
 
 data class ProfileUiState(
     val displayName: String = "Growth Seeker",
+    val bio: String = "",
     val title: String = "Newcomer",
     val avatarId: String = "default",
     val bannerId: String = "default",
@@ -68,6 +69,7 @@ class ProfileViewModel @Inject constructor(
                         _uiState.update { state ->
                             state.copy(
                                 displayName = it.displayName,
+                                bio = it.bio,
                                 title = getTitleFromId(it.titleId),
                                 avatarId = it.avatarId,
                                 bannerId = it.bannerId,
