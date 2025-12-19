@@ -558,6 +558,35 @@ val OnboardingLeaderboardRowActiveLight = Color(0xFFF0FFF5)
 val OnboardingLeaderboardRowActiveDark = Color(0xFF1E3D28)
 
 // =============================================================================
+// JOURNAL NEW ENTRY DESIGN SYSTEM - Clean Minimalist Theme
+// =============================================================================
+
+// Light Mode Colors - Bright, Focused Aesthetic
+val JournalBackgroundLight = Color(0xFFF9FAFB)          // Very light off-white background
+val JournalSurfaceLight = Color(0xFFFFFFFF)             // Pure white for cards/containers
+val JournalPrimaryTextLight = Color(0xFF212529)         // Dark gray for primary text
+val JournalSecondaryTextLight = Color(0xFF6C757D)       // Medium-dark gray for descriptions
+val JournalPlaceholderTextLight = Color(0xFFADB5BD)     // Subtle gray for placeholders
+val JournalSliderInactiveLight = Color(0xFFDEE2E6)      // Light gray for inactive slider track
+val JournalSaveButtonBgLight = Color(0xFFE6FFF0)        // Very light green for save button background
+val JournalIconCircleBorderLight = Color(0xFFE9ECEF)    // Subtle light gray border for icon circles
+val JournalCardCornerDetailLight = Color(0xFFF0F2F4)    // Very light gray for corner decorations
+
+// Dark Mode Colors - Immersive Dark Teal/Green Aesthetic
+val JournalBackgroundDark = Color(0xFF0D2826)           // Deep dark teal/green background
+val JournalSurfaceDark = Color(0xFF2A4240)              // Slightly lighter muted green for cards
+val JournalPrimaryTextDark = Color(0xFFFFFFFF)          // Pure white for primary text
+val JournalSecondaryTextDark = Color(0xFFD3D8D7)        // Light subtle gray for descriptions
+val JournalPlaceholderTextDark = Color(0xFF8A9493)      // Subtle light gray for placeholders
+val JournalSliderInactiveDark = Color(0xFF404B4A)       // Dark gray for inactive slider track
+val JournalSaveButtonBgDark = Color(0xFF1A3331)         // Very dark muted green for save button background
+val JournalIconCircleBorderDark = Color(0xFF3A5250)     // Subtle darker border for icon circles
+val JournalCardCornerDetailDark = Color(0xFF354845)     // Darker gray for corner decorations
+
+// Accent Green - Vibrant Neon Green (same for both modes)
+val JournalAccentGreen = Color(0xFF36F97F)              // Vibrant neon green accent
+
+// =============================================================================
 // JOURNEY ONBOARDING DESIGN SYSTEM - Premium Stoic Theme
 // =============================================================================
 
