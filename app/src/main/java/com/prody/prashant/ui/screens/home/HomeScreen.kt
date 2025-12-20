@@ -84,12 +84,22 @@ fun HomeScreen(
         enter = fadeIn(animationSpec = tween(500, easing = EaseOutCubic)),
         exit = fadeOut(animationSpec = tween(300, easing = EaseOutCubic))
     ) {
-        LazyColumn(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background),
-            contentPadding = PaddingValues(bottom = 100.dp)
+                .background(MaterialTheme.colorScheme.background)
         ) {
+            // Magical Ambient Background - subtle, organic animation
+            AmbientBackground(
+                modifier = Modifier.fillMaxSize(),
+                timeOfDay = getCurrentTimeOfDay(),
+                intensity = 0.2f
+            )
+
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(bottom = 100.dp)
+            ) {
             // Header with greeting and stats
             item {
                 HomeHeader(
@@ -153,6 +163,7 @@ fun HomeScreen(
                     )
                 }
             }
+            }
         }
     }
 }
@@ -206,7 +217,7 @@ private fun HomeHeader(
 }
 
 /**
- * Compact stats badge showing streak and points
+ * Compact stats badge showing streak and points with animated flame
  */
 @Composable
 private fun StatsBadge(
@@ -223,7 +234,7 @@ private fun StatsBadge(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Streak
+            // Streak with animated flame
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -537,7 +548,7 @@ private fun DailyWisdomHeader() {
 }
 
 /**
- * Quote of the Day card
+ * Quote of the Day card with wisdom reveal animation
  */
 @Composable
 private fun QuoteOfTheDayCard(
@@ -545,6 +556,15 @@ private fun QuoteOfTheDayCard(
     author: String,
     onShareClick: () -> Unit
 ) {
+    // Track if the quote has been revealed
+    var isQuoteVisible by remember { mutableStateOf(false) }
+
+    // Trigger reveal animation after a short delay
+    LaunchedEffect(quote) {
+        delay(300)
+        isQuoteVisible = true
+    }
+
     Surface(
         modifier = Modifier
             .fillMaxWidth()

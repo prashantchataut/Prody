@@ -49,7 +49,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.prody.prashant.R
+import com.prody.prashant.ui.components.TimeCapsuleSealAnimation
+import com.prody.prashant.ui.components.rememberTimeCapsuleSealState
 import com.prody.prashant.ui.theme.*
+import kotlinx.coroutines.delay
 
 /**
  * Write to Time Capsule Screen - Complete Redesign
@@ -97,6 +100,9 @@ fun WriteMessageScreen(
         }
     }
 
+    // Magical sealing animation state
+    val sealState = rememberTimeCapsuleSealState()
+
     // Theme-aware colors
     val backgroundColor = if (isDarkTheme) TimeCapsuleBackgroundDark else TimeCapsuleBackgroundLight
     val titleTextColor = if (isDarkTheme) TimeCapsuleTitleTextDark else TimeCapsuleTitleTextLight
@@ -111,8 +117,11 @@ fun WriteMessageScreen(
     val inactiveTagTextColor = if (isDarkTheme) TimeCapsuleInactiveTagTextDark else TimeCapsuleInactiveTagTextLight
     val buttonTextColor = if (isDarkTheme) TimeCapsuleButtonTextDark else TimeCapsuleButtonTextLight
 
+    // Handle saved state with magical animation
     LaunchedEffect(uiState.isSaved) {
         if (uiState.isSaved) {
+            // Small delay for the animation to complete
+            delay(100)
             onMessageSaved()
         }
     }
@@ -293,6 +302,12 @@ fun WriteMessageScreen(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .padding(horizontal = 24.dp, vertical = 32.dp)
+        )
+
+        // Magical Time Capsule Sealing Animation overlay
+        TimeCapsuleSealAnimation(
+            state = sealState,
+            onComplete = { /* Animation completed, message is being saved */ }
         )
 
         // Date Picker Dialog

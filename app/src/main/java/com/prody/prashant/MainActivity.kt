@@ -61,6 +61,8 @@ import com.prody.prashant.ui.screens.quotes.QuotesScreen
 import com.prody.prashant.ui.screens.stats.StatsScreen
 import com.prody.prashant.ui.screens.vocabulary.VocabularyDetailScreen
 import com.prody.prashant.ui.screens.vocabulary.VocabularyListScreen
+import com.prody.prashant.ui.components.NavigationBreathingGlow
+import com.prody.prashant.ui.theme.ProdyPrimary
 import com.prody.prashant.ui.theme.ProdyTheme
 import com.prody.prashant.ui.theme.ThemeMode
 import dagger.hilt.android.AndroidEntryPoint
@@ -244,6 +246,35 @@ fun ProdyApp(
                     animationSpec = tween(200)
                 )
             ) {
+                NavigationBar {
+                    bottomNavItems.forEach { item ->
+                        val selected = currentDestination?.hierarchy?.any {
+                            it.route == item.route
+                        } == true
+
+                        NavigationBarItem(
+                            icon = {
+                                // Wrap icon with magical breathing glow effect
+                                NavigationBreathingGlow(
+                                    isActive = selected,
+                                    color = ProdyPrimary
+                                ) {
+                                    Icon(
+                                        imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
+                                        contentDescription = null
+                                    )
+                                }
+                            },
+                            label = { Text(stringResource(item.labelResId)) },
+                            selected = selected,
+                            onClick = {
+                                navController.navigate(item.route) {
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
                 // Flat design bottom navigation - no shadow, clean surface
                 ProdyBottomNavBar(
                     items = bottomNavItems,

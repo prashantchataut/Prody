@@ -32,6 +32,10 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.data.local.entity.LeaderboardEntryEntity
+import com.prody.prashant.ui.components.AmbientBackground
+import com.prody.prashant.ui.components.FloatingParticles
+import com.prody.prashant.ui.components.StreakFlame
+import com.prody.prashant.ui.components.getCurrentTimeOfDay
 import com.prody.prashant.ui.theme.*
 import kotlinx.coroutines.delay
 import kotlin.math.PI
@@ -146,6 +150,20 @@ fun StatsScreen(
             .fillMaxSize()
             .background(backgroundColor)
     ) {
+        // Magical ambient background for immersive stats experience
+        AmbientBackground(
+            modifier = Modifier.fillMaxSize(),
+            timeOfDay = getCurrentTimeOfDay(),
+            intensity = 0.15f
+        )
+
+        // Subtle floating particles for achievement-oriented atmosphere
+        FloatingParticles(
+            modifier = Modifier.fillMaxSize(),
+            particleCount = 8,
+            particleColor = NeonGreen.copy(alpha = 0.3f)
+        )
+
         PullToRefreshBox(
             isRefreshing = isRefreshing,
             onRefresh = { isRefreshing = true },
@@ -389,24 +407,36 @@ private fun UserStatsSection(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.Top
     ) {
-        // Active Streak (Large, prominent, neon green)
+        // Active Streak (Large, prominent, neon green) with magical flame
         Column {
-            // Animated streak number
+            // Animated streak number with flame
             val animatedStreak by animateIntAsState(
                 targetValue = currentStreak,
                 animationSpec = tween(1200, easing = EaseOutCubic),
                 label = "streak_animation"
             )
 
-            Text(
-                text = animatedStreak.toString(),
-                style = MaterialTheme.typography.displayLarge.copy(
-                    fontSize = 72.sp,
-                    lineHeight = 72.sp
-                ),
-                color = NeonGreen,
-                fontWeight = FontWeight.Bold
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = animatedStreak.toString(),
+                    style = MaterialTheme.typography.displayLarge.copy(
+                        fontSize = 72.sp,
+                        lineHeight = 72.sp
+                    ),
+                    color = NeonGreen,
+                    fontWeight = FontWeight.Bold
+                )
+                // Magical animated flame that grows with streak
+                Box(modifier = Modifier.size(48.dp)) {
+                    StreakFlame(
+                        streakDays = currentStreak,
+                        size = 48.dp
+                    )
+                }
+            }
             Text(
                 text = "ACTIVE STREAK",
                 style = MaterialTheme.typography.labelSmall,

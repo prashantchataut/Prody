@@ -49,6 +49,11 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.prody.prashant.R
 import com.prody.prashant.domain.model.Mood
+import com.prody.prashant.ui.components.AmbientBackground
+import com.prody.prashant.ui.components.MoodSuggestionHint
+import com.prody.prashant.ui.components.rememberMoodSuggestionState
+import com.prody.prashant.ui.components.getCurrentTimeOfDay
+import com.prody.prashant.ui.components.mapMoodToAmbient
 import com.prody.prashant.ui.theme.*
 
 /**
@@ -89,8 +94,20 @@ fun NewJournalEntryScreen(
         }
     }
 
+    // Mood suggestion state for AI-powered hints
+    val moodSuggestionState = rememberMoodSuggestionState()
+
     // Determine if dark mode is active
     val isDarkTheme = LocalJournalThemeColors.current.isDark
+
+    // Analyze content for mood suggestions when content changes
+    LaunchedEffect(uiState.content) {
+        if (uiState.content.length > 50 && uiState.selectedMood == null) {
+            moodSuggestionState.analyzeText(uiState.content)
+        } else {
+            moodSuggestionState.clearSuggestion()
+        }
+    }
 
     LaunchedEffect(uiState.isSaved) {
         if (uiState.isSaved) {
@@ -144,11 +161,10 @@ fun NewJournalEntryScreen(
                 )
             }
         ) { padding ->
-            Column(
+            Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding)
-                    .verticalScroll(rememberScrollState())
             ) {
                 Spacer(modifier = Modifier.height(8.dp))
 
@@ -167,25 +183,37 @@ fun NewJournalEntryScreen(
                     colors = colors
                 )
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    Spacer(modifier = Modifier.height(8.dp))
 
-                // How are you feeling? Section
-                MoodSelectionSection(
-                    selectedMood = uiState.selectedMood,
-                    onMoodSelected = { viewModel.updateMood(it) },
-                    colors = colors
-                )
+                    // Use Template Section
+                    UseTemplateSection(
+                        onTemplateSelected = { viewModel.selectTemplate(it) },
+                        colors = colors
+                    )
 
-                Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(24.dp))
 
-                // Intensity Section
-                IntensitySection(
-                    intensity = uiState.moodIntensity,
-                    onIntensityChanged = { viewModel.updateMoodIntensity(it) },
-                    colors = colors
-                )
+                    // How are you feeling? Section with mood suggestion hint
+                    Box {
+                        MoodSelectionSection(
+                            selectedMood = uiState.selectedMood,
+                            onMoodSelected = { viewModel.updateMood(it) },
+                            colors = colors
+                        )
 
-                Spacer(modifier = Modifier.height(24.dp))
+                        // Subtle AI-powered mood suggestion hint
+                        MoodSuggestionHint(
+                            state = moodSuggestionState,
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .padding(end = 20.dp, top = 4.dp)
+                        )
+                    }
 
                 // Main Input Field with media actions
                 JournalInputField(
@@ -1035,388 +1063,3 @@ private fun JournalInputField(
     }
 }
 
-// =============================================================================
-// ATTACHED MEDIA SECTION (NEW)
-// =============================================================================
-
-@Composable
-private fun AttachedMediaSection(
-    photos: List<String>,
-    videos: List<String>,
-    onRemovePhoto: (String) -> Unit,
-    onRemoveVideo: (String) -> Unit,
-    colors: JournalThemeColors
-) {
-    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-        Text(
-            text = "Attached Media",
-            style = MaterialTheme.typography.labelMedium.copy(
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.SemiBold
-            ),
-            color = colors.secondaryText
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            // Photos
-            items(photos) { photoUri ->
-                MediaThumbnail(
-                    uri = photoUri,
-                    isVideo = false,
-                    onRemove = { onRemovePhoto(photoUri) },
-                    colors = colors
-                )
-            }
-            // Videos
-            items(videos) { videoUri ->
-                MediaThumbnail(
-                    uri = videoUri,
-                    isVideo = true,
-                    onRemove = { onRemoveVideo(videoUri) },
-                    colors = colors
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun MediaThumbnail(
-    uri: String,
-    isVideo: Boolean,
-    onRemove: () -> Unit,
-    colors: JournalThemeColors
-) {
-    val context = LocalContext.current
-
-    Box(
-        modifier = Modifier
-            .size(80.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(colors.surface)
-    ) {
-        AsyncImage(
-            model = ImageRequest.Builder(context)
-                .data(uri)
-                .crossfade(true)
-                .build(),
-            contentDescription = if (isVideo) "Video thumbnail" else "Photo",
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize()
-        )
-
-        // Video indicator overlay
-        if (isVideo) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.3f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.PlayArrow,
-                    contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier.size(32.dp)
-                )
-            }
-        }
-
-        // Remove button
-        IconButton(
-            onClick = onRemove,
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .size(24.dp)
-                .padding(2.dp)
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clip(CircleShape)
-                    .background(Color.Black.copy(alpha = 0.6f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Close,
-                    contentDescription = "Remove",
-                    tint = Color.White,
-                    modifier = Modifier.size(14.dp)
-                )
-            }
-        }
-    }
-}
-
-// =============================================================================
-// VOICE RECORDING COMPONENTS (NEW)
-// =============================================================================
-
-@Composable
-private fun VoiceRecordingPreview(
-    duration: Long,
-    isPlaying: Boolean,
-    onPlayToggle: () -> Unit,
-    onRemove: () -> Unit,
-    colors: JournalThemeColors
-) {
-    val durationText = formatDuration(duration)
-
-    Box(
-        modifier = Modifier
-            .padding(horizontal = 16.dp)
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .background(colors.surface)
-            .padding(12.dp)
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            // Play/Pause button
-            IconButton(
-                onClick = onPlayToggle,
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .background(colors.accent)
-            ) {
-                Icon(
-                    imageVector = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
-                    contentDescription = if (isPlaying) "Pause" else "Play",
-                    tint = Color.White,
-                    modifier = Modifier.size(24.dp)
-                )
-            }
-
-            // Waveform visualization (simplified)
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(32.dp)
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(colors.accent.copy(alpha = 0.1f))
-            ) {
-                // Simple waveform bars
-                Row(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(2.dp)
-                ) {
-                    repeat(20) { index ->
-                        val height = (8 + (index * 17) % 20).dp
-                        Box(
-                            modifier = Modifier
-                                .width(3.dp)
-                                .height(height)
-                                .clip(RoundedCornerShape(1.dp))
-                                .background(colors.accent.copy(alpha = 0.6f))
-                        )
-                    }
-                }
-            }
-
-            // Duration text
-            Text(
-                text = durationText,
-                style = MaterialTheme.typography.labelMedium.copy(
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Medium
-                ),
-                color = colors.secondaryText
-            )
-
-            // Remove button
-            IconButton(
-                onClick = onRemove,
-                modifier = Modifier.size(32.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Delete,
-                    contentDescription = "Remove voice recording",
-                    tint = colors.secondaryText,
-                    modifier = Modifier.size(20.dp)
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun RecordingIndicator(
-    timeElapsed: Long,
-    onStop: (String, Long) -> Unit,
-    onCancel: () -> Unit,
-    colors: JournalThemeColors
-) {
-    val infiniteTransition = rememberInfiniteTransition(label = "recording")
-    val alpha by infiniteTransition.animateFloat(
-        initialValue = 1f,
-        targetValue = 0.3f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(500),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "recording_alpha"
-    )
-
-    Box(
-        modifier = Modifier
-            .padding(horizontal = 16.dp)
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .background(colors.accent.copy(alpha = 0.1f))
-            .padding(16.dp)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                // Pulsating red dot
-                Box(
-                    modifier = Modifier
-                        .size(12.dp)
-                        .clip(CircleShape)
-                        .background(Color.Red.copy(alpha = alpha))
-                )
-
-                Text(
-                    text = "Recording...",
-                    style = MaterialTheme.typography.labelLarge.copy(
-                        fontFamily = PoppinsFamily,
-                        fontWeight = FontWeight.SemiBold
-                    ),
-                    color = colors.primaryText
-                )
-
-                Text(
-                    text = formatDuration(timeElapsed),
-                    style = MaterialTheme.typography.labelMedium.copy(
-                        fontFamily = PoppinsFamily
-                    ),
-                    color = colors.secondaryText
-                )
-            }
-
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                // Cancel button
-                IconButton(
-                    onClick = onCancel,
-                    modifier = Modifier.size(40.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Close,
-                        contentDescription = "Cancel recording",
-                        tint = colors.secondaryText
-                    )
-                }
-
-                // Stop button - This would need actual recording implementation
-                IconButton(
-                    onClick = {
-                        // In a real implementation, this would get the actual URI from the recorder
-                        // For now, we'll simulate with a placeholder
-                        onStop("voice_recording_${System.currentTimeMillis()}.m4a", timeElapsed)
-                    },
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(colors.accent)
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Stop,
-                        contentDescription = "Stop recording",
-                        tint = Color.White
-                    )
-                }
-            }
-        }
-    }
-}
-
-// =============================================================================
-// DISCARD CHANGES DIALOG (NEW)
-// =============================================================================
-
-@Composable
-private fun DiscardChangesDialog(
-    onDismiss: () -> Unit,
-    onDiscard: () -> Unit,
-    colors: JournalThemeColors
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        containerColor = colors.surface,
-        title = {
-            Text(
-                text = "Discard Entry?",
-                style = MaterialTheme.typography.titleMedium.copy(
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Bold
-                ),
-                color = colors.primaryText
-            )
-        },
-        text = {
-            Text(
-                text = "You have unsaved changes. Are you sure you want to discard this entry?",
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    fontFamily = PoppinsFamily
-                ),
-                color = colors.secondaryText
-            )
-        },
-        confirmButton = {
-            TextButton(
-                onClick = onDiscard
-            ) {
-                Text(
-                    text = "Discard",
-                    style = MaterialTheme.typography.labelLarge.copy(
-                        fontFamily = PoppinsFamily,
-                        fontWeight = FontWeight.SemiBold
-                    ),
-                    color = Color(0xFFE53935) // Red color for destructive action
-                )
-            }
-        },
-        dismissButton = {
-            TextButton(
-                onClick = onDismiss
-            ) {
-                Text(
-                    text = "Keep Editing",
-                    style = MaterialTheme.typography.labelLarge.copy(
-                        fontFamily = PoppinsFamily,
-                        fontWeight = FontWeight.SemiBold
-                    ),
-                    color = colors.accent
-                )
-            }
-        }
-    )
-}
-
-// =============================================================================
-// HELPER FUNCTIONS
-// =============================================================================
-
-private fun formatDuration(milliseconds: Long): String {
-    val seconds = (milliseconds / 1000) % 60
-    val minutes = (milliseconds / (1000 * 60)) % 60
-    return String.format("%d:%02d", minutes, seconds)
-}
