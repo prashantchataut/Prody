@@ -8,32 +8,25 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.compose.animation.*
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -43,9 +36,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.prody.prashant.data.local.preferences.PreferencesManager
-import com.prody.prashant.notification.NotificationReceiver
 import com.prody.prashant.notification.NotificationScheduler
+import com.prody.prashant.ui.components.NavigationBreathingGlow
+import com.prody.prashant.ui.main.MainViewModel
 import com.prody.prashant.ui.navigation.BottomNavItem
 import com.prody.prashant.ui.navigation.Screen
 import com.prody.prashant.ui.screens.futuremessage.FutureMessageListScreen
@@ -61,26 +54,21 @@ import com.prody.prashant.ui.screens.quotes.QuotesScreen
 import com.prody.prashant.ui.screens.stats.StatsScreen
 import com.prody.prashant.ui.screens.vocabulary.VocabularyDetailScreen
 import com.prody.prashant.ui.screens.vocabulary.VocabularyListScreen
-import com.prody.prashant.ui.components.NavigationBreathingGlow
 import com.prody.prashant.ui.theme.ProdyPrimary
 import com.prody.prashant.ui.theme.ProdyTheme
-import com.prody.prashant.ui.theme.ThemeMode
 import dagger.hilt.android.AndroidEntryPoint
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     @Inject
-    lateinit var preferencesManager: PreferencesManager
-
-    @Inject
     lateinit var notificationScheduler: NotificationScheduler
+
+    private val viewModel: MainViewModel by viewModels()
 
     // Flag to track if Hilt injection is complete
     private var isInjectionComplete = false
@@ -112,51 +100,19 @@ class MainActivity : ComponentActivity() {
 
         enableEdgeToEdge()
 
-        // Use mutable state to update UI when preferences are loaded
-        var isOnboardingCompleted by mutableStateOf<Boolean?>(null)
-
-        // Keep splash screen visible until the essential onboarding status is loaded.
-        splashScreen.setKeepOnScreenCondition { isOnboardingCompleted == null }
-
-        // Load ONLY the essential preference to unblock the splash screen.
-        // The theme is loaded asynchronously in setContent and will update when ready.
-        lifecycleScope.launch {
-            try {
-                isOnboardingCompleted = preferencesManager.onboardingCompleted.first()
-            } catch (e: Exception) {
-                // If preferences fail, default to showing onboarding.
-                android.util.Log.e("MainActivity", "Failed to load onboarding status", e)
-                isOnboardingCompleted = false
-            }
-        }
-
         setContent {
-            // Wait until the onboarding status is loaded before showing the UI.
-            val onboardingDone = isOnboardingCompleted
-            if (onboardingDone == null) {
-                // While this is null, the splash screen is kept visible.
-                // We return here to prevent the UI from composing unnecessarily.
-                return@setContent
-            }
+            val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-            // Asynchronously collect the theme mode. It will default to "system" and then
-            // update the UI automatically when the actual preference is loaded.
-            val currentThemeModeString by preferencesManager.themeMode.collectAsStateWithLifecycle(
-                initialValue = "system"
-            )
+            splashScreen.setKeepOnScreenCondition { uiState.isLoading }
 
-            val themeModeState = when (currentThemeModeString.lowercase()) {
-                "light" -> ThemeMode.LIGHT
-                "dark" -> ThemeMode.DARK
-                else -> ThemeMode.SYSTEM
-            }
-
-            ProdyTheme(
-                themeMode = themeModeState
-            ) {
-                ProdyApp(
-                    startDestination = if (onboardingDone) Screen.Home.route else Screen.Onboarding.route
-                )
+            if (!uiState.isLoading) {
+                ProdyTheme(
+                    themeMode = uiState.themeMode
+                ) {
+                    ProdyApp(
+                        startDestination = if (uiState.isOnboardingCompleted) Screen.Home.route else Screen.Onboarding.route
+                    )
+                }
             }
         }
     }
@@ -246,36 +202,6 @@ fun ProdyApp(
                     animationSpec = tween(200)
                 )
             ) {
-                NavigationBar {
-                    bottomNavItems.forEach { item ->
-                        val selected = currentDestination?.hierarchy?.any {
-                            it.route == item.route
-                        } == true
-
-                        NavigationBarItem(
-                            icon = {
-                                // Wrap icon with magical breathing glow effect
-                                NavigationBreathingGlow(
-                                    isActive = selected,
-                                    color = ProdyPrimary
-                                ) {
-                                    Icon(
-                                        imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
-                                        contentDescription = null
-                                    )
-                                }
-                            },
-                            label = { Text(stringResource(item.labelResId)) },
-                            selected = selected,
-                            onClick = {
-                                navController.navigate(item.route) {
-                                    popUpTo(navController.graph.findStartDestination().id) {
-                                        saveState = true
-                                    }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
-                // Flat design bottom navigation - no shadow, clean surface
                 ProdyBottomNavBar(
                     items = bottomNavItems,
                     currentRoute = currentDestination?.route,
