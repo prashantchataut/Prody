@@ -33,11 +33,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.R
-import com.prody.prashant.ui.components.AmbientBackground
-import com.prody.prashant.ui.components.StreakFlame
-import com.prody.prashant.ui.components.WisdomTextReveal
-import com.prody.prashant.ui.components.getCurrentTimeOfDay
-import com.prody.prashant.ui.theme.PlayfairFamily
+import com.prody.prashant.ui.theme.*
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -54,11 +50,13 @@ import java.util.Locale
  * - Daily Wisdom section with Quote, Word, Idiom, and Proverb cards
  *
  * Design Principles:
- * - Flat, shadow-free design
+ * - Flat, shadow-free design with NO gradients or skeuomorphism
  * - Clear visual hierarchy
  * - 8dp spacing grid
- * - Green accents for interactivity
- * - Elegant typography with Poppins + Playfair Display
+ * - Vibrant neon green (#36F97F) accents for interactivity
+ * - Exclusively Poppins typography
+ * - Deep dark teal background in dark mode
+ * - Clean off-white background in light mode
  */
 
 @Composable
@@ -241,13 +239,12 @@ private fun StatsBadge(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                // Animated streak flame that grows with streak length
-                Box(modifier = Modifier.size(20.dp)) {
-                    StreakFlame(
-                        streakDays = streak,
-                        size = 20.dp
-                    )
-                }
+                Icon(
+                    imageVector = Icons.Outlined.LocalFireDepartment,
+                    contentDescription = "Streak",
+                    tint = StreakFire,
+                    modifier = Modifier.size(16.dp)
+                )
                 Text(
                     text = streak.toString(),
                     style = MaterialTheme.typography.labelLarge,
@@ -272,7 +269,7 @@ private fun StatsBadge(
                 Icon(
                     imageVector = Icons.Outlined.Star,
                     contentDescription = "Points",
-                    tint = Color(0xFFE6B422),
+                    tint = LeaderboardGold,
                     modifier = Modifier.size(16.dp)
                 )
                 Text(
@@ -311,7 +308,7 @@ private fun ReflectionCardsRow(
         ReflectionCard(
             modifier = Modifier.weight(1f),
             icon = Icons.Outlined.NightsStay,
-            iconTint = Color(0xFF5B8DEF),
+            iconTint = MoodCalm,
             title = "Gratitude",
             subtitle = reflectionText,
             onClick = onGratitudeClick
@@ -321,7 +318,7 @@ private fun ReflectionCardsRow(
         ReflectionCard(
             modifier = Modifier.weight(1f),
             icon = Icons.Filled.EmojiEvents,
-            iconTint = Color(0xFFFF9500),
+            iconTint = LeaderboardGold,
             title = "Challenges",
             subtitle = "Compete now",
             showNewBadge = true,
@@ -379,7 +376,7 @@ private fun ReflectionCard(
                 if (showNewBadge) {
                     Surface(
                         shape = RoundedCornerShape(4.dp),
-                        color = Color(0xFFFF3B30)
+                        color = ProdyError
                     ) {
                         Text(
                             text = "NEW",
@@ -601,11 +598,11 @@ private fun QuoteOfTheDayCard(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Quote text with wisdom reveal animation - unfurls elegantly
-            WisdomTextReveal(
+            // Quote text with Poppins italic styling
+            Text(
                 text = "\"$quote\"",
-                isVisible = isQuoteVisible,
-                modifier = Modifier.fillMaxWidth()
+                style = WisdomLargeStyle,
+                color = MaterialTheme.colorScheme.onSurface
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -730,13 +727,13 @@ private fun WordCard(
                     text = "WORD",
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.SemiBold,
-                    color = Color(0xFFE6B422),
+                    color = WordOfDayColor,
                     letterSpacing = 1.sp
                 )
                 Icon(
                     imageVector = Icons.AutoMirrored.Outlined.MenuBook,
                     contentDescription = null,
-                    tint = Color(0xFFE6B422).copy(alpha = 0.7f),
+                    tint = WordOfDayColor.copy(alpha = 0.7f),
                     modifier = Modifier.size(16.dp)
                 )
             }
@@ -834,13 +831,13 @@ private fun IdiomCard(
                     text = "IDIOM",
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.SemiBold,
-                    color = Color(0xFFB39DDB),
+                    color = IdiomPurple,
                     letterSpacing = 1.sp
                 )
                 Icon(
                     imageVector = Icons.Outlined.Translate,
                     contentDescription = null,
-                    tint = Color(0xFFB39DDB).copy(alpha = 0.7f),
+                    tint = IdiomPurple.copy(alpha = 0.7f),
                     modifier = Modifier.size(16.dp)
                 )
             }
@@ -907,13 +904,13 @@ private fun ProverbCard(
                 modifier = Modifier
                     .size(40.dp)
                     .clip(CircleShape)
-                    .background(Color(0xFF26A69A).copy(alpha = 0.15f)),
+                    .background(ProverbTeal.copy(alpha = 0.15f)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Outlined.Psychology,
                     contentDescription = null,
-                    tint = Color(0xFF26A69A),
+                    tint = ProverbTeal,
                     modifier = Modifier.size(22.dp)
                 )
             }
@@ -931,7 +928,7 @@ private fun ProverbCard(
                         text = "PROVERB",
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFF26A69A),
+                        color = ProverbTeal,
                         letterSpacing = 1.sp
                     )
                     if (origin.isNotBlank()) {
@@ -948,8 +945,7 @@ private fun ProverbCard(
                 // Proverb text
                 Text(
                     text = "\"$proverb\"",
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        fontFamily = PlayfairFamily,
+                    style = WisdomMediumStyle.copy(
                         fontStyle = FontStyle.Italic
                     ),
                     color = MaterialTheme.colorScheme.onSurface

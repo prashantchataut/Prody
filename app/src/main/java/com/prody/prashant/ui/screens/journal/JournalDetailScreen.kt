@@ -1,9 +1,17 @@
 package com.prody.prashant.ui.screens.journal
 
+import android.media.MediaPlayer
+import android.net.Uri
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -13,16 +21,25 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.prody.prashant.R
 import com.prody.prashant.domain.model.Mood
 import com.prody.prashant.ui.components.ProdyCard
 import com.prody.prashant.ui.theme.*
+import kotlinx.coroutines.delay
+import org.json.JSONArray
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -74,10 +91,17 @@ fun JournalDetailScreen(
             )
         }
     ) { padding ->
+        val context = LocalContext.current
+
         uiState.entry?.let { entry ->
             val mood = Mood.fromString(entry.mood)
             val dateFormat = remember { SimpleDateFormat("EEEE, MMMM d, yyyy", Locale.getDefault()) }
             val timeFormat = remember { SimpleDateFormat("h:mm a", Locale.getDefault()) }
+
+            // Parse media attachments
+            val photos = remember(entry.attachedPhotos) { parseJsonArray(entry.attachedPhotos) }
+            val videos = remember(entry.attachedVideos) { parseJsonArray(entry.attachedVideos) }
+            val hasMedia = photos.isNotEmpty() || videos.isNotEmpty() || !entry.voiceRecordingUri.isNullOrEmpty()
 
             Column(
                 modifier = Modifier
@@ -144,12 +168,47 @@ fun JournalDetailScreen(
                     }
                 }
 
+                // Title (if present)
+                if (entry.title.isNotBlank()) {
+                    Text(
+                        text = entry.title,
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                    )
+                }
+
+                // Voice Recording Playback (if present)
+                entry.voiceRecordingUri?.let { voiceUri ->
+                    if (voiceUri.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        VoiceRecordingPlayer(
+                            voiceUri = voiceUri,
+                            durationMs = entry.voiceRecordingDuration,
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        )
+                    }
+                }
+
+                // Media Gallery (Photos & Videos)
+                if (photos.isNotEmpty() || videos.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    MediaGallerySection(
+                        photos = photos,
+                        videos = videos,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
                 // Journal content
                 Column(
                     modifier = Modifier.padding(horizontal = 16.dp)
                 ) {
                     Text(
-                        text = "Your Thoughts",
+                        text = if (entry.title.isNotBlank()) "Entry" else "Your Thoughts",
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -271,4 +330,358 @@ private fun BuddhaResponseContent(response: String) {
             }
         }
     }
+}
+
+// ============================================================================
+// VOICE RECORDING PLAYER
+// ============================================================================
+
+@Composable
+private fun VoiceRecordingPlayer(
+    voiceUri: String,
+    durationMs: Long,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+    var isPlaying by remember { mutableStateOf(false) }
+    var currentPosition by remember { mutableFloatStateOf(0f) }
+    var mediaPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
+
+    // Cleanup on dispose
+    DisposableEffect(voiceUri) {
+        onDispose {
+            mediaPlayer?.apply {
+                if (isPlaying) stop()
+                release()
+            }
+        }
+    }
+
+    // Progress update while playing
+    LaunchedEffect(isPlaying) {
+        while (isPlaying && mediaPlayer != null) {
+            try {
+                val player = mediaPlayer
+                if (player != null && player.isPlaying) {
+                    currentPosition = player.currentPosition.toFloat() / player.duration.toFloat()
+                }
+            } catch (e: Exception) {
+                isPlaying = false
+            }
+            delay(100)
+        }
+    }
+
+    val accentColor by animateColorAsState(
+        targetValue = if (isPlaying) MoodMotivated else MoodCalm,
+        animationSpec = tween(300),
+        label = "voice_accent"
+    )
+
+    ProdyCard(
+        modifier = modifier.fillMaxWidth(),
+        backgroundColor = accentColor.copy(alpha = 0.1f)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                // Play/Pause button
+                FilledIconButton(
+                    onClick = {
+                        if (isPlaying) {
+                            mediaPlayer?.pause()
+                            isPlaying = false
+                        } else {
+                            try {
+                                if (mediaPlayer == null) {
+                                    mediaPlayer = MediaPlayer().apply {
+                                        setDataSource(context, Uri.parse(voiceUri))
+                                        prepare()
+                                        setOnCompletionListener {
+                                            isPlaying = false
+                                            currentPosition = 0f
+                                        }
+                                    }
+                                }
+                                mediaPlayer?.start()
+                                isPlaying = true
+                            } catch (e: Exception) {
+                                android.util.Log.e("VoicePlayer", "Error playing voice", e)
+                            }
+                        }
+                    },
+                    colors = IconButtonDefaults.filledIconButtonColors(
+                        containerColor = accentColor.copy(alpha = 0.2f),
+                        contentColor = accentColor
+                    ),
+                    modifier = Modifier.size(48.dp)
+                ) {
+                    Icon(
+                        imageVector = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
+                        contentDescription = if (isPlaying) "Pause" else "Play",
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Mic,
+                            contentDescription = null,
+                            tint = accentColor,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Text(
+                            text = "Voice Note",
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // Progress bar
+                    LinearProgressIndicator(
+                        progress = { currentPosition },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(4.dp)
+                            .clip(RoundedCornerShape(2.dp)),
+                        color = accentColor,
+                        trackColor = accentColor.copy(alpha = 0.2f)
+                    )
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    // Duration
+                    Text(
+                        text = formatDuration(
+                            if (isPlaying && mediaPlayer != null) {
+                                (currentPosition * durationMs).toLong()
+                            } else {
+                                durationMs
+                            }
+                        ),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
+    }
+}
+
+// ============================================================================
+// MEDIA GALLERY SECTION
+// ============================================================================
+
+@Composable
+private fun MediaGallerySection(
+    photos: List<String>,
+    videos: List<String>,
+    modifier: Modifier = Modifier
+) {
+    var selectedImageUri by remember { mutableStateOf<String?>(null) }
+
+    Column(modifier = modifier) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Filled.PhotoLibrary,
+                contentDescription = null,
+                tint = MoodExcited,
+                modifier = Modifier.size(18.dp)
+            )
+            Text(
+                text = "Attachments",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Surface(
+                shape = CircleShape,
+                color = MoodExcited.copy(alpha = 0.15f)
+            ) {
+                Text(
+                    text = "${photos.size + videos.size}",
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.Medium,
+                    color = MoodExcited,
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            // Photos
+            items(photos) { photoUri ->
+                MediaThumbnail(
+                    uri = photoUri,
+                    isVideo = false,
+                    onClick = { selectedImageUri = photoUri }
+                )
+            }
+
+            // Videos
+            items(videos) { videoUri ->
+                MediaThumbnail(
+                    uri = videoUri,
+                    isVideo = true,
+                    onClick = { /* TODO: Open video player */ }
+                )
+            }
+        }
+    }
+
+    // Full-screen image viewer
+    selectedImageUri?.let { uri ->
+        FullScreenImageViewer(
+            imageUri = uri,
+            onDismiss = { selectedImageUri = null }
+        )
+    }
+}
+
+@Composable
+private fun MediaThumbnail(
+    uri: String,
+    isVideo: Boolean,
+    onClick: () -> Unit
+) {
+    val context = LocalContext.current
+
+    Box(
+        modifier = Modifier
+            .size(100.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .clickable(onClick = onClick)
+    ) {
+        AsyncImage(
+            model = ImageRequest.Builder(context)
+                .data(Uri.parse(uri))
+                .crossfade(true)
+                .build(),
+            contentDescription = if (isVideo) "Video" else "Photo",
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
+        )
+
+        // Video overlay
+        if (isVideo) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.4f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.PlayCircle,
+                    contentDescription = "Play video",
+                    tint = Color.White,
+                    modifier = Modifier.size(40.dp)
+                )
+            }
+        }
+
+        // Gradient overlay for aesthetics
+        if (!isVideo) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Transparent,
+                                Color.Black.copy(alpha = 0.1f)
+                            ),
+                            startY = 0f,
+                            endY = Float.POSITIVE_INFINITY
+                        )
+                    )
+            )
+        }
+    }
+}
+
+@Composable
+private fun FullScreenImageViewer(
+    imageUri: String,
+    onDismiss: () -> Unit
+) {
+    val context = LocalContext.current
+
+    androidx.compose.ui.window.Dialog(
+        onDismissRequest = onDismiss,
+        properties = androidx.compose.ui.window.DialogProperties(
+            usePlatformDefaultWidth = false
+        )
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black)
+                .clickable(onClick = onDismiss),
+            contentAlignment = Alignment.Center
+        ) {
+            AsyncImage(
+                model = ImageRequest.Builder(context)
+                    .data(Uri.parse(imageUri))
+                    .crossfade(true)
+                    .build(),
+                contentDescription = "Full screen image",
+                contentScale = ContentScale.Fit,
+                modifier = Modifier.fillMaxSize()
+            )
+
+            // Close button
+            IconButton(
+                onClick = onDismiss,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(16.dp)
+                    .statusBarsPadding()
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Close,
+                    contentDescription = "Close",
+                    tint = Color.White,
+                    modifier = Modifier.size(28.dp)
+                )
+            }
+        }
+    }
+}
+
+// ============================================================================
+// HELPER FUNCTIONS
+// ============================================================================
+
+private fun parseJsonArray(jsonString: String): List<String> {
+    if (jsonString.isBlank()) return emptyList()
+    return try {
+        val jsonArray = JSONArray(jsonString)
+        (0 until jsonArray.length()).map { jsonArray.getString(it) }
+    } catch (e: Exception) {
+        emptyList()
+    }
+}
+
+private fun formatDuration(durationMs: Long): String {
+    val seconds = (durationMs / 1000) % 60
+    val minutes = (durationMs / 1000) / 60
+    return String.format("%d:%02d", minutes, seconds)
 }

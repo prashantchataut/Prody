@@ -9,8 +9,14 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
@@ -21,7 +27,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -225,8 +234,17 @@ fun ProdyApp(
         bottomBar = {
             AnimatedVisibility(
                 visible = showBottomBar,
-                enter = slideInVertically(initialOffsetY = { it }),
-                exit = slideOutVertically(targetOffsetY = { it })
+                enter = slideInVertically(
+                    initialOffsetY = { it },
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                        stiffness = Spring.StiffnessMedium
+                    )
+                ),
+                exit = slideOutVertically(
+                    targetOffsetY = { it },
+                    animationSpec = tween(200)
+                )
             ) {
                 NavigationBar {
                     bottomNavItems.forEach { item ->
@@ -257,10 +275,20 @@ fun ProdyApp(
                                     launchSingleTop = true
                                     restoreState = true
                                 }
+                // Flat design bottom navigation - no shadow, clean surface
+                ProdyBottomNavBar(
+                    items = bottomNavItems,
+                    currentRoute = currentDestination?.route,
+                    onNavigate = { route ->
+                        navController.navigate(route) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
                             }
-                        )
+                            launchSingleTop = true
+                            restoreState = true
+                        }
                     }
-                }
+                )
             }
         }
     ) { innerPadding ->
@@ -416,5 +444,140 @@ fun ProdyApp(
                 )
             }
         }
+    }
+}
+
+// =============================================================================
+// CUSTOM BOTTOM NAVIGATION BAR - Flat Design
+// =============================================================================
+
+/**
+ * Premium flat-design bottom navigation bar.
+ *
+ * Design features:
+ * - NO shadows - pure flat design
+ * - Clean surface with subtle top border
+ * - Animated selection indicator with accent color
+ * - Minimal, focused visual hierarchy
+ */
+@Composable
+private fun ProdyBottomNavBar(
+    items: List<BottomNavItem>,
+    currentRoute: String?,
+    onNavigate: (String) -> Unit
+) {
+    // Flat design - no elevation, clean surface with subtle top border
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = MaterialTheme.colorScheme.surface,
+        tonalElevation = 0.dp // Flat - no elevation
+    ) {
+        Column {
+            // Subtle top border for visual separation (flat design)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(1.dp)
+                    .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
+            )
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(80.dp)
+                    .padding(horizontal = 8.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                items.forEach { item ->
+                    val isSelected = currentRoute == item.route
+
+                    ProdyNavItem(
+                        item = item,
+                        isSelected = isSelected,
+                        onClick = { onNavigate(item.route) },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Individual navigation item with animated selection state.
+ */
+@Composable
+private fun ProdyNavItem(
+    item: BottomNavItem,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val accentColor = MaterialTheme.colorScheme.primary
+
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(12.dp))
+            .then(
+                if (isSelected) {
+                    Modifier.background(accentColor.copy(alpha = 0.1f))
+                } else {
+                    Modifier
+                }
+            )
+            .padding(vertical = 8.dp, horizontal = 4.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        // Icon with animated selection state
+        IconButton(
+            onClick = onClick,
+            modifier = Modifier.size(48.dp) // WCAG AA minimum touch target
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                // Selection indicator dot (above icon when selected)
+                AnimatedVisibility(
+                    visible = isSelected,
+                    enter = scaleIn(
+                        animationSpec = spring(
+                            dampingRatio = Spring.DampingRatioMediumBouncy,
+                            stiffness = Spring.StiffnessMedium
+                        )
+                    ) + fadeIn(),
+                    exit = scaleOut() + fadeOut()
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .offset(y = (-18).dp)
+                            .size(6.dp)
+                            .clip(CircleShape)
+                            .background(accentColor)
+                    )
+                }
+
+                Icon(
+                    imageVector = if (isSelected) item.selectedIcon else item.unselectedIcon,
+                    contentDescription = stringResource(item.contentDescriptionResId),
+                    tint = if (isSelected) {
+                        accentColor
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    },
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+        }
+
+        // Label with animated color
+        Text(
+            text = stringResource(item.labelResId),
+            style = MaterialTheme.typography.labelSmall,
+            color = if (isSelected) {
+                accentColor
+            } else {
+                MaterialTheme.colorScheme.onSurfaceVariant
+            }
+        )
     }
 }

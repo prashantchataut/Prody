@@ -22,6 +22,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class NewJournalEntryUiState(
+    val title: String = "",
     val content: String = "",
     val selectedMood: Mood = Mood.CALM,
     val moodIntensity: Int = 5,
@@ -40,8 +41,26 @@ data class NewJournalEntryUiState(
     val savedEntryId: Long? = null,
     val journalInsight: JournalInsightResult? = null,
     val isGeneratingInsight: Boolean = false,
-    val showInsightCard: Boolean = false
-)
+    val showInsightCard: Boolean = false,
+    // Media attachments
+    val attachedPhotos: List<String> = emptyList(), // URIs as strings
+    val attachedVideos: List<String> = emptyList(), // URIs as strings
+    // Voice recording state
+    val isRecording: Boolean = false,
+    val voiceRecordingUri: String? = null,
+    val voiceRecordingDuration: Long = 0, // milliseconds
+    val recordingTimeElapsed: Long = 0, // milliseconds for UI display
+    val isPlayingVoice: Boolean = false,
+    // Unsaved changes tracking
+    val hasUnsavedChanges: Boolean = false,
+    val showDiscardDialog: Boolean = false
+) {
+    // Check if there are any unsaved changes
+    val hasContent: Boolean
+        get() = title.isNotBlank() || content.isNotBlank() ||
+                attachedPhotos.isNotEmpty() || attachedVideos.isNotEmpty() ||
+                voiceRecordingUri != null
+}
 
 @HiltViewModel
 class NewJournalEntryViewModel @Inject constructor(
@@ -92,15 +111,21 @@ class NewJournalEntryViewModel @Inject constructor(
         }
     }
 
+    fun updateTitle(title: String) {
+        _uiState.update {
+            it.copy(title = title, hasUnsavedChanges = true)
+        }
+    }
+
     fun updateContent(content: String) {
         val wordCount = if (content.isBlank()) 0 else content.trim().split("\\s+".toRegex()).size
         _uiState.update {
-            it.copy(content = content, wordCount = wordCount)
+            it.copy(content = content, wordCount = wordCount, hasUnsavedChanges = true)
         }
     }
 
     fun updateMood(mood: Mood) {
-        _uiState.update { it.copy(selectedMood = mood) }
+        _uiState.update { it.copy(selectedMood = mood, hasUnsavedChanges = true) }
     }
 
     fun updateMoodIntensity(intensity: Int) {
@@ -152,13 +177,19 @@ class NewJournalEntryViewModel @Inject constructor(
                 _uiState.update { it.copy(isGeneratingAiResponse = false) }
 
                 val entry = JournalEntryEntity(
+                    title = state.title,
                     content = state.content,
                     mood = state.selectedMood.name,
                     moodIntensity = state.moodIntensity,
                     buddhaResponse = buddhaResponse,
                     wordCount = state.wordCount,
                     createdAt = System.currentTimeMillis(),
-                    updatedAt = System.currentTimeMillis()
+                    updatedAt = System.currentTimeMillis(),
+                    attachedPhotos = state.attachedPhotos.joinToString(","),
+                    attachedVideos = state.attachedVideos.joinToString(","),
+                    voiceRecordingUri = state.voiceRecordingUri,
+                    voiceRecordingDuration = state.voiceRecordingDuration,
+                    templateId = state.selectedTemplate?.id
                 )
 
                 val entryId = journalDao.insertEntry(entry)
@@ -312,5 +343,172 @@ class NewJournalEntryViewModel @Inject constructor(
      */
     fun dismissInsightCard() {
         _uiState.update { it.copy(showInsightCard = false) }
+    }
+
+    // =========================================================================
+    // MEDIA ATTACHMENT METHODS
+    // =========================================================================
+
+    /**
+     * Add photos to the journal entry.
+     */
+    fun addPhotos(photoUris: List<String>) {
+        _uiState.update {
+            it.copy(
+                attachedPhotos = it.attachedPhotos + photoUris,
+                hasUnsavedChanges = true
+            )
+        }
+    }
+
+    /**
+     * Remove a photo from the journal entry.
+     */
+    fun removePhoto(uri: String) {
+        _uiState.update {
+            it.copy(
+                attachedPhotos = it.attachedPhotos - uri,
+                hasUnsavedChanges = true
+            )
+        }
+    }
+
+    /**
+     * Add videos to the journal entry.
+     */
+    fun addVideos(videoUris: List<String>) {
+        _uiState.update {
+            it.copy(
+                attachedVideos = it.attachedVideos + videoUris,
+                hasUnsavedChanges = true
+            )
+        }
+    }
+
+    /**
+     * Remove a video from the journal entry.
+     */
+    fun removeVideo(uri: String) {
+        _uiState.update {
+            it.copy(
+                attachedVideos = it.attachedVideos - uri,
+                hasUnsavedChanges = true
+            )
+        }
+    }
+
+    // =========================================================================
+    // VOICE RECORDING METHODS
+    // =========================================================================
+
+    /**
+     * Start voice recording.
+     */
+    fun startRecording() {
+        _uiState.update {
+            it.copy(
+                isRecording = true,
+                recordingTimeElapsed = 0
+            )
+        }
+    }
+
+    /**
+     * Update recording time elapsed (called periodically during recording).
+     */
+    fun updateRecordingTime(elapsed: Long) {
+        _uiState.update {
+            it.copy(recordingTimeElapsed = elapsed)
+        }
+    }
+
+    /**
+     * Stop voice recording and save the URI.
+     */
+    fun stopRecording(uri: String, duration: Long) {
+        _uiState.update {
+            it.copy(
+                isRecording = false,
+                voiceRecordingUri = uri,
+                voiceRecordingDuration = duration,
+                recordingTimeElapsed = 0,
+                hasUnsavedChanges = true
+            )
+        }
+    }
+
+    /**
+     * Cancel voice recording without saving.
+     */
+    fun cancelRecording() {
+        _uiState.update {
+            it.copy(
+                isRecording = false,
+                recordingTimeElapsed = 0
+            )
+        }
+    }
+
+    /**
+     * Remove the voice recording.
+     */
+    fun removeVoiceRecording() {
+        _uiState.update {
+            it.copy(
+                voiceRecordingUri = null,
+                voiceRecordingDuration = 0,
+                hasUnsavedChanges = true
+            )
+        }
+    }
+
+    /**
+     * Toggle voice playback state.
+     */
+    fun toggleVoicePlayback() {
+        _uiState.update {
+            it.copy(isPlayingVoice = !it.isPlayingVoice)
+        }
+    }
+
+    /**
+     * Stop voice playback.
+     */
+    fun stopVoicePlayback() {
+        _uiState.update {
+            it.copy(isPlayingVoice = false)
+        }
+    }
+
+    // =========================================================================
+    // UNSAVED CHANGES DIALOG METHODS
+    // =========================================================================
+
+    /**
+     * Show the discard changes confirmation dialog.
+     */
+    fun showDiscardDialog() {
+        _uiState.update { it.copy(showDiscardDialog = true) }
+    }
+
+    /**
+     * Hide the discard changes confirmation dialog.
+     */
+    fun hideDiscardDialog() {
+        _uiState.update { it.copy(showDiscardDialog = false) }
+    }
+
+    /**
+     * Check if there are unsaved changes and handle back navigation.
+     * Returns true if navigation should proceed, false if dialog should be shown.
+     */
+    fun handleBackNavigation(): Boolean {
+        val state = _uiState.value
+        return if (state.hasContent && !state.isSaved) {
+            showDiscardDialog()
+            false
+        } else {
+            true
+        }
     }
 }

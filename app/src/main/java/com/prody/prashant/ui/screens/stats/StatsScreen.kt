@@ -43,35 +43,36 @@ import kotlin.math.sin
 
 // =============================================================================
 // DESIGN SYSTEM CONSTANTS - Stats Screen Redesign
+// Using theme colors from Color.kt for consistent design language
 // =============================================================================
 
-// Vibrant Neon Green Accent (Primary brand accent per design spec)
-private val NeonGreen = Color(0xFF36F97F)
-private val NeonGreenDark = Color(0xFF2BD968)
-private val NeonGreenLight = Color(0xFF5AFF9A)
+// Vibrant Neon Green Accent - Using theme accent
+private val NeonGreen = ProdyAccentGreen
+private val NeonGreenDark = ProdyAccentGreenDark
+private val NeonGreenLight = ProdyAccentGreenLight
 
-// Dark Mode Card Background (muted green tint)
-private val DarkCardBackground = Color(0xFF1A2E21)
-private val DarkCardBackgroundElevated = Color(0xFF1E3327)
-private val DarkBackground = Color(0xFF0D1F14)
+// Dark Mode Card Background - Using theme colors (deep teal #0D2826 based)
+private val DarkCardBackground = ProdySurfaceVariantDark
+private val DarkCardBackgroundElevated = ProdySurfaceContainerDark
+private val DarkBackground = ProdyBackgroundDark
 
-// Light Mode Card Background
-private val LightCardBackground = Color(0xFFF0F4F1)
-private val LightCardBackgroundElevated = Color(0xFFFAFCFA)
-private val LightBackground = Color(0xFFF8F9FA)
+// Light Mode Card Background - Using theme colors (off-white #F0F4F3 based)
+private val LightCardBackground = ProdySurfaceVariantLight
+private val LightCardBackgroundElevated = ProdySurfaceContainerLight
+private val LightBackground = ProdyBackgroundLight
 
-// Leaderboard Tier Colors (Animated Banner Colors)
-private val GoldBanner = Color(0xFFD4AF37)
-private val GoldBannerLight = Color(0xFFF4D03F)
-private val GoldBannerDark = Color(0xFFB8960C)
+// Leaderboard Tier Colors (Animated Banner Colors) - Using theme colors
+private val GoldBanner = LeaderboardGold
+private val GoldBannerLight = LeaderboardGoldLight
+private val GoldBannerDark = LeaderboardGoldDark
 
-private val SilverBanner = Color(0xFFC0C0C0)
-private val SilverBannerLight = Color(0xFFE8E8E8)
-private val SilverBannerDark = Color(0xFF9A9A9A)
+private val SilverBanner = LeaderboardSilver
+private val SilverBannerLight = LeaderboardSilverLight
+private val SilverBannerDark = LeaderboardSilverDark
 
-private val BronzeBanner = Color(0xFFCD7F32)
-private val BronzeBannerLight = Color(0xFFE8A057)
-private val BronzeBannerDark = Color(0xFFA86523)
+private val BronzeBanner = LeaderboardBronze
+private val BronzeBannerLight = LeaderboardBronzeLight
+private val BronzeBannerDark = LeaderboardBronzeDark
 
 // =============================================================================
 // MAIN STATS SCREEN
@@ -112,9 +113,9 @@ fun StatsScreen(
     val backgroundColor = if (isDarkTheme) DarkBackground else LightBackground
     val cardBackgroundColor = if (isDarkTheme) DarkCardBackground else LightCardBackground
     val cardElevatedColor = if (isDarkTheme) DarkCardBackgroundElevated else LightCardBackgroundElevated
-    val textPrimaryColor = if (isDarkTheme) Color.White else Color(0xFF1A2B23)
-    val textSecondaryColor = if (isDarkTheme) Color(0xFFB0C4B8) else Color(0xFF5A6B63)
-    val textTertiaryColor = if (isDarkTheme) Color(0xFF708878) else Color(0xFF8A9B93)
+    val textPrimaryColor = if (isDarkTheme) ProdyTextPrimaryDark else ProdyTextPrimaryLight
+    val textSecondaryColor = if (isDarkTheme) ProdyTextSecondaryDark else ProdyTextSecondaryLight
+    val textTertiaryColor = if (isDarkTheme) ProdyTextTertiaryDark else ProdyTextTertiaryLight
 
     // Support bottom sheet
     if (showSupportSheet && selectedUserForSupport != null) {
@@ -595,7 +596,7 @@ private fun ActivityPulseVisualization(
 
                 // Draw bar with gradient
                 val barColor = if (value > 0) NeonGreen else {
-                    if (isDarkTheme) Color(0xFF2A4033) else Color(0xFFD0DDD6)
+                    if (isDarkTheme) ActivityPulseBackground else ActivityPulseBackgroundLight
                 }
 
                 drawRoundRect(
@@ -996,7 +997,7 @@ private fun StickyUserSection(
                     Text(
                         text = "YOU",
                         style = MaterialTheme.typography.labelMedium,
-                        color = Color(0xFF0D1F14),
+                        color = ProdyTextOnAccentLight,
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -1004,7 +1005,7 @@ private fun StickyUserSection(
                 Text(
                     text = userName,
                     style = MaterialTheme.typography.bodyLarge,
-                    color = Color(0xFF0D1F14),
+                    color = ProdyTextOnAccentLight,
                     fontWeight = FontWeight.SemiBold,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
@@ -1014,7 +1015,7 @@ private fun StickyUserSection(
                 Icon(
                     imageVector = Icons.Filled.Bolt,
                     contentDescription = null,
-                    tint = Color(0xFF0D1F14),
+                    tint = ProdyTextOnAccentLight,
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -1026,13 +1027,13 @@ private fun StickyUserSection(
                 Text(
                     text = formatNumber(userScore),
                     style = MaterialTheme.typography.titleMedium,
-                    color = Color(0xFF0D1F14),
+                    color = ProdyTextOnAccentLight,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
                     text = "Top $percentile%",
                     style = MaterialTheme.typography.labelSmall,
-                    color = Color(0xFF0D1F14).copy(alpha = 0.7f)
+                    color = ProdyTextOnAccentLight.copy(alpha = 0.7f)
                 )
             }
         }
@@ -1239,7 +1240,7 @@ private fun SupportActionButton(
                 Text(
                     text = "Limit reached today",
                     style = MaterialTheme.typography.labelSmall,
-                    color = Color(0xFFBF3B3B).copy(alpha = 0.7f),
+                    color = ProdyError.copy(alpha = 0.7f),
                     fontSize = 10.sp
                 )
             }

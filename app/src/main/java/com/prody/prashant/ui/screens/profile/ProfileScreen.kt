@@ -64,48 +64,50 @@ import kotlinx.coroutines.delay
  */
 
 // ============================================================================
-// DESIGN SYSTEM COLORS - Identity Room Theme
+// DESIGN SYSTEM COLORS - Identity Room Theme (Using Theme Colors)
 // ============================================================================
 
 private object IdentityRoomColors {
-    // Dark Mode
-    val BackgroundDark = Color(0xFF0D2826)
-    val CardBackgroundDark = Color(0xFF1A3331)
-    val CardBackgroundElevatedDark = Color(0xFF223D3A)
-    val AccentGreen = Color(0xFF36F97F)
-    val AccentGreenDim = Color(0xFF2BC968)
-    val TextPrimaryDark = Color(0xFFFFFFFF)
-    val TextSecondaryDark = Color(0xFFB8C5C3)
-    val TextTertiaryDark = Color(0xFF6B7F7C)
-    val BorderDark = Color(0xFF2A4744)
+    // Dark Mode - Using theme colors
+    val BackgroundDark = ProdyBackgroundDark
+    val CardBackgroundDark = ProdySurfaceVariantDark
+    val CardBackgroundElevatedDark = ProdySurfaceContainerDark
+    val AccentGreen = ProdyAccentGreen
+    val AccentGreenDim = ProdyAccentGreenDark
+    val TextPrimaryDark = ProdyTextPrimaryDark
+    val TextSecondaryDark = ProdyTextSecondaryDark
+    val TextTertiaryDark = ProdyTextTertiaryDark
+    val BorderDark = ProdyOutlineDark
 
-    // Light Mode
-    val BackgroundLight = Color(0xFFF5F8F7)
-    val CardBackgroundLight = Color(0xFFFFFFFF)
-    val CardBackgroundElevatedLight = Color(0xFFF0F5F4)
-    val AccentGreenLight = Color(0xFF2ECC71)
-    val TextPrimaryLight = Color(0xFF1A2B23)
-    val TextSecondaryLight = Color(0xFF5A6B63)
-    val TextTertiaryLight = Color(0xFF8A9B93)
-    val BorderLight = Color(0xFFE0E8E4)
+    // Light Mode - Using theme colors
+    val BackgroundLight = ProdyBackgroundLight
+    val CardBackgroundLight = ProdySurfaceLight
+    val CardBackgroundElevatedLight = ProdySurfaceContainerLight
+    val AccentGreenLight = ProdyAccentGreen
+    val TextPrimaryLight = ProdyTextPrimaryLight
+    val TextSecondaryLight = ProdyTextSecondaryLight
+    val TextTertiaryLight = ProdyTextTertiaryLight
+    val BorderLight = ProdyOutlineLight
 
-    // Badge Colors
-    val DevBadgeBackground = Color(0xFF1A3331)
-    val DevBadgeText = Color(0xFF36F97F)
-    val BetaBadgeBackground = Color(0xFF2A1F3D)
-    val BetaBadgeText = Color(0xFFB57EDC)
+    // Badge Colors - Using theme colors
+    val DevBadgeBackground = ProdySurfaceVariantDark
+    val DevBadgeText = ProdyAccentGreen
+    val BetaBadgeBackground = ProdyPremiumVioletContainer
+    val BetaBadgeText = ProdyPremiumViolet
 
-    // Achievement Rarity
-    val RarityCommon = Color(0xFF78909C)
-    val RarityUncommon = Color(0xFF66BB6A)
-    val RarityRare = Color(0xFF42A5F5)
-    val RarityEpic = Color(0xFFAB47BC)
-    val RarityLegendary = Color(0xFFD4AF37)
+    // Achievement Rarity - Using theme colors
+    val RarityCommon = com.prody.prashant.ui.theme.RarityCommon
+    val RarityUncommon = com.prody.prashant.ui.theme.RarityUncommon
+    val RarityRare = com.prody.prashant.ui.theme.RarityRare
+    val RarityEpic = com.prody.prashant.ui.theme.RarityEpic
+    val RarityLegendary = com.prody.prashant.ui.theme.RarityLegendary
 }
 
 @Composable
 fun ProfileScreen(
     onNavigateToSettings: () -> Unit,
+    onNavigateToEditProfile: () -> Unit = {},
+    onNavigateToAchievements: () -> Unit = {},
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -150,7 +152,7 @@ fun ProfileScreen(
             item {
                 IdentityRoomHeader(
                     onSettingsClick = onNavigateToSettings,
-                    onEditClick = { /* TODO: Edit profile */ },
+                    onEditClick = onNavigateToEditProfile,
                     isDarkMode = isDarkMode
                 )
             }
@@ -166,11 +168,13 @@ fun ProfileScreen(
                 ) {
                     HeroSection(
                         displayName = uiState.displayName,
+                        bio = uiState.bio,
                         level = getLevelFromPoints(uiState.totalPoints),
                         levelProgress = calculateLevelProgress(uiState.totalPoints),
                         isDev = true, // TODO: Get from user state
                         isBetaPioneer = true, // TODO: Get from user state
-                        isDarkMode = isDarkMode
+                        isDarkMode = isDarkMode,
+                        onEditClick = onNavigateToEditProfile
                     )
                 }
             }
@@ -241,7 +245,8 @@ fun ProfileScreen(
                     TrophyRoomHeader(
                         unlockedCount = uiState.unlockedAchievements.size,
                         totalCount = uiState.unlockedAchievements.size + uiState.lockedAchievements.size,
-                        isDarkMode = isDarkMode
+                        isDarkMode = isDarkMode,
+                        onClick = onNavigateToAchievements
                     )
                 }
             }
@@ -344,11 +349,13 @@ private fun IdentityRoomHeader(
 @Composable
 private fun HeroSection(
     displayName: String,
+    bio: String,
     level: Int,
     levelProgress: Float,
     isDev: Boolean,
     isBetaPioneer: Boolean,
-    isDarkMode: Boolean
+    isDarkMode: Boolean,
+    onEditClick: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -455,6 +462,61 @@ private fun HeroSection(
             if (isBetaPioneer) {
                 BetaPioneerBadge()
             }
+        }
+
+        // Bio Section
+        if (bio.isNotBlank()) {
+            Spacer(modifier = Modifier.height(16.dp))
+            BioSection(
+                bio = bio,
+                isDarkMode = isDarkMode,
+                onEditClick = onEditClick
+            )
+        }
+    }
+}
+
+@Composable
+private fun BioSection(
+    bio: String,
+    isDarkMode: Boolean,
+    onEditClick: () -> Unit
+) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onEditClick() },
+        color = if (isDarkMode) IdentityRoomColors.CardBackgroundDark.copy(alpha = 0.5f)
+                else IdentityRoomColors.CardBackgroundLight.copy(alpha = 0.8f),
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.Top,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.FormatQuote,
+                contentDescription = null,
+                tint = if (isDarkMode) IdentityRoomColors.AccentGreen
+                       else IdentityRoomColors.AccentGreenLight,
+                modifier = Modifier.size(20.dp)
+            )
+            Text(
+                text = bio,
+                style = MaterialTheme.typography.bodyMedium,
+                color = if (isDarkMode) IdentityRoomColors.TextSecondaryDark
+                        else IdentityRoomColors.TextSecondaryLight,
+                modifier = Modifier.weight(1f),
+                lineHeight = 22.sp
+            )
+            Icon(
+                imageVector = Icons.Outlined.Edit,
+                contentDescription = "Edit bio",
+                tint = if (isDarkMode) IdentityRoomColors.TextTertiaryDark
+                       else IdentityRoomColors.TextTertiaryLight,
+                modifier = Modifier.size(16.dp)
+            )
         }
     }
 }
@@ -1042,11 +1104,13 @@ private fun WeeklyPatternSection(
 private fun TrophyRoomHeader(
     unlockedCount: Int,
     totalCount: Int,
-    isDarkMode: Boolean
+    isDarkMode: Boolean,
+    onClick: () -> Unit
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .clickable { onClick() }
             .padding(horizontal = 20.dp, vertical = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
@@ -1070,18 +1134,30 @@ private fun TrophyRoomHeader(
             )
         }
 
-        Surface(
-            color = if (isDarkMode) IdentityRoomColors.CardBackgroundDark
-                    else IdentityRoomColors.CardBackgroundLight,
-            shape = RoundedCornerShape(12.dp)
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(
-                text = "$unlockedCount / $totalCount",
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.Medium,
-                color = if (isDarkMode) IdentityRoomColors.TextSecondaryDark
-                        else IdentityRoomColors.TextSecondaryLight,
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+            Surface(
+                color = if (isDarkMode) IdentityRoomColors.CardBackgroundDark
+                        else IdentityRoomColors.CardBackgroundLight,
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text(
+                    text = "$unlockedCount / $totalCount",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Medium,
+                    color = if (isDarkMode) IdentityRoomColors.TextSecondaryDark
+                            else IdentityRoomColors.TextSecondaryLight,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                )
+            }
+            Icon(
+                imageVector = Icons.Filled.ChevronRight,
+                contentDescription = "View all achievements",
+                tint = if (isDarkMode) IdentityRoomColors.TextTertiaryDark
+                       else IdentityRoomColors.TextTertiaryLight,
+                modifier = Modifier.size(20.dp)
             )
         }
     }
