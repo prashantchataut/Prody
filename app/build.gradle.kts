@@ -215,4 +215,7 @@ dependencies {
     implementation(libs.okhttp.logging)
     implementation(libs.retrofit)
     implementation(libs.retrofit.kotlinx.serialization)
+
+    // Security
+    implementation(libs.androidx.security.crypto)
 }

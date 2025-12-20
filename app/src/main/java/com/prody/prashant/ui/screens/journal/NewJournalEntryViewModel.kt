@@ -12,6 +12,7 @@ import com.prody.prashant.data.local.dao.JournalDao
 import com.prody.prashant.data.local.dao.UserDao
 import com.prody.prashant.data.local.entity.JournalEntryEntity
 import com.prody.prashant.data.local.preferences.PreferencesManager
+import com.prody.prashant.data.local.preferences.SecurePreferencesManager
 import com.prody.prashant.domain.gamification.GamificationService
 import com.prody.prashant.domain.model.Mood
 import com.prody.prashant.ui.theme.JournalTemplate
@@ -69,6 +70,7 @@ class NewJournalEntryViewModel @Inject constructor(
     private val geminiService: GeminiService,
     private val openRouterService: OpenRouterService,
     private val preferencesManager: PreferencesManager,
+    private val securePreferencesManager: SecurePreferencesManager,
     private val gamificationService: GamificationService,
     private val buddhaAiRepository: BuddhaAiRepository
 ) : ViewModel() {
@@ -87,16 +89,10 @@ class NewJournalEntryViewModel @Inject constructor(
     private fun loadAiSettings() {
         viewModelScope.launch {
             try {
-                combine(
-                    preferencesManager.buddhaAiEnabled,
-                    preferencesManager.geminiApiKey
-                ) { enabled, apiKey ->
-                    Triple(
-                        enabled,
-                        apiKey.isNotBlank() || GeminiService.isApiKeyConfiguredInBuildConfig(),
-                        openRouterService.isConfigured()
-                    )
-                }.collect { (enabled, geminiConfigured, openRouterConfigured) ->
+                preferencesManager.buddhaAiEnabled.collect { enabled ->
+                    val apiKey = securePreferencesManager.getGeminiApiKey()
+                    val geminiConfigured = apiKey.isNotBlank() || GeminiService.isApiKeyConfiguredInBuildConfig()
+                    val openRouterConfigured = openRouterService.isConfigured()
                     _uiState.update {
                         it.copy(
                             buddhaAiEnabled = enabled,

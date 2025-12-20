@@ -242,6 +242,20 @@ fun SettingsScreen(
                 )
             }
 
+            // Gemini AI section
+            AnimatedVisibility(
+                visible = isVisible,
+                enter = fadeIn(tween(400, delayMillis = 300)) + slideInVertically(
+                    initialOffsetY = { it / 4 },
+                    animationSpec = tween(400, delayMillis = 300, easing = EaseOutCubic)
+                )
+            ) {
+                GeminiSettingsSection(
+                    apiKey = uiState.geminiApiKey,
+                    onApiKeyChange = { viewModel.setGeminiApiKey(it) }
+                )
+            }
+
             // Buddha AI section (expanded with per-feature toggles)
             AnimatedVisibility(
                 visible = isVisible,
@@ -423,6 +437,26 @@ fun SettingsScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
         }
+    }
+}
+@Composable
+private fun GeminiSettingsSection(
+    apiKey: String,
+    onApiKeyChange: (String) -> Unit
+) {
+    EnhancedSettingsSection(
+        title = "Gemini AI",
+        icon = Icons.Filled.Key
+    ) {
+        OutlinedTextField(
+            value = apiKey,
+            onValueChange = onApiKeyChange,
+            label = { Text("Gemini API Key") },
+            placeholder = { Text("Enter your Gemini API Key") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
     }
 }
 

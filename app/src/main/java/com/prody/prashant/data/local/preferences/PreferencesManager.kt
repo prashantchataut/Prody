@@ -22,6 +22,7 @@ class PreferencesManager @Inject constructor(
 
     // Keys
     private object PreferencesKeys {
+        val MIGRATION_API_KEY_COMPLETED = booleanPreferencesKey("migration_api_key_completed")
         val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
         val THEME_MODE = stringPreferencesKey("theme_mode")
         val DYNAMIC_COLORS = booleanPreferencesKey("dynamic_colors")
@@ -59,6 +60,21 @@ class PreferencesManager @Inject constructor(
         // Debug: Special Badge Preview Toggles
         val DEBUG_PREVIEW_DEV_BADGE = booleanPreferencesKey("debug_preview_dev_badge")
         val DEBUG_PREVIEW_BETA_BADGE = booleanPreferencesKey("debug_preview_beta_badge")
+    }
+
+    val migrationApiKeyCompleted: Flow<Boolean> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.MIGRATION_API_KEY_COMPLETED] ?: false
+        }
+
+    suspend fun setMigrationApiKeyCompleted(completed: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.MIGRATION_API_KEY_COMPLETED] = completed
+        }
     }
 
     // Onboarding
