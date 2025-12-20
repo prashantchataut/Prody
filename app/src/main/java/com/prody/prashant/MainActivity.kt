@@ -50,6 +50,7 @@ import com.prody.prashant.data.local.preferences.PreferencesManager
 import com.prody.prashant.notification.NotificationReceiver
 import com.prody.prashant.notification.NotificationScheduler
 import com.prody.prashant.ui.navigation.BottomNavItem
+import com.prody.prashant.data.local.preferences.SecurePreferencesManager
 import com.prody.prashant.ui.navigation.Screen
 import com.prody.prashant.ui.screens.futuremessage.FutureMessageListScreen
 import com.prody.prashant.ui.screens.futuremessage.WriteMessageScreen
@@ -81,6 +82,9 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var preferencesManager: PreferencesManager
+
+    @Inject
+    lateinit var securePreferencesManager: SecurePreferencesManager
 
     @Inject
     lateinit var notificationScheduler: NotificationScheduler
@@ -120,6 +124,11 @@ class MainActivity : ComponentActivity() {
 
         // Keep splash screen visible until the essential onboarding status is loaded.
         splashScreen.setKeepOnScreenCondition { isOnboardingCompleted == null }
+
+        // Perform one-time data migrations
+        lifecycleScope.launch {
+            runMigrations()
+        }
 
         // Load ONLY the essential preference to unblock the splash screen.
         // The theme is loaded asynchronously in setContent and will update when ready.
@@ -205,6 +214,22 @@ class MainActivity : ComponentActivity() {
             } catch (e: Exception) {
                 android.util.Log.e("MainActivity", "Failed to schedule notifications", e)
             }
+        }
+    }
+
+    private suspend fun runMigrations() {
+        migrateApiKey()
+    }
+
+    private suspend fun migrateApiKey() {
+        val migrationCompleted = preferencesManager.migrationApiKeyCompleted.first()
+        if (!migrationCompleted) {
+            val oldApiKey = preferencesManager.geminiApiKey.first()
+            if (oldApiKey.isNotBlank()) {
+                securePreferencesManager.setGeminiApiKey(oldApiKey)
+                preferencesManager.setGeminiApiKey("") // Clear the old key
+            }
+            preferencesManager.setMigrationApiKeyCompleted(true)
         }
     }
 }

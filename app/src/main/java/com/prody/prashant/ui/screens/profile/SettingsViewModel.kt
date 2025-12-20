@@ -3,12 +3,15 @@ package com.prody.prashant.ui.screens.profile
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.prody.prashant.data.local.preferences.PreferencesManager
+import com.prody.prashant.data.local.preferences.SecurePreferencesManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class SettingsUiState(
+    val geminiApiKey: String = "",
+    val isGeminiKeyValid: Boolean = true,
     val themeMode: String = "system",
     val dynamicColors: Boolean = false,
     val notificationsEnabled: Boolean = true,
@@ -38,7 +41,8 @@ data class SettingsUiState(
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
-    private val preferencesManager: PreferencesManager
+    private val preferencesManager: PreferencesManager,
+    private val securePreferencesManager: SecurePreferencesManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SettingsUiState())
@@ -52,8 +56,17 @@ class SettingsViewModel @Inject constructor(
         loadSettings()
     }
 
+    fun setGeminiApiKey(apiKey: String) {
+        viewModelScope.launch {
+            securePreferencesManager.setGeminiApiKey(apiKey)
+            _uiState.update { it.copy(geminiApiKey = apiKey, isGeminiKeyValid = true) }
+        }
+    }
+
     private fun loadSettings() {
         viewModelScope.launch {
+            val currentApiKey = securePreferencesManager.getGeminiApiKey()
+            _uiState.update { it.copy(geminiApiKey = currentApiKey) }
             try {
                 // Combine first 5 appearance/notification settings
                 val appearanceAndNotifications = combine(
