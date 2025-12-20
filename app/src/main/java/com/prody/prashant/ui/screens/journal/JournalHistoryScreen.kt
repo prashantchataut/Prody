@@ -96,8 +96,9 @@ fun JournalHistoryScreen(
                 onNavigateBack = onNavigateBack,
                 onFilterClick = { showFilterSheet = true },
                 textColor = textPrimary,
-                accentColor = accentColor,
-                backgroundColor = backgroundColor
+                backgroundColor = backgroundColor,
+                hasActiveFilters = uiState.hasActiveFilters,
+                activeFilterCount = uiState.activeFilterCount
             )
         }
     ) { padding ->
@@ -238,8 +239,8 @@ fun JournalHistoryScreen(
                         PremiumEmptyHistoryState(
                             textPrimary = textPrimary,
                             textSecondary = textSecondary,
-                            accentColor = accentColor,
-                            dividerColor = dividerColor
+                            hasActiveFilters = uiState.hasActiveFilters,
+                            onClearFilters = { viewModel.clearAllFilters() }
                         )
                     }
                 }
@@ -257,8 +258,14 @@ fun JournalHistoryScreen(
         PremiumFilterSortBottomSheet(
             currentSortOrder = uiState.sortOrder,
             currentFilterMood = uiState.selectedFilterMood,
+            currentBookmarkedOnly = uiState.showBookmarkedOnly,
+            currentDateRangeFilter = uiState.dateRangeFilter,
+            hasActiveFilters = uiState.hasActiveFilters,
             onSortOrderChange = { viewModel.setSortOrder(it) },
             onFilterMoodChange = { viewModel.setFilterMood(it) },
+            onBookmarkedOnlyChange = { viewModel.setBookmarkedOnly(it) },
+            onDateRangeFilterChange = { viewModel.setDateRangeFilter(it) },
+            onClearAllFilters = { viewModel.clearAllFilters() },
             onDismiss = { showFilterSheet = false },
             isDarkTheme = isDarkTheme
         )
@@ -274,8 +281,9 @@ private fun PremiumJournalHistoryTopBar(
     onNavigateBack: () -> Unit,
     onFilterClick: () -> Unit,
     textColor: Color,
-    accentColor: Color,
-    backgroundColor: Color
+    backgroundColor: Color,
+    hasActiveFilters: Boolean,
+    activeFilterCount: Int
 ) {
     TopAppBar(
         title = {
@@ -303,18 +311,38 @@ private fun PremiumJournalHistoryTopBar(
             }
         },
         actions = {
-            IconButton(
-                onClick = onFilterClick,
-                modifier = Modifier
-                    .size(48.dp)
-                    .padding(4.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.FilterList,
-                    contentDescription = "Filter and sort",
-                    tint = accentColor,
-                    modifier = Modifier.size(24.dp)
-                )
+            Box {
+                IconButton(
+                    onClick = onFilterClick,
+                    modifier = Modifier.size(48.dp)
+                ) {
+                    Icon(
+                        imageVector = if (hasActiveFilters) Icons.Filled.FilterAlt else Icons.Filled.Tune,
+                        contentDescription = "Filter and sort",
+                        tint = if (hasActiveFilters) JournalHistoryAccent else textColor,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+                // Filter badge
+                if (hasActiveFilters) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(top = 6.dp, end = 6.dp)
+                            .size(18.dp)
+                            .clip(RoundedCornerShape(9.dp))
+                            .background(JournalHistoryAccent),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "$activeFilterCount",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Color.Black,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 10.sp
+                        )
+                    }
+                }
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(
@@ -702,8 +730,8 @@ private fun PremiumLoadMoreButton(
 private fun PremiumEmptyHistoryState(
     textPrimary: Color,
     textSecondary: Color,
-    accentColor: Color,
-    dividerColor: Color
+    hasActiveFilters: Boolean = false,
+    onClearFilters: () -> Unit = {}
 ) {
     Column(
         modifier = Modifier
@@ -712,39 +740,16 @@ private fun PremiumEmptyHistoryState(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // Decorative empty state icon
-        Box(
-            modifier = Modifier
-                .size(100.dp)
-                .clip(CircleShape)
-                .background(accentColor.copy(alpha = 0.08f)),
-            contentAlignment = Alignment.Center
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(72.dp)
-                    .clip(CircleShape)
-                    .border(
-                        width = 2.dp,
-                        color = accentColor.copy(alpha = 0.3f),
-                        shape = CircleShape
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.AutoStories,
-                    contentDescription = null,
-                    modifier = Modifier.size(36.dp),
-                    tint = accentColor.copy(alpha = 0.7f)
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(32.dp))
-
+        Icon(
+            imageVector = if (hasActiveFilters) Icons.Outlined.SearchOff else Icons.Outlined.AutoStories,
+            contentDescription = null,
+            modifier = Modifier.size(64.dp),
+            tint = textSecondary.copy(alpha = 0.5f)
+        )
+        Spacer(modifier = Modifier.height(16.dp))
         Text(
-            text = "No Journal Entries Yet",
-            fontFamily = PoppinsFamily,
+            text = if (hasActiveFilters) "No Matching Entries" else "No Journal Entries Yet",
+            style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.SemiBold,
             fontSize = 20.sp,
             color = textPrimary
@@ -753,12 +758,39 @@ private fun PremiumEmptyHistoryState(
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = "Start writing to build your timeline",
-            fontFamily = PoppinsFamily,
-            fontWeight = FontWeight.Normal,
-            fontSize = 14.sp,
+            text = if (hasActiveFilters) "Try adjusting your filters to see more entries"
+                   else "Start writing to build your journal history",
+            style = MaterialTheme.typography.bodyMedium,
             color = textSecondary
         )
+        if (hasActiveFilters) {
+            Spacer(modifier = Modifier.height(20.dp))
+            Surface(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(20.dp))
+                    .clickable(onClick = onClearFilters),
+                color = JournalHistoryAccent.copy(alpha = 0.15f)
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Clear,
+                        contentDescription = null,
+                        tint = JournalHistoryAccent,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Text(
+                        text = "Clear Filters",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = JournalHistoryAccent,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -770,16 +802,26 @@ private fun PremiumEmptyHistoryState(
 private fun PremiumFilterSortBottomSheet(
     currentSortOrder: SortOrder,
     currentFilterMood: String?,
+    currentBookmarkedOnly: Boolean,
+    currentDateRangeFilter: DateRangeFilter,
+    hasActiveFilters: Boolean,
     onSortOrderChange: (SortOrder) -> Unit,
     onFilterMoodChange: (String?) -> Unit,
+    onBookmarkedOnlyChange: (Boolean) -> Unit,
+    onDateRangeFilterChange: (DateRangeFilter) -> Unit,
+    onClearAllFilters: () -> Unit,
     onDismiss: () -> Unit,
     isDarkTheme: Boolean
 ) {
-    val sheetBackground = if (isDarkTheme) Color(0xFF1A3331) else Color(0xFFFFFFFF)
-    val textPrimary = if (isDarkTheme) Color.White else Color(0xFF1A1A1A)
-    val textSecondary = if (isDarkTheme) Color(0xFFD3D8D7) else Color(0xFF6C757D)
-    val accentColor = Color(0xFF36F97F)
-    val dividerColor = if (isDarkTheme) Color(0xFF3A5250) else Color(0xFFDEE2E6)
+    val sheetBackground = if (isDarkTheme) JournalHistoryCardDark else JournalHistoryCardLight
+    val textPrimary = if (isDarkTheme) JournalHistoryTextPrimaryDark else JournalHistoryTextPrimaryLight
+    val textSecondary = if (isDarkTheme) JournalHistoryTextSecondaryDark else JournalHistoryTextSecondaryLight
+    val dividerColor = if (isDarkTheme) JournalHistoryDividerDark.copy(alpha = 0.3f) else JournalHistoryDividerLight.copy(alpha = 0.3f)
+
+    // Track expanded sections
+    var sortExpanded by remember { mutableStateOf(false) }
+    var moodExpanded by remember { mutableStateOf(false) }
+    var dateRangeExpanded by remember { mutableStateOf(false) }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -801,71 +843,234 @@ private fun PremiumFilterSortBottomSheet(
                 .padding(horizontal = 24.dp)
                 .padding(bottom = 40.dp)
         ) {
-            // Sort Section
-            Text(
-                text = "Sort By",
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 16.sp,
-                color = textPrimary
-            )
-            Spacer(modifier = Modifier.height(16.dp))
+            // Header with Clear All button
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Filter & Sort",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = textPrimary
+                )
+                if (hasActiveFilters) {
+                    Surface(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(16.dp))
+                            .clickable { onClearAllFilters() },
+                        color = JournalHistoryAccent.copy(alpha = 0.15f)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Clear,
+                                contentDescription = null,
+                                tint = JournalHistoryAccent,
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Text(
+                                text = "Clear All",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = JournalHistoryAccent,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                    }
+                }
+            }
 
-            SortOrder.entries.forEach { sortOrder ->
-                PremiumFilterOption(
-                    label = when (sortOrder) {
-                        SortOrder.NEWEST_FIRST -> "Newest First"
-                        SortOrder.OLDEST_FIRST -> "Oldest First"
-                        SortOrder.HIGHEST_INTENSITY -> "Highest Intensity"
-                        SortOrder.LOWEST_INTENSITY -> "Lowest Intensity"
-                    },
-                    isSelected = currentSortOrder == sortOrder,
-                    onClick = {
-                        onSortOrderChange(sortOrder)
-                        onDismiss()
-                    },
-                    textPrimary = textPrimary,
-                    accentColor = accentColor
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Bookmarked Only Toggle
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .clickable { onBookmarkedOnlyChange(!currentBookmarkedOnly) }
+                    .padding(vertical = 12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Icon(
+                        imageVector = if (currentBookmarkedOnly) Icons.Filled.Bookmark else Icons.Outlined.BookmarkBorder,
+                        contentDescription = null,
+                        tint = if (currentBookmarkedOnly) JournalHistoryAccent else textSecondary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Text(
+                        text = "Bookmarked Only",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = textPrimary,
+                        fontWeight = if (currentBookmarkedOnly) FontWeight.Medium else FontWeight.Normal
+                    )
+                }
+                Switch(
+                    checked = currentBookmarkedOnly,
+                    onCheckedChange = { onBookmarkedOnlyChange(it) },
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = JournalHistoryAccent,
+                        checkedTrackColor = JournalHistoryAccent.copy(alpha = 0.3f)
+                    )
                 )
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
-            HorizontalDivider(color = dividerColor, thickness = 1.dp)
-            Spacer(modifier = Modifier.height(24.dp))
+            HorizontalDivider(color = dividerColor, modifier = Modifier.padding(vertical = 8.dp))
 
-            // Filter Section
-            Text(
-                text = "Filter by Mood",
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 16.sp,
-                color = textPrimary
+            // Sort Section (Collapsible)
+            FilterSectionHeader(
+                title = "SORT BY",
+                currentValue = when (currentSortOrder) {
+                    SortOrder.NEWEST_FIRST -> "Newest First"
+                    SortOrder.OLDEST_FIRST -> "Oldest First"
+                    SortOrder.HIGHEST_INTENSITY -> "Highest Intensity"
+                    SortOrder.LOWEST_INTENSITY -> "Lowest Intensity"
+                },
+                isExpanded = sortExpanded,
+                onToggle = { sortExpanded = !sortExpanded },
+                textPrimary = textPrimary,
+                textSecondary = textSecondary
             )
+
+            AnimatedVisibility(visible = sortExpanded) {
+                Column(modifier = Modifier.padding(start = 8.dp)) {
+                    SortOrder.entries.forEach { sortOrder ->
+                        FilterSortOption(
+                            label = when (sortOrder) {
+                                SortOrder.NEWEST_FIRST -> "Newest First"
+                                SortOrder.OLDEST_FIRST -> "Oldest First"
+                                SortOrder.HIGHEST_INTENSITY -> "Highest Intensity"
+                                SortOrder.LOWEST_INTENSITY -> "Lowest Intensity"
+                            },
+                            isSelected = currentSortOrder == sortOrder,
+                            onClick = {
+                                onSortOrderChange(sortOrder)
+                                sortExpanded = false
+                            },
+                            textPrimary = textPrimary,
+                            accentColor = JournalHistoryAccent
+                        )
+                    }
+                }
+            }
+
+            HorizontalDivider(color = dividerColor, modifier = Modifier.padding(vertical = 8.dp))
+
+            // Date Range Section (Collapsible)
+            FilterSectionHeader(
+                title = "DATE RANGE",
+                currentValue = when (currentDateRangeFilter) {
+                    DateRangeFilter.ALL_TIME -> "All Time"
+                    DateRangeFilter.THIS_WEEK -> "This Week"
+                    DateRangeFilter.THIS_MONTH -> "This Month"
+                    DateRangeFilter.LAST_3_MONTHS -> "Last 3 Months"
+                    DateRangeFilter.THIS_YEAR -> "This Year"
+                },
+                isExpanded = dateRangeExpanded,
+                onToggle = { dateRangeExpanded = !dateRangeExpanded },
+                textPrimary = textPrimary,
+                textSecondary = textSecondary,
+                isActive = currentDateRangeFilter != DateRangeFilter.ALL_TIME
+            )
+
+            AnimatedVisibility(visible = dateRangeExpanded) {
+                Column(modifier = Modifier.padding(start = 8.dp)) {
+                    DateRangeFilter.entries.forEach { dateRange ->
+                        FilterSortOption(
+                            label = when (dateRange) {
+                                DateRangeFilter.ALL_TIME -> "All Time"
+                                DateRangeFilter.THIS_WEEK -> "This Week"
+                                DateRangeFilter.THIS_MONTH -> "This Month"
+                                DateRangeFilter.LAST_3_MONTHS -> "Last 3 Months"
+                                DateRangeFilter.THIS_YEAR -> "This Year"
+                            },
+                            isSelected = currentDateRangeFilter == dateRange,
+                            onClick = {
+                                onDateRangeFilterChange(dateRange)
+                                dateRangeExpanded = false
+                            },
+                            textPrimary = textPrimary,
+                            accentColor = JournalHistoryAccent
+                        )
+                    }
+                }
+            }
+
+            HorizontalDivider(color = dividerColor, modifier = Modifier.padding(vertical = 8.dp))
+
+            // Mood Filter Section (Collapsible)
+            FilterSectionHeader(
+                title = "MOOD",
+                currentValue = currentFilterMood?.let {
+                    try {
+                        Mood.valueOf(it).displayName
+                    } catch (e: Exception) {
+                        "All Moods"
+                    }
+                } ?: "All Moods",
+                isExpanded = moodExpanded,
+                onToggle = { moodExpanded = !moodExpanded },
+                textPrimary = textPrimary,
+                textSecondary = textSecondary,
+                isActive = currentFilterMood != null
+            )
+
+            AnimatedVisibility(visible = moodExpanded) {
+                Column(modifier = Modifier.padding(start = 8.dp)) {
+                    // All moods option
+                    FilterSortOption(
+                        label = "All Moods",
+                        isSelected = currentFilterMood == null,
+                        onClick = {
+                            onFilterMoodChange(null)
+                            moodExpanded = false
+                        },
+                        textPrimary = textPrimary,
+                        accentColor = JournalHistoryAccent
+                    )
+
+                    // Individual mood options
+                    Mood.entries.forEach { mood ->
+                        FilterSortOption(
+                            label = mood.displayName,
+                            isSelected = currentFilterMood?.equals(mood.name, ignoreCase = true) == true,
+                            onClick = {
+                                onFilterMoodChange(mood.name)
+                                moodExpanded = false
+                            },
+                            textPrimary = textPrimary,
+                            accentColor = getMoodColorForHistory(mood),
+                            icon = getMoodIconForHistory(mood)
+                        )
+                    }
+                }
+            }
+
             Spacer(modifier = Modifier.height(16.dp))
 
-            // All moods option
-            PremiumFilterOption(
-                label = "All Moods",
-                isSelected = currentFilterMood == null,
-                onClick = {
-                    onFilterMoodChange(null)
-                    onDismiss()
-                },
-                textPrimary = textPrimary,
-                accentColor = accentColor
-            )
-
-            // Individual mood options
-            Mood.entries.forEach { mood ->
-                PremiumFilterOption(
-                    label = mood.displayName,
-                    isSelected = currentFilterMood?.equals(mood.name, ignoreCase = true) == true,
-                    onClick = {
-                        onFilterMoodChange(mood.name)
-                        onDismiss()
-                    },
-                    textPrimary = textPrimary,
-                    accentColor = getMoodColorPremium(mood)
+            // Apply button
+            Button(
+                onClick = onDismiss,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = JournalHistoryAccent,
+                    contentColor = Color.Black
+                ),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text(
+                    text = "Done",
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.padding(vertical = 4.dp)
                 )
             }
         }
@@ -876,12 +1081,56 @@ private fun PremiumFilterSortBottomSheet(
  * Premium Filter Option Row
  */
 @Composable
-private fun PremiumFilterOption(
+private fun FilterSectionHeader(
+    title: String,
+    currentValue: String,
+    isExpanded: Boolean,
+    onToggle: () -> Unit,
+    textPrimary: Color,
+    textSecondary: Color,
+    isActive: Boolean = false
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(8.dp))
+            .clickable(onClick = onToggle)
+            .padding(vertical = 12.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.labelMedium,
+                color = textSecondary,
+                letterSpacing = 1.sp
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = currentValue,
+                style = MaterialTheme.typography.bodyMedium,
+                color = if (isActive) JournalHistoryAccent else textPrimary,
+                fontWeight = if (isActive) FontWeight.Medium else FontWeight.Normal
+            )
+        }
+        Icon(
+            imageVector = if (isExpanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
+            contentDescription = if (isExpanded) "Collapse" else "Expand",
+            tint = textSecondary,
+            modifier = Modifier.size(24.dp)
+        )
+    }
+}
+
+@Composable
+private fun FilterSortOption(
     label: String,
     isSelected: Boolean,
     onClick: () -> Unit,
     textPrimary: Color,
-    accentColor: Color
+    accentColor: Color,
+    icon: ImageVector? = null
 ) {
     Row(
         modifier = Modifier
@@ -892,13 +1141,25 @@ private fun PremiumFilterOption(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = label,
-            fontFamily = PoppinsFamily,
-            fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal,
-            fontSize = 15.sp,
-            color = if (isSelected) accentColor else textPrimary
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            if (icon != null) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = if (isSelected) accentColor else textPrimary.copy(alpha = 0.6f),
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+            Text(
+                text = label,
+                style = MaterialTheme.typography.bodyLarge,
+                color = if (isSelected) accentColor else textPrimary,
+                fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal
+            )
+        }
         if (isSelected) {
             Icon(
                 imageVector = Icons.Filled.Check,

@@ -1,6 +1,10 @@
 package com.prody.prashant.ui.screens.journal
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -24,12 +28,15 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -38,8 +45,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.prody.prashant.R
 import com.prody.prashant.domain.model.Mood
+import com.prody.prashant.ui.components.AmbientBackground
+import com.prody.prashant.ui.components.MoodSuggestionHint
+import com.prody.prashant.ui.components.rememberMoodSuggestionState
+import com.prody.prashant.ui.components.getCurrentTimeOfDay
+import com.prody.prashant.ui.components.mapMoodToAmbient
 import com.prody.prashant.ui.theme.*
 
 /**
@@ -61,9 +75,39 @@ fun NewJournalEntryScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
+
+    // Photo/Video picker launcher
+    val mediaPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetMultipleContents()
+    ) { uris: List<Uri> ->
+        if (uris.isNotEmpty()) {
+            val photoUris = uris.filter { uri ->
+                context.contentResolver.getType(uri)?.startsWith("image/") == true
+            }.map { it.toString() }
+            val videoUris = uris.filter { uri ->
+                context.contentResolver.getType(uri)?.startsWith("video/") == true
+            }.map { it.toString() }
+
+            if (photoUris.isNotEmpty()) viewModel.addPhotos(photoUris)
+            if (videoUris.isNotEmpty()) viewModel.addVideos(videoUris)
+        }
+    }
+
+    // Mood suggestion state for AI-powered hints
+    val moodSuggestionState = rememberMoodSuggestionState()
 
     // Determine if dark mode is active
     val isDarkTheme = LocalJournalThemeColors.current.isDark
+
+    // Analyze content for mood suggestions when content changes
+    LaunchedEffect(uiState.content) {
+        if (uiState.content.length > 50 && uiState.selectedMood == null) {
+            moodSuggestionState.analyzeText(uiState.content)
+        } else {
+            moodSuggestionState.clearSuggestion()
+        }
+    }
 
     LaunchedEffect(uiState.isSaved) {
         if (uiState.isSaved) {
@@ -81,15 +125,34 @@ fun NewJournalEntryScreen(
         }
     }
 
+    // Handle back navigation with unsaved changes check
+    val handleBack: () -> Unit = {
+        if (viewModel.handleBackNavigation()) {
+            onNavigateBack()
+        }
+    }
+
     JournalTheme {
         val colors = LocalJournalThemeColors.current
+
+        // Discard Changes Dialog
+        if (uiState.showDiscardDialog) {
+            DiscardChangesDialog(
+                onDismiss = { viewModel.hideDiscardDialog() },
+                onDiscard = {
+                    viewModel.hideDiscardDialog()
+                    onNavigateBack()
+                },
+                colors = colors
+            )
+        }
 
         Scaffold(
             snackbarHost = { SnackbarHost(snackbarHostState) },
             containerColor = colors.background,
             topBar = {
                 JournalTopBar(
-                    onBackClick = onNavigateBack,
+                    onBackClick = handleBack,
                     onSaveClick = { viewModel.saveEntry() },
                     isSaveEnabled = uiState.content.isNotBlank() && !uiState.isSaving,
                     isSaving = uiState.isSaving,
@@ -98,13 +161,21 @@ fun NewJournalEntryScreen(
                 )
             }
         ) { padding ->
-            Column(
+            Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding)
-                    .verticalScroll(rememberScrollState())
             ) {
                 Spacer(modifier = Modifier.height(8.dp))
+
+                // Title Input Field (NEW)
+                TitleInputField(
+                    title = uiState.title,
+                    onTitleChanged = { viewModel.updateTitle(it) },
+                    colors = colors
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
 
                 // Use Template Section
                 UseTemplateSection(
@@ -112,33 +183,92 @@ fun NewJournalEntryScreen(
                     colors = colors
                 )
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    Spacer(modifier = Modifier.height(8.dp))
 
-                // How are you feeling? Section
-                MoodSelectionSection(
-                    selectedMood = uiState.selectedMood,
-                    onMoodSelected = { viewModel.updateMood(it) },
-                    colors = colors
-                )
+                    // Use Template Section
+                    UseTemplateSection(
+                        onTemplateSelected = { viewModel.selectTemplate(it) },
+                        colors = colors
+                    )
 
-                Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(24.dp))
 
-                // Intensity Section
-                IntensitySection(
-                    intensity = uiState.moodIntensity,
-                    onIntensityChanged = { viewModel.updateMoodIntensity(it) },
-                    colors = colors
-                )
+                    // How are you feeling? Section with mood suggestion hint
+                    Box {
+                        MoodSelectionSection(
+                            selectedMood = uiState.selectedMood,
+                            onMoodSelected = { viewModel.updateMood(it) },
+                            colors = colors
+                        )
 
-                Spacer(modifier = Modifier.height(24.dp))
+                        // Subtle AI-powered mood suggestion hint
+                        MoodSuggestionHint(
+                            state = moodSuggestionState,
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .padding(end = 20.dp, top = 4.dp)
+                        )
+                    }
 
-                // Main Input Field
+                // Main Input Field with media actions
                 JournalInputField(
                     content = uiState.content,
                     wordCount = uiState.wordCount,
                     onContentChanged = { viewModel.updateContent(it) },
+                    onMediaClick = { mediaPickerLauncher.launch("*/*") },
+                    onVoiceClick = {
+                        if (uiState.isRecording) {
+                            viewModel.cancelRecording()
+                        } else {
+                            viewModel.startRecording()
+                        }
+                    },
+                    isRecording = uiState.isRecording,
+                    recordingTimeElapsed = uiState.recordingTimeElapsed,
                     colors = colors
                 )
+
+                // Attached Media Preview Section (NEW)
+                if (uiState.attachedPhotos.isNotEmpty() || uiState.attachedVideos.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    AttachedMediaSection(
+                        photos = uiState.attachedPhotos,
+                        videos = uiState.attachedVideos,
+                        onRemovePhoto = { viewModel.removePhoto(it) },
+                        onRemoveVideo = { viewModel.removeVideo(it) },
+                        colors = colors
+                    )
+                }
+
+                // Voice Recording Preview Section (NEW)
+                if (uiState.voiceRecordingUri != null) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    VoiceRecordingPreview(
+                        duration = uiState.voiceRecordingDuration,
+                        isPlaying = uiState.isPlayingVoice,
+                        onPlayToggle = { viewModel.toggleVoicePlayback() },
+                        onRemove = { viewModel.removeVoiceRecording() },
+                        colors = colors
+                    )
+                }
+
+                // Recording Indicator (NEW)
+                if (uiState.isRecording) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    RecordingIndicator(
+                        timeElapsed = uiState.recordingTimeElapsed,
+                        onStop = { uri, duration ->
+                            viewModel.stopRecording(uri, duration)
+                        },
+                        onCancel = { viewModel.cancelRecording() },
+                        colors = colors
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(100.dp))
             }
@@ -749,6 +879,51 @@ private fun CustomIntensitySlider(
 }
 
 // =============================================================================
+// TITLE INPUT FIELD (NEW)
+// =============================================================================
+
+@Composable
+private fun TitleInputField(
+    title: String,
+    onTitleChanged: (String) -> Unit,
+    colors: JournalThemeColors
+) {
+    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+        BasicTextField(
+            value = title,
+            onValueChange = onTitleChanged,
+            modifier = Modifier.fillMaxWidth(),
+            textStyle = TextStyle(
+                fontFamily = PoppinsFamily,
+                fontWeight = FontWeight.Bold,
+                fontSize = 24.sp,
+                lineHeight = 32.sp,
+                color = colors.primaryText
+            ),
+            cursorBrush = SolidColor(colors.accent),
+            singleLine = true,
+            decorationBox = { innerTextField ->
+                Box {
+                    if (title.isEmpty()) {
+                        Text(
+                            text = "Entry Title (optional)",
+                            style = TextStyle(
+                                fontFamily = PoppinsFamily,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 24.sp,
+                                lineHeight = 32.sp,
+                                color = colors.placeholderText
+                            )
+                        )
+                    }
+                    innerTextField()
+                }
+            }
+        )
+    }
+}
+
+// =============================================================================
 // JOURNAL INPUT FIELD
 // =============================================================================
 
@@ -757,6 +932,10 @@ private fun JournalInputField(
     content: String,
     wordCount: Int,
     onContentChanged: (String) -> Unit,
+    onMediaClick: () -> Unit,
+    onVoiceClick: () -> Unit,
+    isRecording: Boolean,
+    recordingTimeElapsed: Long,
     colors: JournalThemeColors
 ) {
     Column(modifier = Modifier.padding(horizontal = 16.dp)) {
@@ -820,25 +999,39 @@ private fun JournalInputField(
                         horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         IconButton(
-                            onClick = { /* Gallery action */ },
+                            onClick = onMediaClick,
                             modifier = Modifier.size(48.dp)
                         ) {
                             Icon(
                                 imageVector = Icons.Filled.Image,
-                                contentDescription = "Add image",
+                                contentDescription = "Add photo/video",
                                 tint = colors.primaryText,
                                 modifier = Modifier.size(24.dp)
                             )
                         }
                         IconButton(
-                            onClick = { /* Microphone action */ },
+                            onClick = onVoiceClick,
                             modifier = Modifier.size(48.dp)
                         ) {
+                            // Pulsating animation when recording
+                            val infiniteTransition = rememberInfiniteTransition(label = "mic_pulse")
+                            val scale by infiniteTransition.animateFloat(
+                                initialValue = 1f,
+                                targetValue = if (isRecording) 1.2f else 1f,
+                                animationSpec = infiniteRepeatable(
+                                    animation = tween(500, easing = FastOutSlowInEasing),
+                                    repeatMode = RepeatMode.Reverse
+                                ),
+                                label = "mic_scale"
+                            )
+
                             Icon(
-                                imageVector = Icons.Filled.Mic,
-                                contentDescription = "Voice input",
-                                tint = colors.primaryText,
-                                modifier = Modifier.size(24.dp)
+                                imageVector = if (isRecording) Icons.Filled.Stop else Icons.Filled.Mic,
+                                contentDescription = if (isRecording) "Stop recording" else "Voice input",
+                                tint = if (isRecording) colors.accent else colors.primaryText,
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .scale(if (isRecording) scale else 1f)
                             )
                         }
                         IconButton(
@@ -869,3 +1062,4 @@ private fun JournalInputField(
         }
     }
 }
+

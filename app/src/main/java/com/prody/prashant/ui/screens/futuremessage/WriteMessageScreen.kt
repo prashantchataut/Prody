@@ -1,13 +1,21 @@
 package com.prody.prashant.ui.screens.futuremessage
 
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.tween
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
@@ -16,22 +24,35 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.CameraAlt
 import androidx.compose.material.icons.outlined.Mic
+import androidx.compose.material.icons.outlined.Stop
+import androidx.compose.material.icons.outlined.PlayArrow
+import androidx.compose.material.icons.outlined.Pause
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.prody.prashant.R
+import com.prody.prashant.ui.components.TimeCapsuleSealAnimation
+import com.prody.prashant.ui.components.rememberTimeCapsuleSealState
 import com.prody.prashant.ui.theme.*
+import kotlinx.coroutines.delay
 
 /**
  * Write to Time Capsule Screen - Complete Redesign
@@ -52,8 +73,35 @@ fun WriteMessageScreen(
     viewModel: WriteMessageViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    var showDatePicker by remember { mutableStateOf(false) }
     val isDarkTheme = isSystemInDarkTheme()
+    val context = LocalContext.current
+
+    // Media picker launcher
+    val mediaPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickMultipleVisualMedia(maxItems = 5)
+    ) { uris: List<Uri> ->
+        if (uris.isNotEmpty()) {
+            val photos = uris.filter { uri ->
+                context.contentResolver.getType(uri)?.startsWith("image/") == true
+            }.map { it.toString() }
+            val videos = uris.filter { uri ->
+                context.contentResolver.getType(uri)?.startsWith("video/") == true
+            }.map { it.toString() }
+
+            if (photos.isNotEmpty()) viewModel.addPhotos(photos)
+            if (videos.isNotEmpty()) viewModel.addVideos(videos)
+        }
+    }
+
+    // Handle back navigation with unsaved changes check
+    val handleBack: () -> Unit = {
+        if (viewModel.handleBackNavigation()) {
+            onNavigateBack()
+        }
+    }
+
+    // Magical sealing animation state
+    val sealState = rememberTimeCapsuleSealState()
 
     // Theme-aware colors
     val backgroundColor = if (isDarkTheme) TimeCapsuleBackgroundDark else TimeCapsuleBackgroundLight
@@ -69,9 +117,31 @@ fun WriteMessageScreen(
     val inactiveTagTextColor = if (isDarkTheme) TimeCapsuleInactiveTagTextDark else TimeCapsuleInactiveTagTextLight
     val buttonTextColor = if (isDarkTheme) TimeCapsuleButtonTextDark else TimeCapsuleButtonTextLight
 
+    // Handle saved state with magical animation
     LaunchedEffect(uiState.isSaved) {
         if (uiState.isSaved) {
+            // Small delay for the animation to complete
+            delay(100)
             onMessageSaved()
+        }
+    }
+
+    // Discard changes confirmation dialog
+    if (uiState.showDiscardDialog) {
+        DiscardChangesDialog(
+            onDismiss = { viewModel.hideDiscardDialog() },
+            onConfirm = {
+                viewModel.hideDiscardDialog()
+                onNavigateBack()
+            }
+        )
+    }
+
+    // Error snackbar
+    uiState.error?.let { error ->
+        LaunchedEffect(error) {
+            kotlinx.coroutines.delay(3000)
+            viewModel.clearError()
         }
     }
 
@@ -90,8 +160,8 @@ fun WriteMessageScreen(
             TimeCapsuleTopBar(
                 titleTextColor = titleTextColor,
                 discardTextColor = discardTextColor,
-                onBackClick = onNavigateBack,
-                onDiscardClick = onNavigateBack
+                onBackClick = handleBack,
+                onDiscardClick = handleBack
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -124,8 +194,49 @@ fun WriteMessageScreen(
                 attachTextColor = attachTextColor,
                 dividerColor = dividerColor,
                 backgroundColor = inactiveTagBgColor,
+                isRecording = uiState.isRecording,
+                recordingTimeElapsed = uiState.recordingTimeElapsed,
+                onMediaClick = {
+                    mediaPickerLauncher.launch(
+                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageAndVideo)
+                    )
+                },
+                onVoiceClick = {
+                    if (uiState.isRecording) {
+                        // In a real implementation, this would stop the recording
+                        // and get the actual URI and duration from the recorder
+                        viewModel.stopRecording("recorded_voice.m4a", uiState.recordingTimeElapsed)
+                    } else {
+                        viewModel.startRecording()
+                    }
+                },
                 modifier = Modifier.padding(horizontal = 24.dp)
             )
+
+            // Attached Media Preview
+            if (uiState.attachedPhotos.isNotEmpty() || uiState.attachedVideos.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(16.dp))
+                AttachedMediaSection(
+                    photos = uiState.attachedPhotos,
+                    videos = uiState.attachedVideos,
+                    onRemovePhoto = { viewModel.removePhoto(it) },
+                    onRemoveVideo = { viewModel.removeVideo(it) },
+                    modifier = Modifier.padding(horizontal = 24.dp)
+                )
+            }
+
+            // Voice Recording Preview
+            if (uiState.voiceRecordingUri != null) {
+                Spacer(modifier = Modifier.height(16.dp))
+                VoiceRecordingPreview(
+                    duration = uiState.voiceRecordingDuration,
+                    isPlaying = uiState.isPlayingVoice,
+                    onPlayPauseClick = { viewModel.toggleVoicePlayback() },
+                    onRemoveClick = { viewModel.removeVoiceRecording() },
+                    backgroundColor = inactiveTagBgColor,
+                    modifier = Modifier.padding(horizontal = 24.dp)
+                )
+            }
 
             Spacer(modifier = Modifier.height(32.dp))
 
@@ -136,17 +247,17 @@ fun WriteMessageScreen(
                 onPresetSelected = { viewModel.selectDatePreset(it) },
                 inactiveTagBgColor = inactiveTagBgColor,
                 inactiveTagTextColor = inactiveTagTextColor,
-                onCustomDateClick = { showDatePicker = true },
+                onCustomDateClick = { viewModel.showDatePicker() },
                 modifier = Modifier.padding(start = 24.dp)
             )
 
             Spacer(modifier = Modifier.height(28.dp))
 
-            // ESSENCE Section
-            EssenceSection(
+            // ESSENCE Section - Multi-select categories
+            EssenceSectionMultiSelect(
                 sectionTitleColor = sectionTitleColor,
-                selectedCategory = uiState.selectedCategory,
-                onCategorySelected = { viewModel.updateCategory(it) },
+                selectedCategories = uiState.selectedCategories,
+                onCategoryToggle = { viewModel.toggleCategory(it) },
                 inactiveTagBgColor = inactiveTagBgColor,
                 inactiveTagTextColor = inactiveTagTextColor,
                 modifier = Modifier.padding(start = 24.dp)
@@ -155,45 +266,89 @@ fun WriteMessageScreen(
             Spacer(modifier = Modifier.height(48.dp))
         }
 
+        // Error message
+        AnimatedVisibility(
+            visible = uiState.error != null,
+            enter = fadeIn() + slideInVertically(),
+            exit = fadeOut() + slideOutVertically(),
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .padding(top = 80.dp)
+        ) {
+            uiState.error?.let { error ->
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer
+                    ),
+                    modifier = Modifier.padding(horizontal = 24.dp)
+                ) {
+                    Text(
+                        text = error,
+                        color = MaterialTheme.colorScheme.onErrorContainer,
+                        modifier = Modifier.padding(16.dp),
+                        fontFamily = PoppinsFamily,
+                        fontSize = 14.sp
+                    )
+                }
+            }
+        }
+
         // Seal & Schedule Button - Fixed at bottom
         SealAndScheduleButton(
             onClick = { viewModel.saveMessage() },
-            enabled = uiState.canSave && !uiState.isSaving,
-            isLoading = uiState.isSaving,
+            enabled = !uiState.isSaving && uiState.content.isNotBlank(),
+            isLoading = uiState.isSaving && !uiState.showSealingAnimation,
             buttonTextColor = buttonTextColor,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .padding(horizontal = 24.dp, vertical = 32.dp)
         )
 
+        // Magical Time Capsule Sealing Animation overlay
+        TimeCapsuleSealAnimation(
+            state = sealState,
+            onComplete = { /* Animation completed, message is being saved */ }
+        )
+
         // Date Picker Dialog
-        if (showDatePicker) {
+        if (uiState.showDatePicker) {
             val datePickerState = rememberDatePickerState(
                 initialSelectedDateMillis = uiState.deliveryDate
             )
 
             DatePickerDialog(
-                onDismissRequest = { showDatePicker = false },
+                onDismissRequest = { viewModel.hideDatePicker() },
                 confirmButton = {
                     TextButton(
                         onClick = {
                             datePickerState.selectedDateMillis?.let {
                                 viewModel.selectCustomDate(it)
                             }
-                            showDatePicker = false
                         }
                     ) {
                         Text("Confirm")
                     }
                 },
                 dismissButton = {
-                    TextButton(onClick = { showDatePicker = false }) {
+                    TextButton(onClick = { viewModel.hideDatePicker() }) {
                         Text("Cancel")
                     }
                 }
             ) {
                 DatePicker(state = datePickerState)
             }
+        }
+
+        // Sealing Animation Overlay
+        AnimatedVisibility(
+            visible = uiState.showSealingAnimation,
+            enter = fadeIn(animationSpec = tween(300)),
+            exit = fadeOut(animationSpec = tween(300)),
+            modifier = Modifier.fillMaxSize()
+        ) {
+            SealingAnimationOverlay(
+                backgroundColor = backgroundColor
+            )
         }
     }
 }
@@ -345,8 +500,24 @@ private fun MultimediaAttachmentRow(
     attachTextColor: Color,
     dividerColor: Color,
     backgroundColor: Color,
+    isRecording: Boolean,
+    recordingTimeElapsed: Long,
+    onMediaClick: () -> Unit,
+    onVoiceClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    // Recording pulse animation
+    val infiniteTransition = rememberInfiniteTransition(label = "recording")
+    val pulseAlpha by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 0.3f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(500),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "pulse"
+    )
+
     Row(
         modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -358,13 +529,13 @@ private fun MultimediaAttachmentRow(
                 .size(48.dp)
                 .clip(RoundedCornerShape(12.dp))
                 .background(backgroundColor)
-                .clickable { /* TODO: Open camera/gallery */ },
+                .clickable(enabled = !isRecording) { onMediaClick() },
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Outlined.CameraAlt,
                 contentDescription = "Attach photo",
-                tint = iconColor,
+                tint = if (isRecording) iconColor.copy(alpha = 0.3f) else iconColor,
                 modifier = Modifier.size(24.dp)
             )
         }
@@ -374,14 +545,14 @@ private fun MultimediaAttachmentRow(
             modifier = Modifier
                 .size(48.dp)
                 .clip(RoundedCornerShape(12.dp))
-                .background(backgroundColor)
-                .clickable { /* TODO: Open voice recorder */ },
+                .background(if (isRecording) TimeCapsuleAccent.copy(alpha = pulseAlpha * 0.3f) else backgroundColor)
+                .clickable { onVoiceClick() },
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                imageVector = Icons.Outlined.Mic,
-                contentDescription = "Record voice",
-                tint = iconColor,
+                imageVector = if (isRecording) Icons.Outlined.Stop else Icons.Outlined.Mic,
+                contentDescription = if (isRecording) "Stop recording" else "Record voice",
+                tint = if (isRecording) TimeCapsuleAccent else iconColor,
                 modifier = Modifier.size(24.dp)
             )
         }
@@ -394,14 +565,222 @@ private fun MultimediaAttachmentRow(
                 .background(dividerColor)
         )
 
-        // Attach memories text
-        Text(
-            text = stringResource(R.string.attach_memories),
-            fontFamily = PoppinsFamily,
-            fontWeight = FontWeight.Normal,
-            fontSize = 14.sp,
-            color = attachTextColor
+        // Attach memories text or recording indicator
+        if (isRecording) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(8.dp)
+                        .clip(CircleShape)
+                        .background(TimeCapsuleAccent.copy(alpha = pulseAlpha))
+                )
+                Text(
+                    text = formatDuration(recordingTimeElapsed),
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 14.sp,
+                    color = TimeCapsuleAccent
+                )
+            }
+        } else {
+            Text(
+                text = stringResource(R.string.attach_memories),
+                fontFamily = PoppinsFamily,
+                fontWeight = FontWeight.Normal,
+                fontSize = 14.sp,
+                color = attachTextColor
+            )
+        }
+    }
+}
+
+/**
+ * Attached Media Section showing photo/video thumbnails
+ */
+@Composable
+private fun AttachedMediaSection(
+    photos: List<String>,
+    videos: List<String>,
+    onRemovePhoto: (String) -> Unit,
+    onRemoveVideo: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+
+    LazyRow(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        items(photos) { photoUri ->
+            MediaThumbnail(
+                uri = photoUri,
+                isVideo = false,
+                onRemove = { onRemovePhoto(photoUri) }
+            )
+        }
+        items(videos) { videoUri ->
+            MediaThumbnail(
+                uri = videoUri,
+                isVideo = true,
+                onRemove = { onRemoveVideo(videoUri) }
+            )
+        }
+    }
+}
+
+/**
+ * Media thumbnail with remove button
+ */
+@Composable
+private fun MediaThumbnail(
+    uri: String,
+    isVideo: Boolean,
+    onRemove: () -> Unit
+) {
+    val context = LocalContext.current
+
+    Box(
+        modifier = Modifier
+            .size(72.dp)
+            .clip(RoundedCornerShape(12.dp))
+    ) {
+        AsyncImage(
+            model = ImageRequest.Builder(context)
+                .data(uri)
+                .crossfade(true)
+                .build(),
+            contentDescription = if (isVideo) "Video thumbnail" else "Photo thumbnail",
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
         )
+
+        // Video indicator
+        if (isVideo) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .size(28.dp)
+                    .clip(CircleShape)
+                    .background(Color.Black.copy(alpha = 0.6f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.PlayArrow,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
+        }
+
+        // Remove button
+        IconButton(
+            onClick = onRemove,
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .size(24.dp)
+                .padding(2.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(CircleShape)
+                    .background(Color.Black.copy(alpha = 0.6f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Close,
+                    contentDescription = "Remove",
+                    tint = Color.White,
+                    modifier = Modifier.size(14.dp)
+                )
+            }
+        }
+    }
+}
+
+/**
+ * Voice Recording Preview with play/pause and remove
+ */
+@Composable
+private fun VoiceRecordingPreview(
+    duration: Long,
+    isPlaying: Boolean,
+    onPlayPauseClick: () -> Unit,
+    onRemoveClick: () -> Unit,
+    backgroundColor: Color,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(backgroundColor)
+            .padding(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        // Play/Pause button
+        IconButton(
+            onClick = onPlayPauseClick,
+            modifier = Modifier
+                .size(40.dp)
+                .clip(CircleShape)
+                .background(TimeCapsuleAccent)
+        ) {
+            Icon(
+                imageVector = if (isPlaying) Icons.Outlined.Pause else Icons.Outlined.PlayArrow,
+                contentDescription = if (isPlaying) "Pause" else "Play",
+                tint = Color.White,
+                modifier = Modifier.size(20.dp)
+            )
+        }
+
+        // Waveform placeholder and duration
+        Column(
+            modifier = Modifier.weight(1f)
+        ) {
+            // Waveform visualization placeholder
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(2.dp),
+                modifier = Modifier.height(24.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                repeat(20) { index ->
+                    val height = (8 + (index * 7) % 16).dp
+                    Box(
+                        modifier = Modifier
+                            .width(3.dp)
+                            .height(height)
+                            .clip(RoundedCornerShape(1.5.dp))
+                            .background(TimeCapsuleAccent.copy(alpha = 0.6f))
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = formatDuration(duration),
+                fontFamily = PoppinsFamily,
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+
+        // Remove button
+        IconButton(
+            onClick = onRemoveClick,
+            modifier = Modifier.size(32.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Delete,
+                contentDescription = "Remove recording",
+                tint = MaterialTheme.colorScheme.error,
+                modifier = Modifier.size(20.dp)
+            )
+        }
     }
 }
 
@@ -709,4 +1088,311 @@ enum class MessageCategory(val displayName: String) {
     GOAL("Goal"),
     PROMISE("Promise"),
     MOTIVATION("Motivation")
+}
+
+/**
+ * ESSENCE Section with multi-select category tags
+ */
+@Composable
+private fun EssenceSectionMultiSelect(
+    sectionTitleColor: Color,
+    selectedCategories: Set<MessageCategory>,
+    onCategoryToggle: (MessageCategory) -> Unit,
+    inactiveTagBgColor: Color,
+    inactiveTagTextColor: Color,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier) {
+        // Section Header with Tag Icon
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Filled.LocalOffer,
+                contentDescription = null,
+                tint = TimeCapsuleAccent,
+                modifier = Modifier.size(16.dp)
+            )
+            Text(
+                text = stringResource(R.string.essence),
+                fontFamily = PoppinsFamily,
+                fontWeight = FontWeight.Normal,
+                fontSize = 12.sp,
+                letterSpacing = 1.sp,
+                color = sectionTitleColor
+            )
+            // Multi-select indicator
+            Text(
+                text = "(select multiple)",
+                fontFamily = PoppinsFamily,
+                fontWeight = FontWeight.Normal,
+                fontSize = 10.sp,
+                color = sectionTitleColor.copy(alpha = 0.6f)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Horizontal Scrolling Category Tags with multi-select
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            MultiSelectCategoryTag(
+                text = stringResource(R.string.goal),
+                isSelected = selectedCategories.contains(MessageCategory.GOAL),
+                onClick = { onCategoryToggle(MessageCategory.GOAL) },
+                inactiveTagBgColor = inactiveTagBgColor,
+                inactiveTagTextColor = inactiveTagTextColor
+            )
+            MultiSelectCategoryTag(
+                text = stringResource(R.string.motivation),
+                isSelected = selectedCategories.contains(MessageCategory.MOTIVATION),
+                onClick = { onCategoryToggle(MessageCategory.MOTIVATION) },
+                inactiveTagBgColor = inactiveTagBgColor,
+                inactiveTagTextColor = inactiveTagTextColor
+            )
+            MultiSelectCategoryTag(
+                text = stringResource(R.string.promise),
+                isSelected = selectedCategories.contains(MessageCategory.PROMISE),
+                onClick = { onCategoryToggle(MessageCategory.PROMISE) },
+                inactiveTagBgColor = inactiveTagBgColor,
+                inactiveTagTextColor = inactiveTagTextColor
+            )
+            MultiSelectCategoryTag(
+                text = stringResource(R.string.prediction),
+                isSelected = selectedCategories.contains(MessageCategory.GENERAL),
+                onClick = { onCategoryToggle(MessageCategory.GENERAL) },
+                inactiveTagBgColor = inactiveTagBgColor,
+                inactiveTagTextColor = inactiveTagTextColor
+            )
+            // Right padding spacer
+            Spacer(modifier = Modifier.width(24.dp))
+        }
+    }
+}
+
+/**
+ * Multi-select Category Tag with checkmark indicator
+ */
+@Composable
+private fun MultiSelectCategoryTag(
+    text: String,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    inactiveTagBgColor: Color,
+    inactiveTagTextColor: Color
+) {
+    val backgroundColor by animateColorAsState(
+        targetValue = if (isSelected) TimeCapsuleAccent else inactiveTagBgColor,
+        animationSpec = tween(200),
+        label = "multi_category_tag_bg"
+    )
+    val textColor by animateColorAsState(
+        targetValue = if (isSelected) Color.White else inactiveTagTextColor,
+        animationSpec = tween(200),
+        label = "multi_category_tag_text"
+    )
+
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(20.dp))
+            .background(backgroundColor)
+            .clickable(onClick = onClick)
+            .defaultMinSize(minWidth = 80.dp, minHeight = 48.dp)
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            AnimatedVisibility(
+                visible = isSelected,
+                enter = fadeIn() + scaleIn(),
+                exit = fadeOut() + scaleOut()
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Check,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(14.dp)
+                )
+            }
+            Text(
+                text = text,
+                fontFamily = PoppinsFamily,
+                fontWeight = FontWeight.Normal,
+                fontSize = 14.sp,
+                color = textColor
+            )
+        }
+    }
+}
+
+/**
+ * Sealing Animation Overlay - Shows lock sealing animation
+ */
+@Composable
+private fun SealingAnimationOverlay(
+    backgroundColor: Color
+) {
+    val infiniteTransition = rememberInfiniteTransition(label = "sealing")
+
+    // Pulsing lock scale
+    val lockScale by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 1.2f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(400, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "lock_scale"
+    )
+
+    // Rotating particles
+    val rotation by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "rotation"
+    )
+
+    // Glow alpha
+    val glowAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.3f,
+        targetValue = 0.8f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(500),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "glow"
+    )
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(backgroundColor.copy(alpha = 0.95f)),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(24.dp)
+        ) {
+            // Animated lock icon with glow effect
+            Box(
+                contentAlignment = Alignment.Center
+            ) {
+                // Outer glow
+                Box(
+                    modifier = Modifier
+                        .size(120.dp)
+                        .scale(lockScale * 1.2f)
+                        .alpha(glowAlpha)
+                        .clip(CircleShape)
+                        .background(TimeCapsuleAccent.copy(alpha = 0.2f))
+                )
+
+                // Inner glow
+                Box(
+                    modifier = Modifier
+                        .size(90.dp)
+                        .scale(lockScale)
+                        .clip(CircleShape)
+                        .background(TimeCapsuleAccent.copy(alpha = 0.3f))
+                )
+
+                // Lock icon
+                Icon(
+                    imageVector = Icons.Filled.Lock,
+                    contentDescription = "Sealing",
+                    tint = TimeCapsuleAccent,
+                    modifier = Modifier
+                        .size(48.dp)
+                        .scale(lockScale)
+                )
+            }
+
+            // Text
+            Text(
+                text = "Sealing your time capsule...",
+                fontFamily = PoppinsFamily,
+                fontWeight = FontWeight.Medium,
+                fontSize = 18.sp,
+                color = TimeCapsuleAccent,
+                textAlign = TextAlign.Center
+            )
+
+            Text(
+                text = "Your message is being locked away\nfor your future self",
+                fontFamily = PoppinsFamily,
+                fontWeight = FontWeight.Normal,
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+}
+
+/**
+ * Discard Changes Confirmation Dialog
+ */
+@Composable
+private fun DiscardChangesDialog(
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = "Discard Changes?",
+                fontFamily = PoppinsFamily,
+                fontWeight = FontWeight.SemiBold
+            )
+        },
+        text = {
+            Text(
+                text = "You have unsaved changes. Are you sure you want to discard them?",
+                fontFamily = PoppinsFamily,
+                fontWeight = FontWeight.Normal
+            )
+        },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text(
+                    text = "Discard",
+                    color = MaterialTheme.colorScheme.error,
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(
+                    text = "Keep Editing",
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+        }
+    )
+}
+
+/**
+ * Format duration in milliseconds to mm:ss
+ */
+private fun formatDuration(millis: Long): String {
+    val totalSeconds = millis / 1000
+    val minutes = totalSeconds / 60
+    val seconds = totalSeconds % 60
+    return String.format("%d:%02d", minutes, seconds)
 }

@@ -9,12 +9,11 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
-import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -30,12 +29,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.prody.prashant.ui.theme.PoppinsFamily
@@ -68,6 +64,8 @@ import com.prody.prashant.ui.screens.quotes.QuotesScreen
 import com.prody.prashant.ui.screens.stats.StatsScreen
 import com.prody.prashant.ui.screens.vocabulary.VocabularyDetailScreen
 import com.prody.prashant.ui.screens.vocabulary.VocabularyListScreen
+import com.prody.prashant.ui.components.NavigationBreathingGlow
+import com.prody.prashant.ui.theme.ProdyPrimary
 import com.prody.prashant.ui.theme.ProdyTheme
 import com.prody.prashant.ui.theme.ThemeMode
 import dagger.hilt.android.AndroidEntryPoint
@@ -239,13 +237,52 @@ fun ProdyApp(
         bottomBar = {
             AnimatedVisibility(
                 visible = showBottomBar,
-                enter = slideInVertically(initialOffsetY = { it }),
-                exit = slideOutVertically(targetOffsetY = { it })
+                enter = slideInVertically(
+                    initialOffsetY = { it },
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                        stiffness = Spring.StiffnessMedium
+                    )
+                ),
+                exit = slideOutVertically(
+                    targetOffsetY = { it },
+                    animationSpec = tween(200)
+                )
             ) {
-                ProdyBottomNavigationBar(
+                NavigationBar {
+                    bottomNavItems.forEach { item ->
+                        val selected = currentDestination?.hierarchy?.any {
+                            it.route == item.route
+                        } == true
+
+                        NavigationBarItem(
+                            icon = {
+                                // Wrap icon with magical breathing glow effect
+                                NavigationBreathingGlow(
+                                    isActive = selected,
+                                    color = ProdyPrimary
+                                ) {
+                                    Icon(
+                                        imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
+                                        contentDescription = null
+                                    )
+                                }
+                            },
+                            label = { Text(stringResource(item.labelResId)) },
+                            selected = selected,
+                            onClick = {
+                                navController.navigate(item.route) {
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                // Flat design bottom navigation - no shadow, clean surface
+                ProdyBottomNavBar(
                     items = bottomNavItems,
                     currentRoute = currentDestination?.route,
-                    onItemClick = { route ->
+                    onNavigate = { route ->
                         navController.navigate(route) {
                             popUpTo(navController.graph.findStartDestination().id) {
                                 saveState = true
@@ -413,74 +450,65 @@ fun ProdyApp(
     }
 }
 
+// =============================================================================
+// CUSTOM BOTTOM NAVIGATION BAR - Flat Design
+// =============================================================================
+
 /**
- * Premium Bottom Navigation Bar - Redesigned for Prody UI/UX Phase 2
+ * Premium flat-design bottom navigation bar.
  *
- * Design Principles:
- * - Sleek, minimal, flat design (no shadows)
- * - Neon green accent (#36F97F) for active states
- * - Green circular background for active icon
- * - Poppins typography for labels
- * - Smooth micro-interactions
- * - 8dp grid spacing system
+ * Design features:
+ * - NO shadows - pure flat design
+ * - Clean surface with subtle top border
+ * - Animated selection indicator with accent color
+ * - Minimal, focused visual hierarchy
  */
 @Composable
-private fun ProdyBottomNavigationBar(
+private fun ProdyBottomNavBar(
     items: List<BottomNavItem>,
     currentRoute: String?,
-    onItemClick: (String) -> Unit
+    onNavigate: (String) -> Unit
 ) {
-    val isDarkTheme = isSystemInDarkTheme()
-
-    // Theme-aware colors
-    val backgroundColor = if (isDarkTheme) {
-        Color(0xFF0D2826) // Deep dark teal/green
-    } else {
-        Color(0xFFF0F4F3) // Clean off-white
-    }
-
-    val inactiveColor = if (isDarkTheme) {
-        Color(0xFFD3D8D7) // Subtle gray for dark mode
-    } else {
-        Color(0xFF6C757D) // Medium gray for light mode
-    }
-
-    val accentColor = ProdyAccent // Vibrant neon green (#36F97F)
-    val accentBackground = accentColor.copy(alpha = 0.15f)
-
+    // Flat design - no elevation, clean surface with subtle top border
     Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .navigationBarsPadding(),
-        color = backgroundColor,
-        tonalElevation = 0.dp // Flat design - no elevation
+        modifier = Modifier.fillMaxWidth(),
+        color = MaterialTheme.colorScheme.surface,
+        tonalElevation = 0.dp // Flat - no elevation
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(72.dp) // Comfortable touch target height
-                .padding(horizontal = 8.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            items.forEach { item ->
-                val selected = currentRoute == item.route
+        Column {
+            // Subtle top border for visual separation (flat design)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(1.dp)
+                    .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
+            )
 
-                ProdyNavItem(
-                    item = item,
-                    selected = selected,
-                    accentColor = accentColor,
-                    accentBackground = accentBackground,
-                    inactiveColor = inactiveColor,
-                    onClick = { onItemClick(item.route) }
-                )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(80.dp)
+                    .padding(horizontal = 8.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                items.forEach { item ->
+                    val isSelected = currentRoute == item.route
+
+                    ProdyNavItem(
+                        item = item,
+                        isSelected = isSelected,
+                        onClick = { onNavigate(item.route) },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
             }
         }
     }
 }
 
 /**
- * Individual navigation item with premium styling
+ * Individual navigation item with animated selection state.
  */
 @Composable
 private fun ProdyNavItem(

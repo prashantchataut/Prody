@@ -39,31 +39,52 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.data.local.entity.LeaderboardEntryEntity
+import com.prody.prashant.ui.components.AmbientBackground
+import com.prody.prashant.ui.components.FloatingParticles
+import com.prody.prashant.ui.components.StreakFlame
+import com.prody.prashant.ui.components.getCurrentTimeOfDay
 import com.prody.prashant.ui.theme.*
 import kotlinx.coroutines.delay
 import kotlin.math.PI
 import kotlin.math.sin
 
-/**
- * Stats Screen - Dashboard & Leaderboard - Premium Phase 2 Redesign
- *
- * A completely redesigned stats experience featuring:
- *
- * Design Philosophy:
- * - Extreme minimalism, flat design - NO shadows, gradients, or hi-fi elements
- * - Deep teal dark (#0D2826), clean off-white light (#F0F4F3)
- * - Vibrant neon green accent (#36F97F) for interactive elements
- * - Poppins typography throughout
- * - 8dp grid spacing system
- *
- * Features:
- * - User impact dashboard with large streak display
- * - Activity pulse visualization with wave animation
- * - Summary cards for key metrics
- * - Leaderboard with animated podium banners
- * - Sticky user position at bottom
- * - Support system with boost/respect actions
- */
+// =============================================================================
+// DESIGN SYSTEM CONSTANTS - Stats Screen Redesign
+// Using theme colors from Color.kt for consistent design language
+// =============================================================================
+
+// Vibrant Neon Green Accent - Using theme accent
+private val NeonGreen = ProdyAccentGreen
+private val NeonGreenDark = ProdyAccentGreenDark
+private val NeonGreenLight = ProdyAccentGreenLight
+
+// Dark Mode Card Background - Using theme colors (deep teal #0D2826 based)
+private val DarkCardBackground = ProdySurfaceVariantDark
+private val DarkCardBackgroundElevated = ProdySurfaceContainerDark
+private val DarkBackground = ProdyBackgroundDark
+
+// Light Mode Card Background - Using theme colors (off-white #F0F4F3 based)
+private val LightCardBackground = ProdySurfaceVariantLight
+private val LightCardBackgroundElevated = ProdySurfaceContainerLight
+private val LightBackground = ProdyBackgroundLight
+
+// Leaderboard Tier Colors (Animated Banner Colors) - Using theme colors
+private val GoldBanner = LeaderboardGold
+private val GoldBannerLight = LeaderboardGoldLight
+private val GoldBannerDark = LeaderboardGoldDark
+
+private val SilverBanner = LeaderboardSilver
+private val SilverBannerLight = LeaderboardSilverLight
+private val SilverBannerDark = LeaderboardSilverDark
+
+private val BronzeBanner = LeaderboardBronze
+private val BronzeBannerLight = LeaderboardBronzeLight
+private val BronzeBannerDark = LeaderboardBronzeDark
+
+// =============================================================================
+// MAIN STATS SCREEN
+// =============================================================================
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StatsScreen(
@@ -110,6 +131,14 @@ fun StatsScreen(
         }
     }
 
+    // Background colors based on theme
+    val backgroundColor = if (isDarkTheme) DarkBackground else LightBackground
+    val cardBackgroundColor = if (isDarkTheme) DarkCardBackground else LightCardBackground
+    val cardElevatedColor = if (isDarkTheme) DarkCardBackgroundElevated else LightCardBackgroundElevated
+    val textPrimaryColor = if (isDarkTheme) ProdyTextPrimaryDark else ProdyTextPrimaryLight
+    val textSecondaryColor = if (isDarkTheme) ProdyTextSecondaryDark else ProdyTextSecondaryLight
+    val textTertiaryColor = if (isDarkTheme) ProdyTextTertiaryDark else ProdyTextTertiaryLight
+
     // Support bottom sheet
     if (showSupportSheet && selectedUserForSupport != null) {
         PremiumSupportBottomSheet(
@@ -144,6 +173,20 @@ fun StatsScreen(
             .fillMaxSize()
             .background(backgroundColor)
     ) {
+        // Magical ambient background for immersive stats experience
+        AmbientBackground(
+            modifier = Modifier.fillMaxSize(),
+            timeOfDay = getCurrentTimeOfDay(),
+            intensity = 0.15f
+        )
+
+        // Subtle floating particles for achievement-oriented atmosphere
+        FloatingParticles(
+            modifier = Modifier.fillMaxSize(),
+            particleCount = 8,
+            particleColor = NeonGreen.copy(alpha = 0.3f)
+        )
+
         PullToRefreshBox(
             isRefreshing = isRefreshing,
             onRefresh = { isRefreshing = true },
@@ -410,22 +453,36 @@ private fun PremiumUserStatsSection(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.Top
     ) {
-        // Active Streak (Large, prominent, neon green)
+        // Active Streak (Large, prominent, neon green) with magical flame
         Column {
+            // Animated streak number with flame
             val animatedStreak by animateIntAsState(
                 targetValue = currentStreak,
                 animationSpec = tween(1200, easing = EaseOutCubic),
                 label = "streak_animation"
             )
 
-            Text(
-                text = animatedStreak.toString(),
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.Bold,
-                fontSize = 72.sp,
-                lineHeight = 72.sp,
-                color = accentColor
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = animatedStreak.toString(),
+                    style = MaterialTheme.typography.displayLarge.copy(
+                        fontSize = 72.sp,
+                        lineHeight = 72.sp
+                    ),
+                    color = NeonGreen,
+                    fontWeight = FontWeight.Bold
+                )
+                // Magical animated flame that grows with streak
+                Box(modifier = Modifier.size(48.dp)) {
+                    StreakFlame(
+                        streakDays = currentStreak,
+                        size = 48.dp
+                    )
+                }
+            }
             Text(
                 text = "ACTIVE STREAK",
                 fontFamily = PoppinsFamily,
@@ -631,8 +688,10 @@ private fun PremiumActivityPulseVisualization(
                 val x = index * (barWidth + 12.dp.toPx())
                 val y = height - finalBarHeight
 
-                // Draw bar
-                val barColor = if (value > 0) accentColor else inactiveColor
+                // Draw bar with gradient
+                val barColor = if (value > 0) NeonGreen else {
+                    if (isDarkTheme) ActivityPulseBackground else ActivityPulseBackgroundLight
+                }
 
                 drawRoundRect(
                     color = barColor,
@@ -985,17 +1044,16 @@ private fun PremiumStickyUserSection(
                 ) {
                     Text(
                         text = "YOU",
-                        fontFamily = PoppinsFamily,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 11.sp,
-                        color = Color.Black,
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                        style = MaterialTheme.typography.labelMedium,
+                        color = ProdyTextOnAccentLight,
+                        fontWeight = FontWeight.Bold
                     )
                 }
 
                 Text(
                     text = userName,
-                    fontFamily = PoppinsFamily,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = ProdyTextOnAccentLight,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 15.sp,
                     color = Color.Black,
@@ -1006,7 +1064,7 @@ private fun PremiumStickyUserSection(
                 Icon(
                     imageVector = Icons.Filled.Bolt,
                     contentDescription = null,
-                    tint = Color.Black,
+                    tint = ProdyTextOnAccentLight,
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -1017,17 +1075,14 @@ private fun PremiumStickyUserSection(
             ) {
                 Text(
                     text = formatNumber(userScore),
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp,
-                    color = Color.Black
+                    style = MaterialTheme.typography.titleMedium,
+                    color = ProdyTextOnAccentLight,
+                    fontWeight = FontWeight.Bold
                 )
                 Text(
                     text = "Top $percentile%",
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Normal,
-                    fontSize = 11.sp,
-                    color = Color.Black.copy(alpha = 0.7f)
+                    style = MaterialTheme.typography.labelSmall,
+                    color = ProdyTextOnAccentLight.copy(alpha = 0.7f)
                 )
             }
         }
@@ -1255,10 +1310,9 @@ private fun PremiumSupportActionButton(
             if (!enabled) {
                 Text(
                     text = "Limit reached today",
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Normal,
-                    fontSize = 10.sp,
-                    color = Color(0xFFE65C2C).copy(alpha = 0.7f)
+                    style = MaterialTheme.typography.labelSmall,
+                    color = ProdyError.copy(alpha = 0.7f),
+                    fontSize = 10.sp
                 )
             }
         }

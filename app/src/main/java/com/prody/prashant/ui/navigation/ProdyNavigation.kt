@@ -20,6 +20,9 @@ import com.prody.prashant.ui.screens.journal.JournalListScreen
 import com.prody.prashant.ui.screens.journal.NewJournalEntryScreen
 import com.prody.prashant.ui.screens.meditation.MeditationTimerScreen
 import com.prody.prashant.ui.screens.onboarding.OnboardingScreen
+import com.prody.prashant.ui.screens.profile.AchievementsCollectionScreen
+import com.prody.prashant.ui.screens.profile.BannerSelectionScreen
+import com.prody.prashant.ui.screens.profile.EditProfileScreen
 import com.prody.prashant.ui.screens.profile.ProfileScreen
 import com.prody.prashant.ui.screens.profile.SettingsScreen
 import com.prody.prashant.ui.screens.quotes.QuotesScreen
@@ -69,6 +72,9 @@ sealed class Screen(val route: String) {
     data object WriteMessage : Screen("future_message/write")
     data object Stats : Screen("stats")
     data object Profile : Screen("profile")
+    data object EditProfile : Screen("profile/edit")
+    data object BannerSelection : Screen("profile/banner")
+    data object AchievementsCollection : Screen("profile/achievements")
     data object Settings : Screen("settings")
     data object VocabularyList : Screen("vocabulary")
     data object VocabularyDetail : Screen("vocabulary/{wordId}") {
@@ -311,7 +317,49 @@ fun ProdyNavHost(
             ProfileScreen(
                 onNavigateToSettings = {
                     navController.navigate(Screen.Settings.route)
+                },
+                onNavigateToEditProfile = {
+                    navController.navigate(Screen.EditProfile.route)
+                },
+                onNavigateToAchievements = {
+                    navController.navigate(Screen.AchievementsCollection.route)
                 }
+            )
+        }
+
+        composable(
+            route = Screen.EditProfile.route,
+            // Slide up for edit screens
+            enterTransition = {
+                fadeIn(tween(FADE_DURATION)) + slideInVertically(
+                    initialOffsetY = { it / 4 },
+                    animationSpec = tween(TRANSITION_DURATION, easing = EaseOutQuart)
+                )
+            },
+            popExitTransition = {
+                fadeOut(tween(FADE_DURATION)) + slideOutVertically(
+                    targetOffsetY = { it / 4 },
+                    animationSpec = tween(TRANSITION_DURATION, easing = EaseInQuart)
+                )
+            }
+        ) {
+            EditProfileScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToBannerSelection = {
+                    navController.navigate(Screen.BannerSelection.route)
+                }
+            )
+        }
+
+        composable(Screen.BannerSelection.route) {
+            BannerSelectionScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.AchievementsCollection.route) {
+            AchievementsCollectionScreen(
+                onNavigateBack = { navController.popBackStack() }
             )
         }
 

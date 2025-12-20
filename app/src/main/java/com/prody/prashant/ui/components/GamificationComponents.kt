@@ -15,7 +15,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.blur
+// blur import removed - flat design with no blur effects
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.CornerRadius
@@ -267,6 +267,22 @@ fun PremiumXPBar(
                 .height(height),
             contentAlignment = Alignment.CenterStart
         ) {
+            // Flat design - subtle alpha pulse instead of blur glow
+            if (showGlow && animatedProgress > 0.05f) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(animatedProgress)
+                        .height(height)
+                        .alpha(glowAlpha * animatedProgress * 0.3f)
+                        .background(
+                            Brush.horizontalGradient(
+                                colors = listOf(primaryColor, secondaryColor)
+                            ),
+                            RoundedCornerShape(height / 2)
+                        )
+                )
+            }
+
             // Background track
             Box(
                 modifier = Modifier
@@ -469,6 +485,16 @@ fun LevelProgressRing(
         modifier = modifier.size(size),
         contentAlignment = Alignment.Center
     ) {
+        // Flat design - subtle alpha pulse instead of blur glow
+        if (showGlow) {
+            Box(
+                modifier = Modifier
+                    .size(size)
+                    .alpha(glowAlpha * animatedProgress * 0.2f)
+                    .background(primaryColor, CircleShape)
+            )
+        }
+
         Canvas(modifier = Modifier.size(size)) {
             val stroke = strokeWidth.toPx()
             val radius = (this.size.minDimension - stroke) / 2
@@ -555,6 +581,14 @@ fun RankBadge(
         modifier = modifier.size(size),
         contentAlignment = Alignment.Center
     ) {
+        // Flat design - subtle background accent instead of blur glow
+        Box(
+            modifier = Modifier
+                .size(size)
+                .alpha(0.2f)
+                .background(tierColor, CircleShape)
+        )
+
         // Badge background with metallic gradient
         Canvas(modifier = Modifier.fillMaxSize()) {
             val center = Offset(this.size.width / 2, this.size.height / 2)
@@ -677,6 +711,8 @@ fun PointBurst(
             .alpha(alpha),
         contentAlignment = Alignment.Center
     ) {
+        // Flat design - removed blur glow, using just the surface below
+
         // Points text
         Surface(
             color = GoldTier,
@@ -746,6 +782,15 @@ fun StreakCounter(
     ) {
         if (showFlame && streak > 0) {
             Box(contentAlignment = Alignment.Center) {
+                // Flat design - subtle alpha pulse instead of blur glow
+                Box(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .scale(flameScale)
+                        .alpha(glowAlpha * 0.3f)
+                        .background(StreakFire, CircleShape)
+                )
+
                 // Flame icon
                 Box(
                     modifier = Modifier

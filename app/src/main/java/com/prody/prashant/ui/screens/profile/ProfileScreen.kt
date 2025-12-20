@@ -41,6 +41,10 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import com.prody.prashant.R
 import com.prody.prashant.data.ai.WeeklyPatternResult
 import com.prody.prashant.data.local.entity.AchievementEntity
+import com.prody.prashant.ui.components.AmbientBackground
+import com.prody.prashant.ui.components.FloatingParticles
+import com.prody.prashant.ui.components.MoodBreathingHalo
+import com.prody.prashant.ui.components.getCurrentTimeOfDay
 import com.prody.prashant.ui.theme.*
 import kotlinx.coroutines.delay
 
@@ -64,9 +68,52 @@ import kotlinx.coroutines.delay
  * - Trophy Room achievement showcase
  * - Weekly AI Insights card
  */
+
+// ============================================================================
+// DESIGN SYSTEM COLORS - Identity Room Theme (Using Theme Colors)
+// ============================================================================
+
+private object IdentityRoomColors {
+    // Dark Mode - Using theme colors
+    val BackgroundDark = ProdyBackgroundDark
+    val CardBackgroundDark = ProdySurfaceVariantDark
+    val CardBackgroundElevatedDark = ProdySurfaceContainerDark
+    val AccentGreen = ProdyAccentGreen
+    val AccentGreenDim = ProdyAccentGreenDark
+    val TextPrimaryDark = ProdyTextPrimaryDark
+    val TextSecondaryDark = ProdyTextSecondaryDark
+    val TextTertiaryDark = ProdyTextTertiaryDark
+    val BorderDark = ProdyOutlineDark
+
+    // Light Mode - Using theme colors
+    val BackgroundLight = ProdyBackgroundLight
+    val CardBackgroundLight = ProdySurfaceLight
+    val CardBackgroundElevatedLight = ProdySurfaceContainerLight
+    val AccentGreenLight = ProdyAccentGreen
+    val TextPrimaryLight = ProdyTextPrimaryLight
+    val TextSecondaryLight = ProdyTextSecondaryLight
+    val TextTertiaryLight = ProdyTextTertiaryLight
+    val BorderLight = ProdyOutlineLight
+
+    // Badge Colors - Using theme colors
+    val DevBadgeBackground = ProdySurfaceVariantDark
+    val DevBadgeText = ProdyAccentGreen
+    val BetaBadgeBackground = ProdyPremiumVioletContainer
+    val BetaBadgeText = ProdyPremiumViolet
+
+    // Achievement Rarity - Using theme colors
+    val RarityCommon = com.prody.prashant.ui.theme.RarityCommon
+    val RarityUncommon = com.prody.prashant.ui.theme.RarityUncommon
+    val RarityRare = com.prody.prashant.ui.theme.RarityRare
+    val RarityEpic = com.prody.prashant.ui.theme.RarityEpic
+    val RarityLegendary = com.prody.prashant.ui.theme.RarityLegendary
+}
+
 @Composable
 fun ProfileScreen(
     onNavigateToSettings: () -> Unit,
+    onNavigateToEditProfile: () -> Unit = {},
+    onNavigateToAchievements: () -> Unit = {},
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -94,6 +141,20 @@ fun ProfileScreen(
             .fillMaxSize()
             .background(backgroundColor)
     ) {
+        // Magical ambient background for immersive profile experience
+        AmbientBackground(
+            modifier = Modifier.fillMaxSize(),
+            timeOfDay = getCurrentTimeOfDay(),
+            intensity = 0.1f
+        )
+
+        // Premium floating particles celebrating achievements
+        FloatingParticles(
+            modifier = Modifier.fillMaxSize(),
+            particleCount = 12,
+            particleColor = IdentityRoomColors.AccentGreen.copy(alpha = 0.25f)
+        )
+
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(bottom = 100.dp)
@@ -102,10 +163,8 @@ fun ProfileScreen(
             item {
                 PremiumProfileHeader(
                     onSettingsClick = onNavigateToSettings,
-                    onEditClick = { /* TODO: Edit profile */ },
-                    textPrimary = textPrimary,
-                    textSecondary = textSecondary,
-                    accentColor = accentColor
+                    onEditClick = onNavigateToEditProfile,
+                    isDarkMode = isDarkMode
                 )
             }
 
@@ -120,15 +179,13 @@ fun ProfileScreen(
                 ) {
                     PremiumHeroSection(
                         displayName = uiState.displayName,
+                        bio = uiState.bio,
                         level = getLevelFromPoints(uiState.totalPoints),
                         levelProgress = calculateLevelProgress(uiState.totalPoints),
-                        isDev = true,
-                        isBetaPioneer = true,
-                        accentColor = accentColor,
-                        surfaceColor = surfaceColor,
-                        textPrimary = textPrimary,
-                        textSecondary = textSecondary,
-                        dividerColor = dividerColor
+                        isDev = true, // TODO: Get from user state
+                        isBetaPioneer = true, // TODO: Get from user state
+                        isDarkMode = isDarkMode,
+                        onEditClick = onNavigateToEditProfile
                     )
                 }
             }
@@ -210,10 +267,8 @@ fun ProfileScreen(
                     PremiumTrophyRoomHeader(
                         unlockedCount = uiState.unlockedAchievements.size,
                         totalCount = uiState.unlockedAchievements.size + uiState.lockedAchievements.size,
-                        surfaceColor = surfaceColor,
-                        textPrimary = textPrimary,
-                        textSecondary = textSecondary,
-                        accentColor = accentColor
+                        isDarkMode = isDarkMode,
+                        onClick = onNavigateToAchievements
                     )
                 }
             }
@@ -333,15 +388,13 @@ private fun PremiumProfileHeader(
 @Composable
 private fun PremiumHeroSection(
     displayName: String,
+    bio: String,
     level: Int,
     levelProgress: Float,
     isDev: Boolean,
     isBetaPioneer: Boolean,
-    accentColor: Color,
-    surfaceColor: Color,
-    textPrimary: Color,
-    textSecondary: Color,
-    dividerColor: Color
+    isDarkMode: Boolean,
+    onEditClick: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -349,56 +402,78 @@ private fun PremiumHeroSection(
             .padding(horizontal = 24.dp, vertical = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Avatar with Progress Ring
+        // Avatar with Progress Ring and Magical Breathing Halo
         Box(
             contentAlignment = Alignment.Center,
-            modifier = Modifier.size(140.dp)
+            modifier = Modifier.size(160.dp) // Slightly larger to accommodate halo
         ) {
-            // Animated Neon Progress Ring
-            NeonProgressRing(
-                progress = levelProgress,
-                modifier = Modifier.fillMaxSize(),
-                accentColor = accentColor
+            // Magical breathing halo effect around the avatar
+            MoodBreathingHalo(
+                modifier = Modifier.size(156.dp),
+                baseColor = if (isDarkMode) IdentityRoomColors.AccentGreen.copy(alpha = 0.3f)
+                            else IdentityRoomColors.AccentGreenLight.copy(alpha = 0.25f),
+                pulseIntensity = 0.15f
             )
 
-            // Avatar Circle - Flat design
+            // Avatar container
             Box(
-                modifier = Modifier
-                    .size(110.dp)
-                    .clip(CircleShape)
-                    .background(surfaceColor)
-                    .border(
-                        width = 3.dp,
-                        color = dividerColor,
-                        shape = CircleShape
-                    ),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.size(140.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Filled.Person,
-                    contentDescription = null,
-                    modifier = Modifier.size(56.dp),
-                    tint = textSecondary
+                // Animated Progress Ring
+                NeonProgressRing(
+                    progress = levelProgress,
+                    modifier = Modifier.fillMaxSize(),
+                    accentColor = if (isDarkMode) IdentityRoomColors.AccentGreen
+                                  else IdentityRoomColors.AccentGreenLight
                 )
-            }
 
-            // Level Badge
-            Box(
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .offset(x = (-8).dp, y = (-8).dp)
-                    .size(36.dp)
-                    .clip(CircleShape)
-                    .background(accentColor),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = level.toString(),
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 14.sp,
-                    color = Color.Black
-                )
+                // Avatar Circle
+                Box(
+                    modifier = Modifier
+                        .size(110.dp)
+                        .clip(CircleShape)
+                        .background(
+                            if (isDarkMode) IdentityRoomColors.CardBackgroundDark
+                            else IdentityRoomColors.CardBackgroundLight
+                        )
+                        .border(
+                            width = 3.dp,
+                            color = if (isDarkMode) IdentityRoomColors.BorderDark
+                                    else IdentityRoomColors.BorderLight,
+                            shape = CircleShape
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Person,
+                        contentDescription = null,
+                        modifier = Modifier.size(56.dp),
+                        tint = if (isDarkMode) IdentityRoomColors.TextSecondaryDark
+                               else IdentityRoomColors.TextSecondaryLight
+                    )
+                }
+
+                // Level Badge
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .offset(x = (-8).dp, y = (-8).dp)
+                        .size(36.dp)
+                        .clip(CircleShape)
+                        .background(
+                            if (isDarkMode) IdentityRoomColors.AccentGreen
+                            else IdentityRoomColors.AccentGreenLight
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = level.toString(),
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Black
+                    )
+                }
             }
         }
 
@@ -426,6 +501,61 @@ private fun PremiumHeroSection(
             if (isBetaPioneer) {
                 PremiumBetaPioneerBadge()
             }
+        }
+
+        // Bio Section
+        if (bio.isNotBlank()) {
+            Spacer(modifier = Modifier.height(16.dp))
+            BioSection(
+                bio = bio,
+                isDarkMode = isDarkMode,
+                onEditClick = onEditClick
+            )
+        }
+    }
+}
+
+@Composable
+private fun BioSection(
+    bio: String,
+    isDarkMode: Boolean,
+    onEditClick: () -> Unit
+) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onEditClick() },
+        color = if (isDarkMode) IdentityRoomColors.CardBackgroundDark.copy(alpha = 0.5f)
+                else IdentityRoomColors.CardBackgroundLight.copy(alpha = 0.8f),
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.Top,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.FormatQuote,
+                contentDescription = null,
+                tint = if (isDarkMode) IdentityRoomColors.AccentGreen
+                       else IdentityRoomColors.AccentGreenLight,
+                modifier = Modifier.size(20.dp)
+            )
+            Text(
+                text = bio,
+                style = MaterialTheme.typography.bodyMedium,
+                color = if (isDarkMode) IdentityRoomColors.TextSecondaryDark
+                        else IdentityRoomColors.TextSecondaryLight,
+                modifier = Modifier.weight(1f),
+                lineHeight = 22.sp
+            )
+            Icon(
+                imageVector = Icons.Outlined.Edit,
+                contentDescription = "Edit bio",
+                tint = if (isDarkMode) IdentityRoomColors.TextTertiaryDark
+                       else IdentityRoomColors.TextTertiaryLight,
+                modifier = Modifier.size(16.dp)
+            )
         }
     }
 }
@@ -1057,17 +1187,16 @@ private fun PremiumWeeklyPatternSection(
 private fun PremiumTrophyRoomHeader(
     unlockedCount: Int,
     totalCount: Int,
-    surfaceColor: Color,
-    textPrimary: Color,
-    textSecondary: Color,
-    accentColor: Color
+    isDarkMode: Boolean,
+    onClick: () -> Unit
 ) {
     val goldColor = Color(0xFFD4AF37)
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 16.dp),
+            .clickable { onClick() }
+            .padding(horizontal = 20.dp, vertical = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
@@ -1090,18 +1219,30 @@ private fun PremiumTrophyRoomHeader(
             )
         }
 
-        Surface(
-            color = accentColor.copy(alpha = 0.15f),
-            shape = RoundedCornerShape(12.dp),
-            tonalElevation = 0.dp
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(
-                text = "$unlockedCount / $totalCount",
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 13.sp,
-                color = accentColor,
-                modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)
+            Surface(
+                color = if (isDarkMode) IdentityRoomColors.CardBackgroundDark
+                        else IdentityRoomColors.CardBackgroundLight,
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text(
+                    text = "$unlockedCount / $totalCount",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Medium,
+                    color = if (isDarkMode) IdentityRoomColors.TextSecondaryDark
+                            else IdentityRoomColors.TextSecondaryLight,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                )
+            }
+            Icon(
+                imageVector = Icons.Filled.ChevronRight,
+                contentDescription = "View all achievements",
+                tint = if (isDarkMode) IdentityRoomColors.TextTertiaryDark
+                       else IdentityRoomColors.TextTertiaryLight,
+                modifier = Modifier.size(20.dp)
             )
         }
     }

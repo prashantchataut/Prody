@@ -36,6 +36,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.R
 import com.prody.prashant.data.local.entity.FutureMessageEntity
+import com.prody.prashant.ui.components.DeliveryCountdownAura
 import com.prody.prashant.ui.theme.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -762,7 +763,7 @@ private fun DeliveredMessageCard(
 }
 
 /**
- * Card for pending messages
+ * Card for pending messages with magical countdown aura
  */
 @Composable
 private fun PendingMessageCard(
@@ -779,86 +780,100 @@ private fun PendingMessageCard(
     val primaryTextColor = if (isDarkTheme) TimeCapsuleTextPrimaryDark else TimeCapsuleTextPrimaryLight
     val secondaryTextColor = if (isDarkTheme) TimeCapsuleTextSecondaryDark else TimeCapsuleTextSecondaryLight
 
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        color = cardBgColor
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+    // Wrap with countdown aura for messages close to delivery
+    Box {
+        // Magical countdown aura effect for messages close to delivery
+        DeliveryCountdownAura(
+            daysUntilDelivery = daysRemaining.toInt()
+        )
+
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp),
+            color = cardBgColor
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
                 Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Icon circle
-                    Box(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(CircleShape)
-                            .background(TimeCapsuleAccent.copy(alpha = 0.2f)),
-                        contentAlignment = Alignment.Center
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        Icon(
-                            imageVector = Icons.Filled.HourglassBottom,
-                            contentDescription = null,
-                            tint = TimeCapsuleAccent,
-                            modifier = Modifier.size(20.dp)
-                        )
+                        // Icon circle
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(CircleShape)
+                                .background(TimeCapsuleAccent.copy(alpha = 0.2f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.HourglassBottom,
+                                contentDescription = null,
+                                tint = TimeCapsuleAccent,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+
+                        Column {
+                            Text(
+                                text = message.title,
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Medium,
+                                color = primaryTextColor
+                            )
+                            Text(
+                                text = "Delivers ${dateFormat.format(Date(message.deliveryDate))}",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = secondaryTextColor
+                            )
+                        }
                     }
 
-                    Column {
+                    // Days remaining badge with enhanced styling for close deliveries
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = if (daysRemaining <= 7)
+                            TimeCapsuleAccent.copy(alpha = 0.25f)
+                        else
+                            TimeCapsuleAccent.copy(alpha = 0.15f)
+                    ) {
                         Text(
-                            text = message.title,
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.Medium,
-                            color = primaryTextColor
-                        )
-                        Text(
-                            text = "Delivers ${dateFormat.format(Date(message.deliveryDate))}",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = secondaryTextColor
+                            text = when {
+                                daysRemaining == 0L -> "Today!"
+                                daysRemaining == 1L -> "Tomorrow!"
+                                else -> "$daysRemaining days"
+                            },
+                            style = MaterialTheme.typography.labelMedium,
+                            color = TimeCapsuleAccent,
+                            fontWeight = if (daysRemaining <= 3) FontWeight.Bold else FontWeight.SemiBold,
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
                         )
                     }
                 }
 
-                // Days remaining badge
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Sealed content indicator
                 Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = TimeCapsuleAccent.copy(alpha = 0.15f)
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    color = if (isDarkTheme) TimeCapsuleDashedCircleDark.copy(alpha = 0.5f)
+                    else TimeCapsuleDashedCircleLight
                 ) {
                     Text(
-                        text = when {
-                            daysRemaining == 0L -> "Today"
-                            daysRemaining == 1L -> "Tomorrow"
-                            else -> "$daysRemaining days"
-                        },
-                        style = MaterialTheme.typography.labelMedium,
-                        color = TimeCapsuleAccent,
-                        fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                        text = if (daysRemaining <= 1)
+                            "Almost time to reveal your message..."
+                        else
+                            "Content sealed until delivery...",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = secondaryTextColor.copy(alpha = 0.7f),
+                        modifier = Modifier.padding(12.dp)
                     )
                 }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Sealed content indicator
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                color = if (isDarkTheme) TimeCapsuleDashedCircleDark.copy(alpha = 0.5f)
-                else TimeCapsuleDashedCircleLight
-            ) {
-                Text(
-                    text = "Content sealed until delivery...",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = secondaryTextColor.copy(alpha = 0.7f),
-                    modifier = Modifier.padding(12.dp)
-                )
             }
         }
     }

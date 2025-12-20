@@ -12,24 +12,23 @@ import androidx.compose.ui.unit.sp
 import com.prody.prashant.R
 
 /**
- * Prody Design System - Typography (Phase 2 Redesign)
+ * Prody Design System - Typography (Redesigned)
  *
- * A refined typography system using Poppins EXCLUSIVELY for all UI elements.
- * Playfair Display is retained only for wisdom/philosophical content.
+ * A clean, modern typography system using EXCLUSIVELY Poppins font family
+ * for all text elements throughout the entire application.
  *
- * Design Principles (WCAG AA Compliant):
- * - Font Family: Poppins for ALL text elements (exclusive requirement)
- * - Hierarchy: Meticulously varied weights (Regular, Medium, Bold) and sizes
- * - Readability: Optimized line heights, letter spacing for superior mobile readability
- * - Generous line heights for comfortable reading
- * - Subtle letter spacing for elegance
+ * Design Principles:
+ * - Single font family (Poppins) for visual consistency
  * - Clear weight distinctions for visual hierarchy
- * - Consistent optical sizing across all text styles
+ * - Generous line heights for comfortable reading
+ * - Optimized letter spacing for mobile readability
+ * - WCAG AA contrast compliance for all text sizes
  *
- * Font Loading Strategy:
- * - Uses FontLoadingStrategy.Async for graceful loading with fallback
- * - Each font is individually wrapped with error handling
- * - Fallback fonts are provided at the family level for graceful degradation
+ * Typography Hierarchy:
+ * - Bold: Titles and important numbers
+ * - Medium/SemiBold: Section headers
+ * - Regular: Body text
+ * - Light: Subtle secondary content
  */
 
 private const val TAG = "ProdyTypography"
@@ -37,7 +36,6 @@ private const val TAG = "ProdyTypography"
 /**
  * Creates a safe Font instance with proper error handling.
  * Uses Async loading strategy to prevent crash if font resource is unavailable.
- * The system will fall back to default fonts gracefully.
  */
 private fun safeFont(
     resId: Int,
@@ -58,11 +56,10 @@ private fun safeFont(
 }
 
 /**
- * Primary font family - Poppins (for UI elements)
+ * Primary font family - Poppins (EXCLUSIVE font for all UI elements)
  *
  * Uses async loading strategy to ensure fonts are loaded gracefully,
- * falling back to system fonts if unavailable. Each font weight is loaded individually
- * with error handling to ensure partial font family availability.
+ * falling back to system fonts if unavailable.
  */
 val PoppinsFamily: FontFamily = try {
     val fonts = listOfNotNull(
@@ -92,11 +89,10 @@ val PoppinsFamily: FontFamily = try {
 }
 
 /**
- * Secondary font family - Playfair Display (for wisdom, quotes, and stoic content)
- *
- * This elegant serif font contrasts with Poppins to separate "ancient wisdom"
- * from "modern interface". Uses the same safe loading strategy as Poppins.
+ * Secondary font family - Playfair Display (DEPRECATED - kept for backward compatibility)
+ * All new code should use PoppinsFamily instead.
  */
+@Deprecated("Use PoppinsFamily instead - Prody uses exclusively Poppins", ReplaceWith("PoppinsFamily"))
 val PlayfairFamily: FontFamily = try {
     val fonts = listOfNotNull(
         safeFont(R.font.playfairdisplay_regular, FontWeight.Normal),
@@ -107,22 +103,19 @@ val PlayfairFamily: FontFamily = try {
     )
 
     if (fonts.isEmpty()) {
-        Log.e(TAG, "All Playfair Display fonts failed to load, falling back to system serif")
-        FontFamily.Serif
+        Log.e(TAG, "All Playfair Display fonts failed to load, falling back to Poppins")
+        PoppinsFamily
     } else {
-        if (fonts.size < 5) {
-            Log.w(TAG, "Only ${fonts.size}/5 Playfair Display fonts loaded successfully")
-        }
         FontFamily(fonts)
     }
 } catch (e: Exception) {
     Log.e(TAG, "Failed to initialize Playfair Display font family", e)
-    FontFamily.Serif
+    PoppinsFamily
 }
 
 /**
  * Main Typography configuration following Material Design 3 guidelines
- * with custom refinements for the Prody design language.
+ * with Poppins as the exclusive font family.
  */
 val ProdyTypography = Typography(
     // ==========================================================================
@@ -133,7 +126,7 @@ val ProdyTypography = Typography(
         fontWeight = FontWeight.Bold,
         fontSize = 52.sp,
         lineHeight = 60.sp,
-        letterSpacing = (-0.5).sp  // Tighter tracking for large display
+        letterSpacing = (-0.5).sp
     ),
     displayMedium = TextStyle(
         fontFamily = PoppinsFamily,
@@ -207,7 +200,7 @@ val ProdyTypography = Typography(
         fontFamily = PoppinsFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
-        lineHeight = 26.sp,  // More generous for readability
+        lineHeight = 26.sp,
         letterSpacing = 0.3.sp
     ),
     bodyMedium = TextStyle(
@@ -253,6 +246,7 @@ val ProdyTypography = Typography(
 
 // =============================================================================
 // EXTENDED TYPOGRAPHY - Custom text styles for special use cases
+// All using Poppins exclusively
 // =============================================================================
 
 /**
@@ -263,7 +257,8 @@ val QuoteTextStyle = TextStyle(
     fontWeight = FontWeight.Light,
     fontSize = 18.sp,
     lineHeight = 28.sp,
-    letterSpacing = 0.2.sp
+    letterSpacing = 0.2.sp,
+    fontStyle = FontStyle.Italic
 )
 
 /**
@@ -290,10 +285,11 @@ val CaptionTextStyle = TextStyle(
 
 /**
  * Button text - Emphasized for interactive elements
+ * Note: Uses Regular weight as per design spec (not bold)
  */
 val ButtonTextStyle = TextStyle(
     fontFamily = PoppinsFamily,
-    fontWeight = FontWeight.SemiBold,
+    fontWeight = FontWeight.Normal,  // Regular weight per design spec
     fontSize = 14.sp,
     lineHeight = 20.sp,
     letterSpacing = 0.5.sp
@@ -307,32 +303,31 @@ val OverlineTextStyle = TextStyle(
     fontWeight = FontWeight.SemiBold,
     fontSize = 10.sp,
     lineHeight = 14.sp,
-    letterSpacing = 1.5.sp  // Wide tracking for small caps effect
+    letterSpacing = 1.5.sp
 )
 
 // =============================================================================
-// WISDOM TYPOGRAPHY - Playfair Display for philosophical content
+// WISDOM TYPOGRAPHY - Using Poppins (replacing Playfair)
 // =============================================================================
 
 /**
  * Hero wisdom quote - For Buddha's Thought and featured wisdom cards
- * Large, impactful display with elegant serif presence
  */
 val WisdomHeroStyle = TextStyle(
-    fontFamily = PlayfairFamily,
-    fontWeight = FontWeight.Medium,
+    fontFamily = PoppinsFamily,
+    fontWeight = FontWeight.Light,
     fontSize = 24.sp,
     lineHeight = 34.sp,
     letterSpacing = 0.2.sp,
-    fontStyle = FontStyle.Normal
+    fontStyle = FontStyle.Italic
 )
 
 /**
  * Large wisdom quote - For quote of the day and prominent wisdom
  */
 val WisdomLargeStyle = TextStyle(
-    fontFamily = PlayfairFamily,
-    fontWeight = FontWeight.Normal,
+    fontFamily = PoppinsFamily,
+    fontWeight = FontWeight.Light,
     fontSize = 20.sp,
     lineHeight = 30.sp,
     letterSpacing = 0.15.sp,
@@ -343,7 +338,7 @@ val WisdomLargeStyle = TextStyle(
  * Medium wisdom text - For proverbs, idioms, and journal prompts
  */
 val WisdomMediumStyle = TextStyle(
-    fontFamily = PlayfairFamily,
+    fontFamily = PoppinsFamily,
     fontWeight = FontWeight.Normal,
     fontSize = 18.sp,
     lineHeight = 28.sp,
@@ -354,7 +349,7 @@ val WisdomMediumStyle = TextStyle(
  * Small wisdom text - For secondary wisdom content and attributions
  */
 val WisdomSmallStyle = TextStyle(
-    fontFamily = PlayfairFamily,
+    fontFamily = PoppinsFamily,
     fontWeight = FontWeight.Normal,
     fontSize = 16.sp,
     lineHeight = 24.sp,
@@ -365,8 +360,8 @@ val WisdomSmallStyle = TextStyle(
  * Wisdom attribution - For author names and sources
  */
 val WisdomAttributionStyle = TextStyle(
-    fontFamily = PlayfairFamily,
-    fontWeight = FontWeight.SemiBold,
+    fontFamily = PoppinsFamily,
+    fontWeight = FontWeight.Medium,
     fontSize = 14.sp,
     lineHeight = 20.sp,
     letterSpacing = 0.5.sp
@@ -376,8 +371,8 @@ val WisdomAttributionStyle = TextStyle(
  * Wisdom caption - For small wisdom-related metadata
  */
 val WisdomCaptionStyle = TextStyle(
-    fontFamily = PlayfairFamily,
-    fontWeight = FontWeight.Medium,
+    fontFamily = PoppinsFamily,
+    fontWeight = FontWeight.Normal,
     fontSize = 12.sp,
     lineHeight = 16.sp,
     letterSpacing = 0.4.sp,
@@ -388,8 +383,8 @@ val WisdomCaptionStyle = TextStyle(
  * Journal prompt style - For reflective questions and prompts
  */
 val JournalPromptStyle = TextStyle(
-    fontFamily = PlayfairFamily,
-    fontWeight = FontWeight.Medium,
+    fontFamily = PoppinsFamily,
+    fontWeight = FontWeight.Light,
     fontSize = 18.sp,
     lineHeight = 28.sp,
     letterSpacing = 0.1.sp,
@@ -400,8 +395,8 @@ val JournalPromptStyle = TextStyle(
  * Stoic maxim style - For concise philosophical statements
  */
 val StoicMaximStyle = TextStyle(
-    fontFamily = PlayfairFamily,
-    fontWeight = FontWeight.SemiBold,
+    fontFamily = PoppinsFamily,
+    fontWeight = FontWeight.Medium,
     fontSize = 16.sp,
     lineHeight = 24.sp,
     letterSpacing = 0.3.sp
@@ -618,27 +613,159 @@ val CardCaptionStyle = TextStyle(
 )
 
 // =============================================================================
-// WISDOM SERIF TYPOGRAPHY - Extended Playfair styles
+// WISDOM SERIF TYPOGRAPHY - DEPRECATED (Keeping for backward compatibility)
+// All now redirect to Poppins equivalents
 // =============================================================================
 
 /**
- * Wisdom serif for Buddha's thought - Elegant and contemplative
+ * @deprecated Use WisdomHeroStyle instead
  */
-val WisdomSerifStyle = TextStyle(
-    fontFamily = PlayfairFamily,
+@Deprecated("Use WisdomHeroStyle instead", ReplaceWith("WisdomHeroStyle"))
+val WisdomSerifStyle = WisdomHeroStyle
+
+/**
+ * @deprecated Use WisdomLargeStyle instead
+ */
+@Deprecated("Use WisdomLargeStyle instead", ReplaceWith("WisdomLargeStyle"))
+val WisdomSerifLargeStyle = WisdomLargeStyle
+
+// =============================================================================
+// ONBOARDING SPECIFIC TYPOGRAPHY
+// =============================================================================
+
+/**
+ * Onboarding title - Large, bold, attention-grabbing
+ */
+val OnboardingTitleStyle = TextStyle(
+    fontFamily = PoppinsFamily,
+    fontWeight = FontWeight.Bold,
+    fontSize = 28.sp,
+    lineHeight = 36.sp,
+    letterSpacing = (-0.25).sp
+)
+
+/**
+ * Onboarding subtitle - Secondary explanation text
+ */
+val OnboardingSubtitleStyle = TextStyle(
+    fontFamily = PoppinsFamily,
     fontWeight = FontWeight.Normal,
-    fontSize = 20.sp,
-    lineHeight = 30.sp,
+    fontSize = 16.sp,
+    lineHeight = 24.sp,
+    letterSpacing = 0.1.sp
+)
+
+/**
+ * Onboarding CTA button text
+ */
+val OnboardingButtonStyle = TextStyle(
+    fontFamily = PoppinsFamily,
+    fontWeight = FontWeight.Normal,  // Regular weight per design spec
+    fontSize = 16.sp,
+    lineHeight = 24.sp,
+    letterSpacing = 0.5.sp
+)
+
+// =============================================================================
+// TIME CAPSULE SPECIFIC TYPOGRAPHY
+// =============================================================================
+
+/**
+ * Time capsule section header
+ */
+val TimeCapsuleSectionStyle = TextStyle(
+    fontFamily = PoppinsFamily,
+    fontWeight = FontWeight.SemiBold,
+    fontSize = 12.sp,
+    lineHeight = 16.sp,
+    letterSpacing = 1.0.sp
+)
+
+/**
+ * Time capsule tag text
+ */
+val TimeCapsuleTagStyle = TextStyle(
+    fontFamily = PoppinsFamily,
+    fontWeight = FontWeight.Medium,
+    fontSize = 14.sp,
+    lineHeight = 20.sp,
+    letterSpacing = 0.1.sp
+)
+
+// =============================================================================
+// PROFILE SPECIFIC TYPOGRAPHY
+// =============================================================================
+
+/**
+ * Profile display name
+ */
+val ProfileNameStyle = TextStyle(
+    fontFamily = PoppinsFamily,
+    fontWeight = FontWeight.Bold,
+    fontSize = 24.sp,
+    lineHeight = 32.sp,
     letterSpacing = 0.sp
 )
 
 /**
- * Large wisdom serif - For featured quotes
+ * Profile title/badge text
  */
-val WisdomSerifLargeStyle = TextStyle(
-    fontFamily = PlayfairFamily,
+val ProfileTitleStyle = TextStyle(
+    fontFamily = PoppinsFamily,
     fontWeight = FontWeight.Medium,
+    fontSize = 14.sp,
+    lineHeight = 20.sp,
+    letterSpacing = 0.25.sp
+)
+
+// =============================================================================
+// HOME SCREEN SPECIFIC TYPOGRAPHY
+// =============================================================================
+
+/**
+ * Home greeting text
+ */
+val HomeGreetingStyle = TextStyle(
+    fontFamily = PoppinsFamily,
+    fontWeight = FontWeight.SemiBold,
     fontSize = 24.sp,
-    lineHeight = 34.sp,
+    lineHeight = 32.sp,
     letterSpacing = 0.sp
+)
+
+/**
+ * Quick action tile label
+ */
+val QuickActionLabelStyle = TextStyle(
+    fontFamily = PoppinsFamily,
+    fontWeight = FontWeight.Medium,
+    fontSize = 12.sp,
+    lineHeight = 16.sp,
+    letterSpacing = 0.25.sp
+)
+
+// =============================================================================
+// STATS SCREEN SPECIFIC TYPOGRAPHY
+// =============================================================================
+
+/**
+ * Stats hero number (very large)
+ */
+val StatsHeroNumberStyle = TextStyle(
+    fontFamily = PoppinsFamily,
+    fontWeight = FontWeight.Bold,
+    fontSize = 56.sp,
+    lineHeight = 64.sp,
+    letterSpacing = (-1.0).sp
+)
+
+/**
+ * Stats label
+ */
+val StatsLabelStyle = TextStyle(
+    fontFamily = PoppinsFamily,
+    fontWeight = FontWeight.Medium,
+    fontSize = 12.sp,
+    lineHeight = 16.sp,
+    letterSpacing = 0.5.sp
 )

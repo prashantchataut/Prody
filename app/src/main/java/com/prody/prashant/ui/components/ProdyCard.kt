@@ -1,7 +1,7 @@
 package com.prody.prashant.ui.components
 
 import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateDpAsState
+// animateDpAsState removed - no longer needed for flat design
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
@@ -24,6 +24,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+// shadow import removed - flat design with no shadows
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
@@ -45,9 +46,13 @@ import com.prody.prashant.ui.theme.ProdyTokens
  * All cards feature:
  * - Smooth press animations
  * - Proper accessibility semantics
- * - Flat design (NO shadows, tonalElevation = 0.dp)
- * - Support for custom backgrounds
- * - 20dp corner radius standard
+ * - Flat design (no shadows or elevation)
+ * - Support for custom backgrounds including gradients
+ *
+ * Design principles:
+ * - NO shadows or elevation - strictly flat 2D design
+ * - Clean borders for visual separation
+ * - Subtle background color differentiation
  */
 
 // =============================================================================
@@ -56,7 +61,7 @@ import com.prody.prashant.ui.theme.ProdyTokens
 
 /**
  * Standard card component for content containers.
- * Phase 2: Flat design with no shadows.
+ * Flat design - no shadows or elevation.
  *
  * @param modifier Modifier for the card
  * @param shape Shape of the card corners (default 20dp radius)
@@ -91,7 +96,7 @@ fun ProdyCard(
 
 /**
  * Interactive card with press feedback animation.
- * Phase 2: Flat design with scale animation only.
+ * Flat design - no shadows, uses scale animation for feedback.
  *
  * @param onClick Callback when card is clicked
  * @param modifier Modifier for the card
@@ -147,14 +152,14 @@ fun ProdyClickableCard(
 // =============================================================================
 
 /**
- * Card for prominent content (now flat design, same as ProdyCard).
- * Phase 2: Flat design - elevated appearance achieved via surfaceColor.
+ * Elevated card variant - uses surfaceVariant background for visual distinction.
+ * Flat design - no shadows, relies on background color for hierarchy.
  */
 @Composable
 fun ProdyElevatedCard(
     modifier: Modifier = Modifier,
     shape: Shape = ElevatedCardShape,
-    backgroundColor: Color = MaterialTheme.colorScheme.surface,
+    backgroundColor: Color = MaterialTheme.colorScheme.surfaceVariant,
     contentDescription: String? = null,
     content: @Composable BoxScope.() -> Unit
 ) {
@@ -173,7 +178,7 @@ fun ProdyElevatedCard(
 
 /**
  * Card with gradient background for visual emphasis.
- * Phase 2: Flat design with no shadows.
+ * Flat design - no shadows, gradient provides visual interest.
  *
  * @param gradientColors List of colors for the gradient
  * @param modifier Modifier for the card
@@ -238,8 +243,8 @@ fun ProdyOutlinedCard(
 // =============================================================================
 
 /**
- * Featured card for hero content with visual emphasis.
- * Phase 2: Flat design with no shadows.
+ * Featured card for hero content with extra visual emphasis.
+ * Flat design - uses primaryContainer background for distinction.
  */
 @Composable
 fun ProdyFeaturedCard(
@@ -267,12 +272,12 @@ fun ProdyFeaturedCard(
 // =============================================================================
 
 /**
- * Premium card component with flat design.
- * Phase 2: No shadows or glow effects.
+ * Premium card component with optional border for highlighted states.
+ * Flat design - no shadows or glow effects.
  *
  * Features:
  * - Subtle press animation with spring physics
- * - Flat design (tonalElevation = 0.dp)
+ * - Optional border for visual emphasis
  * - Full accessibility support
  *
  * @param modifier Modifier for the card
@@ -280,7 +285,7 @@ fun ProdyFeaturedCard(
  * @param backgroundColor Background color of the card
  * @param contentColor Content color for text/icons inside the card
  * @param shape Shape of the card corners
- * @param borderColor Optional border color
+ * @param borderColor Optional border color for visual emphasis
  * @param borderWidth Border width when borderColor is specified
  * @param contentDescription Accessibility description
  * @param content Content to display inside the card
@@ -309,40 +314,37 @@ fun ProdyPremiumCard(
         label = "premium_card_scale"
     )
 
-    Box(
-        modifier = modifier.scale(scale)
+    Surface(
+        modifier = modifier
+            .scale(scale)
+            .then(
+                if (onClick != null) {
+                    Modifier.clickable(
+                        interactionSource = interactionSource,
+                        indication = null,
+                        onClick = onClick
+                    )
+                } else Modifier
+            )
+            .then(
+                if (borderColor != null) {
+                    Modifier.border(borderWidth, borderColor, shape)
+                } else Modifier
+            )
+            .semantics {
+                if (contentDescription != null) {
+                    this.contentDescription = contentDescription
+                }
+                if (onClick != null) {
+                    role = Role.Button
+                }
+            },
+        shape = shape,
+        color = backgroundColor,
+        contentColor = contentColor,
+        shadowElevation = 0.dp
     ) {
-        Surface(
-            modifier = Modifier
-                .then(
-                    if (onClick != null) {
-                        Modifier.clickable(
-                            interactionSource = interactionSource,
-                            indication = null,
-                            onClick = onClick
-                        )
-                    } else Modifier
-                )
-                .then(
-                    if (borderColor != null) {
-                        Modifier.border(borderWidth, borderColor, shape)
-                    } else Modifier
-                )
-                .semantics {
-                    if (contentDescription != null) {
-                        this.contentDescription = contentDescription
-                    }
-                    if (onClick != null) {
-                        role = Role.Button
-                    }
-                },
-            shape = shape,
-            color = backgroundColor,
-            contentColor = contentColor,
-            tonalElevation = 0.dp // Flat design
-        ) {
-            Column(content = content)
-        }
+        Column(content = content)
     }
 }
 
@@ -351,8 +353,8 @@ fun ProdyPremiumCard(
 // =============================================================================
 
 /**
- * Premium gradient card with flat design.
- * Phase 2: No shadows or glow effects.
+ * Premium gradient card with gradient background.
+ * Flat design - no shadows or glow effects.
  *
  * @param gradientColors List of colors for the gradient background
  * @param modifier Modifier for the card
@@ -421,6 +423,8 @@ fun ProdyPremiumGradientCard(
 /**
  * Card styled for notification-like content with engaging visuals.
  * Phase 2: Flat design with no shadows.
+ * Card styled for notification-like content with accent border.
+ * Flat design - no shadows, uses accent border for visual emphasis.
  *
  * @param accentColor Accent color for the left border
  * @param modifier Modifier for the card

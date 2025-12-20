@@ -14,7 +14,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.blur
+// blur import removed - flat design with no blur effects
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
@@ -101,6 +101,18 @@ fun StreakBadge(
         modifier = modifier.semantics { contentDescription = description },
         contentAlignment = Alignment.Center
     ) {
+        // Flat design - subtle alpha pulse instead of blur glow (only when active)
+        if (streakDays > 0 && showAnimation) {
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .scale(scale)
+                    .alpha(glowAlpha * 0.15f)
+                    .clip(StreakBadgeShape)
+                    .background(primaryColor)
+            )
+        }
+
         // Main badge
         Row(
             modifier = Modifier

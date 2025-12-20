@@ -76,7 +76,10 @@ fun AiDebugScreen(
                             contentDescription = "Refresh"
                         )
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background
+                )
             )
         }
     ) { padding ->

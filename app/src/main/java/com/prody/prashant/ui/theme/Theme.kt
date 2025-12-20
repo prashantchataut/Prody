@@ -21,44 +21,45 @@ import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 
 /**
- * Prody Design System - Theme Configuration
+ * Prody Design System - Theme Configuration (Redesigned)
  *
- * A comprehensive theme setup that provides:
- * - Light and Dark color schemes with carefully designed contrast ratios
- * - Support for Material You dynamic colors (Android 12+)
- * - Extended spacing system for consistent layouts
- * - Proper system UI handling for edge-to-edge experience
+ * A premium, minimalist theme following strict flat design principles:
+ * - NO shadows, gradients, or skeuomorphism
+ * - Deep dark teal backgrounds (#0D2826) for dark mode
+ * - Clean off-white backgrounds (#F0F4F3) for light mode
+ * - Vibrant neon green accent (#36F97F) for interactive elements
  *
- * Accessibility Compliance:
- * - All color combinations meet WCAG 2.1 AA contrast requirements (4.5:1 for text)
- * - Interactive elements have sufficient contrast (3:1 minimum)
- * - Focus states and selection indicators are clearly visible
+ * Design Philosophy:
+ * - Extreme minimalism and cleanliness
+ * - Strong visual hierarchy through color and typography
+ * - Consistent 8dp spacing grid
+ * - WCAG AA accessibility compliance
  */
 
 // =============================================================================
-// LIGHT COLOR SCHEME - Forest & Warmth Palette
+// LIGHT COLOR SCHEME - Clean, Bright Aesthetic
 // =============================================================================
 
 private val LightColorScheme = lightColorScheme(
-    // Primary colors
+    // Primary - Vibrant Neon Green
     primary = ProdyPrimary,
     onPrimary = ProdyOnPrimary,
     primaryContainer = ProdyPrimaryContainer,
-    onPrimaryContainer = ProdyPrimaryVariant,
+    onPrimaryContainer = ProdyTextPrimaryLight,
 
-    // Secondary colors
+    // Secondary - Dark for contrast
     secondary = ProdySecondary,
     onSecondary = ProdyOnSecondary,
-    secondaryContainer = ProdySecondary.copy(alpha = 0.24f),
-    onSecondaryContainer = ProdyOnSecondary,
+    secondaryContainer = ProdySurfaceContainerLight,
+    onSecondaryContainer = ProdyTextPrimaryLight,
 
-    // Tertiary colors
+    // Tertiary - Medium gray
     tertiary = ProdyTertiary,
     onTertiary = ProdyOnTertiary,
     tertiaryContainer = ProdyTertiaryContainer,
-    onTertiaryContainer = ProdyPrimaryVariant,
+    onTertiaryContainer = ProdyTextPrimaryLight,
 
-    // Background & surface
+    // Background & Surface - Clean whites
     background = ProdyBackground,
     onBackground = ProdyOnBackground,
     surface = ProdySurface,
@@ -66,10 +67,10 @@ private val LightColorScheme = lightColorScheme(
     surfaceVariant = ProdySurfaceVariant,
     onSurfaceVariant = ProdyOnSurfaceVariant,
 
-    // Surface tones for elevation
-    surfaceTint = ProdyPrimary,
-    inverseSurface = ProdyOnSurface,
-    inverseOnSurface = ProdySurface,
+    // Surface tones (flat - no elevation tinting)
+    surfaceTint = Color.Transparent, // NO tinting for flat design
+    inverseSurface = ProdyBackgroundDark,
+    inverseOnSurface = ProdyTextPrimaryDark,
     inversePrimary = ProdyPrimaryDark,
 
     // Error colors
@@ -87,29 +88,29 @@ private val LightColorScheme = lightColorScheme(
 )
 
 // =============================================================================
-// DARK COLOR SCHEME - Night Forest Palette
+// DARK COLOR SCHEME - Deep Teal/Green Aesthetic
 // =============================================================================
 
 private val DarkColorScheme = darkColorScheme(
-    // Primary colors
+    // Primary - Vibrant Neon Green (same in both themes)
     primary = ProdyPrimaryDark,
     onPrimary = ProdyOnPrimaryDark,
     primaryContainer = ProdyPrimaryContainerDark,
-    onPrimaryContainer = ProdyPrimaryDark,
+    onPrimaryContainer = ProdyTextPrimaryDark,
 
-    // Secondary colors
+    // Secondary - White for contrast
     secondary = ProdySecondaryDark,
     onSecondary = ProdyOnSecondaryDark,
     secondaryContainer = ProdySecondaryContainerDark,
-    onSecondaryContainer = ProdySecondaryDark,
+    onSecondaryContainer = ProdyTextPrimaryDark,
 
-    // Tertiary colors
+    // Tertiary - Light gray
     tertiary = ProdyTertiaryDark,
     onTertiary = ProdyOnTertiaryDark,
     tertiaryContainer = ProdyTertiaryContainerDark,
-    onTertiaryContainer = ProdyTertiaryDark,
+    onTertiaryContainer = ProdyTextPrimaryDark,
 
-    // Background & surface
+    // Background & Surface - Deep teal/green
     background = ProdyBackgroundDark,
     onBackground = ProdyOnBackgroundDark,
     surface = ProdySurfaceDark,
@@ -117,10 +118,10 @@ private val DarkColorScheme = darkColorScheme(
     surfaceVariant = ProdySurfaceVariantDark,
     onSurfaceVariant = ProdyOnSurfaceVariantDark,
 
-    // Surface tones for elevation
-    surfaceTint = ProdyPrimaryDark,
-    inverseSurface = ProdyOnSurfaceDark,
-    inverseOnSurface = ProdySurfaceDark,
+    // Surface tones (flat - no elevation tinting)
+    surfaceTint = Color.Transparent, // NO tinting for flat design
+    inverseSurface = ProdyBackground,
+    inverseOnSurface = ProdyTextPrimaryLight,
     inversePrimary = ProdyPrimary,
 
     // Error colors
@@ -148,38 +149,39 @@ enum class ThemeMode {
 }
 
 // =============================================================================
-// EXTENDED SPACING SYSTEM
+// EXTENDED SPACING SYSTEM - 8dp Grid
 // =============================================================================
 
 /**
  * Spacing values for consistent layout throughout the app.
- * Based on an 4dp base unit with harmonious scaling.
+ * Based on an 8dp grid system with 4dp fine-tuning.
  */
 data class ProdySpacing(
     val none: Dp = 0.dp,
-    val extraSmall: Dp = 4.dp,
-    val small: Dp = 8.dp,
-    val medium: Dp = 12.dp,
-    val default: Dp = 16.dp,
-    val large: Dp = 20.dp,
-    val extraLarge: Dp = 24.dp,
-    val xxl: Dp = 32.dp,
-    val xxxl: Dp = 40.dp,
-    val huge: Dp = 48.dp,
-    val massive: Dp = 64.dp
+    val extraSmall: Dp = 4.dp,    // 4dp - fine adjustments
+    val small: Dp = 8.dp,         // 8dp - base unit
+    val medium: Dp = 12.dp,       // 12dp
+    val default: Dp = 16.dp,      // 16dp - 2x base
+    val large: Dp = 20.dp,        // 20dp
+    val extraLarge: Dp = 24.dp,   // 24dp - 3x base
+    val xxl: Dp = 32.dp,          // 32dp - 4x base
+    val xxxl: Dp = 40.dp,         // 40dp - 5x base
+    val huge: Dp = 48.dp,         // 48dp - 6x base
+    val massive: Dp = 64.dp       // 64dp - 8x base
 )
 
 /**
- * Elevation values for consistent depth throughout the app.
+ * Elevation values - FLAT DESIGN means minimal to no elevation.
+ * Only use for semantic layering, not visual shadows.
  */
 data class ProdyElevation(
-    val none: Dp = 0.dp,
-    val extraSmall: Dp = 1.dp,
-    val small: Dp = 2.dp,
-    val medium: Dp = 4.dp,
-    val large: Dp = 6.dp,
-    val extraLarge: Dp = 8.dp,
-    val overlay: Dp = 12.dp
+    val none: Dp = 0.dp,          // No elevation - default
+    val extraSmall: Dp = 0.dp,    // Flat
+    val small: Dp = 0.dp,         // Flat
+    val medium: Dp = 0.dp,        // Flat
+    val large: Dp = 0.dp,         // Flat
+    val extraLarge: Dp = 0.dp,    // Flat
+    val overlay: Dp = 0.dp        // Flat - use scrim instead
 )
 
 // Composition locals for extended theme values
@@ -195,12 +197,13 @@ val LocalProdyElevation = staticCompositionLocalOf { ProdyElevation() }
  *
  * @param themeMode The preferred theme mode (LIGHT, DARK, or SYSTEM)
  * @param dynamicColor Whether to use Material You dynamic colors (Android 12+)
+ *                     Note: Disabled by default to maintain brand consistency
  * @param content The app content to be themed
  */
 @Composable
 fun ProdyTheme(
     themeMode: ThemeMode = ThemeMode.SYSTEM,
-    dynamicColor: Boolean = false,
+    dynamicColor: Boolean = false, // Disabled by default for brand consistency
     content: @Composable () -> Unit
 ) {
     // Determine if dark theme should be used
@@ -227,8 +230,6 @@ fun ProdyTheme(
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
-            // Safely obtain Activity context - prevents crash on non-Activity contexts
-            // This can occur during preview mode, widget rendering, or service contexts
             val activity = view.context as? Activity
             if (activity != null) {
                 try {
@@ -237,12 +238,18 @@ fun ProdyTheme(
                         // Enable edge-to-edge display
                         WindowCompat.setDecorFitsSystemWindows(window, false)
 
-                        // Set transparent system bars
+                        // Set system bar colors to match theme background
+                        val statusBarColor = if (darkTheme) {
+                            ProdyBackgroundDark.toArgb()
+                        } else {
+                            ProdyBackground.toArgb()
+                        }
+
                         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
                             @Suppress("DEPRECATION")
-                            window.statusBarColor = Color.Transparent.toArgb()
+                            window.statusBarColor = statusBarColor
                             @Suppress("DEPRECATION")
-                            window.navigationBarColor = Color.Transparent.toArgb()
+                            window.navigationBarColor = statusBarColor
                         }
 
                         // Configure system bar icon colors based on theme
@@ -252,8 +259,6 @@ fun ProdyTheme(
                         }
                     }
                 } catch (e: Exception) {
-                    // Silently handle window configuration errors to prevent crash
-                    // This can occur during rapid lifecycle transitions or edge cases
                     android.util.Log.w("ProdyTheme", "Failed to configure system UI: ${e.message}")
                 }
             }
@@ -279,7 +284,7 @@ fun ProdyTheme(
 // =============================================================================
 
 /**
- * Access spacing values from anywhere in the composition.
+ * Access extended theme values from anywhere in the composition.
  * Usage: ProdyTheme.spacing.medium
  */
 object ProdyTheme {
@@ -290,4 +295,72 @@ object ProdyTheme {
     val elevation: ProdyElevation
         @Composable
         get() = LocalProdyElevation.current
+}
+
+// =============================================================================
+// THEME UTILITY EXTENSIONS
+// =============================================================================
+
+/**
+ * Check if the current theme is dark mode.
+ * Usage: val isDark = MaterialTheme.colorScheme.isDarkTheme()
+ */
+@Composable
+fun isDarkTheme(): Boolean {
+    return MaterialTheme.colorScheme.background == ProdyBackgroundDark
+}
+
+/**
+ * Get the appropriate text color based on background.
+ */
+@Composable
+fun getTextPrimary(): Color {
+    return if (isDarkTheme()) ProdyTextPrimaryDark else ProdyTextPrimaryLight
+}
+
+@Composable
+fun getTextSecondary(): Color {
+    return if (isDarkTheme()) ProdyTextSecondaryDark else ProdyTextSecondaryLight
+}
+
+@Composable
+fun getTextTertiary(): Color {
+    return if (isDarkTheme()) ProdyTextTertiaryDark else ProdyTextTertiaryLight
+}
+
+/**
+ * Get the accent color - consistent across themes
+ */
+fun getAccentColor(): Color = ProdyAccentGreen
+
+/**
+ * Get the appropriate surface color
+ */
+@Composable
+fun getSurfaceColor(): Color {
+    return if (isDarkTheme()) ProdySurfaceDark else ProdySurfaceLight
+}
+
+/**
+ * Get the appropriate surface variant color
+ */
+@Composable
+fun getSurfaceVariantColor(): Color {
+    return if (isDarkTheme()) ProdySurfaceVariantDark else ProdySurfaceVariantLight
+}
+
+/**
+ * Get the appropriate outline color
+ */
+@Composable
+fun getOutlineColor(): Color {
+    return if (isDarkTheme()) ProdyOutlineDark else ProdyOutlineLight
+}
+
+/**
+ * Get the appropriate divider color
+ */
+@Composable
+fun getDividerColor(): Color {
+    return if (isDarkTheme()) ProdyDividerDark else ProdyDividerLight
 }

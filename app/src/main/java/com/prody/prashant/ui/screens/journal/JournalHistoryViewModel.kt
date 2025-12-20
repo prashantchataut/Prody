@@ -21,17 +21,38 @@ data class JournalHistoryUiState(
     val olderEntries: List<JournalEntryEntity> = emptyList(),
     val displayedOlderCount: Int = INITIAL_OLDER_DISPLAY_COUNT,
     val totalOlderCount: Int = 0,
+    val totalEntryCount: Int = 0,
     val isLoading: Boolean = true,
     val error: String? = null,
     val selectedFilterMood: String? = null,
+    val showBookmarkedOnly: Boolean = false,
+    val dateRangeFilter: DateRangeFilter = DateRangeFilter.ALL_TIME,
     val sortOrder: SortOrder = SortOrder.NEWEST_FIRST
-)
+) {
+    val hasActiveFilters: Boolean
+        get() = selectedFilterMood != null || showBookmarkedOnly || dateRangeFilter != DateRangeFilter.ALL_TIME
+
+    val activeFilterCount: Int
+        get() = listOfNotNull(
+            selectedFilterMood,
+            if (showBookmarkedOnly) "bookmarked" else null,
+            if (dateRangeFilter != DateRangeFilter.ALL_TIME) "date" else null
+        ).size
+}
 
 enum class SortOrder {
     NEWEST_FIRST,
     OLDEST_FIRST,
     HIGHEST_INTENSITY,
     LOWEST_INTENSITY
+}
+
+enum class DateRangeFilter {
+    ALL_TIME,
+    THIS_WEEK,
+    THIS_MONTH,
+    LAST_3_MONTHS,
+    THIS_YEAR
 }
 
 private const val INITIAL_OLDER_DISPLAY_COUNT = 5
@@ -46,6 +67,8 @@ class JournalHistoryViewModel @Inject constructor(
     val uiState: StateFlow<JournalHistoryUiState> = _uiState.asStateFlow()
 
     private val _selectedFilterMood = MutableStateFlow<String?>(null)
+    private val _showBookmarkedOnly = MutableStateFlow(false)
+    private val _dateRangeFilter = MutableStateFlow(DateRangeFilter.ALL_TIME)
     private val _sortOrder = MutableStateFlow(SortOrder.NEWEST_FIRST)
 
     init {
@@ -58,13 +81,42 @@ class JournalHistoryViewModel @Inject constructor(
                 combine(
                     journalDao.getAllEntries(),
                     _selectedFilterMood,
+                    _showBookmarkedOnly,
+                    _dateRangeFilter,
                     _sortOrder
-                ) { allEntries, filterMood, sortOrder ->
+                ) { allEntries, filterMood, bookmarkedOnly, dateRange, sortOrder ->
                     // Apply mood filter if selected
-                    val filteredEntries = if (filterMood != null) {
+                    var filteredEntries = if (filterMood != null) {
                         allEntries.filter { it.mood.equals(filterMood, ignoreCase = true) }
                     } else {
                         allEntries
+                    }
+
+                    // Apply bookmarked filter
+                    if (bookmarkedOnly) {
+                        filteredEntries = filteredEntries.filter { it.isBookmarked }
+                    }
+
+                    // Apply date range filter
+                    val now = System.currentTimeMillis()
+                    filteredEntries = when (dateRange) {
+                        DateRangeFilter.ALL_TIME -> filteredEntries
+                        DateRangeFilter.THIS_WEEK -> {
+                            val startOfWeek = getStartOfWeek(now)
+                            filteredEntries.filter { it.createdAt >= startOfWeek }
+                        }
+                        DateRangeFilter.THIS_MONTH -> {
+                            val startOfMonth = getStartOfMonth(now)
+                            filteredEntries.filter { it.createdAt >= startOfMonth }
+                        }
+                        DateRangeFilter.LAST_3_MONTHS -> {
+                            val threeMonthsAgo = getMonthsAgo(now, 3)
+                            filteredEntries.filter { it.createdAt >= threeMonthsAgo }
+                        }
+                        DateRangeFilter.THIS_YEAR -> {
+                            val startOfYear = getStartOfYear(now)
+                            filteredEntries.filter { it.createdAt >= startOfYear }
+                        }
                     }
 
                     // Apply sort order
@@ -75,8 +127,7 @@ class JournalHistoryViewModel @Inject constructor(
                         SortOrder.LOWEST_INTENSITY -> filteredEntries.sortedBy { it.moodIntensity }
                     }
 
-                    // Get time boundaries
-                    val now = System.currentTimeMillis()
+                    // Get time boundaries for grouping
                     val startOfThisWeek = getStartOfWeek(now)
                     val startOfLastWeek = getStartOfWeek(now - 7 * 24 * 60 * 60 * 1000L)
 
@@ -92,10 +143,13 @@ class JournalHistoryViewModel @Inject constructor(
                         lastWeekEntries = lastWeek,
                         olderEntries = older,
                         totalOlderCount = older.size,
+                        totalEntryCount = allEntries.size,
                         displayedOlderCount = _uiState.value.displayedOlderCount,
                         isLoading = false,
                         error = null,
                         selectedFilterMood = filterMood,
+                        showBookmarkedOnly = bookmarkedOnly,
+                        dateRangeFilter = dateRange,
                         sortOrder = sortOrder
                     )
                 }.collect { state ->
@@ -115,8 +169,22 @@ class JournalHistoryViewModel @Inject constructor(
         _selectedFilterMood.value = mood
     }
 
+    fun setBookmarkedOnly(enabled: Boolean) {
+        _showBookmarkedOnly.value = enabled
+    }
+
+    fun setDateRangeFilter(range: DateRangeFilter) {
+        _dateRangeFilter.value = range
+    }
+
     fun setSortOrder(order: SortOrder) {
         _sortOrder.value = order
+    }
+
+    fun clearAllFilters() {
+        _selectedFilterMood.value = null
+        _showBookmarkedOnly.value = false
+        _dateRangeFilter.value = DateRangeFilter.ALL_TIME
     }
 
     fun loadMoreOlderEntries() {
@@ -139,6 +207,42 @@ class JournalHistoryViewModel @Inject constructor(
         val calendar = Calendar.getInstance().apply {
             timeInMillis = timestamp
             set(Calendar.DAY_OF_WEEK, firstDayOfWeek)
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+        return calendar.timeInMillis
+    }
+
+    private fun getStartOfMonth(timestamp: Long): Long {
+        val calendar = Calendar.getInstance().apply {
+            timeInMillis = timestamp
+            set(Calendar.DAY_OF_MONTH, 1)
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+        return calendar.timeInMillis
+    }
+
+    private fun getMonthsAgo(timestamp: Long, months: Int): Long {
+        val calendar = Calendar.getInstance().apply {
+            timeInMillis = timestamp
+            add(Calendar.MONTH, -months)
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+        return calendar.timeInMillis
+    }
+
+    private fun getStartOfYear(timestamp: Long): Long {
+        val calendar = Calendar.getInstance().apply {
+            timeInMillis = timestamp
+            set(Calendar.DAY_OF_YEAR, 1)
             set(Calendar.HOUR_OF_DAY, 0)
             set(Calendar.MINUTE, 0)
             set(Calendar.SECOND, 0)

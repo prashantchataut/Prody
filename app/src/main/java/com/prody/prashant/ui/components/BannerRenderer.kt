@@ -19,7 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.blur
+// blur import removed - flat design with no blur effects
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -36,6 +36,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.prody.prashant.domain.identity.ProdyBanners
 import com.prody.prashant.domain.identity.ProdyBanners.PatternType
+import com.prody.prashant.ui.theme.ProdyAccentGreen
+import com.prody.prashant.ui.theme.ProdyBackgroundDark
+import com.prody.prashant.ui.theme.ProdyPremiumViolet
+import com.prody.prashant.ui.theme.ProdyPremiumVioletLight
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
@@ -353,18 +357,26 @@ fun DevBadge(
             .clip(RoundedCornerShape(4.dp)),
         contentAlignment = Alignment.Center
     ) {
+        // Flat design - subtle alpha pulse background instead of blur glow
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .alpha(glowAlpha * 0.3f)
+                .background(
+                    Brush.horizontalGradient(
+                        colors = listOf(
+                            ProdyAccentGreen.copy(alpha = 0.3f),
+                            ProdyAccentGreen.copy(alpha = 0.2f)
+                        )
+                    )
+                )
+        )
+
         // Main background with code pattern
         Box(
             modifier = Modifier
                 .matchParentSize()
-                .background(
-                    Brush.horizontalGradient(
-                        colors = listOf(
-                            Color(0xFF1A1A2E),
-                            Color(0xFF16213E)
-                        )
-                    )
-                )
+                .background(ProdyBackgroundDark)
         ) {
             // Flowing code effect (subtle)
             Canvas(
@@ -377,7 +389,7 @@ fun DevBadge(
                     val y = (size.height / lineCount) * i + (codeScroll * size.height / lineCount)
                     val adjustedY = y % size.height
                     drawLine(
-                        color = Color(0xFF00FF00),
+                        color = Color(0xFF36F97F), // ProdyAccentGreen
                         start = Offset(0f, adjustedY),
                         end = Offset(size.width * 0.6f, adjustedY),
                         strokeWidth = 1f
@@ -398,14 +410,14 @@ fun DevBadge(
             Icon(
                 imageVector = Icons.Filled.Code,
                 contentDescription = "Developer",
-                tint = Color(0xFF00FF00),
+                tint = ProdyAccentGreen,
                 modifier = Modifier.size(12.dp)
             )
             Text(
                 text = "DEV",
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF00FF00),
+                color = ProdyAccentGreen,
                 fontSize = 10.sp
             )
         }
@@ -439,8 +451,8 @@ fun BetaBadge(
             .background(
                 Brush.horizontalGradient(
                     colors = listOf(
-                        Color(0xFF6B5CE7),
-                        Color(0xFF9B8AFF)
+                        ProdyPremiumViolet,
+                        ProdyPremiumVioletLight
                     )
                 )
             ),

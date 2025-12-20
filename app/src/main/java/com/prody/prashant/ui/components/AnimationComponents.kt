@@ -10,7 +10,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.blur
+// blur import removed - flat design with no blur effects
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
@@ -115,7 +115,15 @@ fun PulsingGlow(
         label = "pulse_alpha"
     )
 
+    // Flat design - subtle alpha pulse instead of blur glow
     Box(modifier = modifier, contentAlignment = Alignment.Center) {
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .scale(scale)
+                .alpha(alpha * 0.3f)
+                .background(color, CircleShape)
+        )
         content()
     }
 }
