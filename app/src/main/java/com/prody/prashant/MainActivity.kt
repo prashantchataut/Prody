@@ -24,6 +24,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,6 +34,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import com.prody.prashant.ui.theme.PoppinsFamily
+import com.prody.prashant.ui.theme.ProdyAccent
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -510,74 +513,59 @@ private fun ProdyBottomNavBar(
 @Composable
 private fun ProdyNavItem(
     item: BottomNavItem,
-    isSelected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    selected: Boolean,
+    accentColor: Color,
+    accentBackground: Color,
+    inactiveColor: Color,
+    onClick: () -> Unit
 ) {
-    val accentColor = MaterialTheme.colorScheme.primary
+    val scale by animateFloatAsState(
+        targetValue = if (selected) 1.05f else 1f,
+        animationSpec = tween(durationMillis = 200),
+        label = "scale"
+    )
 
     Column(
-        modifier = modifier
-            .clip(RoundedCornerShape(12.dp))
-            .then(
-                if (isSelected) {
-                    Modifier.background(accentColor.copy(alpha = 0.1f))
-                } else {
-                    Modifier
-                }
+        modifier = Modifier
+            .clip(RoundedCornerShape(16.dp))
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null, // No ripple for cleaner look
+                onClick = onClick
             )
-            .padding(vertical = 8.dp, horizontal = 4.dp),
+            .padding(horizontal = 16.dp, vertical = 4.dp)
+            .scale(scale),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // Icon with animated selection state
-        IconButton(
-            onClick = onClick,
-            modifier = Modifier.size(48.dp) // WCAG AA minimum touch target
+        // Icon with optional green circular background for active state
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .clip(CircleShape)
+                .background(
+                    if (selected) accentBackground else Color.Transparent
+                ),
+            contentAlignment = Alignment.Center
         ) {
-            Box(contentAlignment = Alignment.Center) {
-                // Selection indicator dot (above icon when selected)
-                AnimatedVisibility(
-                    visible = isSelected,
-                    enter = scaleIn(
-                        animationSpec = spring(
-                            dampingRatio = Spring.DampingRatioMediumBouncy,
-                            stiffness = Spring.StiffnessMedium
-                        )
-                    ) + fadeIn(),
-                    exit = scaleOut() + fadeOut()
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .offset(y = (-18).dp)
-                            .size(6.dp)
-                            .clip(CircleShape)
-                            .background(accentColor)
-                    )
-                }
-
-                Icon(
-                    imageVector = if (isSelected) item.selectedIcon else item.unselectedIcon,
-                    contentDescription = stringResource(item.contentDescriptionResId),
-                    tint = if (isSelected) {
-                        accentColor
-                    } else {
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    },
-                    modifier = Modifier.size(24.dp)
-                )
-            }
+            Icon(
+                imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
+                contentDescription = stringResource(item.contentDescriptionResId),
+                modifier = Modifier.size(24.dp),
+                tint = if (selected) accentColor else inactiveColor
+            )
         }
 
-        // Label with animated color
+        Spacer(modifier = Modifier.height(4.dp))
+
+        // Label with Poppins typography
         Text(
             text = stringResource(item.labelResId),
-            style = MaterialTheme.typography.labelSmall,
-            color = if (isSelected) {
-                accentColor
-            } else {
-                MaterialTheme.colorScheme.onSurfaceVariant
-            }
+            fontFamily = PoppinsFamily,
+            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+            fontSize = 11.sp,
+            color = if (selected) accentColor else inactiveColor,
+            letterSpacing = 0.2.sp
         )
     }
 }

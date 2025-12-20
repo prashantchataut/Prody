@@ -797,11 +797,7 @@ fun StreakCounter(
                         .size(32.dp)
                         .scale(flameScale)
                         .clip(CircleShape)
-                        .background(
-                            Brush.verticalGradient(
-                                colors = listOf(StreakGlow, StreakFire)
-                            )
-                        ),
+                        .background(StreakFire),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(

@@ -91,7 +91,7 @@ import com.prody.prashant.ui.theme.StreakFire
 import kotlinx.coroutines.delay
 
 /**
- * Prody Design System - Lively Notification Components
+ * Prody Design System - Lively Notification Components (Phase 2 Redesign)
  *
  * Fun, engaging notification components inspired by Duolingo's playful style
  * but adapted to fit Prody's calming, mature aesthetic.
@@ -100,7 +100,7 @@ import kotlinx.coroutines.delay
  * - Celebratory without being overwhelming
  * - Playful animations that feel earned
  * - Encouraging language, not pushy
- * - Premium feel with subtle effects
+ * - Premium feel with flat design (NO shadows)
  */
 
 // =============================================================================
@@ -406,6 +406,7 @@ fun StreakNotification(
                 .fillMaxWidth()
                 .padding(ProdyTokens.Spacing.lg)
                 .clip(RoundedCornerShape(ProdyTokens.Radius.xxl))
+                .background(MaterialTheme.colorScheme.surface)
                 .border(1.dp, StreakFire.copy(alpha = 0.3f), RoundedCornerShape(ProdyTokens.Radius.xxl))
                 .background(
                     Brush.verticalGradient(

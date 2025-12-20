@@ -734,7 +734,8 @@ private fun FeatureChip(
 
     Surface(
         shape = RoundedCornerShape(24.dp),
-        color = chipBg
+        color = chipBg,
+        tonalElevation = 0.dp // Flat design
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
@@ -2378,7 +2379,8 @@ private fun LoginButton(
         onClick = onClick,
         modifier = modifier.height(58.dp),
         shape = RoundedCornerShape(29.dp),
-        color = AccentGreen
+        color = AccentGreen,
+        tonalElevation = 0.dp // Flat design
     ) {
         Row(
             modifier = Modifier
@@ -2462,7 +2464,8 @@ private fun SocialLoginButton(
         onClick = onClick,
         modifier = modifier.height(58.dp),
         shape = RoundedCornerShape(29.dp),
-        color = backgroundColor
+        color = backgroundColor,
+        tonalElevation = 0.dp // Flat design
     ) {
         Box(
             modifier = Modifier.fillMaxSize(),
@@ -2626,7 +2629,8 @@ private fun ProdyOnboardingButton(
         onClick = onClick,
         modifier = modifier.height(58.dp),
         shape = RoundedCornerShape(29.dp),
-        color = AccentGreen
+        color = AccentGreen,
+        tonalElevation = 0.dp // Flat design
     ) {
         Row(
             modifier = Modifier

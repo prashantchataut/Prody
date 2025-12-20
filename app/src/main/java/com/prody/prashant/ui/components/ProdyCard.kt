@@ -40,9 +40,9 @@ import com.prody.prashant.ui.theme.FeaturedCardShape
 import com.prody.prashant.ui.theme.ProdyTokens
 
 /**
- * Prody Design System - Card Components
+ * Prody Design System - Card Components (Phase 2 Redesign)
  *
- * A collection of card components with various styles for different use cases.
+ * A collection of card components with flat, minimalist design.
  * All cards feature:
  * - Smooth press animations
  * - Proper accessibility semantics
@@ -64,7 +64,7 @@ import com.prody.prashant.ui.theme.ProdyTokens
  * Flat design - no shadows or elevation.
  *
  * @param modifier Modifier for the card
- * @param shape Shape of the card corners
+ * @param shape Shape of the card corners (default 20dp radius)
  * @param backgroundColor Background color of the card
  * @param contentDescription Accessibility description
  * @param content Content to display inside the card
@@ -101,7 +101,7 @@ fun ProdyCard(
  * @param onClick Callback when card is clicked
  * @param modifier Modifier for the card
  * @param enabled Whether the card is clickable
- * @param shape Shape of the card corners
+ * @param shape Shape of the card corners (default 20dp radius)
  * @param backgroundColor Background color of the card
  * @param contentDescription Accessibility description for screen readers
  * @param content Content to display inside the card
@@ -421,6 +421,8 @@ fun ProdyPremiumGradientCard(
 // =============================================================================
 
 /**
+ * Card styled for notification-like content with engaging visuals.
+ * Phase 2: Flat design with no shadows.
  * Card styled for notification-like content with accent border.
  * Flat design - no shadows, uses accent border for visual emphasis.
  *

@@ -44,7 +44,7 @@ import androidx.compose.ui.unit.dp
 import com.prody.prashant.ui.theme.ProdyTokens
 
 /**
- * Prody Premium Header System
+ * Prody Premium Header System (Phase 2 Redesign)
  *
  * A production-grade, reusable header component designed for premium user experience.
  * Features three variants:
@@ -58,6 +58,7 @@ import com.prody.prashant.ui.theme.ProdyTokens
  * - Proper text contrast on all backgrounds
  * - 48dp minimum touch targets for accessibility
  * - Smooth animations for state changes
+ * - Flat design (NO shadows or elevation)
  */
 
 // =============================================================================
@@ -402,12 +403,8 @@ private fun ScrollAwareHeader(
         label = "header_height"
     )
 
-    // Animated elevation
-    val elevation by animateDpAsState(
-        targetValue = if (collapseProgress > 0.5f) ProdyTokens.Elevation.sm else 0.dp,
-        animationSpec = tween(HeaderDefaults.AnimationDuration),
-        label = "header_elevation"
-    )
+    // Flat design - no animated elevation
+    // Previously animated elevation removed for Phase 2 flat design
 
     // Animated title size alpha for subtitle
     val subtitleAlpha by animateFloatAsState(
@@ -420,7 +417,8 @@ private fun ScrollAwareHeader(
         modifier = modifier.fillMaxWidth(),
         color = backgroundColor,
         contentColor = contentColor,
-        shadowElevation = elevation
+        shadowElevation = 0.dp, // Flat design
+        tonalElevation = 0.dp // Flat design
     ) {
         Column(
             modifier = Modifier.padding(top = statusBarPadding)

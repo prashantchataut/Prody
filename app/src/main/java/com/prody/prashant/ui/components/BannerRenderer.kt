@@ -258,7 +258,7 @@ fun BannerPreviewCard(
                 shape = RoundedCornerShape(12.dp)
             ),
         shape = RoundedCornerShape(12.dp),
-        tonalElevation = if (isSelected) 4.dp else 1.dp
+        tonalElevation = 0.dp // Flat design
     ) {
         Column {
             Box(modifier = Modifier.alpha(if (isUnlocked) 1f else 0.5f)) {

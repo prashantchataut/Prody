@@ -46,9 +46,9 @@ import androidx.compose.ui.unit.dp
 import com.prody.prashant.ui.theme.ProdyTokens
 
 /**
- * Prody Premium Chip System
+ * Prody Premium Chip System (Phase 2 Redesign)
  *
- * A comprehensive chip system for filters, selections, and tags.
+ * A comprehensive chip system with flat, minimalist design.
  * Features:
  * - Filter chips (toggleable)
  * - Selection chips (radio-style)
@@ -60,6 +60,7 @@ import com.prody.prashant.ui.theme.ProdyTokens
  * - Smooth selection animations
  * - Proper color transitions
  * - Full accessibility semantics
+ * - Flat design (NO shadows)
  */
 
 // =============================================================================
@@ -421,7 +422,7 @@ fun ProdyAssistChip(
         color = MaterialTheme.colorScheme.surface,
         contentColor = contentColor,
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-        shadowElevation = 1.dp,
+        shadowElevation = 0.dp, // Flat design
         interactionSource = interactionSource
     ) {
         Row(

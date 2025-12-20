@@ -6,6 +6,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -19,18 +20,16 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -50,17 +49,24 @@ import com.prody.prashant.ui.theme.*
 import kotlinx.coroutines.delay
 
 /**
- * Profile Screen - Identity Room
+ * Profile Screen - Identity & Trophy Room - Premium Phase 2 Redesign
  *
- * A premium gamified profile experience featuring:
- * - Clean minimalist design with neon green accents
- * - Avatar with animated progress ring
+ * A completely redesigned gamified profile experience featuring:
+ *
+ * Design Philosophy:
+ * - Extreme minimalism, flat design - NO shadows, gradients, or hi-fi elements
+ * - Deep teal dark (#0D2826), clean off-white light (#F0F4F3)
+ * - Vibrant neon green accent (#36F97F) for interactive elements
+ * - Poppins typography throughout
+ * - 8dp grid spacing system
+ *
+ * Features:
+ * - Avatar with animated neon green progress ring
  * - DEV and BETA PIONEER badges
- * - Key metrics (Level, Streak, Words)
+ * - Key metrics (Level, Streak, Words) with clean cards
  * - Story of Growth narrative section
  * - Trophy Room achievement showcase
- *
- * Design: Gamified minimalism - no shadows, subtle gradients, clean typography
+ * - Weekly AI Insights card
  */
 
 // ============================================================================
@@ -111,9 +117,17 @@ fun ProfileScreen(
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
-    // Determine if dark mode based on system theme
     val isDarkMode = isSystemInDarkTheme()
+
+    // Premium theme colors
+    val backgroundColor = if (isDarkMode) Color(0xFF0D2826) else Color(0xFFF0F4F3)
+    val surfaceColor = if (isDarkMode) Color(0xFF1A3331) else Color(0xFFFFFFFF)
+    val surfaceElevated = if (isDarkMode) Color(0xFF2A4240) else Color(0xFFF5F7F6)
+    val textPrimary = if (isDarkMode) Color.White else Color(0xFF1A1A1A)
+    val textSecondary = if (isDarkMode) Color(0xFFD3D8D7) else Color(0xFF6C757D)
+    val textTertiary = if (isDarkMode) Color(0xFF8A9493) else Color(0xFF9CA3AF)
+    val accentColor = Color(0xFF36F97F) // Vibrant neon green
+    val dividerColor = if (isDarkMode) Color(0xFF3A5250) else Color(0xFFDEE2E6)
 
     // Entry animation
     var isVisible by remember { mutableStateOf(false) }
@@ -125,10 +139,7 @@ fun ProfileScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                if (isDarkMode) IdentityRoomColors.BackgroundDark
-                else IdentityRoomColors.BackgroundLight
-            )
+            .background(backgroundColor)
     ) {
         // Magical ambient background for immersive profile experience
         AmbientBackground(
@@ -150,7 +161,7 @@ fun ProfileScreen(
         ) {
             // Header with title and actions
             item {
-                IdentityRoomHeader(
+                PremiumProfileHeader(
                     onSettingsClick = onNavigateToSettings,
                     onEditClick = onNavigateToEditProfile,
                     isDarkMode = isDarkMode
@@ -166,7 +177,7 @@ fun ProfileScreen(
                         animationSpec = tween(400, easing = EaseOutCubic)
                     )
                 ) {
-                    HeroSection(
+                    PremiumHeroSection(
                         displayName = uiState.displayName,
                         bio = uiState.bio,
                         level = getLevelFromPoints(uiState.totalPoints),
@@ -188,11 +199,14 @@ fun ProfileScreen(
                         animationSpec = tween(400, delayMillis = 100, easing = EaseOutCubic)
                     )
                 ) {
-                    KeyMetricsRow(
+                    PremiumKeyMetricsRow(
                         level = getLevelFromPoints(uiState.totalPoints),
                         streak = uiState.currentStreak,
                         wordsLearned = uiState.wordsLearned,
-                        isDarkMode = isDarkMode
+                        surfaceColor = surfaceColor,
+                        textPrimary = textPrimary,
+                        textTertiary = textTertiary,
+                        accentColor = accentColor
                     )
                 }
             }
@@ -206,14 +220,18 @@ fun ProfileScreen(
                         animationSpec = tween(400, delayMillis = 200, easing = EaseOutCubic)
                     )
                 ) {
-                    StoryOfGrowthSection(
+                    PremiumStoryOfGrowthSection(
                         currentStreak = uiState.currentStreak,
                         longestStreak = uiState.longestStreak,
                         totalPoints = uiState.totalPoints,
                         journalEntries = uiState.journalEntries,
                         wordsLearned = uiState.wordsLearned,
                         daysOnPrody = uiState.daysOnPrody,
-                        isDarkMode = isDarkMode
+                        surfaceColor = surfaceColor,
+                        textPrimary = textPrimary,
+                        textSecondary = textSecondary,
+                        textTertiary = textTertiary,
+                        accentColor = accentColor
                     )
                 }
             }
@@ -227,11 +245,15 @@ fun ProfileScreen(
                         animationSpec = tween(400, delayMillis = 250, easing = EaseOutCubic)
                     )
                 ) {
-                    WeeklyPatternSection(
+                    PremiumWeeklyPatternSection(
                         weeklyPattern = uiState.weeklyPattern,
                         isLoading = uiState.isLoadingWeeklyPattern,
                         hasEnoughData = uiState.hasEnoughDataForPattern,
-                        isDarkMode = isDarkMode
+                        surfaceColor = surfaceColor,
+                        textPrimary = textPrimary,
+                        textSecondary = textSecondary,
+                        textTertiary = textTertiary,
+                        accentColor = accentColor
                     )
                 }
             }
@@ -242,7 +264,7 @@ fun ProfileScreen(
                     visible = isVisible,
                     enter = fadeIn(tween(400, delayMillis = 300))
                 ) {
-                    TrophyRoomHeader(
+                    PremiumTrophyRoomHeader(
                         unlockedCount = uiState.unlockedAchievements.size,
                         totalCount = uiState.unlockedAchievements.size + uiState.lockedAchievements.size,
                         isDarkMode = isDarkMode,
@@ -258,9 +280,11 @@ fun ProfileScreen(
                         visible = isVisible,
                         enter = fadeIn(tween(400, delayMillis = 350))
                     ) {
-                        FeaturedAchievementsRow(
+                        PremiumFeaturedAchievementsRow(
                             achievements = uiState.unlockedAchievements.take(4),
-                            isDarkMode = isDarkMode
+                            surfaceElevated = surfaceElevated,
+                            textPrimary = textPrimary,
+                            accentColor = accentColor
                         )
                     }
                 }
@@ -272,10 +296,14 @@ fun ProfileScreen(
                     visible = isVisible,
                     enter = fadeIn(tween(400, delayMillis = 400))
                 ) {
-                    RecentUnlocksSection(
+                    PremiumRecentUnlocksSection(
                         unlockedAchievements = uiState.unlockedAchievements,
                         lockedAchievements = uiState.lockedAchievements.take(4),
-                        isDarkMode = isDarkMode
+                        surfaceColor = surfaceColor,
+                        surfaceElevated = surfaceElevated,
+                        textPrimary = textPrimary,
+                        textSecondary = textSecondary,
+                        textTertiary = textTertiary
                     )
                 }
             }
@@ -286,7 +314,10 @@ fun ProfileScreen(
                     visible = isVisible,
                     enter = fadeIn(tween(400, delayMillis = 500))
                 ) {
-                    GrowthQuoteCard(isDarkMode = isDarkMode)
+                    PremiumGrowthQuoteCard(
+                        textSecondary = textSecondary,
+                        accentColor = accentColor
+                    )
                 }
             }
         }
@@ -298,44 +329,52 @@ fun ProfileScreen(
 // ============================================================================
 
 @Composable
-private fun IdentityRoomHeader(
+private fun PremiumProfileHeader(
     onSettingsClick: () -> Unit,
     onEditClick: () -> Unit,
-    isDarkMode: Boolean
+    textPrimary: Color,
+    textSecondary: Color,
+    accentColor: Color
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .statusBarsPadding()
-            .padding(horizontal = 20.dp, vertical = 16.dp),
+            .padding(horizontal = 24.dp, vertical = 16.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text = "Identity Room",
-            style = MaterialTheme.typography.headlineSmall,
+            fontFamily = PoppinsFamily,
             fontWeight = FontWeight.Bold,
-            color = if (isDarkMode) IdentityRoomColors.TextPrimaryDark
-                    else IdentityRoomColors.TextPrimaryLight
+            fontSize = 26.sp,
+            color = textPrimary
         )
 
         Row(
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            IconButton(onClick = onEditClick) {
+            IconButton(
+                onClick = onEditClick,
+                modifier = Modifier.size(48.dp)
+            ) {
                 Icon(
                     imageVector = Icons.Outlined.Edit,
                     contentDescription = "Edit Profile",
-                    tint = if (isDarkMode) IdentityRoomColors.TextSecondaryDark
-                           else IdentityRoomColors.TextSecondaryLight
+                    tint = textSecondary,
+                    modifier = Modifier.size(24.dp)
                 )
             }
-            IconButton(onClick = onSettingsClick) {
+            IconButton(
+                onClick = onSettingsClick,
+                modifier = Modifier.size(48.dp)
+            ) {
                 Icon(
                     imageVector = Icons.Outlined.Settings,
                     contentDescription = stringResource(R.string.settings),
-                    tint = if (isDarkMode) IdentityRoomColors.TextSecondaryDark
-                           else IdentityRoomColors.TextSecondaryLight
+                    tint = accentColor,
+                    modifier = Modifier.size(24.dp)
                 )
             }
         }
@@ -347,7 +386,7 @@ private fun IdentityRoomHeader(
 // ============================================================================
 
 @Composable
-private fun HeroSection(
+private fun PremiumHeroSection(
     displayName: String,
     bio: String,
     level: Int,
@@ -360,7 +399,7 @@ private fun HeroSection(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 16.dp),
+            .padding(horizontal = 24.dp, vertical = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Avatar with Progress Ring and Magical Breathing Halo
@@ -443,10 +482,10 @@ private fun HeroSection(
         // Display Name
         Text(
             text = displayName,
-            style = MaterialTheme.typography.headlineMedium,
+            fontFamily = PoppinsFamily,
             fontWeight = FontWeight.Bold,
-            color = if (isDarkMode) IdentityRoomColors.TextPrimaryDark
-                    else IdentityRoomColors.TextPrimaryLight
+            fontSize = 28.sp,
+            color = textPrimary
         )
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -457,10 +496,10 @@ private fun HeroSection(
             verticalAlignment = Alignment.CenterVertically
         ) {
             if (isDev) {
-                DevBadge()
+                PremiumDevBadge(accentColor = accentColor)
             }
             if (isBetaPioneer) {
-                BetaPioneerBadge()
+                PremiumBetaPioneerBadge()
             }
         }
 
@@ -560,7 +599,7 @@ private fun NeonProgressRing(
 
         // Glow effect (subtle)
         drawCircle(
-            color = accentColor.copy(alpha = glowAlpha * 0.2f),
+            color = accentColor.copy(alpha = glowAlpha * 0.15f),
             radius = radius + 4.dp.toPx(),
             center = center,
             style = Stroke(width = 8.dp.toPx())
@@ -580,27 +619,29 @@ private fun NeonProgressRing(
 }
 
 @Composable
-private fun DevBadge() {
+private fun PremiumDevBadge(accentColor: Color) {
     Surface(
-        color = IdentityRoomColors.DevBadgeBackground,
-        shape = RoundedCornerShape(6.dp)
+        color = accentColor.copy(alpha = 0.15f),
+        shape = RoundedCornerShape(8.dp),
+        tonalElevation = 0.dp
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Icon(
                 imageVector = Icons.Filled.Code,
                 contentDescription = null,
-                tint = IdentityRoomColors.DevBadgeText,
+                tint = accentColor,
                 modifier = Modifier.size(14.dp)
             )
             Text(
                 text = "DEV",
-                style = MaterialTheme.typography.labelSmall,
+                fontFamily = PoppinsFamily,
                 fontWeight = FontWeight.Bold,
-                color = IdentityRoomColors.DevBadgeText,
+                fontSize = 11.sp,
+                color = accentColor,
                 letterSpacing = 1.sp
             )
         }
@@ -608,27 +649,31 @@ private fun DevBadge() {
 }
 
 @Composable
-private fun BetaPioneerBadge() {
+private fun PremiumBetaPioneerBadge() {
+    val badgeColor = Color(0xFFB57EDC) // Premium violet
+
     Surface(
-        color = IdentityRoomColors.BetaBadgeBackground,
-        shape = RoundedCornerShape(6.dp)
+        color = badgeColor.copy(alpha = 0.15f),
+        shape = RoundedCornerShape(8.dp),
+        tonalElevation = 0.dp
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Icon(
                 imageVector = Icons.Filled.Rocket,
                 contentDescription = null,
-                tint = IdentityRoomColors.BetaBadgeText,
+                tint = badgeColor,
                 modifier = Modifier.size(14.dp)
             )
             Text(
                 text = "BETA PIONEER",
-                style = MaterialTheme.typography.labelSmall,
+                fontFamily = PoppinsFamily,
                 fontWeight = FontWeight.Bold,
-                color = IdentityRoomColors.BetaBadgeText,
+                fontSize = 11.sp,
+                color = badgeColor,
                 letterSpacing = 0.5.sp
             )
         }
@@ -640,52 +685,63 @@ private fun BetaPioneerBadge() {
 // ============================================================================
 
 @Composable
-private fun KeyMetricsRow(
+private fun PremiumKeyMetricsRow(
     level: Int,
     streak: Int,
     wordsLearned: Int,
-    isDarkMode: Boolean
+    surfaceColor: Color,
+    textPrimary: Color,
+    textTertiary: Color,
+    accentColor: Color
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 12.dp),
+            .padding(horizontal = 24.dp, vertical = 12.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        MetricCard(
+        PremiumMetricCard(
             label = "Level",
             value = level.toString(),
             icon = Icons.Filled.TrendingUp,
-            iconColor = IdentityRoomColors.AccentGreen,
-            isDarkMode = isDarkMode,
+            iconColor = accentColor,
+            surfaceColor = surfaceColor,
+            textPrimary = textPrimary,
+            textTertiary = textTertiary,
             modifier = Modifier.weight(1f)
         )
-        MetricCard(
+        PremiumMetricCard(
             label = "Streak",
             value = streak.toString(),
             icon = Icons.Filled.LocalFireDepartment,
-            iconColor = StreakFire,
-            isDarkMode = isDarkMode,
+            iconColor = Color(0xFFE65C2C), // Fire orange
+            surfaceColor = surfaceColor,
+            textPrimary = textPrimary,
+            textTertiary = textTertiary,
             modifier = Modifier.weight(1f)
         )
-        MetricCard(
+        PremiumMetricCard(
             label = "Words",
             value = formatCompactNumber(wordsLearned),
             icon = Icons.Filled.School,
-            iconColor = MoodMotivated,
-            isDarkMode = isDarkMode,
+            iconColor = Color(0xFFFFD166), // Energetic amber
+            surfaceColor = surfaceColor,
+            textPrimary = textPrimary,
+            textTertiary = textTertiary,
             modifier = Modifier.weight(1f)
         )
     }
 }
 
 @Composable
-private fun MetricCard(
+private fun PremiumMetricCard(
     label: String,
     value: String,
     icon: ImageVector,
     iconColor: Color,
-    isDarkMode: Boolean,
+    surfaceColor: Color,
+    textPrimary: Color,
+    textTertiary: Color,
     modifier: Modifier = Modifier
 ) {
     var isAnimated by remember { mutableStateOf(false) }
@@ -704,10 +760,12 @@ private fun MetricCard(
     )
 
     Surface(
-        modifier = modifier.scale(scale),
-        color = if (isDarkMode) IdentityRoomColors.CardBackgroundDark
-                else IdentityRoomColors.CardBackgroundLight,
-        shape = RoundedCornerShape(16.dp)
+        modifier = modifier
+            .scale(scale)
+            .clip(RoundedCornerShape(20.dp)),
+        color = surfaceColor,
+        shape = RoundedCornerShape(20.dp),
+        tonalElevation = 0.dp // Flat design
     ) {
         Column(
             modifier = Modifier
@@ -724,16 +782,17 @@ private fun MetricCard(
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = value,
-                style = MaterialTheme.typography.headlineSmall,
+                fontFamily = PoppinsFamily,
                 fontWeight = FontWeight.Bold,
-                color = if (isDarkMode) IdentityRoomColors.TextPrimaryDark
-                        else IdentityRoomColors.TextPrimaryLight
+                fontSize = 24.sp,
+                color = textPrimary
             )
             Text(
                 text = label,
-                style = MaterialTheme.typography.labelSmall,
-                color = if (isDarkMode) IdentityRoomColors.TextTertiaryDark
-                        else IdentityRoomColors.TextTertiaryLight
+                fontFamily = PoppinsFamily,
+                fontWeight = FontWeight.Normal,
+                fontSize = 11.sp,
+                color = textTertiary
             )
         }
     }
@@ -744,14 +803,18 @@ private fun MetricCard(
 // ============================================================================
 
 @Composable
-private fun StoryOfGrowthSection(
+private fun PremiumStoryOfGrowthSection(
     currentStreak: Int,
     longestStreak: Int,
     totalPoints: Int,
     journalEntries: Int,
     wordsLearned: Int,
     daysOnPrody: Int,
-    isDarkMode: Boolean
+    surfaceColor: Color,
+    textPrimary: Color,
+    textSecondary: Color,
+    textTertiary: Color,
+    accentColor: Color
 ) {
     // Determine the highlight achievement
     val highlight = remember(currentStreak, longestStreak, journalEntries, wordsLearned, totalPoints) {
@@ -760,37 +823,37 @@ private fun StoryOfGrowthSection(
                 title = "Consistency Master",
                 description = "You're on your longest streak ever!",
                 icon = Icons.Filled.LocalFireDepartment,
-                color = StreakFire
+                color = Color(0xFFE65C2C)
             )
             journalEntries >= 30 -> GrowthHighlight(
                 title = "Dedicated Writer",
                 description = "$journalEntries journal entries and counting",
                 icon = Icons.Filled.AutoStories,
-                color = MoodCalm
+                color = Color(0xFF6CB4D4)
             )
             wordsLearned >= 100 -> GrowthHighlight(
                 title = "Word Collector",
                 description = "Over $wordsLearned words mastered",
                 icon = Icons.Filled.School,
-                color = MoodMotivated
+                color = Color(0xFFFFD166)
             )
             totalPoints >= 500 -> GrowthHighlight(
                 title = "Rising Star",
                 description = "Earned ${formatCompactNumber(totalPoints)} XP",
                 icon = Icons.Filled.Stars,
-                color = GoldTier
+                color = Color(0xFFD4AF37)
             )
             currentStreak >= 3 -> GrowthHighlight(
                 title = "Building Momentum",
                 description = "$currentStreak day streak going strong",
                 icon = Icons.Filled.LocalFireDepartment,
-                color = StreakFire
+                color = Color(0xFFE65C2C)
             )
             else -> GrowthHighlight(
                 title = "New Journey",
                 description = "Every expert was once a beginner",
                 icon = Icons.Filled.EmojiNature,
-                color = MoodGrateful
+                color = Color(0xFF7EC8A3)
             )
         }
     }
@@ -798,10 +861,11 @@ private fun StoryOfGrowthSection(
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 8.dp),
-        color = if (isDarkMode) IdentityRoomColors.CardBackgroundDark
-                else IdentityRoomColors.CardBackgroundLight,
-        shape = RoundedCornerShape(20.dp)
+            .padding(horizontal = 24.dp, vertical = 8.dp)
+            .clip(RoundedCornerShape(20.dp)),
+        color = surfaceColor,
+        shape = RoundedCornerShape(20.dp),
+        tonalElevation = 0.dp
     ) {
         Column(
             modifier = Modifier.padding(20.dp)
@@ -813,28 +877,24 @@ private fun StoryOfGrowthSection(
             ) {
                 Box(
                     modifier = Modifier
-                        .size(36.dp)
+                        .size(40.dp)
                         .clip(CircleShape)
-                        .background(
-                            if (isDarkMode) IdentityRoomColors.AccentGreen.copy(alpha = 0.15f)
-                            else IdentityRoomColors.AccentGreenLight.copy(alpha = 0.15f)
-                        ),
+                        .background(accentColor.copy(alpha = 0.15f)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Filled.AutoGraph,
                         contentDescription = null,
-                        tint = if (isDarkMode) IdentityRoomColors.AccentGreen
-                               else IdentityRoomColors.AccentGreenLight,
-                        modifier = Modifier.size(20.dp)
+                        tint = accentColor,
+                        modifier = Modifier.size(22.dp)
                     )
                 }
                 Text(
                     text = "Story of Growth",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = if (isDarkMode) IdentityRoomColors.TextPrimaryDark
-                            else IdentityRoomColors.TextPrimaryLight
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 18.sp,
+                    color = textPrimary
                 )
             }
 
@@ -843,7 +903,8 @@ private fun StoryOfGrowthSection(
             // Highlight Card
             Surface(
                 color = highlight.color.copy(alpha = 0.1f),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(16.dp),
+                tonalElevation = 0.dp
             ) {
                 Row(
                     modifier = Modifier
@@ -854,7 +915,7 @@ private fun StoryOfGrowthSection(
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(44.dp)
+                            .size(48.dp)
                             .clip(CircleShape)
                             .background(highlight.color.copy(alpha = 0.2f)),
                         contentAlignment = Alignment.Center
@@ -869,15 +930,17 @@ private fun StoryOfGrowthSection(
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = highlight.title,
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.Bold,
+                            fontFamily = PoppinsFamily,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 15.sp,
                             color = highlight.color
                         )
                         Text(
                             text = highlight.description,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = if (isDarkMode) IdentityRoomColors.TextSecondaryDark
-                                    else IdentityRoomColors.TextSecondaryLight
+                            fontFamily = PoppinsFamily,
+                            fontWeight = FontWeight.Normal,
+                            fontSize = 13.sp,
+                            color = textSecondary
                         )
                     }
                 }
@@ -890,20 +953,23 @@ private fun StoryOfGrowthSection(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                MiniStat(
+                PremiumMiniStat(
                     value = daysOnPrody.toString(),
                     label = "Days Active",
-                    isDarkMode = isDarkMode
+                    textPrimary = textPrimary,
+                    textTertiary = textTertiary
                 )
-                MiniStat(
+                PremiumMiniStat(
                     value = journalEntries.toString(),
                     label = "Entries",
-                    isDarkMode = isDarkMode
+                    textPrimary = textPrimary,
+                    textTertiary = textTertiary
                 )
-                MiniStat(
+                PremiumMiniStat(
                     value = longestStreak.toString(),
                     label = "Best Streak",
-                    isDarkMode = isDarkMode
+                    textPrimary = textPrimary,
+                    textTertiary = textTertiary
                 )
             }
         }
@@ -918,24 +984,26 @@ private data class GrowthHighlight(
 )
 
 @Composable
-private fun MiniStat(
+private fun PremiumMiniStat(
     value: String,
     label: String,
-    isDarkMode: Boolean
+    textPrimary: Color,
+    textTertiary: Color
 ) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
             text = value,
-            style = MaterialTheme.typography.titleMedium,
+            fontFamily = PoppinsFamily,
             fontWeight = FontWeight.Bold,
-            color = if (isDarkMode) IdentityRoomColors.TextPrimaryDark
-                    else IdentityRoomColors.TextPrimaryLight
+            fontSize = 18.sp,
+            color = textPrimary
         )
         Text(
             text = label,
-            style = MaterialTheme.typography.labelSmall,
-            color = if (isDarkMode) IdentityRoomColors.TextTertiaryDark
-                    else IdentityRoomColors.TextTertiaryLight
+            fontFamily = PoppinsFamily,
+            fontWeight = FontWeight.Normal,
+            fontSize = 11.sp,
+            color = textTertiary
         )
     }
 }
@@ -945,19 +1013,26 @@ private fun MiniStat(
 // ============================================================================
 
 @Composable
-private fun WeeklyPatternSection(
+private fun PremiumWeeklyPatternSection(
     weeklyPattern: WeeklyPatternResult?,
     isLoading: Boolean,
     hasEnoughData: Boolean,
-    isDarkMode: Boolean
+    surfaceColor: Color,
+    textPrimary: Color,
+    textSecondary: Color,
+    textTertiary: Color,
+    accentColor: Color
 ) {
+    val violetColor = Color(0xFF6B5CE7) // Premium violet for AI
+
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 8.dp),
-        color = if (isDarkMode) IdentityRoomColors.CardBackgroundDark
-                else IdentityRoomColors.CardBackgroundLight,
-        shape = RoundedCornerShape(20.dp)
+            .padding(horizontal = 24.dp, vertical = 8.dp)
+            .clip(RoundedCornerShape(20.dp)),
+        color = surfaceColor,
+        shape = RoundedCornerShape(20.dp),
+        tonalElevation = 0.dp
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
             // Header
@@ -972,46 +1047,49 @@ private fun WeeklyPatternSection(
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(36.dp)
+                            .size(40.dp)
                             .clip(CircleShape)
-                            .background(ProdyPremiumViolet.copy(alpha = 0.15f)),
+                            .background(violetColor.copy(alpha = 0.15f)),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Filled.Psychology,
                             contentDescription = null,
-                            tint = ProdyPremiumViolet,
-                            modifier = Modifier.size(20.dp)
+                            tint = violetColor,
+                            modifier = Modifier.size(22.dp)
                         )
                     }
                     Column {
                         Text(
                             text = "Weekly Insights",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = if (isDarkMode) IdentityRoomColors.TextPrimaryDark
-                                    else IdentityRoomColors.TextPrimaryLight
+                            fontFamily = PoppinsFamily,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 18.sp,
+                            color = textPrimary
                         )
                         Text(
                             text = "AI-powered analysis",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = if (isDarkMode) IdentityRoomColors.TextTertiaryDark
-                                    else IdentityRoomColors.TextTertiaryLight
+                            fontFamily = PoppinsFamily,
+                            fontWeight = FontWeight.Normal,
+                            fontSize = 11.sp,
+                            color = textTertiary
                         )
                     }
                 }
 
                 if (weeklyPattern?.isAiGenerated == true) {
                     Surface(
-                        color = ProdyPremiumViolet.copy(alpha = 0.15f),
-                        shape = RoundedCornerShape(6.dp)
+                        color = violetColor.copy(alpha = 0.15f),
+                        shape = RoundedCornerShape(8.dp),
+                        tonalElevation = 0.dp
                     ) {
                         Text(
                             text = "AI",
-                            style = MaterialTheme.typography.labelSmall,
+                            fontFamily = PoppinsFamily,
                             fontWeight = FontWeight.Bold,
-                            color = ProdyPremiumViolet,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                            fontSize = 11.sp,
+                            color = violetColor,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
                         )
                     }
                 }
@@ -1029,7 +1107,7 @@ private fun WeeklyPatternSection(
                     ) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(24.dp),
-                            color = ProdyPremiumViolet,
+                            color = violetColor,
                             strokeWidth = 2.dp
                         )
                     }
@@ -1041,52 +1119,57 @@ private fun WeeklyPatternSection(
                     ) {
                         Text(
                             text = "Write 3+ entries this week",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = if (isDarkMode) IdentityRoomColors.TextSecondaryDark
-                                    else IdentityRoomColors.TextSecondaryLight
+                            fontFamily = PoppinsFamily,
+                            fontWeight = FontWeight.Normal,
+                            fontSize = 13.sp,
+                            color = textSecondary
                         )
                         Text(
                             text = "to unlock AI insights",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = if (isDarkMode) IdentityRoomColors.TextTertiaryDark
-                                    else IdentityRoomColors.TextTertiaryLight
+                            fontFamily = PoppinsFamily,
+                            fontWeight = FontWeight.Normal,
+                            fontSize = 11.sp,
+                            color = textTertiary
                         )
                     }
                 }
                 weeklyPattern != null -> {
                     Text(
                         text = weeklyPattern.summary,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = if (isDarkMode) IdentityRoomColors.TextSecondaryDark
-                                else IdentityRoomColors.TextSecondaryLight,
-                        lineHeight = 20.sp
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.Normal,
+                        fontSize = 14.sp,
+                        color = textSecondary,
+                        lineHeight = 22.sp
                     )
 
                     Spacer(modifier = Modifier.height(12.dp))
 
                     Surface(
-                        color = ProdyTertiary.copy(alpha = 0.1f),
-                        shape = RoundedCornerShape(10.dp)
+                        color = accentColor.copy(alpha = 0.1f),
+                        shape = RoundedCornerShape(12.dp),
+                        tonalElevation = 0.dp
                     ) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(12.dp),
+                                .padding(14.dp),
                             verticalAlignment = Alignment.Top,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
                             Icon(
                                 imageVector = Icons.Filled.Lightbulb,
                                 contentDescription = null,
-                                tint = ProdyTertiary,
-                                modifier = Modifier.size(16.dp)
+                                tint = accentColor,
+                                modifier = Modifier.size(18.dp)
                             )
                             Text(
                                 text = weeklyPattern.suggestion,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = if (isDarkMode) IdentityRoomColors.TextPrimaryDark
-                                        else IdentityRoomColors.TextPrimaryLight,
-                                lineHeight = 18.sp
+                                fontFamily = PoppinsFamily,
+                                fontWeight = FontWeight.Normal,
+                                fontSize = 13.sp,
+                                color = textPrimary,
+                                lineHeight = 20.sp
                             )
                         }
                     }
@@ -1101,12 +1184,14 @@ private fun WeeklyPatternSection(
 // ============================================================================
 
 @Composable
-private fun TrophyRoomHeader(
+private fun PremiumTrophyRoomHeader(
     unlockedCount: Int,
     totalCount: Int,
     isDarkMode: Boolean,
     onClick: () -> Unit
 ) {
+    val goldColor = Color(0xFFD4AF37)
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -1122,15 +1207,15 @@ private fun TrophyRoomHeader(
             Icon(
                 imageVector = Icons.Filled.EmojiEvents,
                 contentDescription = null,
-                tint = GoldTier,
-                modifier = Modifier.size(24.dp)
+                tint = goldColor,
+                modifier = Modifier.size(26.dp)
             )
             Text(
                 text = "Trophy Room",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = if (isDarkMode) IdentityRoomColors.TextPrimaryDark
-                        else IdentityRoomColors.TextPrimaryLight
+                fontFamily = PoppinsFamily,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 20.sp,
+                color = textPrimary
             )
         }
 
@@ -1164,21 +1249,24 @@ private fun TrophyRoomHeader(
 }
 
 @Composable
-private fun FeaturedAchievementsRow(
+private fun PremiumFeaturedAchievementsRow(
     achievements: List<AchievementEntity>,
-    isDarkMode: Boolean
+    surfaceElevated: Color,
+    textPrimary: Color,
+    accentColor: Color
 ) {
     LazyRow(
-        contentPadding = PaddingValues(horizontal = 20.dp),
+        contentPadding = PaddingValues(horizontal = 24.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         itemsIndexed(
             items = achievements,
             key = { _, item -> item.id }
         ) { index, achievement ->
-            FeaturedAchievementCard(
+            PremiumFeaturedAchievementCard(
                 achievement = achievement,
-                isDarkMode = isDarkMode,
+                surfaceElevated = surfaceElevated,
+                textPrimary = textPrimary,
                 index = index
             )
         }
@@ -1186,9 +1274,10 @@ private fun FeaturedAchievementsRow(
 }
 
 @Composable
-private fun FeaturedAchievementCard(
+private fun PremiumFeaturedAchievementCard(
     achievement: AchievementEntity,
-    isDarkMode: Boolean,
+    surfaceElevated: Color,
+    textPrimary: Color,
     index: Int
 ) {
     val rarity = try {
@@ -1214,19 +1303,20 @@ private fun FeaturedAchievementCard(
     Surface(
         modifier = Modifier
             .width(100.dp)
-            .scale(scale),
-        color = if (isDarkMode) IdentityRoomColors.CardBackgroundElevatedDark
-                else IdentityRoomColors.CardBackgroundElevatedLight,
-        shape = RoundedCornerShape(16.dp)
+            .scale(scale)
+            .clip(RoundedCornerShape(20.dp)),
+        color = surfaceElevated,
+        shape = RoundedCornerShape(20.dp),
+        tonalElevation = 0.dp
     ) {
         Column(
-            modifier = Modifier.padding(12.dp),
+            modifier = Modifier.padding(14.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Icon Circle
             Box(
                 modifier = Modifier
-                    .size(48.dp)
+                    .size(52.dp)
                     .clip(CircleShape)
                     .background(rarity.color.copy(alpha = 0.15f))
                     .border(2.dp, rarity.color.copy(alpha = 0.4f), CircleShape),
@@ -1236,18 +1326,18 @@ private fun FeaturedAchievementCard(
                     imageVector = achievementData?.icon ?: Icons.Filled.EmojiEvents,
                     contentDescription = null,
                     tint = rarity.color,
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(26.dp)
                 )
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
             Text(
                 text = achievement.name,
-                style = MaterialTheme.typography.labelSmall,
+                fontFamily = PoppinsFamily,
                 fontWeight = FontWeight.Medium,
-                color = if (isDarkMode) IdentityRoomColors.TextPrimaryDark
-                        else IdentityRoomColors.TextPrimaryLight,
+                fontSize = 11.sp,
+                color = textPrimary,
                 textAlign = TextAlign.Center,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
@@ -1258,22 +1348,26 @@ private fun FeaturedAchievementCard(
 }
 
 @Composable
-private fun RecentUnlocksSection(
+private fun PremiumRecentUnlocksSection(
     unlockedAchievements: List<AchievementEntity>,
     lockedAchievements: List<AchievementEntity>,
-    isDarkMode: Boolean
+    surfaceColor: Color,
+    surfaceElevated: Color,
+    textPrimary: Color,
+    textSecondary: Color,
+    textTertiary: Color
 ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 8.dp)
+            .padding(horizontal = 24.dp, vertical = 8.dp)
     ) {
         Text(
             text = "Recent Unlocks",
-            style = MaterialTheme.typography.labelLarge,
+            fontFamily = PoppinsFamily,
             fontWeight = FontWeight.SemiBold,
-            color = if (isDarkMode) IdentityRoomColors.TextSecondaryDark
-                    else IdentityRoomColors.TextSecondaryLight,
+            fontSize = 15.sp,
+            color = textSecondary,
             modifier = Modifier.padding(bottom = 12.dp)
         )
 
@@ -1286,19 +1380,23 @@ private fun RecentUnlocksSection(
             val nextLocked = lockedAchievements.take(2)
 
             recentUnlocked.forEach { achievement ->
-                CompactBadge(
+                PremiumCompactBadge(
                     achievement = achievement,
                     isUnlocked = true,
-                    isDarkMode = isDarkMode,
+                    surfaceColor = surfaceElevated,
+                    textPrimary = textPrimary,
+                    textTertiary = textTertiary,
                     modifier = Modifier.weight(1f)
                 )
             }
 
             nextLocked.forEach { achievement ->
-                CompactBadge(
+                PremiumCompactBadge(
                     achievement = achievement,
                     isUnlocked = false,
-                    isDarkMode = isDarkMode,
+                    surfaceColor = surfaceColor,
+                    textPrimary = textPrimary,
+                    textTertiary = textTertiary,
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -1307,10 +1405,12 @@ private fun RecentUnlocksSection(
 }
 
 @Composable
-private fun CompactBadge(
+private fun PremiumCompactBadge(
     achievement: AchievementEntity,
     isUnlocked: Boolean,
-    isDarkMode: Boolean,
+    surfaceColor: Color,
+    textPrimary: Color,
+    textTertiary: Color,
     modifier: Modifier = Modifier
 ) {
     val rarity = try {
@@ -1320,29 +1420,25 @@ private fun CompactBadge(
     }
 
     val achievementData = Achievements.getAchievementById(achievement.id)
+    val lockedGray = Color(0xFF888888)
 
     Surface(
-        modifier = modifier,
-        color = if (isDarkMode) {
-            if (isUnlocked) IdentityRoomColors.CardBackgroundElevatedDark
-            else IdentityRoomColors.CardBackgroundDark.copy(alpha = 0.5f)
-        } else {
-            if (isUnlocked) IdentityRoomColors.CardBackgroundLight
-            else IdentityRoomColors.CardBackgroundElevatedLight.copy(alpha = 0.5f)
-        },
-        shape = RoundedCornerShape(12.dp)
+        modifier = modifier.clip(RoundedCornerShape(16.dp)),
+        color = if (isUnlocked) surfaceColor else surfaceColor.copy(alpha = 0.5f),
+        shape = RoundedCornerShape(16.dp),
+        tonalElevation = 0.dp
     ) {
         Column(
-            modifier = Modifier.padding(10.dp),
+            modifier = Modifier.padding(12.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Box(
                 modifier = Modifier
-                    .size(36.dp)
+                    .size(40.dp)
                     .clip(CircleShape)
                     .background(
                         if (isUnlocked) rarity.color.copy(alpha = 0.15f)
-                        else AchievementLocked.copy(alpha = 0.1f)
+                        else lockedGray.copy(alpha = 0.1f)
                     ),
                 contentAlignment = Alignment.Center
             ) {
@@ -1351,35 +1447,29 @@ private fun CompactBadge(
                         imageVector = achievementData?.icon ?: Icons.Filled.EmojiEvents,
                         contentDescription = null,
                         tint = rarity.color,
-                        modifier = Modifier.size(18.dp)
+                        modifier = Modifier.size(20.dp)
                     )
                 } else {
                     Icon(
                         imageVector = Icons.Filled.Lock,
                         contentDescription = null,
-                        tint = AchievementLocked,
-                        modifier = Modifier.size(16.dp)
+                        tint = lockedGray,
+                        modifier = Modifier.size(18.dp)
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             Text(
                 text = achievement.name,
-                style = MaterialTheme.typography.labelSmall,
+                fontFamily = PoppinsFamily,
                 fontWeight = FontWeight.Medium,
-                color = if (isUnlocked) {
-                    if (isDarkMode) IdentityRoomColors.TextPrimaryDark
-                    else IdentityRoomColors.TextPrimaryLight
-                } else {
-                    if (isDarkMode) IdentityRoomColors.TextTertiaryDark
-                    else IdentityRoomColors.TextTertiaryLight
-                },
+                fontSize = 10.sp,
+                color = if (isUnlocked) textPrimary else textTertiary,
                 textAlign = TextAlign.Center,
                 maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                fontSize = 10.sp
+                overflow = TextOverflow.Ellipsis
             )
         }
     }
@@ -1390,7 +1480,10 @@ private fun CompactBadge(
 // ============================================================================
 
 @Composable
-private fun GrowthQuoteCard(isDarkMode: Boolean) {
+private fun PremiumGrowthQuoteCard(
+    textSecondary: Color,
+    accentColor: Color
+) {
     val quotes = remember {
         listOf(
             "Every step forward is progress.",
@@ -1405,12 +1498,9 @@ private fun GrowthQuoteCard(isDarkMode: Boolean) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 16.dp)
-            .clip(RoundedCornerShape(16.dp))
-            .background(
-                if (isDarkMode) IdentityRoomColors.AccentGreen.copy(alpha = 0.08f)
-                else IdentityRoomColors.AccentGreenLight.copy(alpha = 0.1f)
-            )
+            .padding(horizontal = 24.dp, vertical = 16.dp)
+            .clip(RoundedCornerShape(20.dp))
+            .background(accentColor.copy(alpha = 0.08f))
             .padding(20.dp)
     ) {
         Row(
@@ -1420,17 +1510,17 @@ private fun GrowthQuoteCard(isDarkMode: Boolean) {
             Icon(
                 imageVector = Icons.Filled.FormatQuote,
                 contentDescription = null,
-                tint = if (isDarkMode) IdentityRoomColors.AccentGreen
-                       else IdentityRoomColors.AccentGreenLight,
+                tint = accentColor,
                 modifier = Modifier.size(24.dp)
             )
             Text(
                 text = quote,
-                style = MaterialTheme.typography.bodyMedium,
-                color = if (isDarkMode) IdentityRoomColors.TextSecondaryDark
-                        else IdentityRoomColors.TextSecondaryLight,
-                fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
-                lineHeight = 22.sp
+                fontFamily = PoppinsFamily,
+                fontWeight = FontWeight.Normal,
+                fontSize = 15.sp,
+                color = textSecondary,
+                fontStyle = FontStyle.Italic,
+                lineHeight = 24.sp
             )
         }
     }

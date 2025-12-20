@@ -5,6 +5,8 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -21,9 +23,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -84,7 +91,22 @@ fun StatsScreen(
     viewModel: StatsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val isDarkTheme = !MaterialTheme.colorScheme.background.luminance().let { it > 0.5f }
+    val isDarkTheme = isSystemInDarkTheme()
+
+    // Premium theme colors - matching Phase 2 design system
+    val backgroundColor = if (isDarkTheme) Color(0xFF0D2826) else Color(0xFFF0F4F3)
+    val surfaceColor = if (isDarkTheme) Color(0xFF1A3331) else Color(0xFFFFFFFF)
+    val surfaceElevated = if (isDarkTheme) Color(0xFF2A4240) else Color(0xFFF5F7F6)
+    val textPrimary = if (isDarkTheme) Color.White else Color(0xFF1A1A1A)
+    val textSecondary = if (isDarkTheme) Color(0xFFD3D8D7) else Color(0xFF6C757D)
+    val textTertiary = if (isDarkTheme) Color(0xFF8A9493) else Color(0xFF9CA3AF)
+    val accentColor = Color(0xFF36F97F) // Vibrant neon green
+    val dividerColor = if (isDarkTheme) Color(0xFF3A5250) else Color(0xFFDEE2E6)
+
+    // Leaderboard tier colors
+    val goldColor = Color(0xFFD4AF37)
+    val silverColor = Color(0xFFC0C0C0)
+    val bronzeColor = Color(0xFFCD7F32)
 
     // Pull-to-refresh state
     var isRefreshing by remember { mutableStateOf(false) }
@@ -97,7 +119,7 @@ fun StatsScreen(
     // Entry animation
     var isVisible by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
-        delay(100)
+        delay(50)
         isVisible = true
     }
 
@@ -119,7 +141,7 @@ fun StatsScreen(
 
     // Support bottom sheet
     if (showSupportSheet && selectedUserForSupport != null) {
-        SupportBottomSheet(
+        PremiumSupportBottomSheet(
             sheetState = sheetState,
             entry = selectedUserForSupport!!,
             onDismiss = {
@@ -139,9 +161,10 @@ fun StatsScreen(
             canBoost = uiState.canBoostToday,
             canRespect = uiState.canRespectToday,
             isDarkTheme = isDarkTheme,
-            cardBackgroundColor = cardBackgroundColor,
-            textPrimaryColor = textPrimaryColor,
-            textSecondaryColor = textSecondaryColor
+            surfaceColor = surfaceColor,
+            textPrimary = textPrimary,
+            textSecondary = textSecondary,
+            accentColor = accentColor
         )
     }
 
@@ -172,41 +195,42 @@ fun StatsScreen(
         ) {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(bottom = 120.dp) // Space for sticky user section
+                contentPadding = PaddingValues(bottom = 100.dp)
             ) {
-                // Header Area
+                // Header Section
                 item {
                     AnimatedVisibility(
                         visible = isVisible,
-                        enter = fadeIn(tween(600)) + slideInVertically(
-                            initialOffsetY = { -it / 2 },
-                            animationSpec = tween(600, easing = EaseOutCubic)
+                        enter = fadeIn(tween(400)) + slideInVertically(
+                            initialOffsetY = { -it / 4 },
+                            animationSpec = tween(400, easing = EaseOutCubic)
                         )
                     ) {
-                        StatsHeaderSection(
-                            textPrimaryColor = textPrimaryColor,
-                            textSecondaryColor = textSecondaryColor,
-                            cardBackgroundColor = cardBackgroundColor,
-                            isDarkTheme = isDarkTheme
+                        PremiumStatsHeader(
+                            textPrimary = textPrimary,
+                            textSecondary = textSecondary,
+                            surfaceColor = surfaceColor,
+                            accentColor = accentColor
                         )
                     }
                 }
 
-                // User Stats Section (72 Active Streak, Global Rank, Total XP)
+                // User Stats Section (Streak, Rank, XP)
                 item {
                     AnimatedVisibility(
                         visible = isVisible,
-                        enter = fadeIn(tween(600, delayMillis = 100)) + slideInVertically(
+                        enter = fadeIn(tween(400, delayMillis = 100)) + slideInVertically(
                             initialOffsetY = { it / 3 },
-                            animationSpec = tween(600, delayMillis = 100, easing = EaseOutCubic)
+                            animationSpec = tween(400, delayMillis = 100, easing = EaseOutCubic)
                         )
                     ) {
-                        UserStatsSection(
+                        PremiumUserStatsSection(
                             currentStreak = uiState.currentStreak,
                             currentRank = uiState.currentRank,
                             totalXp = uiState.totalPoints,
-                            textPrimaryColor = textPrimaryColor,
-                            textSecondaryColor = textSecondaryColor
+                            textPrimary = textPrimary,
+                            textSecondary = textSecondary,
+                            accentColor = accentColor
                         )
                     }
                 }
@@ -215,15 +239,17 @@ fun StatsScreen(
                 item {
                     AnimatedVisibility(
                         visible = isVisible,
-                        enter = fadeIn(tween(600, delayMillis = 200)) + slideInVertically(
+                        enter = fadeIn(tween(400, delayMillis = 200)) + slideInVertically(
                             initialOffsetY = { it / 3 },
-                            animationSpec = tween(600, delayMillis = 200, easing = EaseOutCubic)
+                            animationSpec = tween(400, delayMillis = 200, easing = EaseOutCubic)
                         )
                     ) {
-                        ActivityPulseSection(
+                        PremiumActivityPulseSection(
                             weeklyData = uiState.weeklyProgress,
-                            textPrimaryColor = textPrimaryColor,
-                            textSecondaryColor = textSecondaryColor,
+                            surfaceColor = surfaceColor,
+                            textPrimary = textPrimary,
+                            textSecondary = textSecondary,
+                            accentColor = accentColor,
                             isDarkTheme = isDarkTheme
                         )
                     }
@@ -233,29 +259,33 @@ fun StatsScreen(
                 item {
                     AnimatedVisibility(
                         visible = isVisible,
-                        enter = fadeIn(tween(600, delayMillis = 300)) + slideInVertically(
+                        enter = fadeIn(tween(400, delayMillis = 300)) + slideInVertically(
                             initialOffsetY = { it / 3 },
-                            animationSpec = tween(600, delayMillis = 300, easing = EaseOutCubic)
+                            animationSpec = tween(400, delayMillis = 300, easing = EaseOutCubic)
                         )
                     ) {
-                        SummaryCardsSection(
+                        PremiumSummaryCardsSection(
                             wordsWritten = uiState.totalWordsWritten,
                             entries = uiState.journalEntries,
                             messages = uiState.futureMessages,
-                            cardBackgroundColor = cardBackgroundColor,
-                            textPrimaryColor = textPrimaryColor,
-                            textSecondaryColor = textSecondaryColor
+                            surfaceColor = surfaceColor,
+                            textPrimary = textPrimary,
+                            textSecondary = textSecondary,
+                            accentColor = accentColor
                         )
                     }
                 }
 
-                // Top Performers Section Header
+                // Top Performers Header
                 item {
                     AnimatedVisibility(
                         visible = isVisible,
-                        enter = fadeIn(tween(600, delayMillis = 400))
+                        enter = fadeIn(tween(400, delayMillis = 400))
                     ) {
-                        TopPerformersHeader(textPrimaryColor = textPrimaryColor)
+                        PremiumTopPerformersHeader(
+                            textPrimary = textPrimary,
+                            accentColor = accentColor
+                        )
                     }
                 }
 
@@ -274,13 +304,17 @@ fun StatsScreen(
                                         animationSpec = tween(400, delayMillis = 500 + index * 30)
                                     )
                         ) {
-                            LeaderboardItemRow(
+                            PremiumLeaderboardItemRow(
                                 entry = entry,
                                 rank = index + 1,
                                 isDarkTheme = isDarkTheme,
-                                cardBackgroundColor = cardBackgroundColor,
-                                textPrimaryColor = textPrimaryColor,
-                                textSecondaryColor = textSecondaryColor,
+                                surfaceColor = surfaceColor,
+                                textPrimary = textPrimary,
+                                textSecondary = textSecondary,
+                                accentColor = accentColor,
+                                goldColor = goldColor,
+                                silverColor = silverColor,
+                                bronzeColor = bronzeColor,
                                 onSupportClick = { selectedEntry ->
                                     if (!selectedEntry.isCurrentUser) {
                                         selectedUserForSupport = selectedEntry
@@ -300,35 +334,36 @@ fun StatsScreen(
             enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
             modifier = Modifier.align(Alignment.BottomCenter)
         ) {
-            StickyUserSection(
+            PremiumStickyUserSection(
                 userName = getCurrentUserName(uiState.allTimeLeaderboard),
                 userScore = getCurrentUserScore(uiState.allTimeLeaderboard),
                 userRank = uiState.currentRank,
-                totalUsers = uiState.allTimeLeaderboard.size
+                totalUsers = uiState.allTimeLeaderboard.size,
+                accentColor = accentColor
             )
         }
     }
 }
 
-// =============================================================================
+// ============================================================================
 // HEADER SECTION
-// =============================================================================
+// ============================================================================
 
 @Composable
-private fun StatsHeaderSection(
-    textPrimaryColor: Color,
-    textSecondaryColor: Color,
-    cardBackgroundColor: Color,
-    isDarkTheme: Boolean
+private fun PremiumStatsHeader(
+    textPrimary: Color,
+    textSecondary: Color,
+    surfaceColor: Color,
+    accentColor: Color
 ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .statusBarsPadding()
-            .padding(horizontal = 20.dp)
+            .padding(horizontal = 24.dp)
             .padding(top = 16.dp)
     ) {
-        // Top Row: DASHBOARD text and THIS WEEK button
+        // Top Row: Dashboard label and filter
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -336,74 +371,85 @@ private fun StatsHeaderSection(
         ) {
             Text(
                 text = "DASHBOARD",
-                style = MaterialTheme.typography.labelSmall,
-                color = textSecondaryColor,
-                letterSpacing = 1.5.sp,
-                fontWeight = FontWeight.Medium
+                fontFamily = PoppinsFamily,
+                fontWeight = FontWeight.Medium,
+                fontSize = 11.sp,
+                color = textSecondary,
+                letterSpacing = 1.5.sp
             )
 
-            // THIS WEEK Button with Calendar Icon
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(cardBackgroundColor)
-                    .clickable { /* TODO: Implement filter */ }
-                    .padding(horizontal = 12.dp, vertical = 8.dp)
+            // Filter Button
+            Surface(
+                modifier = Modifier.clip(RoundedCornerShape(12.dp)),
+                color = surfaceColor,
+                shape = RoundedCornerShape(12.dp),
+                tonalElevation = 0.dp
             ) {
                 Row(
+                    modifier = Modifier
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) { /* TODO: Implement filter */ }
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     Text(
                         text = "THIS WEEK",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = textSecondaryColor,
-                        fontWeight = FontWeight.Medium
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 10.sp,
+                        color = textSecondary,
+                        letterSpacing = 0.5.sp
                     )
                     Icon(
                         imageVector = Icons.Outlined.CalendarMonth,
                         contentDescription = "Calendar",
-                        tint = textSecondaryColor,
+                        tint = accentColor,
                         modifier = Modifier.size(16.dp)
                     )
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-        // Your Impact Title
+        // Title
         Text(
             text = "Your",
-            style = MaterialTheme.typography.headlineMedium,
-            color = textPrimaryColor,
-            fontWeight = FontWeight.Normal
+            fontFamily = PoppinsFamily,
+            fontWeight = FontWeight.Normal,
+            fontSize = 28.sp,
+            color = textPrimary
         )
         Text(
             text = "Impact",
-            style = MaterialTheme.typography.headlineLarge,
-            color = textPrimaryColor,
-            fontWeight = FontWeight.Bold
+            fontFamily = PoppinsFamily,
+            fontWeight = FontWeight.Bold,
+            fontSize = 36.sp,
+            color = textPrimary
         )
     }
 }
 
-// =============================================================================
+// ============================================================================
 // USER STATS SECTION (Streak, Rank, XP)
-// =============================================================================
+// ============================================================================
 
 @Composable
-private fun UserStatsSection(
+private fun PremiumUserStatsSection(
     currentStreak: Int,
     currentRank: Int,
     totalXp: Int,
-    textPrimaryColor: Color,
-    textSecondaryColor: Color
+    textPrimary: Color,
+    textSecondary: Color,
+    accentColor: Color
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 16.dp),
+            .padding(horizontal = 24.dp, vertical = 20.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.Top
     ) {
@@ -439,30 +485,34 @@ private fun UserStatsSection(
             }
             Text(
                 text = "ACTIVE STREAK",
-                style = MaterialTheme.typography.labelSmall,
-                color = textSecondaryColor,
-                letterSpacing = 1.sp,
-                fontWeight = FontWeight.SemiBold
+                fontFamily = PoppinsFamily,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 10.sp,
+                color = textSecondary,
+                letterSpacing = 1.sp
             )
         }
 
         // Right side stats: Global Rank and Total XP
         Column(
             horizontalAlignment = Alignment.End,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
             // Global Rank
             Column(horizontalAlignment = Alignment.End) {
                 Text(
                     text = if (currentRank > 0) "#${formatNumber(currentRank)}" else "-",
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = textPrimaryColor,
-                    fontWeight = FontWeight.Bold
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 26.sp,
+                    color = textPrimary
                 )
                 Text(
                     text = "GLOBAL RANK",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = textSecondaryColor,
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Normal,
+                    fontSize = 10.sp,
+                    color = textSecondary,
                     letterSpacing = 0.5.sp
                 )
             }
@@ -477,14 +527,17 @@ private fun UserStatsSection(
 
                 Text(
                     text = formatNumber(animatedXp),
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = textPrimaryColor,
-                    fontWeight = FontWeight.Bold
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 26.sp,
+                    color = textPrimary
                 )
                 Text(
                     text = "TOTAL XP",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = textSecondaryColor,
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Normal,
+                    fontSize = 10.sp,
+                    color = textSecondary,
                     letterSpacing = 0.5.sp
                 )
             }
@@ -492,56 +545,96 @@ private fun UserStatsSection(
     }
 }
 
-// =============================================================================
-// ACTIVITY PULSE SECTION - Innovative Wave Visualization
-// =============================================================================
+// ============================================================================
+// ACTIVITY PULSE SECTION
+// ============================================================================
 
 @Composable
-private fun ActivityPulseSection(
+private fun PremiumActivityPulseSection(
     weeklyData: List<Int>,
-    textPrimaryColor: Color,
-    textSecondaryColor: Color,
+    surfaceColor: Color,
+    textPrimary: Color,
+    textSecondary: Color,
+    accentColor: Color,
     isDarkTheme: Boolean
 ) {
-    Column(
+    Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 8.dp)
+            .padding(horizontal = 24.dp, vertical = 8.dp)
+            .clip(RoundedCornerShape(20.dp)),
+        color = surfaceColor,
+        shape = RoundedCornerShape(20.dp),
+        tonalElevation = 0.dp
     ) {
-        // Header Row
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+        Column(
+            modifier = Modifier.padding(20.dp)
         ) {
-            Text(
-                text = "Activity Pulse",
-                style = MaterialTheme.typography.titleMedium,
-                color = textPrimaryColor,
-                fontWeight = FontWeight.SemiBold
-            )
-            Text(
-                text = "LAST 7 DAYS",
-                style = MaterialTheme.typography.labelSmall,
-                color = NeonGreen,
-                fontWeight = FontWeight.Medium,
-                letterSpacing = 0.5.sp
+            // Header Row
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(accentColor.copy(alpha = 0.15f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.ShowChart,
+                            contentDescription = null,
+                            tint = accentColor,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
+                    Text(
+                        text = "Activity Pulse",
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 18.sp,
+                        color = textPrimary
+                    )
+                }
+                Surface(
+                    color = accentColor.copy(alpha = 0.15f),
+                    shape = RoundedCornerShape(8.dp),
+                    tonalElevation = 0.dp
+                ) {
+                    Text(
+                        text = "LAST 7 DAYS",
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 10.sp,
+                        color = accentColor,
+                        letterSpacing = 0.5.sp,
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Animated Wave Visualization
+            PremiumActivityPulseVisualization(
+                data = weeklyData,
+                accentColor = accentColor,
+                isDarkTheme = isDarkTheme
             )
         }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Animated Wave Visualization
-        ActivityPulseVisualization(
-            data = weeklyData,
-            isDarkTheme = isDarkTheme
-        )
     }
 }
 
 @Composable
-private fun ActivityPulseVisualization(
+private fun PremiumActivityPulseVisualization(
     data: List<Int>,
+    accentColor: Color,
     isDarkTheme: Boolean
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "pulse_animation")
@@ -568,6 +661,7 @@ private fun ActivityPulseVisualization(
     )
 
     val maxValue = data.maxOrNull()?.coerceAtLeast(1) ?: 1
+    val inactiveColor = if (isDarkTheme) Color(0xFF3A5250) else Color(0xFFDEE2E6)
 
     Box(
         modifier = Modifier
@@ -602,198 +696,250 @@ private fun ActivityPulseVisualization(
                 drawRoundRect(
                     color = barColor,
                     topLeft = Offset(x, y),
-                    size = androidx.compose.ui.geometry.Size(barWidth, finalBarHeight),
-                    cornerRadius = androidx.compose.ui.geometry.CornerRadius(4.dp.toPx(), 4.dp.toPx())
+                    size = Size(barWidth, finalBarHeight),
+                    cornerRadius = CornerRadius(6.dp.toPx(), 6.dp.toPx())
                 )
             }
         }
     }
 }
 
-// =============================================================================
+// ============================================================================
 // SUMMARY CARDS SECTION
-// =============================================================================
+// ============================================================================
 
 @Composable
-private fun SummaryCardsSection(
+private fun PremiumSummaryCardsSection(
     wordsWritten: Int,
     entries: Int,
     messages: Int,
-    cardBackgroundColor: Color,
-    textPrimaryColor: Color,
-    textSecondaryColor: Color
+    surfaceColor: Color,
+    textPrimary: Color,
+    textSecondary: Color,
+    accentColor: Color
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 16.dp),
+            .padding(horizontal = 24.dp, vertical = 12.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        SummaryCard(
+        PremiumSummaryCard(
             value = wordsWritten,
-            label = "WORDS",
-            cardBackgroundColor = cardBackgroundColor,
-            textPrimaryColor = textPrimaryColor,
-            textSecondaryColor = textSecondaryColor,
+            label = "Words",
+            icon = Icons.Filled.EditNote,
+            iconColor = Color(0xFFFFD166), // Energetic amber
+            surfaceColor = surfaceColor,
+            textPrimary = textPrimary,
+            textSecondary = textSecondary,
             modifier = Modifier.weight(1f)
         )
-        SummaryCard(
+        PremiumSummaryCard(
             value = entries,
-            label = "ENTRIES",
-            cardBackgroundColor = cardBackgroundColor,
-            textPrimaryColor = textPrimaryColor,
-            textSecondaryColor = textSecondaryColor,
+            label = "Entries",
+            icon = Icons.Filled.AutoStories,
+            iconColor = Color(0xFF6CB4D4), // Serene blue
+            surfaceColor = surfaceColor,
+            textPrimary = textPrimary,
+            textSecondary = textSecondary,
             modifier = Modifier.weight(1f)
         )
-        SummaryCard(
+        PremiumSummaryCard(
             value = messages,
-            label = "MSGS",
-            cardBackgroundColor = cardBackgroundColor,
-            textPrimaryColor = textPrimaryColor,
-            textSecondaryColor = textSecondaryColor,
+            label = "Messages",
+            icon = Icons.Filled.Email,
+            iconColor = Color(0xFFB57EDC), // Premium violet
+            surfaceColor = surfaceColor,
+            textPrimary = textPrimary,
+            textSecondary = textSecondary,
             modifier = Modifier.weight(1f)
         )
     }
 }
 
 @Composable
-private fun SummaryCard(
+private fun PremiumSummaryCard(
     value: Int,
     label: String,
-    cardBackgroundColor: Color,
-    textPrimaryColor: Color,
-    textSecondaryColor: Color,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    iconColor: Color,
+    surfaceColor: Color,
+    textPrimary: Color,
+    textSecondary: Color,
     modifier: Modifier = Modifier
 ) {
+    var isAnimated by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        delay(200)
+        isAnimated = true
+    }
+
+    val scale by animateFloatAsState(
+        targetValue = if (isAnimated) 1f else 0.9f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
+        label = "card_scale"
+    )
+
     val animatedValue by animateIntAsState(
         targetValue = value,
         animationSpec = tween(1200, easing = EaseOutCubic),
         label = "card_value_animation"
     )
 
-    Box(
+    Surface(
         modifier = modifier
-            .clip(RoundedCornerShape(12.dp))
-            .background(cardBackgroundColor)
-            .padding(vertical = 20.dp, horizontal = 12.dp),
-        contentAlignment = Alignment.Center
+            .scale(scale)
+            .clip(RoundedCornerShape(20.dp)),
+        color = surfaceColor,
+        shape = RoundedCornerShape(20.dp),
+        tonalElevation = 0.dp
     ) {
         Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = iconColor,
+                modifier = Modifier.size(24.dp)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = formatNumber(animatedValue),
-                style = MaterialTheme.typography.headlineSmall,
-                color = textPrimaryColor,
-                fontWeight = FontWeight.Bold
+                fontFamily = PoppinsFamily,
+                fontWeight = FontWeight.Bold,
+                fontSize = 22.sp,
+                color = textPrimary
             )
-            Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = label,
-                style = MaterialTheme.typography.labelSmall,
-                color = textSecondaryColor,
-                letterSpacing = 0.5.sp
+                fontFamily = PoppinsFamily,
+                fontWeight = FontWeight.Normal,
+                fontSize = 11.sp,
+                color = textSecondary
             )
         }
     }
 }
 
-// =============================================================================
+// ============================================================================
 // TOP PERFORMERS SECTION
-// =============================================================================
+// ============================================================================
 
 @Composable
-private fun TopPerformersHeader(textPrimaryColor: Color) {
+private fun PremiumTopPerformersHeader(
+    textPrimary: Color,
+    accentColor: Color
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp)
+            .padding(horizontal = 24.dp)
             .padding(top = 24.dp, bottom = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        // Green dot indicator
-        Box(
-            modifier = Modifier
-                .size(8.dp)
-                .clip(CircleShape)
-                .background(NeonGreen)
+        Icon(
+            imageVector = Icons.Filled.EmojiEvents,
+            contentDescription = null,
+            tint = Color(0xFFD4AF37), // Gold
+            modifier = Modifier.size(24.dp)
         )
         Text(
             text = "Top Performers",
-            style = MaterialTheme.typography.titleMedium,
-            color = textPrimaryColor,
-            fontWeight = FontWeight.SemiBold
+            fontFamily = PoppinsFamily,
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 18.sp,
+            color = textPrimary
         )
     }
 }
 
-// =============================================================================
-// LEADERBOARD ITEM ROW WITH ANIMATED BANNERS
-// =============================================================================
+// ============================================================================
+// LEADERBOARD ITEM ROW
+// ============================================================================
 
 @Composable
-private fun LeaderboardItemRow(
+private fun PremiumLeaderboardItemRow(
     entry: LeaderboardEntryEntity,
     rank: Int,
     isDarkTheme: Boolean,
-    cardBackgroundColor: Color,
-    textPrimaryColor: Color,
-    textSecondaryColor: Color,
+    surfaceColor: Color,
+    textPrimary: Color,
+    textSecondary: Color,
+    accentColor: Color,
+    goldColor: Color,
+    silverColor: Color,
+    bronzeColor: Color,
     onSupportClick: (LeaderboardEntryEntity) -> Unit
 ) {
     val isTopThree = rank <= 3
 
-    Box(
+    val rankColor = when (rank) {
+        1 -> goldColor
+        2 -> silverColor
+        3 -> bronzeColor
+        else -> textSecondary
+    }
+
+    Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 4.dp)
+            .padding(horizontal = 24.dp, vertical = 4.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null
+            ) { onSupportClick(entry) },
+        color = if (isTopThree) rankColor.copy(alpha = 0.15f) else surfaceColor,
+        shape = RoundedCornerShape(16.dp),
+        tonalElevation = 0.dp
     ) {
-        // Animated Banner Background for Top 3
-        if (isTopThree) {
-            AnimatedBannerBackground(
-                rank = rank,
-                modifier = Modifier
-                    .matchParentSize()
-                    .clip(RoundedCornerShape(12.dp))
-            )
-        }
-
-        // Main Row Content
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .then(
-                    if (!isTopThree) {
-                        Modifier
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(Color.Transparent)
-                    } else Modifier
-                )
-                .clickable { onSupportClick(entry) }
                 .padding(horizontal = 16.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Rank Number
-            Box(
-                modifier = Modifier
-                    .width(36.dp),
-                contentAlignment = Alignment.CenterStart
-            ) {
-                if (isTopThree) {
-                    // Special rank badge for top 3
-                    TopRankBadge(rank = rank)
-                } else {
+            // Rank Badge
+            if (isTopThree) {
+                Box(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clip(CircleShape)
+                        .background(rankColor),
+                    contentAlignment = Alignment.Center
+                ) {
                     Text(
                         text = rank.toString(),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = textSecondaryColor,
-                        fontWeight = FontWeight.Medium
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp,
+                        color = Color.White
+                    )
+                }
+            } else {
+                Box(
+                    modifier = Modifier.width(32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = rank.toString(),
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 14.sp,
+                        color = textSecondary
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(14.dp))
 
             // Name and Badge
             Column(
@@ -805,27 +951,28 @@ private fun LeaderboardItemRow(
                 ) {
                     Text(
                         text = entry.displayName,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = if (isTopThree) Color.White else textPrimaryColor,
+                        fontFamily = PoppinsFamily,
                         fontWeight = if (isTopThree) FontWeight.SemiBold else FontWeight.Medium,
+                        fontSize = 15.sp,
+                        color = if (isTopThree) rankColor else textPrimary,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
 
-                    // Title badge for top 3
-                    if (isTopThree && rank == 1) {
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(4.dp))
-                                .background(Color.White.copy(alpha = 0.2f))
-                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                    if (rank == 1) {
+                        Surface(
+                            color = goldColor.copy(alpha = 0.2f),
+                            shape = RoundedCornerShape(4.dp),
+                            tonalElevation = 0.dp
                         ) {
                             Text(
                                 text = "CHAMPION",
-                                style = MaterialTheme.typography.labelSmall.copy(fontSize = 8.sp),
-                                color = Color.White,
+                                fontFamily = PoppinsFamily,
                                 fontWeight = FontWeight.Bold,
-                                letterSpacing = 0.5.sp
+                                fontSize = 8.sp,
+                                color = goldColor,
+                                letterSpacing = 0.5.sp,
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                             )
                         }
                     }
@@ -839,16 +986,15 @@ private fun LeaderboardItemRow(
             ) {
                 Text(
                     text = formatNumber(entry.totalPoints),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = if (isTopThree) NeonGreen else NeonGreen,
-                    fontWeight = FontWeight.SemiBold
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 15.sp,
+                    color = accentColor
                 )
-
-                // Boost indicator
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.TrendingUp,
                     contentDescription = null,
-                    tint = NeonGreen,
+                    tint = accentColor,
                     modifier = Modifier.size(16.dp)
                 )
             }
@@ -856,143 +1002,45 @@ private fun LeaderboardItemRow(
     }
 }
 
-@Composable
-private fun TopRankBadge(rank: Int) {
-    val badgeColor = when (rank) {
-        1 -> GoldBanner
-        2 -> SilverBanner
-        3 -> BronzeBanner
-        else -> Color.Gray
-    }
-
-    Box(
-        modifier = Modifier
-            .size(28.dp)
-            .clip(CircleShape)
-            .background(badgeColor),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = rank.toString(),
-            style = MaterialTheme.typography.labelMedium,
-            color = Color.White,
-            fontWeight = FontWeight.Bold
-        )
-    }
-}
-
-// =============================================================================
-// ANIMATED BANNER BACKGROUND FOR TOP 3
-// =============================================================================
+// ============================================================================
+// STICKY USER SECTION
+// ============================================================================
 
 @Composable
-private fun AnimatedBannerBackground(
-    rank: Int,
-    modifier: Modifier = Modifier
-) {
-    val infiniteTransition = rememberInfiniteTransition(label = "banner_$rank")
-
-    // Shimmer animation
-    val shimmerOffset by infiniteTransition.animateFloat(
-        initialValue = -1f,
-        targetValue = 2f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(2500, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "shimmer_$rank"
-    )
-
-    // Glow pulse animation
-    val glowAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.6f,
-        targetValue = 0.9f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1500, easing = EaseInOutCubic),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "glow_$rank"
-    )
-
-    val (primaryColor, secondaryColor, shimmerColor) = when (rank) {
-        1 -> Triple(GoldBannerDark, GoldBanner, GoldBannerLight)
-        2 -> Triple(SilverBannerDark, SilverBanner, SilverBannerLight)
-        3 -> Triple(BronzeBannerDark, BronzeBanner, BronzeBannerLight)
-        else -> Triple(Color.Gray, Color.Gray, Color.Gray)
-    }
-
-    Canvas(modifier = modifier) {
-        val width = size.width
-        val height = size.height
-
-        // Base gradient background
-        drawRoundRect(
-            brush = Brush.horizontalGradient(
-                colors = listOf(
-                    primaryColor.copy(alpha = glowAlpha),
-                    secondaryColor.copy(alpha = glowAlpha * 0.9f),
-                    primaryColor.copy(alpha = glowAlpha * 0.8f)
-                )
-            ),
-            cornerRadius = androidx.compose.ui.geometry.CornerRadius(12.dp.toPx(), 12.dp.toPx())
-        )
-
-        // Animated shimmer effect
-        val shimmerWidth = width * 0.4f
-        val shimmerX = shimmerOffset * width
-
-        drawRoundRect(
-            brush = Brush.horizontalGradient(
-                colors = listOf(
-                    Color.Transparent,
-                    shimmerColor.copy(alpha = 0.3f),
-                    Color.Transparent
-                ),
-                startX = shimmerX - shimmerWidth / 2,
-                endX = shimmerX + shimmerWidth / 2
-            ),
-            cornerRadius = androidx.compose.ui.geometry.CornerRadius(12.dp.toPx(), 12.dp.toPx())
-        )
-    }
-}
-
-// =============================================================================
-// STICKY USER SECTION AT BOTTOM
-// =============================================================================
-
-@Composable
-private fun StickyUserSection(
+private fun PremiumStickyUserSection(
     userName: String,
     userScore: Int,
     userRank: Int,
-    totalUsers: Int
+    totalUsers: Int,
+    accentColor: Color
 ) {
     val percentile = if (totalUsers > 0) {
         ((totalUsers - userRank + 1).toFloat() / totalUsers * 100).toInt().coerceIn(1, 99)
     } else 15
 
-    Box(
+    Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .background(NeonGreen)
-            .navigationBarsPadding()
-            .padding(horizontal = 20.dp, vertical = 16.dp)
+            .navigationBarsPadding(),
+        color = accentColor,
+        tonalElevation = 0.dp
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp, vertical = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // YOU label with lightning bolt
+            // YOU label with name
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
                 modifier = Modifier.weight(1f)
             ) {
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(4.dp))
-                        .background(Color.Black.copy(alpha = 0.15f))
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                Surface(
+                    color = Color.Black.copy(alpha = 0.15f),
+                    shape = RoundedCornerShape(6.dp),
+                    tonalElevation = 0.dp
                 ) {
                     Text(
                         text = "YOU",
@@ -1007,11 +1055,12 @@ private fun StickyUserSection(
                     style = MaterialTheme.typography.bodyLarge,
                     color = ProdyTextOnAccentLight,
                     fontWeight = FontWeight.SemiBold,
+                    fontSize = 15.sp,
+                    color = Color.Black,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
 
-                // Lightning bolt icon
                 Icon(
                     imageVector = Icons.Filled.Bolt,
                     contentDescription = null,
@@ -1040,13 +1089,13 @@ private fun StickyUserSection(
     }
 }
 
-// =============================================================================
+// ============================================================================
 // SUPPORT BOTTOM SHEET
-// =============================================================================
+// ============================================================================
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun SupportBottomSheet(
+private fun PremiumSupportBottomSheet(
     sheetState: SheetState,
     entry: LeaderboardEntryEntity,
     onDismiss: () -> Unit,
@@ -1055,39 +1104,52 @@ private fun SupportBottomSheet(
     canBoost: Boolean,
     canRespect: Boolean,
     isDarkTheme: Boolean,
-    cardBackgroundColor: Color,
-    textPrimaryColor: Color,
-    textSecondaryColor: Color
+    surfaceColor: Color,
+    textPrimary: Color,
+    textSecondary: Color,
+    accentColor: Color
 ) {
-    val sheetBackgroundColor = if (isDarkTheme) DarkCardBackgroundElevated else Color.White
+    val sheetBackgroundColor = if (isDarkTheme) Color(0xFF1A3331) else Color.White
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         containerColor = sheetBackgroundColor,
-        dragHandle = { BottomSheetDefaults.DragHandle() }
+        dragHandle = {
+            Box(
+                modifier = Modifier
+                    .padding(vertical = 16.dp)
+                    .width(48.dp)
+                    .height(4.dp)
+                    .clip(RoundedCornerShape(2.dp))
+                    .background(textSecondary.copy(alpha = 0.3f))
+            )
+        }
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp)
-                .padding(bottom = 32.dp),
+                .padding(bottom = 40.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Header
             Text(
                 text = "Support ${entry.displayName}",
-                style = MaterialTheme.typography.titleMedium,
-                color = textPrimaryColor,
-                fontWeight = FontWeight.SemiBold
+                fontFamily = PoppinsFamily,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 18.sp,
+                color = textPrimary
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
                 text = "Show your appreciation for their growth journey",
-                style = MaterialTheme.typography.bodySmall,
-                color = textSecondaryColor,
+                fontFamily = PoppinsFamily,
+                fontWeight = FontWeight.Normal,
+                fontSize = 13.sp,
+                color = textSecondary,
                 textAlign = TextAlign.Center
             )
 
@@ -1098,33 +1160,31 @@ private fun SupportBottomSheet(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Boost button
-                SupportActionButton(
+                PremiumSupportActionButton(
                     modifier = Modifier.weight(1f),
                     icon = Icons.Filled.RocketLaunch,
                     title = "Boost",
                     description = "Power up their journey",
                     count = entry.boostsReceived,
-                    color = NeonGreen,
+                    color = accentColor,
                     enabled = canBoost,
-                    textPrimaryColor = textPrimaryColor,
-                    textSecondaryColor = textSecondaryColor,
-                    cardBackgroundColor = cardBackgroundColor,
+                    surfaceColor = surfaceColor,
+                    textPrimary = textPrimary,
+                    textSecondary = textSecondary,
                     onClick = onBoost
                 )
 
-                // Respect button
-                SupportActionButton(
+                PremiumSupportActionButton(
                     modifier = Modifier.weight(1f),
                     icon = Icons.Filled.ThumbUp,
                     title = "Respect",
                     description = "Acknowledge dedication",
                     count = entry.respectsReceived,
-                    color = ProdyTertiary,
+                    color = Color(0xFF6CB4D4), // Serene blue
                     enabled = canRespect,
-                    textPrimaryColor = textPrimaryColor,
-                    textSecondaryColor = textSecondaryColor,
-                    cardBackgroundColor = cardBackgroundColor,
+                    surfaceColor = surfaceColor,
+                    textPrimary = textPrimary,
+                    textSecondary = textSecondary,
                     onClick = onRespect
                 )
             }
@@ -1139,13 +1199,15 @@ private fun SupportBottomSheet(
                     Icon(
                         imageVector = Icons.Outlined.Schedule,
                         contentDescription = null,
-                        tint = textSecondaryColor.copy(alpha = 0.6f),
+                        tint = textSecondary.copy(alpha = 0.6f),
                         modifier = Modifier.size(16.dp)
                     )
                     Text(
                         text = "Daily support limits help keep interactions meaningful",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = textSecondaryColor.copy(alpha = 0.6f)
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.Normal,
+                        fontSize = 11.sp,
+                        color = textSecondary.copy(alpha = 0.6f)
                     )
                 }
             }
@@ -1154,7 +1216,7 @@ private fun SupportBottomSheet(
 }
 
 @Composable
-private fun SupportActionButton(
+private fun PremiumSupportActionButton(
     modifier: Modifier = Modifier,
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     title: String,
@@ -1162,20 +1224,26 @@ private fun SupportActionButton(
     count: Int,
     color: Color,
     enabled: Boolean,
-    textPrimaryColor: Color,
-    textSecondaryColor: Color,
-    cardBackgroundColor: Color,
+    surfaceColor: Color,
+    textPrimary: Color,
+    textSecondary: Color,
     onClick: () -> Unit
 ) {
     val alpha = if (enabled) 1f else 0.5f
 
     Surface(
         modifier = modifier
-            .clip(RoundedCornerShape(16.dp))
-            .clickable(enabled = enabled, onClick = onClick)
+            .clip(RoundedCornerShape(20.dp))
+            .clickable(
+                enabled = enabled,
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onClick
+            )
             .alpha(alpha),
-        color = cardBackgroundColor,
-        shape = RoundedCornerShape(16.dp)
+        color = surfaceColor,
+        shape = RoundedCornerShape(20.dp),
+        tonalElevation = 0.dp
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
@@ -1186,7 +1254,7 @@ private fun SupportActionButton(
             Box {
                 Box(
                     modifier = Modifier
-                        .size(48.dp)
+                        .size(52.dp)
                         .clip(CircleShape)
                         .background(color.copy(alpha = 0.15f)),
                     contentAlignment = Alignment.Center
@@ -1195,7 +1263,7 @@ private fun SupportActionButton(
                         imageVector = icon,
                         contentDescription = title,
                         tint = color,
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(26.dp)
                     )
                 }
 
@@ -1205,17 +1273,17 @@ private fun SupportActionButton(
                         modifier = Modifier
                             .align(Alignment.TopEnd)
                             .offset(x = 4.dp, y = (-4).dp)
-                            .size(20.dp)
+                            .size(22.dp)
                             .clip(CircleShape)
                             .background(color),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = if (count > 99) "99+" else count.toString(),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = Color.White,
+                            fontFamily = PoppinsFamily,
+                            fontWeight = FontWeight.Bold,
                             fontSize = 9.sp,
-                            fontWeight = FontWeight.Bold
+                            color = Color.White
                         )
                     }
                 }
@@ -1223,15 +1291,18 @@ private fun SupportActionButton(
 
             Text(
                 text = title,
-                style = MaterialTheme.typography.titleSmall,
+                fontFamily = PoppinsFamily,
                 fontWeight = FontWeight.SemiBold,
+                fontSize = 14.sp,
                 color = color
             )
 
             Text(
                 text = description,
-                style = MaterialTheme.typography.labelSmall,
-                color = textSecondaryColor,
+                fontFamily = PoppinsFamily,
+                fontWeight = FontWeight.Normal,
+                fontSize = 11.sp,
+                color = textSecondary,
                 textAlign = TextAlign.Center,
                 maxLines = 2
             )
@@ -1248,9 +1319,9 @@ private fun SupportActionButton(
     }
 }
 
-// =============================================================================
+// ============================================================================
 // HELPER FUNCTIONS
-// =============================================================================
+// ============================================================================
 
 private fun formatNumber(number: Int): String {
     return when {
@@ -1262,17 +1333,9 @@ private fun formatNumber(number: Int): String {
 }
 
 private fun getCurrentUserName(leaderboard: List<LeaderboardEntryEntity>): String {
-    return leaderboard.find { it.isCurrentUser }?.displayName ?: "Alex Morgan"
+    return leaderboard.find { it.isCurrentUser }?.displayName ?: "You"
 }
 
 private fun getCurrentUserScore(leaderboard: List<LeaderboardEntryEntity>): Int {
-    return leaderboard.find { it.isCurrentUser }?.totalPoints ?: 8450
-}
-
-// Extension function to calculate luminance
-private fun Color.luminance(): Float {
-    val r = red
-    val g = green
-    val b = blue
-    return 0.2126f * r + 0.7152f * g + 0.0722f * b
+    return leaderboard.find { it.isCurrentUser }?.totalPoints ?: 0
 }

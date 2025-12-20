@@ -2,18 +2,19 @@ package com.prody.prashant.ui.screens.home
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.EaseOutCubic
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
@@ -21,6 +22,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
@@ -41,13 +43,16 @@ import java.util.Date
 import java.util.Locale
 
 /**
- * Home Screen - Redesigned Dashboard
+ * Home Screen - Premium Redesign (Phase 2)
  *
- * A clean, minimal, modern interface featuring:
- * - Personalized greeting with streak and points badge
- * - Gratitude and Challenges reflection cards
- * - Quick action buttons for core features
- * - Daily Wisdom section with Quote, Word, Idiom, and Proverb cards
+ * A completely redesigned dashboard following Prody's new design system:
+ * - Extreme minimalism and cleanliness
+ * - NO shadows, gradients, or hi-fi elements
+ * - Generous white space for premium feel
+ * - 8dp grid spacing system
+ * - Vibrant neon green accent (#36F97F)
+ * - Poppins typography throughout
+ * - Flat design with subtle borders
  *
  * Design Principles:
  * - Flat, shadow-free design with NO gradients or skeuomorphism
@@ -71,6 +76,14 @@ fun HomeScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val greeting = getGreeting()
+    val isDarkTheme = isSystemInDarkTheme()
+
+    // Theme-aware colors
+    val backgroundColor = if (isDarkTheme) Color(0xFF0D2826) else Color(0xFFF0F4F3)
+    val surfaceColor = if (isDarkTheme) Color(0xFF2A4240) else Color(0xFFFFFFFF)
+    val primaryTextColor = if (isDarkTheme) Color.White else Color(0xFF1A1A1A)
+    val secondaryTextColor = if (isDarkTheme) Color(0xFFD3D8D7) else Color(0xFF6C757D)
+    val accentColor = ProdyAccent // #36F97F
 
     // Entry animations
     var isVisible by remember { mutableStateOf(false) }
@@ -102,64 +115,114 @@ fun HomeScreen(
             ) {
             // Header with greeting and stats
             item {
-                HomeHeader(
+                PremiumHeader(
                     greeting = greeting,
                     userName = uiState.userName,
                     currentStreak = uiState.currentStreak,
-                    totalPoints = uiState.totalPoints
+                    totalPoints = uiState.totalPoints,
+                    primaryTextColor = primaryTextColor,
+                    secondaryTextColor = secondaryTextColor,
+                    surfaceColor = surfaceColor,
+                    accentColor = accentColor,
+                    isDarkTheme = isDarkTheme
                 )
             }
 
-            // Gratitude and Challenges cards row
+            // Spacer for generous spacing
+            item { Spacer(modifier = Modifier.height(24.dp)) }
+
+            // Reflection Cards Row (Gratitude & Challenges)
             item {
-                ReflectionCardsRow(
+                ReflectionCardsSection(
                     onGratitudeClick = onNavigateToJournal,
-                    onChallengesClick = onNavigateToChallenges
+                    onChallengesClick = onNavigateToChallenges,
+                    surfaceColor = surfaceColor,
+                    primaryTextColor = primaryTextColor,
+                    secondaryTextColor = secondaryTextColor,
+                    accentColor = accentColor,
+                    isDarkTheme = isDarkTheme
                 )
             }
 
-            // Quick Actions bar
+            // Spacer
+            item { Spacer(modifier = Modifier.height(24.dp)) }
+
+            // Quick Actions Bar
             item {
-                QuickActionsBar(
+                QuickActionsSection(
                     onJournalClick = onNavigateToJournal,
                     onFutureClick = onNavigateToFutureMessage,
-                    onQuotesClick = onNavigateToQuotes
+                    onQuotesClick = onNavigateToQuotes,
+                    surfaceColor = surfaceColor,
+                    primaryTextColor = primaryTextColor,
+                    secondaryTextColor = secondaryTextColor,
+                    accentColor = accentColor,
+                    isDarkTheme = isDarkTheme
                 )
             }
 
-            // Daily Wisdom section header
+            // Spacer
+            item { Spacer(modifier = Modifier.height(32.dp)) }
+
+            // Daily Wisdom Section Header
             item {
-                DailyWisdomHeader()
+                DailyWisdomSectionHeader(
+                    primaryTextColor = primaryTextColor,
+                    secondaryTextColor = secondaryTextColor,
+                    surfaceColor = surfaceColor
+                )
             }
 
-            // Quote of the Day card
+            // Spacer
+            item { Spacer(modifier = Modifier.height(16.dp)) }
+
+            // Quote of the Day Card
             item {
-                QuoteOfTheDayCard(
+                QuoteCard(
                     quote = uiState.dailyQuote,
                     author = uiState.dailyQuoteAuthor,
-                    onShareClick = { /* Share functionality */ }
+                    onShareClick = { /* Share functionality */ },
+                    surfaceColor = surfaceColor,
+                    primaryTextColor = primaryTextColor,
+                    secondaryTextColor = secondaryTextColor,
+                    accentColor = accentColor,
+                    isDarkTheme = isDarkTheme
                 )
             }
 
-            // Word and Idiom side-by-side cards
+            // Spacer
+            item { Spacer(modifier = Modifier.height(16.dp)) }
+
+            // Word and Idiom Row
             item {
-                WordAndIdiomRow(
+                WordAndIdiomSection(
                     word = uiState.wordOfTheDay,
                     pronunciation = uiState.wordPronunciation,
                     wordDefinition = uiState.wordDefinition,
                     idiom = uiState.dailyIdiom,
                     idiomMeaning = uiState.idiomMeaning,
                     idiomExample = uiState.idiomExample,
-                    onLearnClick = { viewModel.markWordAsLearned() }
+                    onLearnClick = { viewModel.markWordAsLearned() },
+                    surfaceColor = surfaceColor,
+                    primaryTextColor = primaryTextColor,
+                    secondaryTextColor = secondaryTextColor,
+                    accentColor = accentColor,
+                    isDarkTheme = isDarkTheme
                 )
             }
 
-            // Proverb card
+            // Proverb Card
             if (uiState.dailyProverb.isNotBlank()) {
+                item { Spacer(modifier = Modifier.height(16.dp)) }
                 item {
-                    ProverbCard(
+                    ProverbSection(
                         proverb = uiState.dailyProverb,
-                        origin = uiState.proverbOrigin
+                        origin = uiState.proverbOrigin,
+                        surfaceColor = surfaceColor,
+                        primaryTextColor = primaryTextColor,
+                        secondaryTextColor = secondaryTextColor,
+                        accentColor = accentColor,
+                        isDarkTheme = isDarkTheme
                     )
                 }
             }
@@ -168,49 +231,63 @@ fun HomeScreen(
     }
 }
 
-/**
- * Clean header with greeting and stats badge
- */
+// =============================================================================
+// PREMIUM HEADER SECTION
+// =============================================================================
+
 @Composable
-private fun HomeHeader(
+private fun PremiumHeader(
     greeting: String,
     userName: String,
     currentStreak: Int,
-    totalPoints: Int
+    totalPoints: Int,
+    primaryTextColor: Color,
+    secondaryTextColor: Color,
+    surfaceColor: Color,
+    accentColor: Color,
+    isDarkTheme: Boolean
 ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .statusBarsPadding()
-            .padding(horizontal = 20.dp, vertical = 16.dp)
+            .padding(horizontal = 24.dp) // Generous horizontal padding
+            .padding(top = 24.dp) // Generous top padding
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.Top
         ) {
-            // Greeting column
-            Column {
+            // Greeting Column
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = greeting.uppercase(),
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.Normal,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    letterSpacing = 1.sp
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 12.sp,
+                    color = secondaryTextColor,
+                    letterSpacing = 2.sp
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = userName,
-                    style = MaterialTheme.typography.headlineMedium,
+                    fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onBackground
+                    fontSize = 28.sp,
+                    color = primaryTextColor,
+                    letterSpacing = (-0.5).sp
                 )
             }
 
-            // Stats badge
-            StatsBadge(
+            // Stats Badge
+            PremiumStatsBadge(
                 streak = currentStreak,
-                points = totalPoints
+                points = totalPoints,
+                surfaceColor = surfaceColor,
+                primaryTextColor = primaryTextColor,
+                accentColor = accentColor,
+                isDarkTheme = isDarkTheme
             )
         }
     }
@@ -220,24 +297,33 @@ private fun HomeHeader(
  * Compact stats badge showing streak and points with animated flame
  */
 @Composable
-private fun StatsBadge(
+private fun PremiumStatsBadge(
     streak: Int,
-    points: Int
+    points: Int,
+    surfaceColor: Color,
+    primaryTextColor: Color,
+    accentColor: Color,
+    isDarkTheme: Boolean
 ) {
+    val borderColor = if (isDarkTheme) Color(0xFF3A5250) else Color(0xFFDEE2E6)
+
     Surface(
-        shape = RoundedCornerShape(24.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant,
-        tonalElevation = 0.dp
+        shape = RoundedCornerShape(16.dp),
+        color = surfaceColor,
+        tonalElevation = 0.dp,
+        modifier = Modifier.clip(RoundedCornerShape(16.dp))
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+            modifier = Modifier
+                .background(surfaceColor)
+                .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // Streak with animated flame
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Icon(
                     imageVector = Icons.Outlined.LocalFireDepartment,
@@ -247,9 +333,10 @@ private fun StatsBadge(
                 )
                 Text(
                     text = streak.toString(),
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp,
+                    color = primaryTextColor
                 )
             }
 
@@ -257,14 +344,14 @@ private fun StatsBadge(
             Box(
                 modifier = Modifier
                     .width(1.dp)
-                    .height(16.dp)
-                    .background(MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
+                    .height(20.dp)
+                    .background(borderColor)
             )
 
             // Points
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Icon(
                     imageVector = Icons.Outlined.Star,
@@ -274,22 +361,29 @@ private fun StatsBadge(
                 )
                 Text(
                     text = points.toString(),
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp,
+                    color = primaryTextColor
                 )
             }
         }
     }
 }
 
-/**
- * Reflection cards row - Gratitude and Challenges
- */
+// =============================================================================
+// REFLECTION CARDS SECTION
+// =============================================================================
+
 @Composable
-private fun ReflectionCardsRow(
+private fun ReflectionCardsSection(
     onGratitudeClick: () -> Unit,
-    onChallengesClick: () -> Unit
+    onChallengesClick: () -> Unit,
+    surfaceColor: Color,
+    primaryTextColor: Color,
+    secondaryTextColor: Color,
+    accentColor: Color,
+    isDarkTheme: Boolean
 ) {
     val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
     val reflectionText = when {
@@ -301,136 +395,172 @@ private fun ReflectionCardsRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+            .padding(horizontal = 24.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp) // More generous spacing
     ) {
-        // Gratitude card
-        ReflectionCard(
+        // Gratitude Card
+        PremiumReflectionCard(
             modifier = Modifier.weight(1f),
             icon = Icons.Outlined.NightsStay,
             iconTint = MoodCalm,
             title = "Gratitude",
             subtitle = reflectionText,
+            showBadge = false,
+            surfaceColor = surfaceColor,
+            primaryTextColor = primaryTextColor,
+            secondaryTextColor = secondaryTextColor,
+            isDarkTheme = isDarkTheme,
             onClick = onGratitudeClick
         )
 
-        // Challenges card
-        ReflectionCard(
+        // Challenges Card
+        PremiumReflectionCard(
             modifier = Modifier.weight(1f),
             icon = Icons.Filled.EmojiEvents,
             iconTint = LeaderboardGold,
             title = "Challenges",
             subtitle = "Compete now",
-            showNewBadge = true,
+            showBadge = true,
+            badgeText = "NEW",
+            surfaceColor = surfaceColor,
+            primaryTextColor = primaryTextColor,
+            secondaryTextColor = secondaryTextColor,
+            isDarkTheme = isDarkTheme,
             onClick = onChallengesClick
         )
     }
 }
 
-/**
- * Individual reflection card
- */
 @Composable
-private fun ReflectionCard(
+private fun PremiumReflectionCard(
     modifier: Modifier = Modifier,
     icon: ImageVector,
     iconTint: Color,
     title: String,
     subtitle: String,
-    showNewBadge: Boolean = false,
+    showBadge: Boolean = false,
+    badgeText: String = "",
+    surfaceColor: Color,
+    primaryTextColor: Color,
+    secondaryTextColor: Color,
+    isDarkTheme: Boolean,
     onClick: () -> Unit
 ) {
+    var isPressed by remember { mutableStateOf(false) }
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.98f else 1f,
+        animationSpec = tween(100),
+        label = "cardScale"
+    )
+
     Surface(
         modifier = modifier
-            .clip(RoundedCornerShape(16.dp))
-            .clickable(onClick = onClick),
-        shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+            .scale(scale)
+            .clip(RoundedCornerShape(20.dp))
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onClick
+            ),
+        shape = RoundedCornerShape(20.dp),
+        color = surfaceColor,
         tonalElevation = 0.dp
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(20.dp) // Generous padding
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.Top
             ) {
-                // Icon
+                // Icon Container
                 Box(
                     modifier = Modifier
-                        .size(40.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(iconTint.copy(alpha = 0.15f)),
+                        .size(48.dp)
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(iconTint.copy(alpha = 0.12f)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = icon,
                         contentDescription = null,
                         tint = iconTint,
-                        modifier = Modifier.size(22.dp)
+                        modifier = Modifier.size(24.dp)
                     )
                 }
 
-                // NEW badge
-                if (showNewBadge) {
+                // Badge
+                if (showBadge) {
                     Surface(
                         shape = RoundedCornerShape(4.dp),
                         color = ProdyError
                     ) {
                         Text(
-                            text = "NEW",
-                            style = MaterialTheme.typography.labelSmall,
+                            text = badgeText,
+                            fontFamily = PoppinsFamily,
                             fontWeight = FontWeight.Bold,
+                            fontSize = 9.sp,
                             color = Color.White,
-                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                            fontSize = 9.sp
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                            letterSpacing = 0.5.sp
                         )
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             Text(
                 text = title,
-                style = MaterialTheme.typography.titleSmall,
+                fontFamily = PoppinsFamily,
                 fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface
+                fontSize = 16.sp,
+                color = primaryTextColor
             )
 
-            Spacer(modifier = Modifier.height(2.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
             Text(
                 text = subtitle,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                fontFamily = PoppinsFamily,
+                fontWeight = FontWeight.Normal,
+                fontSize = 13.sp,
+                color = secondaryTextColor
             )
         }
     }
 }
 
-/**
- * Quick actions bar with Journal, Future, Quotes
- */
+// =============================================================================
+// QUICK ACTIONS SECTION
+// =============================================================================
+
 @Composable
-private fun QuickActionsBar(
+private fun QuickActionsSection(
     onJournalClick: () -> Unit,
     onFutureClick: () -> Unit,
-    onQuotesClick: () -> Unit
+    onQuotesClick: () -> Unit,
+    surfaceColor: Color,
+    primaryTextColor: Color,
+    secondaryTextColor: Color,
+    accentColor: Color,
+    isDarkTheme: Boolean
 ) {
+    val dividerColor = if (isDarkTheme) Color(0xFF3A5250) else Color(0xFFDEE2E6)
+
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 8.dp),
-        shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+            .padding(horizontal = 24.dp),
+        shape = RoundedCornerShape(20.dp),
+        color = surfaceColor,
         tonalElevation = 0.dp
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 12.dp),
+                .padding(vertical = 16.dp),
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -438,6 +568,7 @@ private fun QuickActionsBar(
             QuickActionItem(
                 icon = Icons.Outlined.Book,
                 label = "Journal",
+                textColor = secondaryTextColor,
                 onClick = onJournalClick
             )
 
@@ -445,14 +576,15 @@ private fun QuickActionsBar(
             Box(
                 modifier = Modifier
                     .width(1.dp)
-                    .height(32.dp)
-                    .background(MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+                    .height(40.dp)
+                    .background(dividerColor)
             )
 
             // Future
             QuickActionItem(
                 icon = Icons.Outlined.Send,
                 label = "Future",
+                textColor = secondaryTextColor,
                 onClick = onFutureClick
             )
 
@@ -460,88 +592,96 @@ private fun QuickActionsBar(
             Box(
                 modifier = Modifier
                     .width(1.dp)
-                    .height(32.dp)
-                    .background(MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+                    .height(40.dp)
+                    .background(dividerColor)
             )
 
             // Quotes
             QuickActionItem(
                 icon = Icons.Outlined.FormatQuote,
                 label = "Quotes",
+                textColor = secondaryTextColor,
                 onClick = onQuotesClick
             )
         }
     }
 }
 
-/**
- * Individual quick action item
- */
 @Composable
 private fun QuickActionItem(
     icon: ImageVector,
     label: String,
+    textColor: Color,
     onClick: () -> Unit
 ) {
     Column(
         modifier = Modifier
-            .clip(RoundedCornerShape(8.dp))
+            .clip(RoundedCornerShape(12.dp))
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
                 onClick = onClick
             )
-            .padding(horizontal = 16.dp, vertical = 4.dp),
+            .padding(horizontal = 20.dp, vertical = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Icon(
             imageVector = icon,
             contentDescription = label,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.size(22.dp)
+            tint = textColor,
+            modifier = Modifier.size(24.dp)
         )
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(6.dp))
         Text(
             text = label,
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            fontFamily = PoppinsFamily,
+            fontWeight = FontWeight.Medium,
+            fontSize = 12.sp,
+            color = textColor
         )
     }
 }
 
-/**
- * Daily Wisdom section header with date
- */
+// =============================================================================
+// DAILY WISDOM SECTION
+// =============================================================================
+
 @Composable
-private fun DailyWisdomHeader() {
+private fun DailyWisdomSectionHeader(
+    primaryTextColor: Color,
+    secondaryTextColor: Color,
+    surfaceColor: Color
+) {
     val dateFormat = SimpleDateFormat("MMM d", Locale.getDefault())
     val currentDate = dateFormat.format(Date()).uppercase()
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp)
-            .padding(top = 24.dp, bottom = 12.dp),
+            .padding(horizontal = 24.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text = "Daily Wisdom",
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.onBackground
+            fontFamily = PoppinsFamily,
+            fontWeight = FontWeight.Bold,
+            fontSize = 22.sp,
+            color = primaryTextColor
         )
 
         Surface(
             shape = RoundedCornerShape(8.dp),
-            color = MaterialTheme.colorScheme.surfaceVariant
+            color = surfaceColor
         ) {
             Text(
                 text = currentDate,
-                style = MaterialTheme.typography.labelSmall,
+                fontFamily = PoppinsFamily,
                 fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                fontSize = 11.sp,
+                color = secondaryTextColor,
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                letterSpacing = 1.sp
             )
         }
     }
@@ -551,10 +691,15 @@ private fun DailyWisdomHeader() {
  * Quote of the Day card with wisdom reveal animation
  */
 @Composable
-private fun QuoteOfTheDayCard(
+private fun QuoteCard(
     quote: String,
     author: String,
-    onShareClick: () -> Unit
+    onShareClick: () -> Unit,
+    surfaceColor: Color,
+    primaryTextColor: Color,
+    secondaryTextColor: Color,
+    accentColor: Color,
+    isDarkTheme: Boolean
 ) {
     // Track if the quote has been revealed
     var isQuoteVisible by remember { mutableStateOf(false) }
@@ -568,35 +713,36 @@ private fun QuoteOfTheDayCard(
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 8.dp),
-        shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+            .padding(horizontal = 24.dp),
+        shape = RoundedCornerShape(20.dp),
+        color = surfaceColor,
         tonalElevation = 0.dp
     ) {
         Column(
-            modifier = Modifier.padding(20.dp)
+            modifier = Modifier.padding(24.dp)
         ) {
-            // Header with green dot
+            // Header with green accent dot
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 Box(
                     modifier = Modifier
-                        .size(8.dp)
+                        .size(10.dp)
                         .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primary)
+                        .background(accentColor)
                 )
                 Text(
                     text = "QUOTE OF THE DAY",
-                    style = MaterialTheme.typography.labelMedium,
+                    fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.primary,
-                    letterSpacing = 1.sp
+                    fontSize = 11.sp,
+                    color = accentColor,
+                    letterSpacing = 1.5.sp
                 )
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             // Quote text with Poppins italic styling
             Text(
@@ -605,19 +751,19 @@ private fun QuoteOfTheDayCard(
                 color = MaterialTheme.colorScheme.onSurface
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             // Divider
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(1.dp)
-                    .background(MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+                    .background(dividerColor)
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // Author and Share
+            // Author and Share button
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -625,30 +771,32 @@ private fun QuoteOfTheDayCard(
             ) {
                 Text(
                     text = "— $author",
-                    style = MaterialTheme.typography.bodySmall,
+                    fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    fontSize = 13.sp,
+                    color = secondaryTextColor
                 )
 
                 Row(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(4.dp))
+                        .clip(RoundedCornerShape(8.dp))
                         .clickable(onClick = onShareClick)
-                        .padding(4.dp),
+                        .padding(8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Text(
                         text = "SHARE",
-                        style = MaterialTheme.typography.labelSmall,
+                        fontFamily = PoppinsFamily,
                         fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.primary,
+                        fontSize = 11.sp,
+                        color = accentColor,
                         letterSpacing = 0.5.sp
                     )
                     Icon(
                         imageVector = Icons.Outlined.OpenInNew,
                         contentDescription = "Share",
-                        tint = MaterialTheme.colorScheme.primary,
+                        tint = accentColor,
                         modifier = Modifier.size(14.dp)
                     )
                 }
@@ -657,65 +805,79 @@ private fun QuoteOfTheDayCard(
     }
 }
 
-/**
- * Word and Idiom cards side by side
- */
+// =============================================================================
+// WORD AND IDIOM SECTION
+// =============================================================================
+
 @Composable
-private fun WordAndIdiomRow(
+private fun WordAndIdiomSection(
     word: String,
     pronunciation: String,
     wordDefinition: String,
     idiom: String,
     idiomMeaning: String,
     idiomExample: String,
-    onLearnClick: () -> Unit
+    onLearnClick: () -> Unit,
+    surfaceColor: Color,
+    primaryTextColor: Color,
+    secondaryTextColor: Color,
+    accentColor: Color,
+    isDarkTheme: Boolean
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+            .padding(horizontal = 24.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Word card
+        // Word Card
         WordCard(
             modifier = Modifier.weight(1f),
             word = word,
             pronunciation = pronunciation,
             definition = wordDefinition,
-            onLearnClick = onLearnClick
+            onLearnClick = onLearnClick,
+            surfaceColor = surfaceColor,
+            primaryTextColor = primaryTextColor,
+            secondaryTextColor = secondaryTextColor,
+            accentColor = accentColor
         )
 
-        // Idiom card
+        // Idiom Card
         IdiomCard(
             modifier = Modifier.weight(1f),
             idiom = idiom,
             meaning = idiomMeaning,
-            example = idiomExample
+            example = idiomExample,
+            surfaceColor = surfaceColor,
+            primaryTextColor = primaryTextColor,
+            secondaryTextColor = secondaryTextColor
         )
     }
 }
 
-/**
- * Word of the Day card
- */
 @Composable
 private fun WordCard(
     modifier: Modifier = Modifier,
     word: String,
     pronunciation: String,
     definition: String,
-    onLearnClick: () -> Unit
+    onLearnClick: () -> Unit,
+    surfaceColor: Color,
+    primaryTextColor: Color,
+    secondaryTextColor: Color,
+    accentColor: Color
 ) {
     var isLearned by remember { mutableStateOf(false) }
 
     Surface(
         modifier = modifier,
-        shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        shape = RoundedCornerShape(20.dp),
+        color = surfaceColor,
         tonalElevation = 0.dp
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(20.dp)
         ) {
             // Header
             Row(
@@ -725,76 +887,80 @@ private fun WordCard(
             ) {
                 Text(
                     text = "WORD",
-                    style = MaterialTheme.typography.labelSmall,
+                    fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.SemiBold,
                     color = WordOfDayColor,
                     letterSpacing = 1.sp
                 )
                 Icon(
-                    imageVector = Icons.AutoMirrored.Outlined.MenuBook,
+                    imageVector = Icons.Outlined.MenuBook,
                     contentDescription = null,
                     tint = WordOfDayColor.copy(alpha = 0.7f),
                     modifier = Modifier.size(16.dp)
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             // Word
             Text(
                 text = word,
-                style = MaterialTheme.typography.titleMedium,
+                fontFamily = PoppinsFamily,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
+                fontSize = 16.sp,
+                color = primaryTextColor
             )
 
             // Pronunciation
             if (pronunciation.isNotBlank()) {
+                Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = "/$pronunciation/",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 2.dp)
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Normal,
+                    fontSize = 11.sp,
+                    color = secondaryTextColor
                 )
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             // Definition
             Text(
                 text = definition,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontFamily = PoppinsFamily,
+                fontWeight = FontWeight.Normal,
+                fontSize = 12.sp,
+                color = secondaryTextColor,
                 maxLines = 3,
-                overflow = TextOverflow.Ellipsis
+                overflow = TextOverflow.Ellipsis,
+                lineHeight = 18.sp
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             // Learn button
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(20.dp))
+                    .clip(RoundedCornerShape(12.dp))
                     .clickable {
                         if (!isLearned) {
                             isLearned = true
                             onLearnClick()
                         }
                     },
-                shape = RoundedCornerShape(20.dp),
-                color = if (isLearned)
-                    MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
-                else
-                    MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                shape = RoundedCornerShape(12.dp),
+                color = if (isLearned) accentColor.copy(alpha = 0.2f) else accentColor.copy(alpha = 0.12f),
                 tonalElevation = 0.dp
             ) {
                 Text(
                     text = if (isLearned) "LEARNED!" else "LEARN +25",
-                    style = MaterialTheme.typography.labelMedium,
+                    fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(vertical = 10.dp),
+                    fontSize = 12.sp,
+                    color = accentColor,
+                    modifier = Modifier.padding(vertical = 12.dp),
                     textAlign = TextAlign.Center
                 )
             }
@@ -802,24 +968,24 @@ private fun WordCard(
     }
 }
 
-/**
- * Idiom of the Day card
- */
 @Composable
 private fun IdiomCard(
     modifier: Modifier = Modifier,
     idiom: String,
     meaning: String,
-    example: String
+    example: String,
+    surfaceColor: Color,
+    primaryTextColor: Color,
+    secondaryTextColor: Color
 ) {
     Surface(
         modifier = modifier,
-        shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        shape = RoundedCornerShape(20.dp),
+        color = surfaceColor,
         tonalElevation = 0.dp
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(20.dp)
         ) {
             // Header
             Row(
@@ -829,7 +995,7 @@ private fun IdiomCard(
             ) {
                 Text(
                     text = "IDIOM",
-                    style = MaterialTheme.typography.labelSmall,
+                    fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.SemiBold,
                     color = IdiomPurple,
                     letterSpacing = 1.sp
@@ -842,67 +1008,80 @@ private fun IdiomCard(
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             // Idiom
             Text(
                 text = idiom,
-                style = MaterialTheme.typography.titleMedium,
+                fontFamily = PoppinsFamily,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
+                fontSize = 16.sp,
+                color = primaryTextColor
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             // Meaning
             Text(
                 text = meaning,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontFamily = PoppinsFamily,
+                fontWeight = FontWeight.Normal,
+                fontSize = 12.sp,
+                color = secondaryTextColor,
                 maxLines = 3,
-                overflow = TextOverflow.Ellipsis
+                overflow = TextOverflow.Ellipsis,
+                lineHeight = 18.sp
             )
 
             // Example
             if (example.isNotBlank()) {
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(12.dp))
                 Text(
                     text = "\"$example\"",
-                    style = MaterialTheme.typography.labelSmall,
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Normal,
                     fontStyle = FontStyle.Italic,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                    fontSize = 11.sp,
+                    color = secondaryTextColor.copy(alpha = 0.8f),
                     maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
+                    lineHeight = 16.sp
                 )
             }
         }
     }
 }
 
-/**
- * Proverb of the Day card
- */
+// =============================================================================
+// PROVERB SECTION
+// =============================================================================
+
 @Composable
-private fun ProverbCard(
+private fun ProverbSection(
     proverb: String,
-    origin: String
+    origin: String,
+    surfaceColor: Color,
+    primaryTextColor: Color,
+    secondaryTextColor: Color,
+    accentColor: Color,
+    isDarkTheme: Boolean
 ) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 8.dp),
-        shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+            .padding(horizontal = 24.dp),
+        shape = RoundedCornerShape(20.dp),
+        color = surfaceColor,
         tonalElevation = 0.dp
     ) {
         Row(
-            modifier = Modifier.padding(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            modifier = Modifier.padding(20.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // Icon container
             Box(
                 modifier = Modifier
-                    .size(40.dp)
+                    .size(48.dp)
                     .clip(CircleShape)
                     .background(ProverbTeal.copy(alpha = 0.15f)),
                 contentAlignment = Alignment.Center
@@ -915,9 +1094,7 @@ private fun ProverbCard(
                 )
             }
 
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
+            Column(modifier = Modifier.weight(1f)) {
                 // Header with origin
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -926,7 +1103,7 @@ private fun ProverbCard(
                 ) {
                     Text(
                         text = "PROVERB",
-                        style = MaterialTheme.typography.labelSmall,
+                        fontFamily = PoppinsFamily,
                         fontWeight = FontWeight.SemiBold,
                         color = ProverbTeal,
                         letterSpacing = 1.sp
@@ -934,13 +1111,15 @@ private fun ProverbCard(
                     if (origin.isNotBlank()) {
                         Text(
                             text = origin,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            fontFamily = PoppinsFamily,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 11.sp,
+                            color = secondaryTextColor
                         )
                     }
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
                 // Proverb text
                 Text(
@@ -955,7 +1134,10 @@ private fun ProverbCard(
     }
 }
 
-// Helper functions
+// =============================================================================
+// HELPER FUNCTIONS
+// =============================================================================
+
 @Composable
 private fun getGreeting(): String {
     val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
