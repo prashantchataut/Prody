@@ -158,10 +158,17 @@ class StatsViewModel @Inject constructor(
     private fun loadLeaderboard() {
         viewModelScope.launch {
             try {
-                // Initialize with sample data for demo
-                // In a real app, this would come from a backend
-                val sampleLeaderboard = createSampleLeaderboard()
-                userDao.insertLeaderboardEntries(sampleLeaderboard)
+                // Only seed demo data if leaderboard is completely empty
+                // This prevents overwriting real user progress on every launch
+                val existingCount = userDao.getLeaderboardCount()
+                if (existingCount == 0) {
+                    android.util.Log.d(TAG, "Seeding initial demo leaderboard data")
+                    val sampleLeaderboard = createSampleLeaderboard()
+                    userDao.insertLeaderboardEntries(sampleLeaderboard)
+                }
+
+                // Always ensure current user's leaderboard entry is synced with their profile
+                syncCurrentUserLeaderboardEntry()
 
                 userDao.getLeaderboard().collect { leaderboard ->
                     _uiState.update { state ->
@@ -282,6 +289,43 @@ class StatsViewModel @Inject constructor(
         val streak: Int,
         val isCurrentUser: Boolean = false
     )
+
+    /**
+     * Syncs the current user's leaderboard entry with their actual profile data.
+     * This ensures the leaderboard reflects real user progress, not outdated demo data.
+     */
+    private suspend fun syncCurrentUserLeaderboardEntry() {
+        try {
+            val userProfile = userDao.getUserProfileSync()
+            if (userProfile != null) {
+                // Calculate weekly points based on journal activity this week
+                val weekStart = System.currentTimeMillis() - (7 * 24 * 60 * 60 * 1000L)
+                val weeklyEntries = journalDao.getEntriesCountThisWeek(weekStart)
+                // Approximate weekly points: 10 points per journal entry + streak bonus
+                val weeklyPoints = (weeklyEntries * 10) + (userProfile.currentStreak * 5)
+
+                val currentUserEntry = LeaderboardEntryEntity(
+                    odId = "current_user",
+                    displayName = userProfile.displayName,
+                    avatarId = userProfile.avatarId,
+                    titleId = userProfile.titleId,
+                    totalPoints = userProfile.totalPoints,
+                    weeklyPoints = weeklyPoints,
+                    currentStreak = userProfile.currentStreak,
+                    rank = 0, // Will be recalculated when leaderboard loads
+                    previousRank = 0,
+                    isCurrentUser = true,
+                    lastActiveAt = userProfile.lastActiveDate,
+                    boostsReceived = userProfile.boostsReceived,
+                    congratsReceived = 0
+                )
+                userDao.insertLeaderboardEntry(currentUserEntry)
+                android.util.Log.d(TAG, "Synced current user leaderboard entry with profile")
+            }
+        } catch (e: Exception) {
+            android.util.Log.e(TAG, "Error syncing current user leaderboard entry", e)
+        }
+    }
 
     private fun calculateWeeklyProgress(data: List<Int>): List<Int> {
         return if (data.size >= 7) {
