@@ -8,6 +8,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.compose.animation.*
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
@@ -64,7 +65,7 @@ import com.prody.prashant.ui.screens.quotes.QuotesScreen
 import com.prody.prashant.ui.screens.stats.StatsScreen
 import com.prody.prashant.ui.screens.vocabulary.VocabularyDetailScreen
 import com.prody.prashant.ui.screens.vocabulary.VocabularyListScreen
-import com.prody.prashant.ui.components.NavigationBreathingGlow
+import com.prody.prashant.ui.components.ProdyBottomNavBar
 import com.prody.prashant.ui.theme.ProdyPrimary
 import com.prody.prashant.ui.theme.ProdyTheme
 import com.prody.prashant.ui.theme.ThemeMode
@@ -76,11 +77,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
+import com.prody.prashant.ui.MainViewModel
+
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-
-    @Inject
-    lateinit var preferencesManager: PreferencesManager
 
     @Inject
     lateinit var notificationScheduler: NotificationScheduler
@@ -97,16 +97,16 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        // Install splash screen BEFORE calling super.onCreate()
-        val splashScreen = installSplashScreen()
+    private val viewModel: MainViewModel by viewModels()
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
 
-        // Mark injection as complete after super.onCreate() for Hilt activities
         isInjectionComplete = true
 
-        // Check and request notification permission for Android 13+ safely
+        splashScreen.setKeepOnScreenCondition { viewModel.uiState.value.startDestination == null }
+
         try {
             requestNotificationPermission()
         } catch (e: Exception) {
@@ -115,51 +115,14 @@ class MainActivity : ComponentActivity() {
 
         enableEdgeToEdge()
 
-        // Use mutable state to update UI when preferences are loaded
-        var isOnboardingCompleted by mutableStateOf<Boolean?>(null)
-
-        // Keep splash screen visible until the essential onboarding status is loaded.
-        splashScreen.setKeepOnScreenCondition { isOnboardingCompleted == null }
-
-        // Load ONLY the essential preference to unblock the splash screen.
-        // The theme is loaded asynchronously in setContent and will update when ready.
-        lifecycleScope.launch {
-            try {
-                isOnboardingCompleted = preferencesManager.onboardingCompleted.first()
-            } catch (e: Exception) {
-                // If preferences fail, default to showing onboarding.
-                android.util.Log.e("MainActivity", "Failed to load onboarding status", e)
-                isOnboardingCompleted = false
-            }
-        }
-
         setContent {
-            // Wait until the onboarding status is loaded before showing the UI.
-            val onboardingDone = isOnboardingCompleted
-            if (onboardingDone == null) {
-                // While this is null, the splash screen is kept visible.
-                // We return here to prevent the UI from composing unnecessarily.
-                return@setContent
-            }
+            val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-            // Asynchronously collect the theme mode. It will default to "system" and then
-            // update the UI automatically when the actual preference is loaded.
-            val currentThemeModeString by preferencesManager.themeMode.collectAsStateWithLifecycle(
-                initialValue = "system"
-            )
-
-            val themeModeState = when (currentThemeModeString.lowercase()) {
-                "light" -> ThemeMode.LIGHT
-                "dark" -> ThemeMode.DARK
-                else -> ThemeMode.SYSTEM
-            }
-
-            ProdyTheme(
-                themeMode = themeModeState
-            ) {
-                ProdyApp(
-                    startDestination = if (onboardingDone) Screen.Home.route else Screen.Onboarding.route
-                )
+            val startDestination = uiState.startDestination
+            if (startDestination != null) {
+                ProdyTheme(themeMode = uiState.themeMode) {
+                    ProdyApp(startDestination = startDestination)
+                }
             }
         }
     }
@@ -249,36 +212,6 @@ fun ProdyApp(
                     animationSpec = tween(200)
                 )
             ) {
-                NavigationBar {
-                    bottomNavItems.forEach { item ->
-                        val selected = currentDestination?.hierarchy?.any {
-                            it.route == item.route
-                        } == true
-
-                        NavigationBarItem(
-                            icon = {
-                                // Wrap icon with magical breathing glow effect
-                                NavigationBreathingGlow(
-                                    isActive = selected,
-                                    color = ProdyPrimary
-                                ) {
-                                    Icon(
-                                        imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
-                                        contentDescription = null
-                                    )
-                                }
-                            },
-                            label = { Text(stringResource(item.labelResId)) },
-                            selected = selected,
-                            onClick = {
-                                navController.navigate(item.route) {
-                                    popUpTo(navController.graph.findStartDestination().id) {
-                                        saveState = true
-                                    }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
-                // Flat design bottom navigation - no shadow, clean surface
                 ProdyBottomNavBar(
                     items = bottomNavItems,
                     currentRoute = currentDestination?.route,
@@ -450,122 +383,3 @@ fun ProdyApp(
     }
 }
 
-// =============================================================================
-// CUSTOM BOTTOM NAVIGATION BAR - Flat Design
-// =============================================================================
-
-/**
- * Premium flat-design bottom navigation bar.
- *
- * Design features:
- * - NO shadows - pure flat design
- * - Clean surface with subtle top border
- * - Animated selection indicator with accent color
- * - Minimal, focused visual hierarchy
- */
-@Composable
-private fun ProdyBottomNavBar(
-    items: List<BottomNavItem>,
-    currentRoute: String?,
-    onNavigate: (String) -> Unit
-) {
-    // Flat design - no elevation, clean surface with subtle top border
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        color = MaterialTheme.colorScheme.surface,
-        tonalElevation = 0.dp // Flat - no elevation
-    ) {
-        Column {
-            // Subtle top border for visual separation (flat design)
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(1.dp)
-                    .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
-            )
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(80.dp)
-                    .padding(horizontal = 8.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                items.forEach { item ->
-                    val isSelected = currentRoute == item.route
-
-                    ProdyNavItem(
-                        item = item,
-                        isSelected = isSelected,
-                        onClick = { onNavigate(item.route) },
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-            }
-        }
-    }
-}
-
-/**
- * Individual navigation item with animated selection state.
- */
-@Composable
-private fun ProdyNavItem(
-    item: BottomNavItem,
-    selected: Boolean,
-    accentColor: Color,
-    accentBackground: Color,
-    inactiveColor: Color,
-    onClick: () -> Unit
-) {
-    val scale by animateFloatAsState(
-        targetValue = if (selected) 1.05f else 1f,
-        animationSpec = tween(durationMillis = 200),
-        label = "scale"
-    )
-
-    Column(
-        modifier = Modifier
-            .clip(RoundedCornerShape(16.dp))
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null, // No ripple for cleaner look
-                onClick = onClick
-            )
-            .padding(horizontal = 16.dp, vertical = 4.dp)
-            .scale(scale),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        // Icon with optional green circular background for active state
-        Box(
-            modifier = Modifier
-                .size(40.dp)
-                .clip(CircleShape)
-                .background(
-                    if (selected) accentBackground else Color.Transparent
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
-                contentDescription = stringResource(item.contentDescriptionResId),
-                modifier = Modifier.size(24.dp),
-                tint = if (selected) accentColor else inactiveColor
-            )
-        }
-
-        Spacer(modifier = Modifier.height(4.dp))
-
-        // Label with Poppins typography
-        Text(
-            text = stringResource(item.labelResId),
-            fontFamily = PoppinsFamily,
-            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
-            fontSize = 11.sp,
-            color = if (selected) accentColor else inactiveColor,
-            letterSpacing = 0.2.sp
-        )
-    }
-}
