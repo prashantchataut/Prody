@@ -176,6 +176,26 @@ fun HomeScreen(
             // Spacer
             item { Spacer(modifier = Modifier.height(16.dp)) }
 
+            // Buddha Wisdom Card
+            item {
+                BuddhaWisdomCard(
+                    thought = uiState.buddhaThought,
+                    explanation = uiState.buddhaThoughtExplanation,
+                    isLoading = uiState.isBuddhaThoughtLoading,
+                    isAiGenerated = uiState.isBuddhaThoughtAiGenerated,
+                    canRefresh = uiState.canRefreshBuddhaThought,
+                    onRefresh = { viewModel.refreshBuddhaThought() },
+                    surfaceColor = surfaceColor,
+                    primaryTextColor = primaryTextColor,
+                    secondaryTextColor = secondaryTextColor,
+                    accentColor = accentColor,
+                    isDarkTheme = isDarkTheme
+                )
+            }
+
+            // Spacer
+            item { Spacer(modifier = Modifier.height(16.dp)) }
+
             // Quote of the Day Card
             item {
                 QuoteCard(
@@ -1128,6 +1148,164 @@ private fun ProverbSection(
                         fontStyle = FontStyle.Italic
                     ),
                     color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+        }
+    }
+}
+
+// =============================================================================
+// BUDDHA WISDOM CARD
+// =============================================================================
+
+@Composable
+private fun BuddhaWisdomCard(
+    thought: String,
+    explanation: String?,
+    isLoading: Boolean,
+    isAiGenerated: Boolean,
+    canRefresh: Boolean,
+    onRefresh: () -> Unit,
+    surfaceColor: Color,
+    primaryTextColor: Color,
+    secondaryTextColor: Color,
+    accentColor: Color,
+    isDarkTheme: Boolean
+) {
+    val buddhaGold = Color(0xFFDAA520)
+    val buddhaGoldLight = Color(0xFFFFF8DC)
+
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp),
+        shape = RoundedCornerShape(20.dp),
+        color = if (isDarkTheme) surfaceColor.copy(alpha = 0.9f)
+        else buddhaGoldLight.copy(alpha = 0.4f),
+        tonalElevation = 2.dp
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp)
+        ) {
+            // Header row
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    // Buddha icon
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(CircleShape)
+                            .background(buddhaGold.copy(alpha = 0.2f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.SelfImprovement,
+                            contentDescription = null,
+                            tint = buddhaGold,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+
+                    Column {
+                        Text(
+                            text = "BUDDHA'S WISDOM",
+                            fontFamily = PoppinsFamily,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 11.sp,
+                            letterSpacing = 1.sp,
+                            color = buddhaGold
+                        )
+                        if (isAiGenerated) {
+                            Text(
+                                text = "AI Generated",
+                                fontFamily = PoppinsFamily,
+                                fontWeight = FontWeight.Normal,
+                                fontSize = 9.sp,
+                                color = secondaryTextColor
+                            )
+                        }
+                    }
+                }
+
+                // Refresh button
+                if (canRefresh && !isLoading) {
+                    IconButton(
+                        onClick = onRefresh,
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Refresh,
+                            contentDescription = "Refresh wisdom",
+                            tint = secondaryTextColor,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Content
+            if (isLoading) {
+                // Loading state
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(16.dp),
+                        strokeWidth = 2.dp,
+                        color = buddhaGold
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Buddha is contemplating...",
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.Normal,
+                        fontSize = 13.sp,
+                        color = secondaryTextColor
+                    )
+                }
+            } else if (thought.isNotBlank()) {
+                // Wisdom text
+                Text(
+                    text = thought,
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 15.sp,
+                    lineHeight = 24.sp,
+                    color = primaryTextColor
+                )
+
+                // Explanation/source if available
+                if (explanation != null && explanation.isNotBlank()) {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        text = explanation,
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.Normal,
+                        fontSize = 12.sp,
+                        color = secondaryTextColor,
+                        fontStyle = FontStyle.Italic
+                    )
+                }
+            } else {
+                // Fallback when no content
+                Text(
+                    text = "Wisdom awaits. Pull down to refresh.",
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Normal,
+                    fontSize = 14.sp,
+                    color = secondaryTextColor,
+                    fontStyle = FontStyle.Italic
                 )
             }
         }

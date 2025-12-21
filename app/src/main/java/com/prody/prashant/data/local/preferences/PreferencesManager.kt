@@ -51,8 +51,6 @@ class PreferencesManager @Inject constructor(
         val BUDDHA_QUOTE_EXPLANATION_ENABLED = booleanPreferencesKey("buddha_quote_explanation_enabled")
         val BUDDHA_JOURNAL_INSIGHTS_ENABLED = booleanPreferencesKey("buddha_journal_insights_enabled")
         val BUDDHA_PATTERN_TRACKING_ENABLED = booleanPreferencesKey("buddha_pattern_tracking_enabled")
-        val BUDDHA_VOCABULARY_CONTEXT_ENABLED = booleanPreferencesKey("buddha_vocabulary_context_enabled")
-        val BUDDHA_MESSAGE_HELPER_ENABLED = booleanPreferencesKey("buddha_message_helper_enabled")
         val BUDDHA_PLAYFUL_MODE = booleanPreferencesKey("buddha_playful_mode")
         val BUDDHA_REDUCE_AI_USAGE = booleanPreferencesKey("buddha_reduce_ai_usage")
 
@@ -444,36 +442,6 @@ class PreferencesManager @Inject constructor(
     suspend fun setBuddhaPatternTrackingEnabled(enabled: Boolean) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.BUDDHA_PATTERN_TRACKING_ENABLED] = enabled
-        }
-    }
-
-    val buddhaVocabularyContextEnabled: Flow<Boolean> = dataStore.data
-        .catch { exception ->
-            if (exception is IOException) emit(emptyPreferences())
-            else throw exception
-        }
-        .map { preferences ->
-            preferences[PreferencesKeys.BUDDHA_VOCABULARY_CONTEXT_ENABLED] ?: true
-        }
-
-    suspend fun setBuddhaVocabularyContextEnabled(enabled: Boolean) {
-        dataStore.edit { preferences ->
-            preferences[PreferencesKeys.BUDDHA_VOCABULARY_CONTEXT_ENABLED] = enabled
-        }
-    }
-
-    val buddhaMessageHelperEnabled: Flow<Boolean> = dataStore.data
-        .catch { exception ->
-            if (exception is IOException) emit(emptyPreferences())
-            else throw exception
-        }
-        .map { preferences ->
-            preferences[PreferencesKeys.BUDDHA_MESSAGE_HELPER_ENABLED] ?: true
-        }
-
-    suspend fun setBuddhaMessageHelperEnabled(enabled: Boolean) {
-        dataStore.edit { preferences ->
-            preferences[PreferencesKeys.BUDDHA_MESSAGE_HELPER_ENABLED] = enabled
         }
     }
 

@@ -334,21 +334,6 @@ fun SettingsScreen(
                             )
 
                             EnhancedSettingsToggle(
-                                icon = Icons.Filled.Spellcheck,
-                                title = "Vocabulary Help",
-                                subtitle = "Example sentences and memory hooks",
-                                checked = uiState.buddhaVocabularyContextEnabled,
-                                onCheckedChange = { viewModel.setBuddhaVocabularyContextEnabled(it) },
-                                iconBackground = MoodExcited.copy(alpha = 0.15f),
-                                iconTint = MoodExcited
-                            )
-
-                            HorizontalDivider(
-                                modifier = Modifier.padding(horizontal = 16.dp),
-                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
-                            )
-
-                            EnhancedSettingsToggle(
                                 icon = Icons.Filled.EmojiEmotions,
                                 title = "Playful Buddha",
                                 subtitle = "Occasional lighthearted responses",

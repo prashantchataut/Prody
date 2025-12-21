@@ -22,8 +22,6 @@ data class SettingsUiState(
     val buddhaQuoteExplanationEnabled: Boolean = true,
     val buddhaJournalInsightsEnabled: Boolean = true,
     val buddhaPatternTrackingEnabled: Boolean = true,
-    val buddhaVocabularyContextEnabled: Boolean = true,
-    val buddhaMessageHelperEnabled: Boolean = true,
     val buddhaPlayfulMode: Boolean = false,
     val buddhaReduceAiUsage: Boolean = false,
     // Data management
@@ -97,12 +95,10 @@ class SettingsViewModel @Inject constructor(
 
                 // Combine Buddha AI feature toggles (second group)
                 val buddhaFeatures2 = combine(
-                    preferencesManager.buddhaVocabularyContextEnabled,
-                    preferencesManager.buddhaMessageHelperEnabled,
                     preferencesManager.buddhaPlayfulMode,
                     preferencesManager.buddhaReduceAiUsage
-                ) { vocab, message, playful, reduce ->
-                    BuddhaFeatures2(vocab, message, playful, reduce)
+                ) { playful, reduce ->
+                    BuddhaFeatures2(playful, reduce)
                 }
 
                 // Combine all groups into final state
@@ -125,8 +121,6 @@ class SettingsViewModel @Inject constructor(
                         buddhaQuoteExplanationEnabled = buddha1.quote,
                         buddhaJournalInsightsEnabled = buddha1.journal,
                         buddhaPatternTrackingEnabled = buddha1.pattern,
-                        buddhaVocabularyContextEnabled = buddha2.vocab,
-                        buddhaMessageHelperEnabled = buddha2.message,
                         buddhaPlayfulMode = buddha2.playful,
                         buddhaReduceAiUsage = buddha2.reduce
                     )
@@ -161,8 +155,6 @@ class SettingsViewModel @Inject constructor(
     )
 
     private data class BuddhaFeatures2(
-        val vocab: Boolean,
-        val message: Boolean,
         val playful: Boolean,
         val reduce: Boolean
     )
@@ -285,26 +277,6 @@ class SettingsViewModel @Inject constructor(
                 preferencesManager.setBuddhaPatternTrackingEnabled(enabled)
             } catch (e: Exception) {
                 android.util.Log.e(TAG, "Error setting Buddha pattern tracking enabled", e)
-            }
-        }
-    }
-
-    fun setBuddhaVocabularyContextEnabled(enabled: Boolean) {
-        viewModelScope.launch {
-            try {
-                preferencesManager.setBuddhaVocabularyContextEnabled(enabled)
-            } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error setting Buddha vocabulary context enabled", e)
-            }
-        }
-    }
-
-    fun setBuddhaMessageHelperEnabled(enabled: Boolean) {
-        viewModelScope.launch {
-            try {
-                preferencesManager.setBuddhaMessageHelperEnabled(enabled)
-            } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error setting Buddha message helper enabled", e)
             }
         }
     }
