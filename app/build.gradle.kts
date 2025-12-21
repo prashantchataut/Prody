@@ -69,9 +69,13 @@ android {
                 rootKeystoreFile.exists() -> rootKeystoreFile
                 else -> null
             }
-            storePassword = System.getenv("KEYSTORE_PASSWORD") ?: "prody2024"
-            keyAlias = System.getenv("KEY_ALIAS") ?: "prody"
-            keyPassword = System.getenv("KEY_PASSWORD") ?: "prody2024"
+            // SECURITY: The following credentials should be set in your CI/CD environment
+            // or your global gradle.properties file (e.g., in ~/.gradle/gradle.properties).
+            // Do not hardcode them in the repository.
+            // See keystore/README.md for more details.
+            storePassword = System.getenv("KEYSTORE_PASSWORD")
+            keyAlias = System.getenv("KEY_ALIAS")
+            keyPassword = System.getenv("KEY_PASSWORD")
         }
     }
 
