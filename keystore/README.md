@@ -1,45 +1,55 @@
-# Prody Keystore
+# Prody Keystore Security
 
-This directory contains documentation for the signing keystore used in release builds.
+This directory contains the release signing key for the Prody Android application. This key is required to create official release builds that can be uploaded to the Google Play Store.
 
-## Open Source Keystore
+## 🛡️ Security Warning
 
-For open source contributions and testing, the GitHub Actions workflow automatically generates a keystore with the following credentials when no secrets are configured:
+**DO NOT COMMIT THE ACTUAL `prody-release.jks` KEYSTORE FILE TO THIS REPOSITORY.**
 
-```bash
-keytool -genkeypair -v \
-  -keystore prody-release.jks \
-  -keyalg RSA \
-  -keysize 2048 \
-  -validity 10000 \
-  -alias prody \
-  -storepass prody2024 \
-  -keypass prody2024 \
-  -dname "CN=Prody App, OU=Prody, O=Prody, L=Unknown, ST=Unknown, C=IN"
+This file should be stored in a secure location, such as a secure vault or your CI/CD environment's secret storage. Exposing this key would allow anyone to sign and distribute malicious versions of the app, appearing as if they came from the official developer.
+
+## ✍️ Signing a Release Build Locally
+
+To sign a release build on your local machine, you need to provide the keystore and its credentials to the Gradle build system. This project is configured to read these values from environment variables to avoid hardcoding them in the source code.
+
+### 1. Obtain the Keystore File
+
+- Get the `prody-release.jks` file from the secure storage location.
+- Place it in this `keystore/` directory. The build script is configured to look for it here.
+
+### 2. Set Environment Variables
+
+You need to set the following environment variables. The recommended way to do this for local builds is to add them to your global Gradle properties file.
+
+- **File Location:** `~/.gradle/gradle.properties` (create the file if it doesn't exist)
+- **Content to Add:**
+
+```properties
+# Prody Release Keystore Credentials
+KEYSTORE_PASSWORD=your_keystore_password_here
+KEY_ALIAS=your_key_alias_here
+KEY_PASSWORD=your_key_password_here
 ```
 
-## Keystore Credentials
+- **Replace the placeholder values** with the actual credentials for the keystore.
 
-For open source builds (auto-generated):
-- **Keystore Password**: `prody2024`
-- **Key Alias**: `prody`
-- **Key Password**: `prody2024`
+### 3. Build the Release APK
 
-## Production Builds
-
-For production/Play Store releases, use your own private keystore and set these GitHub Secrets:
-- `KEYSTORE_BASE64`: Base64-encoded keystore file
-- `KEYSTORE_PASSWORD`: Your keystore password
-- `KEY_ALIAS`: Your key alias
-- `KEY_PASSWORD`: Your key password
-
-### Encoding Keystore to Base64
+Once the keystore is in place and the environment variables are set, you can build the release APK using the following Gradle command from the root of the project:
 
 ```bash
-base64 -i your-keystore.jks -o keystore-base64.txt
+./gradlew assembleRelease
 ```
 
-## Security Note
+The signed APK will be located at `app/build/outputs/apk/release/app-release-signed.apk`.
 
-The open source keystore credentials are intentionally public to allow anyone to build and test the app.
-For production releases, always use your own private keystore that is not shared publicly.
+## 🤖 For CI/CD Environments (e.g., GitHub Actions)
+
+In your CI/CD pipeline, you should:
+1.  **Store the keystore file** as a secure, base64-encoded secret.
+2.  **Store the `KEYSTORE_PASSWORD`, `KEY_ALIAS`, and `KEY_PASSWORD`** as separate secrets.
+3.  **During the build job:**
+    - Decode the keystore secret back into a file (`keystore/prody-release.jks`).
+    - Expose the credential secrets as environment variables for the Gradle build step.
+
+This ensures that your signing keys are never exposed in your build logs or repository history.
