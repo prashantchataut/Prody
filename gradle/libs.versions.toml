@@ -28,6 +28,8 @@ archCoreTesting = "2.2.0"
 composeUiTest = "1.7.5"
 testExtJunit = "1.2.1"
 espresso = "3.6.1"
+security = "1.0.0"
+sqlcipher = "4.5.4"
 okhttp = "4.12.0"
 retrofit = "2.9.0"
 retrofitKotlinxSerializationJson = "1.0.0"
@@ -79,6 +81,11 @@ androidx-arch-core-testing = { group = "androidx.arch.core", name = "core-testin
 androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4", version.ref = "composeUiTest" }
 androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "testExtJunit" }
 androidx-test-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso" }
+
+# Security
+androidx-security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "security" }
+sqlcipher-android = { group = "net.zetetic", name = "android-database-sqlcipher", version.ref = "sqlcipher" }
+sqlite-ktx = { group = "androidx.sqlite", name = "sqlite-ktx", version = "2.4.0" }
 
 # Networking
 okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }

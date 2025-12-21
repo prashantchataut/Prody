@@ -11,6 +11,7 @@ import androidx.room.PrimaryKey
  */
 @Entity(
     tableName = "vocabulary_learning",
+    primaryKeys = ["wordId", "userId"], // Composite key for multi-user
     foreignKeys = [
         ForeignKey(
             entity = VocabularyEntity::class,
@@ -20,14 +21,16 @@ import androidx.room.PrimaryKey
         )
     ],
     indices = [
-        Index(value = ["wordId"], unique = true),
+        Index(value = ["wordId"]),
+        Index(value = ["userId"]),
         Index(value = ["nextReviewDate"]),
-        Index(value = ["boxLevel"])
+        Index(value = ["boxLevel"]),
+        Index(value = ["userId", "nextReviewDate"])
     ]
 )
 data class VocabularyLearningEntity(
-    @PrimaryKey
     val wordId: Long,
+    val userId: String = "local", // Multi-user support
 
     /**
      * SM-2 ease factor (difficulty). Default 2.5, min 1.3

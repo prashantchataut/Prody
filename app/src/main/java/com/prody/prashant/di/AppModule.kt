@@ -14,6 +14,12 @@ import com.prody.prashant.data.local.database.ProdyDatabase
 import com.prody.prashant.data.local.preferences.PreferencesManager
 import com.prody.prashant.data.backup.BackupManager
 import com.prody.prashant.data.cache.AiCacheManager
+import com.prody.prashant.data.moderation.ContentModerationManager
+import com.prody.prashant.data.monitoring.PerformanceMonitor
+import com.prody.prashant.data.network.NetworkConnectivityManager
+import com.prody.prashant.data.onboarding.AiOnboardingManager
+import com.prody.prashant.data.security.EncryptionManager
+import com.prody.prashant.data.sync.SyncManager
 import com.prody.prashant.util.TextToSpeechManager
 import dagger.Module
 import dagger.Provides
@@ -202,5 +208,59 @@ object AppModule {
         aiCacheManager: AiCacheManager
     ): BuddhaAiService {
         return BuddhaAiService(geminiService, aiCacheManager)
+    }
+
+    // ============================================================================
+    // PRIVACY, SECURITY & MONITORING PROVIDERS
+    // ============================================================================
+
+    @Provides
+    @Singleton
+    fun provideEncryptionManager(
+        @ApplicationContext context: Context
+    ): EncryptionManager {
+        return EncryptionManager(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideNetworkConnectivityManager(
+        @ApplicationContext context: Context
+    ): NetworkConnectivityManager {
+        return NetworkConnectivityManager(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideSyncManager(
+        @ApplicationContext context: Context,
+        networkManager: NetworkConnectivityManager,
+        preferencesManager: PreferencesManager
+    ): SyncManager {
+        return SyncManager(context, networkManager, preferencesManager)
+    }
+
+    @Provides
+    @Singleton
+    fun providePerformanceMonitor(
+        @ApplicationContext context: Context
+    ): PerformanceMonitor {
+        return PerformanceMonitor(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideAiOnboardingManager(
+        @ApplicationContext context: Context
+    ): AiOnboardingManager {
+        return AiOnboardingManager(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideContentModerationManager(
+        @ApplicationContext context: Context
+    ): ContentModerationManager {
+        return ContentModerationManager(context)
     }
 }

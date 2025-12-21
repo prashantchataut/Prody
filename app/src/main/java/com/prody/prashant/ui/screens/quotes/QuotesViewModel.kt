@@ -13,6 +13,9 @@ import com.prody.prashant.data.local.entity.IdiomEntity
 import com.prody.prashant.data.local.entity.PhraseEntity
 import com.prody.prashant.data.local.entity.ProverbEntity
 import com.prody.prashant.data.local.entity.QuoteEntity
+import com.prody.prashant.data.onboarding.AiHint
+import com.prody.prashant.data.onboarding.AiHintType
+import com.prody.prashant.data.onboarding.AiOnboardingManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -31,7 +34,9 @@ data class QuotesUiState(
     val loadedCount: Int = 0,
     // AI-generated quote explanations (keyed by quote ID)
     val quoteExplanations: Map<Long, QuoteExplanationResult> = emptyMap(),
-    val loadingExplanations: Set<Long> = emptySet()
+    val loadingExplanations: Set<Long> = emptySet(),
+    // Onboarding hint for first quote explanation
+    val showQuoteExplanationHint: Boolean = false
 )
 
 @HiltViewModel
@@ -40,7 +45,8 @@ class QuotesViewModel @Inject constructor(
     private val proverbDao: ProverbDao,
     private val idiomDao: IdiomDao,
     private val phraseDao: PhraseDao,
-    private val buddhaAiRepository: BuddhaAiRepository
+    private val buddhaAiRepository: BuddhaAiRepository,
+    private val aiOnboardingManager: AiOnboardingManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(QuotesUiState())
@@ -48,6 +54,28 @@ class QuotesViewModel @Inject constructor(
 
     init {
         loadAllContent()
+        checkOnboarding()
+    }
+
+    private fun checkOnboarding() {
+        viewModelScope.launch {
+            aiOnboardingManager.shouldShowHint(AiHintType.FIRST_QUOTE_EXPLANATION).collect { shouldShow ->
+                _uiState.update { state ->
+                    state.copy(showQuoteExplanationHint = shouldShow)
+                }
+            }
+        }
+    }
+
+    fun onQuoteExplanationHintDismiss() {
+        viewModelScope.launch {
+            aiOnboardingManager.markHintShown(AiHintType.FIRST_QUOTE_EXPLANATION)
+            _uiState.update { it.copy(showQuoteExplanationHint = false) }
+        }
+    }
+
+    fun getQuoteExplanationHint(): AiHint {
+        return aiOnboardingManager.getHintContent(AiHintType.FIRST_QUOTE_EXPLANATION)
     }
 
     private fun loadAllContent() {

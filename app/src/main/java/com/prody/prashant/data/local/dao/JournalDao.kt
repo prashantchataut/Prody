@@ -99,6 +99,26 @@ interface JournalDao {
         LIMIT 1
     """)
     suspend fun getMostActiveTimeOfDay(weekStart: Long): TimeOfDayCount?
+
+    // Data Hygiene - Soft delete management
+    @Query("UPDATE journal_entries SET isDeleted = 1 WHERE id = :id")
+    suspend fun softDeleteEntry(id: Long)
+
+    @Query("SELECT * FROM journal_entries WHERE isDeleted = 1")
+    suspend fun getSoftDeletedEntries(): List<JournalEntryEntity>
+
+    @Query("DELETE FROM journal_entries WHERE isDeleted = 1")
+    suspend fun purgeSoftDeleted(): Int
+
+    // Sync-related queries
+    @Query("SELECT * FROM journal_entries WHERE syncStatus = 'pending' AND isDeleted = 0")
+    suspend fun getPendingSyncEntries(): List<JournalEntryEntity>
+
+    @Query("UPDATE journal_entries SET syncStatus = :status, lastSyncedAt = :syncTime WHERE id = :id")
+    suspend fun updateSyncStatus(id: Long, status: String, syncTime: Long = System.currentTimeMillis())
+
+    @Query("SELECT * FROM journal_entries WHERE userId = :userId ORDER BY createdAt DESC")
+    fun getEntriesByUser(userId: String): Flow<List<JournalEntryEntity>>
 }
 
 data class MoodCount(
