@@ -141,6 +141,9 @@ interface UserDao {
     suspend fun getStreakDaysInRange(startDate: Long): Int
 
     // Leaderboard
+    @Query("SELECT COUNT(*) FROM leaderboard")
+    suspend fun getLeaderboardCount(): Int
+
     @Query("SELECT * FROM leaderboard ORDER BY totalPoints DESC")
     fun getLeaderboard(): Flow<List<LeaderboardEntryEntity>>
 
@@ -193,4 +196,48 @@ interface UserDao {
 
     @Query("SELECT COUNT(*) FROM motivational_messages WHERE isRead = 0")
     fun getUnreadMessageCount(): Flow<Int>
+
+    // =========================================================================
+    // Data Hygiene Methods
+    // =========================================================================
+
+    @Query("DELETE FROM user_profile WHERE id = 1")
+    suspend fun deleteUserProfile()
+
+    @Query("DELETE FROM user_stats")
+    suspend fun clearUserStats()
+
+    @Query("DELETE FROM streak_history")
+    suspend fun clearStreakHistory()
+
+    @Query("DELETE FROM streak_history WHERE date < :cutoffTime")
+    suspend fun deleteOldStreakHistory(cutoffTime: Long)
+
+    @Query("DELETE FROM achievements")
+    suspend fun clearAchievements()
+
+    @Query("DELETE FROM leaderboard")
+    suspend fun clearLeaderboard()
+
+    @Query("DELETE FROM peer_interactions")
+    suspend fun clearPeerInteractions()
+
+    @Query("DELETE FROM motivational_messages")
+    suspend fun clearMotivationalMessages()
+
+    // =========================================================================
+    // Multi-User / Sync Methods
+    // =========================================================================
+
+    @Query("SELECT * FROM user_profile WHERE odUserId = :odUserId")
+    suspend fun getUserByOdUserId(odUserId: String): UserProfileEntity?
+
+    @Query("UPDATE user_profile SET syncStatus = :status, lastSyncedAt = :syncTime WHERE id = 1")
+    suspend fun updateProfileSyncStatus(status: String, syncTime: Long = System.currentTimeMillis())
+
+    @Query("SELECT * FROM streak_history WHERE userId = :userId ORDER BY date DESC")
+    fun getStreakHistoryByUser(userId: String): Flow<List<StreakHistoryEntity>>
+
+    @Query("SELECT * FROM user_stats WHERE userId = :userId")
+    fun getUserStatsByUser(userId: String): Flow<UserStatsEntity?>
 }

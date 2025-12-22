@@ -27,6 +27,11 @@ import com.prody.prashant.data.local.entity.*
  *
  * Schema Version History:
  * - Version 1: Initial schema with all core entities
+ * - Version 2: Added userId fields for multi-user/Google Auth support
+ *              Added sync metadata (syncStatus, lastSyncedAt, serverVersion)
+ *              Added auth fields to UserProfileEntity (odUserId, email, photoUrl, etc.)
+ *              Added indices for efficient userId queries
+ *              Changed VocabularyLearningEntity to composite key (wordId, userId)
  */
 @Database(
     entities = [
@@ -50,8 +55,8 @@ import com.prody.prashant.data.local.entity.*
         ChallengeParticipationEntity::class,
         ChallengeLeaderboardEntity::class
     ],
-    version = 1,
-    exportSchema = false
+    version = 2,
+    exportSchema = true // Enable for migration verification
 )
 abstract class ProdyDatabase : RoomDatabase() {
 

@@ -618,4 +618,97 @@
     <string name="dialog_discard_message">You have unsaved changes. Are you sure you want to discard them?</string>
     <string name="dialog_logout_title">Log Out</string>
     <string name="dialog_logout_message">Are you sure you want to log out?</string>
+
+    <!-- ==================== -->
+    <!-- PRIVACY & DATA POLICY -->
+    <!-- ==================== -->
+    <string name="privacy_data_policy">Privacy &amp; Data Policy</string>
+    <string name="privacy_your_data_safe">Your Data is Safe</string>
+    <string name="privacy_local_first">Local-First Storage</string>
+    <string name="privacy_local_first_desc">All your journals and data are stored securely on your device first.</string>
+    <string name="privacy_encryption">End-to-End Encryption</string>
+    <string name="privacy_encryption_desc">Your personal data is encrypted using industry-standard AES-256.</string>
+    <string name="privacy_ai_processing">AI Processing</string>
+    <string name="privacy_ai_processing_desc">AI insights are generated on-device when possible. No data leaves your device without consent.</string>
+    <string name="privacy_no_third_party">No Third-Party Sharing</string>
+    <string name="privacy_no_third_party_desc">We never sell or share your personal data with third parties.</string>
+    <string name="privacy_data_export">Export Your Data</string>
+    <string name="privacy_data_export_desc">Download all your data at any time in JSON format.</string>
+    <string name="privacy_data_delete">Delete All Data</string>
+    <string name="privacy_data_delete_desc">Permanently remove all your data from our servers.</string>
+    <string name="privacy_learn_more">Learn More</string>
+    <string name="privacy_view_policy">View Full Privacy Policy</string>
+
+    <!-- ==================== -->
+    <!-- NETWORK & SYNC STATUS -->
+    <!-- ==================== -->
+    <string name="sync_status">Sync Status</string>
+    <string name="sync_online">Online</string>
+    <string name="sync_offline">Offline</string>
+    <string name="sync_syncing">Syncing…</string>
+    <string name="sync_synced">All synced</string>
+    <string name="sync_pending">%d changes pending</string>
+    <string name="sync_failed">Sync failed</string>
+    <string name="sync_retry">Tap to retry</string>
+    <string name="sync_last_synced">Last synced %s</string>
+    <string name="sync_never">Never synced</string>
+    <string name="offline_mode">Offline Mode</string>
+    <string name="offline_mode_desc">You\'re offline. Changes will sync when connected.</string>
+    <string name="network_connected">Connected to internet</string>
+    <string name="network_disconnected">No internet connection</string>
+
+    <!-- ==================== -->
+    <!-- CONTENT MODERATION -->
+    <!-- ==================== -->
+    <string name="report_content">Report Content</string>
+    <string name="report_inappropriate">Report Inappropriate Content</string>
+    <string name="report_reason">Why are you reporting this?</string>
+    <string name="report_reason_spam">Spam or misleading</string>
+    <string name="report_reason_offensive">Offensive or harmful</string>
+    <string name="report_reason_privacy">Privacy violation</string>
+    <string name="report_reason_other">Other</string>
+    <string name="report_additional_info">Additional information (optional)</string>
+    <string name="report_submitted">Report submitted</string>
+    <string name="report_thank_you">Thank you for helping keep Prody safe.</string>
+
+    <!-- ==================== -->
+    <!-- BUDDHA AI GUIDE -->
+    <!-- ==================== -->
+    <string name="buddha_ai_title">Meet Buddha</string>
+    <string name="buddha_ai_subtitle">Your Wise Companion</string>
+    <string name="buddha_ai_intro">I\'m here to help you reflect on your thoughts and grow. Think of me as your patient, wise friend.</string>
+    <string name="buddha_ai_journal_hint">After you write, I\'ll share insights about your emotions and themes.</string>
+    <string name="buddha_ai_quote_hint">Tap any quote to learn its deeper meaning and how to apply it today.</string>
+    <string name="buddha_ai_wisdom_hint">I curate daily wisdom based on what resonates with your journey.</string>
+    <string name="buddha_ai_privacy">Your thoughts stay private. I analyze on-device first.</string>
+    <string name="buddha_ai_got_it">Got it!</string>
+    <string name="buddha_ai_dont_show_again">Don\'t show again</string>
+
+    <!-- ==================== -->
+    <!-- DATA HYGIENE -->
+    <!-- ==================== -->
+    <string name="data_retention">Data Retention</string>
+    <string name="data_cleanup">Clean Up</string>
+    <string name="data_cleanup_desc">Remove old cached data to free up space.</string>
+    <string name="data_cache_cleared">Cache cleared</string>
+    <string name="data_export_title">Export Data</string>
+    <string name="data_export_desc">Download all your journals, messages, and preferences.</string>
+    <string name="data_export_format">Export as %s</string>
+    <string name="data_delete_title">Delete Account</string>
+    <string name="data_delete_desc">Permanently delete all your data. This cannot be undone.</string>
+    <string name="data_delete_confirm">Type DELETE to confirm</string>
+    <string name="data_deleted">All data deleted</string>
+
+    <!-- ==================== -->
+    <!-- PERFORMANCE -->
+    <!-- ==================== -->
+    <string name="performance_slow_connection">Slow connection detected</string>
+    <string name="performance_optimizing">Optimizing…</string>
+    <string name="performance_loading_cached">Loading cached data</string>
+
+    <!-- ==================== -->
+    <!-- RTL SUPPORT MARKERS -->
+    <!-- ==================== -->
+    <!-- Note: All text is RTL-compatible. Icons should use autoMirrored variants. -->
+    <!-- For formats with numbers, use xliff:g for proper RTL handling -->
 </resources>

@@ -10,10 +10,13 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
 import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -29,9 +32,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.prody.prashant.ui.theme.PoppinsFamily
@@ -278,20 +284,10 @@ fun ProdyApp(
                                     launchSingleTop = true
                                     restoreState = true
                                 }
-                // Flat design bottom navigation - no shadow, clean surface
-                ProdyBottomNavBar(
-                    items = bottomNavItems,
-                    currentRoute = currentDestination?.route,
-                    onNavigate = { route ->
-                        navController.navigate(route) {
-                            popUpTo(navController.graph.findStartDestination().id) {
-                                saveState = true
                             }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
+                        )
                     }
-                )
+                }
             }
         }
     ) { innerPadding ->
@@ -513,24 +509,26 @@ private fun ProdyBottomNavBar(
 @Composable
 private fun ProdyNavItem(
     item: BottomNavItem,
-    selected: Boolean,
-    accentColor: Color,
-    accentBackground: Color,
-    inactiveColor: Color,
-    onClick: () -> Unit
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
+    val accentColor = ProdyPrimary
+    val accentBackground = ProdyPrimary.copy(alpha = 0.15f)
+    val inactiveColor = MaterialTheme.colorScheme.onSurfaceVariant
+
     val scale by animateFloatAsState(
-        targetValue = if (selected) 1.05f else 1f,
+        targetValue = if (isSelected) 1.05f else 1f,
         animationSpec = tween(durationMillis = 200),
         label = "scale"
     )
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .clip(RoundedCornerShape(16.dp))
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
-                indication = null, // No ripple for cleaner look
+                indication = null,
                 onClick = onClick
             )
             .padding(horizontal = 16.dp, vertical = 4.dp)
@@ -538,33 +536,31 @@ private fun ProdyNavItem(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // Icon with optional green circular background for active state
         Box(
             modifier = Modifier
                 .size(40.dp)
                 .clip(CircleShape)
                 .background(
-                    if (selected) accentBackground else Color.Transparent
+                    if (isSelected) accentBackground else Color.Transparent
                 ),
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
+                imageVector = if (isSelected) item.selectedIcon else item.unselectedIcon,
                 contentDescription = stringResource(item.contentDescriptionResId),
                 modifier = Modifier.size(24.dp),
-                tint = if (selected) accentColor else inactiveColor
+                tint = if (isSelected) accentColor else inactiveColor
             )
         }
 
         Spacer(modifier = Modifier.height(4.dp))
 
-        // Label with Poppins typography
         Text(
             text = stringResource(item.labelResId),
             fontFamily = PoppinsFamily,
-            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
             fontSize = 11.sp,
-            color = if (selected) accentColor else inactiveColor,
+            color = if (isSelected) accentColor else inactiveColor,
             letterSpacing = 0.2.sp
         )
     }

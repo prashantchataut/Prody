@@ -157,6 +157,11 @@ dependencies {
     // DataStore
     implementation(libs.androidx.datastore.preferences)
 
+    // Security - Encryption
+    implementation(libs.androidx.security.crypto)
+    implementation(libs.sqlcipher.android)
+    implementation(libs.sqlite.ktx)
+
     // Hilt
     implementation(libs.hilt.android)
     ksp(libs.hilt.android.compiler)

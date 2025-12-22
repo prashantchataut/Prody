@@ -6,13 +6,25 @@ import androidx.room.PrimaryKey
 /**
  * Entity for tracking individual user's participation in challenges.
  */
-@Entity(tableName = "challenge_participation")
+@Entity(
+    tableName = "challenge_participation",
+    indices = [
+        androidx.room.Index(value = ["userId"]),
+        androidx.room.Index(value = ["challengeId"]),
+        androidx.room.Index(value = ["userId", "challengeId"]),
+        androidx.room.Index(value = ["date"])
+    ]
+)
 data class ChallengeParticipationEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
+    val userId: String = "local", // Multi-user support
     val challengeId: String,
     val date: Long,
     val progressMade: Int, // Progress made on this date
     val activityType: String, // journal, word, meditation, etc.
-    val activityId: String? = null // Reference to specific activity (journal entry ID, etc.)
+    val activityId: String? = null, // Reference to specific activity (journal entry ID, etc.)
+    // Sync metadata
+    val syncStatus: String = "pending",
+    val lastSyncedAt: Long? = null
 )

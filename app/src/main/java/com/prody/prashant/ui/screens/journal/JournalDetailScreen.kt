@@ -36,12 +36,16 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.prody.prashant.R
 import com.prody.prashant.domain.model.Mood
+import com.prody.prashant.ui.components.ContextualAiHint
 import com.prody.prashant.ui.components.ProdyCard
 import com.prody.prashant.ui.theme.*
 import kotlinx.coroutines.delay
 import org.json.JSONArray
 import java.text.SimpleDateFormat
 import java.util.*
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import com.prody.prashant.util.AccessibilityUtils
 
 @Composable
 fun JournalDetailScreen(
@@ -68,19 +72,25 @@ fun JournalDetailScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { viewModel.toggleBookmark() }) {
+                    IconButton(
+                        onClick = { viewModel.toggleBookmark() },
+                        modifier = Modifier.size(48.dp) // Minimum touch target for accessibility
+                    ) {
                         Icon(
                             imageVector = if (uiState.entry?.isBookmarked == true) Icons.Filled.Bookmark
                             else Icons.Filled.BookmarkBorder,
-                            contentDescription = "Bookmark",
+                            contentDescription = AccessibilityUtils.bookmarkDescription(uiState.entry?.isBookmarked == true),
                             tint = if (uiState.entry?.isBookmarked == true) MaterialTheme.colorScheme.primary
                             else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
-                    IconButton(onClick = { viewModel.showDeleteDialog() }) {
+                    IconButton(
+                        onClick = { viewModel.showDeleteDialog() },
+                        modifier = Modifier.size(48.dp) // Minimum touch target for accessibility
+                    ) {
                         Icon(
                             imageVector = Icons.Filled.Delete,
-                            contentDescription = "Delete",
+                            contentDescription = AccessibilityUtils.deleteDescription("journal entry"),
                             tint = MaterialTheme.colorScheme.error
                         )
                     }
@@ -228,10 +238,22 @@ fun JournalDetailScreen(
                 entry.buddhaResponse?.let { response ->
                     Spacer(modifier = Modifier.height(24.dp))
 
+                    // Show journal insight hint for first-time users
+                    if (uiState.showJournalInsightHint) {
+                        ContextualAiHint(
+                            hint = viewModel.getJournalInsightHint(),
+                            onDismiss = { viewModel.onJournalInsightHintDismiss() }
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                    }
+
                     ProdyCard(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
+                            .padding(horizontal = 16.dp)
+                            .semantics {
+                                contentDescription = AccessibilityUtils.buddhaResponseDescription(true)
+                            },
                         backgroundColor = ProdyPrimary.copy(alpha = 0.08f)
                     ) {
                         Column(modifier = Modifier.padding(20.dp)) {
@@ -241,7 +263,7 @@ fun JournalDetailScreen(
                             ) {
                                 Icon(
                                     imageVector = Icons.Filled.SelfImprovement,
-                                    contentDescription = null,
+                                    contentDescription = null, // Decorative, parent has description
                                     tint = ProdyPrimary,
                                     modifier = Modifier.size(24.dp)
                                 )

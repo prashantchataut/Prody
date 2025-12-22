@@ -3,10 +3,22 @@ package com.prody.prashant.data.local.entity
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "user_profile")
+@Entity(
+    tableName = "user_profile",
+    indices = [
+        androidx.room.Index(value = ["odUserId"], unique = true)
+    ]
+)
 data class UserProfileEntity(
     @PrimaryKey
-    val id: Int = 1, // Single user profile
+    val id: Int = 1, // Single user profile (legacy, kept for migration)
+    // Firebase/Google Auth fields - prepared for multi-user support
+    val odUserId: String = "local", // Firebase UID or "local" for offline
+    val email: String? = null, // Google account email
+    val photoUrl: String? = null, // Google profile photo URL
+    val isAnonymous: Boolean = true, // True until Google sign-in
+    val authProvider: String = "local", // local, google, anonymous
+    val lastAuthenticatedAt: Long? = null,
     val displayName: String = "Growth Seeker",
     val bio: String = "",
     val avatarId: String = "default",
@@ -36,7 +48,11 @@ data class UserProfileEntity(
     val boostsReceived: Int = 0, // Total boosts received
     val boostsGiven: Int = 0, // Total boosts given
     val dailyBoostsRemaining: Int = 5, // Daily boost limit
-    val lastBoostResetDate: Long = System.currentTimeMillis() // For daily reset
+    val lastBoostResetDate: Long = System.currentTimeMillis(), // For daily reset
+    // Sync metadata
+    val syncStatus: String = "pending",
+    val lastSyncedAt: Long? = null,
+    val serverVersion: Long = 0
 )
 
 @Entity(tableName = "achievements")
@@ -90,10 +106,14 @@ data class AchievementEntity(
     }
 }
 
-@Entity(tableName = "user_stats")
+@Entity(
+    tableName = "user_stats",
+    indices = [androidx.room.Index(value = ["userId"])]
+)
 data class UserStatsEntity(
     @PrimaryKey
     val id: Int = 1,
+    val userId: String = "local", // Multi-user support
     val dailyPointsEarned: Int = 0,
     val weeklyPointsEarned: Int = 0,
     val monthlyPointsEarned: Int = 0,
@@ -108,10 +128,18 @@ data class UserStatsEntity(
     val monthStartDate: Long = System.currentTimeMillis()
 )
 
-@Entity(tableName = "streak_history")
+@Entity(
+    tableName = "streak_history",
+    indices = [
+        androidx.room.Index(value = ["userId"]),
+        androidx.room.Index(value = ["date"]),
+        androidx.room.Index(value = ["userId", "date"])
+    ]
+)
 data class StreakHistoryEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
+    val userId: String = "local", // Multi-user support
     val date: Long,
     val activitiesCompleted: String = "", // Comma-separated activity types
     val pointsEarned: Int = 0,

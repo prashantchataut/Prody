@@ -70,4 +70,24 @@ interface FutureMessageDao {
 
     @Query("DELETE FROM future_messages")
     suspend fun deleteAllMessages()
+
+    // Data Hygiene - Soft delete management
+    @Query("UPDATE future_messages SET isDeleted = 1 WHERE id = :id")
+    suspend fun softDeleteMessage(id: Long)
+
+    @Query("SELECT * FROM future_messages WHERE isDeleted = 1")
+    suspend fun getSoftDeletedMessages(): List<FutureMessageEntity>
+
+    @Query("DELETE FROM future_messages WHERE isDeleted = 1")
+    suspend fun purgeSoftDeleted(): Int
+
+    // Sync-related queries
+    @Query("SELECT * FROM future_messages WHERE syncStatus = 'pending' AND isDeleted = 0")
+    suspend fun getPendingSyncMessages(): List<FutureMessageEntity>
+
+    @Query("UPDATE future_messages SET syncStatus = :status, lastSyncedAt = :syncTime WHERE id = :id")
+    suspend fun updateSyncStatus(id: Long, status: String, syncTime: Long = System.currentTimeMillis())
+
+    @Query("SELECT * FROM future_messages WHERE userId = :userId ORDER BY deliveryDate ASC")
+    fun getMessagesByUser(userId: String): Flow<List<FutureMessageEntity>>
 }

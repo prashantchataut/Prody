@@ -3,10 +3,19 @@ package com.prody.prashant.data.local.entity
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "future_messages")
+@Entity(
+    tableName = "future_messages",
+    indices = [
+        androidx.room.Index(value = ["userId"]),
+        androidx.room.Index(value = ["deliveryDate"]),
+        androidx.room.Index(value = ["userId", "deliveryDate"])
+    ]
+)
 data class FutureMessageEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
+    // User authentication - prepared for multi-user support
+    val userId: String = "local",
     val title: String,
     val content: String,
     val deliveryDate: Long, // Timestamp when message should be delivered
@@ -20,5 +29,10 @@ data class FutureMessageEntity(
     val attachedPhotos: String = "", // JSON array of photo URIs
     val attachedVideos: String = "", // JSON array of video URIs
     val voiceRecordingUri: String? = null, // URI to voice recording file
-    val voiceRecordingDuration: Long = 0 // Duration in milliseconds
+    val voiceRecordingDuration: Long = 0, // Duration in milliseconds
+    // Sync metadata - for cloud synchronization
+    val syncStatus: String = "pending", // pending, synced, conflict
+    val lastSyncedAt: Long? = null,
+    val serverVersion: Long = 0,
+    val isDeleted: Boolean = false
 )

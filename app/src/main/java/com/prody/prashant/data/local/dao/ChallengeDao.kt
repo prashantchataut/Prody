@@ -125,4 +125,37 @@ interface ChallengeDao {
 
     @Query("SELECT SUM(rewardPoints) FROM challenges WHERE isCompleted = 1")
     fun getTotalPointsFromChallenges(): Flow<Int?>
+
+    // =========================================================================
+    // Data Hygiene Methods
+    // =========================================================================
+
+    @Query("DELETE FROM challenge_participation")
+    suspend fun clearUserParticipation()
+
+    @Query("DELETE FROM challenge_participation WHERE userId = :userId")
+    suspend fun clearParticipationByUser(userId: String)
+
+    @Query("DELETE FROM challenge_milestones")
+    suspend fun clearAllMilestones()
+
+    @Query("DELETE FROM challenge_leaderboard")
+    suspend fun clearAllLeaderboards()
+
+    // Reset user's challenge progress (without leaving the challenge)
+    @Query("UPDATE challenges SET currentUserProgress = 0, isCompleted = 0, completedAt = NULL WHERE isJoined = 1")
+    suspend fun resetUserChallengeProgress()
+
+    // =========================================================================
+    // Multi-User / Sync Methods
+    // =========================================================================
+
+    @Query("SELECT * FROM challenge_participation WHERE userId = :userId ORDER BY date DESC")
+    fun getParticipationByUser(userId: String): Flow<List<ChallengeParticipationEntity>>
+
+    @Query("UPDATE challenge_participation SET syncStatus = :status, lastSyncedAt = :syncTime WHERE id = :id")
+    suspend fun updateParticipationSyncStatus(id: Long, status: String, syncTime: Long = System.currentTimeMillis())
+
+    @Query("SELECT * FROM challenge_participation WHERE syncStatus = 'pending'")
+    suspend fun getPendingSyncParticipation(): List<ChallengeParticipationEntity>
 }
