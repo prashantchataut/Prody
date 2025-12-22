@@ -35,7 +35,12 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.R
+import com.prody.prashant.ui.components.BuddhaGuideIntro
+import com.prody.prashant.ui.components.ContextualAiHint
 import com.prody.prashant.ui.theme.*
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import com.prody.prashant.util.AccessibilityUtils
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -128,6 +133,17 @@ fun HomeScreen(
                 )
             }
 
+            // Buddha Guide Intro for first-time users
+            if (uiState.showBuddhaGuide && uiState.buddhaGuideCards.isNotEmpty()) {
+                item {
+                    BuddhaGuideIntro(
+                        cards = uiState.buddhaGuideCards,
+                        onComplete = { viewModel.onBuddhaGuideComplete() },
+                        onDontShowAgain = { viewModel.onBuddhaGuideDontShowAgain() }
+                    )
+                }
+            }
+
             // Spacer for generous spacing
             item { Spacer(modifier = Modifier.height(24.dp)) }
 
@@ -171,6 +187,16 @@ fun HomeScreen(
                     secondaryTextColor = secondaryTextColor,
                     surfaceColor = surfaceColor
                 )
+            }
+
+            // Contextual AI Hint for Daily Wisdom (first time)
+            if (uiState.showDailyWisdomHint) {
+                item {
+                    ContextualAiHint(
+                        hint = viewModel.getDailyWisdomHint(),
+                        onDismiss = { viewModel.onDailyWisdomHintDismiss() }
+                    )
+                }
             }
 
             // Spacer
@@ -311,7 +337,11 @@ private fun PremiumStatsBadge(
         shape = RoundedCornerShape(16.dp),
         color = surfaceColor,
         tonalElevation = 0.dp,
-        modifier = Modifier.clip(RoundedCornerShape(16.dp))
+        modifier = Modifier
+            .clip(RoundedCornerShape(16.dp))
+            .semantics {
+                contentDescription = "${AccessibilityUtils.streakDescription(streak)}, ${AccessibilityUtils.pointsDescription(points)}"
+            }
     ) {
         Row(
             modifier = Modifier
@@ -327,7 +357,7 @@ private fun PremiumStatsBadge(
             ) {
                 Icon(
                     imageVector = Icons.Outlined.LocalFireDepartment,
-                    contentDescription = "Streak",
+                    contentDescription = null, // Parent has combined description
                     tint = StreakFire,
                     modifier = Modifier.size(16.dp)
                 )
@@ -355,7 +385,7 @@ private fun PremiumStatsBadge(
             ) {
                 Icon(
                     imageVector = Icons.Outlined.Star,
-                    contentDescription = "Points",
+                    contentDescription = null, // Parent has combined description
                     tint = LeaderboardGold,
                     modifier = Modifier.size(16.dp)
                 )
@@ -713,7 +743,10 @@ private fun QuoteCard(
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 24.dp),
+            .padding(horizontal = 24.dp)
+            .semantics {
+                contentDescription = AccessibilityUtils.quoteDescription(quote, author)
+            },
         shape = RoundedCornerShape(20.dp),
         color = surfaceColor,
         tonalElevation = 0.dp

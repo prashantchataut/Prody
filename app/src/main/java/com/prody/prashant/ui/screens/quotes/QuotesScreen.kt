@@ -10,6 +10,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import com.prody.prashant.util.AccessibilityUtils
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -25,6 +28,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.R
 import com.prody.prashant.data.local.entity.*
+import com.prody.prashant.data.onboarding.AiHint
+import com.prody.prashant.ui.components.ContextualAiHint
 import com.prody.prashant.ui.components.ProdyCard
 import com.prody.prashant.data.ai.QuoteExplanationResult
 import com.prody.prashant.ui.theme.*
@@ -109,6 +114,9 @@ fun QuotesScreen(
                         quotes = uiState.quotes,
                         quoteExplanations = uiState.quoteExplanations,
                         loadingExplanations = uiState.loadingExplanations,
+                        showHint = uiState.showQuoteExplanationHint,
+                        hint = if (uiState.showQuoteExplanationHint) viewModel.getQuoteExplanationHint() else null,
+                        onHintDismiss = { viewModel.onQuoteExplanationHintDismiss() },
                         onFavoriteToggle = { viewModel.toggleQuoteFavorite(it) },
                         onLoadExplanation = { viewModel.loadQuoteExplanation(it) }
                     )
@@ -135,6 +143,9 @@ private fun QuotesList(
     quotes: List<QuoteEntity>,
     quoteExplanations: Map<Long, QuoteExplanationResult>,
     loadingExplanations: Set<Long>,
+    showHint: Boolean = false,
+    hint: AiHint? = null,
+    onHintDismiss: () -> Unit = {},
     onFavoriteToggle: (QuoteEntity) -> Unit,
     onLoadExplanation: (QuoteEntity) -> Unit
 ) {
@@ -142,6 +153,17 @@ private fun QuotesList(
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
+        // Show contextual AI hint for first quote explanation
+        if (showHint && hint != null) {
+            item {
+                ContextualAiHint(
+                    hint = hint,
+                    onDismiss = onHintDismiss,
+                    onAction = { onHintDismiss() }
+                )
+            }
+        }
+
         items(quotes, key = { it.id }) { quote ->
             QuoteCard(
                 quote = quote,
@@ -172,6 +194,9 @@ private fun QuoteCard(
                 if (expanded && explanation == null) {
                     onTap()
                 }
+            }
+            .semantics {
+                contentDescription = AccessibilityUtils.quoteDescription(quote.content, quote.author)
             },
         backgroundColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
     ) {
@@ -406,12 +431,12 @@ private fun ProverbCard(
                 )
                 IconButton(
                     onClick = onFavoriteToggle,
-                    modifier = Modifier.size(32.dp)
+                    modifier = Modifier.size(48.dp) // Minimum 48dp touch target for accessibility
                 ) {
                     Icon(
                         imageVector = if (proverb.isFavorite) Icons.Filled.Favorite
                         else Icons.Filled.FavoriteBorder,
-                        contentDescription = "Favorite",
+                        contentDescription = if (proverb.isFavorite) "Remove from favorites" else "Add to favorites",
                         tint = if (proverb.isFavorite) MaterialTheme.colorScheme.error
                         else MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(20.dp)
@@ -519,12 +544,12 @@ private fun IdiomCard(
                 )
                 IconButton(
                     onClick = onFavoriteToggle,
-                    modifier = Modifier.size(32.dp)
+                    modifier = Modifier.size(48.dp) // Minimum 48dp touch target for accessibility
                 ) {
                     Icon(
                         imageVector = if (idiom.isFavorite) Icons.Filled.Favorite
                         else Icons.Filled.FavoriteBorder,
-                        contentDescription = "Favorite",
+                        contentDescription = if (idiom.isFavorite) "Remove from favorites" else "Add to favorites",
                         tint = if (idiom.isFavorite) MaterialTheme.colorScheme.error
                         else MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(20.dp)
@@ -647,12 +672,12 @@ private fun PhraseCard(
                 )
                 IconButton(
                     onClick = onFavoriteToggle,
-                    modifier = Modifier.size(32.dp)
+                    modifier = Modifier.size(48.dp) // Minimum 48dp touch target for accessibility
                 ) {
                     Icon(
                         imageVector = if (phrase.isFavorite) Icons.Filled.Favorite
                         else Icons.Filled.FavoriteBorder,
-                        contentDescription = "Favorite",
+                        contentDescription = if (phrase.isFavorite) "Remove from favorites" else "Add to favorites",
                         tint = if (phrase.isFavorite) MaterialTheme.colorScheme.error
                         else MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(20.dp)

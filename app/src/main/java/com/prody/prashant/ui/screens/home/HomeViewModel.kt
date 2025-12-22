@@ -6,6 +6,10 @@ import com.prody.prashant.data.ai.BuddhaAiRepository
 import com.prody.prashant.data.ai.BuddhaAiResult
 import com.prody.prashant.data.local.dao.*
 import com.prody.prashant.data.local.preferences.PreferencesManager
+import com.prody.prashant.data.onboarding.AiHint
+import com.prody.prashant.data.onboarding.AiHintType
+import com.prody.prashant.data.onboarding.AiOnboardingManager
+import com.prody.prashant.data.onboarding.BuddhaGuideCard
 import com.prody.prashant.util.BuddhaWisdom
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -37,7 +41,11 @@ data class HomeUiState(
     val journalEntriesThisWeek: Int = 0,
     val wordsLearnedThisWeek: Int = 0,
     val daysActiveThisWeek: Int = 0,
-    val isLoading: Boolean = true
+    val isLoading: Boolean = true,
+    // Onboarding state
+    val showBuddhaGuide: Boolean = false,
+    val buddhaGuideCards: List<BuddhaGuideCard> = emptyList(),
+    val showDailyWisdomHint: Boolean = false
 )
 
 @HiltViewModel
@@ -49,7 +57,8 @@ class HomeViewModel @Inject constructor(
     private val idiomDao: IdiomDao,
     private val journalDao: JournalDao,
     private val preferencesManager: PreferencesManager,
-    private val buddhaAiRepository: BuddhaAiRepository
+    private val buddhaAiRepository: BuddhaAiRepository,
+    private val aiOnboardingManager: AiOnboardingManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -66,6 +75,57 @@ class HomeViewModel @Inject constructor(
     init {
         loadHomeData()
         loadBuddhaWisdom()
+        checkOnboarding()
+    }
+
+    private fun checkOnboarding() {
+        viewModelScope.launch {
+            // Check if we should show the Buddha Guide intro
+            aiOnboardingManager.shouldShowBuddhaGuide().collect { shouldShow ->
+                if (shouldShow) {
+                    _uiState.update { state ->
+                        state.copy(
+                            showBuddhaGuide = true,
+                            buddhaGuideCards = aiOnboardingManager.getBuddhaGuideCards()
+                        )
+                    }
+                }
+            }
+        }
+
+        viewModelScope.launch {
+            // Check if we should show daily wisdom hint
+            aiOnboardingManager.shouldShowHint(AiHintType.DAILY_WISDOM_TIP).collect { shouldShow ->
+                _uiState.update { state ->
+                    state.copy(showDailyWisdomHint = shouldShow)
+                }
+            }
+        }
+    }
+
+    fun onBuddhaGuideComplete() {
+        viewModelScope.launch {
+            aiOnboardingManager.markBuddhaGuideShown()
+            _uiState.update { it.copy(showBuddhaGuide = false) }
+        }
+    }
+
+    fun onBuddhaGuideDontShowAgain() {
+        viewModelScope.launch {
+            aiOnboardingManager.dismissBuddhaGuideForever()
+            _uiState.update { it.copy(showBuddhaGuide = false) }
+        }
+    }
+
+    fun onDailyWisdomHintDismiss() {
+        viewModelScope.launch {
+            aiOnboardingManager.markHintShown(AiHintType.DAILY_WISDOM_TIP)
+            _uiState.update { it.copy(showDailyWisdomHint = false) }
+        }
+    }
+
+    fun getDailyWisdomHint(): AiHint {
+        return aiOnboardingManager.getHintContent(AiHintType.DAILY_WISDOM_TIP)
     }
 
     private fun loadHomeData() {

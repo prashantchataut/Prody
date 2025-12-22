@@ -39,9 +39,14 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.prody.prashant.util.AccessibilityUtils
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -515,6 +520,10 @@ private fun TemplateCard(
             .clip(RoundedCornerShape(16.dp))
             .background(colors.surface)
             .clickable(onClick = onClick)
+            .semantics {
+                contentDescription = "$title template: $description"
+                role = Role.Button
+            }
     ) {
         // Corner decoration (subtle abstract shape)
         Box(
@@ -651,7 +660,11 @@ private fun MoodButton(
             .clip(RoundedCornerShape(24.dp))
             .background(backgroundColor)
             .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = 16.dp)
+            .semantics {
+                contentDescription = AccessibilityUtils.moodDescription(mood.displayName, isSelected)
+                role = Role.Button
+            },
         contentAlignment = Alignment.Center
     ) {
         Row(
@@ -660,7 +673,7 @@ private fun MoodButton(
         ) {
             Icon(
                 imageVector = mood.icon,
-                contentDescription = mood.displayName,
+                contentDescription = null, // Parent has description
                 tint = contentColor,
                 modifier = Modifier.size(20.dp)
             )

@@ -26,10 +26,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.prody.prashant.util.AccessibilityUtils
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.BuildConfig
 import com.prody.prashant.R
@@ -1132,6 +1138,294 @@ private fun ProdyIdFooter(isDark: Boolean) {
             style = MaterialTheme.typography.labelSmall,
             color = textColor,
             letterSpacing = 0.5.sp
+        )
+    }
+}
+
+// ============================================================================
+// PRIVACY & DATA POLICY SECTION
+// ============================================================================
+
+@Composable
+private fun PrivacyDataPolicySection() {
+    var showPolicyDialog by remember { mutableStateOf(false) }
+
+    // Privacy Policy Dialog
+    if (showPolicyDialog) {
+        PrivacyPolicyDialog(onDismiss = { showPolicyDialog = false })
+    }
+
+    Column(
+        modifier = Modifier.padding(vertical = 8.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Security,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(20.dp)
+            )
+            Text(
+                text = "Privacy & Data Policy",
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.SemiBold
+            )
+        }
+
+        ProdyCard(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(vertical = 8.dp)
+            ) {
+                // View Data Policy
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { showPolicyDialog = true }
+                        .padding(horizontal = 16.dp, vertical = 14.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(MoodCalm.copy(alpha = 0.15f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Policy,
+                            contentDescription = null,
+                            tint = MoodCalm,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(14.dp))
+
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "View Data Policy",
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Medium
+                        )
+                        Text(
+                            text = "See what data we collect and why",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+
+                    Icon(
+                        imageVector = Icons.Filled.ChevronRight,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+
+                // Privacy Summary Card
+                PrivacySummaryCard()
+            }
+        }
+    }
+}
+
+@Composable
+private fun PrivacySummaryCard() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(
+                Brush.horizontalGradient(
+                    colors = listOf(
+                        MoodCalm.copy(alpha = 0.08f),
+                        MoodGrateful.copy(alpha = 0.08f)
+                    )
+                )
+            )
+            .padding(16.dp)
+    ) {
+        Column {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.VerifiedUser,
+                    contentDescription = null,
+                    tint = MoodCalm,
+                    modifier = Modifier.size(20.dp)
+                )
+                Text(
+                    text = "Your Privacy at a Glance",
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Privacy bullets
+            PrivacyBullet(
+                icon = Icons.Filled.Lock,
+                text = "Journal entries encrypted on device"
+            )
+            PrivacyBullet(
+                icon = Icons.Filled.PhoneAndroid,
+                text = "All data stored locally on your device"
+            )
+            PrivacyBullet(
+                icon = Icons.Filled.VisibilityOff,
+                text = "No personal data shared with third parties"
+            )
+            PrivacyBullet(
+                icon = Icons.Filled.Cloud,
+                text = "AI features use secure API connections"
+            )
+        }
+    }
+}
+
+@Composable
+private fun PrivacyBullet(
+    icon: ImageVector,
+    text: String
+) {
+    Row(
+        modifier = Modifier.padding(vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = MoodCalm,
+            modifier = Modifier.size(16.dp)
+        )
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+@Composable
+private fun PrivacyPolicyDialog(onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        icon = {
+            Icon(
+                imageVector = Icons.Filled.Policy,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary
+            )
+        },
+        title = {
+            Text(
+                text = "Prody Data Policy",
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            Column(
+                modifier = Modifier.verticalScroll(rememberScrollState())
+            ) {
+                PolicySection(
+                    title = "What We Collect",
+                    content = """
+                        • Journal entries (stored locally, encrypted)
+                        • Mood selections and tags
+                        • Gamification progress (XP, badges, streaks)
+                        • App preferences and settings
+                        • Anonymous performance metrics
+                    """.trimIndent()
+                )
+
+                PolicySection(
+                    title = "How We Use Your Data",
+                    content = """
+                        • To provide personalized AI insights
+                        • To track your self-improvement journey
+                        • To generate mood analytics and patterns
+                        • To improve app performance (anonymized only)
+                    """.trimIndent()
+                )
+
+                PolicySection(
+                    title = "Data Storage",
+                    content = """
+                        • All personal data is stored locally on your device
+                        • Journal entries are encrypted using industry-standard AES-256 encryption
+                        • You can export or delete all data at any time
+                        • No data is uploaded to servers without your explicit consent
+                    """.trimIndent()
+                )
+
+                PolicySection(
+                    title = "AI Features",
+                    content = """
+                        • Journal content may be sent to AI services for analysis when AI features are enabled
+                        • AI providers do not store your personal data
+                        • You can disable AI features at any time in Settings
+                        • Cached AI responses are stored locally to reduce data usage
+                    """.trimIndent()
+                )
+
+                PolicySection(
+                    title = "Your Rights",
+                    content = """
+                        • Export all your data at any time
+                        • Delete all data permanently
+                        • Disable any data collection features
+                        • Opt out of AI processing
+                    """.trimIndent()
+                )
+
+                Text(
+                    text = "Last updated: December 2024",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 16.dp)
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Close")
+            }
+        }
+    )
+}
+
+@Composable
+private fun PolicySection(
+    title: String,
+    content: String
+) {
+    Column(modifier = Modifier.padding(vertical = 8.dp)) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.primary
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = content,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            lineHeight = 18.sp
         )
     }
 }

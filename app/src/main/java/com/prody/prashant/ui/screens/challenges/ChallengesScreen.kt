@@ -34,12 +34,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.prody.prashant.util.AccessibilityUtils
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.domain.model.Challenge
 import com.prody.prashant.domain.model.ChallengeDifficulty
@@ -454,7 +457,10 @@ private fun FeaturedChallengeCard(
         ProdyCard(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable(onClick = onClick),
+                .clickable(onClick = onClick)
+                .semantics {
+                    contentDescription = "Featured challenge: ${challenge.title}. ${challenge.description}. ${challenge.daysRemaining} days remaining, ${challenge.rewardPoints} points reward"
+                },
             backgroundColor = challenge.type.color.copy(alpha = 0.15f)
         ) {
             Box {
