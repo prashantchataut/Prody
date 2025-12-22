@@ -101,4 +101,8 @@ interface VocabularyDao {
 
     @Query("SELECT * FROM vocabulary ORDER BY word ASC")
     suspend fun getAllVocabularySync(): List<VocabularyEntity>
+
+    // Reset progress
+    @Query("UPDATE vocabulary SET isLearned = 0, isFavorite = 0, learnedAt = NULL, lastReviewedAt = NULL, nextReviewAt = NULL, reviewCount = 0, masteryLevel = 0, shownAsDaily = 0, shownAt = NULL")
+    suspend fun resetAllProgress()
 }

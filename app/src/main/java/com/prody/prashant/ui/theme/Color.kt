@@ -163,6 +163,17 @@ val StreakMonthMilestone = Color(0xFFE65C2C)          // 30-day
 val StreakQuarterMilestone = Color(0xFFD43B3B)        // 90-day
 val StreakYearMilestone = Color(0xFFFFD700)           // 365-day
 
+// Streak Milestone Colors (numbered aliases for BoostingSystem)
+val StreakMilestone7 = StreakWeekMilestone            // 7-day milestone
+val StreakMilestone30 = StreakMonthMilestone          // 30-day milestone
+val StreakMilestone100 = Color(0xFFD43B3B)            // 100-day milestone
+val StreakMilestone365 = StreakYearMilestone          // 365-day milestone
+
+// Support/Boost Colors
+val SupportBoost = Color(0xFF36F97F)                  // Green for boost
+val SupportRespect = Color(0xFF42A5F5)                // Blue for respect
+val SupportEncourage = Color(0xFFFFB300)              // Amber for encourage
+
 // =============================================================================
 // XP & PROGRESS COLORS (Flat)
 // =============================================================================
@@ -469,15 +480,8 @@ val ProdyOnSurfaceVariant = Color(0xFF6C757D)
 val ProdySurfaceElevated = Color(0xFFFFFFFF)
 val ProdySurfaceDim = Color(0xFFE8EDEC)
 
-val ProdyError = Color(0xFFE53935)
-val ProdyOnError = Color(0xFFFFFFFF)
-val ProdyErrorContainer = Color(0xFFFFEBEE)
-
-val ProdySuccess = Color(0xFF36F97F)
-val ProdyOnSuccess = Color(0xFF000000)
-
-val ProdyWarning = Color(0xFFFFC107)
-val ProdyOnWarning = Color(0xFF1A1A1A)
+// Note: ProdyError, ProdyOnError, ProdyErrorContainer, ProdySuccess, ProdyOnSuccess,
+// ProdyWarning, ProdyOnWarning are defined in the SEMANTIC COLORS section above
 
 val ProdyOutline = Color(0xFFE0E7E6)
 val ProdyOutlineVariant = Color(0xFFD0D8D7)
@@ -496,22 +500,19 @@ val ProdyTertiaryDark = Color(0xFFD3D8D7)
 val ProdyOnTertiaryDark = Color(0xFF1A1A1A)
 val ProdyTertiaryContainerDark = Color(0xFF1A3633)
 
-val ProdyBackgroundDark = Color(0xFF0D2826)
+// Note: ProdyBackgroundDark is defined in DARK THEME COLORS section above
 val ProdyOnBackgroundDark = Color(0xFFFFFFFF)
 
-val ProdySurfaceDark = Color(0xFF142E2B)
-val ProdySurfaceVariantDark = Color(0xFF1A3633)
+// Note: ProdySurfaceDark, ProdySurfaceVariantDark, ProdySurfaceElevatedDark are defined above
 val ProdyOnSurfaceDark = Color(0xFFFFFFFF)
 val ProdyOnSurfaceVariantDark = Color(0xFFD3D8D7)
-val ProdySurfaceElevatedDark = Color(0xFF1F3B38)
 val ProdySurfaceDimDark = Color(0xFF0A1F1D)
 
 val ProdyErrorDark = Color(0xFFFF8A80)
 val ProdyOnErrorDark = Color(0xFF1A1A1A)
-val ProdyErrorContainerDark = Color(0xFF4A2525)
+// Note: ProdyErrorContainerDark is defined in SEMANTIC COLORS section above
 
-val ProdyOutlineDark = Color(0xFF3A5250)
-val ProdyOutlineVariantDark = Color(0xFF4A6260)
+// Note: ProdyOutlineDark, ProdyOutlineVariantDark are defined in DARK THEME COLORS section above
 
 // =============================================================================
 // BRAND ALIASES
@@ -521,11 +522,27 @@ val ProdyGreen = ProdyAccentGreen
 val ProdyGreenLight = ProdyAccentGreenLight
 val ProdyGreenDark = ProdyAccentGreenDark
 
+// Main accent color alias
+val ProdyAccent = ProdyAccentGreen
+
+// Premium violet dark variant (missing)
+val ProdyPremiumVioletDark = Color(0xFF4A3AB8)
+
 // =============================================================================
 // GRADIENT DEFINITIONS (Minimal - only for special effects like animated banners)
 // =============================================================================
 
+// Top-level gradient definitions for easy access
+val primaryGradient = listOf(ProdyAccentGreenDark, ProdyAccentGreen, ProdyAccentGreenLight)
+val goldGradient = listOf(LeaderboardGoldDark, LeaderboardGold, LeaderboardGoldLight)
+
 object ProdyGradients {
+    // Primary gradient (green accent)
+    val primaryGradient = listOf(ProdyAccentGreenDark, ProdyAccentGreen, ProdyAccentGreenLight)
+
+    // Gold gradient for achievements/rewards
+    val goldGradient = listOf(LeaderboardGoldDark, LeaderboardGold, LeaderboardGoldLight)
+
     // Gold banner gradient for 1st place
     val goldBanner = listOf(LeaderboardGoldDark, LeaderboardGold, LeaderboardGoldLight, LeaderboardGold)
 

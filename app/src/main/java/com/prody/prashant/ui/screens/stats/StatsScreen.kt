@@ -131,10 +131,9 @@ fun StatsScreen(
         }
     }
 
-    // Background colors based on theme
-    val backgroundColor = if (isDarkTheme) DarkBackground else LightBackground
-    val cardBackgroundColor = if (isDarkTheme) DarkCardBackground else LightCardBackground
-    val cardElevatedColor = if (isDarkTheme) DarkCardBackgroundElevated else LightCardBackgroundElevated
+    // Background colors based on theme (using previously defined colors)
+    val cardBackgroundColor = if (isDarkTheme) Color(0xFF1A3331) else Color(0xFFFFFFFF)
+    val cardElevatedColor = if (isDarkTheme) Color(0xFF2A4240) else Color(0xFFF5F7F6)
     val textPrimaryColor = if (isDarkTheme) ProdyTextPrimaryDark else ProdyTextPrimaryLight
     val textSecondaryColor = if (isDarkTheme) ProdyTextSecondaryDark else ProdyTextSecondaryLight
     val textTertiaryColor = if (isDarkTheme) ProdyTextTertiaryDark else ProdyTextTertiaryLight
