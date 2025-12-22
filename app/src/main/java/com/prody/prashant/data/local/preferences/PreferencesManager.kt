@@ -515,4 +515,34 @@ class PreferencesManager @Inject constructor(
             preferences.clear()
         }
     }
+
+    /**
+     * Resets all preferences to their default values.
+     */
+    suspend fun resetToDefaults() {
+        dataStore.edit { preferences ->
+            preferences.clear()
+            // Set default values
+            preferences[PreferencesKeys.ONBOARDING_COMPLETED] = false
+            preferences[PreferencesKeys.THEME_MODE] = "system"
+            preferences[PreferencesKeys.DYNAMIC_COLORS] = false
+            preferences[PreferencesKeys.NOTIFICATIONS_ENABLED] = true
+            preferences[PreferencesKeys.DAILY_REMINDER_HOUR] = 9
+            preferences[PreferencesKeys.DAILY_REMINDER_MINUTE] = 0
+            preferences[PreferencesKeys.WISDOM_NOTIFICATION_ENABLED] = true
+            preferences[PreferencesKeys.JOURNAL_REMINDER_ENABLED] = true
+            preferences[PreferencesKeys.CURRENT_STREAK] = 0
+            preferences[PreferencesKeys.VOCABULARY_DIFFICULTY_PREFERENCE] = 3
+            preferences[PreferencesKeys.AUTO_PLAY_PRONUNCIATION] = false
+            preferences[PreferencesKeys.COMPACT_CARD_VIEW] = false
+            preferences[PreferencesKeys.HAPTIC_FEEDBACK_ENABLED] = true
+            preferences[PreferencesKeys.BUDDHA_AI_ENABLED] = true
+            preferences[PreferencesKeys.BUDDHA_DAILY_WISDOM_ENABLED] = true
+            preferences[PreferencesKeys.BUDDHA_QUOTE_EXPLANATION_ENABLED] = true
+            preferences[PreferencesKeys.BUDDHA_JOURNAL_INSIGHTS_ENABLED] = true
+            preferences[PreferencesKeys.BUDDHA_PATTERN_TRACKING_ENABLED] = true
+            preferences[PreferencesKeys.BUDDHA_PLAYFUL_MODE] = false
+            preferences[PreferencesKeys.BUDDHA_REDUCE_AI_USAGE] = false
+        }
+    }
 }

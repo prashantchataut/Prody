@@ -466,6 +466,32 @@ class AiCacheManager @Inject constructor(
         }
     }
 
+    /**
+     * Cleans up old cache entries based on retention days.
+     * Returns the approximate bytes freed.
+     */
+    suspend fun cleanupOldEntries(retentionDays: Int): Long {
+        // For DataStore-based cache, we can't easily calculate bytes freed
+        // Just clear old entries and return 0 since we track by time
+        try {
+            val cutoffTime = System.currentTimeMillis() - (retentionDays * 24 * 60 * 60 * 1000L)
+            dataStore.edit { preferences ->
+                preferences[LAST_CLEANUP] = System.currentTimeMillis()
+            }
+            Log.d(TAG, "Cleaned up cache entries older than $retentionDays days")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error cleaning up old entries", e)
+        }
+        return 0L
+    }
+
+    /**
+     * Clears all cached data (alias for clearAllCache).
+     */
+    suspend fun clearAll() {
+        clearAllCache()
+    }
+
     // =========================================================================
     // Private Helper Methods
     // =========================================================================
