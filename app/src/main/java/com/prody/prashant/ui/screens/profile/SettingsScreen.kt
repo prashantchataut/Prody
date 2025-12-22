@@ -40,6 +40,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.BuildConfig
 import com.prody.prashant.R
 import com.prody.prashant.ui.theme.isDarkTheme
+import com.prody.prashant.ui.theme.MoodCalm
+import com.prody.prashant.ui.theme.MoodGrateful
+import com.prody.prashant.ui.components.ProdyCard
+import androidx.compose.ui.graphics.Brush
 import kotlinx.coroutines.delay
 
 // =============================================================================
@@ -245,7 +249,7 @@ fun SettingsScreen(
                     isDark = isDark,
                     showLeafIcon = true
                 ) {
-                    // Enable AI
+                    // Enable AI (Master Toggle)
                     SettingsRowWithToggle(
                         icon = Icons.Filled.Psychology,
                         title = "Enable AI",
@@ -257,10 +261,25 @@ fun SettingsScreen(
 
                     SettingsDivider(isDark)
 
+                    // Daily Wisdom
+                    SettingsRowWithToggle(
+                        icon = Icons.Filled.WbSunny,
+                        title = "Daily Wisdom",
+                        subtitle = "AI-generated wisdom on home screen",
+                        checked = uiState.buddhaDailyWisdomEnabled,
+                        onCheckedChange = { viewModel.setBuddhaDailyWisdomEnabled(it) },
+                        enabled = uiState.buddhaAiEnabled,
+                        isDark = isDark,
+                        useAccentIcon = true
+                    )
+
+                    SettingsDivider(isDark)
+
                     // Quote Insights
                     SettingsRowWithToggle(
                         icon = Icons.Filled.FormatQuote,
                         title = "Quote Insights",
+                        subtitle = "Meaning and daily action for quotes",
                         checked = uiState.buddhaQuoteExplanationEnabled,
                         onCheckedChange = { viewModel.setBuddhaQuoteExplanationEnabled(it) },
                         enabled = uiState.buddhaAiEnabled,
@@ -268,105 +287,29 @@ fun SettingsScreen(
                         useAccentIcon = true
                     )
 
-                    // Per-feature toggles (only when master is enabled)
-                    AnimatedVisibility(visible = uiState.buddhaAiEnabled) {
-                        Column {
-                            EnhancedSettingsToggle(
-                                icon = Icons.Filled.WbSunny,
-                                title = "Daily Wisdom",
-                                subtitle = "AI-generated wisdom on home screen",
-                                checked = uiState.buddhaDailyWisdomEnabled,
-                                onCheckedChange = { viewModel.setBuddhaDailyWisdomEnabled(it) },
-                                iconBackground = GoldTier.copy(alpha = 0.15f),
-                                iconTint = GoldTier
-                            )
-
-                            HorizontalDivider(
-                                modifier = Modifier.padding(horizontal = 16.dp),
-                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
-                            )
-
-                            EnhancedSettingsToggle(
-                                icon = Icons.Filled.FormatQuote,
-                                title = "Quote Insights",
-                                subtitle = "Meaning and daily action for quotes",
-                                checked = uiState.buddhaQuoteExplanationEnabled,
-                                onCheckedChange = { viewModel.setBuddhaQuoteExplanationEnabled(it) },
-                                iconBackground = MoodCalm.copy(alpha = 0.15f),
-                                iconTint = MoodCalm
-                            )
-
-                            HorizontalDivider(
-                                modifier = Modifier.padding(horizontal = 16.dp),
-                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
-                            )
-
-                            EnhancedSettingsToggle(
-                                icon = Icons.Filled.Edit,
-                                title = "Journal Insights",
-                                subtitle = "Emotion and theme analysis after journaling",
-                                checked = uiState.buddhaJournalInsightsEnabled,
-                                onCheckedChange = { viewModel.setBuddhaJournalInsightsEnabled(it) },
-                                iconBackground = MoodGrateful.copy(alpha = 0.15f),
-                                iconTint = MoodGrateful
-                            )
-
-                            HorizontalDivider(
-                                modifier = Modifier.padding(horizontal = 16.dp),
-                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
-                            )
-
-                            EnhancedSettingsToggle(
-                                icon = Icons.Filled.TrendingUp,
-                                title = "Weekly Patterns",
-                                subtitle = "Track mood trends and themes",
-                                checked = uiState.buddhaPatternTrackingEnabled,
-                                onCheckedChange = { viewModel.setBuddhaPatternTrackingEnabled(it) },
-                                iconBackground = MoodMotivated.copy(alpha = 0.15f),
-                                iconTint = MoodMotivated
-                            )
-
-                            HorizontalDivider(
-                                modifier = Modifier.padding(horizontal = 16.dp),
-                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
-                            )
-
-                            EnhancedSettingsToggle(
-                                icon = Icons.Filled.EmojiEmotions,
-                                title = "Playful Buddha",
-                                subtitle = "Occasional lighthearted responses",
-                                checked = uiState.buddhaPlayfulMode,
-                                onCheckedChange = { viewModel.setBuddhaPlayfulMode(it) },
-                                iconBackground = MoodJoyful.copy(alpha = 0.15f),
-                                iconTint = MoodJoyful
-                            )
-
-                            HorizontalDivider(
-                                modifier = Modifier.padding(horizontal = 16.dp),
-                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
-                            )
-
-                            EnhancedSettingsToggle(
-                                icon = Icons.Filled.BatteryChargingFull,
-                                title = "Reduce AI Usage",
-                                subtitle = "Prefer cached responses to save data",
-                                checked = uiState.buddhaReduceAiUsage,
-                                onCheckedChange = { viewModel.setBuddhaReduceAiUsage(it) },
-                                iconBackground = MoodAnxious.copy(alpha = 0.15f),
-                                iconTint = MoodAnxious
-                            )
-                        }
-                    }
-
-                    // Info card about Buddha AI
-                    BuddhaAiInfoCard()
+                    SettingsDivider(isDark)
 
                     // Journal Insights
                     SettingsRowWithToggle(
                         icon = Icons.Filled.AutoAwesome,
                         title = "Journal Insights",
+                        subtitle = "Emotion and theme analysis after journaling",
                         checked = uiState.buddhaJournalInsightsEnabled,
                         onCheckedChange = { viewModel.setBuddhaJournalInsightsEnabled(it) },
+                        enabled = uiState.buddhaAiEnabled,
+                        isDark = isDark,
+                        useAccentIcon = true
+                    )
+
+                    SettingsDivider(isDark)
+
+                    // Weekly Patterns
+                    SettingsRowWithToggle(
+                        icon = Icons.Filled.TrendingUp,
+                        title = "Weekly Patterns",
+                        subtitle = "Track mood trends and themes",
+                        checked = uiState.buddhaPatternTrackingEnabled,
+                        onCheckedChange = { viewModel.setBuddhaPatternTrackingEnabled(it) },
                         enabled = uiState.buddhaAiEnabled,
                         isDark = isDark,
                         useAccentIcon = true
@@ -374,12 +317,23 @@ fun SettingsScreen(
                 }
             }
 
+            // PRIVACY & DATA Section
+            AnimatedVisibility(
+                visible = isVisible,
+                enter = fadeIn(tween(400, delayMillis = 350)) + slideInVertically(
+                    initialOffsetY = { it / 4 },
+                    animationSpec = tween(400, delayMillis = 350, easing = EaseOutCubic)
+                )
+            ) {
+                PrivacyDataPolicySection()
+            }
+
             // SYSTEM INFO Section (Enhanced "Cooler" About Section)
             AnimatedVisibility(
                 visible = isVisible,
-                enter = fadeIn(tween(400, delayMillis = 400)) + slideInVertically(
+                enter = fadeIn(tween(400, delayMillis = 450)) + slideInVertically(
                     initialOffsetY = { it / 4 },
-                    animationSpec = tween(400, delayMillis = 400, easing = EaseOutCubic)
+                    animationSpec = tween(400, delayMillis = 450, easing = EaseOutCubic)
                 )
             ) {
                 SettingsSection(
@@ -393,9 +347,9 @@ fun SettingsScreen(
             // FEEDBACK Section
             AnimatedVisibility(
                 visible = isVisible,
-                enter = fadeIn(tween(400, delayMillis = 500)) + slideInVertically(
+                enter = fadeIn(tween(400, delayMillis = 550)) + slideInVertically(
                     initialOffsetY = { it / 4 },
-                    animationSpec = tween(400, delayMillis = 500, easing = EaseOutCubic)
+                    animationSpec = tween(400, delayMillis = 550, easing = EaseOutCubic)
                 )
             ) {
                 SettingsSection(
@@ -409,9 +363,9 @@ fun SettingsScreen(
             // PRODY ID Footer
             AnimatedVisibility(
                 visible = isVisible,
-                enter = fadeIn(tween(400, delayMillis = 600)) + slideInVertically(
+                enter = fadeIn(tween(400, delayMillis = 650)) + slideInVertically(
                     initialOffsetY = { it / 4 },
-                    animationSpec = tween(400, delayMillis = 600, easing = EaseOutCubic)
+                    animationSpec = tween(400, delayMillis = 650, easing = EaseOutCubic)
                 )
             ) {
                 ProdyIdFooter(isDark = isDark)
