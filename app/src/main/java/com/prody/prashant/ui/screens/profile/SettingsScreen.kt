@@ -2,13 +2,12 @@ package com.prody.prashant.ui.screens.profile
 
 import android.content.Intent
 import android.net.Uri
-import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -16,16 +15,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -36,7 +32,6 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -44,12 +39,48 @@ import com.prody.prashant.util.AccessibilityUtils
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.BuildConfig
 import com.prody.prashant.R
-import com.prody.prashant.ui.components.ProdyCard
-import com.prody.prashant.ui.theme.*
+import com.prody.prashant.ui.theme.isDarkTheme
 import kotlinx.coroutines.delay
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+
+// =============================================================================
+// COLOR DEFINITIONS - Exact colors from design specs
+// =============================================================================
+
+// Light Mode Colors
+private val LightBackground = Color(0xFFF9FAFB)
+private val LightCardBackground = Color(0xFFFFFFFF)
+private val LightSectionHeader = Color(0xFF6C757D)
+private val LightIconBackground = Color(0xFFE0E7E6)
+private val LightIconColor = Color(0xFF212529)
+private val LightPrimaryText = Color(0xFF212529)
+private val LightSecondaryText = Color(0xFFADB5BD)
+private val LightToggleActive = Color(0xFF36F97F)
+private val LightToggleInactive = Color(0xFFDEE2E6)
+private val LightDropdownBackground = Color(0xFFE0E7E6)
+private val LightOnlineGreen = Color(0xFF36F97F)
+private val LightFollowButtonBg = Color(0xFFE0E7E6)
+private val LightFeedbackCardBg = Color(0xFFFFF8F0)
+private val LightFeedbackIconBg = Color(0xFFFFD8A3)
+private val LightFeedbackIconColor = Color(0xFFFA8800)
+private val LightProdyIdText = Color(0xFFDEE2E6)
+
+// Dark Mode Colors
+private val DarkBackground = Color(0xFF0D2826)
+private val DarkCardBackground = Color(0xFF1A3331)
+private val DarkSectionHeader = Color(0xFFFFFFFF)
+private val DarkIconBackground = Color(0xFF2A4240)
+private val DarkIconColor = Color(0xFFFFFFFF)
+private val DarkPrimaryText = Color(0xFFFFFFFF)
+private val DarkSecondaryText = Color(0xFFD3D8D7)
+private val DarkToggleActive = Color(0xFF36F97F)
+private val DarkToggleInactive = Color(0xFF404B4A)
+private val DarkDropdownBackground = Color(0xFF2A4240)
+private val DarkOnlineGreen = Color(0xFF36F97F)
+private val DarkFollowButtonBg = Color(0xFF2A4240)
+private val DarkFeedbackCardBg = Color(0xFF3F2B1A)
+private val DarkFeedbackIconBg = Color(0xFF5A3B27)
+private val DarkFeedbackIconColor = Color(0xFFFFD8A3)
+private val DarkProdyIdText = Color(0xFF404B4A)
 
 @Composable
 fun SettingsScreen(
@@ -57,6 +88,7 @@ fun SettingsScreen(
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val isDark = isDarkTheme()
 
     // Entry animations
     var isVisible by remember { mutableStateOf(false) }
@@ -65,18 +97,25 @@ fun SettingsScreen(
         isVisible = true
     }
 
+    val backgroundColor = if (isDark) DarkBackground else LightBackground
+
     Scaffold(
         topBar = {
-            SettingsTopAppBar(onNavigateBack = onNavigateBack)
-        }
+            SettingsTopBar(
+                onNavigateBack = onNavigateBack,
+                isDark = isDark
+            )
+        },
+        containerColor = backgroundColor
     ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
                 .verticalScroll(rememberScrollState())
+                .background(backgroundColor)
         ) {
-            // Appearance section
+            // APPEARANCE Section
             AnimatedVisibility(
                 visible = isVisible,
                 enter = fadeIn(tween(400)) + slideInVertically(
@@ -84,47 +123,33 @@ fun SettingsScreen(
                     animationSpec = tween(400, easing = EaseOutCubic)
                 )
             ) {
-                EnhancedSettingsSection(
-                    title = "Appearance",
-                    icon = Icons.Filled.Palette
+                SettingsSection(
+                    title = "APPEARANCE",
+                    isDark = isDark
                 ) {
-                    SettingsItem(
+                    // App Theme Row
+                    SettingsRowWithDropdown(
                         icon = Icons.Filled.DarkMode,
-                        title = stringResource(R.string.theme),
-                        subtitle = "Choose your preferred theme",
-                        iconBackground = MoodCalm.copy(alpha = 0.15f),
-                        iconTint = MoodCalm
-                    ) {
-                        var expanded by remember { mutableStateOf(false) }
-                        ThemeSelector(
-                            currentTheme = uiState.themeMode,
-                            expanded = expanded,
-                            onExpandChange = { expanded = it },
-                            onThemeSelected = {
-                                viewModel.setThemeMode(it)
-                                expanded = false
-                            }
-                        )
-                    }
-
-                    HorizontalDivider(
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                        title = "App Theme",
+                        currentValue = uiState.themeMode.replaceFirstChar { it.uppercase() },
+                        isDark = isDark,
+                        onValueChange = { viewModel.setThemeMode(it) }
                     )
 
-                    EnhancedSettingsToggle(
-                        icon = Icons.Filled.AutoAwesome,
+                    SettingsDivider(isDark)
+
+                    // Dynamic Colors Row
+                    SettingsRowWithToggle(
+                        icon = Icons.Filled.Palette,
                         title = "Dynamic Colors",
-                        subtitle = "Use Material You colors (Android 12+)",
                         checked = uiState.dynamicColors,
                         onCheckedChange = { viewModel.setDynamicColors(it) },
-                        iconBackground = MoodExcited.copy(alpha = 0.15f),
-                        iconTint = MoodExcited
+                        isDark = isDark
                     )
                 }
             }
 
-            // Notifications section
+            // NOTIFICATIONS Section
             AnimatedVisibility(
                 visible = isVisible,
                 enter = fadeIn(tween(400, delayMillis = 100)) + slideInVertically(
@@ -132,55 +157,48 @@ fun SettingsScreen(
                     animationSpec = tween(400, delayMillis = 100, easing = EaseOutCubic)
                 )
             ) {
-                EnhancedSettingsSection(
-                    title = stringResource(R.string.notifications),
-                    icon = Icons.Filled.Notifications
+                SettingsSection(
+                    title = "NOTIFICATIONS",
+                    isDark = isDark
                 ) {
-                    EnhancedSettingsToggle(
-                        icon = Icons.Filled.NotificationsActive,
-                        title = "All Notifications",
-                        subtitle = "Enable or disable all notifications",
+                    // Push Notifications
+                    SettingsRowWithToggle(
+                        icon = Icons.Filled.Notifications,
+                        title = "Push Notifications",
                         checked = uiState.notificationsEnabled,
                         onCheckedChange = { viewModel.setNotificationsEnabled(it) },
-                        iconBackground = MoodMotivated.copy(alpha = 0.15f),
-                        iconTint = MoodMotivated
+                        isDark = isDark
                     )
 
-                    HorizontalDivider(
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                    )
+                    SettingsDivider(isDark)
 
-                    EnhancedSettingsToggle(
+                    // Daily Wisdom
+                    SettingsRowWithToggle(
                         icon = Icons.Filled.Lightbulb,
                         title = "Daily Wisdom",
-                        subtitle = "Get daily vocabulary and quotes",
+                        subtitle = "Morning quotes, inspiration",
                         checked = uiState.wisdomNotificationsEnabled,
                         onCheckedChange = { viewModel.setWisdomNotifications(it) },
                         enabled = uiState.notificationsEnabled,
-                        iconBackground = GoldTier.copy(alpha = 0.15f),
-                        iconTint = GoldTier
+                        isDark = isDark
                     )
 
-                    HorizontalDivider(
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                    )
+                    SettingsDivider(isDark)
 
-                    EnhancedSettingsToggle(
-                        icon = Icons.Filled.Book,
+                    // Journal Reminders
+                    SettingsRowWithToggle(
+                        icon = Icons.Filled.Edit,
                         title = "Journal Reminders",
-                        subtitle = "Gentle reminders to reflect",
+                        subtitle = "Evening reflection",
                         checked = uiState.journalRemindersEnabled,
                         onCheckedChange = { viewModel.setJournalReminders(it) },
                         enabled = uiState.notificationsEnabled,
-                        iconBackground = MoodCalm.copy(alpha = 0.15f),
-                        iconTint = MoodCalm
+                        isDark = isDark
                     )
                 }
             }
 
-            // Preferences section
+            // PREFERENCES Section
             AnimatedVisibility(
                 visible = isVisible,
                 enter = fadeIn(tween(400, delayMillis = 200)) + slideInVertically(
@@ -188,208 +206,84 @@ fun SettingsScreen(
                     animationSpec = tween(400, delayMillis = 200, easing = EaseOutCubic)
                 )
             ) {
-                EnhancedSettingsSection(
-                    title = "Preferences",
-                    icon = Icons.Filled.Tune
+                SettingsSection(
+                    title = "PREFERENCES",
+                    isDark = isDark
                 ) {
-                    EnhancedSettingsToggle(
+                    // Haptics
+                    SettingsRowWithToggle(
                         icon = Icons.Filled.Vibration,
-                        title = "Haptic Feedback",
-                        subtitle = "Vibration feedback for actions",
+                        title = "Haptics",
                         checked = uiState.hapticFeedbackEnabled,
                         onCheckedChange = { viewModel.setHapticFeedback(it) },
-                        iconBackground = MoodGrateful.copy(alpha = 0.15f),
-                        iconTint = MoodGrateful
+                        isDark = isDark
                     )
 
-                    HorizontalDivider(
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                    )
+                    SettingsDivider(isDark)
 
-                    EnhancedSettingsToggle(
-                        icon = Icons.Filled.ViewCompact,
+                    // Compact View
+                    SettingsRowWithToggle(
+                        icon = Icons.Filled.GridView,
                         title = "Compact View",
-                        subtitle = "Smaller cards for more content",
                         checked = uiState.compactView,
                         onCheckedChange = { viewModel.setCompactView(it) },
-                        iconBackground = MoodConfused.copy(alpha = 0.15f),
-                        iconTint = MoodConfused
+                        isDark = isDark
                     )
                 }
             }
 
-            // Data Management section
+            // BUDDHA AI Section
             AnimatedVisibility(
                 visible = isVisible,
-                enter = fadeIn(tween(400, delayMillis = 250)) + slideInVertically(
+                enter = fadeIn(tween(400, delayMillis = 300)) + slideInVertically(
                     initialOffsetY = { it / 4 },
-                    animationSpec = tween(400, delayMillis = 250, easing = EaseOutCubic)
+                    animationSpec = tween(400, delayMillis = 300, easing = EaseOutCubic)
                 )
             ) {
-                DataManagementSection(
-                    isExporting = uiState.isExporting,
-                    isImporting = uiState.isImporting,
-                    exportSuccess = uiState.exportSuccess,
-                    importSuccess = uiState.importSuccess,
-                    dataError = uiState.dataError,
-                    showClearDataDialog = uiState.showClearDataDialog,
-                    isClearingData = uiState.isClearingData,
-                    onExportClick = { viewModel.setExporting(true) },
-                    onExportComplete = { success -> viewModel.setExportSuccess(success) },
-                    onImportClick = { viewModel.setImporting(true) },
-                    onImportComplete = { success -> viewModel.setImportSuccess(success) },
-                    onClearDataClick = { viewModel.showClearDataDialog() },
-                    onClearDataConfirm = { viewModel.clearAllData {} },
-                    onClearDataDismiss = { viewModel.hideClearDataDialog() },
-                    onClearError = { viewModel.clearDataError() },
-                    onClearExportSuccess = { viewModel.clearExportSuccess() },
-                    onClearImportSuccess = { viewModel.clearImportSuccess() }
-                )
-            }
-
-            // Buddha AI section (expanded with per-feature toggles)
-            AnimatedVisibility(
-                visible = isVisible,
-                enter = fadeIn(tween(400, delayMillis = 350)) + slideInVertically(
-                    initialOffsetY = { it / 4 },
-                    animationSpec = tween(400, delayMillis = 350, easing = EaseOutCubic)
-                )
-            ) {
-                EnhancedSettingsSection(
-                    title = "Buddha AI",
-                    icon = Icons.Filled.SelfImprovement
+                SettingsSection(
+                    title = "BUDDHA AI",
+                    isDark = isDark,
+                    showLeafIcon = true
                 ) {
-                    // Master toggle
-                    EnhancedSettingsToggle(
+                    // Enable AI
+                    SettingsRowWithToggle(
                         icon = Icons.Filled.Psychology,
-                        title = "Enable Buddha AI",
-                        subtitle = "AI-powered stoic wisdom across the app",
+                        title = "Enable AI",
                         checked = uiState.buddhaAiEnabled,
                         onCheckedChange = { viewModel.setBuddhaAiEnabled(it) },
-                        iconBackground = ProdyPrimary.copy(alpha = 0.15f),
-                        iconTint = ProdyPrimary
+                        isDark = isDark,
+                        useAccentIcon = true
                     )
 
-                    HorizontalDivider(
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                    SettingsDivider(isDark)
+
+                    // Quote Insights
+                    SettingsRowWithToggle(
+                        icon = Icons.Filled.FormatQuote,
+                        title = "Quote Insights",
+                        checked = uiState.buddhaQuoteExplanationEnabled,
+                        onCheckedChange = { viewModel.setBuddhaQuoteExplanationEnabled(it) },
+                        enabled = uiState.buddhaAiEnabled,
+                        isDark = isDark,
+                        useAccentIcon = true
                     )
 
-                    // Per-feature toggles (only when master is enabled)
-                    AnimatedVisibility(visible = uiState.buddhaAiEnabled) {
-                        Column {
-                            EnhancedSettingsToggle(
-                                icon = Icons.Filled.WbSunny,
-                                title = "Daily Wisdom",
-                                subtitle = "AI-generated wisdom on home screen",
-                                checked = uiState.buddhaDailyWisdomEnabled,
-                                onCheckedChange = { viewModel.setBuddhaDailyWisdomEnabled(it) },
-                                iconBackground = GoldTier.copy(alpha = 0.15f),
-                                iconTint = GoldTier
-                            )
+                    SettingsDivider(isDark)
 
-                            HorizontalDivider(
-                                modifier = Modifier.padding(horizontal = 16.dp),
-                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
-                            )
-
-                            EnhancedSettingsToggle(
-                                icon = Icons.Filled.FormatQuote,
-                                title = "Quote Insights",
-                                subtitle = "Meaning and daily action for quotes",
-                                checked = uiState.buddhaQuoteExplanationEnabled,
-                                onCheckedChange = { viewModel.setBuddhaQuoteExplanationEnabled(it) },
-                                iconBackground = MoodCalm.copy(alpha = 0.15f),
-                                iconTint = MoodCalm
-                            )
-
-                            HorizontalDivider(
-                                modifier = Modifier.padding(horizontal = 16.dp),
-                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
-                            )
-
-                            EnhancedSettingsToggle(
-                                icon = Icons.Filled.Edit,
-                                title = "Journal Insights",
-                                subtitle = "Emotion and theme analysis after journaling",
-                                checked = uiState.buddhaJournalInsightsEnabled,
-                                onCheckedChange = { viewModel.setBuddhaJournalInsightsEnabled(it) },
-                                iconBackground = MoodGrateful.copy(alpha = 0.15f),
-                                iconTint = MoodGrateful
-                            )
-
-                            HorizontalDivider(
-                                modifier = Modifier.padding(horizontal = 16.dp),
-                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
-                            )
-
-                            EnhancedSettingsToggle(
-                                icon = Icons.Filled.TrendingUp,
-                                title = "Weekly Patterns",
-                                subtitle = "Track mood trends and themes",
-                                checked = uiState.buddhaPatternTrackingEnabled,
-                                onCheckedChange = { viewModel.setBuddhaPatternTrackingEnabled(it) },
-                                iconBackground = MoodMotivated.copy(alpha = 0.15f),
-                                iconTint = MoodMotivated
-                            )
-
-                            HorizontalDivider(
-                                modifier = Modifier.padding(horizontal = 16.dp),
-                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
-                            )
-
-                            EnhancedSettingsToggle(
-                                icon = Icons.Filled.Spellcheck,
-                                title = "Vocabulary Help",
-                                subtitle = "Example sentences and memory hooks",
-                                checked = uiState.buddhaVocabularyContextEnabled,
-                                onCheckedChange = { viewModel.setBuddhaVocabularyContextEnabled(it) },
-                                iconBackground = MoodExcited.copy(alpha = 0.15f),
-                                iconTint = MoodExcited
-                            )
-
-                            HorizontalDivider(
-                                modifier = Modifier.padding(horizontal = 16.dp),
-                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
-                            )
-
-                            EnhancedSettingsToggle(
-                                icon = Icons.Filled.EmojiEmotions,
-                                title = "Playful Buddha",
-                                subtitle = "Occasional lighthearted responses",
-                                checked = uiState.buddhaPlayfulMode,
-                                onCheckedChange = { viewModel.setBuddhaPlayfulMode(it) },
-                                iconBackground = MoodJoyful.copy(alpha = 0.15f),
-                                iconTint = MoodJoyful
-                            )
-
-                            HorizontalDivider(
-                                modifier = Modifier.padding(horizontal = 16.dp),
-                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
-                            )
-
-                            EnhancedSettingsToggle(
-                                icon = Icons.Filled.BatteryChargingFull,
-                                title = "Reduce AI Usage",
-                                subtitle = "Prefer cached responses to save data",
-                                checked = uiState.buddhaReduceAiUsage,
-                                onCheckedChange = { viewModel.setBuddhaReduceAiUsage(it) },
-                                iconBackground = MoodAnxious.copy(alpha = 0.15f),
-                                iconTint = MoodAnxious
-                            )
-                        }
-                    }
-
-                    // Info card about Buddha AI
-                    BuddhaAiInfoCard()
-
-                    // Privacy note
-                    BuddhaPrivacyNote()
+                    // Journal Insights
+                    SettingsRowWithToggle(
+                        icon = Icons.Filled.AutoAwesome,
+                        title = "Journal Insights",
+                        checked = uiState.buddhaJournalInsightsEnabled,
+                        onCheckedChange = { viewModel.setBuddhaJournalInsightsEnabled(it) },
+                        enabled = uiState.buddhaAiEnabled,
+                        isDark = isDark,
+                        useAccentIcon = true
+                    )
                 }
             }
 
-            // Privacy & Data Policy section
+            // SYSTEM INFO Section (Enhanced "Cooler" About Section)
             AnimatedVisibility(
                 visible = isVisible,
                 enter = fadeIn(tween(400, delayMillis = 400)) + slideInVertically(
@@ -397,45 +291,39 @@ fun SettingsScreen(
                     animationSpec = tween(400, delayMillis = 400, easing = EaseOutCubic)
                 )
             ) {
-                PrivacyDataPolicySection()
-            }
-
-            // About section
-            AnimatedVisibility(
-                visible = isVisible,
-                enter = fadeIn(tween(400, delayMillis = 450)) + slideInVertically(
-                    initialOffsetY = { it / 4 },
-                    animationSpec = tween(400, delayMillis = 450, easing = EaseOutCubic)
-                )
-            ) {
-                EnhancedSettingsSection(
-                    title = stringResource(R.string.about),
-                    icon = Icons.Filled.Info
+                SettingsSection(
+                    title = "SYSTEM INFO",
+                    isDark = isDark
                 ) {
-                    AboutAppCard()
+                    EnhancedSystemInfoCard(isDark = isDark)
                 }
             }
 
-            // Send Feedback section
+            // FEEDBACK Section
             AnimatedVisibility(
                 visible = isVisible,
-                enter = fadeIn(tween(400, delayMillis = 550)) + slideInVertically(
+                enter = fadeIn(tween(400, delayMillis = 500)) + slideInVertically(
                     initialOffsetY = { it / 4 },
-                    animationSpec = tween(400, delayMillis = 550, easing = EaseOutCubic)
+                    animationSpec = tween(400, delayMillis = 500, easing = EaseOutCubic)
                 )
             ) {
-                SendFeedbackSection()
+                SettingsSection(
+                    title = "FEEDBACK",
+                    isDark = isDark
+                ) {
+                    FeedbackCard(isDark = isDark)
+                }
             }
 
-            // Developer section - About Me (at the bottom, expandable)
+            // PRODY ID Footer
             AnimatedVisibility(
                 visible = isVisible,
-                enter = fadeIn(tween(400, delayMillis = 650)) + slideInVertically(
+                enter = fadeIn(tween(400, delayMillis = 600)) + slideInVertically(
                     initialOffsetY = { it / 4 },
-                    animationSpec = tween(400, delayMillis = 650, easing = EaseOutCubic)
+                    animationSpec = tween(400, delayMillis = 600, easing = EaseOutCubic)
                 )
             ) {
-                DeveloperAboutMeSection()
+                ProdyIdFooter(isDark = isDark)
             }
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -443,87 +331,275 @@ fun SettingsScreen(
     }
 }
 
+// =============================================================================
+// TOP APP BAR
+// =============================================================================
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun SettingsTopAppBar(onNavigateBack: () -> Unit) {
+private fun SettingsTopBar(
+    onNavigateBack: () -> Unit,
+    isDark: Boolean
+) {
+    val backgroundColor = if (isDark) DarkBackground else LightBackground
+    val textColor = if (isDark) DarkPrimaryText else LightPrimaryText
+
     TopAppBar(
         title = {
-            Text(
-                text = stringResource(R.string.settings),
-                fontWeight = FontWeight.SemiBold
-            )
-        },
-        navigationIcon = {
-            IconButton(onClick = onNavigateBack) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = stringResource(R.string.back)
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = stringResource(R.string.settings),
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = textColor
                 )
             }
         },
+        navigationIcon = {
+            IconButton(
+                onClick = onNavigateBack,
+                modifier = Modifier.size(48.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = stringResource(R.string.back),
+                    tint = textColor,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+        },
+        actions = {
+            // Spacer to balance the back button
+            Spacer(modifier = Modifier.size(48.dp))
+        },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.background
+            containerColor = backgroundColor
         )
     )
 }
 
+// =============================================================================
+// SETTINGS SECTION
+// =============================================================================
+
 @Composable
-private fun EnhancedSettingsSection(
+private fun SettingsSection(
     title: String,
-    icon: ImageVector,
+    isDark: Boolean,
+    showLeafIcon: Boolean = false,
     content: @Composable ColumnScope.() -> Unit
 ) {
+    val sectionHeaderColor = if (isDark) DarkSectionHeader else LightSectionHeader
+    val cardBackground = if (isDark) DarkCardBackground else LightCardBackground
+
     Column(
         modifier = Modifier.padding(vertical = 8.dp)
     ) {
+        // Section Header
         Row(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(20.dp)
-            )
+            if (showLeafIcon) {
+                Icon(
+                    imageVector = Icons.Filled.Eco,
+                    contentDescription = null,
+                    tint = LightOnlineGreen,
+                    modifier = Modifier.size(14.dp)
+                )
+            }
             Text(
                 text = title,
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.primary,
-                fontWeight = FontWeight.SemiBold
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.Normal,
+                color = sectionHeaderColor,
+                letterSpacing = 1.sp
             )
         }
 
-        ProdyCard(
+        // Card Container
+        Surface(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = 16.dp),
+            shape = RoundedCornerShape(16.dp),
+            color = cardBackground
         ) {
             Column(
-                modifier = Modifier.padding(vertical = 8.dp),
+                modifier = Modifier.padding(vertical = 4.dp),
                 content = content
             )
         }
     }
 }
 
+// =============================================================================
+// SETTINGS ROW WITH TOGGLE
+// =============================================================================
+
 @Composable
-private fun SettingsItem(
+private fun SettingsRowWithToggle(
     icon: ImageVector,
     title: String,
-    subtitle: String,
-    iconBackground: Color = MaterialTheme.colorScheme.primaryContainer,
-    iconTint: Color = MaterialTheme.colorScheme.primary,
-    trailing: @Composable () -> Unit
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    isDark: Boolean,
+    subtitle: String? = null,
+    enabled: Boolean = true,
+    useAccentIcon: Boolean = false
 ) {
+    val iconBackground = if (isDark) DarkIconBackground else LightIconBackground
+    val iconColor = when {
+        useAccentIcon -> LightOnlineGreen
+        isDark -> DarkIconColor
+        else -> LightIconColor
+    }
+    val primaryText = if (isDark) DarkPrimaryText else LightPrimaryText
+    val secondaryText = if (isDark) DarkSecondaryText else LightSecondaryText
+    val toggleActiveColor = if (isDark) DarkToggleActive else LightToggleActive
+    val toggleInactiveColor = if (isDark) DarkToggleInactive else LightToggleInactive
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(
+                enabled = enabled,
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null
+            ) { onCheckedChange(!checked) }
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // Icon with circular background
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .clip(CircleShape)
+                .background(if (enabled) iconBackground else iconBackground.copy(alpha = 0.5f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = if (enabled) iconColor else iconColor.copy(alpha = 0.5f),
+                modifier = Modifier.size(20.dp)
+            )
+        }
+
+        Spacer(modifier = Modifier.width(14.dp))
+
+        // Title and Subtitle
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Medium,
+                color = if (enabled) primaryText else primaryText.copy(alpha = 0.5f)
+            )
+            if (subtitle != null) {
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = secondaryText
+                )
+            }
+        }
+
+        // Custom Toggle Switch (no tick marks, pill-shaped)
+        CustomToggleSwitch(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            enabled = enabled,
+            activeTrackColor = toggleActiveColor,
+            inactiveTrackColor = toggleInactiveColor,
+            isDark = isDark
+        )
+    }
+}
+
+// =============================================================================
+// CUSTOM TOGGLE SWITCH (No tick marks, pill-shaped)
+// =============================================================================
+
+@Composable
+private fun CustomToggleSwitch(
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    enabled: Boolean,
+    activeTrackColor: Color,
+    inactiveTrackColor: Color,
+    isDark: Boolean
+) {
+    val thumbOffset by animateDpAsState(
+        targetValue = if (checked) 20.dp else 0.dp,
+        animationSpec = tween(200, easing = EaseOutCubic),
+        label = "thumbOffset"
+    )
+
+    val trackColor by animateColorAsState(
+        targetValue = if (checked) activeTrackColor else inactiveTrackColor,
+        animationSpec = tween(200),
+        label = "trackColor"
+    )
+
+    val thumbBorderColor = if (isDark) Color(0xFF404B4A) else Color(0xFF6C757D)
+
+    Box(
+        modifier = Modifier
+            .width(52.dp)
+            .height(32.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .background(if (enabled) trackColor else trackColor.copy(alpha = 0.5f))
+            .clickable(
+                enabled = enabled,
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null
+            ) { onCheckedChange(!checked) },
+        contentAlignment = Alignment.CenterStart
+    ) {
+        // Thumb (white knob with thin dark border)
+        Box(
+            modifier = Modifier
+                .padding(start = 4.dp)
+                .offset(x = thumbOffset)
+                .size(24.dp)
+                .clip(CircleShape)
+                .background(Color.White)
+                .border(1.dp, thumbBorderColor.copy(alpha = 0.3f), CircleShape)
+        )
+    }
+}
+
+// =============================================================================
+// SETTINGS ROW WITH DROPDOWN
+// =============================================================================
+
+@Composable
+private fun SettingsRowWithDropdown(
+    icon: ImageVector,
+    title: String,
+    currentValue: String,
+    isDark: Boolean,
+    onValueChange: (String) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    val iconBackground = if (isDark) DarkIconBackground else LightIconBackground
+    val iconColor = if (isDark) DarkIconColor else LightIconColor
+    val primaryText = if (isDark) DarkPrimaryText else LightPrimaryText
+    val dropdownBg = if (isDark) DarkDropdownBackground else LightDropdownBackground
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Icon with background
+        // Icon with circular background
         Box(
             modifier = Modifier
                 .size(40.dp)
@@ -534,1027 +610,535 @@ private fun SettingsItem(
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = iconTint,
+                tint = iconColor,
                 modifier = Modifier.size(20.dp)
             )
         }
 
         Spacer(modifier = Modifier.width(14.dp))
 
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Medium
-            )
-            Text(
-                text = subtitle,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-
-        trailing()
-    }
-}
-
-@Composable
-private fun EnhancedSettingsToggle(
-    icon: ImageVector,
-    title: String,
-    subtitle: String,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
-    enabled: Boolean = true,
-    iconBackground: Color = MaterialTheme.colorScheme.primaryContainer,
-    iconTint: Color = MaterialTheme.colorScheme.primary
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(enabled = enabled) { onCheckedChange(!checked) }
-            .padding(horizontal = 16.dp, vertical = 14.dp)
-            .semantics(mergeDescendants = true) {
-                contentDescription = "$title. $subtitle"
-                stateDescription = AccessibilityUtils.toggleStateDescription(checked, title)
-                role = Role.Switch
-            },
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        // Icon with background
-        Box(
-            modifier = Modifier
-                .size(40.dp)
-                .clip(CircleShape)
-                .background(
-                    if (enabled) iconBackground
-                    else MaterialTheme.colorScheme.surfaceVariant
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = if (enabled) iconTint else MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(20.dp)
-            )
-        }
-
-        Spacer(modifier = Modifier.width(14.dp))
-
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Medium,
-                color = if (enabled) MaterialTheme.colorScheme.onSurface
-                else MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Text(
-                text = subtitle,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-
-        Switch(
-            checked = checked,
-            onCheckedChange = onCheckedChange,
-            enabled = enabled,
-            colors = SwitchDefaults.colors(
-                checkedThumbColor = MaterialTheme.colorScheme.primary,
-                checkedTrackColor = MaterialTheme.colorScheme.primaryContainer
-            )
+        // Title
+        Text(
+            text = title,
+            style = MaterialTheme.typography.bodyLarge,
+            fontWeight = FontWeight.Medium,
+            color = primaryText,
+            modifier = Modifier.weight(1f)
         )
-    }
-}
 
-@Composable
-private fun ThemeSelector(
-    currentTheme: String,
-    expanded: Boolean,
-    onExpandChange: (Boolean) -> Unit,
-    onThemeSelected: (String) -> Unit
-) {
-    Box {
-        Surface(
-            modifier = Modifier.clickable { onExpandChange(true) },
-            shape = RoundedCornerShape(8.dp),
-            color = MaterialTheme.colorScheme.primaryContainer
-        ) {
-            Row(
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
+        // Dropdown
+        Box {
+            Surface(
+                modifier = Modifier.clickable { expanded = true },
+                shape = RoundedCornerShape(8.dp),
+                color = dropdownBg
             ) {
-                Text(
-                    text = currentTheme.replaceFirstChar { it.uppercase() },
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Medium
-                )
-                Icon(
-                    imageVector = Icons.Filled.ArrowDropDown,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(18.dp)
-                )
-            }
-        }
-
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { onExpandChange(false) }
-        ) {
-            listOf(
-                "system" to Icons.Filled.BrightnessAuto,
-                "light" to Icons.Filled.LightMode,
-                "dark" to Icons.Filled.DarkMode
-            ).forEach { (theme, icon) ->
-                DropdownMenuItem(
-                    text = {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Icon(
-                                imageVector = icon,
-                                contentDescription = null,
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Text(
-                                text = theme.replaceFirstChar { it.uppercase() },
-                                fontWeight = if (theme == currentTheme) FontWeight.SemiBold else FontWeight.Normal
-                            )
-                        }
-                    },
-                    onClick = { onThemeSelected(theme) },
-                    trailingIcon = if (theme == currentTheme) {
-                        {
-                            Icon(
-                                imageVector = Icons.Filled.Check,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(18.dp)
-                            )
-                        }
-                    } else null
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun BuddhaAiInfoCard() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(
-                Brush.horizontalGradient(
-                    colors = listOf(
-                        ProdyPrimary.copy(alpha = 0.08f),
-                        ProdyTertiary.copy(alpha = 0.08f)
+                Row(
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Text(
+                        text = currentValue,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = primaryText
                     )
-                )
-            )
-            .padding(16.dp)
-    ) {
-        Row(
-            verticalAlignment = Alignment.Top,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Outlined.Info,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(20.dp)
-            )
-            Column {
-                Text(
-                    text = "About Buddha AI",
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "Buddha provides thoughtful, stoic-inspired reflections on your journal entries. " +
-                            "Drawing from ancient wisdom and modern psychology, it offers personalized guidance " +
-                            "for your self-improvement journey.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                    Icon(
+                        imageVector = Icons.Filled.ArrowDropDown,
+                        contentDescription = null,
+                        tint = primaryText,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+            }
+
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                listOf("System", "Light", "Dark").forEach { option ->
+                    DropdownMenuItem(
+                        text = {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Icon(
+                                    imageVector = when (option) {
+                                        "System" -> Icons.Filled.BrightnessAuto
+                                        "Light" -> Icons.Filled.LightMode
+                                        else -> Icons.Filled.DarkMode
+                                    },
+                                    contentDescription = null,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Text(
+                                    text = option,
+                                    fontWeight = if (option.lowercase() == currentValue.lowercase())
+                                        FontWeight.SemiBold else FontWeight.Normal
+                                )
+                            }
+                        },
+                        onClick = {
+                            onValueChange(option.lowercase())
+                            expanded = false
+                        },
+                        trailingIcon = if (option.lowercase() == currentValue.lowercase()) {
+                            {
+                                Icon(
+                                    imageVector = Icons.Filled.Check,
+                                    contentDescription = null,
+                                    tint = LightOnlineGreen,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                        } else null
+                    )
+                }
             }
         }
     }
 }
 
+// =============================================================================
+// SETTINGS DIVIDER
+// =============================================================================
+
 @Composable
-private fun BuddhaPrivacyNote() {
-    Box(
+private fun SettingsDivider(isDark: Boolean) {
+    val dividerColor = if (isDark) DarkIconBackground.copy(alpha = 0.5f)
+                       else LightIconBackground.copy(alpha = 0.5f)
+    HorizontalDivider(
+        modifier = Modifier.padding(horizontal = 16.dp),
+        color = dividerColor
+    )
+}
+
+// =============================================================================
+// ENHANCED SYSTEM INFO CARD (Cooler About Section)
+// =============================================================================
+
+@Composable
+private fun EnhancedSystemInfoCard(isDark: Boolean) {
+    val context = LocalContext.current
+    val primaryText = if (isDark) DarkPrimaryText else LightPrimaryText
+    val secondaryText = if (isDark) DarkSecondaryText else LightSecondaryText
+    val onlineColor = if (isDark) DarkOnlineGreen else LightOnlineGreen
+    val iconBackground = if (isDark) DarkIconBackground else LightIconBackground
+    val followButtonBg = if (isDark) DarkFollowButtonBg else LightFollowButtonBg
+
+    // Subtle pulsing animation for the status dot
+    val infiniteTransition = rememberInfiniteTransition(label = "pulse")
+    val pulseAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.6f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000, easing = EaseInOut),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "pulseAlpha"
+    )
+
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-            .clip(RoundedCornerShape(8.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-            .padding(12.dp)
+            .padding(16.dp)
     ) {
-        Row(
-            verticalAlignment = Alignment.Top,
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Outlined.Shield,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(16.dp)
-            )
-            Column {
-                Text(
-                    text = "Privacy",
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = "Your journal content is processed securely for AI features. " +
-                            "Responses are cached locally to reduce data usage. " +
-                            "No data is stored on external servers beyond what's needed to generate responses.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun AboutAppCard() {
-    Column(
-        modifier = Modifier.padding(16.dp)
-    ) {
-        // App info row
+        // Top Row: Status and Meditation Icon
         Row(
             modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.Top
         ) {
-            // App icon placeholder
+            Column {
+                // ONLINE Status with pulsing dot
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(8.dp)
+                            .clip(CircleShape)
+                            .background(onlineColor.copy(alpha = pulseAlpha))
+                    )
+                    Text(
+                        text = "ONLINE",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Normal,
+                        color = primaryText,
+                        letterSpacing = 1.sp
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Prody Logo Text
+                Text(
+                    text = "Prody.",
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = primaryText
+                )
+
+                // Tagline
+                Text(
+                    text = "Growth Companion OS",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = secondaryText
+                )
+            }
+
+            // Meditation Icon (circular with dark background)
             Box(
                 modifier = Modifier
-                    .size(56.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(
-                        Brush.linearGradient(
-                            colors = listOf(
-                                MaterialTheme.colorScheme.primary,
-                                MaterialTheme.colorScheme.tertiary
-                            )
-                        )
-                    ),
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(if (isDark) Color(0xFF212121) else LightPrimaryText),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Filled.SelfImprovement,
                     contentDescription = null,
                     tint = Color.White,
-                    modifier = Modifier.size(32.dp)
+                    modifier = Modifier.size(28.dp)
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // Version and Build ID in a sleek row with subtle visual treatment
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(24.dp)
+        ) {
+            // Version Info
+            Column {
+                Text(
+                    text = "VERSION",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = secondaryText,
+                    letterSpacing = 0.5.sp
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = "${BuildConfig.VERSION_NAME} (RC)",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = primaryText
                 )
             }
 
-            Spacer(modifier = Modifier.width(16.dp))
+            // Build ID Info
+            Column {
+                Text(
+                    text = "BUILD ID",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = secondaryText,
+                    letterSpacing = 0.5.sp
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = BuildConfig.VERSION_CODE.toString() + "-XJ",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = primaryText
+                )
+            }
+        }
 
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // Minimalist Progress/Status visualization (Cooler element)
+        EnhancedStatusVisualization(isDark = isDark, primaryText = primaryText, secondaryText = secondaryText)
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // Developer Info Row
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Developer Avatar
+            Box(
+                modifier = Modifier
+                    .size(44.dp)
+                    .clip(CircleShape)
+                    .background(if (isDark) Color(0xFF212121) else LightPrimaryText),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "PC",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+            }
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            // Developer Name and Role
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Prody",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
+                    text = "Prashant Chataut",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = primaryText
                 )
                 Text(
-                    text = "Your Growth Companion",
+                    text = "Lead Developer",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = secondaryText
                 )
             }
 
+            // Follow Button
             Surface(
-                color = MaterialTheme.colorScheme.primaryContainer,
-                shape = RoundedCornerShape(8.dp)
-            ) {
-                Text(
-                    text = "v${BuildConfig.VERSION_NAME}",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Medium,
-                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Tagline
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(12.dp))
-                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-                .padding(16.dp)
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Favorite,
-                    contentDescription = null,
-                    tint = MoodExcited,
-                    modifier = Modifier.size(20.dp)
-                )
-                Text(
-                    text = "Made with love for your personal growth journey",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun SendFeedbackSection() {
-    val context = LocalContext.current
-
-    Column(
-        modifier = Modifier.padding(vertical = 8.dp)
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.Send,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(20.dp)
-            )
-            Text(
-                text = "Feedback",
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.primary,
-                fontWeight = FontWeight.SemiBold
-            )
-        }
-
-        ProdyCard(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-                .clickable {
-                    val intent = Intent(Intent.ACTION_SENDTO).apply {
-                        data = Uri.parse("mailto:prashantchataut@gmail.com")
-                        putExtra(Intent.EXTRA_SUBJECT, "Prody App Feedback - v${BuildConfig.VERSION_NAME}")
-                        putExtra(Intent.EXTRA_TEXT, "Hi Prashant,\n\nI wanted to share my feedback about Prody:\n\n")
-                    }
-                    context.startActivity(Intent.createChooser(intent, "Send Feedback"))
-                }
-        ) {
-            Row(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .clickable {
+                        val intent = Intent(
+                            Intent.ACTION_VIEW,
+                            Uri.parse("https://github.com/prashantchataut")
+                        )
+                        context.startActivity(intent)
+                    },
+                shape = RoundedCornerShape(8.dp),
+                color = followButtonBg
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(44.dp)
-                        .clip(CircleShape)
-                        .background(
-                            Brush.linearGradient(
-                                colors = listOf(
-                                    MoodExcited.copy(alpha = 0.2f),
-                                    MoodMotivated.copy(alpha = 0.2f)
-                                )
-                            )
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Feedback,
-                        contentDescription = null,
-                        tint = MoodExcited,
-                        modifier = Modifier.size(22.dp)
-                    )
-                }
-
-                Spacer(modifier = Modifier.width(14.dp))
-
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "Send Feedback",
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.Medium
-                    )
-                    Text(
-                        text = "Help us improve Prody with your suggestions",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-
-                Icon(
-                    imageVector = Icons.Filled.ChevronRight,
-                    contentDescription = "Open",
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(24.dp)
+                Text(
+                    text = "Follow",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = primaryText,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                 )
             }
         }
     }
 }
 
+// =============================================================================
+// ENHANCED STATUS VISUALIZATION (Cooler Element for About Section)
+// =============================================================================
+
 @Composable
-private fun DeveloperAboutMeSection() {
-    val context = LocalContext.current
-    var isExpanded by remember { mutableStateOf(false) }
-    val rotationAngle by animateFloatAsState(
-        targetValue = if (isExpanded) 180f else 0f,
-        animationSpec = tween(300, easing = EaseInOutCubic),
-        label = "rotation"
+private fun EnhancedStatusVisualization(
+    isDark: Boolean,
+    primaryText: Color,
+    secondaryText: Color
+) {
+    val accentColor = LightOnlineGreen
+    val trackColor = if (isDark) DarkIconBackground else LightIconBackground
+
+    // Animated progress for visual interest
+    val infiniteTransition = rememberInfiniteTransition(label = "statusAnim")
+    val progressOffset by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(3000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "progressOffset"
     )
 
     Column(
-        modifier = Modifier.padding(vertical = 8.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(trackColor.copy(alpha = 0.5f))
+            .padding(16.dp)
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = Icons.Filled.Code,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(20.dp)
+            Text(
+                text = "System Health",
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.Medium,
+                color = primaryText
             )
             Text(
-                text = "Developer",
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.primary,
-                fontWeight = FontWeight.SemiBold
+                text = "Optimal",
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = accentColor
             )
         }
 
-        ProdyCard(
+        Spacer(modifier = Modifier.height(10.dp))
+
+        // Progress bar representing system health
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp)
+                .height(4.dp)
+                .clip(RoundedCornerShape(2.dp))
+                .background(trackColor)
         ) {
-            Column {
-                // Header - always visible, clickable to expand
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { isExpanded = !isExpanded }
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    // Developer avatar
-                    Box(
-                        modifier = Modifier
-                            .size(52.dp)
-                            .clip(CircleShape)
-                            .background(
-                                Brush.linearGradient(
-                                    colors = listOf(
-                                        ProdyPrimary,
-                                        ProdyTertiary
-                                    )
-                                )
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "PC",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
-                    }
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(0.92f)
+                    .height(4.dp)
+                    .clip(RoundedCornerShape(2.dp))
+                    .background(accentColor)
+            )
+        }
 
-                    Spacer(modifier = Modifier.width(14.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "Prashant Chataut",
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                        Text(
-                            text = "Creator of Prody",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-
-                    Icon(
-                        imageVector = Icons.Filled.ExpandMore,
-                        contentDescription = if (isExpanded) "Collapse" else "Expand",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier
-                            .size(24.dp)
-                            .rotate(rotationAngle)
-                    )
-                }
-
-                // Expandable content
-                AnimatedVisibility(
-                    visible = isExpanded,
-                    enter = expandVertically(
-                        animationSpec = spring(
-                            dampingRatio = Spring.DampingRatioLowBouncy,
-                            stiffness = Spring.StiffnessLow
-                        )
-                    ) + fadeIn(),
-                    exit = shrinkVertically() + fadeOut()
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
-                    ) {
-                        HorizontalDivider(
-                            modifier = Modifier.padding(bottom = 16.dp),
-                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                        )
-
-                        // About text
-                        Text(
-                            text = "Hey there! I'm Prashant, a passionate developer who believes in the power of self-improvement. Prody is my way of helping people grow, reflect, and become their best selves. Thanks for being part of this journey!",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            textAlign = TextAlign.Start,
-                            modifier = Modifier.padding(bottom = 16.dp)
-                        )
-
-                        // Social links
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceEvenly
-                        ) {
-                            // Instagram
-                            SocialLinkButton(
-                                icon = Icons.Filled.CameraAlt,
-                                label = "Instagram",
-                                color = Color(0xFFE4405F),
-                                onClick = {
-                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.instagram.com/prashantchataut_/"))
-                                    context.startActivity(intent)
-                                }
-                            )
-
-                            // Website
-                            SocialLinkButton(
-                                icon = Icons.Filled.Language,
-                                label = "Website",
-                                color = MoodMotivated,
-                                onClick = {
-                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://knowprashant.vercel.app"))
-                                    context.startActivity(intent)
-                                }
-                            )
-
-                            // GitHub
-                            SocialLinkButton(
-                                icon = Icons.Filled.Code,
-                                label = "GitHub",
-                                color = MaterialTheme.colorScheme.onSurface,
-                                onClick = {
-                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/prashantchataut"))
-                                    context.startActivity(intent)
-                                }
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        // Thank you message
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(
-                                    Brush.horizontalGradient(
-                                        colors = listOf(
-                                            ProdyPrimary.copy(alpha = 0.1f),
-                                            ProdyTertiary.copy(alpha = 0.1f)
-                                        )
-                                    )
-                                )
-                                .padding(12.dp)
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.Favorite,
-                                    contentDescription = null,
-                                    tint = MoodExcited,
-                                    modifier = Modifier.size(18.dp)
-                                )
-                                Text(
-                                    text = "Thank you for using Prody!",
-                                    style = MaterialTheme.typography.labelMedium,
-                                    fontWeight = FontWeight.Medium,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                            }
-                        }
-                    }
-                }
-            }
+        // Mini stats row
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            MiniStatItem(
+                label = "Uptime",
+                value = "99.9%",
+                primaryText = primaryText,
+                secondaryText = secondaryText
+            )
+            MiniStatItem(
+                label = "Response",
+                value = "12ms",
+                primaryText = primaryText,
+                secondaryText = secondaryText
+            )
+            MiniStatItem(
+                label = "Sync",
+                value = "Active",
+                primaryText = primaryText,
+                secondaryText = secondaryText,
+                isActive = true
+            )
         }
     }
 }
 
 @Composable
-private fun SocialLinkButton(
-    icon: ImageVector,
+private fun MiniStatItem(
     label: String,
-    color: Color,
-    onClick: () -> Unit
+    value: String,
+    primaryText: Color,
+    secondaryText: Color,
+    isActive: Boolean = false
 ) {
     Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .clip(RoundedCornerShape(12.dp))
-            .clickable(onClick = onClick)
-            .padding(12.dp)
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Box(
-            modifier = Modifier
-                .size(44.dp)
-                .clip(CircleShape)
-                .background(color.copy(alpha = 0.15f)),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = label,
-                tint = color,
-                modifier = Modifier.size(22.dp)
-            )
-        }
-        Spacer(modifier = Modifier.height(6.dp))
+        Text(
+            text = value,
+            style = MaterialTheme.typography.labelLarge,
+            fontWeight = FontWeight.Bold,
+            color = if (isActive) LightOnlineGreen else primaryText
+        )
         Text(
             text = label,
             style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = secondaryText
         )
     }
 }
 
-// ============================================================================
-// DATA MANAGEMENT SECTION
-// ============================================================================
+// =============================================================================
+// FEEDBACK CARD
+// =============================================================================
 
 @Composable
-private fun DataManagementSection(
-    isExporting: Boolean,
-    isImporting: Boolean,
-    exportSuccess: Boolean,
-    importSuccess: Boolean,
-    dataError: String?,
-    showClearDataDialog: Boolean,
-    isClearingData: Boolean,
-    onExportClick: () -> Unit,
-    onExportComplete: (Boolean) -> Unit,
-    onImportClick: () -> Unit,
-    onImportComplete: (Boolean) -> Unit,
-    onClearDataClick: () -> Unit,
-    onClearDataConfirm: () -> Unit,
-    onClearDataDismiss: () -> Unit,
-    onClearError: () -> Unit,
-    onClearExportSuccess: () -> Unit,
-    onClearImportSuccess: () -> Unit
-) {
+private fun FeedbackCard(isDark: Boolean) {
     val context = LocalContext.current
+    val cardBg = if (isDark) DarkFeedbackCardBg else LightFeedbackCardBg
+    val iconBg = if (isDark) DarkFeedbackIconBg else LightFeedbackIconBg
+    val iconColor = if (isDark) DarkFeedbackIconColor else LightFeedbackIconColor
+    val primaryText = if (isDark) DarkPrimaryText else LightPrimaryText
+    val secondaryText = if (isDark) DarkSecondaryText else LightSecondaryText
 
-    // Export launcher
-    val exportLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.CreateDocument("application/json")
-    ) { uri ->
-        uri?.let {
-            try {
-                // In a real implementation, this would write actual data
-                context.contentResolver.openOutputStream(uri)?.use { outputStream ->
-                    val exportData = """
-                        {
-                            "app": "Prody",
-                            "version": "${BuildConfig.VERSION_NAME}",
-                            "exportDate": "${SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())}",
-                            "message": "Export functionality - data backup placeholder"
-                        }
-                    """.trimIndent()
-                    outputStream.write(exportData.toByteArray())
-                }
-                onExportComplete(true)
-                Toast.makeText(context, "Data exported successfully", Toast.LENGTH_SHORT).show()
-            } catch (e: Exception) {
-                onExportComplete(false)
-                Toast.makeText(context, "Export failed: ${e.message}", Toast.LENGTH_SHORT).show()
-            }
-        } ?: run {
-            onExportComplete(false)
-        }
-    }
-
-    // Import launcher
-    val importLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.OpenDocument()
-    ) { uri ->
-        uri?.let {
-            try {
-                context.contentResolver.openInputStream(uri)?.use { inputStream ->
-                    val content = inputStream.bufferedReader().readText()
-                    // In a real implementation, this would parse and import the data
-                    if (content.contains("Prody")) {
-                        onImportComplete(true)
-                        Toast.makeText(context, "Data imported successfully", Toast.LENGTH_SHORT).show()
-                    } else {
-                        onImportComplete(false)
-                        Toast.makeText(context, "Invalid backup file", Toast.LENGTH_SHORT).show()
-                    }
-                }
-            } catch (e: Exception) {
-                onImportComplete(false)
-                Toast.makeText(context, "Import failed: ${e.message}", Toast.LENGTH_SHORT).show()
-            }
-        } ?: run {
-            onImportComplete(false)
-        }
-    }
-
-    // Success/error messages
-    LaunchedEffect(exportSuccess) {
-        if (exportSuccess) {
-            delay(2000)
-            onClearExportSuccess()
-        }
-    }
-
-    LaunchedEffect(importSuccess) {
-        if (importSuccess) {
-            delay(2000)
-            onClearImportSuccess()
-        }
-    }
-
-    LaunchedEffect(dataError) {
-        if (dataError != null) {
-            delay(3000)
-            onClearError()
-        }
-    }
-
-    // Clear data confirmation dialog
-    if (showClearDataDialog) {
-        AlertDialog(
-            onDismissRequest = onClearDataDismiss,
-            icon = {
-                Icon(
-                    imageVector = Icons.Filled.Warning,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.error
-                )
-            },
-            title = {
-                Text(
-                    text = "Clear All Data?",
-                    fontWeight = FontWeight.Bold
-                )
-            },
-            text = {
-                Text(
-                    text = "This will permanently delete all your journals, future messages, vocabulary progress, and achievements. This action cannot be undone.",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            },
-            confirmButton = {
-                Button(
-                    onClick = onClearDataConfirm,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.error
-                    )
-                ) {
-                    Text("Clear All Data")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = onClearDataDismiss) {
-                    Text("Cancel")
-                }
-            }
-        )
-    }
-
-    Column(
-        modifier = Modifier.padding(vertical = 8.dp)
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Filled.Storage,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(20.dp)
-            )
-            Text(
-                text = "Data Management",
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.primary,
-                fontWeight = FontWeight.SemiBold
-            )
-        }
-
-        ProdyCard(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-        ) {
-            Column(
-                modifier = Modifier.padding(vertical = 8.dp)
-            ) {
-                // Export Data
-                DataManagementItem(
-                    icon = Icons.Filled.CloudUpload,
-                    title = "Export Data",
-                    subtitle = "Backup your journals and progress",
-                    iconBackground = MoodCalm.copy(alpha = 0.15f),
-                    iconTint = MoodCalm,
-                    isLoading = isExporting,
-                    onClick = {
-                        onExportClick()
-                        val fileName = "prody_backup_${SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())}.json"
-                        exportLauncher.launch(fileName)
-                    }
-                )
-
-                HorizontalDivider(
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                )
-
-                // Import Data
-                DataManagementItem(
-                    icon = Icons.Filled.CloudDownload,
-                    title = "Import Data",
-                    subtitle = "Restore from a backup file",
-                    iconBackground = MoodMotivated.copy(alpha = 0.15f),
-                    iconTint = MoodMotivated,
-                    isLoading = isImporting,
-                    onClick = {
-                        onImportClick()
-                        importLauncher.launch(arrayOf("application/json"))
-                    }
-                )
-
-                HorizontalDivider(
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                )
-
-                // Clear All Data
-                DataManagementItem(
-                    icon = Icons.Filled.DeleteForever,
-                    title = "Clear All Data",
-                    subtitle = "Permanently delete all app data",
-                    iconBackground = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.5f),
-                    iconTint = MaterialTheme.colorScheme.error,
-                    isLoading = isClearingData,
-                    isDangerous = true,
-                    onClick = onClearDataClick
-                )
-
-                // Data storage info
-                DataStorageInfoCard()
-            }
-        }
-    }
-}
-
-@Composable
-private fun DataManagementItem(
-    icon: ImageVector,
-    title: String,
-    subtitle: String,
-    iconBackground: Color,
-    iconTint: Color,
-    isLoading: Boolean = false,
-    isDangerous: Boolean = false,
-    onClick: () -> Unit
-) {
-    Row(
+    Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(enabled = !isLoading) { onClick() }
-            .padding(horizontal = 16.dp, vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .clickable {
+                val intent = Intent(Intent.ACTION_SENDTO).apply {
+                    data = Uri.parse("mailto:prashantchataut@gmail.com")
+                    putExtra(Intent.EXTRA_SUBJECT, "Prody App Feedback - v${BuildConfig.VERSION_NAME}")
+                    putExtra(Intent.EXTRA_TEXT, "Hi Prashant,\n\nI wanted to share my feedback about Prody:\n\n")
+                }
+                context.startActivity(Intent.createChooser(intent, "Send Feedback"))
+            },
+        shape = RoundedCornerShape(0.dp),
+        color = cardBg
     ) {
-        Box(
+        Row(
             modifier = Modifier
-                .size(40.dp)
-                .clip(CircleShape)
-                .background(iconBackground),
-            contentAlignment = Alignment.Center
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            if (isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(20.dp),
-                    color = iconTint,
-                    strokeWidth = 2.dp
-                )
-            } else {
+            // Feedback Icon
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(iconBg),
+                contentAlignment = Alignment.Center
+            ) {
                 Icon(
-                    imageVector = icon,
+                    imageVector = Icons.Filled.ChatBubble,
                     contentDescription = null,
-                    tint = iconTint,
+                    tint = iconColor,
                     modifier = Modifier.size(20.dp)
                 )
             }
-        }
 
-        Spacer(modifier = Modifier.width(14.dp))
+            Spacer(modifier = Modifier.width(14.dp))
 
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Medium,
-                color = if (isDangerous) MaterialTheme.colorScheme.error
-                        else MaterialTheme.colorScheme.onSurface
+            // Text content
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Send Feedback",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Medium,
+                    color = primaryText
+                )
+                Text(
+                    text = "Help us improve Prody",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = secondaryText
+                )
+            }
+
+            // Arrow Icon
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                contentDescription = null,
+                tint = primaryText,
+                modifier = Modifier.size(24.dp)
             )
-            Text(
-                text = subtitle,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
         }
-
-        Icon(
-            imageVector = Icons.Filled.ChevronRight,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.size(24.dp)
-        )
     }
 }
 
+// =============================================================================
+// PRODY ID FOOTER
+// =============================================================================
+
 @Composable
-private fun DataStorageInfoCard() {
+private fun ProdyIdFooter(isDark: Boolean) {
+    val textColor = if (isDark) DarkProdyIdText else LightProdyIdText
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-            .padding(14.dp)
+            .padding(vertical = 24.dp),
+        contentAlignment = Alignment.Center
     ) {
-        Row(
-            verticalAlignment = Alignment.Top,
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Outlined.Info,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(18.dp)
-            )
-            Column {
-                Text(
-                    text = "Your Data, Your Control",
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "All your data is stored locally on your device. Export regularly to keep a backup. " +
-                            "Importing data will merge with existing content.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    lineHeight = 18.sp
-                )
-            }
-        }
+        Text(
+            text = "PRODY ID: 882-991-X",
+            style = MaterialTheme.typography.labelSmall,
+            color = textColor,
+            letterSpacing = 0.5.sp
+        )
     }
 }
 

@@ -141,6 +141,9 @@ interface UserDao {
     suspend fun getStreakDaysInRange(startDate: Long): Int
 
     // Leaderboard
+    @Query("SELECT COUNT(*) FROM leaderboard")
+    suspend fun getLeaderboardCount(): Int
+
     @Query("SELECT * FROM leaderboard ORDER BY totalPoints DESC")
     fun getLeaderboard(): Flow<List<LeaderboardEntryEntity>>
 
