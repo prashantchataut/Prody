@@ -268,7 +268,98 @@ fun SettingsScreen(
                         useAccentIcon = true
                     )
 
-                    SettingsDivider(isDark)
+                    // Per-feature toggles (only when master is enabled)
+                    AnimatedVisibility(visible = uiState.buddhaAiEnabled) {
+                        Column {
+                            EnhancedSettingsToggle(
+                                icon = Icons.Filled.WbSunny,
+                                title = "Daily Wisdom",
+                                subtitle = "AI-generated wisdom on home screen",
+                                checked = uiState.buddhaDailyWisdomEnabled,
+                                onCheckedChange = { viewModel.setBuddhaDailyWisdomEnabled(it) },
+                                iconBackground = GoldTier.copy(alpha = 0.15f),
+                                iconTint = GoldTier
+                            )
+
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = 16.dp),
+                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+                            )
+
+                            EnhancedSettingsToggle(
+                                icon = Icons.Filled.FormatQuote,
+                                title = "Quote Insights",
+                                subtitle = "Meaning and daily action for quotes",
+                                checked = uiState.buddhaQuoteExplanationEnabled,
+                                onCheckedChange = { viewModel.setBuddhaQuoteExplanationEnabled(it) },
+                                iconBackground = MoodCalm.copy(alpha = 0.15f),
+                                iconTint = MoodCalm
+                            )
+
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = 16.dp),
+                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+                            )
+
+                            EnhancedSettingsToggle(
+                                icon = Icons.Filled.Edit,
+                                title = "Journal Insights",
+                                subtitle = "Emotion and theme analysis after journaling",
+                                checked = uiState.buddhaJournalInsightsEnabled,
+                                onCheckedChange = { viewModel.setBuddhaJournalInsightsEnabled(it) },
+                                iconBackground = MoodGrateful.copy(alpha = 0.15f),
+                                iconTint = MoodGrateful
+                            )
+
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = 16.dp),
+                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+                            )
+
+                            EnhancedSettingsToggle(
+                                icon = Icons.Filled.TrendingUp,
+                                title = "Weekly Patterns",
+                                subtitle = "Track mood trends and themes",
+                                checked = uiState.buddhaPatternTrackingEnabled,
+                                onCheckedChange = { viewModel.setBuddhaPatternTrackingEnabled(it) },
+                                iconBackground = MoodMotivated.copy(alpha = 0.15f),
+                                iconTint = MoodMotivated
+                            )
+
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = 16.dp),
+                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+                            )
+
+                            EnhancedSettingsToggle(
+                                icon = Icons.Filled.EmojiEmotions,
+                                title = "Playful Buddha",
+                                subtitle = "Occasional lighthearted responses",
+                                checked = uiState.buddhaPlayfulMode,
+                                onCheckedChange = { viewModel.setBuddhaPlayfulMode(it) },
+                                iconBackground = MoodJoyful.copy(alpha = 0.15f),
+                                iconTint = MoodJoyful
+                            )
+
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = 16.dp),
+                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+                            )
+
+                            EnhancedSettingsToggle(
+                                icon = Icons.Filled.BatteryChargingFull,
+                                title = "Reduce AI Usage",
+                                subtitle = "Prefer cached responses to save data",
+                                checked = uiState.buddhaReduceAiUsage,
+                                onCheckedChange = { viewModel.setBuddhaReduceAiUsage(it) },
+                                iconBackground = MoodAnxious.copy(alpha = 0.15f),
+                                iconTint = MoodAnxious
+                            )
+                        }
+                    }
+
+                    // Info card about Buddha AI
+                    BuddhaAiInfoCard()
 
                     // Journal Insights
                     SettingsRowWithToggle(
