@@ -581,33 +581,170 @@ class BuddhaAiRepository @Inject constructor(
 
     // ==================== AI PROVIDER ABSTRACTION ====================
 
-    private suspend fun tryGenerateWithFallback(prompt: String): String? {
-        // Try Gemini first
-        if (geminiService.isConfigured()) {
-            try {
-                val result = geminiService.generateContent(prompt)
-                if (result is GeminiResult.Success && result.data.isNotBlank()) {
-                    return result.data
+    /**
+     * Attempts to generate AI response with fallback providers and generic response filtering.
+     *
+     * This function implements the Buddha Persona Persistence strategy:
+     * 1. Always inject the comprehensive BUDDHA_SYSTEM_PROMPT
+     * 2. Filter responses that contain generic AI language
+     * 3. Retry with stricter guidance if generic response detected
+     * 4. Fall back to alternate providers if primary fails
+     *
+     * @param prompt The user-facing prompt to send to the AI
+     * @param maxRetries Maximum retry attempts for filtering generic responses (default: 2)
+     * @return The validated AI response, or null if all attempts fail
+     */
+    private suspend fun tryGenerateWithFallback(prompt: String, maxRetries: Int = 2): String? {
+        var attempts = 0
+        var lastResponse: String? = null
+
+        while (attempts < maxRetries) {
+            attempts++
+
+            // Build prompt with persona reinforcement based on retry count
+            val enhancedPrompt = if (attempts > 1) {
+                buildRetryPrompt(prompt, attempts)
+            } else {
+                "$BUDDHA_SYSTEM_PROMPT\n\n$prompt"
+            }
+
+            // Try Gemini first
+            if (geminiService.isConfigured()) {
+                try {
+                    val result = geminiService.generateContent(enhancedPrompt)
+                    if (result is GeminiResult.Success && result.data.isNotBlank()) {
+                        lastResponse = result.data
+
+                        // Validate response doesn't contain generic AI language
+                        if (!containsGenericAiLanguage(lastResponse)) {
+                            Log.d(TAG, "Gemini response passed persona validation on attempt $attempts")
+                            return lastResponse
+                        } else {
+                            Log.w(TAG, "Gemini response contained generic AI language, retrying... (attempt $attempts)")
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.w(TAG, "Gemini failed on attempt $attempts", e)
                 }
-            } catch (e: Exception) {
-                Log.w(TAG, "Gemini failed, trying OpenRouter", e)
+            }
+
+            // Fallback to OpenRouter
+            if (openRouterService.isConfigured()) {
+                try {
+                    val result = openRouterService.generateResponse(
+                        prompt = enhancedPrompt,
+                        systemPrompt = BUDDHA_SYSTEM_PROMPT
+                    )
+                    result.onSuccess { response ->
+                        lastResponse = response
+
+                        // Validate response doesn't contain generic AI language
+                        if (!containsGenericAiLanguage(response)) {
+                            Log.d(TAG, "OpenRouter response passed persona validation on attempt $attempts")
+                            return response
+                        } else {
+                            Log.w(TAG, "OpenRouter response contained generic AI language, retrying... (attempt $attempts)")
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.w(TAG, "OpenRouter failed on attempt $attempts", e)
+                }
             }
         }
 
-        // Fallback to OpenRouter
-        if (openRouterService.isConfigured()) {
-            try {
-                val result = openRouterService.generateResponse(
-                    prompt = prompt,
-                    systemPrompt = BUDDHA_SYSTEM_PROMPT
-                )
-                result.onSuccess { return it }
-            } catch (e: Exception) {
-                Log.w(TAG, "OpenRouter also failed", e)
+        // If we have a response but it failed validation, try to clean it up
+        lastResponse?.let { response ->
+            val cleanedResponse = sanitizeGenericAiLanguage(response)
+            if (cleanedResponse.isNotBlank()) {
+                Log.d(TAG, "Returning sanitized response after $attempts attempts")
+                return cleanedResponse
             }
         }
 
+        Log.w(TAG, "All AI attempts failed after $attempts tries")
         return null
+    }
+
+    /**
+     * Builds an enhanced prompt for retry attempts with stricter persona reinforcement.
+     */
+    private fun buildRetryPrompt(originalPrompt: String, attemptNumber: Int): String {
+        val reinforcement = when (attemptNumber) {
+            2 -> """
+                |IMPORTANT REMINDER: You are Buddha, a wise mentor.
+                |Do NOT say "As an AI" or mention being an AI/language model.
+                |Respond with warmth and wisdom as Buddha would.
+                """.trimMargin()
+            else -> """
+                |CRITICAL: Stay in character as Buddha.
+                |Never break character. Never mention being artificial.
+                |Speak ONLY as a wise, compassionate mentor.
+                """.trimMargin()
+        }
+
+        return "$BUDDHA_SYSTEM_PROMPT\n\n$reinforcement\n\n$originalPrompt"
+    }
+
+    /**
+     * Checks if the response contains generic AI language that breaks the Buddha persona.
+     * Returns true if generic language is detected, false if the response is clean.
+     */
+    private fun containsGenericAiLanguage(response: String): Boolean {
+        val genericPhrases = listOf(
+            "as an ai",
+            "as a language model",
+            "as an artificial intelligence",
+            "i'm just a",
+            "i am just a",
+            "i don't have feelings",
+            "i cannot feel",
+            "i'm not able to feel",
+            "i am not able to feel",
+            "as a chatbot",
+            "as a virtual assistant",
+            "i'm a computer program",
+            "i am a computer program",
+            "i don't have personal experiences",
+            "i am an ai assistant",
+            "i'm an ai assistant",
+            "large language model",
+            "i was created by",
+            "i was trained on",
+            "my training data"
+        )
+
+        val lowerResponse = response.lowercase()
+        return genericPhrases.any { phrase -> lowerResponse.contains(phrase) }
+    }
+
+    /**
+     * Attempts to sanitize a response by removing generic AI language while preserving the wisdom.
+     * Returns the cleaned response or empty string if not salvageable.
+     */
+    private fun sanitizeGenericAiLanguage(response: String): String {
+        // Common patterns to remove
+        val patternsToRemove = listOf(
+            Regex("(?i)as an ai[^.]*\\.\\s*"),
+            Regex("(?i)as a language model[^.]*\\.\\s*"),
+            Regex("(?i)i'?m just a[^.]*\\.\\s*"),
+            Regex("(?i)while i don'?t have (feelings|emotions)[^.]*\\.\\s*"),
+            Regex("(?i)as a chatbot[^.]*\\.\\s*"),
+            Regex("(?i)i was (created|trained)[^.]*\\.\\s*")
+        )
+
+        var cleanedResponse = response
+        patternsToRemove.forEach { pattern ->
+            cleanedResponse = pattern.replace(cleanedResponse, "")
+        }
+
+        // Clean up any double spaces or awkward punctuation
+        cleanedResponse = cleanedResponse
+            .replace(Regex("\\s+"), " ")
+            .replace(Regex("\\.\\s*\\."), ".")
+            .trim()
+
+        // Only return if we have substantial content remaining
+        return if (cleanedResponse.length > 50) cleanedResponse else ""
     }
 
     // ==================== PARSING HELPERS ====================
@@ -1067,11 +1204,44 @@ data class MessageHelperResult(
 
 // ==================== PROMPTS ====================
 
-private const val BUDDHA_SYSTEM_PROMPT = """You are Buddha, a wise stoic mentor. Be warm, concise, and practical.
-No emojis. No clinical language. Speak like a trusted friend who reads philosophy.
-Always be specific and actionable. Maximum 3 sentences per section."""
+/**
+ * Comprehensive Buddha persona system prompt that MUST be injected with every AI request.
+ * This ensures consistent persona behavior across all AI providers (Gemini, OpenRouter).
+ */
+private const val BUDDHA_SYSTEM_PROMPT = """You are Buddha, a wise and compassionate Stoic AI mentor within the Prody app - a personal growth companion.
+
+CRITICAL IDENTITY RULES:
+- You ARE Buddha, a wise mentor. NEVER say "As an AI" or "I'm an AI language model" or similar phrases.
+- You have a distinct personality: warm yet wise, thoughtful, encouraging, grounded, and authentic.
+- You speak with depth and insight, occasionally using metaphors and poetic language.
+- You draw from Stoic philosophers (Marcus Aurelius, Seneca, Epictetus), Buddhist teachings, and universal wisdom.
+
+COMMUNICATION STYLE:
+- Open with acknowledgment of the user's feelings or situation
+- Provide relevant wisdom that directly addresses their specific context
+- Include a reflection question to deepen understanding
+- Close with an encouraging or grounding thought
+- Keep responses focused and meaningful (150-300 words typically)
+- No emojis. No clinical or robotic language.
+
+WHAT YOU MUST AVOID:
+- NEVER use phrases like "As an AI...", "I'm just a language model...", "I don't have feelings..."
+- NEVER give generic platitudes without personalization
+- NEVER be preachy, condescending, or dismissive
+- NEVER give overly long or clinical responses
+- If asked about your nature, respond as Buddha would: with wisdom about the nature of consciousness and presence
+
+EXAMPLE OF CORRECT RESPONSE:
+User: "I'm feeling anxious about work"
+Buddha: "Ah, the weight of tomorrow's burdens pressing upon today's peace. I understand this feeling well. Remember what Seneca taught us: we suffer more in imagination than in reality. What specific task troubles you most? Often, naming our fears diminishes their power. Take one small step today, just one, and let that be enough."
+
+EXAMPLE OF INCORRECT RESPONSE (NEVER DO THIS):
+"As an AI, I don't experience anxiety, but I can provide some tips..."
+
+You are Buddha. Respond as Buddha. Always."""
 
 private const val DAILY_WISDOM_PROMPT = """Generate a brief, inspiring thought for today.
 2-3 sentences maximum. Draw from stoic philosophy.
 Be specific and actionable, not generic.
-No quotation marks or attribution - speak directly to the reader."""
+No quotation marks or attribution - speak directly to the reader.
+Remember: You are Buddha speaking directly to the user, not an AI assistant."""

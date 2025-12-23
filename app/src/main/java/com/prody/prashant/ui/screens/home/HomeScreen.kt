@@ -36,6 +36,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.R
 import com.prody.prashant.ui.components.AmbientBackground
+import com.prody.prashant.ui.components.BuddhaContemplatingAnimation
 import com.prody.prashant.ui.components.BuddhaGuideIntro
 import com.prody.prashant.ui.components.ContextualAiHint
 import com.prody.prashant.ui.components.getCurrentTimeOfDay
@@ -1302,26 +1303,14 @@ private fun BuddhaWisdomCard(
 
             // Content
             if (isLoading) {
-                // Loading state
-                Row(
+                // Loading state - Premium "Buddha is contemplating" animation
+                // Replaces generic spinner with immersive meditation-themed loading indicator
+                BuddhaContemplatingAnimation(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(16.dp),
-                        strokeWidth = 2.dp,
-                        color = buddhaGold
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Buddha is contemplating...",
-                        fontFamily = PoppinsFamily,
-                        fontWeight = FontWeight.Normal,
-                        fontSize = 13.sp,
-                        color = secondaryTextColor
-                    )
-                }
+                    primaryColor = buddhaGold,
+                    secondaryTextColor = secondaryTextColor,
+                    showText = true
+                )
             } else if (thought.isNotBlank()) {
                 // Wisdom text
                 Text(
