@@ -130,156 +130,60 @@ class HomeViewModel @Inject constructor(
 
     private fun loadHomeData() {
         viewModelScope.launch {
-            try {
-                // Load user profile
-                userDao.getUserProfile().collect { profile ->
-                    profile?.let {
-                        _uiState.update { state ->
-                            state.copy(
-                                userName = it.displayName,
-                                currentStreak = it.currentStreak,
-                                totalPoints = it.totalPoints
-                            )
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error loading user profile", e)
+            _uiState.update { it.copy(isLoading = true) }
+
+            // Fetch daily data that doesn't need to be observed continuously
+            val quote = try { quoteDao.getQuoteOfTheDay() } catch (e: Exception) { null }
+            val word = try { vocabularyDao.getWordOfTheDay() } catch (e: Exception) { null }
+            val proverb = try { proverbDao.getProverbOfTheDay() } catch (e: Exception) { null }
+            val idiom = try { idiomDao.getIdiomOfTheDay() } catch (e: Exception) { null }
+
+            // Mark them as shown
+            quote?.let { quoteDao.markAsShownDaily(it.id) }
+            word?.let {
+                currentWordId = it.id
+                vocabularyDao.markAsShownDaily(it.id)
             }
-        }
+            proverb?.let { proverbDao.markAsShownDaily(it.id) }
+            idiom?.let { idiomDao.markAsShownDaily(it.id) }
 
-        viewModelScope.launch {
-            try {
-                // Load quote of the day
-                val quote = quoteDao.getQuoteOfTheDay()
-                quote?.let {
-                    quoteDao.markAsShownDaily(it.id)
-                    _uiState.update { state ->
-                        state.copy(
-                            dailyQuote = it.content,
-                            dailyQuoteAuthor = it.author
-                        )
-                    }
-                }
-            } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error loading quote of the day", e)
-            }
-        }
+            val weekStart = getWeekStartTimestamp()
 
-        viewModelScope.launch {
-            try {
-                // Load word of the day
-                val word = vocabularyDao.getWordOfTheDay()
-                word?.let {
-                    currentWordId = it.id
-                    vocabularyDao.markAsShownDaily(it.id)
-                    _uiState.update { state ->
-                        state.copy(
-                            wordOfTheDay = it.word,
-                            wordDefinition = it.definition,
-                            wordPronunciation = it.pronunciation,
-                            wordId = it.id
-                        )
-                    }
-                }
-            } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error loading word of the day", e)
-            }
-        }
-
-        viewModelScope.launch {
-            try {
-                // Load proverb of the day
-                val proverb = proverbDao.getProverbOfTheDay()
-                proverb?.let {
-                    proverbDao.markAsShownDaily(it.id)
-                    _uiState.update { state ->
-                        state.copy(
-                            dailyProverb = it.content,
-                            proverbMeaning = it.meaning,
-                            proverbOrigin = it.origin
-                        )
-                    }
-                }
-            } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error loading proverb of the day", e)
-            }
-        }
-
-        viewModelScope.launch {
-            try {
-                // Load idiom of the day
-                val idiom = idiomDao.getIdiomOfTheDay()
-                idiom?.let {
-                    idiomDao.markAsShownDaily(it.id)
-                    _uiState.update { state ->
-                        state.copy(
-                            dailyIdiom = it.phrase,
-                            idiomMeaning = it.meaning,
-                            idiomExample = it.exampleSentence
-                        )
-                    }
-                }
-            } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error loading idiom of the day", e)
-            }
-        }
-
-        viewModelScope.launch {
-            try {
-                // Load weekly stats
-                val weekStart = getWeekStartTimestamp()
-
-                journalDao.getEntriesByDateRange(weekStart, System.currentTimeMillis())
-                    .collect { entries ->
-                        _uiState.update { state ->
-                            state.copy(journalEntriesThisWeek = entries.size)
-                        }
-                    }
-            } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error loading journal entries this week", e)
-            }
-        }
-
-        viewModelScope.launch {
-            try {
-                val weekStart = getWeekStartTimestamp()
-                vocabularyDao.getLearnedCountSince(weekStart).collect { count ->
-                    _uiState.update { state ->
-                        state.copy(wordsLearnedThisWeek = count)
-                    }
-                }
-            } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error loading learned words count this week", e)
-            }
-        }
-
-        viewModelScope.launch {
-            try {
-                // Set loading to false after initial data load
-                _uiState.update { state ->
-                    state.copy(isLoading = false)
-                }
-            } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error completing home data load", e)
-                _uiState.update { state ->
-                    state.copy(isLoading = false)
-                }
-            }
-        }
-
-        // Calculate days active this week
-        viewModelScope.launch {
-            try {
-                userDao.getStreakHistory().collect { history ->
-                    val weekStart = getWeekStartTimestamp()
-                    val daysActive = history.count { it.date >= weekStart }
-                    _uiState.update { state ->
-                        state.copy(daysActiveThisWeek = daysActive)
-                    }
-                }
-            } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error loading streak history", e)
+            combine(
+                userDao.getUserProfile(),
+                journalDao.getEntriesByDateRange(weekStart, System.currentTimeMillis()),
+                vocabularyDao.getLearnedCountSince(weekStart),
+                userDao.getStreakHistory()
+            ) { profile, journalEntries, learnedWordsCount, streakHistory ->
+                // This lambda creates a new state object with all the data.
+                val daysActive = streakHistory.count { it.date >= weekStart }
+                _uiState.value.copy(
+                    userName = profile?.displayName ?: _uiState.value.userName,
+                    currentStreak = profile?.currentStreak ?: _uiState.value.currentStreak,
+                    totalPoints = profile?.totalPoints ?: _uiState.value.totalPoints,
+                    dailyQuote = quote?.content ?: _uiState.value.dailyQuote,
+                    dailyQuoteAuthor = quote?.author ?: _uiState.value.dailyQuoteAuthor,
+                    wordOfTheDay = word?.word ?: _uiState.value.wordOfTheDay,
+                    wordDefinition = word?.definition ?: _uiState.value.wordDefinition,
+                    wordPronunciation = word?.pronunciation ?: _uiState.value.wordPronunciation,
+                    wordId = word?.id ?: _uiState.value.wordId,
+                    dailyProverb = proverb?.content ?: _uiState.value.dailyProverb,
+                    proverbMeaning = proverb?.meaning ?: _uiState.value.proverbMeaning,
+                    proverbOrigin = proverb?.origin ?: _uiState.value.proverbOrigin,
+                    dailyIdiom = idiom?.phrase ?: _uiState.value.dailyIdiom,
+                    idiomMeaning = idiom?.meaning ?: _uiState.value.idiomMeaning,
+                    idiomExample = idiom?.exampleSentence ?: _uiState.value.idiomExample,
+                    journalEntriesThisWeek = journalEntries.size,
+                    wordsLearnedThisWeek = learnedWordsCount,
+                    daysActiveThisWeek = daysActive,
+                    isLoading = false
+                )
+            }.catch { e ->
+                android.util.Log.e(TAG, "Error in combined home data flow", e)
+                // In case of error, just stop loading and keep the existing data
+                _uiState.update { it.copy(isLoading = false) }
+            }.collect { newState ->
+                _uiState.value = newState
             }
         }
     }
