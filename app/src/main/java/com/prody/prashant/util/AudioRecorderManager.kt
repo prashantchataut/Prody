@@ -361,13 +361,12 @@ class AudioRecorderManager @Inject constructor(
      */
     fun getAudioDuration(uri: Uri): Long {
         return try {
-            MediaPlayer().apply {
-                setDataSource(context, uri)
-                prepare()
-                val duration = duration.toLong()
-                release()
-                return duration
-            }
+            val player = MediaPlayer()
+            player.setDataSource(context, uri)
+            player.prepare()
+            val duration = player.duration.toLong()
+            player.release()
+            duration
         } catch (e: Exception) {
             Log.e(TAG, "Failed to get audio duration", e)
             0L
