@@ -221,6 +221,10 @@ fun NewJournalEntryScreen(
                             viewModel.startRecording()
                         }
                     },
+                    onListClick = {
+                        val bulletPrefix = if (uiState.content.isEmpty() || uiState.content.endsWith("\n")) "• " else "\n• "
+                        viewModel.updateContent(uiState.content + bulletPrefix)
+                    },
                     isRecording = uiState.isRecording,
                     recordingTimeElapsed = uiState.recordingTimeElapsed,
                     colors = colors
@@ -935,6 +939,7 @@ private fun JournalInputField(
     onContentChanged: (String) -> Unit,
     onMediaClick: () -> Unit,
     onVoiceClick: () -> Unit,
+    onListClick: () -> Unit,
     isRecording: Boolean,
     recordingTimeElapsed: Long,
     colors: JournalThemeColors
@@ -1036,7 +1041,7 @@ private fun JournalInputField(
                             )
                         }
                         IconButton(
-                            onClick = { /* List action */ },
+                            onClick = onListClick,
                             modifier = Modifier.size(48.dp)
                         ) {
                             Icon(

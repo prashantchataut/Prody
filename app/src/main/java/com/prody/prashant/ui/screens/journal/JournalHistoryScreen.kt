@@ -1172,6 +1172,16 @@ private fun FilterSortOption(
 }
 
 /**
+ * Mood color helper for history filter
+ */
+private fun getMoodColorForHistory(mood: Mood): Color = getMoodColorPremium(mood)
+
+/**
+ * Mood icon helper for history filter
+ */
+private fun getMoodIconForHistory(mood: Mood): ImageVector = getMoodIconPremium(mood)
+
+/**
  * Premium mood color mapping - using neon green accent and updated palette
  */
 private fun getMoodColorPremium(mood: Mood): Color {

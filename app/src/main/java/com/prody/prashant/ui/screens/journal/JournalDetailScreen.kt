@@ -511,6 +511,7 @@ private fun MediaGallerySection(
     videos: List<String>,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     var selectedImageUri by remember { mutableStateOf<String?>(null) }
 
     Column(modifier = modifier) {
@@ -563,7 +564,17 @@ private fun MediaGallerySection(
                 MediaThumbnail(
                     uri = videoUri,
                     isVideo = true,
-                    onClick = { /* TODO: Open video player */ }
+                    onClick = {
+                        try {
+                            val intent = android.content.Intent(android.content.Intent.ACTION_VIEW).apply {
+                                setDataAndType(Uri.parse(videoUri), "video/*")
+                                addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                            }
+                            context.startActivity(intent)
+                        } catch (e: Exception) {
+                            android.util.Log.e("JournalDetail", "No video player found", e)
+                        }
+                    }
                 )
             }
         }

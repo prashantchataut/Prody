@@ -43,6 +43,8 @@ import com.prody.prashant.ui.theme.*
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import com.prody.prashant.util.AccessibilityUtils
+import android.content.Intent
+import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -84,6 +86,7 @@ fun HomeScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val greeting = getGreeting()
     val isDarkTheme = isSystemInDarkTheme()
+    val context = LocalContext.current
 
     // Theme-aware colors
     val backgroundColor = if (isDarkTheme) Color(0xFF0D2826) else Color(0xFFF0F4F3)
@@ -229,7 +232,14 @@ fun HomeScreen(
                 QuoteCard(
                     quote = uiState.dailyQuote,
                     author = uiState.dailyQuoteAuthor,
-                    onShareClick = { /* Share functionality */ },
+                    onShareClick = {
+                        val shareText = "\"${uiState.dailyQuote}\"\n\n— ${uiState.dailyQuoteAuthor}\n\nShared via Prody"
+                        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                            type = "text/plain"
+                            putExtra(Intent.EXTRA_TEXT, shareText)
+                        }
+                        context.startActivity(Intent.createChooser(shareIntent, "Share Quote"))
+                    },
                     surfaceColor = surfaceColor,
                     primaryTextColor = primaryTextColor,
                     secondaryTextColor = secondaryTextColor,

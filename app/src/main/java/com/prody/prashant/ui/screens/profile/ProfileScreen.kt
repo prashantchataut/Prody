@@ -164,7 +164,9 @@ fun ProfileScreen(
                 PremiumProfileHeader(
                     onSettingsClick = onNavigateToSettings,
                     onEditClick = onNavigateToEditProfile,
-                    isDarkMode = isDarkMode
+                    textPrimary = textPrimary,
+                    textSecondary = textSecondary,
+                    accentColor = accentColor
                 )
             }
 

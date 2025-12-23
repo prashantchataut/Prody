@@ -1,6 +1,7 @@
 package com.prody.prashant.domain.gamification
 
 import android.util.Log
+import com.prody.prashant.data.local.dao.ChallengeDao
 import com.prody.prashant.data.local.dao.UserDao
 import com.prody.prashant.data.local.entity.AchievementEntity
 import com.prody.prashant.data.local.entity.StreakHistoryEntity
@@ -8,6 +9,7 @@ import com.prody.prashant.data.local.entity.UserProfileEntity
 import com.prody.prashant.data.local.entity.UserStatsEntity
 import com.prody.prashant.domain.identity.ProdyAchievements
 import com.prody.prashant.domain.identity.ProdyRanks
+import com.prody.prashant.domain.model.ChallengeType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
@@ -29,7 +31,8 @@ import javax.inject.Singleton
  */
 @Singleton
 class GamificationService @Inject constructor(
-    private val userDao: UserDao
+    private val userDao: UserDao,
+    private val challengeDao: ChallengeDao
 ) {
     companion object {
         private const val TAG = "GamificationService"
@@ -162,6 +165,9 @@ class GamificationService @Inject constructor(
 
             // Update achievement progress
             updateAchievementProgress(activityType, profile)
+
+            // Record progress for any joined challenges that match this activity type
+            recordChallengeProgress(activityType)
 
             Log.d(TAG, "Awarded $totalPoints points for $activityType (base: $basePoints, streak bonus: $streakBonus)")
             return@withContext totalPoints
@@ -435,5 +441,50 @@ class GamificationService @Inject constructor(
             set(Calendar.SECOND, 0)
             set(Calendar.MILLISECOND, 0)
         }.timeInMillis
+    }
+
+    /**
+     * Records progress for any active challenges that match the activity type.
+     * Called automatically when recording an activity.
+     */
+    private suspend fun recordChallengeProgress(activityType: ActivityType) {
+        try {
+            // Map activity type to challenge type
+            val challengeType = when (activityType) {
+                ActivityType.JOURNAL_ENTRY -> ChallengeType.JOURNALING.name.lowercase()
+                ActivityType.WORD_LEARNED -> ChallengeType.VOCABULARY.name.lowercase()
+                ActivityType.DAILY_CHECK_IN -> ChallengeType.STREAK.name.lowercase()
+                ActivityType.BUDDHA_CONVERSATION -> ChallengeType.MEDITATION.name.lowercase()
+                ActivityType.QUOTE_READ, ActivityType.PROVERB_EXPLORED -> ChallengeType.REFLECTION.name.lowercase()
+                else -> null
+            }
+
+            if (challengeType == null) {
+                return
+            }
+
+            // Get all joined challenges that match this type (or are "mixed" type)
+            val matchingChallenges = challengeDao.getJoinedChallengesByTypeSync(challengeType)
+
+            for (challenge in matchingChallenges) {
+                // Increment progress
+                challengeDao.incrementUserProgress(challenge.id, 1)
+
+                // Check if challenge is now completed
+                val newProgress = challenge.currentUserProgress + 1
+                if (newProgress >= challenge.targetCount && !challenge.isCompleted) {
+                    // Mark as completed and award points
+                    challengeDao.markChallengeCompleted(challenge.id)
+                    if (challenge.rewardPoints > 0) {
+                        userDao.addPoints(challenge.rewardPoints)
+                        Log.d(TAG, "Challenge completed: ${challenge.title} (+${challenge.rewardPoints} points)")
+                    }
+                } else {
+                    Log.d(TAG, "Challenge progress: ${challenge.title} ($newProgress/${challenge.targetCount})")
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error recording challenge progress", e)
+        }
     }
 }
