@@ -2,7 +2,9 @@ package com.prody.prashant.ui.screens.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.prody.prashant.BuildConfig
 import com.prody.prashant.data.local.preferences.PreferencesManager
+import com.prody.prashant.notification.NotificationScheduler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -31,12 +33,16 @@ data class SettingsUiState(
     val importSuccess: Boolean = false,
     val dataError: String? = null,
     val showClearDataDialog: Boolean = false,
-    val isClearingData: Boolean = false
+    val isClearingData: Boolean = false,
+    // Debug notification state
+    val isDebugBuild: Boolean = BuildConfig.DEBUG,
+    val debugNotificationSent: String? = null
 )
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
-    private val preferencesManager: PreferencesManager
+    private val preferencesManager: PreferencesManager,
+    private val notificationScheduler: NotificationScheduler
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SettingsUiState())
@@ -356,5 +362,33 @@ class SettingsViewModel @Inject constructor(
                 _uiState.update { it.copy(isClearingData = false, dataError = "Failed to clear data") }
             }
         }
+    }
+
+    // Debug notification functions
+
+    /**
+     * Sends a test notification immediately (DEBUG builds only).
+     * @param type One of: morning, evening, word, streak, journal, future
+     */
+    fun sendTestNotification(type: String) {
+        if (!BuildConfig.DEBUG) return
+        try {
+            notificationScheduler.debugTriggerNotificationNow(type)
+            _uiState.update { it.copy(debugNotificationSent = type) }
+            // Clear the message after a delay
+            viewModelScope.launch {
+                kotlinx.coroutines.delay(3000)
+                _uiState.update { it.copy(debugNotificationSent = null) }
+            }
+        } catch (e: Exception) {
+            android.util.Log.e(TAG, "Error sending test notification", e)
+        }
+    }
+
+    /**
+     * Clears the debug notification sent message.
+     */
+    fun clearDebugNotificationMessage() {
+        _uiState.update { it.copy(debugNotificationSent = null) }
     }
 }

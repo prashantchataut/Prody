@@ -1,8 +1,11 @@
 package com.prody.prashant.ui.screens.journal
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
@@ -96,6 +99,39 @@ fun NewJournalEntryScreen(
 
             if (photoUris.isNotEmpty()) viewModel.addPhotos(photoUris)
             if (videoUris.isNotEmpty()) viewModel.addVideos(videoUris)
+        }
+    }
+
+    // Audio recording permission state
+    var hasRecordingPermission by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.RECORD_AUDIO
+            ) == PackageManager.PERMISSION_GRANTED
+        )
+    }
+
+    // Audio permission launcher
+    val audioPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        hasRecordingPermission = isGranted
+        if (isGranted) {
+            viewModel.startRecording()
+        }
+    }
+
+    // Function to handle voice button click with permission check
+    val handleVoiceClick: () -> Unit = {
+        if (uiState.isRecording) {
+            viewModel.stopRecording()
+        } else {
+            if (hasRecordingPermission) {
+                viewModel.startRecording()
+            } else {
+                audioPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+            }
         }
     }
 
@@ -214,13 +250,7 @@ fun NewJournalEntryScreen(
                     wordCount = uiState.wordCount,
                     onContentChanged = { viewModel.updateContent(it) },
                     onMediaClick = { mediaPickerLauncher.launch("*/*") },
-                    onVoiceClick = {
-                        if (uiState.isRecording) {
-                            viewModel.cancelRecording()
-                        } else {
-                            viewModel.startRecording()
-                        }
-                    },
+                    onVoiceClick = handleVoiceClick,
                     onListClick = {
                         val bulletPrefix = if (uiState.content.isEmpty() || uiState.content.endsWith("\n")) "• " else "\n• "
                         viewModel.updateContent(uiState.content + bulletPrefix)
@@ -259,9 +289,7 @@ fun NewJournalEntryScreen(
                     Spacer(modifier = Modifier.height(16.dp))
                     RecordingIndicator(
                         timeElapsed = uiState.recordingTimeElapsed,
-                        onStop = { uri, duration ->
-                            viewModel.stopRecording(uri, duration)
-                        },
+                        onStop = { viewModel.stopRecording() },
                         onCancel = { viewModel.cancelRecording() },
                         colors = colors
                     )
@@ -1259,7 +1287,7 @@ private fun VoiceRecordingPreview(
 @Composable
 private fun RecordingIndicator(
     timeElapsed: Long,
-    onStop: (String, Long) -> Unit,
+    onStop: () -> Unit,
     onCancel: () -> Unit,
     colors: JournalThemeColors
 ) {
@@ -1310,7 +1338,7 @@ private fun RecordingIndicator(
         }
 
         TextButton(
-            onClick = { onStop("", timeElapsed) }
+            onClick = onStop
         ) {
             Text(
                 text = "Stop",
