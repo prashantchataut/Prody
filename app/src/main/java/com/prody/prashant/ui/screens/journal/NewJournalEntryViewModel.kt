@@ -15,6 +15,7 @@ import com.prody.prashant.data.local.preferences.PreferencesManager
 import com.prody.prashant.domain.gamification.GamificationService
 import com.prody.prashant.domain.model.Mood
 import com.prody.prashant.ui.theme.JournalTemplate
+import com.prody.prashant.util.AudioRecorderManager
 import com.prody.prashant.util.BuddhaWisdom
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -70,7 +71,8 @@ class NewJournalEntryViewModel @Inject constructor(
     private val openRouterService: OpenRouterService,
     private val preferencesManager: PreferencesManager,
     private val gamificationService: GamificationService,
-    private val buddhaAiRepository: BuddhaAiRepository
+    private val buddhaAiRepository: BuddhaAiRepository,
+    private val audioRecorderManager: AudioRecorderManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(NewJournalEntryUiState())
@@ -82,6 +84,36 @@ class NewJournalEntryViewModel @Inject constructor(
 
     init {
         loadAiSettings()
+        observeAudioRecorderStates()
+    }
+
+    /**
+     * Observe audio recorder state changes and update UI state accordingly.
+     */
+    private fun observeAudioRecorderStates() {
+        viewModelScope.launch {
+            audioRecorderManager.isRecording.collect { isRecording ->
+                _uiState.update { it.copy(isRecording = isRecording) }
+            }
+        }
+        viewModelScope.launch {
+            audioRecorderManager.recordingDuration.collect { duration ->
+                _uiState.update { it.copy(recordingTimeElapsed = duration) }
+            }
+        }
+        viewModelScope.launch {
+            audioRecorderManager.isPlaying.collect { isPlaying ->
+                _uiState.update { it.copy(isPlayingVoice = isPlaying) }
+            }
+        }
+        viewModelScope.launch {
+            audioRecorderManager.error.collect { error ->
+                error?.let {
+                    _uiState.update { state -> state.copy(error = it) }
+                    audioRecorderManager.clearError()
+                }
+            }
+        }
     }
 
     private fun loadAiSettings() {
@@ -402,38 +434,29 @@ class NewJournalEntryViewModel @Inject constructor(
     // =========================================================================
 
     /**
-     * Start voice recording.
+     * Start voice recording using AudioRecorderManager.
+     * Returns true if recording started successfully.
      */
-    fun startRecording() {
-        _uiState.update {
-            it.copy(
-                isRecording = true,
-                recordingTimeElapsed = 0
-            )
-        }
-    }
-
-    /**
-     * Update recording time elapsed (called periodically during recording).
-     */
-    fun updateRecordingTime(elapsed: Long) {
-        _uiState.update {
-            it.copy(recordingTimeElapsed = elapsed)
-        }
+    fun startRecording(): Boolean {
+        val uri = audioRecorderManager.startRecording()
+        return uri != null
     }
 
     /**
      * Stop voice recording and save the URI.
+     * The result is automatically handled via state observation.
      */
-    fun stopRecording(uri: String, duration: Long) {
-        _uiState.update {
-            it.copy(
-                isRecording = false,
-                voiceRecordingUri = uri,
-                voiceRecordingDuration = duration,
-                recordingTimeElapsed = 0,
-                hasUnsavedChanges = true
-            )
+    fun stopRecording() {
+        val result = audioRecorderManager.stopRecording()
+        if (result != null) {
+            val (recordingUri, recordingDuration) = result
+            _uiState.update {
+                it.copy(
+                    voiceRecordingUri = recordingUri.toString(),
+                    voiceRecordingDuration = recordingDuration,
+                    hasUnsavedChanges = true
+                )
+            }
         }
     }
 
@@ -441,18 +464,22 @@ class NewJournalEntryViewModel @Inject constructor(
      * Cancel voice recording without saving.
      */
     fun cancelRecording() {
-        _uiState.update {
-            it.copy(
-                isRecording = false,
-                recordingTimeElapsed = 0
-            )
-        }
+        audioRecorderManager.cancelRecording()
     }
 
     /**
-     * Remove the voice recording.
+     * Remove the voice recording and delete the file.
      */
     fun removeVoiceRecording() {
+        val uri = _uiState.value.voiceRecordingUri
+        if (uri != null) {
+            try {
+                audioRecorderManager.deleteRecording(android.net.Uri.parse(uri))
+            } catch (e: Exception) {
+                android.util.Log.w(TAG, "Failed to delete recording file", e)
+            }
+        }
+        audioRecorderManager.stopPlayback()
         _uiState.update {
             it.copy(
                 voiceRecordingUri = null,
@@ -466,8 +493,11 @@ class NewJournalEntryViewModel @Inject constructor(
      * Toggle voice playback state.
      */
     fun toggleVoicePlayback() {
-        _uiState.update {
-            it.copy(isPlayingVoice = !it.isPlayingVoice)
+        val uri = _uiState.value.voiceRecordingUri ?: return
+        if (_uiState.value.isPlayingVoice) {
+            audioRecorderManager.togglePlaybackPause()
+        } else {
+            audioRecorderManager.startPlayback(android.net.Uri.parse(uri))
         }
     }
 
@@ -475,9 +505,15 @@ class NewJournalEntryViewModel @Inject constructor(
      * Stop voice playback.
      */
     fun stopVoicePlayback() {
-        _uiState.update {
-            it.copy(isPlayingVoice = false)
-        }
+        audioRecorderManager.stopPlayback()
+    }
+
+    /**
+     * Clean up audio resources when ViewModel is cleared.
+     */
+    override fun onCleared() {
+        super.onCleared()
+        audioRecorderManager.release()
     }
 
     // =========================================================================

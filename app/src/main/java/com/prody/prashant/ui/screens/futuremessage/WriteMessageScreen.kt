@@ -1,9 +1,12 @@
 package com.prody.prashant.ui.screens.futuremessage
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
@@ -90,6 +93,39 @@ fun WriteMessageScreen(
 
             if (photos.isNotEmpty()) viewModel.addPhotos(photos)
             if (videos.isNotEmpty()) viewModel.addVideos(videos)
+        }
+    }
+
+    // Audio recording permission state
+    var hasRecordingPermission by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.RECORD_AUDIO
+            ) == PackageManager.PERMISSION_GRANTED
+        )
+    }
+
+    // Audio permission launcher
+    val audioPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        hasRecordingPermission = isGranted
+        if (isGranted) {
+            viewModel.startRecording()
+        }
+    }
+
+    // Function to handle voice button click with permission check
+    val handleVoiceClick: () -> Unit = {
+        if (uiState.isRecording) {
+            viewModel.stopRecording()
+        } else {
+            if (hasRecordingPermission) {
+                viewModel.startRecording()
+            } else {
+                audioPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+            }
         }
     }
 
@@ -201,15 +237,7 @@ fun WriteMessageScreen(
                         PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageAndVideo)
                     )
                 },
-                onVoiceClick = {
-                    if (uiState.isRecording) {
-                        // In a real implementation, this would stop the recording
-                        // and get the actual URI and duration from the recorder
-                        viewModel.stopRecording("recorded_voice.m4a", uiState.recordingTimeElapsed)
-                    } else {
-                        viewModel.startRecording()
-                    }
-                },
+                onVoiceClick = handleVoiceClick,
                 modifier = Modifier.padding(horizontal = 24.dp)
             )
 

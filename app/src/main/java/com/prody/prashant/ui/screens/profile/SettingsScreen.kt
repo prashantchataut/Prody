@@ -344,6 +344,23 @@ fun SettingsScreen(
                 }
             }
 
+            // DEBUG Section (only in debug builds)
+            if (uiState.isDebugBuild) {
+                AnimatedVisibility(
+                    visible = isVisible,
+                    enter = fadeIn(tween(400, delayMillis = 500)) + slideInVertically(
+                        initialOffsetY = { it / 4 },
+                        animationSpec = tween(400, delayMillis = 500, easing = EaseOutCubic)
+                    )
+                ) {
+                    DebugNotificationSection(
+                        isDark = isDark,
+                        onTestNotification = { type -> viewModel.sendTestNotification(type) },
+                        debugNotificationSent = uiState.debugNotificationSent
+                    )
+                }
+            }
+
             // FEEDBACK Section
             AnimatedVisibility(
                 visible = isVisible,
@@ -1184,6 +1201,183 @@ private fun ProdyIdFooter(isDark: Boolean) {
             color = textColor,
             letterSpacing = 0.5.sp
         )
+    }
+}
+
+// =============================================================================
+// DEBUG NOTIFICATION SECTION (DEBUG builds only)
+// =============================================================================
+
+@Composable
+private fun DebugNotificationSection(
+    isDark: Boolean,
+    onTestNotification: (String) -> Unit,
+    debugNotificationSent: String?
+) {
+    val cardBackground = if (isDark) DarkCardBackground else LightCardBackground
+    val primaryText = if (isDark) DarkPrimaryText else LightPrimaryText
+    val secondaryText = if (isDark) DarkSecondaryText else LightSecondaryText
+    val iconBackground = if (isDark) DarkIconBackground else LightIconBackground
+    val warningColor = Color(0xFFFF9800)
+
+    Column(modifier = Modifier.padding(vertical = 8.dp)) {
+        // Section Header
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Filled.BugReport,
+                contentDescription = null,
+                tint = warningColor,
+                modifier = Modifier.size(14.dp)
+            )
+            Text(
+                text = "DEBUG",
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.Normal,
+                color = warningColor,
+                letterSpacing = 1.sp
+            )
+        }
+
+        // Card Container
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            shape = RoundedCornerShape(16.dp),
+            color = cardBackground
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                // Title
+                Text(
+                    text = "Test Notifications",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    color = primaryText
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = "Tap a button to send a test notification immediately",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = secondaryText
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Success message
+                AnimatedVisibility(
+                    visible = debugNotificationSent != null,
+                    enter = fadeIn() + expandVertically(),
+                    exit = fadeOut() + shrinkVertically()
+                ) {
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 12.dp),
+                        shape = RoundedCornerShape(8.dp),
+                        color = LightOnlineGreen.copy(alpha = 0.15f)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.CheckCircle,
+                                contentDescription = null,
+                                tint = LightOnlineGreen,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Text(
+                                text = "Sent: ${debugNotificationSent ?: ""}",
+                                style = MaterialTheme.typography.bodySmall,
+                                fontWeight = FontWeight.Medium,
+                                color = primaryText
+                            )
+                        }
+                    }
+                }
+
+                // Notification type buttons in a flow layout
+                val notificationTypes = listOf(
+                    "morning" to "Morning Wisdom",
+                    "evening" to "Evening Reflection",
+                    "word" to "Word of Day",
+                    "streak" to "Streak Reminder",
+                    "journal" to "Journal Reminder",
+                    "future" to "Future Message"
+                )
+
+                // Two rows of buttons
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        notificationTypes.take(3).forEach { (type, label) ->
+                            DebugNotificationButton(
+                                label = label,
+                                onClick = { onTestNotification(type) },
+                                isDark = isDark,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        notificationTypes.drop(3).forEach { (type, label) ->
+                            DebugNotificationButton(
+                                label = label,
+                                onClick = { onTestNotification(type) },
+                                isDark = isDark,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun DebugNotificationButton(
+    label: String,
+    onClick: () -> Unit,
+    isDark: Boolean,
+    modifier: Modifier = Modifier
+) {
+    val buttonBg = if (isDark) DarkIconBackground else LightIconBackground
+    val buttonText = if (isDark) DarkPrimaryText else LightPrimaryText
+
+    Surface(
+        modifier = modifier
+            .clip(RoundedCornerShape(8.dp))
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(8.dp),
+        color = buttonBg
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 10.dp, horizontal = 8.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.Medium,
+                color = buttonText,
+                maxLines = 1
+            )
+        }
     }
 }
 
