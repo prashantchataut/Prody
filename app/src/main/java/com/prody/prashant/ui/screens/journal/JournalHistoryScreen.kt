@@ -283,7 +283,8 @@ private fun PremiumJournalHistoryTopBar(
     textColor: Color,
     backgroundColor: Color,
     hasActiveFilters: Boolean,
-    activeFilterCount: Int
+    activeFilterCount: Int,
+    accentColor: Color = JournalHistoryAccent
 ) {
     TopAppBar(
         title = {

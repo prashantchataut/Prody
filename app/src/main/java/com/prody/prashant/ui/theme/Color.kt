@@ -557,6 +557,15 @@ object ProdyGradients {
 
     // Level up celebration
     val levelUpGradient = listOf(ProdyAccentGreenDark, ProdyAccentGreen, ProdyAccentGreenLight)
+
+    // Notification gradients
+    val streakNotificationGradient = listOf(StreakWarm, StreakFire, StreakHot)
+    val celebrationGradient = listOf(LeaderboardGoldDark, LeaderboardGold, LeaderboardGoldLight)
+    val achievementGradient = listOf(RarityEpic, RarityLegendary, LeaderboardGold)
+    val motivationGradient = listOf(MoodMotivated, MoodExcited, MoodEnergetic)
+    val oceanGradient = listOf(MoodCalm, ProdyInfo, MoodCalm)
+    val growthGradient = listOf(ProdyAccentGreenDark, ProdyAccentGreen, ProdyAccentGreenLight)
+    val serenityGradient = listOf(MoodCalm, MoodGrateful, MoodCalm)
 }
 
 // =============================================================================
