@@ -193,6 +193,11 @@ fun OnboardingScreen(
                         coroutineScope.launch {
                             pagerState.animateScrollToPage(page + 1)
                         }
+                    },
+                    onLogin = {
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(6) // Navigate to login screen
+                        }
                     }
                 )
                 OnboardingPageType.GAMIFICATION_LEADERBOARD -> GamificationLeaderboardScreen(
@@ -417,7 +422,8 @@ private fun JournalingScreen(
     totalPages: Int,
     onSkip: () -> Unit,
     onBack: () -> Unit,
-    onContinue: () -> Unit
+    onContinue: () -> Unit,
+    onLogin: () -> Unit
 ) {
     val backgroundColor = if (isDarkTheme) DarkBackground else LightBackground
     val cardBackground = if (isDarkTheme) DarkCardBackground else LightCardBackground
@@ -545,7 +551,7 @@ private fun JournalingScreen(
                         fontSize = 14.sp
                     ),
                     color = AccentGreen,
-                    modifier = Modifier.clickable { }
+                    modifier = Modifier.clickable { onLogin() }
                 )
             }
 
@@ -1948,6 +1954,9 @@ private fun LoginSignupScreen(
     var password by remember { mutableStateOf("") }
     var emailFocused by remember { mutableStateOf(false) }
     var passwordFocused by remember { mutableStateOf(false) }
+    var showForgotPasswordDialog by remember { mutableStateOf(false) }
+    var forgotPasswordEmail by remember { mutableStateOf("") }
+    var forgotPasswordSent by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -2032,7 +2041,11 @@ private fun LoginSignupScreen(
                 color = subtleTextColor,
                 modifier = Modifier
                     .align(Alignment.End)
-                    .clickable { onForgotPassword() }
+                    .clickable {
+                        forgotPasswordEmail = email // Pre-fill with current email if any
+                        forgotPasswordSent = false
+                        showForgotPasswordDialog = true
+                    }
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -2179,6 +2192,184 @@ private fun LoginSignupScreen(
             }
 
             Spacer(modifier = Modifier.height(40.dp))
+        }
+
+        // Forgot Password Dialog
+        if (showForgotPasswordDialog) {
+            ForgotPasswordDialog(
+                email = forgotPasswordEmail,
+                onEmailChange = { forgotPasswordEmail = it },
+                isSent = forgotPasswordSent,
+                onSend = {
+                    if (forgotPasswordEmail.isNotBlank() && forgotPasswordEmail.contains("@")) {
+                        forgotPasswordSent = true
+                    }
+                },
+                onDismiss = { showForgotPasswordDialog = false },
+                isDarkTheme = isDarkTheme
+            )
+        }
+    }
+}
+
+/**
+ * Forgot Password Dialog - Allows user to request password reset email
+ */
+@Composable
+private fun ForgotPasswordDialog(
+    email: String,
+    onEmailChange: (String) -> Unit,
+    isSent: Boolean,
+    onSend: () -> Unit,
+    onDismiss: () -> Unit,
+    isDarkTheme: Boolean
+) {
+    val dialogBg = if (isDarkTheme) LoginDarkBackground else LoginLightBackground
+    val textPrimary = if (isDarkTheme) Color.White else LoginLightLogoLeaf
+    val textSecondary = if (isDarkTheme) LoginDarkSubtleText else LoginLightSubtleText
+    val inputBg = if (isDarkTheme) LoginDarkInputBackground else LoginLightInputBackground
+
+    androidx.compose.ui.window.Dialog(onDismissRequest = onDismiss) {
+        Surface(
+            shape = RoundedCornerShape(24.dp),
+            color = dialogBg,
+            tonalElevation = 0.dp
+        ) {
+            Column(
+                modifier = Modifier.padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Icon
+                Box(
+                    modifier = Modifier
+                        .size(56.dp)
+                        .clip(CircleShape)
+                        .background(AccentGreen.copy(alpha = 0.15f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = if (isSent) Icons.Filled.MarkEmailRead else Icons.Outlined.Lock,
+                        contentDescription = null,
+                        tint = AccentGreen,
+                        modifier = Modifier.size(28.dp)
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                Text(
+                    text = if (isSent) "Check Your Email" else "Reset Password",
+                    style = TextStyle(
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 22.sp
+                    ),
+                    color = textPrimary
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = if (isSent)
+                        "We've sent password reset instructions to $email"
+                    else
+                        "Enter your email address and we'll send you instructions to reset your password.",
+                    style = TextStyle(
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.Normal,
+                        fontSize = 14.sp,
+                        lineHeight = 20.sp
+                    ),
+                    color = textSecondary,
+                    textAlign = TextAlign.Center
+                )
+
+                if (!isSent) {
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    // Email input
+                    LoginInputField(
+                        value = email,
+                        onValueChange = onEmailChange,
+                        placeholder = "Email Address",
+                        icon = Icons.Outlined.Email,
+                        isFocused = false,
+                        onFocusChange = {},
+                        backgroundColor = inputBg,
+                        iconColor = textSecondary,
+                        placeholderColor = textSecondary,
+                        textColor = textPrimary
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                if (isSent) {
+                    // Done button
+                    Surface(
+                        onClick = onDismiss,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(50.dp),
+                        shape = RoundedCornerShape(25.dp),
+                        color = AccentGreen,
+                        tonalElevation = 0.dp
+                    ) {
+                        Box(
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Done",
+                                style = TextStyle(
+                                    fontFamily = PoppinsFamily,
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 16.sp
+                                ),
+                                color = ButtonTextDark
+                            )
+                        }
+                    }
+                } else {
+                    // Send Reset Link button
+                    Surface(
+                        onClick = onSend,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(50.dp),
+                        shape = RoundedCornerShape(25.dp),
+                        color = if (email.isNotBlank() && email.contains("@")) AccentGreen else AccentGreen.copy(alpha = 0.5f),
+                        tonalElevation = 0.dp
+                    ) {
+                        Box(
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Send Reset Link",
+                                style = TextStyle(
+                                    fontFamily = PoppinsFamily,
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 16.sp
+                                ),
+                                color = ButtonTextDark
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // Cancel link
+                    Text(
+                        text = "Cancel",
+                        style = TextStyle(
+                            fontFamily = PoppinsFamily,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 14.sp
+                        ),
+                        color = textSecondary,
+                        modifier = Modifier.clickable { onDismiss() }
+                    )
+                }
+            }
         }
     }
 }

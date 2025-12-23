@@ -17,6 +17,9 @@ interface ChallengeDao {
     @Query("SELECT * FROM challenges WHERE isJoined = 1 AND endDate >= :currentTime ORDER BY startDate ASC")
     fun getJoinedChallenges(currentTime: Long = System.currentTimeMillis()): Flow<List<ChallengeEntity>>
 
+    @Query("SELECT * FROM challenges WHERE isJoined = 1 AND isCompleted = 0 AND endDate >= :currentTime AND (type = :challengeType OR type = 'mixed')")
+    suspend fun getJoinedChallengesByTypeSync(challengeType: String, currentTime: Long = System.currentTimeMillis()): List<ChallengeEntity>
+
     @Query("SELECT * FROM challenges WHERE isCompleted = 1 ORDER BY completedAt DESC")
     fun getCompletedChallenges(): Flow<List<ChallengeEntity>>
 

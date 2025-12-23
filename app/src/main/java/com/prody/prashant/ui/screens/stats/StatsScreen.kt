@@ -116,6 +116,9 @@ fun StatsScreen(
     var selectedUserForSupport by remember { mutableStateOf<LeaderboardEntryEntity?>(null) }
     val sheetState = rememberModalBottomSheetState()
 
+    // Filter dialog state
+    var showFilterDialog by remember { mutableStateOf(false) }
+
     // Entry animation
     var isVisible by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
@@ -167,6 +170,18 @@ fun StatsScreen(
         )
     }
 
+    // Stats filter dialog
+    if (showFilterDialog) {
+        StatsFilterDialog(
+            onDismiss = { showFilterDialog = false },
+            isDarkTheme = isDarkTheme,
+            surfaceColor = surfaceColor,
+            textPrimary = textPrimary,
+            textSecondary = textSecondary,
+            accentColor = accentColor
+        )
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -209,7 +224,8 @@ fun StatsScreen(
                             textPrimary = textPrimary,
                             textSecondary = textSecondary,
                             surfaceColor = surfaceColor,
-                            accentColor = accentColor
+                            accentColor = accentColor,
+                            onFilterClick = { showFilterDialog = true }
                         )
                     }
                 }
@@ -353,7 +369,8 @@ private fun PremiumStatsHeader(
     textPrimary: Color,
     textSecondary: Color,
     surfaceColor: Color,
-    accentColor: Color
+    accentColor: Color,
+    onFilterClick: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -388,8 +405,9 @@ private fun PremiumStatsHeader(
                     modifier = Modifier
                         .clickable(
                             interactionSource = remember { MutableInteractionSource() },
-                            indication = null
-                        ) { /* TODO: Implement filter */ }
+                            indication = null,
+                            onClick = onFilterClick
+                        )
                         .padding(horizontal = 12.dp, vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
@@ -1315,6 +1333,96 @@ private fun PremiumSupportActionButton(
             }
         }
     }
+}
+
+// ============================================================================
+// STATS FILTER DIALOG
+// ============================================================================
+
+@Composable
+private fun StatsFilterDialog(
+    onDismiss: () -> Unit,
+    isDarkTheme: Boolean,
+    surfaceColor: Color,
+    textPrimary: Color,
+    textSecondary: Color,
+    accentColor: Color
+) {
+    val dialogBgColor = if (isDarkTheme) Color(0xFF1A3331) else Color.White
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = dialogBgColor,
+        title = {
+            Text(
+                text = "Filter Stats",
+                fontFamily = PoppinsFamily,
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp,
+                color = textPrimary
+            )
+        },
+        text = {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text(
+                    text = "Choose a time range to filter your stats dashboard.",
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Normal,
+                    fontSize = 14.sp,
+                    color = textSecondary
+                )
+
+                // Filter options
+                val filterOptions = listOf("This Week", "This Month", "Last 3 Months", "This Year", "All Time")
+                filterOptions.forEach { option ->
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .clickable { onDismiss() },
+                        color = if (option == "This Week") accentColor.copy(alpha = 0.15f) else Color.Transparent,
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 12.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = option,
+                                fontFamily = PoppinsFamily,
+                                fontWeight = if (option == "This Week") FontWeight.SemiBold else FontWeight.Normal,
+                                fontSize = 14.sp,
+                                color = if (option == "This Week") accentColor else textPrimary
+                            )
+                            if (option == "This Week") {
+                                Icon(
+                                    imageVector = Icons.Filled.Check,
+                                    contentDescription = "Selected",
+                                    tint = accentColor,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text(
+                    text = "Done",
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.SemiBold,
+                    color = accentColor
+                )
+            }
+        }
+    )
 }
 
 // ============================================================================

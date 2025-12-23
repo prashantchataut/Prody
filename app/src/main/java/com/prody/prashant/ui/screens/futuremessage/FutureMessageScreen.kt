@@ -61,6 +61,7 @@ fun FutureMessageListScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var selectedTab by remember { mutableIntStateOf(0) }
+    var showFilterDialog by remember { mutableStateOf(false) }
     val isDarkTheme = isSystemInDarkTheme()
 
     // Theme-aware colors
@@ -82,6 +83,7 @@ fun FutureMessageListScreen(
             // Top Header Bar
             TimeCapsuleHeader(
                 onNavigateBack = onNavigateBack,
+                onFilterClick = { showFilterDialog = true },
                 iconColor = iconColor,
                 titleColor = primaryTextColor
             )
@@ -125,6 +127,14 @@ fun FutureMessageListScreen(
                 .padding(bottom = 32.dp)
                 .navigationBarsPadding()
         )
+
+        // Filter Dialog
+        if (showFilterDialog) {
+            TimeCapsuleFilterDialog(
+                onDismiss = { showFilterDialog = false },
+                isDarkTheme = isDarkTheme
+            )
+        }
     }
 }
 
@@ -134,6 +144,7 @@ fun FutureMessageListScreen(
 @Composable
 private fun TimeCapsuleHeader(
     onNavigateBack: () -> Unit,
+    onFilterClick: () -> Unit,
     iconColor: Color,
     titleColor: Color
 ) {
@@ -167,7 +178,7 @@ private fun TimeCapsuleHeader(
 
         // Filter icon
         IconButton(
-            onClick = { /* Filter action */ },
+            onClick = onFilterClick,
             modifier = Modifier.size(48.dp)
         ) {
             Icon(
@@ -635,6 +646,57 @@ private fun HourglassIcon(
             cap = StrokeCap.Round
         )
     }
+}
+
+/**
+ * Filter dialog for time capsule messages
+ */
+@Composable
+private fun TimeCapsuleFilterDialog(
+    onDismiss: () -> Unit,
+    isDarkTheme: Boolean
+) {
+    val dialogBgColor = if (isDarkTheme) TimeCapsuleBackgroundDark else TimeCapsuleBackgroundLight
+    val textPrimaryColor = if (isDarkTheme) TimeCapsuleTextPrimaryDark else TimeCapsuleTextPrimaryLight
+    val textSecondaryColor = if (isDarkTheme) TimeCapsuleTextSecondaryDark else TimeCapsuleTextSecondaryLight
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = dialogBgColor,
+        title = {
+            Text(
+                text = "Filter Messages",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = textPrimaryColor
+            )
+        },
+        text = {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    text = "Filter options for time capsule messages will be available in a future update.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = textSecondaryColor
+                )
+                Text(
+                    text = "Planned filters:\n• By date range\n• By read/unread status\n• By delivery date",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = textSecondaryColor.copy(alpha = 0.8f)
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text(
+                    text = "Got it",
+                    color = TimeCapsuleAccent,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+        }
+    )
 }
 
 /**
