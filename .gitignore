@@ -29,3 +29,6 @@ build_output.txt
 # Kotlin
 .kotlin/
 .env
+
+# API Keys
+/app/apikey.properties
