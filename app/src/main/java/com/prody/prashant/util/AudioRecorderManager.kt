@@ -360,17 +360,17 @@ class AudioRecorderManager @Inject constructor(
      * Gets the duration of an audio file in milliseconds.
      */
     fun getAudioDuration(uri: Uri): Long {
+        var player: MediaPlayer? = null
         return try {
-            MediaPlayer().apply {
-                setDataSource(context, uri)
-                prepare()
-                val duration = duration.toLong()
-                release()
-                return duration
-            }
+            player = MediaPlayer()
+            player.setDataSource(context, uri)
+            player.prepare()
+            player.duration.toLong()
         } catch (e: Exception) {
             Log.e(TAG, "Failed to get audio duration", e)
             0L
+        } finally {
+            player?.release()
         }
     }
 
