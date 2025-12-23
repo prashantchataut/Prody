@@ -1052,7 +1052,6 @@ private fun PremiumStickyUserSection(
                 Text(
                     text = userName,
                     style = MaterialTheme.typography.bodyLarge,
-                    color = ProdyTextOnAccentLight,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 15.sp,
                     color = Color.Black,

@@ -753,6 +753,9 @@ private fun QuoteCard(
     accentColor: Color,
     isDarkTheme: Boolean
 ) {
+    // Divider color based on theme
+    val dividerColor = if (isDarkTheme) Color(0xFF3A5250) else Color(0xFFDEE2E6)
+
     // Track if the quote has been revealed
     var isQuoteVisible by remember { mutableStateOf(false) }
 

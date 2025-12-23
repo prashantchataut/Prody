@@ -164,7 +164,9 @@ fun ProfileScreen(
                 PremiumProfileHeader(
                     onSettingsClick = onNavigateToSettings,
                     onEditClick = onNavigateToEditProfile,
-                    isDarkMode = isDarkMode
+                    textPrimary = textPrimary,
+                    textSecondary = textSecondary,
+                    accentColor = accentColor
                 )
             }
 
@@ -185,7 +187,9 @@ fun ProfileScreen(
                         isDev = true, // TODO: Get from user state
                         isBetaPioneer = true, // TODO: Get from user state
                         isDarkMode = isDarkMode,
-                        onEditClick = onNavigateToEditProfile
+                        onEditClick = onNavigateToEditProfile,
+                        textPrimary = textPrimary,
+                        accentColor = accentColor
                     )
                 }
             }
@@ -268,7 +272,8 @@ fun ProfileScreen(
                         unlockedCount = uiState.unlockedAchievements.size,
                         totalCount = uiState.unlockedAchievements.size + uiState.lockedAchievements.size,
                         isDarkMode = isDarkMode,
-                        onClick = onNavigateToAchievements
+                        onClick = onNavigateToAchievements,
+                        textPrimary = textPrimary
                     )
                 }
             }
@@ -394,7 +399,9 @@ private fun PremiumHeroSection(
     isDev: Boolean,
     isBetaPioneer: Boolean,
     isDarkMode: Boolean,
-    onEditClick: () -> Unit
+    onEditClick: () -> Unit,
+    textPrimary: Color,
+    accentColor: Color
 ) {
     Column(
         modifier = Modifier
@@ -410,10 +417,11 @@ private fun PremiumHeroSection(
             // Magical breathing halo effect around the avatar
             MoodBreathingHalo(
                 modifier = Modifier.size(156.dp),
-                baseColor = if (isDarkMode) IdentityRoomColors.AccentGreen.copy(alpha = 0.3f)
-                            else IdentityRoomColors.AccentGreenLight.copy(alpha = 0.25f),
-                pulseIntensity = 0.15f
-            )
+                mood = com.prody.prashant.ui.components.AmbientMood.Calm,
+                size = 156.dp
+            ) {
+                // Empty - just provides halo effect
+            }
 
             // Avatar container
             Box(
@@ -1188,7 +1196,8 @@ private fun PremiumTrophyRoomHeader(
     unlockedCount: Int,
     totalCount: Int,
     isDarkMode: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    textPrimary: Color
 ) {
     val goldColor = Color(0xFFD4AF37)
 
