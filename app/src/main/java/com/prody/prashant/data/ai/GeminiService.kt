@@ -333,11 +333,11 @@ class GeminiService @Inject constructor() {
 
     companion object {
         /**
-         * Gets the API key from BuildConfig (set via local.properties).
+         * Gets the API key from BuildConfig (set via apikey.properties).
          * This is the recommended way to configure the API key for security.
          *
          * To configure:
-         * 1. Open local.properties in the project root
+         * 1. Open apikey.properties in the app/ directory
          * 2. Add: AI_API_KEY=your_gemini_api_key_here
          * 3. Rebuild the project
          *

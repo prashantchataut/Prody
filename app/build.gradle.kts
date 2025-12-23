@@ -9,6 +9,14 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
 }
 
+// Load apikey.properties for secure API key storage
+val apiKeyProperties = Properties().apply {
+    val apiKeyPropertiesFile = rootProject.file("app/apikey.properties")
+    if (apiKeyPropertiesFile.exists()) {
+        load(apiKeyPropertiesFile.inputStream())
+    }
+}
+
 // Load local.properties for API key configuration
 val localProperties = Properties().apply {
     val localPropertiesFile = rootProject.file("local.properties")
@@ -40,12 +48,12 @@ android {
             arg("room.generateKotlin", "true")
         }
 
-        // AI API Key configuration - reads from local.properties
-        // Add your API key to local.properties: AI_API_KEY=your_gemini_api_key_here
+        // AI API Key configuration - reads from apikey.properties
+        // Add your API key to apikey.properties: AI_API_KEY=your_gemini_api_key_here
         buildConfigField(
             "String",
             "AI_API_KEY",
-            "\"${localProperties.getProperty("AI_API_KEY", "")}\""
+            "\"${apiKeyProperties.getProperty("AI_API_KEY", "")}\""
         )
         buildConfigField(
             "String",
