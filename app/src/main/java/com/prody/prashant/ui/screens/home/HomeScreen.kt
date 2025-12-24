@@ -40,6 +40,7 @@ import com.prody.prashant.data.local.entity.SeedEntity
 import com.prody.prashant.domain.progress.NextAction
 import com.prody.prashant.domain.progress.NextActionType
 import com.prody.prashant.domain.progress.TodayProgress
+import com.prody.prashant.ui.components.AiProofModeDebugInfo
 import com.prody.prashant.ui.components.AmbientBackground
 import com.prody.prashant.ui.components.BuddhaContemplatingAnimation
 import com.prody.prashant.ui.components.BuddhaGuideIntro
@@ -271,7 +272,8 @@ fun HomeScreen(
                     primaryTextColor = primaryTextColor,
                     secondaryTextColor = secondaryTextColor,
                     accentColor = accentColor,
-                    isDarkTheme = isDarkTheme
+                    isDarkTheme = isDarkTheme,
+                    proofInfo = uiState.buddhaWisdomProofInfo
                 )
             }
 
@@ -1549,7 +1551,8 @@ private fun BuddhaWisdomCard(
     primaryTextColor: Color,
     secondaryTextColor: Color,
     accentColor: Color,
-    isDarkTheme: Boolean
+    isDarkTheme: Boolean,
+    proofInfo: AiProofModeInfo = AiProofModeInfo()
 ) {
     val buddhaGold = Color(0xFFDAA520)
     val buddhaGoldLight = Color(0xFFFFF8DC)
@@ -1673,6 +1676,15 @@ private fun BuddhaWisdomCard(
                     fontSize = 14.sp,
                     color = secondaryTextColor,
                     fontStyle = FontStyle.Italic
+                )
+            }
+
+            // AI Proof Mode debug info (shown when enabled in Settings)
+            if (proofInfo.isEnabled) {
+                Spacer(modifier = Modifier.height(12.dp))
+                AiProofModeDebugInfo(
+                    proofInfo = proofInfo,
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
         }

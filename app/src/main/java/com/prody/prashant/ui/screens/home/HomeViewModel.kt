@@ -23,6 +23,19 @@ import kotlinx.coroutines.launch
 import java.util.Calendar
 import javax.inject.Inject
 
+/**
+ * AI Proof Mode debug info - shown on AI surfaces when enabled in Settings.
+ * Provides visibility into AI generation status for debugging.
+ */
+data class AiProofModeInfo(
+    val provider: String = "",           // Gemini, OpenRouter, Fallback
+    val cacheStatus: String = "",        // HIT, MISS, or empty if no call
+    val timestamp: Long = 0L,            // Last successful generation timestamp
+    val lastError: String? = null,       // Short error code/message if failed
+    val isEnabled: Boolean = false,      // Whether AI Proof Mode is enabled
+    val isAiConfigured: Boolean = true   // Whether API key is configured
+)
+
 data class HomeUiState(
     val userName: String = "Growth Seeker",
     val currentStreak: Int = 0,
@@ -67,7 +80,10 @@ data class HomeUiState(
     val dailySeed: SeedEntity? = null,
     val showProgressFeedback: Boolean = false,
     val progressFeedbackTitle: String = "",
-    val progressFeedbackMessage: String = ""
+    val progressFeedbackMessage: String = "",
+    // ============== AI PROOF MODE ==============
+    // Debug info for Buddha Wisdom (shown when AI Proof Mode is enabled)
+    val buddhaWisdomProofInfo: AiProofModeInfo = AiProofModeInfo()
 )
 
 @HiltViewModel
@@ -102,6 +118,22 @@ class HomeViewModel @Inject constructor(
         checkOnboarding()
         loadActiveProgress()
         loadDailySeed()
+        observeAiProofMode()
+    }
+
+    /**
+     * Observe AI Proof Mode preference and update UI state accordingly.
+     */
+    private fun observeAiProofMode() {
+        viewModelScope.launch {
+            preferencesManager.debugAiProofMode.collect { isEnabled ->
+                _uiState.update { state ->
+                    state.copy(
+                        buddhaWisdomProofInfo = state.buddhaWisdomProofInfo.copy(isEnabled = isEnabled)
+                    )
+                }
+            }
+        }
     }
 
     // ============== ACTIVE PROGRESS LAYER ==============
@@ -377,7 +409,18 @@ class HomeViewModel @Inject constructor(
             try {
                 _uiState.update { it.copy(isBuddhaThoughtLoading = true) }
 
+                // Check if AI is configured (API key present)
+                val isAiConfigured = buddhaAiRepository.isAiConfigured()
+
+                // Get stats before the call to determine cache status
+                val statsBefore = buddhaAiRepository.getStats()
+                val cacheHitsBefore = statsBefore.cacheHits
+
                 val result = buddhaAiRepository.getDailyWisdom(forceRefresh)
+
+                // Get stats after the call
+                val statsAfter = buddhaAiRepository.getStats()
+                val wasCacheHit = statsAfter.cacheHits > cacheHitsBefore
 
                 when (result) {
                     is BuddhaAiResult.Success -> {
@@ -386,7 +429,14 @@ class HomeViewModel @Inject constructor(
                                 buddhaThought = result.data.wisdom,
                                 buddhaThoughtExplanation = result.data.explanation,
                                 isBuddhaThoughtAiGenerated = result.data.isAiGenerated,
-                                isBuddhaThoughtLoading = false
+                                isBuddhaThoughtLoading = false,
+                                buddhaWisdomProofInfo = state.buddhaWisdomProofInfo.copy(
+                                    provider = if (result.data.isAiGenerated) statsAfter.lastProvider.ifEmpty { "Gemini" } else "Fallback",
+                                    cacheStatus = if (wasCacheHit) "HIT" else "MISS",
+                                    timestamp = statsAfter.lastCallTimestamp.takeIf { it > 0 } ?: System.currentTimeMillis(),
+                                    lastError = null,
+                                    isAiConfigured = isAiConfigured
+                                )
                             )
                         }
                         android.util.Log.d(TAG, "Buddha wisdom loaded (AI: ${result.data.isAiGenerated})")
@@ -397,10 +447,17 @@ class HomeViewModel @Inject constructor(
                                 buddhaThought = result.data.wisdom,
                                 buddhaThoughtExplanation = result.data.explanation,
                                 isBuddhaThoughtAiGenerated = false,
-                                isBuddhaThoughtLoading = false
+                                isBuddhaThoughtLoading = false,
+                                buddhaWisdomProofInfo = state.buddhaWisdomProofInfo.copy(
+                                    provider = "Fallback",
+                                    cacheStatus = if (wasCacheHit) "HIT" else "MISS",
+                                    timestamp = System.currentTimeMillis(),
+                                    lastError = if (!isAiConfigured) "API key not configured" else statsAfter.lastError,
+                                    isAiConfigured = isAiConfigured
+                                )
                             )
                         }
-                        android.util.Log.d(TAG, "Buddha wisdom loaded (fallback)")
+                        android.util.Log.d(TAG, "Buddha wisdom loaded (fallback, AI configured: $isAiConfigured)")
                     }
                     is BuddhaAiResult.Error -> {
                         // Fall back to local wisdom
@@ -409,7 +466,14 @@ class HomeViewModel @Inject constructor(
                                 buddhaThought = BuddhaWisdom.getDailyReflectionPrompt(),
                                 buddhaThoughtExplanation = "From the archives",
                                 isBuddhaThoughtAiGenerated = false,
-                                isBuddhaThoughtLoading = false
+                                isBuddhaThoughtLoading = false,
+                                buddhaWisdomProofInfo = state.buddhaWisdomProofInfo.copy(
+                                    provider = "Error",
+                                    cacheStatus = "MISS",
+                                    timestamp = System.currentTimeMillis(),
+                                    lastError = result.message,
+                                    isAiConfigured = isAiConfigured
+                                )
                             )
                         }
                         android.util.Log.e(TAG, "Buddha wisdom error: ${result.message}")
@@ -425,7 +489,14 @@ class HomeViewModel @Inject constructor(
                         buddhaThought = BuddhaWisdom.getDailyReflectionPrompt(),
                         buddhaThoughtExplanation = "From the archives",
                         isBuddhaThoughtAiGenerated = false,
-                        isBuddhaThoughtLoading = false
+                        isBuddhaThoughtLoading = false,
+                        buddhaWisdomProofInfo = state.buddhaWisdomProofInfo.copy(
+                            provider = "Error",
+                            cacheStatus = "MISS",
+                            timestamp = System.currentTimeMillis(),
+                            lastError = e.message,
+                            isAiConfigured = buddhaAiRepository.isAiConfigured()
+                        )
                     )
                 }
             }

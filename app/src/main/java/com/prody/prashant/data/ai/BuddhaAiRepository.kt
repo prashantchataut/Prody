@@ -291,6 +291,14 @@ class BuddhaAiRepository @Inject constructor(
     fun getStats(): AiStats = stats.copy()
 
     /**
+     * Check if AI is properly configured with an API key.
+     * Returns true if either Gemini (from BuildConfig) or OpenRouter is configured.
+     */
+    fun isAiConfigured(): Boolean {
+        return geminiService.isConfigured() || openRouterService.isConfigured()
+    }
+
+    /**
      * Clear all caches.
      */
     suspend fun clearCache() {
