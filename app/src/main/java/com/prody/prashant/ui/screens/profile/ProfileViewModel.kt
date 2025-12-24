@@ -7,6 +7,7 @@ import com.prody.prashant.data.ai.WeeklyPatternResult
 import com.prody.prashant.data.local.dao.JournalDao
 import com.prody.prashant.data.local.dao.UserDao
 import com.prody.prashant.data.local.entity.AchievementEntity
+import com.prody.prashant.data.local.preferences.PreferencesManager
 import com.prody.prashant.domain.model.Mood
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -35,6 +36,9 @@ data class ProfileUiState(
     val weeklyPattern: WeeklyPatternResult? = null,
     val isLoadingWeeklyPattern: Boolean = false,
     val hasEnoughDataForPattern: Boolean = false,
+    // Badge flags (from debug preferences)
+    val isDev: Boolean = false,
+    val isBetaPioneer: Boolean = false,
     // Error state
     val error: String? = null
 )
@@ -43,7 +47,8 @@ data class ProfileUiState(
 class ProfileViewModel @Inject constructor(
     private val userDao: UserDao,
     private val journalDao: JournalDao,
-    private val buddhaAiRepository: BuddhaAiRepository
+    private val buddhaAiRepository: BuddhaAiRepository,
+    private val preferencesManager: PreferencesManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProfileUiState())
@@ -57,6 +62,25 @@ class ProfileViewModel @Inject constructor(
         loadProfile()
         loadAchievements()
         loadWeeklyPattern()
+        loadBadgePreferences()
+    }
+
+    private fun loadBadgePreferences() {
+        viewModelScope.launch {
+            combine(
+                preferencesManager.debugPreviewDevBadge,
+                preferencesManager.debugPreviewBetaBadge
+            ) { isDev, isBetaPioneer ->
+                Pair(isDev, isBetaPioneer)
+            }.collect { (isDev, isBetaPioneer) ->
+                _uiState.update { state ->
+                    state.copy(
+                        isDev = isDev,
+                        isBetaPioneer = isBetaPioneer
+                    )
+                }
+            }
+        }
     }
 
     private fun loadProfile() {
