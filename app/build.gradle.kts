@@ -162,6 +162,9 @@ dependencies {
     implementation(libs.sqlcipher.android)
     implementation(libs.sqlite.ktx)
 
+    // Biometric Authentication
+    implementation(libs.androidx.biometric)
+
     // Hilt
     implementation(libs.hilt.android)
     ksp(libs.hilt.android.compiler)

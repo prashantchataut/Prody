@@ -463,11 +463,11 @@ class HomeViewModel @Inject constructor(
     }
 
     fun clearError() {
-        _uiState.update { it.copy(error = null) }
+        // No error field in state - method kept for interface compatibility
     }
 
     fun retry() {
-        _uiState.update { it.copy(isLoading = true, error = null, hasLoadError = false) }
+        _uiState.update { it.copy(isLoading = true) }
         loadHomeData()
         loadBuddhaWisdom()
     }
