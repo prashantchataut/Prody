@@ -119,6 +119,30 @@ interface JournalDao {
 
     @Query("SELECT * FROM journal_entries WHERE userId = :userId ORDER BY createdAt DESC")
     fun getEntriesByUser(userId: String): Flow<List<JournalEntryEntity>>
+
+    // ==================== ACTIVE PROGRESS QUERIES ====================
+
+    /**
+     * Get entry count since a timestamp (for daily/weekly progress)
+     */
+    @Query("SELECT COUNT(*) FROM journal_entries WHERE createdAt >= :since AND isDeleted = 0")
+    suspend fun getEntryCountSince(since: Long): Int
+
+    /**
+     * Get total word count since a timestamp (for progress tracking)
+     */
+    @Query("SELECT COALESCE(SUM(wordCount), 0) FROM journal_entries WHERE createdAt >= :since AND isDeleted = 0")
+    suspend fun getTotalWordCountSince(since: Long): Int
+
+    /**
+     * Get count of distinct days with activity since a timestamp
+     */
+    @Query("""
+        SELECT COUNT(DISTINCT date(createdAt/1000, 'unixepoch', 'localtime'))
+        FROM journal_entries
+        WHERE createdAt >= :since AND isDeleted = 0
+    """)
+    suspend fun getActiveDaysCountSince(since: Long): Int
 }
 
 data class MoodCount(

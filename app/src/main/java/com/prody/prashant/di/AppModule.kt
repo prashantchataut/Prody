@@ -147,6 +147,12 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun provideSeedDao(database: ProdyDatabase): SeedDao {
+        return database.seedDao()
+    }
+
+    @Provides
+    @Singleton
     fun providePreferencesManager(
         @ApplicationContext context: Context
     ): PreferencesManager {

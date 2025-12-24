@@ -157,8 +157,9 @@ dependencies {
     // DataStore
     implementation(libs.androidx.datastore.preferences)
 
-    // Security - Encryption
+    // Security - Encryption & Biometrics
     implementation(libs.androidx.security.crypto)
+    implementation(libs.androidx.biometric)
     implementation(libs.sqlcipher.android)
     implementation(libs.sqlite.ktx)
 

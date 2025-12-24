@@ -505,6 +505,13 @@ fun BronzeAuroraBanner(
         label = "bronze_glow"
     )
 
+    // Star positions as relative coordinates (0-1 range)
+    val auroraStarsRelative = remember {
+        List(15) {
+            Pair(Random.nextFloat(), Random.nextFloat() * 0.5f)
+        }
+    }
+
     Canvas(
         modifier = modifier
             .fillMaxSize()
@@ -566,16 +573,9 @@ fun BronzeAuroraBanner(
             verticalOffset = verticalShimmer * 0.5f
         )
 
-        // Star field background (subtle) - use normalized coordinates
-        val auroraStars = listOf(
-            Offset(0.1f, 0.15f), Offset(0.25f, 0.08f), Offset(0.4f, 0.22f),
-            Offset(0.55f, 0.12f), Offset(0.7f, 0.28f), Offset(0.85f, 0.18f),
-            Offset(0.15f, 0.35f), Offset(0.3f, 0.42f), Offset(0.5f, 0.38f),
-            Offset(0.65f, 0.45f), Offset(0.8f, 0.32f), Offset(0.9f, 0.4f),
-            Offset(0.2f, 0.48f), Offset(0.45f, 0.05f), Offset(0.75f, 0.1f)
-        )
-        auroraStars.forEach { normalizedStar ->
-            val star = Offset(normalizedStar.x * width, normalizedStar.y * height)
+        // Star field background (subtle)
+        auroraStarsRelative.forEach { (relX, relY) ->
+            val star = Offset(relX * width, relY * height)
             val twinkle = (sin(auroraPhase1 + star.x / 100) + 1f) / 2f
             drawCircle(
                 color = Color.White.copy(alpha = 0.3f + twinkle * 0.3f),

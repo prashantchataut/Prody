@@ -101,4 +101,18 @@ interface FutureMessageDao {
         ORDER BY deliveryDate DESC
     """)
     fun searchMessages(query: String): Flow<List<FutureMessageEntity>>
+
+    // ==================== ACTIVE PROGRESS QUERIES ====================
+
+    /**
+     * Get message count since a timestamp (for daily/weekly progress)
+     */
+    @Query("SELECT COUNT(*) FROM future_messages WHERE createdAt >= :since AND isDeleted = 0")
+    suspend fun getMessageCountSince(since: Long): Int
+
+    /**
+     * Get total message count (for "Next Action" suggestions)
+     */
+    @Query("SELECT COUNT(*) FROM future_messages WHERE isDeleted = 0")
+    suspend fun getTotalMessageCount(): Int
 }

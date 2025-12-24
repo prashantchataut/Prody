@@ -13,8 +13,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -129,9 +131,33 @@ fun VoidEffectContainer(
                         )
                     }
                 }
-                .graphicsLayer {
-                    if (animatedSaturation < 1f) {
-                        colorFilter = ColorFilter.colorMatrix(colorMatrix)
+                .drawWithCache {
+                    val paint = if (animatedSaturation < 1f) {
+                        android.graphics.Paint().apply {
+                            colorFilter = android.graphics.ColorMatrixColorFilter(colorMatrix.values)
+                        }
+                    } else null
+
+                    onDrawWithContent {
+                        if (paint != null) {
+                            drawIntoCanvas { canvas ->
+                                canvas.saveLayer(
+                                    androidx.compose.ui.geometry.Rect(
+                                        0f, 0f, size.width, size.height
+                                    ),
+                                    androidx.compose.ui.graphics.Paint().apply {
+                                        this.asFrameworkPaint().colorFilter =
+                                            android.graphics.ColorMatrixColorFilter(colorMatrix.values)
+                                    }
+                                )
+                            }
+                            drawContent()
+                            drawIntoCanvas { canvas ->
+                                canvas.restore()
+                            }
+                        } else {
+                            drawContent()
+                        }
                     }
                 }
         ) {
@@ -253,8 +279,26 @@ fun Modifier.voidGrayscale(hoursSinceLastJournal: Long): Modifier {
         setToSaturation(voidLevel.saturation)
     }
 
-    return this.graphicsLayer {
-        colorFilter = ColorFilter.colorMatrix(colorMatrix)
+    return this.drawWithCache {
+        val paint = android.graphics.Paint().apply {
+            colorFilter = android.graphics.ColorMatrixColorFilter(colorMatrix.values)
+        }
+
+        onDrawWithContent {
+            drawIntoCanvas { canvas ->
+                canvas.saveLayer(
+                    androidx.compose.ui.geometry.Rect(0f, 0f, size.width, size.height),
+                    androidx.compose.ui.graphics.Paint().apply {
+                        this.asFrameworkPaint().colorFilter =
+                            android.graphics.ColorMatrixColorFilter(colorMatrix.values)
+                    }
+                )
+            }
+            drawContent()
+            drawIntoCanvas { canvas ->
+                canvas.restore()
+            }
+        }
     }
 }
 

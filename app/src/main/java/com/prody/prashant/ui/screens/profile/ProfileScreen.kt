@@ -184,8 +184,8 @@ fun ProfileScreen(
                         bio = uiState.bio,
                         level = getLevelFromPoints(uiState.totalPoints),
                         levelProgress = calculateLevelProgress(uiState.totalPoints),
-                        isDev = true, // TODO: Get from user state
-                        isBetaPioneer = true, // TODO: Get from user state
+                        isDev = uiState.isDev,
+                        isBetaPioneer = uiState.isBetaPioneer,
                         isDarkMode = isDarkMode,
                         onEditClick = onNavigateToEditProfile,
                         textPrimary = textPrimary,

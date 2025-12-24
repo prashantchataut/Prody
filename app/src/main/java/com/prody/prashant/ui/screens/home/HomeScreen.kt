@@ -36,6 +36,10 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.R
+import com.prody.prashant.data.local.entity.SeedEntity
+import com.prody.prashant.domain.progress.NextAction
+import com.prody.prashant.domain.progress.NextActionType
+import com.prody.prashant.domain.progress.TodayProgress
 import com.prody.prashant.ui.components.AmbientBackground
 import com.prody.prashant.ui.components.BuddhaContemplatingAnimation
 import com.prody.prashant.ui.components.BuddhaGuideIntro
@@ -155,6 +159,46 @@ fun HomeScreen(
 
             // Spacer for generous spacing
             item { Spacer(modifier = Modifier.height(24.dp)) }
+
+            // ============== TODAY'S PROGRESS MODULE ==============
+            // Shows "Today's Progress" summary - never blank
+            item {
+                TodayProgressCard(
+                    todayProgress = uiState.todayProgress,
+                    nextAction = uiState.nextAction,
+                    onNextActionClick = { route ->
+                        when (route) {
+                            "journal/new" -> onNavigateToJournal()
+                            "vocabulary" -> onNavigateToVocabulary()
+                            "future_message/write" -> onNavigateToFutureMessage()
+                            "quotes" -> onNavigateToQuotes()
+                        }
+                    },
+                    surfaceColor = surfaceColor,
+                    primaryTextColor = primaryTextColor,
+                    secondaryTextColor = secondaryTextColor,
+                    accentColor = accentColor,
+                    isDarkTheme = isDarkTheme
+                )
+            }
+
+            // Spacer
+            item { Spacer(modifier = Modifier.height(16.dp)) }
+
+            // ============== SEED OF THE DAY (Seed -> Bloom) ==============
+            if (uiState.dailySeed != null) {
+                item {
+                    SeedOfTheDayCard(
+                        seed = uiState.dailySeed!!,
+                        surfaceColor = surfaceColor,
+                        primaryTextColor = primaryTextColor,
+                        secondaryTextColor = secondaryTextColor,
+                        accentColor = accentColor,
+                        isDarkTheme = isDarkTheme
+                    )
+                }
+                item { Spacer(modifier = Modifier.height(16.dp)) }
+            }
 
             // Reactive Hero Section - changes based on today's journaling status
             item {
@@ -1629,6 +1673,303 @@ private fun BuddhaWisdomCard(
                     fontSize = 14.sp,
                     color = secondaryTextColor,
                     fontStyle = FontStyle.Italic
+                )
+            }
+        }
+    }
+}
+
+// =============================================================================
+// TODAY'S PROGRESS CARD - Active Progress Layer
+// =============================================================================
+
+@Composable
+private fun TodayProgressCard(
+    todayProgress: TodayProgress,
+    nextAction: NextAction?,
+    onNextActionClick: (String) -> Unit,
+    surfaceColor: Color,
+    primaryTextColor: Color,
+    secondaryTextColor: Color,
+    accentColor: Color,
+    isDarkTheme: Boolean
+) {
+    val dividerColor = if (isDarkTheme) Color(0xFF3A5250) else Color(0xFFDEE2E6)
+
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp),
+        shape = RoundedCornerShape(20.dp),
+        color = surfaceColor,
+        tonalElevation = 0.dp
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp)
+        ) {
+            // Header
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "TODAY'S PROGRESS",
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 11.sp,
+                    color = accentColor,
+                    letterSpacing = 1.5.sp
+                )
+                if (todayProgress.currentStreak > 0) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.LocalFireDepartment,
+                            contentDescription = null,
+                            tint = StreakFire,
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Text(
+                            text = "${todayProgress.currentStreak} day streak",
+                            fontFamily = PoppinsFamily,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 12.sp,
+                            color = StreakFire
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Progress Stats Row
+            if (todayProgress.isEmpty) {
+                // Empty state - designed, not blank
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Your day awaits",
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 16.sp,
+                        color = primaryTextColor
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Start with a small step below",
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.Normal,
+                        fontSize = 13.sp,
+                        color = secondaryTextColor
+                    )
+                }
+            } else {
+                // Show today's stats
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    // Journal entries
+                    ProgressStatItem(
+                        value = todayProgress.journalEntries.toString(),
+                        label = if (todayProgress.journalEntries == 1) "entry" else "entries",
+                        primaryTextColor = primaryTextColor,
+                        secondaryTextColor = secondaryTextColor
+                    )
+
+                    // Words written
+                    ProgressStatItem(
+                        value = todayProgress.wordsWritten.toString(),
+                        label = "words",
+                        primaryTextColor = primaryTextColor,
+                        secondaryTextColor = secondaryTextColor
+                    )
+
+                    // Words learned
+                    ProgressStatItem(
+                        value = todayProgress.wordsLearned.toString(),
+                        label = "learned",
+                        primaryTextColor = primaryTextColor,
+                        secondaryTextColor = secondaryTextColor
+                    )
+                }
+            }
+
+            // Divider
+            Spacer(modifier = Modifier.height(16.dp))
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(1.dp)
+                    .background(dividerColor)
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Next Action - the contextual suggestion
+            nextAction?.let { action ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(accentColor.copy(alpha = 0.1f))
+                        .clickable { onNextActionClick(action.actionRoute) }
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = action.title,
+                            fontFamily = PoppinsFamily,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 14.sp,
+                            color = primaryTextColor
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = action.subtitle,
+                            fontFamily = PoppinsFamily,
+                            fontWeight = FontWeight.Normal,
+                            fontSize = 12.sp,
+                            color = secondaryTextColor
+                        )
+                    }
+
+                    Icon(
+                        imageVector = Icons.Outlined.ArrowForward,
+                        contentDescription = "Go",
+                        tint = accentColor,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ProgressStatItem(
+    value: String,
+    label: String,
+    primaryTextColor: Color,
+    secondaryTextColor: Color
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = value,
+            fontFamily = PoppinsFamily,
+            fontWeight = FontWeight.Bold,
+            fontSize = 24.sp,
+            color = primaryTextColor
+        )
+        Text(
+            text = label,
+            fontFamily = PoppinsFamily,
+            fontWeight = FontWeight.Normal,
+            fontSize = 12.sp,
+            color = secondaryTextColor
+        )
+    }
+}
+
+// =============================================================================
+// SEED OF THE DAY CARD - Seed -> Bloom Mechanic
+// =============================================================================
+
+@Composable
+private fun SeedOfTheDayCard(
+    seed: SeedEntity,
+    surfaceColor: Color,
+    primaryTextColor: Color,
+    secondaryTextColor: Color,
+    accentColor: Color,
+    isDarkTheme: Boolean
+) {
+    val seedColor = if (seed.hasBloomedToday) MoodGrateful else Color(0xFFE8B42F) // Golden yellow for seed
+
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp),
+        shape = RoundedCornerShape(20.dp),
+        color = seedColor.copy(alpha = 0.1f),
+        tonalElevation = 0.dp
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Seed/Bloom Icon
+            Box(
+                modifier = Modifier
+                    .size(44.dp)
+                    .clip(CircleShape)
+                    .background(seedColor.copy(alpha = 0.2f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = if (seed.hasBloomedToday) Icons.Outlined.Park else Icons.Outlined.Spa,
+                    contentDescription = null,
+                    tint = seedColor,
+                    modifier = Modifier.size(22.dp)
+                )
+            }
+
+            // Seed content
+            Column(modifier = Modifier.weight(1f)) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = if (seed.hasBloomedToday) "BLOOMED" else "SEED OF THE DAY",
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 10.sp,
+                        color = seedColor,
+                        letterSpacing = 1.sp
+                    )
+                    if (seed.hasBloomedToday) {
+                        Text(
+                            text = "+25",
+                            fontFamily = PoppinsFamily,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 10.sp,
+                            color = accentColor
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = seed.seedContent.replaceFirstChar { it.uppercase() },
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp,
+                    color = primaryTextColor
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = if (seed.hasBloomedToday) {
+                        "Applied in your ${seed.bloomedIn ?: "writing"}"
+                    } else {
+                        "Use this in your journal to bloom"
+                    },
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Normal,
+                    fontSize = 12.sp,
+                    color = secondaryTextColor
                 )
             }
         }

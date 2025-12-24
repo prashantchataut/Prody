@@ -51,4 +51,12 @@ interface QuoteDao {
 
     @Delete
     suspend fun deleteQuote(quote: QuoteEntity)
+
+    // ==================== ACTIVE PROGRESS QUERIES ====================
+
+    /**
+     * Get count of saved/favorited quotes (for "Next Action" suggestions)
+     */
+    @Query("SELECT COUNT(*) FROM quotes WHERE isFavorite = 1")
+    suspend fun getSavedQuoteCount(): Int
 }

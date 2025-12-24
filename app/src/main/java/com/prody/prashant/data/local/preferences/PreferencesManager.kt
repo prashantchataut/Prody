@@ -61,7 +61,7 @@ class PreferencesManager @Inject constructor(
         // Debug: AI Proof Mode - Shows AI generation metadata in UI
         val DEBUG_AI_PROOF_MODE = booleanPreferencesKey("debug_ai_proof_mode")
 
-        // Privacy Mode Settings
+        // Privacy Mode settings
         val PRIVACY_LOCK_JOURNAL = booleanPreferencesKey("privacy_lock_journal")
         val PRIVACY_LOCK_FUTURE_MESSAGES = booleanPreferencesKey("privacy_lock_future_messages")
         val PRIVACY_LOCK_ON_BACKGROUND = booleanPreferencesKey("privacy_lock_on_background")
@@ -531,6 +531,68 @@ class PreferencesManager @Inject constructor(
     suspend fun setDebugAiProofMode(enabled: Boolean) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.DEBUG_AI_PROOF_MODE] = enabled
+        }
+    }
+
+    // ===== PRIVACY MODE SETTINGS =====
+
+    val privacyLockJournal: Flow<Boolean> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.PRIVACY_LOCK_JOURNAL] ?: false
+        }
+
+    suspend fun setPrivacyLockJournal(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.PRIVACY_LOCK_JOURNAL] = enabled
+        }
+    }
+
+    val privacyLockFutureMessages: Flow<Boolean> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.PRIVACY_LOCK_FUTURE_MESSAGES] ?: false
+        }
+
+    suspend fun setPrivacyLockFutureMessages(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.PRIVACY_LOCK_FUTURE_MESSAGES] = enabled
+        }
+    }
+
+    val privacyLockOnBackground: Flow<Boolean> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.PRIVACY_LOCK_ON_BACKGROUND] ?: true
+        }
+
+    suspend fun setPrivacyLockOnBackground(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.PRIVACY_LOCK_ON_BACKGROUND] = enabled
+        }
+    }
+
+    val privacyLastUnlockedAt: Flow<Long> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.PRIVACY_LAST_UNLOCKED_AT] ?: 0L
+        }
+
+    suspend fun setPrivacyLastUnlockedAt(timestamp: Long) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.PRIVACY_LAST_UNLOCKED_AT] = timestamp
         }
     }
 
