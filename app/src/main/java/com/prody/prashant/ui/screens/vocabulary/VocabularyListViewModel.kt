@@ -15,7 +15,8 @@ data class VocabularyListUiState(
     val totalCount: Int = 0,
     val showFavoritesOnly: Boolean = false,
     val currentFilter: String = "all",
-    val isLoading: Boolean = true
+    val isLoading: Boolean = true,
+    val error: String? = null
 )
 
 @HiltViewModel
@@ -60,7 +61,7 @@ class VocabularyListViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 android.util.Log.e(TAG, "Error loading vocabulary", e)
-                _uiState.update { it.copy(isLoading = false) }
+                _uiState.update { it.copy(isLoading = false, error = "Failed to load vocabulary. Please try again.") }
             }
         }
     }
@@ -101,7 +102,18 @@ class VocabularyListViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 android.util.Log.e(TAG, "Error toggling favorite for word: $wordId", e)
+                _uiState.update { it.copy(error = "Failed to update favorite status") }
             }
         }
+    }
+
+    fun clearError() {
+        _uiState.update { it.copy(error = null) }
+    }
+
+    fun retry() {
+        _uiState.update { it.copy(isLoading = true, error = null) }
+        loadVocabulary()
+        loadCounts()
     }
 }

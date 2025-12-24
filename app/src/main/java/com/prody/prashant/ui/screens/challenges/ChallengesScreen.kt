@@ -1347,7 +1347,10 @@ private fun ChallengeDetailBottomSheet(
                     Spacer(modifier = Modifier.height(12.dp))
                 }
 
-                itemsIndexed(leaderboard.take(10)) { index, entry ->
+                itemsIndexed(
+                    items = leaderboard.take(10),
+                    key = { _, entry -> entry.odId }
+                ) { index, entry ->
                     LeaderboardItemRow(entry = entry, rank = index + 1)
                     if (index < leaderboard.size - 1) {
                         HorizontalDivider(

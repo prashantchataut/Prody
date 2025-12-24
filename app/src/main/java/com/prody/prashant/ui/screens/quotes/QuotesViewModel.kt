@@ -198,6 +198,11 @@ class QuotesViewModel @Inject constructor(
         _uiState.update { it.copy(error = null) }
     }
 
+    fun retry() {
+        _uiState.update { it.copy(isLoading = true, error = null, loadedCount = 0) }
+        loadAllContent()
+    }
+
     /**
      * Load AI-generated explanation for a quote.
      * Shows "Meaning" and "Try this today" suggestions.

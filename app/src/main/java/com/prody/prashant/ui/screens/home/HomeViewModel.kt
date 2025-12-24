@@ -45,7 +45,10 @@ data class HomeUiState(
     // Onboarding state
     val showBuddhaGuide: Boolean = false,
     val buddhaGuideCards: List<BuddhaGuideCard> = emptyList(),
-    val showDailyWisdomHint: Boolean = false
+    val showDailyWisdomHint: Boolean = false,
+    // Error state - null means no error, content shows with defaults
+    val error: String? = null,
+    val hasLoadError: Boolean = false
 )
 
 @HiltViewModel
@@ -417,5 +420,15 @@ class HomeViewModel @Inject constructor(
         }
 
         loadBuddhaWisdom(forceRefresh = true)
+    }
+
+    fun clearError() {
+        _uiState.update { it.copy(error = null) }
+    }
+
+    fun retry() {
+        _uiState.update { it.copy(isLoading = true, error = null, hasLoadError = false) }
+        loadHomeData()
+        loadBuddhaWisdom()
     }
 }
