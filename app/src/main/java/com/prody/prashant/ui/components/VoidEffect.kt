@@ -375,7 +375,7 @@ fun VoidRestorationCelebration(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "✨ Colors Restored ✨",
+                    text = "Colors Restored",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = ProdyAccentGreen
