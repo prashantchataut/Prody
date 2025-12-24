@@ -57,6 +57,9 @@ class PreferencesManager @Inject constructor(
         // Debug: Special Badge Preview Toggles
         val DEBUG_PREVIEW_DEV_BADGE = booleanPreferencesKey("debug_preview_dev_badge")
         val DEBUG_PREVIEW_BETA_BADGE = booleanPreferencesKey("debug_preview_beta_badge")
+
+        // Debug: AI Proof Mode - Shows AI generation metadata in UI
+        val DEBUG_AI_PROOF_MODE = booleanPreferencesKey("debug_ai_proof_mode")
     }
 
     // Onboarding
@@ -506,6 +509,22 @@ class PreferencesManager @Inject constructor(
     suspend fun setDebugPreviewBetaBadge(enabled: Boolean) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.DEBUG_PREVIEW_BETA_BADGE] = enabled
+        }
+    }
+
+    // Debug: AI Proof Mode - Shows AI generation metadata in UI (DEBUG builds only)
+    val debugAiProofMode: Flow<Boolean> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.DEBUG_AI_PROOF_MODE] ?: false
+        }
+
+    suspend fun setDebugAiProofMode(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.DEBUG_AI_PROOF_MODE] = enabled
         }
     }
 
