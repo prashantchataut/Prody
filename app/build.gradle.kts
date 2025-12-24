@@ -69,9 +69,9 @@ android {
                 rootKeystoreFile.exists() -> rootKeystoreFile
                 else -> null
             }
-            storePassword = System.getenv("KEYSTORE_PASSWORD") ?: "prody2024"
-            keyAlias = System.getenv("KEY_ALIAS") ?: "prody"
-            keyPassword = System.getenv("KEY_PASSWORD") ?: "prody2024"
+            storePassword = System.getenv("KEYSTORE_PASSWORD")
+            keyAlias = System.getenv("KEY_ALIAS")
+            keyPassword = System.getenv("KEY_PASSWORD")
         }
     }
 
@@ -83,12 +83,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            val releaseConfig = signingConfigs.findByName("release")
-            signingConfig = if (releaseConfig?.storeFile?.exists() == true) {
-                releaseConfig
-            } else {
-                signingConfigs.getByName("debug")
-            }
+            signingConfig = signingConfigs.getByName("release")
         }
         debug {
             isMinifyEnabled = false
