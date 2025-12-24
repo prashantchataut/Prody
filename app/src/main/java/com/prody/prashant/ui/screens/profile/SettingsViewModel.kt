@@ -26,6 +26,10 @@ data class SettingsUiState(
     val buddhaPatternTrackingEnabled: Boolean = true,
     val buddhaPlayfulMode: Boolean = false,
     val buddhaReduceAiUsage: Boolean = false,
+    // Privacy Mode settings
+    val privacyLockJournal: Boolean = false,
+    val privacyLockFutureMessages: Boolean = false,
+    val privacyLockOnBackground: Boolean = true,
     // Data management
     val isExporting: Boolean = false,
     val isImporting: Boolean = false,
@@ -110,13 +114,23 @@ class SettingsViewModel @Inject constructor(
                     BuddhaFeatures2(playful, reduce, aiProofMode)
                 }
 
+                // Combine Privacy Mode settings
+                val privacySettings = combine(
+                    preferencesManager.privacyLockJournal,
+                    preferencesManager.privacyLockFutureMessages,
+                    preferencesManager.privacyLockOnBackground
+                ) { lockJournal, lockFutureMessages, lockOnBackground ->
+                    PrivacySettings(lockJournal, lockFutureMessages, lockOnBackground)
+                }
+
                 // Combine all groups into final state
                 combine(
                     appearanceAndNotifications,
                     preferences,
                     buddhaFeatures1,
-                    buddhaFeatures2
-                ) { appearance, prefs, buddha1, buddha2 ->
+                    buddhaFeatures2,
+                    privacySettings
+                ) { appearance, prefs, buddha1, buddha2, privacy ->
                     SettingsUiState(
                         themeMode = appearance.themeMode,
                         dynamicColors = appearance.dynamicColors,
@@ -168,6 +182,12 @@ class SettingsViewModel @Inject constructor(
         val playful: Boolean,
         val reduce: Boolean,
         val aiProofMode: Boolean
+    )
+
+    private data class PrivacySettings(
+        val lockJournal: Boolean,
+        val lockFutureMessages: Boolean,
+        val lockOnBackground: Boolean
     )
 
     fun setThemeMode(mode: String) {
@@ -308,6 +328,38 @@ class SettingsViewModel @Inject constructor(
                 preferencesManager.setBuddhaReduceAiUsage(enabled)
             } catch (e: Exception) {
                 android.util.Log.e(TAG, "Error setting Buddha reduce AI usage", e)
+            }
+        }
+    }
+
+    // Privacy Mode setters
+
+    fun setPrivacyLockJournal(enabled: Boolean) {
+        viewModelScope.launch {
+            try {
+                preferencesManager.setPrivacyLockJournal(enabled)
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error setting privacy lock journal", e)
+            }
+        }
+    }
+
+    fun setPrivacyLockFutureMessages(enabled: Boolean) {
+        viewModelScope.launch {
+            try {
+                preferencesManager.setPrivacyLockFutureMessages(enabled)
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error setting privacy lock future messages", e)
+            }
+        }
+    }
+
+    fun setPrivacyLockOnBackground(enabled: Boolean) {
+        viewModelScope.launch {
+            try {
+                preferencesManager.setPrivacyLockOnBackground(enabled)
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error setting privacy lock on background", e)
             }
         }
     }
