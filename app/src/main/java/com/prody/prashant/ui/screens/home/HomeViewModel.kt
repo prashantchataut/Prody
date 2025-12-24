@@ -46,9 +46,10 @@ data class HomeUiState(
     val showBuddhaGuide: Boolean = false,
     val buddhaGuideCards: List<BuddhaGuideCard> = emptyList(),
     val showDailyWisdomHint: Boolean = false,
-    // Error state - null means no error, content shows with defaults
-    val error: String? = null,
-    val hasLoadError: Boolean = false
+    // Reactive state - Did user journal today?
+    val journaledToday: Boolean = false,
+    val todayEntryMood: String = "",
+    val todayEntryPreview: String = ""
 )
 
 @HiltViewModel
@@ -285,6 +286,36 @@ class HomeViewModel @Inject constructor(
                 android.util.Log.e(TAG, "Error loading streak history", e)
             }
         }
+
+        // Check if user journaled today (reactive home hero)
+        viewModelScope.launch {
+            try {
+                val todayStart = getTodayStartTimestamp()
+                journalDao.getEntriesByDateRange(todayStart, System.currentTimeMillis())
+                    .collect { todayEntries ->
+                        if (todayEntries.isNotEmpty()) {
+                            val latestEntry = todayEntries.maxByOrNull { it.createdAt }
+                            _uiState.update { state ->
+                                state.copy(
+                                    journaledToday = true,
+                                    todayEntryMood = latestEntry?.mood ?: "",
+                                    todayEntryPreview = latestEntry?.content?.take(100) ?: ""
+                                )
+                            }
+                        } else {
+                            _uiState.update { state ->
+                                state.copy(
+                                    journaledToday = false,
+                                    todayEntryMood = "",
+                                    todayEntryPreview = ""
+                                )
+                            }
+                        }
+                    }
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error checking today's journal entries", e)
+            }
+        }
     }
 
     fun markWordAsLearned() {
@@ -330,6 +361,15 @@ class HomeViewModel @Inject constructor(
     private fun getWeekStartTimestamp(): Long {
         val calendar = Calendar.getInstance()
         calendar.set(Calendar.DAY_OF_WEEK, calendar.firstDayOfWeek)
+        calendar.set(Calendar.HOUR_OF_DAY, 0)
+        calendar.set(Calendar.MINUTE, 0)
+        calendar.set(Calendar.SECOND, 0)
+        calendar.set(Calendar.MILLISECOND, 0)
+        return calendar.timeInMillis
+    }
+
+    private fun getTodayStartTimestamp(): Long {
+        val calendar = Calendar.getInstance()
         calendar.set(Calendar.HOUR_OF_DAY, 0)
         calendar.set(Calendar.MINUTE, 0)
         calendar.set(Calendar.SECOND, 0)
