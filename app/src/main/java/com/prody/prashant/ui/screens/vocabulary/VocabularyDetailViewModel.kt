@@ -38,7 +38,8 @@ data class VocabularyDetailUiState(
     val word: VocabularyEntity? = null,
     val isLoading: Boolean = true,
     val isSpeaking: Boolean = false,
-    val wisdomQuestState: WisdomQuestState = WisdomQuestState.Idle
+    val wisdomQuestState: WisdomQuestState = WisdomQuestState.Idle,
+    val error: String? = null
 )
 
 @HiltViewModel
@@ -53,16 +54,28 @@ class VocabularyDetailViewModel @Inject constructor(
 
     fun loadWord(wordId: Long) {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
-            vocabularyDao.observeWordById(wordId).collect { word ->
-                _uiState.update {
-                    it.copy(
-                        word = word,
-                        isLoading = false
-                    )
+            try {
+                _uiState.update { it.copy(isLoading = true, error = null) }
+                vocabularyDao.observeWordById(wordId).collect { word ->
+                    _uiState.update {
+                        it.copy(
+                            word = word,
+                            isLoading = false
+                        )
+                    }
                 }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(isLoading = false, error = "Failed to load word details") }
             }
         }
+    }
+
+    fun clearError() {
+        _uiState.update { it.copy(error = null) }
+    }
+
+    fun retry(wordId: Long) {
+        loadWord(wordId)
     }
 
     fun toggleFavorite() {

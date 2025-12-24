@@ -359,6 +359,15 @@ class ChallengesViewModel @Inject constructor(
         _uiState.update { it.copy(showCelebration = false, celebrationMessage = "") }
     }
 
+    fun clearError() {
+        _uiState.update { it.copy(error = null) }
+    }
+
+    fun retry() {
+        _uiState.update { it.copy(isLoading = true, error = null) }
+        loadChallenges()
+    }
+
     private fun mapEntityToChallenge(entity: ChallengeEntity): Challenge {
         return Challenge(
             id = entity.id,

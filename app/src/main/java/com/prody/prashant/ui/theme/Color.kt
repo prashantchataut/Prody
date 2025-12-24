@@ -572,14 +572,10 @@ object ProdyGradients {
 // DEPRECATED COLORS - Keeping for backward compatibility
 // =============================================================================
 
-// These will be phased out but kept for now to prevent compilation errors
-@Deprecated("Use ProdyAccentGreen instead", ReplaceWith("ProdyAccentGreen"))
+// Tier colors for gamification - actively used throughout the app
 val GoldTier = Color(0xFFD4AF37)
-@Deprecated("Use LeaderboardSilver instead", ReplaceWith("LeaderboardSilver"))
 val SilverTier = Color(0xFFB8C0C4)
-@Deprecated("Use LeaderboardBronze instead", ReplaceWith("LeaderboardBronze"))
 val BronzeTier = Color(0xFFCD9575)
-@Deprecated("Use ProdyAccentGreen instead", ReplaceWith("ProdyAccentGreen"))
 val PlatinumTier = Color(0xFF8CD3D9)
 
 val AchievementUnlocked = Color(0xFF36F97F)
