@@ -40,7 +40,9 @@ data class SettingsUiState(
     val isClearingData: Boolean = false,
     // Debug notification state
     val isDebugBuild: Boolean = BuildConfig.DEBUG,
-    val debugNotificationSent: String? = null
+    val debugNotificationSent: String? = null,
+    // Debug: AI Proof Mode - Shows AI generation metadata in UI
+    val debugAiProofMode: Boolean = false
 )
 
 @HiltViewModel
@@ -106,9 +108,10 @@ class SettingsViewModel @Inject constructor(
                 // Combine Buddha AI feature toggles (second group)
                 val buddhaFeatures2 = combine(
                     preferencesManager.buddhaPlayfulMode,
-                    preferencesManager.buddhaReduceAiUsage
-                ) { playful, reduce ->
-                    BuddhaFeatures2(playful, reduce)
+                    preferencesManager.buddhaReduceAiUsage,
+                    preferencesManager.debugAiProofMode
+                ) { playful, reduce, aiProofMode ->
+                    BuddhaFeatures2(playful, reduce, aiProofMode)
                 }
 
                 // Combine Privacy Mode settings
@@ -143,9 +146,7 @@ class SettingsViewModel @Inject constructor(
                         buddhaPatternTrackingEnabled = buddha1.pattern,
                         buddhaPlayfulMode = buddha2.playful,
                         buddhaReduceAiUsage = buddha2.reduce,
-                        privacyLockJournal = privacy.lockJournal,
-                        privacyLockFutureMessages = privacy.lockFutureMessages,
-                        privacyLockOnBackground = privacy.lockOnBackground
+                        debugAiProofMode = buddha2.aiProofMode
                     )
                 }.collect { state ->
                     _uiState.value = state
@@ -179,7 +180,8 @@ class SettingsViewModel @Inject constructor(
 
     private data class BuddhaFeatures2(
         val playful: Boolean,
-        val reduce: Boolean
+        val reduce: Boolean,
+        val aiProofMode: Boolean
     )
 
     private data class PrivacySettings(
@@ -445,5 +447,20 @@ class SettingsViewModel @Inject constructor(
      */
     fun clearDebugNotificationMessage() {
         _uiState.update { it.copy(debugNotificationSent = null) }
+    }
+
+    /**
+     * Toggles AI Proof Mode (DEBUG builds only).
+     * When enabled, shows AI generation metadata (provider, timestamp) in UI.
+     */
+    fun setDebugAiProofMode(enabled: Boolean) {
+        if (!BuildConfig.DEBUG) return
+        viewModelScope.launch {
+            try {
+                preferencesManager.setDebugAiProofMode(enabled)
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error setting AI Proof Mode", e)
+            }
+        }
     }
 }

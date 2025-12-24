@@ -32,6 +32,7 @@ import com.prody.prashant.data.local.entity.*
  *              Added auth fields to UserProfileEntity (odUserId, email, photoUrl, etc.)
  *              Added indices for efficient userId queries
  *              Changed VocabularyLearningEntity to composite key (wordId, userId)
+ * - Version 3: Added aiSummary field to JournalEntryEntity for short AI summaries
  */
 @Database(
     entities = [
@@ -55,7 +56,7 @@ import com.prody.prashant.data.local.entity.*
         ChallengeParticipationEntity::class,
         ChallengeLeaderboardEntity::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = true // Enable for migration verification
 )
 abstract class ProdyDatabase : RoomDatabase() {

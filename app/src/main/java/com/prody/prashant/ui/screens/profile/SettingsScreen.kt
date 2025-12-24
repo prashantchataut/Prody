@@ -403,10 +403,12 @@ fun SettingsScreen(
                         animationSpec = tween(400, delayMillis = 550, easing = EaseOutCubic)
                     )
                 ) {
-                    DebugNotificationSection(
+                    DebugSection(
                         isDark = isDark,
                         onTestNotification = { type -> viewModel.sendTestNotification(type) },
-                        debugNotificationSent = uiState.debugNotificationSent
+                        debugNotificationSent = uiState.debugNotificationSent,
+                        aiProofModeEnabled = uiState.debugAiProofMode,
+                        onAiProofModeChange = { viewModel.setDebugAiProofMode(it) }
                     )
                 }
             }
@@ -1255,20 +1257,24 @@ private fun ProdyIdFooter(isDark: Boolean) {
 }
 
 // =============================================================================
-// DEBUG NOTIFICATION SECTION (DEBUG builds only)
+// DEBUG SECTION (DEBUG builds only)
 // =============================================================================
 
 @Composable
-private fun DebugNotificationSection(
+private fun DebugSection(
     isDark: Boolean,
     onTestNotification: (String) -> Unit,
-    debugNotificationSent: String?
+    debugNotificationSent: String?,
+    aiProofModeEnabled: Boolean,
+    onAiProofModeChange: (Boolean) -> Unit
 ) {
     val cardBackground = if (isDark) DarkCardBackground else LightCardBackground
     val primaryText = if (isDark) DarkPrimaryText else LightPrimaryText
     val secondaryText = if (isDark) DarkSecondaryText else LightSecondaryText
     val iconBackground = if (isDark) DarkIconBackground else LightIconBackground
     val warningColor = Color(0xFFFF9800)
+    val toggleActiveColor = if (isDark) DarkToggleActive else LightToggleActive
+    val toggleInactiveColor = if (isDark) DarkToggleInactive else LightToggleInactive
 
     Column(modifier = Modifier.padding(vertical = 8.dp)) {
         // Section Header
@@ -1301,6 +1307,63 @@ private fun DebugNotificationSection(
             color = cardBackground
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
+                // AI Proof Mode Toggle
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) { onAiProofModeChange(!aiProofModeEnabled) }
+                        .padding(vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(iconBackground),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Science,
+                            contentDescription = null,
+                            tint = LightOnlineGreen,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(14.dp))
+
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "AI Proof Mode",
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Medium,
+                            color = primaryText
+                        )
+                        Text(
+                            text = "Show AI generation metadata on cards",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = secondaryText
+                        )
+                    }
+
+                    CustomToggleSwitch(
+                        checked = aiProofModeEnabled,
+                        onCheckedChange = onAiProofModeChange,
+                        enabled = true,
+                        activeTrackColor = toggleActiveColor,
+                        inactiveTrackColor = toggleInactiveColor,
+                        isDark = isDark
+                    )
+                }
+
+                HorizontalDivider(
+                    modifier = Modifier.padding(vertical = 12.dp),
+                    color = iconBackground.copy(alpha = 0.5f)
+                )
+
                 // Title
                 Text(
                     text = "Test Notifications",

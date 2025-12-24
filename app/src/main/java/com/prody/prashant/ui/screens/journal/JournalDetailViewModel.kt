@@ -105,4 +105,9 @@ class JournalDetailViewModel @Inject constructor(
     fun clearError() {
         _uiState.update { it.copy(error = null) }
     }
+
+    fun retry(entryId: Long) {
+        _uiState.update { it.copy(isLoading = true, error = null) }
+        loadEntry(entryId)
+    }
 }

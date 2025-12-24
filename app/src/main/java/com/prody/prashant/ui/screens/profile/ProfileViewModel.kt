@@ -34,7 +34,9 @@ data class ProfileUiState(
     // Weekly AI Pattern Tracking
     val weeklyPattern: WeeklyPatternResult? = null,
     val isLoadingWeeklyPattern: Boolean = false,
-    val hasEnoughDataForPattern: Boolean = false
+    val hasEnoughDataForPattern: Boolean = false,
+    // Error state
+    val error: String? = null
 )
 
 @HiltViewModel
@@ -87,7 +89,7 @@ class ProfileViewModel @Inject constructor(
             } catch (e: Exception) {
                 android.util.Log.e(TAG, "Error loading profile", e)
                 _uiState.update { state ->
-                    state.copy(isLoading = false)
+                    state.copy(isLoading = false, error = "Failed to load profile. Please try again.")
                 }
             }
         }
@@ -232,5 +234,16 @@ class ProfileViewModel @Inject constructor(
         calendar.set(Calendar.SECOND, 0)
         calendar.set(Calendar.MILLISECOND, 0)
         return calendar.timeInMillis
+    }
+
+    fun clearError() {
+        _uiState.update { it.copy(error = null) }
+    }
+
+    fun retry() {
+        _uiState.update { it.copy(isLoading = true, error = null) }
+        loadProfile()
+        loadAchievements()
+        loadWeeklyPattern()
     }
 }

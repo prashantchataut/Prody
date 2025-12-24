@@ -89,31 +89,6 @@ val PoppinsFamily: FontFamily = try {
 }
 
 /**
- * Secondary font family - Playfair Display (DEPRECATED - kept for backward compatibility)
- * All new code should use PoppinsFamily instead.
- */
-@Deprecated("Use PoppinsFamily instead - Prody uses exclusively Poppins", ReplaceWith("PoppinsFamily"))
-val PlayfairFamily: FontFamily = try {
-    val fonts = listOfNotNull(
-        safeFont(R.font.playfairdisplay_regular, FontWeight.Normal),
-        safeFont(R.font.playfairdisplay_medium, FontWeight.Medium),
-        safeFont(R.font.playfairdisplay_semibold, FontWeight.SemiBold),
-        safeFont(R.font.playfairdisplay_bold, FontWeight.Bold),
-        safeFont(R.font.playfairdisplay_italic, FontWeight.Normal, FontStyle.Italic)
-    )
-
-    if (fonts.isEmpty()) {
-        Log.e(TAG, "All Playfair Display fonts failed to load, falling back to Poppins")
-        PoppinsFamily
-    } else {
-        FontFamily(fonts)
-    }
-} catch (e: Exception) {
-    Log.e(TAG, "Failed to initialize Playfair Display font family", e)
-    PoppinsFamily
-}
-
-/**
  * Main Typography configuration following Material Design 3 guidelines
  * with Poppins as the exclusive font family.
  */
@@ -611,23 +586,6 @@ val CardCaptionStyle = TextStyle(
     lineHeight = 16.sp,
     letterSpacing = 0.4.sp
 )
-
-// =============================================================================
-// WISDOM SERIF TYPOGRAPHY - DEPRECATED (Keeping for backward compatibility)
-// All now redirect to Poppins equivalents
-// =============================================================================
-
-/**
- * @deprecated Use WisdomHeroStyle instead
- */
-@Deprecated("Use WisdomHeroStyle instead", ReplaceWith("WisdomHeroStyle"))
-val WisdomSerifStyle = WisdomHeroStyle
-
-/**
- * @deprecated Use WisdomLargeStyle instead
- */
-@Deprecated("Use WisdomLargeStyle instead", ReplaceWith("WisdomLargeStyle"))
-val WisdomSerifLargeStyle = WisdomLargeStyle
 
 // =============================================================================
 // ONBOARDING SPECIFIC TYPOGRAPHY
