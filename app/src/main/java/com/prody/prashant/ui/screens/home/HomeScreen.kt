@@ -82,6 +82,7 @@ fun HomeScreen(
     onNavigateToFutureMessage: () -> Unit,
     onNavigateToMeditation: () -> Unit = {},
     onNavigateToChallenges: () -> Unit = {},
+    onNavigateToSearch: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -135,7 +136,8 @@ fun HomeScreen(
                     secondaryTextColor = secondaryTextColor,
                     surfaceColor = surfaceColor,
                     accentColor = accentColor,
-                    isDarkTheme = isDarkTheme
+                    isDarkTheme = isDarkTheme,
+                    onSearchClick = onNavigateToSearch
                 )
             }
 
@@ -304,7 +306,8 @@ private fun PremiumHeader(
     secondaryTextColor: Color,
     surfaceColor: Color,
     accentColor: Color,
-    isDarkTheme: Boolean
+    isDarkTheme: Boolean,
+    onSearchClick: () -> Unit = {}
 ) {
     Column(
         modifier = Modifier
@@ -339,15 +342,48 @@ private fun PremiumHeader(
                 )
             }
 
-            // Stats Badge
-            PremiumStatsBadge(
-                streak = currentStreak,
-                points = totalPoints,
-                surfaceColor = surfaceColor,
-                primaryTextColor = primaryTextColor,
-                accentColor = accentColor,
-                isDarkTheme = isDarkTheme
-            )
+            // Search and Stats Row
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                // Search Icon Button
+                Surface(
+                    shape = CircleShape,
+                    color = surfaceColor,
+                    tonalElevation = 0.dp,
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clip(CircleShape)
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                            onClick = onSearchClick
+                        )
+                ) {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Search,
+                            contentDescription = "Search",
+                            tint = secondaryTextColor,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
+                }
+
+                // Stats Badge
+                PremiumStatsBadge(
+                    streak = currentStreak,
+                    points = totalPoints,
+                    surfaceColor = surfaceColor,
+                    primaryTextColor = primaryTextColor,
+                    accentColor = accentColor,
+                    isDarkTheme = isDarkTheme
+                )
+            }
         }
     }
 }

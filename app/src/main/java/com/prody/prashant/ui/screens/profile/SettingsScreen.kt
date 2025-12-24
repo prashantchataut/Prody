@@ -236,12 +236,62 @@ fun SettingsScreen(
                 }
             }
 
-            // BUDDHA AI Section
+            // PRIVACY MODE Section
             AnimatedVisibility(
                 visible = isVisible,
                 enter = fadeIn(tween(400, delayMillis = 300)) + slideInVertically(
                     initialOffsetY = { it / 4 },
                     animationSpec = tween(400, delayMillis = 300, easing = EaseOutCubic)
+                )
+            ) {
+                SettingsSection(
+                    title = "PRIVACY MODE",
+                    isDark = isDark,
+                    showLeafIcon = false
+                ) {
+                    // Lock Journal
+                    SettingsRowWithToggle(
+                        icon = Icons.Filled.Lock,
+                        title = "Lock Journal",
+                        subtitle = "Require authentication to access",
+                        checked = uiState.privacyLockJournal,
+                        onCheckedChange = { viewModel.setPrivacyLockJournal(it) },
+                        isDark = isDark
+                    )
+
+                    SettingsDivider(isDark)
+
+                    // Lock Time Capsule (Future Messages)
+                    SettingsRowWithToggle(
+                        icon = Icons.Filled.Lock,
+                        title = "Lock Time Capsule",
+                        subtitle = "Require authentication to access",
+                        checked = uiState.privacyLockFutureMessages,
+                        onCheckedChange = { viewModel.setPrivacyLockFutureMessages(it) },
+                        isDark = isDark
+                    )
+
+                    SettingsDivider(isDark)
+
+                    // Lock on Background
+                    SettingsRowWithToggle(
+                        icon = Icons.Filled.ExitToApp,
+                        title = "Re-lock on Background",
+                        subtitle = "Lock when app goes to background",
+                        checked = uiState.privacyLockOnBackground,
+                        onCheckedChange = { viewModel.setPrivacyLockOnBackground(it) },
+                        enabled = uiState.privacyLockJournal || uiState.privacyLockFutureMessages,
+                        isDark = isDark
+                    )
+                }
+            }
+
+            // BUDDHA AI Section
+            AnimatedVisibility(
+                visible = isVisible,
+                enter = fadeIn(tween(400, delayMillis = 350)) + slideInVertically(
+                    initialOffsetY = { it / 4 },
+                    animationSpec = tween(400, delayMillis = 350, easing = EaseOutCubic)
                 )
             ) {
                 SettingsSection(
@@ -320,9 +370,9 @@ fun SettingsScreen(
             // PRIVACY & DATA Section
             AnimatedVisibility(
                 visible = isVisible,
-                enter = fadeIn(tween(400, delayMillis = 350)) + slideInVertically(
+                enter = fadeIn(tween(400, delayMillis = 400)) + slideInVertically(
                     initialOffsetY = { it / 4 },
-                    animationSpec = tween(400, delayMillis = 350, easing = EaseOutCubic)
+                    animationSpec = tween(400, delayMillis = 400, easing = EaseOutCubic)
                 )
             ) {
                 PrivacyDataPolicySection()
@@ -331,9 +381,9 @@ fun SettingsScreen(
             // SYSTEM INFO Section (Enhanced "Cooler" About Section)
             AnimatedVisibility(
                 visible = isVisible,
-                enter = fadeIn(tween(400, delayMillis = 450)) + slideInVertically(
+                enter = fadeIn(tween(400, delayMillis = 500)) + slideInVertically(
                     initialOffsetY = { it / 4 },
-                    animationSpec = tween(400, delayMillis = 450, easing = EaseOutCubic)
+                    animationSpec = tween(400, delayMillis = 500, easing = EaseOutCubic)
                 )
             ) {
                 SettingsSection(
@@ -348,9 +398,9 @@ fun SettingsScreen(
             if (uiState.isDebugBuild) {
                 AnimatedVisibility(
                     visible = isVisible,
-                    enter = fadeIn(tween(400, delayMillis = 500)) + slideInVertically(
+                    enter = fadeIn(tween(400, delayMillis = 550)) + slideInVertically(
                         initialOffsetY = { it / 4 },
-                        animationSpec = tween(400, delayMillis = 500, easing = EaseOutCubic)
+                        animationSpec = tween(400, delayMillis = 550, easing = EaseOutCubic)
                     )
                 ) {
                     DebugNotificationSection(
@@ -364,9 +414,9 @@ fun SettingsScreen(
             // FEEDBACK Section
             AnimatedVisibility(
                 visible = isVisible,
-                enter = fadeIn(tween(400, delayMillis = 550)) + slideInVertically(
+                enter = fadeIn(tween(400, delayMillis = 600)) + slideInVertically(
                     initialOffsetY = { it / 4 },
-                    animationSpec = tween(400, delayMillis = 550, easing = EaseOutCubic)
+                    animationSpec = tween(400, delayMillis = 600, easing = EaseOutCubic)
                 )
             ) {
                 SettingsSection(
@@ -380,9 +430,9 @@ fun SettingsScreen(
             // PRODY ID Footer
             AnimatedVisibility(
                 visible = isVisible,
-                enter = fadeIn(tween(400, delayMillis = 650)) + slideInVertically(
+                enter = fadeIn(tween(400, delayMillis = 700)) + slideInVertically(
                     initialOffsetY = { it / 4 },
-                    animationSpec = tween(400, delayMillis = 650, easing = EaseOutCubic)
+                    animationSpec = tween(400, delayMillis = 700, easing = EaseOutCubic)
                 )
             ) {
                 ProdyIdFooter(isDark = isDark)

@@ -90,4 +90,15 @@ interface FutureMessageDao {
 
     @Query("SELECT * FROM future_messages WHERE userId = :userId ORDER BY deliveryDate ASC")
     fun getMessagesByUser(userId: String): Flow<List<FutureMessageEntity>>
+
+    // Search across future messages
+    @Query("""
+        SELECT * FROM future_messages
+        WHERE (title LIKE '%' || :query || '%'
+            OR content LIKE '%' || :query || '%'
+            OR category LIKE '%' || :query || '%')
+        AND isDeleted = 0
+        ORDER BY deliveryDate DESC
+    """)
+    fun searchMessages(query: String): Flow<List<FutureMessageEntity>>
 }

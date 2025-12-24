@@ -29,6 +29,7 @@ import com.prody.prashant.ui.screens.quotes.QuotesScreen
 import com.prody.prashant.ui.screens.stats.StatsScreen
 import com.prody.prashant.ui.screens.vocabulary.VocabularyDetailScreen
 import com.prody.prashant.ui.screens.vocabulary.VocabularyListScreen
+import com.prody.prashant.ui.screens.search.SearchScreen
 
 /**
  * Prody Navigation - Screen Routes & Navigation Graph
@@ -83,6 +84,7 @@ sealed class Screen(val route: String) {
     data object Quotes : Screen("quotes")
     data object Meditation : Screen("meditation")
     data object Challenges : Screen("challenges")
+    data object Search : Screen("search")
 }
 
 // =============================================================================
@@ -203,6 +205,9 @@ fun ProdyNavHost(
                 },
                 onNavigateToChallenges = {
                     navController.navigate(Screen.Challenges.route)
+                },
+                onNavigateToSearch = {
+                    navController.navigate(Screen.Search.route)
                 }
             )
         }
@@ -434,6 +439,44 @@ fun ProdyNavHost(
         composable(Screen.Challenges.route) {
             ChallengesScreen(
                 onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        // =====================================================================
+        // GLOBAL SEARCH
+        // =====================================================================
+        composable(
+            route = Screen.Search.route,
+            // Fade transition for search (overlay-like)
+            enterTransition = {
+                fadeIn(tween(250))
+            },
+            exitTransition = {
+                fadeOut(tween(200))
+            },
+            popEnterTransition = {
+                fadeIn(tween(250))
+            },
+            popExitTransition = {
+                fadeOut(tween(200))
+            }
+        ) {
+            SearchScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToJournalEntry = { entryId ->
+                    navController.navigate(Screen.JournalDetail.createRoute(entryId))
+                },
+                onNavigateToQuote = { quoteId ->
+                    // Navigate to quotes screen (quote detail not implemented separately)
+                    navController.navigate(Screen.Quotes.route)
+                },
+                onNavigateToVocabulary = { wordId ->
+                    navController.navigate(Screen.VocabularyDetail.createRoute(wordId))
+                },
+                onNavigateToFutureMessage = { messageId ->
+                    // Navigate to future message list (detail not implemented separately)
+                    navController.navigate(Screen.FutureMessageList.route)
+                }
             )
         }
     }

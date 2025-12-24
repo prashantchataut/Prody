@@ -15,6 +15,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -41,6 +44,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -191,6 +195,7 @@ fun NewJournalEntryScreen(
         Scaffold(
             snackbarHost = { SnackbarHost(snackbarHostState) },
             containerColor = colors.background,
+            contentWindowInsets = WindowInsets(0, 0, 0, 0), // Handle insets manually for IME
             topBar = {
                 JournalTopBar(
                     onBackClick = handleBack,
@@ -202,11 +207,22 @@ fun NewJournalEntryScreen(
                 )
             }
         ) { padding ->
+            val scrollState = rememberScrollState()
+
+            // Auto-scroll to bottom when keyboard appears
+            val imeVisible = WindowInsets.ime.getBottom(LocalDensity.current) > 0
+            LaunchedEffect(imeVisible) {
+                if (imeVisible) {
+                    scrollState.animateScrollTo(scrollState.maxValue)
+                }
+            }
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding)
-                    .verticalScroll(rememberScrollState())
+                    .imePadding() // Critical: Add IME padding to push content above keyboard
+                    .verticalScroll(scrollState)
             ) {
                 Spacer(modifier = Modifier.height(8.dp))
 
