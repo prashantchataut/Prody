@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.material.icons.outlined.ArrowForward
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -82,6 +83,7 @@ fun HomeScreen(
     onNavigateToFutureMessage: () -> Unit,
     onNavigateToMeditation: () -> Unit = {},
     onNavigateToChallenges: () -> Unit = {},
+    onNavigateToSearch: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -135,7 +137,8 @@ fun HomeScreen(
                     secondaryTextColor = secondaryTextColor,
                     surfaceColor = surfaceColor,
                     accentColor = accentColor,
-                    isDarkTheme = isDarkTheme
+                    isDarkTheme = isDarkTheme,
+                    onSearchClick = onNavigateToSearch
                 )
             }
 
@@ -153,10 +156,13 @@ fun HomeScreen(
             // Spacer for generous spacing
             item { Spacer(modifier = Modifier.height(24.dp)) }
 
-            // Reflection Cards Row (Gratitude & Challenges)
+            // Reactive Hero Section - changes based on today's journaling status
             item {
-                ReflectionCardsSection(
-                    onGratitudeClick = onNavigateToJournal,
+                ReactiveHeroSection(
+                    journaledToday = uiState.journaledToday,
+                    todayEntryMood = uiState.todayEntryMood,
+                    todayEntryPreview = uiState.todayEntryPreview,
+                    onJournalClick = onNavigateToJournal,
                     onChallengesClick = onNavigateToChallenges,
                     surfaceColor = surfaceColor,
                     primaryTextColor = primaryTextColor,
@@ -304,7 +310,8 @@ private fun PremiumHeader(
     secondaryTextColor: Color,
     surfaceColor: Color,
     accentColor: Color,
-    isDarkTheme: Boolean
+    isDarkTheme: Boolean,
+    onSearchClick: () -> Unit = {}
 ) {
     Column(
         modifier = Modifier
@@ -339,15 +346,48 @@ private fun PremiumHeader(
                 )
             }
 
-            // Stats Badge
-            PremiumStatsBadge(
-                streak = currentStreak,
-                points = totalPoints,
-                surfaceColor = surfaceColor,
-                primaryTextColor = primaryTextColor,
-                accentColor = accentColor,
-                isDarkTheme = isDarkTheme
-            )
+            // Search and Stats Row
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                // Search Icon Button
+                Surface(
+                    shape = CircleShape,
+                    color = surfaceColor,
+                    tonalElevation = 0.dp,
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clip(CircleShape)
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                            onClick = onSearchClick
+                        )
+                ) {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Search,
+                            contentDescription = "Search",
+                            tint = secondaryTextColor,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
+                }
+
+                // Stats Badge
+                PremiumStatsBadge(
+                    streak = currentStreak,
+                    points = totalPoints,
+                    surfaceColor = surfaceColor,
+                    primaryTextColor = primaryTextColor,
+                    accentColor = accentColor,
+                    isDarkTheme = isDarkTheme
+                )
+            }
         }
     }
 }
@@ -431,6 +471,252 @@ private fun PremiumStatsBadge(
                 )
             }
         }
+    }
+}
+
+// =============================================================================
+// REACTIVE HERO SECTION - Changes based on today's journaling status
+// =============================================================================
+
+@Composable
+private fun ReactiveHeroSection(
+    journaledToday: Boolean,
+    todayEntryMood: String,
+    todayEntryPreview: String,
+    onJournalClick: () -> Unit,
+    onChallengesClick: () -> Unit,
+    surfaceColor: Color,
+    primaryTextColor: Color,
+    secondaryTextColor: Color,
+    accentColor: Color,
+    isDarkTheme: Boolean
+) {
+    val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+
+    if (journaledToday) {
+        // User journaled today - show "Today's Reflection" recap card
+        TodayReflectionCard(
+            mood = todayEntryMood,
+            preview = todayEntryPreview,
+            onViewClick = onJournalClick,
+            surfaceColor = surfaceColor,
+            primaryTextColor = primaryTextColor,
+            secondaryTextColor = secondaryTextColor,
+            accentColor = accentColor,
+            isDarkTheme = isDarkTheme
+        )
+    } else {
+        // User hasn't journaled today - show "Start Here" CTA
+        StartHereCTA(
+            onJournalClick = onJournalClick,
+            onChallengesClick = onChallengesClick,
+            surfaceColor = surfaceColor,
+            primaryTextColor = primaryTextColor,
+            secondaryTextColor = secondaryTextColor,
+            accentColor = accentColor,
+            isDarkTheme = isDarkTheme,
+            hour = hour
+        )
+    }
+}
+
+@Composable
+private fun TodayReflectionCard(
+    mood: String,
+    preview: String,
+    onViewClick: () -> Unit,
+    surfaceColor: Color,
+    primaryTextColor: Color,
+    secondaryTextColor: Color,
+    accentColor: Color,
+    isDarkTheme: Boolean
+) {
+    val moodColor = when (mood.lowercase()) {
+        "happy" -> MoodHappy
+        "calm" -> MoodCalm
+        "anxious" -> MoodAnxious
+        "sad" -> MoodSad
+        "motivated" -> MoodMotivated
+        "grateful" -> MoodGrateful
+        "confused" -> MoodConfused
+        "excited" -> MoodExcited
+        else -> accentColor
+    }
+
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp)
+            .clip(RoundedCornerShape(20.dp))
+            .clickable(onClick = onViewClick),
+        shape = RoundedCornerShape(20.dp),
+        color = moodColor.copy(alpha = 0.1f),
+        tonalElevation = 0.dp
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(8.dp)
+                            .clip(CircleShape)
+                            .background(moodColor)
+                    )
+                    Text(
+                        text = "TODAY'S REFLECTION",
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 11.sp,
+                        color = moodColor,
+                        letterSpacing = 1.sp
+                    )
+                }
+
+                Text(
+                    text = mood.replaceFirstChar { it.uppercase() },
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 12.sp,
+                    color = moodColor
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = if (preview.length > 80) "${preview.take(80)}..." else preview,
+                fontFamily = PoppinsFamily,
+                fontWeight = FontWeight.Normal,
+                fontSize = 14.sp,
+                color = primaryTextColor.copy(alpha = 0.85f),
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                lineHeight = 22.sp
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "View your entry",
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 13.sp,
+                    color = moodColor
+                )
+
+                Icon(
+                    imageVector = Icons.Outlined.ArrowForward,
+                    contentDescription = null,
+                    tint = moodColor,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun StartHereCTA(
+    onJournalClick: () -> Unit,
+    onChallengesClick: () -> Unit,
+    surfaceColor: Color,
+    primaryTextColor: Color,
+    secondaryTextColor: Color,
+    accentColor: Color,
+    isDarkTheme: Boolean,
+    hour: Int
+) {
+    val reflectionText = when {
+        hour < 12 -> "Start your morning reflection"
+        hour < 17 -> "Take a moment to reflect"
+        else -> "End your day with reflection"
+    }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        // Start Journal Card
+        Surface(
+            modifier = Modifier
+                .weight(1f)
+                .clip(RoundedCornerShape(20.dp))
+                .clickable(onClick = onJournalClick),
+            shape = RoundedCornerShape(20.dp),
+            color = accentColor.copy(alpha = 0.1f),
+            tonalElevation = 0.dp
+        ) {
+            Column(
+                modifier = Modifier.padding(20.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(accentColor.copy(alpha = 0.2f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Edit,
+                        contentDescription = null,
+                        tint = accentColor,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text(
+                    text = "Start Here",
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 16.sp,
+                    color = primaryTextColor
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = reflectionText,
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Normal,
+                    fontSize = 13.sp,
+                    color = secondaryTextColor
+                )
+            }
+        }
+
+        // Challenges Card
+        PremiumReflectionCard(
+            modifier = Modifier.weight(1f),
+            icon = Icons.Filled.EmojiEvents,
+            iconTint = LeaderboardGold,
+            title = "Challenges",
+            subtitle = "Compete now",
+            showBadge = true,
+            badgeText = "NEW",
+            surfaceColor = surfaceColor,
+            primaryTextColor = primaryTextColor,
+            secondaryTextColor = secondaryTextColor,
+            isDarkTheme = isDarkTheme,
+            onClick = onChallengesClick
+        )
     }
 }
 

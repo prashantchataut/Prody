@@ -33,9 +33,7 @@ import com.prody.prashant.data.local.entity.*
  *              Added auth fields to UserProfileEntity (odUserId, email, photoUrl, etc.)
  *              Added indices for efficient userId queries
  *              Changed VocabularyLearningEntity to composite key (wordId, userId)
- * - Version 3: Added Identity & Cosmetics system
- *              Added ProfileLoadoutEntity for saved cosmetic configurations
- *              Added PinnedBadgeEntity for badge pinboard system
+ * - Version 3: Added aiSummary field to JournalEntryEntity for short AI summaries
  */
 @Database(
     entities = [

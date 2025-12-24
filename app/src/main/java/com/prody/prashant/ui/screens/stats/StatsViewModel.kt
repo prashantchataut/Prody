@@ -33,7 +33,9 @@ data class StatsUiState(
     val canBoostToday: Boolean = true,
     val canRespectToday: Boolean = true,
     val boostsSentToday: Int = 0,
-    val respectsSentToday: Int = 0
+    val respectsSentToday: Int = 0,
+    // Error state
+    val error: String? = null
 )
 
 @HiltViewModel
@@ -70,7 +72,7 @@ class StatsViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 android.util.Log.e(TAG, "Error loading user profile", e)
-                _uiState.update { state -> state.copy(isLoading = false) }
+                _uiState.update { state -> state.copy(isLoading = false, error = "Failed to load stats. Please try again.") }
             }
         }
 
@@ -340,10 +342,14 @@ class StatsViewModel @Inject constructor(
      */
     fun refresh() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
+            _uiState.update { it.copy(isLoading = true, error = null) }
             loadStats()
             loadLeaderboard()
         }
+    }
+
+    fun clearError() {
+        _uiState.update { it.copy(error = null) }
     }
 
     // =============================================================================

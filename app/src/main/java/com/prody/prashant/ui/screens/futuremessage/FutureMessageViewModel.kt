@@ -13,7 +13,8 @@ data class FutureMessageUiState(
     val deliveredMessages: List<FutureMessageEntity> = emptyList(),
     val pendingMessages: List<FutureMessageEntity> = emptyList(),
     val unreadCount: Int = 0,
-    val isLoading: Boolean = true
+    val isLoading: Boolean = true,
+    val error: String? = null
 )
 
 @HiltViewModel
@@ -52,7 +53,7 @@ class FutureMessageViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 android.util.Log.e(TAG, "Error loading messages", e)
-                _uiState.update { it.copy(isLoading = false) }
+                _uiState.update { it.copy(isLoading = false, error = "Failed to load messages. Please try again.") }
             }
         }
     }
@@ -82,5 +83,15 @@ class FutureMessageViewModel @Inject constructor(
                 android.util.Log.e(TAG, "Error marking message as read: $messageId", e)
             }
         }
+    }
+
+    fun clearError() {
+        _uiState.update { it.copy(error = null) }
+    }
+
+    fun retry() {
+        _uiState.update { it.copy(isLoading = true, error = null) }
+        loadMessages()
+        checkForDeliveredMessages()
     }
 }

@@ -234,6 +234,18 @@ fun JournalDetailScreen(
                     )
                 }
 
+                // AI Insights Section (emotion, themes, insight)
+                if (entry.aiInsightGenerated && entry.aiInsight != null) {
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    AiInsightsCard(
+                        emotionLabel = entry.aiEmotionLabel,
+                        themes = entry.aiThemes?.split(",")?.filter { it.isNotBlank() } ?: emptyList(),
+                        insight = entry.aiInsight,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
+                }
+
                 // Buddha's response
                 entry.buddhaResponse?.let { response ->
                     Spacer(modifier = Modifier.height(24.dp))
@@ -312,6 +324,148 @@ fun JournalDetailScreen(
                     }
                 }
             )
+        }
+    }
+}
+
+// ============================================================================
+// AI INSIGHTS CARD (Emotion, Themes, Insight)
+// ============================================================================
+
+@Composable
+private fun AiInsightsCard(
+    emotionLabel: String?,
+    themes: List<String>,
+    insight: String?,
+    modifier: Modifier = Modifier
+) {
+    val insightColor = MoodCalm
+
+    ProdyCard(
+        modifier = modifier.fillMaxWidth(),
+        backgroundColor = insightColor.copy(alpha = 0.08f)
+    ) {
+        Column(modifier = Modifier.padding(20.dp)) {
+            // Header
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.AutoAwesome,
+                    contentDescription = null,
+                    tint = insightColor,
+                    modifier = Modifier.size(24.dp)
+                )
+                Text(
+                    text = "Buddha's Analysis",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = insightColor
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Emotion Label
+            emotionLabel?.let { emotion ->
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = "Emotion:",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = insightColor.copy(alpha = 0.15f)
+                    ) {
+                        Text(
+                            text = emotion,
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Medium,
+                            color = insightColor,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+
+            // Themes
+            if (themes.isNotEmpty()) {
+                Text(
+                    text = "Themes:",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    themes.take(4).forEach { theme ->
+                        Surface(
+                            shape = RoundedCornerShape(6.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant
+                        ) {
+                            Text(
+                                text = theme.trim(),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+
+            // Insight
+            insight?.let { insightText ->
+                Text(
+                    text = "Insight:",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                Text(
+                    text = insightText,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.85f),
+                    lineHeight = MaterialTheme.typography.bodyMedium.lineHeight * 1.4
+                )
+            }
+
+            // Generated by Buddha indicator
+            Spacer(modifier = Modifier.height(12.dp))
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Verified,
+                    contentDescription = null,
+                    tint = insightColor.copy(alpha = 0.6f),
+                    modifier = Modifier.size(12.dp)
+                )
+                Text(
+                    text = "Generated by Buddha",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                )
+            }
         }
     }
 }

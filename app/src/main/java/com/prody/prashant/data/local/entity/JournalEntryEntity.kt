@@ -32,6 +32,7 @@ data class JournalEntryEntity(
     val aiEmotionLabel: String? = null,
     val aiThemes: String? = null, // Comma-separated themes
     val aiInsight: String? = null,
+    val aiSummary: String? = null, // Short AI-generated summary (1-2 sentences)
     val aiInsightGenerated: Boolean = false,
     // Media attachments - stored as JSON array strings
     val attachedPhotos: String = "", // JSON array of photo URIs

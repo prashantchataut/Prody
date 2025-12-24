@@ -26,6 +26,10 @@ data class SettingsUiState(
     val buddhaPatternTrackingEnabled: Boolean = true,
     val buddhaPlayfulMode: Boolean = false,
     val buddhaReduceAiUsage: Boolean = false,
+    // Privacy Mode settings
+    val privacyLockJournal: Boolean = false,
+    val privacyLockFutureMessages: Boolean = false,
+    val privacyLockOnBackground: Boolean = true,
     // Data management
     val isExporting: Boolean = false,
     val isImporting: Boolean = false,
@@ -36,7 +40,9 @@ data class SettingsUiState(
     val isClearingData: Boolean = false,
     // Debug notification state
     val isDebugBuild: Boolean = BuildConfig.DEBUG,
-    val debugNotificationSent: String? = null
+    val debugNotificationSent: String? = null,
+    // Debug: AI Proof Mode - Shows AI generation metadata in UI
+    val debugAiProofMode: Boolean = false
 )
 
 @HiltViewModel
@@ -102,9 +108,19 @@ class SettingsViewModel @Inject constructor(
                 // Combine Buddha AI feature toggles (second group)
                 val buddhaFeatures2 = combine(
                     preferencesManager.buddhaPlayfulMode,
-                    preferencesManager.buddhaReduceAiUsage
-                ) { playful, reduce ->
-                    BuddhaFeatures2(playful, reduce)
+                    preferencesManager.buddhaReduceAiUsage,
+                    preferencesManager.debugAiProofMode
+                ) { playful, reduce, aiProofMode ->
+                    BuddhaFeatures2(playful, reduce, aiProofMode)
+                }
+
+                // Combine Privacy Mode settings
+                val privacySettings = combine(
+                    preferencesManager.privacyLockJournal,
+                    preferencesManager.privacyLockFutureMessages,
+                    preferencesManager.privacyLockOnBackground
+                ) { lockJournal, lockFutureMessages, lockOnBackground ->
+                    PrivacySettings(lockJournal, lockFutureMessages, lockOnBackground)
                 }
 
                 // Combine all groups into final state
@@ -112,8 +128,9 @@ class SettingsViewModel @Inject constructor(
                     appearanceAndNotifications,
                     preferences,
                     buddhaFeatures1,
-                    buddhaFeatures2
-                ) { appearance, prefs, buddha1, buddha2 ->
+                    buddhaFeatures2,
+                    privacySettings
+                ) { appearance, prefs, buddha1, buddha2, privacy ->
                     SettingsUiState(
                         themeMode = appearance.themeMode,
                         dynamicColors = appearance.dynamicColors,
@@ -128,7 +145,8 @@ class SettingsViewModel @Inject constructor(
                         buddhaJournalInsightsEnabled = buddha1.journal,
                         buddhaPatternTrackingEnabled = buddha1.pattern,
                         buddhaPlayfulMode = buddha2.playful,
-                        buddhaReduceAiUsage = buddha2.reduce
+                        buddhaReduceAiUsage = buddha2.reduce,
+                        debugAiProofMode = buddha2.aiProofMode
                     )
                 }.collect { state ->
                     _uiState.value = state
@@ -162,7 +180,14 @@ class SettingsViewModel @Inject constructor(
 
     private data class BuddhaFeatures2(
         val playful: Boolean,
-        val reduce: Boolean
+        val reduce: Boolean,
+        val aiProofMode: Boolean
+    )
+
+    private data class PrivacySettings(
+        val lockJournal: Boolean,
+        val lockFutureMessages: Boolean,
+        val lockOnBackground: Boolean
     )
 
     fun setThemeMode(mode: String) {
@@ -307,6 +332,38 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
+    // Privacy Mode setters
+
+    fun setPrivacyLockJournal(enabled: Boolean) {
+        viewModelScope.launch {
+            try {
+                preferencesManager.setPrivacyLockJournal(enabled)
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error setting privacy lock journal", e)
+            }
+        }
+    }
+
+    fun setPrivacyLockFutureMessages(enabled: Boolean) {
+        viewModelScope.launch {
+            try {
+                preferencesManager.setPrivacyLockFutureMessages(enabled)
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error setting privacy lock future messages", e)
+            }
+        }
+    }
+
+    fun setPrivacyLockOnBackground(enabled: Boolean) {
+        viewModelScope.launch {
+            try {
+                preferencesManager.setPrivacyLockOnBackground(enabled)
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error setting privacy lock on background", e)
+            }
+        }
+    }
+
     // Data Management functions
 
     fun setExporting(exporting: Boolean) {
@@ -390,5 +447,20 @@ class SettingsViewModel @Inject constructor(
      */
     fun clearDebugNotificationMessage() {
         _uiState.update { it.copy(debugNotificationSent = null) }
+    }
+
+    /**
+     * Toggles AI Proof Mode (DEBUG builds only).
+     * When enabled, shows AI generation metadata (provider, timestamp) in UI.
+     */
+    fun setDebugAiProofMode(enabled: Boolean) {
+        if (!BuildConfig.DEBUG) return
+        viewModelScope.launch {
+            try {
+                preferencesManager.setDebugAiProofMode(enabled)
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error setting AI Proof Mode", e)
+            }
+        }
     }
 }
