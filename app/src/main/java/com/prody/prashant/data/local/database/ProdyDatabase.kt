@@ -20,6 +20,7 @@ import com.prody.prashant.data.local.entity.*
  * - Journal entries
  * - Future messages (letters to future self)
  * - Community challenges and leaderboards
+ * - Profile loadouts and cosmetics (Identity system)
  *
  * Migration Strategy:
  * - For development: Uses fallbackToDestructiveMigration()
@@ -54,7 +55,9 @@ import com.prody.prashant.data.local.entity.*
         ChallengeEntity::class,
         ChallengeMilestoneEntity::class,
         ChallengeParticipationEntity::class,
-        ChallengeLeaderboardEntity::class
+        ChallengeLeaderboardEntity::class,
+        ProfileLoadoutEntity::class,
+        PinnedBadgeEntity::class
     ],
     version = 3,
     exportSchema = true // Enable for migration verification
@@ -71,6 +74,7 @@ abstract class ProdyDatabase : RoomDatabase() {
     abstract fun phraseDao(): PhraseDao
     abstract fun userDao(): UserDao
     abstract fun challengeDao(): ChallengeDao
+    abstract fun profileLoadoutDao(): ProfileLoadoutDao
 
     companion object {
         private const val TAG = "ProdyDatabase"

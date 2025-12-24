@@ -46,6 +46,23 @@ object ProdyBanners {
     }
 
     /**
+     * Display surface where a banner can appear.
+     * Every cosmetic should appear in at least 2 surfaces.
+     */
+    enum class DisplaySurface {
+        /** Full banner on profile header */
+        PROFILE_HEADER,
+        /** Thin banner strip on leaderboard row */
+        LEADERBOARD_ROW,
+        /** Banner on share cards */
+        SHARE_CARD,
+        /** Subtle banner on message cards */
+        MESSAGE_CARD,
+        /** Subtle accent on journal entry cards */
+        JOURNAL_CARD
+    }
+
+    /**
      * Banner definition with visual and unlock properties.
      *
      * @property id Unique identifier for persistence and selection
@@ -54,10 +71,14 @@ object ProdyBanners {
      * @property unlockRequirement Human-readable unlock condition
      * @property gradientColors List of hex color values for the banner gradient
      * @property patternType Visual pattern overlay type
+     * @property rarity Cosmetic rarity (common/rare/epic/legendary)
      * @property isDefault True if this banner is available to all users
      * @property requiredAchievementId Achievement ID required to unlock (if applicable)
      * @property requiredLevel Minimum level required to unlock (if applicable)
      * @property requiredDays Days on app required to unlock (if applicable)
+     * @property displaySurfaces Surfaces where this banner displays
+     * @property isAnimated Whether this banner has subtle animation
+     * @property isSpecial True for special banners (DEV, Founder, etc.)
      */
     data class Banner(
         val id: String,
@@ -66,10 +87,18 @@ object ProdyBanners {
         val unlockRequirement: String,
         val gradientColors: List<Long>,
         val patternType: PatternType,
+        val rarity: CosmeticRarity = CosmeticRarity.COMMON,
         val isDefault: Boolean = false,
         val requiredAchievementId: String? = null,
         val requiredLevel: Int? = null,
-        val requiredDays: Int? = null
+        val requiredDays: Int? = null,
+        val displaySurfaces: Set<DisplaySurface> = setOf(
+            DisplaySurface.PROFILE_HEADER,
+            DisplaySurface.LEADERBOARD_ROW,
+            DisplaySurface.SHARE_CARD
+        ),
+        val isAnimated: Boolean = false,
+        val isSpecial: Boolean = false
     ) {
         /**
          * Checks if this banner is unlocked for the given user state.
@@ -77,19 +106,40 @@ object ProdyBanners {
          * @param currentLevel The user's current level
          * @param daysOnApp Days since the user joined
          * @param unlockedAchievementIds Set of achievement IDs the user has unlocked
+         * @param isDevBadgeHolder True if user has DEV badge
+         * @param isFounder True if user is a founder
+         * @param isBetaTester True if user is a beta tester
          * @return True if the banner is available to the user
          */
         fun isUnlockedFor(
             currentLevel: Int,
             daysOnApp: Int,
-            unlockedAchievementIds: Set<String>
+            unlockedAchievementIds: Set<String>,
+            isDevBadgeHolder: Boolean = false,
+            isFounder: Boolean = false,
+            isBetaTester: Boolean = false
         ): Boolean = when {
             isDefault -> true
+            isSpecial && id == "dev_code_flow" -> isDevBadgeHolder
+            isSpecial && id == "founder" -> isFounder
+            isSpecial && id == "beta_pioneer" -> isBetaTester
             requiredLevel != null -> currentLevel >= requiredLevel
             requiredDays != null -> daysOnApp >= requiredDays
             requiredAchievementId != null -> unlockedAchievementIds.contains(requiredAchievementId)
             else -> false
         }
+
+        /**
+         * Checks if this banner can display on a specific surface.
+         */
+        fun displaysOn(surface: DisplaySurface): Boolean = displaySurfaces.contains(surface)
+
+        /**
+         * Returns true if this banner has animation enabled.
+         * Animation should be used sparingly (max 1-2 per screen).
+         */
+        val hasAnimation: Boolean
+            get() = isAnimated && rarity.animationDurationMs > 0
     }
 
     /**
@@ -391,7 +441,44 @@ object ProdyBanners {
             unlockRequirement = "Join during the first month",
             gradientColors = listOf(0xFFD4AF37, 0xFFF4D03F, 0xFFFFFFFF),
             patternType = PatternType.CONSTELLATION,
+            rarity = CosmeticRarity.LEGENDARY,
+            isAnimated = true,
+            isSpecial = true,
             requiredAchievementId = "founder"
+        ),
+
+        // ===== DEV IDENTITY BANNER =====
+        // Subtle "flowing code" texture as background
+        // Premium feel without being noisy
+        Banner(
+            id = "dev_code_flow",
+            name = "Code Flow",
+            description = "For those who built the path",
+            unlockRequirement = "Reserved for creators",
+            gradientColors = listOf(0xFF0D2826, 0xFF1A3633, 0xFF36F97F),
+            patternType = PatternType.GEOMETRIC, // Will render as flowing code texture
+            rarity = CosmeticRarity.LEGENDARY,
+            isAnimated = true,
+            isSpecial = true,
+            displaySurfaces = setOf(
+                DisplaySurface.PROFILE_HEADER,
+                DisplaySurface.LEADERBOARD_ROW,
+                DisplaySurface.SHARE_CARD,
+                DisplaySurface.MESSAGE_CARD
+            )
+        ),
+
+        // ===== BETA PIONEER BANNER =====
+        Banner(
+            id = "beta_pioneer",
+            name = "Pioneer's Path",
+            description = "Among the first explorers",
+            unlockRequirement = "Beta tester",
+            gradientColors = listOf(0xFF36F97F, 0xFF2ED56B, 0xFF5DFA96),
+            patternType = PatternType.WAVES,
+            rarity = CosmeticRarity.EPIC,
+            isAnimated = false,
+            isSpecial = true
         )
     )
 
@@ -401,15 +488,28 @@ object ProdyBanners {
      * @param currentLevel The user's current level
      * @param daysOnApp Days since the user joined the app
      * @param unlockedAchievementIds Set of achievement IDs the user has unlocked
+     * @param isDevBadgeHolder True if user has DEV badge
+     * @param isFounder True if user is a founder
+     * @param isBetaTester True if user is a beta tester
      * @return List of banners the user has unlocked
      */
     fun getAvailableBanners(
         currentLevel: Int,
         daysOnApp: Int,
-        unlockedAchievementIds: Set<String>
+        unlockedAchievementIds: Set<String>,
+        isDevBadgeHolder: Boolean = false,
+        isFounder: Boolean = false,
+        isBetaTester: Boolean = false
     ): List<Banner> {
         return allBanners.filter { banner ->
-            banner.isUnlockedFor(currentLevel, daysOnApp, unlockedAchievementIds)
+            banner.isUnlockedFor(
+                currentLevel = currentLevel,
+                daysOnApp = daysOnApp,
+                unlockedAchievementIds = unlockedAchievementIds,
+                isDevBadgeHolder = isDevBadgeHolder,
+                isFounder = isFounder,
+                isBetaTester = isBetaTester
+            )
         }
     }
 
@@ -456,6 +556,102 @@ object ProdyBanners {
      * Gets the total number of banners.
      */
     val totalCount: Int get() = allBanners.size
+
+    /**
+     * Gets all special banners (DEV, Founder, Beta).
+     */
+    val specialBanners: List<Banner>
+        get() = allBanners.filter { it.isSpecial }
+
+    /**
+     * Gets banners filtered by rarity.
+     */
+    fun getBannersByRarity(rarity: CosmeticRarity): List<Banner> =
+        allBanners.filter { it.rarity == rarity }
+
+    /**
+     * Gets banners that display on a specific surface.
+     */
+    fun getBannersForSurface(surface: DisplaySurface): List<Banner> =
+        allBanners.filter { it.displaysOn(surface) }
+
+    /**
+     * Gets available banners for a surface, filtered by user state.
+     */
+    fun getAvailableBannersForSurface(
+        surface: DisplaySurface,
+        currentLevel: Int,
+        daysOnApp: Int,
+        unlockedAchievementIds: Set<String>,
+        isDevBadgeHolder: Boolean = false,
+        isFounder: Boolean = false,
+        isBetaTester: Boolean = false
+    ): List<Banner> {
+        return getAvailableBanners(
+            currentLevel = currentLevel,
+            daysOnApp = daysOnApp,
+            unlockedAchievementIds = unlockedAchievementIds,
+            isDevBadgeHolder = isDevBadgeHolder,
+            isFounder = isFounder,
+            isBetaTester = isBetaTester
+        ).filter { it.displaysOn(surface) }
+    }
+
+    /**
+     * Gets banners sorted by rarity (legendary first for gallery view).
+     */
+    fun getBannersSortedByRarity(): List<Banner> =
+        allBanners.sortedByDescending { it.rarity.sortOrder }
+
+    /**
+     * Gets unlocked banners sorted by rarity (for gallery "owned" section).
+     */
+    fun getUnlockedBannersSortedByRarity(
+        currentLevel: Int,
+        daysOnApp: Int,
+        unlockedAchievementIds: Set<String>,
+        isDevBadgeHolder: Boolean = false,
+        isFounder: Boolean = false,
+        isBetaTester: Boolean = false
+    ): List<Banner> {
+        return getAvailableBanners(
+            currentLevel = currentLevel,
+            daysOnApp = daysOnApp,
+            unlockedAchievementIds = unlockedAchievementIds,
+            isDevBadgeHolder = isDevBadgeHolder,
+            isFounder = isFounder,
+            isBetaTester = isBetaTester
+        ).sortedByDescending { it.rarity.sortOrder }
+    }
+
+    /**
+     * Gets locked banners (for gallery "locked" section with requirements).
+     */
+    fun getLockedBanners(
+        currentLevel: Int,
+        daysOnApp: Int,
+        unlockedAchievementIds: Set<String>,
+        isDevBadgeHolder: Boolean = false,
+        isFounder: Boolean = false,
+        isBetaTester: Boolean = false
+    ): List<Banner> {
+        return allBanners.filterNot { banner ->
+            banner.isUnlockedFor(
+                currentLevel = currentLevel,
+                daysOnApp = daysOnApp,
+                unlockedAchievementIds = unlockedAchievementIds,
+                isDevBadgeHolder = isDevBadgeHolder,
+                isFounder = isFounder,
+                isBetaTester = isBetaTester
+            )
+        }.sortedByDescending { it.rarity.sortOrder }
+    }
+
+    /**
+     * Gets animated banners (should be used sparingly).
+     */
+    val animatedBanners: List<Banner>
+        get() = allBanners.filter { it.hasAnimation }
 
     /**
      * Checks if a specific banner should be newly unlocked based on state change.

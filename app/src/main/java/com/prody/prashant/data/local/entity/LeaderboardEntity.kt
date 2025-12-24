@@ -11,6 +11,8 @@ data class LeaderboardEntryEntity(
     val avatarId: String = "default",
     val titleId: String = "newcomer",
     val bannerId: String = "default_dawn", // Gamification 2.0: Banner next to name
+    val frameId: String = "default_clean", // Identity 3.0: Avatar frame
+    val accentColorId: String = "default_green", // Identity 3.0: Accent color
     val totalPoints: Int = 0,
     val weeklyPoints: Int = 0,
     val currentStreak: Int = 0,
@@ -24,6 +26,7 @@ data class LeaderboardEntryEntity(
     // Gamification 2.0 fields
     val isDevBadgeHolder: Boolean = false, // DEV badge
     val isBetaTester: Boolean = false, // Beta tester badge
-    val profileFrameRarity: String = "common", // Frame rarity for avatar
+    val isFounder: Boolean = false, // Founder badge
+    val profileFrameRarity: String = "common", // Frame rarity for avatar (legacy, use frameId instead)
     val lastBoostedByCurrentUser: Long? = null // Track when current user last boosted this person
 )
