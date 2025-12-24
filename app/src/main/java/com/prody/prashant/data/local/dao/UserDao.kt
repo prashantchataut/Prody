@@ -71,9 +71,6 @@ interface UserDao {
     @Query("UPDATE user_profile SET longestStreak = :streak WHERE id = 1")
     suspend fun updateLongestStreak(streak: Int)
 
-    @Query("UPDATE user_profile SET preferences = :preferences WHERE id = 1")
-    suspend fun updatePreferences(preferences: String)
-
     @Query("SELECT totalPoints FROM user_profile WHERE id = 1")
     fun getTotalPoints(): Flow<Int?>
 
