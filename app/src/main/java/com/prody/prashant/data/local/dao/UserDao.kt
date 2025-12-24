@@ -41,6 +41,9 @@ interface UserDao {
     @Query("UPDATE user_profile SET bio = :bio WHERE id = 1")
     suspend fun updateBio(bio: String)
 
+    @Query("UPDATE user_profile SET preferences = :preferences WHERE id = 1")
+    suspend fun updatePreferences(preferences: String)
+
     @Query("UPDATE user_profile SET totalPoints = totalPoints + :points WHERE id = 1")
     suspend fun addPoints(points: Int)
 

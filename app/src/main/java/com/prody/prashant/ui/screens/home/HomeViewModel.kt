@@ -462,12 +462,8 @@ class HomeViewModel @Inject constructor(
         loadBuddhaWisdom(forceRefresh = true)
     }
 
-    fun clearError() {
-        _uiState.update { it.copy(error = null) }
-    }
-
     fun retry() {
-        _uiState.update { it.copy(isLoading = true, error = null, hasLoadError = false) }
+        _uiState.update { it.copy(isLoading = true) }
         loadHomeData()
         loadBuddhaWisdom()
     }
