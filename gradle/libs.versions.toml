@@ -31,7 +31,6 @@ espresso = "3.6.1"
 security = "1.1.0-alpha06"
 biometric = "1.1.0"
 sqlcipher = "4.5.4"
-biometric = "1.1.0"
 okhttp = "4.12.0"
 retrofit = "2.9.0"
 retrofitKotlinxSerializationJson = "1.0.0"
@@ -89,7 +88,6 @@ androidx-security-crypto = { group = "androidx.security", name = "security-crypt
 androidx-biometric = { group = "androidx.biometric", name = "biometric", version.ref = "biometric" }
 sqlcipher-android = { group = "net.zetetic", name = "android-database-sqlcipher", version.ref = "sqlcipher" }
 sqlite-ktx = { group = "androidx.sqlite", name = "sqlite-ktx", version = "2.4.0" }
-androidx-biometric = { group = "androidx.biometric", name = "biometric", version.ref = "biometric" }
 
 # Networking
 okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
