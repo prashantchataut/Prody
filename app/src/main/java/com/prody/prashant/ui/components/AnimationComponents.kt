@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.prody.prashant.ui.theme.*
 import kotlinx.coroutines.delay
 import kotlin.math.PI
@@ -559,6 +560,231 @@ fun AnimatedProgressRing(
             sweepAngle = sweepAngle,
             useCenter = false,
             style = Stroke(width = strokeWidth.toPx(), cap = StrokeCap.Round)
+        )
+    }
+}
+
+/**
+ * Buddha Contemplating Animation - A serene, meditative loading indicator
+ *
+ * This replaces generic loading spinners when the Buddha AI is generating a response.
+ * Features:
+ * - Concentric breathing circles representing meditation
+ * - Subtle glowing orb at center representing enlightenment
+ * - Gentle pulsing animation to mask AI latency
+ * - Animated text dots that cycle through contemplation states
+ *
+ * @param modifier Modifier for the container
+ * @param primaryColor The main color for the animation (typically gold/amber)
+ * @param secondaryTextColor Color for the "Buddha is contemplating" text
+ * @param showText Whether to show the "Buddha is contemplating..." text
+ */
+@Composable
+fun BuddhaContemplatingAnimation(
+    modifier: Modifier = Modifier,
+    primaryColor: Color = GoldTier,
+    secondaryTextColor: Color = Color.Gray,
+    showText: Boolean = true
+) {
+    val infiniteTransition = rememberInfiniteTransition(label = "buddha_contemplating")
+
+    // Main breathing animation - slow, meditative pace
+    val breathScale by infiniteTransition.animateFloat(
+        initialValue = 0.85f,
+        targetValue = 1.15f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(3000, easing = EaseInOutCubic),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "breath_scale"
+    )
+
+    // Inner glow alpha animation
+    val innerGlowAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.4f,
+        targetValue = 0.8f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2000, easing = EaseInOutCubic),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "inner_glow"
+    )
+
+    // Outer ring rotation - very slow, contemplative
+    val outerRotation by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(12000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "outer_rotation"
+    )
+
+    // Animated dots for text
+    var dotCount by remember { mutableIntStateOf(0) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(500)
+            dotCount = (dotCount + 1) % 4
+        }
+    }
+
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        // Animation container
+        Box(
+            modifier = Modifier.size(48.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            // Outer rotating ring (subtle)
+            Canvas(
+                modifier = Modifier
+                    .size(48.dp)
+                    .rotate(outerRotation)
+            ) {
+                val strokeWidth = 2.dp.toPx()
+
+                // Draw partial arc segments
+                for (i in 0 until 4) {
+                    val startAngle = i * 90f + 10f
+                    val sweepAngle = 70f
+                    drawArc(
+                        color = primaryColor.copy(alpha = 0.2f + (i * 0.05f)),
+                        startAngle = startAngle,
+                        sweepAngle = sweepAngle,
+                        useCenter = false,
+                        style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
+                    )
+                }
+            }
+
+            // Middle breathing circle
+            Box(
+                modifier = Modifier
+                    .size(32.dp)
+                    .scale(breathScale)
+                    .clip(CircleShape)
+                    .background(primaryColor.copy(alpha = 0.15f))
+            )
+
+            // Inner glowing orb (center of enlightenment)
+            Box(
+                modifier = Modifier
+                    .size(16.dp)
+                    .clip(CircleShape)
+                    .background(
+                        Brush.radialGradient(
+                            colors = listOf(
+                                primaryColor.copy(alpha = innerGlowAlpha),
+                                primaryColor.copy(alpha = innerGlowAlpha * 0.5f),
+                                primaryColor.copy(alpha = 0f)
+                            )
+                        )
+                    )
+            )
+
+            // Tiny center dot
+            Box(
+                modifier = Modifier
+                    .size(6.dp)
+                    .clip(CircleShape)
+                    .background(primaryColor.copy(alpha = innerGlowAlpha))
+            )
+        }
+
+        // Text below animation
+        if (showText) {
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                androidx.compose.material3.Text(
+                    text = "Buddha is contemplating",
+                    fontFamily = PoppinsFamily,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Normal,
+                    fontSize = 13.sp,
+                    color = secondaryTextColor
+                )
+
+                // Animated dots
+                androidx.compose.material3.Text(
+                    text = ".".repeat(dotCount),
+                    fontFamily = PoppinsFamily,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Normal,
+                    fontSize = 13.sp,
+                    color = secondaryTextColor,
+                    modifier = Modifier.width(20.dp) // Fixed width to prevent layout shift
+                )
+            }
+        }
+    }
+}
+
+/**
+ * Compact version of BuddhaContemplatingAnimation for inline use
+ * Used in buttons, cards, and other tight spaces
+ */
+@Composable
+fun BuddhaContemplatingCompact(
+    modifier: Modifier = Modifier,
+    primaryColor: Color = GoldTier,
+    size: Dp = 20.dp
+) {
+    val infiniteTransition = rememberInfiniteTransition(label = "buddha_compact")
+
+    val breathScale by infiniteTransition.animateFloat(
+        initialValue = 0.8f,
+        targetValue = 1.2f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2000, easing = EaseInOutCubic),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "compact_breath"
+    )
+
+    val rotation by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(4000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "compact_rotation"
+    )
+
+    Box(
+        modifier = modifier.size(size),
+        contentAlignment = Alignment.Center
+    ) {
+        // Rotating outer arc
+        Canvas(
+            modifier = Modifier
+                .size(size)
+                .rotate(rotation)
+        ) {
+            val strokeWidth = 1.5.dp.toPx()
+            drawArc(
+                color = primaryColor.copy(alpha = 0.4f),
+                startAngle = 0f,
+                sweepAngle = 270f,
+                useCenter = false,
+                style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
+            )
+        }
+
+        // Breathing inner dot
+        Box(
+            modifier = Modifier
+                .size(size * 0.4f)
+                .scale(breathScale)
+                .clip(CircleShape)
+                .background(primaryColor.copy(alpha = 0.6f))
         )
     }
 }

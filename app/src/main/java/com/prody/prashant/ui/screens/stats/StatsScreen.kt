@@ -958,14 +958,16 @@ private fun PremiumLeaderboardItemRow(
 
             Spacer(modifier = Modifier.width(14.dp))
 
-            // Name and Badge
+            // Name and Badge - Fixed layout to prevent vertical text wrapping
             Column(
                 modifier = Modifier.weight(1f)
             ) {
                 Row(
+                    modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.Start
                 ) {
+                    // Display name with weight to allow proper ellipsis
                     Text(
                         text = entry.displayName,
                         fontFamily = PoppinsFamily,
@@ -973,24 +975,34 @@ private fun PremiumLeaderboardItemRow(
                         fontSize = 15.sp,
                         color = if (isTopThree) rankColor else textPrimary,
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false)
                     )
 
+                    // CHAMPION badge for rank 1 - fixed width container to prevent text wrapping
                     if (rank == 1) {
+                        Spacer(modifier = Modifier.width(8.dp))
                         Surface(
                             color = goldColor.copy(alpha = 0.2f),
                             shape = RoundedCornerShape(4.dp),
-                            tonalElevation = 0.dp
+                            tonalElevation = 0.dp,
+                            modifier = Modifier.wrapContentWidth()
                         ) {
-                            Text(
-                                text = "CHAMPION",
-                                fontFamily = PoppinsFamily,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 8.sp,
-                                color = goldColor,
-                                letterSpacing = 0.5.sp,
-                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                            )
+                            Row(
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "CHAMPION",
+                                    fontFamily = PoppinsFamily,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 8.sp,
+                                    color = goldColor,
+                                    letterSpacing = 0.5.sp,
+                                    maxLines = 1,
+                                    softWrap = false
+                                )
+                            }
                         }
                     }
                 }
