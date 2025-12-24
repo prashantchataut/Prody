@@ -5,11 +5,17 @@ import androidx.lifecycle.viewModelScope
 import com.prody.prashant.data.ai.BuddhaAiRepository
 import com.prody.prashant.data.ai.BuddhaAiResult
 import com.prody.prashant.data.local.dao.*
+import com.prody.prashant.data.local.entity.SeedEntity
 import com.prody.prashant.data.local.preferences.PreferencesManager
 import com.prody.prashant.data.onboarding.AiHint
 import com.prody.prashant.data.onboarding.AiHintType
 import com.prody.prashant.data.onboarding.AiOnboardingManager
 import com.prody.prashant.data.onboarding.BuddhaGuideCard
+import com.prody.prashant.domain.progress.ActiveProgressService
+import com.prody.prashant.domain.progress.NextAction
+import com.prody.prashant.domain.progress.NextActionType
+import com.prody.prashant.domain.progress.SeedBloomService
+import com.prody.prashant.domain.progress.TodayProgress
 import com.prody.prashant.util.BuddhaWisdom
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -49,7 +55,17 @@ data class HomeUiState(
     // Reactive state - Did user journal today?
     val journaledToday: Boolean = false,
     val todayEntryMood: String = "",
-    val todayEntryPreview: String = ""
+    val todayEntryPreview: String = "",
+    // ============== ACTIVE PROGRESS LAYER ==============
+    // Next Action - contextual suggestion based on user behavior
+    val nextAction: NextAction? = null,
+    // Today's Progress - summary of today's activity
+    val todayProgress: TodayProgress = TodayProgress(),
+    // Seed -> Bloom mechanic
+    val dailySeed: SeedEntity? = null,
+    val showProgressFeedback: Boolean = false,
+    val progressFeedbackTitle: String = "",
+    val progressFeedbackMessage: String = ""
 )
 
 @HiltViewModel
@@ -62,7 +78,9 @@ class HomeViewModel @Inject constructor(
     private val journalDao: JournalDao,
     private val preferencesManager: PreferencesManager,
     private val buddhaAiRepository: BuddhaAiRepository,
-    private val aiOnboardingManager: AiOnboardingManager
+    private val aiOnboardingManager: AiOnboardingManager,
+    private val activeProgressService: ActiveProgressService,
+    private val seedBloomService: SeedBloomService
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -80,6 +98,84 @@ class HomeViewModel @Inject constructor(
         loadHomeData()
         loadBuddhaWisdom()
         checkOnboarding()
+        loadActiveProgress()
+        loadDailySeed()
+    }
+
+    // ============== ACTIVE PROGRESS LAYER ==============
+
+    /**
+     * Load the Active Progress Layer data:
+     * - Next Action suggestion
+     * - Today's Progress summary
+     */
+    private fun loadActiveProgress() {
+        viewModelScope.launch {
+            try {
+                // Load Next Action
+                val nextAction = activeProgressService.getNextAction()
+                _uiState.update { it.copy(nextAction = nextAction) }
+
+                // Load Today's Progress
+                val todayProgress = activeProgressService.getTodayProgress()
+                _uiState.update { it.copy(todayProgress = todayProgress) }
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error loading active progress", e)
+            }
+        }
+    }
+
+    /**
+     * Refresh the Next Action suggestion (called after user actions)
+     */
+    fun refreshNextAction() {
+        viewModelScope.launch {
+            try {
+                val nextAction = activeProgressService.getNextAction()
+                val todayProgress = activeProgressService.getTodayProgress()
+                _uiState.update { it.copy(
+                    nextAction = nextAction,
+                    todayProgress = todayProgress
+                )}
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error refreshing next action", e)
+            }
+        }
+    }
+
+    /**
+     * Load today's Seed for the Seed -> Bloom mechanic
+     */
+    private fun loadDailySeed() {
+        viewModelScope.launch {
+            try {
+                val seed = seedBloomService.getTodaySeed()
+                _uiState.update { it.copy(dailySeed = seed) }
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error loading daily seed", e)
+            }
+        }
+    }
+
+    /**
+     * Show a progress feedback toast/banner after an action
+     */
+    fun showProgressFeedback(title: String, message: String) {
+        _uiState.update { it.copy(
+            showProgressFeedback = true,
+            progressFeedbackTitle = title,
+            progressFeedbackMessage = message
+        )}
+
+        // Auto-dismiss after a few seconds
+        viewModelScope.launch {
+            kotlinx.coroutines.delay(3000)
+            dismissProgressFeedback()
+        }
+    }
+
+    fun dismissProgressFeedback() {
+        _uiState.update { it.copy(showProgressFeedback = false) }
     }
 
     private fun checkOnboarding() {
