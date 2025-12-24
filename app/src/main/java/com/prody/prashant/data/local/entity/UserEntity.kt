@@ -24,6 +24,9 @@ data class UserProfileEntity(
     val avatarId: String = "default",
     val bannerId: String = "default_dawn",
     val titleId: String = "seeker", // Earned title
+    val frameId: String = "default_clean", // Avatar frame
+    val accentColorId: String = "default_green", // Subtle accent color
+    val activeLoadoutId: String? = null, // Currently active profile loadout
     val totalPoints: Int = 0,
     val currentStreak: Int = 0,
     val longestStreak: Int = 0,
