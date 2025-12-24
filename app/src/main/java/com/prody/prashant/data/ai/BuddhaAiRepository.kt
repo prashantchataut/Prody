@@ -56,6 +56,7 @@ class BuddhaAiRepository @Inject constructor(
         private val VOCABULARY_CONTEXT_TTL = TimeUnit.DAYS.toMillis(7)
         private val WEEKLY_PATTERN_TTL = TimeUnit.HOURS.toMillis(12)
         private val MESSAGE_HELPER_TTL = TimeUnit.HOURS.toMillis(1)
+        private val BUDDHA_LENS_TTL = TimeUnit.DAYS.toMillis(30)
 
         // Rate limits
         private const val MAX_CALLS_PER_DAY = 100
@@ -1201,6 +1202,25 @@ data class MessageHelperResult(
     val preview: String?,
     val isAiGenerated: Boolean
 )
+
+/**
+ * Buddha Lens insight - ONE short, focused insight after saving a journal entry.
+ * Types: MIRROR, QUESTION, REFRAME, PATTERN
+ */
+@Serializable
+data class BuddhaLensResult(
+    val type: BuddhaLensType,
+    val insight: String,
+    val isAiGenerated: Boolean
+)
+
+@Serializable
+enum class BuddhaLensType {
+    MIRROR,    // "You said X, but your tone suggests Y"
+    QUESTION,  // One deadly question to ponder
+    REFRAME,   // Alternative perspective on the situation
+    PATTERN    // "This is the third time this theme appeared"
+}
 
 // ==================== PROMPTS ====================
 

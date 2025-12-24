@@ -105,4 +105,18 @@ interface VocabularyDao {
     // Reset progress
     @Query("UPDATE vocabulary SET isLearned = 0, isFavorite = 0, learnedAt = NULL, lastReviewedAt = NULL, nextReviewAt = NULL, reviewCount = 0, masteryLevel = 0, shownAsDaily = 0, shownAt = NULL")
     suspend fun resetAllProgress()
+
+    // ==================== ACTIVE PROGRESS QUERIES ====================
+
+    /**
+     * Get count of words learned today (for daily progress)
+     */
+    @Query("SELECT COUNT(*) FROM vocabulary WHERE isLearned = 1 AND learnedAt >= :todayStart")
+    suspend fun getLearnedCountTodaySync(todayStart: Long): Int
+
+    /**
+     * Get count of words that need review (for "Next Action" suggestions)
+     */
+    @Query("SELECT COUNT(*) FROM vocabulary WHERE isLearned = 1 AND nextReviewAt <= :now")
+    suspend fun getPendingReviewCount(now: Long = System.currentTimeMillis()): Int
 }
