@@ -146,7 +146,10 @@ class SettingsViewModel @Inject constructor(
                         buddhaPatternTrackingEnabled = buddha1.pattern,
                         buddhaPlayfulMode = buddha2.playful,
                         buddhaReduceAiUsage = buddha2.reduce,
-                        debugAiProofMode = buddha2.aiProofMode
+                        debugAiProofMode = buddha2.aiProofMode,
+                        privacyLockJournal = privacy.lockJournal,
+                        privacyLockFutureMessages = privacy.lockFutureMessages,
+                        privacyLockOnBackground = privacy.lockOnBackground
                     )
                 }.collect { state ->
                     _uiState.value = state
