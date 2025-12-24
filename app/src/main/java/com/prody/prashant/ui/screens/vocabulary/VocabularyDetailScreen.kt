@@ -1,5 +1,11 @@
 package com.prody.prashant.ui.screens.vocabulary
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -18,7 +24,10 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.R
+import com.prody.prashant.ui.components.DailyFocusSelector
 import com.prody.prashant.ui.components.ProdyCard
+import com.prody.prashant.ui.components.WisdomQuestChallenge
+import com.prody.prashant.ui.components.WisdomQuestResult
 import com.prody.prashant.ui.theme.*
 
 @Composable
@@ -216,25 +225,120 @@ fun VocabularyDetailScreen(
                     )
                 }
 
-                // Mark as learned button
+                // Wisdom Quest section - replaces boring "Mark as Learned" button
                 if (!word.isLearned) {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Button(
-                        onClick = { viewModel.markAsLearned() },
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    // Wisdom Quest animated content
+                    AnimatedContent(
+                        targetState = uiState.wisdomQuestState,
+                        transitionSpec = {
+                            (fadeIn() + scaleIn(initialScale = 0.95f)) togetherWith
+                                (fadeOut() + scaleOut(targetScale = 0.95f))
+                        },
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = AchievementUnlocked
-                        )
+                        label = "wisdom_quest_transition"
+                    ) { questState ->
+                        when (questState) {
+                            is WisdomQuestState.Idle -> {
+                                // Start Challenge button
+                                Button(
+                                    onClick = { viewModel.startWisdomQuest() },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = ProdyAccentGreen,
+                                        contentColor = androidx.compose.ui.graphics.Color.Black
+                                    )
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.Psychology,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = "Start Wisdom Quest",
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
+
+                            is WisdomQuestState.Loading -> {
+                                // Loading state
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(100.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator(
+                                        color = ProdyAccentGreen
+                                    )
+                                }
+                            }
+
+                            is WisdomQuestState.NeedsDailyFocus -> {
+                                // Daily Focus selector
+                                DailyFocusSelector(
+                                    onFocusSelected = { focus ->
+                                        viewModel.setDailyFocus(focus)
+                                    }
+                                )
+                            }
+
+                            is WisdomQuestState.Active -> {
+                                // Active challenge UI
+                                WisdomQuestChallenge(
+                                    challenge = questState.challenge,
+                                    currentStreak = questState.currentStreak,
+                                    dailyFocus = questState.dailyFocus,
+                                    onAnswerSubmit = { answer ->
+                                        viewModel.submitWisdomQuestAnswer(answer)
+                                    },
+                                    onSkip = { viewModel.skipWisdomQuest() }
+                                )
+                            }
+
+                            is WisdomQuestState.Result -> {
+                                // Result display
+                                WisdomQuestResult(
+                                    result = questState.result,
+                                    onContinue = { viewModel.continueAfterResult() }
+                                )
+                            }
+                        }
+                    }
+                } else {
+                    // Word already learned - show completion badge
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
+                        shape = ChipShape,
+                        color = AchievementUnlocked.copy(alpha = 0.15f)
                     ) {
-                        Icon(
-                            imageVector = Icons.Filled.CheckCircle,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(stringResource(R.string.mark_learned))
+                        Row(
+                            modifier = Modifier.padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.CheckCircle,
+                                contentDescription = null,
+                                tint = AchievementUnlocked,
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                text = "Wisdom Acquired",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                color = AchievementUnlocked
+                            )
+                        }
                     }
                 }
 

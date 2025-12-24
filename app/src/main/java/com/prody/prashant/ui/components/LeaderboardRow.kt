@@ -68,7 +68,12 @@ import com.prody.prashant.ui.theme.LeaderboardSilverLight
 import com.prody.prashant.ui.theme.ProdySuccess
 import com.prody.prashant.ui.theme.ProdyError
 import com.prody.prashant.ui.theme.ProdyTokens
+import com.prody.prashant.ui.theme.ProdyAccentGreen
+import com.prody.prashant.ui.theme.ProdyAccentGreenLight
 import kotlin.math.sin
+import kotlin.math.cos
+import kotlin.math.PI
+import kotlin.random.Random
 
 /**
  * Prody Premium Leaderboard Row Component
@@ -111,198 +116,522 @@ private object LeaderboardRankColors {
 }
 
 /**
- * Flowing animated banner for top 3 leaderboard positions.
+ * Champion animated banner for top 3 leaderboard positions.
  *
- * Creates a premium wave animation effect behind the row content,
- * with colors matching the rank position (gold, silver, bronze).
+ * Creates premium visual effects to distinguish top performers:
+ * - #1 Champion: Starfield with twinkling stars and gold accents
+ * - #2 Runner-up: Liquid mercury effect with metallic sheen
+ * - #3 Bronze: Aurora borealis with flowing color waves
  */
 @Composable
 private fun FlowingRankBanner(
     rank: Int,
     modifier: Modifier = Modifier
 ) {
-    val infiniteTransition = rememberInfiniteTransition(label = "flowing_banner")
+    when (rank) {
+        1 -> ChampionStarfieldBannerInline(modifier = modifier)
+        2 -> RunnerUpLiquidBannerInline(modifier = modifier)
+        3 -> BronzeAuroraBannerInline(modifier = modifier)
+        else -> return // No banner for ranks > 3
+    }
+}
 
-    // Primary wave animation - slower, main movement
-    val wavePhase by infiniteTransition.animateFloat(
+/**
+ * Inline Champion Starfield Banner for leaderboard row.
+ * Twinkling stars with golden nebula - "Champion of the Universe" feel.
+ */
+@Composable
+private fun ChampionStarfieldBannerInline(modifier: Modifier = Modifier) {
+    val infiniteTransition = rememberInfiniteTransition(label = "starfield_inline")
+
+    val twinklePhase by infiniteTransition.animateFloat(
         initialValue = 0f,
-        targetValue = 2f * Math.PI.toFloat(),
+        targetValue = 2f * PI.toFloat(),
         animationSpec = infiniteRepeatable(
-            animation = tween(3000, easing = LinearEasing),
+            animation = tween(4000, easing = LinearEasing),
             repeatMode = RepeatMode.Restart
         ),
-        label = "wave_phase"
+        label = "twinkle"
     )
 
-    // Secondary shimmer animation - faster, sparkle effect
-    val shimmerPhase by infiniteTransition.animateFloat(
+    val goldPulse by infiniteTransition.animateFloat(
+        initialValue = 0.2f,
+        targetValue = 0.5f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2000, easing = androidx.compose.animation.core.EaseInOutCubic),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "gold_pulse"
+    )
+
+    val shootingStarPhase by infiniteTransition.animateFloat(
         initialValue = 0f,
         targetValue = 1f,
         animationSpec = infiniteRepeatable(
-            animation = tween(1500, easing = LinearEasing),
+            animation = tween(3500, easing = LinearEasing),
             repeatMode = RepeatMode.Restart
         ),
-        label = "shimmer_phase"
+        label = "shooting_star"
     )
 
-    // Get colors based on rank
-    val (primaryColor, secondaryColor, tertiaryColor, glowColor) = when (rank) {
-        1 -> listOf(
-            LeaderboardRankColors.GoldPrimary,
-            LeaderboardRankColors.GoldSecondary,
-            LeaderboardRankColors.GoldTertiary,
-            LeaderboardRankColors.GoldGlow
-        )
-        2 -> listOf(
-            LeaderboardRankColors.SilverPrimary,
-            LeaderboardRankColors.SilverSecondary,
-            LeaderboardRankColors.SilverTertiary,
-            LeaderboardRankColors.SilverGlow
-        )
-        3 -> listOf(
-            LeaderboardRankColors.BronzePrimary,
-            LeaderboardRankColors.BronzeSecondary,
-            LeaderboardRankColors.BronzeTertiary,
-            LeaderboardRankColors.BronzeGlow
-        )
-        else -> return // No banner for ranks > 3
+    val stars = remember {
+        List(20) {
+            StarDataInline(
+                x = Random.nextFloat(),
+                y = Random.nextFloat(),
+                size = Random.nextFloat() * 1.5f + 0.5f,
+                twinkleOffset = Random.nextFloat() * 2f * PI.toFloat(),
+                brightness = Random.nextFloat() * 0.4f + 0.4f
+            )
+        }
     }
 
     Canvas(modifier = modifier.fillMaxSize()) {
         val width = size.width
         val height = size.height
 
-        // Draw flowing wave background
-        drawFlowingWaves(
-            width = width,
-            height = height,
-            wavePhase = wavePhase,
-            primaryColor = primaryColor,
-            secondaryColor = secondaryColor,
-            tertiaryColor = tertiaryColor
-        )
-
-        // Draw shimmer overlay
-        drawShimmerOverlay(
-            width = width,
-            height = height,
-            shimmerPhase = shimmerPhase,
-            glowColor = glowColor
-        )
-    }
-}
-
-/**
- * Draws flowing wave patterns for the banner background.
- */
-private fun DrawScope.drawFlowingWaves(
-    width: Float,
-    height: Float,
-    wavePhase: Float,
-    primaryColor: Color,
-    secondaryColor: Color,
-    tertiaryColor: Color
-) {
-    // Background wave (slowest, most prominent)
-    val backgroundPath = Path().apply {
-        moveTo(0f, height * 0.6f)
-
-        var x = 0f
-        while (x <= width) {
-            val y = height * 0.6f + sin((x / width * 4f * Math.PI.toFloat()) + wavePhase) * (height * 0.15f)
-            lineTo(x, y)
-            x += 4f
-        }
-        lineTo(width, height)
-        lineTo(0f, height)
-        close()
-    }
-
-    drawPath(
-        path = backgroundPath,
-        brush = Brush.verticalGradient(
-            colors = listOf(
-                primaryColor.copy(alpha = 0.15f),
-                secondaryColor.copy(alpha = 0.08f)
+        // Deep space gradient with gold tint
+        drawRect(
+            brush = Brush.horizontalGradient(
+                colors = listOf(
+                    Color(0xFF0A0A14).copy(alpha = 0.9f),
+                    Color(0xFF1A1428).copy(alpha = 0.85f),
+                    Color(0xFF0D0D0D).copy(alpha = 0.9f)
+                )
             )
         )
-    )
 
-    // Middle wave (medium speed)
-    val middlePath = Path().apply {
-        moveTo(0f, height * 0.5f)
-
-        var x = 0f
-        while (x <= width) {
-            val y = height * 0.5f + sin((x / width * 3f * Math.PI.toFloat()) + wavePhase * 1.3f) * (height * 0.12f)
-            lineTo(x, y)
-            x += 4f
-        }
-        lineTo(width, height)
-        lineTo(0f, height)
-        close()
-    }
-
-    drawPath(
-        path = middlePath,
-        brush = Brush.verticalGradient(
-            colors = listOf(
-                secondaryColor.copy(alpha = 0.12f),
-                tertiaryColor.copy(alpha = 0.05f)
-            )
-        )
-    )
-
-    // Foreground wave (fastest, subtle)
-    val foregroundPath = Path().apply {
-        moveTo(0f, height * 0.7f)
-
-        var x = 0f
-        while (x <= width) {
-            val y = height * 0.7f + sin((x / width * 5f * Math.PI.toFloat()) + wavePhase * 1.7f) * (height * 0.08f)
-            lineTo(x, y)
-            x += 4f
-        }
-        lineTo(width, height)
-        lineTo(0f, height)
-        close()
-    }
-
-    drawPath(
-        path = foregroundPath,
-        brush = Brush.verticalGradient(
-            colors = listOf(
-                tertiaryColor.copy(alpha = 0.1f),
-                primaryColor.copy(alpha = 0.03f)
-            )
-        )
-    )
-}
-
-/**
- * Draws a subtle shimmer overlay for premium sparkle effect.
- */
-private fun DrawScope.drawShimmerOverlay(
-    width: Float,
-    height: Float,
-    shimmerPhase: Float,
-    glowColor: Color
-) {
-    // Moving shimmer highlight
-    val shimmerX = width * shimmerPhase
-    val shimmerWidth = width * 0.3f
-
-    drawRect(
-        brush = Brush.horizontalGradient(
-            colors = listOf(
-                Color.Transparent,
-                glowColor.copy(alpha = 0.15f),
-                Color.Transparent
+        // Golden nebula clouds
+        drawCircle(
+            brush = Brush.radialGradient(
+                colors = listOf(
+                    LeaderboardGold.copy(alpha = goldPulse * 0.2f),
+                    LeaderboardGold.copy(alpha = goldPulse * 0.08f),
+                    Color.Transparent
+                ),
+                center = Offset(width * 0.3f, height * 0.5f),
+                radius = width * 0.4f
             ),
-            startX = shimmerX - shimmerWidth / 2,
-            endX = shimmerX + shimmerWidth / 2
+            radius = width * 0.4f,
+            center = Offset(width * 0.3f, height * 0.5f)
         )
+
+        drawCircle(
+            brush = Brush.radialGradient(
+                colors = listOf(
+                    LeaderboardGoldDark.copy(alpha = goldPulse * 0.15f),
+                    Color.Transparent
+                ),
+                center = Offset(width * 0.7f, height * 0.5f),
+                radius = width * 0.3f
+            ),
+            radius = width * 0.3f,
+            center = Offset(width * 0.7f, height * 0.5f)
+        )
+
+        // Twinkling stars
+        stars.forEach { star ->
+            val twinkle = (sin(twinklePhase + star.twinkleOffset) + 1f) / 2f
+            val currentBrightness = star.brightness * (0.4f + twinkle * 0.6f)
+
+            // Star glow
+            drawCircle(
+                color = Color.White.copy(alpha = currentBrightness * 0.25f),
+                radius = star.size * 2.5f,
+                center = Offset(star.x * width, star.y * height)
+            )
+
+            // Star core
+            drawCircle(
+                color = Color.White.copy(alpha = currentBrightness),
+                radius = star.size,
+                center = Offset(star.x * width, star.y * height)
+            )
+        }
+
+        // Shooting star effect
+        if (shootingStarPhase in 0.3f..0.55f) {
+            val progress = (shootingStarPhase - 0.3f) / 0.25f
+            val startX = width * 0.85f
+            val startY = height * 0.1f
+            val endX = width * 0.15f
+            val endY = height * 0.9f
+
+            val currentX = startX + (endX - startX) * progress
+            val currentY = startY + (endY - startY) * progress
+
+            drawLine(
+                brush = Brush.linearGradient(
+                    colors = listOf(
+                        Color.Transparent,
+                        LeaderboardGold.copy(alpha = 0.5f),
+                        Color.White
+                    ),
+                    start = Offset(currentX + 30, currentY - 30),
+                    end = Offset(currentX, currentY)
+                ),
+                start = Offset(currentX + 30, currentY - 30),
+                end = Offset(currentX, currentY),
+                strokeWidth = 1.5f
+            )
+
+            drawCircle(
+                color = Color.White,
+                radius = 2f,
+                center = Offset(currentX, currentY)
+            )
+        }
+
+        // Gold edge accents
+        drawRect(
+            brush = Brush.horizontalGradient(
+                colors = listOf(
+                    LeaderboardGold.copy(alpha = goldPulse * 0.5f),
+                    Color.Transparent,
+                    Color.Transparent,
+                    LeaderboardGold.copy(alpha = goldPulse * 0.5f)
+                )
+            )
+        )
+    }
+}
+
+private data class StarDataInline(
+    val x: Float,
+    val y: Float,
+    val size: Float,
+    val twinkleOffset: Float,
+    val brightness: Float
+)
+
+/**
+ * Inline Runner-Up Liquid Banner for leaderboard row.
+ * Liquid mercury/metal effect with flowing waves.
+ */
+@Composable
+private fun RunnerUpLiquidBannerInline(modifier: Modifier = Modifier) {
+    val infiniteTransition = rememberInfiniteTransition(label = "liquid_inline")
+
+    val wave1Phase by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 2f * PI.toFloat(),
+        animationSpec = infiniteRepeatable(
+            animation = tween(3000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "wave1"
     )
+
+    val wave2Phase by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 2f * PI.toFloat(),
+        animationSpec = infiniteRepeatable(
+            animation = tween(4000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "wave2"
+    )
+
+    val shimmerPosition by infiniteTransition.animateFloat(
+        initialValue = -0.3f,
+        targetValue = 1.3f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2500, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "shimmer"
+    )
+
+    val bubbles = remember {
+        List(5) {
+            BubbleDataInline(
+                x = Random.nextFloat(),
+                startY = Random.nextFloat() * 0.3f + 0.7f,
+                size = Random.nextFloat() * 4f + 2f,
+                speed = Random.nextFloat() * 0.4f + 0.4f,
+                phaseOffset = Random.nextFloat() * 2f * PI.toFloat()
+            )
+        }
+    }
+
+    Canvas(modifier = modifier.fillMaxSize()) {
+        val width = size.width
+        val height = size.height
+
+        // Mercury/steel base
+        drawRect(
+            brush = Brush.horizontalGradient(
+                colors = listOf(
+                    Color(0xFF2C3E50).copy(alpha = 0.9f),
+                    Color(0xFF4A5568).copy(alpha = 0.85f),
+                    Color(0xFF2D3748).copy(alpha = 0.9f)
+                )
+            )
+        )
+
+        // Liquid mercury waves
+        drawLiquidWaveInline(width, height, wave1Phase, 0.55f, 0.1f, LeaderboardSilver.copy(alpha = 0.35f))
+        drawLiquidWaveInline(width, height, wave2Phase, 0.65f, 0.08f, LeaderboardSilverLight.copy(alpha = 0.25f))
+        drawLiquidWaveInline(width, height, wave1Phase * 1.5f, 0.75f, 0.06f, LeaderboardSilverDark.copy(alpha = 0.3f))
+
+        // Rising bubbles
+        bubbles.forEach { bubble ->
+            val bubbleY = (bubble.startY - (wave1Phase / (2f * PI.toFloat())) * bubble.speed) % 1.1f
+            if (bubbleY > 0f) {
+                val wobble = sin(wave1Phase * 2 + bubble.phaseOffset) * 8f
+
+                drawCircle(
+                    brush = Brush.radialGradient(
+                        colors = listOf(
+                            Color.White.copy(alpha = 0.5f),
+                            LeaderboardSilver.copy(alpha = 0.2f),
+                            Color.Transparent
+                        )
+                    ),
+                    radius = bubble.size,
+                    center = Offset(bubble.x * width + wobble, bubbleY * height)
+                )
+            }
+        }
+
+        // Metallic shimmer sweep
+        val shimmerWidth = width * 0.35f
+        val shimmerX = shimmerPosition * (width + shimmerWidth) - shimmerWidth / 2
+
+        drawRect(
+            brush = Brush.horizontalGradient(
+                colors = listOf(
+                    Color.Transparent,
+                    Color.White.copy(alpha = 0.12f),
+                    Color.White.copy(alpha = 0.2f),
+                    Color.White.copy(alpha = 0.12f),
+                    Color.Transparent
+                ),
+                startX = shimmerX - shimmerWidth / 2,
+                endX = shimmerX + shimmerWidth / 2
+            )
+        )
+
+        // Silver edge highlights
+        drawRect(
+            brush = Brush.verticalGradient(
+                colors = listOf(
+                    LeaderboardSilverLight.copy(alpha = 0.25f),
+                    Color.Transparent,
+                    Color.Transparent,
+                    LeaderboardSilver.copy(alpha = 0.15f)
+                )
+            )
+        )
+    }
+}
+
+private data class BubbleDataInline(
+    val x: Float,
+    val startY: Float,
+    val size: Float,
+    val speed: Float,
+    val phaseOffset: Float
+)
+
+private fun DrawScope.drawLiquidWaveInline(
+    width: Float,
+    height: Float,
+    phase: Float,
+    baseY: Float,
+    amplitude: Float,
+    color: Color
+) {
+    val path = Path().apply {
+        moveTo(0f, height)
+
+        var x = 0f
+        while (x <= width) {
+            val y = height * baseY +
+                sin((x / width * 3 * PI + phase).toFloat()) * height * amplitude +
+                sin((x / width * 5 * PI + phase * 1.3f).toFloat()) * height * amplitude * 0.4f
+            lineTo(x, y)
+            x += 3f
+        }
+
+        lineTo(width, height)
+        close()
+    }
+
+    drawPath(path = path, color = color)
+}
+
+/**
+ * Inline Bronze Aurora Banner for leaderboard row.
+ * Northern lights effect with bronze/copper and green accents.
+ */
+@Composable
+private fun BronzeAuroraBannerInline(modifier: Modifier = Modifier) {
+    val infiniteTransition = rememberInfiniteTransition(label = "aurora_inline")
+
+    val auroraPhase1 by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 2f * PI.toFloat(),
+        animationSpec = infiniteRepeatable(
+            animation = tween(6000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "aurora1"
+    )
+
+    val auroraPhase2 by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 2f * PI.toFloat(),
+        animationSpec = infiniteRepeatable(
+            animation = tween(8000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "aurora2"
+    )
+
+    val verticalShimmer by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(3000, easing = androidx.compose.animation.core.EaseInOutCubic),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "vertical_shimmer"
+    )
+
+    val bronzeGlow by infiniteTransition.animateFloat(
+        initialValue = 0.35f,
+        targetValue = 0.6f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2500, easing = androidx.compose.animation.core.EaseInOutCubic),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "bronze_glow"
+    )
+
+    val auroraStars = remember {
+        List(10) {
+            Offset(Random.nextFloat(), Random.nextFloat() * 0.4f)
+        }
+    }
+
+    Canvas(modifier = modifier.fillMaxSize()) {
+        val width = size.width
+        val height = size.height
+
+        // Dark night sky
+        drawRect(
+            brush = Brush.horizontalGradient(
+                colors = listOf(
+                    Color(0xFF0D1117).copy(alpha = 0.9f),
+                    Color(0xFF161B22).copy(alpha = 0.85f),
+                    Color(0xFF0D1117).copy(alpha = 0.9f)
+                )
+            )
+        )
+
+        // Aurora curtain 1 - Bronze/copper
+        drawAuroraCurtainInline(
+            width = width,
+            height = height,
+            phase = auroraPhase1,
+            baseX = 0.25f,
+            colors = listOf(
+                LeaderboardBronze.copy(alpha = 0.35f * bronzeGlow),
+                LeaderboardBronzeLight.copy(alpha = 0.25f * bronzeGlow),
+                Color(0xFFDAA06D).copy(alpha = 0.15f * bronzeGlow)
+            ),
+            verticalOffset = verticalShimmer
+        )
+
+        // Aurora curtain 2 - Teal/green accent
+        drawAuroraCurtainInline(
+            width = width,
+            height = height,
+            phase = auroraPhase2,
+            baseX = 0.55f,
+            colors = listOf(
+                Color(0xFF50C878).copy(alpha = 0.2f),
+                ProdyAccentGreen.copy(alpha = 0.15f),
+                Color(0xFF2E8B57).copy(alpha = 0.1f)
+            ),
+            verticalOffset = 1f - verticalShimmer
+        )
+
+        // Aurora curtain 3 - Warm bronze
+        drawAuroraCurtainInline(
+            width = width,
+            height = height,
+            phase = auroraPhase1 * 1.3f,
+            baseX = 0.8f,
+            colors = listOf(
+                LeaderboardBronzeDark.copy(alpha = 0.3f * bronzeGlow),
+                Color(0xFFB8860B).copy(alpha = 0.2f * bronzeGlow),
+                LeaderboardBronze.copy(alpha = 0.15f * bronzeGlow)
+            ),
+            verticalOffset = verticalShimmer * 0.5f
+        )
+
+        // Subtle stars
+        auroraStars.forEach { star ->
+            val twinkle = (sin(auroraPhase1 + star.x * 10) + 1f) / 2f
+            drawCircle(
+                color = Color.White.copy(alpha = 0.25f + twinkle * 0.25f),
+                radius = 1f,
+                center = Offset(star.x * width, star.y * height)
+            )
+        }
+
+        // Bronze edge glow
+        drawRect(
+            brush = Brush.horizontalGradient(
+                colors = listOf(
+                    LeaderboardBronze.copy(alpha = bronzeGlow * 0.35f),
+                    Color.Transparent,
+                    Color.Transparent,
+                    LeaderboardBronze.copy(alpha = bronzeGlow * 0.35f)
+                )
+            )
+        )
+    }
+}
+
+private fun DrawScope.drawAuroraCurtainInline(
+    width: Float,
+    height: Float,
+    phase: Float,
+    baseX: Float,
+    colors: List<Color>,
+    verticalOffset: Float
+) {
+    val curtainWidth = width * 0.35f
+    val centerX = width * baseX
+
+    val stripCount = 6
+    for (i in 0 until stripCount) {
+        val stripOffset = (i - stripCount / 2) * (curtainWidth / stripCount)
+        val waveX = sin(phase + i * 0.5f) * 10f
+        val x = centerX + stripOffset + waveX
+
+        val stripHeight = height * (0.45f + verticalOffset * 0.25f + sin(phase + i) * 0.08f)
+
+        drawLine(
+            brush = Brush.verticalGradient(
+                colors = listOf(
+                    Color.Transparent,
+                    colors[i % colors.size],
+                    colors[(i + 1) % colors.size],
+                    Color.Transparent
+                ),
+                startY = 0f,
+                endY = stripHeight
+            ),
+            start = Offset(x, 0f),
+            end = Offset(x + sin(phase * 2 + i) * 4f, stripHeight),
+            strokeWidth = (curtainWidth / stripCount) * 1.3f,
+            cap = androidx.compose.ui.graphics.StrokeCap.Round
+        )
+    }
 }
 
 /**
