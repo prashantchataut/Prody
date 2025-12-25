@@ -119,6 +119,7 @@ fun FlashcardScreen(
                         skippedCount = uiState.skippedCount,
                         accuracy = uiState.accuracy,
                         durationMinutes = viewModel.getSessionDurationMinutes(),
+                        xpEarned = uiState.sessionXpEarned,
                         onRestartSession = { viewModel.restartSession() },
                         onLoadNewCards = { viewModel.loadReviewCards() },
                         onFinish = onNavigateBack
@@ -251,6 +252,7 @@ private fun SessionCompleteState(
     skippedCount: Int,
     accuracy: Float,
     durationMinutes: Int,
+    xpEarned: Int,
     onRestartSession: () -> Unit,
     onLoadNewCards: () -> Unit,
     onFinish: () -> Unit
@@ -303,7 +305,7 @@ private fun SessionCompleteState(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Accuracy and duration
+        // Accuracy, duration, and XP earned
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
@@ -330,6 +332,19 @@ private fun SessionCompleteState(
                 )
                 Text(
                     text = "Duration",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = "+$xpEarned",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.tertiary
+                )
+                Text(
+                    text = "XP Earned",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
