@@ -8,6 +8,7 @@ import com.prody.prashant.data.local.entity.StreakHistoryEntity
 import com.prody.prashant.data.local.entity.UserProfileEntity
 import com.prody.prashant.data.local.entity.UserStatsEntity
 import com.prody.prashant.domain.identity.ProdyAchievements
+import com.prody.prashant.data.local.preferences.PreferencesManager
 import com.prody.prashant.domain.identity.ProdyRanks
 import com.prody.prashant.domain.model.ChallengeType
 import kotlinx.coroutines.Dispatchers
@@ -32,7 +33,8 @@ import javax.inject.Singleton
 @Singleton
 class GamificationService @Inject constructor(
     private val userDao: UserDao,
-    private val challengeDao: ChallengeDao
+    private val challengeDao: ChallengeDao,
+    private val preferencesManager: PreferencesManager
 ) {
     companion object {
         private const val TAG = "GamificationService"
@@ -73,7 +75,15 @@ class GamificationService @Inject constructor(
      * Should be called on app startup.
      */
     suspend fun initializeUserData() = withContext(Dispatchers.IO) {
+        // PERF: Check flag to ensure this heavy setup runs only once, ever.
+        if (preferencesManager.gamificationInitialized.first()) {
+            Log.d(TAG, "Gamification data already initialized. Skipping setup.")
+            return@withContext
+        }
+
         try {
+            Log.d(TAG, "Performing one-time initialization of gamification data...")
+
             // Initialize user profile if needed
             val existingProfile = userDao.getUserProfileSync()
             if (existingProfile == null) {
@@ -108,8 +118,14 @@ class GamificationService @Inject constructor(
                 userDao.insertAchievements(achievementEntities)
                 Log.d(TAG, "Achievements initialized successfully")
             }
+
+            // Set the flag to true after successful initialization
+            preferencesManager.setGamificationInitialized(true)
+            Log.d(TAG, "Gamification data initialization complete. Flag set to true.")
+
         } catch (e: Exception) {
-            Log.e(TAG, "Error initializing user data", e)
+            Log.e(TAG, "Error initializing user data. The process will retry on next launch.", e)
+            // Do NOT set the flag to true if initialization fails
         }
     }
 

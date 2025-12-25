@@ -41,6 +41,9 @@ class PreferencesManager @Inject constructor(
         val FIRST_LAUNCH_TIME = longPreferencesKey("first_launch_time")
         val USER_ID = stringPreferencesKey("user_id")
 
+        // Gamification
+        val GAMIFICATION_INITIALIZED = booleanPreferencesKey("gamification_initialized")
+
         // Gemini AI Settings
         val GEMINI_API_KEY = stringPreferencesKey("gemini_api_key")
         val GEMINI_MODEL = stringPreferencesKey("gemini_model")
@@ -344,6 +347,22 @@ class PreferencesManager @Inject constructor(
     suspend fun setUserId(id: String) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.USER_ID] = id
+        }
+    }
+
+    // Gamification Initialized Flag
+    val gamificationInitialized: Flow<Boolean> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.GAMIFICATION_INITIALIZED] ?: false
+        }
+
+    suspend fun setGamificationInitialized(initialized: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.GAMIFICATION_INITIALIZED] = initialized
         }
     }
 
