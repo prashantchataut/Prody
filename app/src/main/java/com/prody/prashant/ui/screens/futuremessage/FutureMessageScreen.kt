@@ -6,7 +6,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.isSystemInDarkTheme
+import com.prody.prashant.ui.theme.isDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -62,13 +62,13 @@ fun FutureMessageListScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var selectedTab by remember { mutableIntStateOf(0) }
     var showFilterDialog by remember { mutableStateOf(false) }
-    val isDarkTheme = isSystemInDarkTheme()
+    val isDark = isDarkTheme()
 
     // Theme-aware colors
-    val backgroundColor = if (isDarkTheme) TimeCapsuleBackgroundDark else TimeCapsuleBackgroundLight
-    val primaryTextColor = if (isDarkTheme) TimeCapsuleTextPrimaryDark else TimeCapsuleTextPrimaryLight
-    val secondaryTextColor = if (isDarkTheme) TimeCapsuleTextSecondaryDark else TimeCapsuleTextSecondaryLight
-    val iconColor = if (isDarkTheme) TimeCapsuleIconDark else TimeCapsuleIconLight
+    val backgroundColor = if (isDark) TimeCapsuleBackgroundDark else TimeCapsuleBackgroundLight
+    val primaryTextColor = if (isDark) TimeCapsuleTextPrimaryDark else TimeCapsuleTextPrimaryLight
+    val secondaryTextColor = if (isDark) TimeCapsuleTextSecondaryDark else TimeCapsuleTextSecondaryLight
+    val iconColor = if (isDark) TimeCapsuleIconDark else TimeCapsuleIconLight
 
     Box(
         modifier = Modifier
@@ -94,7 +94,7 @@ fun FutureMessageListScreen(
             TimeCapsuleTabSwitch(
                 selectedTab = selectedTab,
                 onTabSelected = { selectedTab = it },
-                isDarkTheme = isDarkTheme
+                isDarkTheme = isDark
             )
 
             // Content based on selected tab
@@ -107,11 +107,11 @@ fun FutureMessageListScreen(
                     0 -> DeliveredMessagesTab(
                         messages = uiState.deliveredMessages,
                         onMessageClick = { viewModel.markAsRead(it.id) },
-                        isDarkTheme = isDarkTheme
+                        isDarkTheme = isDark
                     )
                     1 -> PendingMessagesTab(
                         messages = uiState.pendingMessages,
-                        isDarkTheme = isDarkTheme
+                        isDarkTheme = isDark
                     )
                 }
             }
@@ -120,7 +120,7 @@ fun FutureMessageListScreen(
         // Bottom CTA Button
         TimeCapsuleCTAButton(
             onClick = onNavigateToWrite,
-            isDarkTheme = isDarkTheme,
+            isDarkTheme = isDark,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .padding(horizontal = 24.dp)
@@ -132,7 +132,7 @@ fun FutureMessageListScreen(
         if (showFilterDialog) {
             TimeCapsuleFilterDialog(
                 onDismiss = { showFilterDialog = false },
-                isDarkTheme = isDarkTheme
+                isDarkTheme = isDark
             )
         }
     }

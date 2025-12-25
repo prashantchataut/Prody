@@ -375,6 +375,7 @@ val WisdomCardAccent = Color(0xFF36F97F)
 val WordOfDayColor = Color(0xFFD4AF37)           // Gold - vocabulary
 val IdiomPurple = Color(0xFFB39DDB)              // Soft lavender - idioms
 val ProverbTeal = Color(0xFF26A69A)              // Teal - proverbs
+val SeedGold = Color(0xFFE8B42F)                 // Golden yellow - seeds
 
 // =============================================================================
 // WISDOM & QUOTES COLORS (Flat)

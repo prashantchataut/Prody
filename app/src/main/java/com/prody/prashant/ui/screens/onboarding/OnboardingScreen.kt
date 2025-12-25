@@ -143,7 +143,7 @@ fun OnboardingScreen(
 ) {
     val pagerState = rememberPagerState(pageCount = { 7 })
     val coroutineScope = rememberCoroutineScope()
-    val isDarkTheme = isSystemInDarkTheme()
+    val isDarkTheme = isDarkTheme()
 
     val backgroundColor = if (isDarkTheme) DarkBackground else LightBackground
 

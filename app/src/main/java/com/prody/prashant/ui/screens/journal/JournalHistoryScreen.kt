@@ -8,7 +8,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.isSystemInDarkTheme
+import com.prody.prashant.ui.theme.isDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -76,15 +76,15 @@ fun JournalHistoryScreen(
     viewModel: JournalHistoryViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val isDarkTheme = isSystemInDarkTheme()
+    val isDark = isDarkTheme()
 
-    // Premium theme-aware colors
-    val backgroundColor = if (isDarkTheme) Color(0xFF0D2826) else Color(0xFFF0F4F3)
-    val surfaceColor = if (isDarkTheme) Color(0xFF1A3331) else Color(0xFFFFFFFF)
-    val textPrimary = if (isDarkTheme) Color.White else Color(0xFF1A1A1A)
-    val textSecondary = if (isDarkTheme) Color(0xFFD3D8D7) else Color(0xFF6C757D)
-    val accentColor = Color(0xFF36F97F) // Vibrant neon green
-    val dividerColor = if (isDarkTheme) Color(0xFF3A5250) else Color(0xFFDEE2E6)
+    // Premium theme-aware colors using MaterialTheme
+    val backgroundColor = MaterialTheme.colorScheme.background
+    val surfaceColor = MaterialTheme.colorScheme.surface
+    val textPrimary = MaterialTheme.colorScheme.onBackground
+    val textSecondary = MaterialTheme.colorScheme.onSurfaceVariant
+    val accentColor = MaterialTheme.colorScheme.primary
+    val dividerColor = MaterialTheme.colorScheme.outlineVariant
     val timelineColor = accentColor.copy(alpha = 0.4f)
 
     var showFilterSheet by remember { mutableStateOf(false) }
