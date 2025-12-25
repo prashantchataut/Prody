@@ -97,22 +97,83 @@ fun FutureMessageListScreen(
                 isDarkTheme = isDarkTheme
             )
 
-            // Content based on selected tab
+            // Content based on selected tab with loading/error states
             Box(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
             ) {
-                when (selectedTab) {
-                    0 -> DeliveredMessagesTab(
-                        messages = uiState.deliveredMessages,
-                        onMessageClick = { viewModel.markAsRead(it.id) },
-                        isDarkTheme = isDarkTheme
-                    )
-                    1 -> PendingMessagesTab(
-                        messages = uiState.pendingMessages,
-                        isDarkTheme = isDarkTheme
-                    )
+                when {
+                    // Loading state
+                    uiState.isLoading -> {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(16.dp)
+                            ) {
+                                CircularProgressIndicator(
+                                    color = TimeCapsuleAccent
+                                )
+                                Text(
+                                    text = "Loading messages...",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = secondaryTextColor
+                                )
+                            }
+                        }
+                    }
+                    // Error state
+                    uiState.error != null -> {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(16.dp),
+                                modifier = Modifier.padding(32.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.ErrorOutline,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(64.dp),
+                                    tint = primaryTextColor.copy(alpha = 0.5f)
+                                )
+                                Text(
+                                    text = uiState.error ?: "Something went wrong",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = secondaryTextColor,
+                                    textAlign = TextAlign.Center
+                                )
+                                Button(
+                                    onClick = { viewModel.retry() },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = TimeCapsuleAccent,
+                                        contentColor = Color.Black
+                                    )
+                                ) {
+                                    Text("Retry")
+                                }
+                            }
+                        }
+                    }
+                    // Content tabs
+                    else -> {
+                        when (selectedTab) {
+                            0 -> DeliveredMessagesTab(
+                                messages = uiState.deliveredMessages,
+                                onMessageClick = { viewModel.markAsRead(it.id) },
+                                isDarkTheme = isDarkTheme
+                            )
+                            1 -> PendingMessagesTab(
+                                messages = uiState.pendingMessages,
+                                isDarkTheme = isDarkTheme
+                            )
+                        }
+                    }
                 }
             }
         }

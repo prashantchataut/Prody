@@ -109,7 +109,29 @@ fun JournalListScreen(
             )
         }
     ) { padding ->
-        if (uiState.entries.isEmpty()) {
+        // Loading state - show before checking empty
+        if (uiState.isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    CircularProgressIndicator(
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = "Loading journal entries...",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        } else if (uiState.entries.isEmpty()) {
             EmptyJournalState(
                 modifier = Modifier
                     .fillMaxSize()
