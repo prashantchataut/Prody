@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -108,6 +109,13 @@ class MainActivity : ComponentActivity() {
         val splashScreen = installSplashScreen()
 
         super.onCreate(savedInstanceState)
+
+        // Security: Prevent screenshots and screen recording of the entire app
+        // This is a critical security measure to protect sensitive user data like journal entries,
+        // future messages, and personal reflections from being captured by other apps or the user
+        // accidentally. FLAG_SECURE is a system-level flag that tells the Android OS to treat
+        // the content of this window as secure, blocking screen captures and recordings.
+        window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
 
         // Mark injection as complete after super.onCreate() for Hilt activities
         isInjectionComplete = true
