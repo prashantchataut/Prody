@@ -170,6 +170,7 @@ class BuddhaAiRepository @Inject constructor(
     /**
      * Analyze journal entry after save (non-blocking).
      * Returns emotion label, themes, and reflection insight.
+     * Respects both the global Buddha AI toggle and the specific Journal Insights toggle.
      */
     suspend fun analyzeJournalEntry(
         content: String,
@@ -179,7 +180,13 @@ class BuddhaAiRepository @Inject constructor(
     ): BuddhaAiResult<JournalInsightResult> {
         val cacheKey = "journal_${hashString(content)}"
 
+        // Check global AI toggle
         if (!preferencesManager.buddhaAiEnabled.first()) {
+            return BuddhaAiResult.Fallback(getStaticJournalInsight(content, mood, wordCount))
+        }
+
+        // Check specific journal insights toggle
+        if (!preferencesManager.buddhaJournalInsightsEnabled.first()) {
             return BuddhaAiResult.Fallback(getStaticJournalInsight(content, mood, wordCount))
         }
 
@@ -417,26 +424,78 @@ class BuddhaAiRepository @Inject constructor(
         return withContext(Dispatchers.IO) {
             try {
                 val startTime = System.currentTimeMillis()
+
+                // Check for insufficient context (very short entries)
+                if (wordCount < 5 || content.trim().length < 20) {
+                    val insufficientResult = JournalInsightResult(
+                        emotionLabel = mood.displayName,
+                        themes = listOf("Reflection"),
+                        insight = "Not enough detail yet to provide a meaningful insight.",
+                        isAiGenerated = false,
+                        snippet = null,
+                        question = "What's on your mind right now? Could you share a bit more about what you're feeling or thinking?",
+                        suggestion = "Try writing at least a few sentences about your day or thoughts.",
+                        isInsufficientContext = true
+                    )
+                    // Don't cache insufficient context responses
+                    return@withContext BuddhaAiResult.Success(insufficientResult)
+                }
+
                 val prompt = """
-                    Analyze this journal entry and provide insight.
+                    Analyze this journal entry and provide a grounded insight based on the ACTUAL content.
 
                     Entry: "$content"
                     Mood: ${mood.displayName} (Intensity: $moodIntensity/10)
                     Word count: $wordCount
 
-                    Respond in this exact format (no extra text):
+                    CRITICAL RULES:
+                    - You MUST extract a short quote (5-12 words) directly from the entry as evidence.
+                    - Your insight MUST specifically reference what the user wrote, NOT generic advice.
+                    - If you cannot find anything meaningful in the entry, respond with INSUFFICIENT_CONTEXT.
+                    - No emojis. No "As an AI..." phrases. Be warm but specific.
+
+                    Respond in this EXACT format (no extra text, no bullet points):
+                    SNIPPET: [5-12 word quote directly from the entry]
                     EMOTION: [Single emotion word that captures the essence]
-                    THEMES: [2-4 themes, comma-separated]
-                    INSIGHT: [2-3 sentences of warm, non-clinical reflection]
+                    THEMES: [2-4 themes based on actual entry content, comma-separated]
+                    INSIGHT: [1-2 sentences directly referencing what they wrote]
+                    QUESTION: [One reflective question based on their specific situation]
+                    SUGGESTION: [One practical action based on their entry, max one sentence]
                 """.trimIndent()
 
                 val response = tryGenerateWithFallback(prompt)
 
                 if (response != null) {
                     val parsed = parseJournalInsight(response, content, mood, wordCount)
-                    cacheResult(cacheKey, parsed)
-                    recordApiCall(System.currentTimeMillis() - startTime, "ai", "journal_insight", null)
-                    BuddhaAiResult.Success(parsed)
+
+                    // Validate the response has a snippet that exists in the content
+                    if (parsed.snippet != null && isSnippetValid(parsed.snippet, content)) {
+                        cacheResult(cacheKey, parsed)
+                        recordApiCall(System.currentTimeMillis() - startTime, "ai", "journal_insight", null)
+                        BuddhaAiResult.Success(parsed)
+                    } else if (response.contains("INSUFFICIENT_CONTEXT", ignoreCase = true)) {
+                        // AI determined there's not enough context
+                        val insufficientResult = JournalInsightResult(
+                            emotionLabel = mood.displayName,
+                            themes = listOf("Reflection"),
+                            insight = "Not enough detail yet to provide a meaningful insight.",
+                            isAiGenerated = false,
+                            snippet = null,
+                            question = "What's on your mind? Could you share more about what's happening?",
+                            suggestion = "Try adding more detail about your thoughts or situation.",
+                            isInsufficientContext = true
+                        )
+                        BuddhaAiResult.Success(insufficientResult)
+                    } else {
+                        // AI response didn't include valid snippet - try to extract one ourselves
+                        val extractedSnippet = extractSnippetFromContent(content)
+                        val fixedResult = parsed.copy(snippet = extractedSnippet)
+                        if (extractedSnippet != null) {
+                            cacheResult(cacheKey, fixedResult)
+                        }
+                        recordApiCall(System.currentTimeMillis() - startTime, "ai", "journal_insight", null)
+                        BuddhaAiResult.Success(fixedResult)
+                    }
                 } else {
                     BuddhaAiResult.Fallback(getStaticJournalInsight(content, mood, wordCount))
                 }
@@ -444,6 +503,46 @@ class BuddhaAiRepository @Inject constructor(
                 Log.e(TAG, "Error generating journal insight", e)
                 recordApiCall(0, "error", "journal_insight", e.message)
                 BuddhaAiResult.Fallback(getStaticJournalInsight(content, mood, wordCount))
+            }
+        }
+    }
+
+    /**
+     * Validates that the snippet actually appears in or closely matches the original content.
+     */
+    private fun isSnippetValid(snippet: String, content: String): Boolean {
+        val normalizedSnippet = snippet.lowercase().trim()
+        val normalizedContent = content.lowercase()
+
+        // Direct match
+        if (normalizedContent.contains(normalizedSnippet)) return true
+
+        // Check if most words from snippet are in content
+        val snippetWords = normalizedSnippet.split("\\s+".toRegex()).filter { it.length > 2 }
+        val contentWords = normalizedContent.split("\\s+".toRegex()).toSet()
+        val matchingWords = snippetWords.count { word -> contentWords.any { it.contains(word) || word.contains(it) } }
+
+        return snippetWords.isNotEmpty() && matchingWords.toFloat() / snippetWords.size >= 0.6f
+    }
+
+    /**
+     * Extracts a meaningful snippet from the content if AI didn't provide one.
+     */
+    private fun extractSnippetFromContent(content: String): String? {
+        val sentences = content.split(Regex("[.!?]+")).filter { it.trim().length > 10 }
+        if (sentences.isEmpty()) return null
+
+        // Try to find a sentence with meaningful content (not just "I feel" or very short)
+        val meaningfulSentence = sentences.find { sentence ->
+            val words = sentence.trim().split("\\s+".toRegex())
+            words.size >= 4 && words.size <= 15
+        } ?: sentences.firstOrNull()
+
+        return meaningfulSentence?.trim()?.take(60)?.let { snippet ->
+            if (snippet.length > 50 && !snippet.endsWith("...")) {
+                snippet.substringBeforeLast(" ") + "..."
+            } else {
+                snippet
             }
         }
     }
@@ -772,17 +871,24 @@ class BuddhaAiRepository @Inject constructor(
     }
 
     private fun parseJournalInsight(response: String, content: String, mood: Mood, wordCount: Int): JournalInsightResult {
+        val snippet = extractSection(response, "SNIPPET:")?.trim()
         val emotion = extractSection(response, "EMOTION:")?.trim() ?: mood.displayName
         val themesRaw = extractSection(response, "THEMES:") ?: ""
         val themes = themesRaw.split(",").map { it.trim() }.filter { it.isNotEmpty() }.take(4)
         val insight = extractSection(response, "INSIGHT:")?.trim()
             ?: "Your reflection shows thoughtful self-awareness."
+        val question = extractSection(response, "QUESTION:")?.trim()
+        val suggestion = extractSection(response, "SUGGESTION:")?.trim()
 
         return JournalInsightResult(
             emotionLabel = emotion,
             themes = themes.ifEmpty { listOf("Self-reflection") },
             insight = insight,
-            isAiGenerated = true
+            isAiGenerated = true,
+            snippet = snippet,
+            question = question,
+            suggestion = suggestion,
+            isInsufficientContext = false
         )
     }
 
@@ -862,8 +968,8 @@ class BuddhaAiRepository @Inject constructor(
     }
 
     private fun findNextLabel(text: String, startIndex: Int): Int {
-        val labels = listOf("MEANING:", "TRY TODAY:", "EMOTION:", "THEMES:", "INSIGHT:",
-            "SUMMARY:", "PATTERN:", "SUGGESTION:", "EXAMPLE:", "MEMORY HOOK:", "RELATED:",
+        val labels = listOf("MEANING:", "TRY TODAY:", "SNIPPET:", "EMOTION:", "THEMES:", "INSIGHT:",
+            "QUESTION:", "SUMMARY:", "PATTERN:", "SUGGESTION:", "EXAMPLE:", "MEMORY HOOK:", "RELATED:",
             "STARTER 1:", "STARTER 2:", "STARTER 3:", "TONE TIP:", "TIP:", "PREVIEW:")
 
         var minIndex = -1
@@ -892,18 +998,36 @@ class BuddhaAiRepository @Inject constructor(
         val themes = mutableListOf<String>()
         val lowerContent = content.lowercase()
 
-        if (lowerContent.contains("work") || lowerContent.contains("job")) themes.add("Work")
-        if (lowerContent.contains("family") || lowerContent.contains("friend")) themes.add("Relationships")
-        if (lowerContent.contains("goal") || lowerContent.contains("future")) themes.add("Growth")
-        if (lowerContent.contains("grateful") || lowerContent.contains("thank")) themes.add("Gratitude")
+        if (lowerContent.contains("work") || lowerContent.contains("job") || lowerContent.contains("boss") || lowerContent.contains("colleague")) themes.add("Work")
+        if (lowerContent.contains("family") || lowerContent.contains("friend") || lowerContent.contains("relationship")) themes.add("Relationships")
+        if (lowerContent.contains("goal") || lowerContent.contains("future") || lowerContent.contains("plan")) themes.add("Growth")
+        if (lowerContent.contains("grateful") || lowerContent.contains("thank") || lowerContent.contains("appreciate")) themes.add("Gratitude")
+        if (lowerContent.contains("stress") || lowerContent.contains("anxious") || lowerContent.contains("worried")) themes.add("Stress")
+        if (lowerContent.contains("happy") || lowerContent.contains("joy") || lowerContent.contains("excited")) themes.add("Joy")
 
         if (themes.isEmpty()) themes.add("Self-reflection")
+
+        // Extract a snippet from the content
+        val snippet = extractSnippetFromContent(content)
+
+        // Generate context-aware insight based on themes
+        val insight = when {
+            themes.contains("Work") -> "Your entry touches on work-related matters. Taking time to reflect on professional challenges helps maintain perspective."
+            themes.contains("Relationships") -> "You've written about the people in your life. These connections shape much of our daily experience."
+            themes.contains("Stress") -> "Your entry reflects some challenging feelings. Acknowledging them is the first step toward working through them."
+            themes.contains("Gratitude") -> "Your gratitude practice shines through in this entry. This awareness strengthens positive patterns."
+            else -> "Your ${wordCount}-word reflection shows thoughtful engagement with your inner world."
+        }
 
         return JournalInsightResult(
             emotionLabel = mood.displayName,
             themes = themes.take(4),
-            insight = "Your ${wordCount}-word reflection shows thoughtful engagement with your inner world. Continue this practice of self-examination.",
-            isAiGenerated = false
+            insight = insight,
+            isAiGenerated = false,
+            snippet = snippet,
+            question = "What would you like to explore further about this?",
+            suggestion = "Consider revisiting this entry in a few days to see how your perspective has changed.",
+            isInsufficientContext = false
         )
     }
 
@@ -1180,7 +1304,11 @@ data class JournalInsightResult(
     val emotionLabel: String,
     val themes: List<String>,
     val insight: String,
-    val isAiGenerated: Boolean
+    val isAiGenerated: Boolean,
+    val snippet: String? = null,
+    val question: String? = null,
+    val suggestion: String? = null,
+    val isInsufficientContext: Boolean = false
 )
 
 @Serializable

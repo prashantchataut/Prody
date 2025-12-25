@@ -34,6 +34,11 @@ data class JournalEntryEntity(
     val aiInsight: String? = null,
     val aiSummary: String? = null, // Short AI-generated summary (1-2 sentences)
     val aiInsightGenerated: Boolean = false,
+    // Additional grounded insight fields
+    val aiSnippet: String? = null, // Short quote from entry proving AI read the content
+    val aiQuestion: String? = null, // Reflective question based on entry
+    val aiSuggestion: String? = null, // Practical suggestion based on entry
+    val aiContentHash: String? = null, // Hash of content for cache invalidation on edit
     // Media attachments - stored as JSON array strings
     val attachedPhotos: String = "", // JSON array of photo URIs
     val attachedVideos: String = "", // JSON array of video URIs
