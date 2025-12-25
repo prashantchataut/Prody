@@ -26,7 +26,6 @@ import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -42,6 +41,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.prody.prashant.ui.theme.PoppinsFamily
 import com.prody.prashant.ui.theme.ProdyAccent
+import androidx.activity.viewModels
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -55,6 +55,8 @@ import androidx.navigation.navArgument
 import com.prody.prashant.data.local.preferences.PreferencesManager
 import com.prody.prashant.notification.NotificationReceiver
 import com.prody.prashant.notification.NotificationScheduler
+import com.prody.prashant.ui.main.MainActivityUiState
+import com.prody.prashant.ui.main.MainViewModel
 import com.prody.prashant.ui.navigation.BottomNavItem
 import com.prody.prashant.ui.navigation.Screen
 import com.prody.prashant.ui.screens.futuremessage.FutureMessageListScreen
@@ -77,9 +79,7 @@ import com.prody.prashant.ui.theme.ThemeMode
 import dagger.hilt.android.AndroidEntryPoint
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -90,6 +90,8 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var notificationScheduler: NotificationScheduler
+
+    private val viewModel: MainViewModel by viewModels()
 
     // Flag to track if Hilt injection is complete
     private var isInjectionComplete = false
@@ -121,31 +123,12 @@ class MainActivity : ComponentActivity() {
 
         enableEdgeToEdge()
 
-        // Use mutable state to update UI when preferences are loaded
-        var isOnboardingCompleted by mutableStateOf<Boolean?>(null)
-
-        // Keep splash screen visible until the essential onboarding status is loaded.
-        splashScreen.setKeepOnScreenCondition { isOnboardingCompleted == null }
-
-        // Load ONLY the essential preference to unblock the splash screen.
-        // The theme is loaded asynchronously in setContent and will update when ready.
-        lifecycleScope.launch {
-            try {
-                isOnboardingCompleted = preferencesManager.onboardingCompleted.first()
-            } catch (e: Exception) {
-                // If preferences fail, default to showing onboarding.
-                android.util.Log.e("MainActivity", "Failed to load onboarding status", e)
-                isOnboardingCompleted = false
-            }
-        }
-
         setContent {
-            // Wait until the onboarding status is loaded before showing the UI.
-            val onboardingDone = isOnboardingCompleted
-            if (onboardingDone == null) {
-                // While this is null, the splash screen is kept visible.
-                // We return here to prevent the UI from composing unnecessarily.
-                return@setContent
+            val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+            // Keep splash screen visible until the UI state is determined.
+            splashScreen.setKeepOnScreenCondition {
+                uiState is MainActivityUiState.Loading
             }
 
             // Asynchronously collect the theme mode. It will default to "system" and then
@@ -163,9 +146,18 @@ class MainActivity : ComponentActivity() {
             ProdyTheme(
                 themeMode = themeModeState
             ) {
-                ProdyApp(
-                    startDestination = if (onboardingDone) Screen.Home.route else Screen.Onboarding.route
-                )
+                when (val state = uiState) {
+                    is MainActivityUiState.Loading -> {
+                        // While loading, the splash screen is shown.
+                        // Optionally, you can show a loading indicator here if needed,
+                        // but the splash screen condition handles it.
+                    }
+                    is MainActivityUiState.Success -> {
+                        ProdyApp(
+                            startDestination = if (state.onboardingCompleted) Screen.Home.route else Screen.Onboarding.route
+                        )
+                    }
+                }
             }
         }
     }
