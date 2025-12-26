@@ -201,7 +201,49 @@ fun StatsScreen(
             particleColor = NeonGreen.copy(alpha = 0.3f)
         )
 
-        PullToRefreshBox(
+        // Error state handling
+        if (uiState.error != null) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    modifier = Modifier.padding(32.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.ErrorOutline,
+                        contentDescription = null,
+                        modifier = Modifier.size(64.dp),
+                        tint = textPrimary.copy(alpha = 0.5f)
+                    )
+                    Text(
+                        text = uiState.error ?: "Something went wrong",
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 16.sp,
+                        color = textSecondary,
+                        textAlign = TextAlign.Center
+                    )
+                    Button(
+                        onClick = { viewModel.refresh() },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = accentColor,
+                            contentColor = Color.Black
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text(
+                            text = "Retry",
+                            fontFamily = PoppinsFamily,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                }
+            }
+        } else {
+            PullToRefreshBox(
             isRefreshing = isRefreshing,
             onRefresh = { isRefreshing = true },
             modifier = Modifier.fillMaxSize(),
@@ -340,6 +382,7 @@ fun StatsScreen(
                         }
                     }
                 }
+            }
             }
         }
 

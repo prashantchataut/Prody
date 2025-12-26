@@ -97,7 +97,7 @@ fun FutureMessageListScreen(
                 isDarkTheme = isDark
             )
 
-            // Content based on selected tab
+            // Content based on selected tab with loading/error states
             Box(
                 modifier = Modifier
                     .weight(1f)
