@@ -1,13 +1,25 @@
 package com.prody.prashant.data.local.preferences
 
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
+import com.prody.prashant.di.ApplicationScope
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -16,9 +28,35 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
 
 @Singleton
 class PreferencesManager @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    @ApplicationScope private val externalScope: CoroutineScope
 ) {
     private val dataStore = context.dataStore
+
+    /**
+     * Security: EncryptedSharedPreferences for storing sensitive data like API keys.
+     * This ensures that even on a rooted device, the keys cannot be easily extracted.
+     */
+    private val securePreferences: SharedPreferences by lazy {
+        val masterKey = MasterKey.Builder(context)
+            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+            .build()
+
+        EncryptedSharedPreferences.create(
+            context,
+            "prody_secure_prefs",
+            masterKey,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
+    }
+
+    init {
+        externalScope.launch {
+            migrateApiKeyToSecureStorage()
+            _geminiApiKey.value = getGeminiApiKey()
+        }
+    }
 
     // Keys
     private object PreferencesKeys {
@@ -367,18 +405,32 @@ class PreferencesManager @Inject constructor(
     }
 
     // Gemini AI Settings
-    val geminiApiKey: Flow<String> = dataStore.data
-        .catch { exception ->
-            if (exception is IOException) emit(emptyPreferences())
-            else throw exception
-        }
-        .map { preferences ->
-            preferences[PreferencesKeys.GEMINI_API_KEY] ?: ""
-        }
+    private val _geminiApiKey = MutableStateFlow<String?>(null)
+    val geminiApiKey: StateFlow<String?> = _geminiApiKey.asStateFlow()
 
-    suspend fun setGeminiApiKey(apiKey: String) {
-        dataStore.edit { preferences ->
-            preferences[PreferencesKeys.GEMINI_API_KEY] = apiKey
+    /**
+     * Security: Saves the user-provided Gemini API key to EncryptedSharedPreferences.
+     */
+    suspend fun setGeminiApiKey(apiKey: String?) {
+        withContext(Dispatchers.IO) {
+            with(securePreferences.edit()) {
+                putString(SECURE_GEMINI_API_KEY, apiKey)
+                apply()
+            }
+        }
+        _geminiApiKey.value = apiKey
+    }
+
+    companion object {
+        private const val SECURE_GEMINI_API_KEY = "secure_gemini_api_key"
+    }
+
+    /**
+     * Security: Retrieves the user-provided Gemini API key from EncryptedSharedPreferences.
+     */
+    suspend fun getGeminiApiKey(): String? {
+        return withContext(Dispatchers.IO) {
+            securePreferences.getString(SECURE_GEMINI_API_KEY, null)
         }
     }
 
@@ -652,6 +704,26 @@ class PreferencesManager @Inject constructor(
             preferences[PreferencesKeys.PRIVACY_LOCK_JOURNAL] = false
             preferences[PreferencesKeys.PRIVACY_LOCK_FUTURE_MESSAGES] = false
             preferences[PreferencesKeys.PRIVACY_LOCK_ON_BACKGROUND] = true
+        }
+    }
+
+    /**
+     * Security: Performs a one-time migration of the Gemini API key from unencrypted DataStore
+     * to EncryptedSharedPreferences. This runs on app startup.
+     */
+    private suspend fun migrateApiKeyToSecureStorage() {
+        val unencryptedApiKey = dataStore.data.map { preferences ->
+            preferences[PreferencesKeys.GEMINI_API_KEY]
+        }.first()
+
+        if (!unencryptedApiKey.isNullOrBlank()) {
+            // Key found in unencrypted storage, move it to secure storage
+            setGeminiApiKey(unencryptedApiKey)
+
+            // Remove the key from unencrypted storage
+            dataStore.edit { preferences ->
+                preferences.remove(PreferencesKeys.GEMINI_API_KEY)
+            }
         }
     }
 }
