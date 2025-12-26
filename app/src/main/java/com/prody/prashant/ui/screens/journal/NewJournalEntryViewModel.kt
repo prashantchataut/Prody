@@ -125,7 +125,7 @@ class NewJournalEntryViewModel @Inject constructor(
                 ) { enabled, apiKey ->
                     Triple(
                         enabled,
-                        apiKey.isNotBlank() || GeminiService.isApiKeyConfiguredInBuildConfig(),
+                        !apiKey.isNullOrBlank() || GeminiService.isApiKeyConfiguredInBuildConfig(),
                         openRouterService.isConfigured()
                     )
                 }.collect { (enabled, geminiConfigured, openRouterConfigured) ->
