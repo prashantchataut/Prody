@@ -56,6 +56,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.prody.prashant.data.local.entity.LeaderboardEntryEntity
 import com.prody.prashant.domain.identity.ProdyBanners
+import com.prody.prashant.domain.identity.ProdyTitles
 import com.prody.prashant.ui.theme.LeaderboardBronze
 import com.prody.prashant.ui.theme.LeaderboardBronzeDark
 import com.prody.prashant.ui.theme.LeaderboardBronzeLight
@@ -804,6 +805,19 @@ fun ProdyLeaderboardRow(
                                 )
                             }
                         }
+                    }
+
+                    // Equipped title (shown subtly below name)
+                    val title = ProdyTitles.findById(entry.titleId)
+                    if (title != null) {
+                        Text(
+                            text = title.name,
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Normal,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
                     }
 
                     Spacer(modifier = Modifier.height(2.dp))

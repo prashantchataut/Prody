@@ -13,7 +13,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.isSystemInDarkTheme
+import com.prody.prashant.ui.theme.isDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.ime
@@ -80,7 +80,7 @@ fun WriteMessageScreen(
     viewModel: WriteMessageViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val isDarkTheme = isSystemInDarkTheme()
+    val isDark = isDarkTheme()
     val context = LocalContext.current
 
     // Media picker launcher
@@ -144,18 +144,18 @@ fun WriteMessageScreen(
     val sealState = rememberTimeCapsuleSealState()
 
     // Theme-aware colors
-    val backgroundColor = if (isDarkTheme) TimeCapsuleBackgroundDark else TimeCapsuleBackgroundLight
-    val titleTextColor = if (isDarkTheme) TimeCapsuleTitleTextDark else TimeCapsuleTitleTextLight
-    val discardTextColor = if (isDarkTheme) TimeCapsuleDiscardTextDark else TimeCapsuleDiscardTextLight
-    val placeholderColor = if (isDarkTheme) TimeCapsulePlaceholderDark else TimeCapsulePlaceholderLight
-    val activeTextColor = if (isDarkTheme) TimeCapsuleActiveTextDark else TimeCapsuleActiveTextLight
-    val multimediaIconColor = if (isDarkTheme) TimeCapsuleMultimediaIconDark else TimeCapsuleMultimediaIconLight
-    val attachTextColor = if (isDarkTheme) TimeCapsuleAttachTextDark else TimeCapsuleAttachTextLight
-    val dividerColor = if (isDarkTheme) TimeCapsuleDividerDark else TimeCapsuleDividerLight
-    val sectionTitleColor = if (isDarkTheme) TimeCapsuleSectionTitleDark else TimeCapsuleSectionTitleLight
-    val inactiveTagBgColor = if (isDarkTheme) TimeCapsuleInactiveTagBgDark else TimeCapsuleInactiveTagBgLight
-    val inactiveTagTextColor = if (isDarkTheme) TimeCapsuleInactiveTagTextDark else TimeCapsuleInactiveTagTextLight
-    val buttonTextColor = if (isDarkTheme) TimeCapsuleButtonTextDark else TimeCapsuleButtonTextLight
+    val backgroundColor = if (isDark) TimeCapsuleBackgroundDark else TimeCapsuleBackgroundLight
+    val titleTextColor = if (isDark) TimeCapsuleTitleTextDark else TimeCapsuleTitleTextLight
+    val discardTextColor = if (isDark) TimeCapsuleDiscardTextDark else TimeCapsuleDiscardTextLight
+    val placeholderColor = if (isDark) TimeCapsulePlaceholderDark else TimeCapsulePlaceholderLight
+    val activeTextColor = if (isDark) TimeCapsuleActiveTextDark else TimeCapsuleActiveTextLight
+    val multimediaIconColor = if (isDark) TimeCapsuleMultimediaIconDark else TimeCapsuleMultimediaIconLight
+    val attachTextColor = if (isDark) TimeCapsuleAttachTextDark else TimeCapsuleAttachTextLight
+    val dividerColor = if (isDark) TimeCapsuleDividerDark else TimeCapsuleDividerLight
+    val sectionTitleColor = if (isDark) TimeCapsuleSectionTitleDark else TimeCapsuleSectionTitleLight
+    val inactiveTagBgColor = if (isDark) TimeCapsuleInactiveTagBgDark else TimeCapsuleInactiveTagBgLight
+    val inactiveTagTextColor = if (isDark) TimeCapsuleInactiveTagTextDark else TimeCapsuleInactiveTagTextLight
+    val buttonTextColor = if (isDark) TimeCapsuleButtonTextDark else TimeCapsuleButtonTextLight
 
     // Handle saved state with magical animation
     LaunchedEffect(uiState.isSaved) {

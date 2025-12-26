@@ -37,7 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.compose.foundation.isSystemInDarkTheme
+import com.prody.prashant.ui.theme.isDarkTheme
 import com.prody.prashant.R
 import com.prody.prashant.data.ai.WeeklyPatternResult
 import com.prody.prashant.data.local.entity.AchievementEntity
@@ -117,17 +117,17 @@ fun ProfileScreen(
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val isDarkMode = isSystemInDarkTheme()
+    val isDarkMode = isDarkTheme()
 
-    // Premium theme colors
-    val backgroundColor = if (isDarkMode) Color(0xFF0D2826) else Color(0xFFF0F4F3)
-    val surfaceColor = if (isDarkMode) Color(0xFF1A3331) else Color(0xFFFFFFFF)
-    val surfaceElevated = if (isDarkMode) Color(0xFF2A4240) else Color(0xFFF5F7F6)
-    val textPrimary = if (isDarkMode) Color.White else Color(0xFF1A1A1A)
-    val textSecondary = if (isDarkMode) Color(0xFFD3D8D7) else Color(0xFF6C757D)
-    val textTertiary = if (isDarkMode) Color(0xFF8A9493) else Color(0xFF9CA3AF)
-    val accentColor = Color(0xFF36F97F) // Vibrant neon green
-    val dividerColor = if (isDarkMode) Color(0xFF3A5250) else Color(0xFFDEE2E6)
+    // Premium theme colors using MaterialTheme
+    val backgroundColor = MaterialTheme.colorScheme.background
+    val surfaceColor = MaterialTheme.colorScheme.surface
+    val surfaceElevated = MaterialTheme.colorScheme.surfaceVariant
+    val textPrimary = MaterialTheme.colorScheme.onBackground
+    val textSecondary = MaterialTheme.colorScheme.onSurfaceVariant
+    val textTertiary = if (isDarkMode) ProdyTextTertiaryDark else ProdyTextTertiaryLight
+    val accentColor = MaterialTheme.colorScheme.primary
+    val dividerColor = MaterialTheme.colorScheme.outlineVariant
 
     // Entry animation
     var isVisible by remember { mutableStateOf(false) }
@@ -181,6 +181,7 @@ fun ProfileScreen(
                 ) {
                     PremiumHeroSection(
                         displayName = uiState.displayName,
+                        title = uiState.title,
                         bio = uiState.bio,
                         level = getLevelFromPoints(uiState.totalPoints),
                         levelProgress = calculateLevelProgress(uiState.totalPoints),
@@ -393,6 +394,7 @@ private fun PremiumProfileHeader(
 @Composable
 private fun PremiumHeroSection(
     displayName: String,
+    title: String,
     bio: String,
     level: Int,
     levelProgress: Float,
@@ -494,6 +496,18 @@ private fun PremiumHeroSection(
             fontWeight = FontWeight.Bold,
             fontSize = 28.sp,
             color = textPrimary
+        )
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        // Equipped Title
+        Text(
+            text = title,
+            fontFamily = PoppinsFamily,
+            fontWeight = FontWeight.Normal,
+            fontSize = 14.sp,
+            color = if (isDarkMode) IdentityRoomColors.TextSecondaryDark
+                    else IdentityRoomColors.TextSecondaryLight
         )
 
         Spacer(modifier = Modifier.height(12.dp))

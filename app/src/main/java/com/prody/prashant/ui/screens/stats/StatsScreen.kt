@@ -6,7 +6,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.isSystemInDarkTheme
+import com.prody.prashant.ui.theme.isDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -91,22 +91,22 @@ fun StatsScreen(
     viewModel: StatsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val isDarkTheme = isSystemInDarkTheme()
+    val isDark = isDarkTheme()
 
-    // Premium theme colors - matching Phase 2 design system
-    val backgroundColor = if (isDarkTheme) Color(0xFF0D2826) else Color(0xFFF0F4F3)
-    val surfaceColor = if (isDarkTheme) Color(0xFF1A3331) else Color(0xFFFFFFFF)
-    val surfaceElevated = if (isDarkTheme) Color(0xFF2A4240) else Color(0xFFF5F7F6)
-    val textPrimary = if (isDarkTheme) Color.White else Color(0xFF1A1A1A)
-    val textSecondary = if (isDarkTheme) Color(0xFFD3D8D7) else Color(0xFF6C757D)
-    val textTertiary = if (isDarkTheme) Color(0xFF8A9493) else Color(0xFF9CA3AF)
-    val accentColor = Color(0xFF36F97F) // Vibrant neon green
-    val dividerColor = if (isDarkTheme) Color(0xFF3A5250) else Color(0xFFDEE2E6)
+    // Premium theme colors using MaterialTheme
+    val backgroundColor = MaterialTheme.colorScheme.background
+    val surfaceColor = MaterialTheme.colorScheme.surface
+    val surfaceElevated = MaterialTheme.colorScheme.surfaceVariant
+    val textPrimary = MaterialTheme.colorScheme.onBackground
+    val textSecondary = MaterialTheme.colorScheme.onSurfaceVariant
+    val textTertiary = if (isDark) ProdyTextTertiaryDark else ProdyTextTertiaryLight
+    val accentColor = MaterialTheme.colorScheme.primary
+    val dividerColor = MaterialTheme.colorScheme.outlineVariant
 
     // Leaderboard tier colors
-    val goldColor = Color(0xFFD4AF37)
-    val silverColor = Color(0xFFC0C0C0)
-    val bronzeColor = Color(0xFFCD7F32)
+    val goldColor = LeaderboardGold
+    val silverColor = LeaderboardSilver
+    val bronzeColor = LeaderboardBronze
 
     // Pull-to-refresh state
     var isRefreshing by remember { mutableStateOf(false) }
@@ -134,12 +134,12 @@ fun StatsScreen(
         }
     }
 
-    // Background colors based on theme (using previously defined colors)
-    val cardBackgroundColor = if (isDarkTheme) Color(0xFF1A3331) else Color(0xFFFFFFFF)
-    val cardElevatedColor = if (isDarkTheme) Color(0xFF2A4240) else Color(0xFFF5F7F6)
-    val textPrimaryColor = if (isDarkTheme) ProdyTextPrimaryDark else ProdyTextPrimaryLight
-    val textSecondaryColor = if (isDarkTheme) ProdyTextSecondaryDark else ProdyTextSecondaryLight
-    val textTertiaryColor = if (isDarkTheme) ProdyTextTertiaryDark else ProdyTextTertiaryLight
+    // Background colors using MaterialTheme
+    val cardBackgroundColor = MaterialTheme.colorScheme.surface
+    val cardElevatedColor = MaterialTheme.colorScheme.surfaceVariant
+    val textPrimaryColor = MaterialTheme.colorScheme.onSurface
+    val textSecondaryColor = MaterialTheme.colorScheme.onSurfaceVariant
+    val textTertiaryColor = if (isDark) ProdyTextTertiaryDark else ProdyTextTertiaryLight
 
     // Support bottom sheet
     if (showSupportSheet && selectedUserForSupport != null) {
@@ -162,7 +162,7 @@ fun StatsScreen(
             },
             canBoost = uiState.canBoostToday,
             canRespect = uiState.canRespectToday,
-            isDarkTheme = isDarkTheme,
+            isDarkTheme = isDark,
             surfaceColor = surfaceColor,
             textPrimary = textPrimary,
             textSecondary = textSecondary,
@@ -174,7 +174,7 @@ fun StatsScreen(
     if (showFilterDialog) {
         StatsFilterDialog(
             onDismiss = { showFilterDialog = false },
-            isDarkTheme = isDarkTheme,
+            isDarkTheme = isDark,
             surfaceColor = surfaceColor,
             textPrimary = textPrimary,
             textSecondary = textSecondary,
@@ -307,7 +307,7 @@ fun StatsScreen(
                             textPrimary = textPrimary,
                             textSecondary = textSecondary,
                             accentColor = accentColor,
-                            isDarkTheme = isDarkTheme
+                            isDarkTheme = isDark
                         )
                     }
                 }
@@ -364,7 +364,7 @@ fun StatsScreen(
                             PremiumLeaderboardItemRow(
                                 entry = entry,
                                 rank = index + 1,
-                                isDarkTheme = isDarkTheme,
+                                isDarkTheme = isDark,
                                 surfaceColor = surfaceColor,
                                 textPrimary = textPrimary,
                                 textSecondary = textSecondary,
@@ -685,7 +685,7 @@ private fun PremiumActivityPulseSection(
             PremiumActivityPulseVisualization(
                 data = weeklyData,
                 accentColor = accentColor,
-                isDarkTheme = isDarkTheme
+                isDarkTheme = isDark
             )
         }
     }
@@ -721,7 +721,7 @@ private fun PremiumActivityPulseVisualization(
     )
 
     val maxValue = data.maxOrNull()?.coerceAtLeast(1) ?: 1
-    val inactiveColor = if (isDarkTheme) Color(0xFF3A5250) else Color(0xFFDEE2E6)
+    val inactiveColor = if (isDarkTheme) ProdyOutlineDark else ProdyOutlineLight
 
     Box(
         modifier = Modifier
@@ -1180,7 +1180,7 @@ private fun PremiumSupportBottomSheet(
     textSecondary: Color,
     accentColor: Color
 ) {
-    val sheetBackgroundColor = if (isDarkTheme) Color(0xFF1A3331) else Color.White
+    val sheetBackgroundColor = if (isDarkTheme) ProdySurfaceVariantDark else ProdySurfaceLight
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -1403,7 +1403,7 @@ private fun StatsFilterDialog(
     textSecondary: Color,
     accentColor: Color
 ) {
-    val dialogBgColor = if (isDarkTheme) Color(0xFF1A3331) else Color.White
+    val dialogBgColor = if (isDarkTheme) ProdySurfaceVariantDark else ProdySurfaceLight
 
     AlertDialog(
         onDismissRequest = onDismiss,

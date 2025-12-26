@@ -154,8 +154,16 @@ fun NewJournalEntryScreen(
         }
     }
 
-    LaunchedEffect(uiState.isSaved) {
-        if (uiState.isSaved) {
+    // Show brief success feedback before navigating away
+    LaunchedEffect(uiState.showSaveSuccess) {
+        if (uiState.showSaveSuccess && uiState.pointsAwarded > 0) {
+            snackbarHostState.showSnackbar(
+                message = "+${uiState.pointsAwarded} XP earned",
+                duration = SnackbarDuration.Short
+            )
+            kotlinx.coroutines.delay(800) // Brief delay to let user see feedback
+            onEntrySaved()
+        } else if (uiState.isSaved) {
             onEntrySaved()
         }
     }

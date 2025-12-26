@@ -9,7 +9,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.isSystemInDarkTheme
+import com.prody.prashant.ui.theme.isDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
@@ -93,15 +93,15 @@ fun HomeScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val greeting = getGreeting()
-    val isDarkTheme = isSystemInDarkTheme()
+    val isDark = isDarkTheme()
     val context = LocalContext.current
 
-    // Theme-aware colors
-    val backgroundColor = if (isDarkTheme) Color(0xFF0D2826) else Color(0xFFF0F4F3)
-    val surfaceColor = if (isDarkTheme) Color(0xFF2A4240) else Color(0xFFFFFFFF)
-    val primaryTextColor = if (isDarkTheme) Color.White else Color(0xFF1A1A1A)
-    val secondaryTextColor = if (isDarkTheme) Color(0xFFD3D8D7) else Color(0xFF6C757D)
-    val accentColor = ProdyAccent // #36F97F
+    // Theme-aware colors using MaterialTheme
+    val backgroundColor = MaterialTheme.colorScheme.background
+    val surfaceColor = MaterialTheme.colorScheme.surface
+    val primaryTextColor = MaterialTheme.colorScheme.onBackground
+    val secondaryTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+    val accentColor = MaterialTheme.colorScheme.primary
 
     // Entry animations
     var isVisible by remember { mutableStateOf(false) }
@@ -142,7 +142,7 @@ fun HomeScreen(
                     secondaryTextColor = secondaryTextColor,
                     surfaceColor = surfaceColor,
                     accentColor = accentColor,
-                    isDarkTheme = isDarkTheme,
+                    isDarkTheme = isDark,
                     onSearchClick = onNavigateToSearch
                 )
             }
@@ -179,7 +179,7 @@ fun HomeScreen(
                     primaryTextColor = primaryTextColor,
                     secondaryTextColor = secondaryTextColor,
                     accentColor = accentColor,
-                    isDarkTheme = isDarkTheme
+                    isDarkTheme = isDark
                 )
             }
 
@@ -195,7 +195,7 @@ fun HomeScreen(
                         primaryTextColor = primaryTextColor,
                         secondaryTextColor = secondaryTextColor,
                         accentColor = accentColor,
-                        isDarkTheme = isDarkTheme
+                        isDarkTheme = isDark
                     )
                 }
                 item { Spacer(modifier = Modifier.height(16.dp)) }
@@ -213,7 +213,7 @@ fun HomeScreen(
                     primaryTextColor = primaryTextColor,
                     secondaryTextColor = secondaryTextColor,
                     accentColor = accentColor,
-                    isDarkTheme = isDarkTheme
+                    isDarkTheme = isDark
                 )
             }
 
@@ -230,7 +230,7 @@ fun HomeScreen(
                     primaryTextColor = primaryTextColor,
                     secondaryTextColor = secondaryTextColor,
                     accentColor = accentColor,
-                    isDarkTheme = isDarkTheme
+                    isDarkTheme = isDark
                 )
             }
 
@@ -272,7 +272,7 @@ fun HomeScreen(
                     primaryTextColor = primaryTextColor,
                     secondaryTextColor = secondaryTextColor,
                     accentColor = accentColor,
-                    isDarkTheme = isDarkTheme,
+                    isDarkTheme = isDark,
                     proofInfo = uiState.buddhaWisdomProofInfo
                 )
             }
@@ -297,7 +297,7 @@ fun HomeScreen(
                     primaryTextColor = primaryTextColor,
                     secondaryTextColor = secondaryTextColor,
                     accentColor = accentColor,
-                    isDarkTheme = isDarkTheme
+                    isDarkTheme = isDark
                 )
             }
 
@@ -313,12 +313,13 @@ fun HomeScreen(
                     idiom = uiState.dailyIdiom,
                     idiomMeaning = uiState.idiomMeaning,
                     idiomExample = uiState.idiomExample,
-                    onLearnClick = { viewModel.markWordAsLearned() },
+                    onWordClick = onNavigateToVocabulary,
+                    onIdiomClick = onNavigateToVocabulary,
                     surfaceColor = surfaceColor,
                     primaryTextColor = primaryTextColor,
                     secondaryTextColor = secondaryTextColor,
                     accentColor = accentColor,
-                    isDarkTheme = isDarkTheme
+                    isDarkTheme = isDark
                 )
             }
 
@@ -333,7 +334,7 @@ fun HomeScreen(
                         primaryTextColor = primaryTextColor,
                         secondaryTextColor = secondaryTextColor,
                         accentColor = accentColor,
-                        isDarkTheme = isDarkTheme
+                        isDarkTheme = isDark
                     )
                 }
             }
@@ -450,7 +451,7 @@ private fun PremiumStatsBadge(
     accentColor: Color,
     isDarkTheme: Boolean
 ) {
-    val borderColor = if (isDarkTheme) Color(0xFF3A5250) else Color(0xFFDEE2E6)
+    val borderColor = MaterialTheme.colorScheme.outlineVariant
 
     Surface(
         shape = RoundedCornerShape(16.dp),
@@ -942,7 +943,7 @@ private fun QuickActionsSection(
     accentColor: Color,
     isDarkTheme: Boolean
 ) {
-    val dividerColor = if (isDarkTheme) Color(0xFF3A5250) else Color(0xFFDEE2E6)
+    val dividerColor = MaterialTheme.colorScheme.outlineVariant
 
     Surface(
         modifier = Modifier
@@ -1096,8 +1097,8 @@ private fun QuoteCard(
     accentColor: Color,
     isDarkTheme: Boolean
 ) {
-    // Divider color based on theme
-    val dividerColor = if (isDarkTheme) Color(0xFF3A5250) else Color(0xFFDEE2E6)
+    // Divider color using MaterialTheme
+    val dividerColor = MaterialTheme.colorScheme.outlineVariant
 
     // Track if the quote has been revealed
     var isQuoteVisible by remember { mutableStateOf(false) }
@@ -1207,7 +1208,8 @@ private fun QuoteCard(
 }
 
 // =============================================================================
-// WORD AND IDIOM SECTION
+// WORD AND IDIOM SECTION - Redesigned for better UX
+// Cards are tappable, readable, and navigate to vocabulary detail
 // =============================================================================
 
 @Composable
@@ -1218,41 +1220,44 @@ private fun WordAndIdiomSection(
     idiom: String,
     idiomMeaning: String,
     idiomExample: String,
-    onLearnClick: () -> Unit,
+    onWordClick: () -> Unit,
+    onIdiomClick: () -> Unit,
     surfaceColor: Color,
     primaryTextColor: Color,
     secondaryTextColor: Color,
     accentColor: Color,
     isDarkTheme: Boolean
 ) {
-    Row(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 24.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Word Card
+        // Word Card - Full width for better readability
         WordCard(
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.fillMaxWidth(),
             word = word,
             pronunciation = pronunciation,
             definition = wordDefinition,
-            onLearnClick = onLearnClick,
+            onClick = onWordClick,
             surfaceColor = surfaceColor,
             primaryTextColor = primaryTextColor,
             secondaryTextColor = secondaryTextColor,
             accentColor = accentColor
         )
 
-        // Idiom Card
+        // Idiom Card - Full width for better readability
         IdiomCard(
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.fillMaxWidth(),
             idiom = idiom,
             meaning = idiomMeaning,
             example = idiomExample,
+            onClick = onIdiomClick,
             surfaceColor = surfaceColor,
             primaryTextColor = primaryTextColor,
-            secondaryTextColor = secondaryTextColor
+            secondaryTextColor = secondaryTextColor,
+            accentColor = accentColor
         )
     }
 }
@@ -1263,16 +1268,16 @@ private fun WordCard(
     word: String,
     pronunciation: String,
     definition: String,
-    onLearnClick: () -> Unit,
+    onClick: () -> Unit,
     surfaceColor: Color,
     primaryTextColor: Color,
     secondaryTextColor: Color,
     accentColor: Color
 ) {
-    var isLearned by remember { mutableStateOf(false) }
-
     Surface(
-        modifier = modifier,
+        modifier = modifier
+            .clip(RoundedCornerShape(20.dp))
+            .clickable(onClick = onClick),
         shape = RoundedCornerShape(20.dp),
         color = surfaceColor,
         tonalElevation = 0.dp
@@ -1286,18 +1291,30 @@ private fun WordCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = "WORD",
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.SemiBold,
-                    color = WordOfDayColor,
-                    letterSpacing = 1.sp
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(8.dp)
+                            .clip(CircleShape)
+                            .background(WordOfDayColor)
+                    )
+                    Text(
+                        text = "WORD OF THE DAY",
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 11.sp,
+                        color = WordOfDayColor,
+                        letterSpacing = 1.sp
+                    )
+                }
                 Icon(
-                    imageVector = Icons.Outlined.MenuBook,
-                    contentDescription = null,
-                    tint = WordOfDayColor.copy(alpha = 0.7f),
-                    modifier = Modifier.size(16.dp)
+                    imageVector = Icons.Outlined.ArrowForward,
+                    contentDescription = "View details",
+                    tint = secondaryTextColor,
+                    modifier = Modifier.size(18.dp)
                 )
             }
 
@@ -1308,61 +1325,50 @@ private fun WordCard(
                 text = word,
                 fontFamily = PoppinsFamily,
                 fontWeight = FontWeight.Bold,
-                fontSize = 16.sp,
+                fontSize = 20.sp,
                 color = primaryTextColor
             )
 
             // Pronunciation
             if (pronunciation.isNotBlank()) {
-                Spacer(modifier = Modifier.height(2.dp))
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = "/$pronunciation/",
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Normal,
-                    fontSize = 11.sp,
+                    fontSize = 13.sp,
                     color = secondaryTextColor
                 )
             }
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Definition
+            // Definition - show more lines for better readability
             Text(
                 text = definition,
                 fontFamily = PoppinsFamily,
                 fontWeight = FontWeight.Normal,
-                fontSize = 12.sp,
+                fontSize = 14.sp,
                 color = secondaryTextColor,
-                maxLines = 3,
+                maxLines = 4,
                 overflow = TextOverflow.Ellipsis,
-                lineHeight = 18.sp
+                lineHeight = 22.sp
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Learn button
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
-                    .clickable {
-                        if (!isLearned) {
-                            isLearned = true
-                            onLearnClick()
-                        }
-                    },
-                shape = RoundedCornerShape(12.dp),
-                color = if (isLearned) accentColor.copy(alpha = 0.2f) else accentColor.copy(alpha = 0.12f),
-                tonalElevation = 0.dp
+            // Tap to learn more indicator
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = if (isLearned) "LEARNED!" else "LEARN +25",
+                    text = "Tap to learn more",
                     fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.SemiBold,
+                    fontWeight = FontWeight.Medium,
                     fontSize = 12.sp,
-                    color = accentColor,
-                    modifier = Modifier.padding(vertical = 12.dp),
-                    textAlign = TextAlign.Center
+                    color = accentColor
                 )
             }
         }
@@ -1375,12 +1381,16 @@ private fun IdiomCard(
     idiom: String,
     meaning: String,
     example: String,
+    onClick: () -> Unit,
     surfaceColor: Color,
     primaryTextColor: Color,
-    secondaryTextColor: Color
+    secondaryTextColor: Color,
+    accentColor: Color
 ) {
     Surface(
-        modifier = modifier,
+        modifier = modifier
+            .clip(RoundedCornerShape(20.dp))
+            .clickable(onClick = onClick),
         shape = RoundedCornerShape(20.dp),
         color = surfaceColor,
         tonalElevation = 0.dp
@@ -1394,18 +1404,30 @@ private fun IdiomCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = "IDIOM",
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.SemiBold,
-                    color = IdiomPurple,
-                    letterSpacing = 1.sp
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(8.dp)
+                            .clip(CircleShape)
+                            .background(IdiomPurple)
+                    )
+                    Text(
+                        text = "IDIOM OF THE DAY",
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 11.sp,
+                        color = IdiomPurple,
+                        letterSpacing = 1.sp
+                    )
+                }
                 Icon(
-                    imageVector = Icons.Outlined.Translate,
-                    contentDescription = null,
-                    tint = IdiomPurple.copy(alpha = 0.7f),
-                    modifier = Modifier.size(16.dp)
+                    imageVector = Icons.Outlined.ArrowForward,
+                    contentDescription = "View details",
+                    tint = secondaryTextColor,
+                    modifier = Modifier.size(18.dp)
                 )
             }
 
@@ -1416,22 +1438,22 @@ private fun IdiomCard(
                 text = idiom,
                 fontFamily = PoppinsFamily,
                 fontWeight = FontWeight.Bold,
-                fontSize = 16.sp,
+                fontSize = 18.sp,
                 color = primaryTextColor
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Meaning
+            // Meaning - show more lines for better readability
             Text(
                 text = meaning,
                 fontFamily = PoppinsFamily,
                 fontWeight = FontWeight.Normal,
-                fontSize = 12.sp,
+                fontSize = 14.sp,
                 color = secondaryTextColor,
                 maxLines = 3,
                 overflow = TextOverflow.Ellipsis,
-                lineHeight = 18.sp
+                lineHeight = 22.sp
             )
 
             // Example
@@ -1442,11 +1464,28 @@ private fun IdiomCard(
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Normal,
                     fontStyle = FontStyle.Italic,
-                    fontSize = 11.sp,
+                    fontSize = 13.sp,
                     color = secondaryTextColor.copy(alpha = 0.8f),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
-                    lineHeight = 16.sp
+                    lineHeight = 20.sp
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Tap to learn more indicator
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Tap to explore",
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 12.sp,
+                    color = accentColor
                 )
             }
         }
@@ -1706,7 +1745,7 @@ private fun TodayProgressCard(
     accentColor: Color,
     isDarkTheme: Boolean
 ) {
-    val dividerColor = if (isDarkTheme) Color(0xFF3A5250) else Color(0xFFDEE2E6)
+    val dividerColor = MaterialTheme.colorScheme.outlineVariant
 
     Surface(
         modifier = Modifier
@@ -1904,7 +1943,7 @@ private fun SeedOfTheDayCard(
     accentColor: Color,
     isDarkTheme: Boolean
 ) {
-    val seedColor = if (seed.hasBloomedToday) MoodGrateful else Color(0xFFE8B42F) // Golden yellow for seed
+    val seedColor = if (seed.hasBloomedToday) MoodGrateful else SeedGold
 
     Surface(
         modifier = Modifier
@@ -1937,28 +1976,14 @@ private fun SeedOfTheDayCard(
 
             // Seed content
             Column(modifier = Modifier.weight(1f)) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        text = if (seed.hasBloomedToday) "BLOOMED" else "SEED OF THE DAY",
-                        fontFamily = PoppinsFamily,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 10.sp,
-                        color = seedColor,
-                        letterSpacing = 1.sp
-                    )
-                    if (seed.hasBloomedToday) {
-                        Text(
-                            text = "+25",
-                            fontFamily = PoppinsFamily,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 10.sp,
-                            color = accentColor
-                        )
-                    }
-                }
+                Text(
+                    text = if (seed.hasBloomedToday) "BLOOMED" else "SEED OF THE DAY",
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 10.sp,
+                    color = seedColor,
+                    letterSpacing = 1.sp
+                )
 
                 Spacer(modifier = Modifier.height(4.dp))
 
