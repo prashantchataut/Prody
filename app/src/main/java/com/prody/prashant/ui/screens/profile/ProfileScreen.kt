@@ -181,6 +181,7 @@ fun ProfileScreen(
                 ) {
                     PremiumHeroSection(
                         displayName = uiState.displayName,
+                        title = uiState.title,
                         bio = uiState.bio,
                         level = getLevelFromPoints(uiState.totalPoints),
                         levelProgress = calculateLevelProgress(uiState.totalPoints),
@@ -393,6 +394,7 @@ private fun PremiumProfileHeader(
 @Composable
 private fun PremiumHeroSection(
     displayName: String,
+    title: String,
     bio: String,
     level: Int,
     levelProgress: Float,
@@ -494,6 +496,18 @@ private fun PremiumHeroSection(
             fontWeight = FontWeight.Bold,
             fontSize = 28.sp,
             color = textPrimary
+        )
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        // Equipped Title
+        Text(
+            text = title,
+            fontFamily = PoppinsFamily,
+            fontWeight = FontWeight.Normal,
+            fontSize = 14.sp,
+            color = if (isDarkMode) IdentityRoomColors.TextSecondaryDark
+                    else IdentityRoomColors.TextSecondaryLight
         )
 
         Spacer(modifier = Modifier.height(12.dp))

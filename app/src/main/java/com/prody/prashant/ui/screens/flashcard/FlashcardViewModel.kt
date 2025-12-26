@@ -6,6 +6,7 @@ import com.prody.prashant.data.local.dao.VocabularyDao
 import com.prody.prashant.data.local.dao.VocabularyLearningDao
 import com.prody.prashant.data.local.entity.VocabularyEntity
 import com.prody.prashant.data.local.entity.VocabularyLearningEntity
+import com.prody.prashant.domain.gamification.GamificationService
 import com.prody.prashant.domain.learning.ReviewResponse
 import com.prody.prashant.domain.learning.SpacedRepetitionEngine
 import com.prody.prashant.util.TextToSpeechManager
@@ -25,7 +26,8 @@ class FlashcardViewModel @Inject constructor(
     private val vocabularyDao: VocabularyDao,
     private val vocabularyLearningDao: VocabularyLearningDao,
     private val spacedRepetitionEngine: SpacedRepetitionEngine,
-    private val textToSpeechManager: TextToSpeechManager
+    private val textToSpeechManager: TextToSpeechManager,
+    private val gamificationService: GamificationService
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(FlashcardUiState())
@@ -71,7 +73,8 @@ class FlashcardViewModel @Inject constructor(
                         currentIndex = 0,
                         isLoading = false,
                         sessionComplete = finalCards.isEmpty(),
-                        learningEntries = learningEntries.associateBy { entry -> entry.wordId }
+                        learningEntries = learningEntries.associateBy { entry -> entry.wordId },
+                        sessionXpEarned = 0
                     )
                 }
             } catch (e: Exception) {
@@ -188,13 +191,23 @@ class FlashcardViewModel @Inject constructor(
 
                 // Update UI state
                 val isCorrect = quality >= 3
+
+                // Award XP for correct answers
+                var xpEarned = 0
+                if (isCorrect) {
+                    xpEarned = gamificationService.recordActivity(
+                        GamificationService.ActivityType.WORD_LEARNED
+                    )
+                }
+
                 _uiState.update {
                     it.copy(
                         currentIndex = it.currentIndex + 1,
                         knownCount = if (isCorrect) it.knownCount + 1 else it.knownCount,
                         unknownCount = if (!isCorrect) it.unknownCount + 1 else it.unknownCount,
                         sessionComplete = it.currentIndex + 1 >= it.cards.size,
-                        learningEntries = it.learningEntries + (currentWord.id to updatedLearning)
+                        learningEntries = it.learningEntries + (currentWord.id to updatedLearning),
+                        sessionXpEarned = it.sessionXpEarned + xpEarned
                     )
                 }
 
@@ -240,7 +253,8 @@ class FlashcardViewModel @Inject constructor(
                 knownCount = 0,
                 unknownCount = 0,
                 skippedCount = 0,
-                sessionComplete = false
+                sessionComplete = false,
+                sessionXpEarned = 0
             )
         }
         sessionStartTime = System.currentTimeMillis()
@@ -282,7 +296,9 @@ data class FlashcardUiState(
     val isLoading: Boolean = false,
     val sessionComplete: Boolean = false,
     val error: String? = null,
-    val learningEntries: Map<Long, VocabularyLearningEntity> = emptyMap()
+    val learningEntries: Map<Long, VocabularyLearningEntity> = emptyMap(),
+    // XP tracking for session feedback
+    val sessionXpEarned: Int = 0
 ) {
     val currentCard: VocabularyEntity?
         get() = cards.getOrNull(currentIndex)

@@ -54,7 +54,10 @@ data class NewJournalEntryUiState(
     val isPlayingVoice: Boolean = false,
     // Unsaved changes tracking
     val hasUnsavedChanges: Boolean = false,
-    val showDiscardDialog: Boolean = false
+    val showDiscardDialog: Boolean = false,
+    // Progress feedback - points awarded on save
+    val pointsAwarded: Int = 0,
+    val showSaveSuccess: Boolean = false
 ) {
     // Check if there are any unsaved changes
     val hasContent: Boolean
@@ -227,15 +230,23 @@ class NewJournalEntryViewModel @Inject constructor(
                 val entryId = journalDao.insertEntry(entry)
 
                 // Use GamificationService for all points and achievements
-                val pointsAwarded = gamificationService.recordActivity(
+                val points = gamificationService.recordActivity(
                     GamificationService.ActivityType.JOURNAL_ENTRY
                 )
-                android.util.Log.d(TAG, "Journal entry saved, $pointsAwarded points awarded")
+                android.util.Log.d(TAG, "Journal entry saved, $points points awarded")
 
                 // Check for time-based achievements (early bird, night owl)
                 gamificationService.checkTimeBasedAchievements()
 
-                _uiState.update { it.copy(isSaving = false, isSaved = true, savedEntryId = entryId) }
+                _uiState.update {
+                    it.copy(
+                        isSaving = false,
+                        isSaved = true,
+                        savedEntryId = entryId,
+                        pointsAwarded = points,
+                        showSaveSuccess = true
+                    )
+                }
 
                 // Trigger non-blocking insight generation after save
                 generateJournalInsight(entryId, state)
@@ -375,6 +386,13 @@ class NewJournalEntryViewModel @Inject constructor(
      */
     fun dismissInsightCard() {
         _uiState.update { it.copy(showInsightCard = false) }
+    }
+
+    /**
+     * Dismiss the save success feedback.
+     */
+    fun dismissSaveSuccess() {
+        _uiState.update { it.copy(showSaveSuccess = false) }
     }
 
     // =========================================================================
