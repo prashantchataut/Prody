@@ -255,39 +255,19 @@ fun ProdyApp(
                     animationSpec = tween(200)
                 )
             ) {
-                NavigationBar {
-                    bottomNavItems.forEach { item ->
-                        val selected = currentDestination?.hierarchy?.any {
-                            it.route == item.route
-                        } == true
-
-                        NavigationBarItem(
-                            icon = {
-                                // Wrap icon with magical breathing glow effect
-                                NavigationBreathingGlow(
-                                    isActive = selected,
-                                    color = ProdyPrimary
-                                ) {
-                                    Icon(
-                                        imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
-                                        contentDescription = null
-                                    )
-                                }
-                            },
-                            label = { Text(stringResource(item.labelResId)) },
-                            selected = selected,
-                            onClick = {
-                                navController.navigate(item.route) {
-                                    popUpTo(navController.graph.findStartDestination().id) {
-                                        saveState = true
-                                    }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
+                ProdyBottomNavBar(
+                    items = bottomNavItems,
+                    currentDestination = currentDestination,
+                    onNavigate = { route ->
+                        navController.navigate(route) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
                             }
-                        )
+                            launchSingleTop = true
+                            restoreState = true
+                        }
                     }
-                }
+                )
             }
         }
     ) { innerPadding ->
@@ -462,7 +442,7 @@ fun ProdyApp(
 @Composable
 private fun ProdyBottomNavBar(
     items: List<BottomNavItem>,
-    currentRoute: String?,
+    currentDestination: androidx.navigation.NavDestination?,
     onNavigate: (String) -> Unit
 ) {
     // Flat design - no elevation, clean surface with subtle top border
@@ -489,7 +469,7 @@ private fun ProdyBottomNavBar(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 items.forEach { item ->
-                    val isSelected = currentRoute == item.route
+                    val isSelected = currentDestination?.hierarchy?.any { it.route == item.route } == true
 
                     ProdyNavItem(
                         item = item,
