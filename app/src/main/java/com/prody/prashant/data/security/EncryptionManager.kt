@@ -93,7 +93,7 @@ class EncryptionManager @Inject constructor(
     fun encryptText(plaintext: String): String {
         if (plaintext.isBlank()) return plaintext
 
-        return try {
+        try {
             val key = getOrCreateJournalKey()
             val cipher = Cipher.getInstance(ALGORITHM)
 
@@ -112,11 +112,10 @@ class EncryptionManager @Inject constructor(
             System.arraycopy(ciphertext, 0, combined, iv.size, ciphertext.size)
 
             // Prefix with marker to identify encrypted content
-            "ENC:" + Base64.encodeToString(combined, Base64.NO_WRAP)
+            return "ENC:" + Base64.encodeToString(combined, Base64.NO_WRAP)
         } catch (e: Exception) {
             Log.e(TAG, "Encryption failed", e)
-            // Return original text if encryption fails (fallback for safety)
-            plaintext
+            throw EncryptionException("Encryption failed", e)
         }
     }
 
@@ -135,7 +134,7 @@ class EncryptionManager @Inject constructor(
             return encryptedText
         }
 
-        return try {
+        try {
             val key = getOrCreateJournalKey()
             val cipher = Cipher.getInstance(ALGORITHM)
 
@@ -151,11 +150,10 @@ class EncryptionManager @Inject constructor(
             val gcmSpec = GCMParameterSpec(TAG_SIZE, iv)
             cipher.init(Cipher.DECRYPT_MODE, key, gcmSpec)
 
-            String(cipher.doFinal(ciphertext), Charsets.UTF_8)
+            return String(cipher.doFinal(ciphertext), Charsets.UTF_8)
         } catch (e: Exception) {
             Log.e(TAG, "Decryption failed", e)
-            // Return original text if decryption fails
-            encryptedText
+            throw EncryptionException("Decryption failed", e)
         }
     }
 
@@ -169,7 +167,7 @@ class EncryptionManager @Inject constructor(
             val encrypted = encryptText(testText)
             val decrypted = decryptText(encrypted)
             decrypted == testText
-        } catch (e: Exception) {
+        } catch (e: EncryptionException) {
             Log.e(TAG, "Encryption availability check failed", e)
             false
         }
