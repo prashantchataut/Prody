@@ -64,10 +64,11 @@ android {
         create("release") {
             val keystoreFile = file("prody-release.jks")
             val rootKeystoreFile = file("../keystore/prody-release.jks")
-            storeFile = when {
-                keystoreFile.exists() -> keystoreFile
-                rootKeystoreFile.exists() -> rootKeystoreFile
-                else -> null
+            // Only enforce keystore existence for release builds.
+            // Gradle eagerly evaluates this block, so we check the task graph.
+            if (project.gradle.startParameter.taskNames.any { it.contains("release", ignoreCase = true) }) {
+                storeFile = listOf(keystoreFile, rootKeystoreFile).firstOrNull { it.exists() }
+                    ?: error("Release keystore not found. Please create one at 'app/prody-release.jks' or '../keystore/prody-release.jks'")
             }
             storePassword = System.getenv("KEYSTORE_PASSWORD")
             keyAlias = System.getenv("KEY_ALIAS")
