@@ -8,6 +8,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.compose.animation.*
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
@@ -71,6 +72,7 @@ import com.prody.prashant.ui.screens.stats.StatsScreen
 import com.prody.prashant.ui.screens.vocabulary.VocabularyDetailScreen
 import com.prody.prashant.ui.screens.vocabulary.VocabularyListScreen
 import com.prody.prashant.ui.components.NavigationBreathingGlow
+import com.prody.prashant.ui.main.MainViewModel
 import com.prody.prashant.ui.theme.ProdyPrimary
 import com.prody.prashant.ui.theme.ProdyTheme
 import com.prody.prashant.ui.theme.ThemeMode
@@ -86,10 +88,9 @@ import javax.inject.Inject
 class MainActivity : ComponentActivity() {
 
     @Inject
-    lateinit var preferencesManager: PreferencesManager
-
-    @Inject
     lateinit var notificationScheduler: NotificationScheduler
+
+    private val viewModel: MainViewModel by viewModels()
 
     // Flag to track if Hilt injection is complete
     private var isInjectionComplete = false
@@ -121,51 +122,20 @@ class MainActivity : ComponentActivity() {
 
         enableEdgeToEdge()
 
-        // Use mutable state to update UI when preferences are loaded
-        var isOnboardingCompleted by mutableStateOf<Boolean?>(null)
-
-        // Keep splash screen visible until the essential onboarding status is loaded.
-        splashScreen.setKeepOnScreenCondition { isOnboardingCompleted == null }
-
-        // Load ONLY the essential preference to unblock the splash screen.
-        // The theme is loaded asynchronously in setContent and will update when ready.
-        lifecycleScope.launch {
-            try {
-                isOnboardingCompleted = preferencesManager.onboardingCompleted.first()
-            } catch (e: Exception) {
-                // If preferences fail, default to showing onboarding.
-                android.util.Log.e("MainActivity", "Failed to load onboarding status", e)
-                isOnboardingCompleted = false
-            }
-        }
-
         setContent {
-            // Wait until the onboarding status is loaded before showing the UI.
-            val onboardingDone = isOnboardingCompleted
-            if (onboardingDone == null) {
-                // While this is null, the splash screen is kept visible.
-                // We return here to prevent the UI from composing unnecessarily.
-                return@setContent
-            }
+            val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-            // Asynchronously collect the theme mode. It will default to "system" and then
-            // update the UI automatically when the actual preference is loaded.
-            val currentThemeModeString by preferencesManager.themeMode.collectAsStateWithLifecycle(
-                initialValue = "system"
-            )
+            // Keep the splash screen visible until the UI state is loaded.
+            splashScreen.setKeepOnScreenCondition { uiState.isLoading }
 
-            val themeModeState = when (currentThemeModeString.lowercase()) {
-                "light" -> ThemeMode.LIGHT
-                "dark" -> ThemeMode.DARK
-                else -> ThemeMode.SYSTEM
-            }
-
-            ProdyTheme(
-                themeMode = themeModeState
-            ) {
-                ProdyApp(
-                    startDestination = if (onboardingDone) Screen.Home.route else Screen.Onboarding.route
-                )
+            if (!uiState.isLoading) {
+                ProdyTheme(
+                    themeMode = uiState.themeMode
+                ) {
+                    ProdyApp(
+                        startDestination = uiState.startDestination
+                    )
+                }
             }
         }
     }
