@@ -264,35 +264,32 @@ class HomeViewModel @Inject constructor(
 
     private fun loadHomeData() {
         viewModelScope.launch {
-            // Combine all reactive flows into a single stream to update the UI atomically.
-            // This prevents multiple recompositions and ensures data consistency.
             val weekStart = getWeekStartTimestamp()
             val todayStart = getTodayStartTimestamp()
 
-            // One-time fetch for daily content that doesn't need to be reactive.
-            val quote = try { quoteDao.getQuoteOfTheDay() } catch (e: Exception) { android.util.Log.e(TAG, "Failed to load quote", e); null }
-            val word = try { vocabularyDao.getWordOfTheDay() } catch (e: Exception) { android.util.Log.e(TAG, "Failed to load word", e); null }
-            val proverb = try { proverbDao.getProverbOfTheDay() } catch (e: Exception) { android.util.Log.e(TAG, "Failed to load proverb", e); null }
-            val idiom = try { idiomDao.getIdiomOfTheDay() } catch (e: Exception) { android.util.Log.e(TAG, "Failed to load idiom", e); null }
-
-            // Mark daily content as shown
-            quote?.let { quoteDao.markAsShownDaily(it.id) }
-            word?.let {
-                currentWordId = it.id
-                vocabularyDao.markAsShownDaily(it.id)
-            }
-            proverb?.let { proverbDao.markAsShownDaily(it.id) }
-            idiom?.let { idiomDao.markAsShownDaily(it.id) }
-
+            // Combine all data sources into a single flow for atomic updates
             combine(
                 userDao.getUserProfile(),
                 journalDao.getEntriesByDateRange(weekStart, System.currentTimeMillis()),
                 vocabularyDao.getLearnedCountSince(weekStart),
                 userDao.getStreakHistory(),
-                journalDao.getEntriesByDateRange(todayStart, System.currentTimeMillis())
-            ) { profile, weeklyJournalEntries, weeklyLearnedWords, streakHistory, todayJournalEntries ->
-                // This transform function is called whenever any of the source flows emit a new value.
-                // It calculates the new UI state based on the latest data.
+                journalDao.getEntriesByDateRange(todayStart, System.currentTimeMillis()),
+                // Wrap suspend functions in flows
+                flow { emit(quoteDao.getQuoteOfTheDay()) },
+                flow { emit(vocabularyDao.getWordOfTheDay()) },
+                flow { emit(proverbDao.getProverbOfTheDay()) },
+                flow { emit(idiomDao.getIdiomOfTheDay()) }
+            ) { profile, weeklyJournalEntries, weeklyLearnedWords, streakHistory, todayJournalEntries, quote, word, proverb, idiom ->
+
+                // Mark daily content as shown
+                quote?.let { quoteDao.markAsShownDaily(it.id) }
+                word?.let {
+                    currentWordId = it.id
+                    vocabularyDao.markAsShownDaily(it.id)
+                }
+                proverb?.let { proverbDao.markAsShownDaily(it.id) }
+                idiom?.let { idiomDao.markAsShownDaily(it.id) }
+
                 val daysActiveThisWeek = streakHistory.count { it.date >= weekStart }
 
                 val (journaledToday, todayMood, todayPreview) = if (todayJournalEntries.isNotEmpty()) {
@@ -302,7 +299,8 @@ class HomeViewModel @Inject constructor(
                     Triple(false, "", "")
                 }
 
-                _uiState.value.copy(
+                // Create the new state
+                HomeUiState(
                     userName = profile?.displayName ?: "Growth Seeker",
                     currentStreak = profile?.currentStreak ?: 0,
                     totalPoints = profile?.totalPoints ?: 0,

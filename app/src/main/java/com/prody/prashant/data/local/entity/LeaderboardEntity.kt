@@ -1,9 +1,17 @@
 package com.prody.prashant.data.local.entity
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "leaderboard")
+@Entity(
+    tableName = "leaderboard",
+    indices = [
+        Index(value = ["totalPoints"]),
+        Index(value = ["weeklyPoints"]),
+        Index(value = ["isCurrentUser"])
+    ]
+)
 data class LeaderboardEntryEntity(
     @PrimaryKey
     val odId: String, // Unique peer ID
