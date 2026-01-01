@@ -1,6 +1,5 @@
 package com.prody.prashant.data.local.database
 
-import android.content.Context
 import android.util.Log
 import com.prody.prashant.data.local.entity.AchievementEntity
 import com.prody.prashant.data.local.entity.IdiomEntity
@@ -15,6 +14,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 /**
  * Database Seeder for Prody App
@@ -29,29 +29,30 @@ import kotlinx.coroutines.launch
  * - Motivation and resilience
  * - Vocabulary enrichment
  */
-object DatabaseSeeder {
+class DatabaseSeeder @Inject constructor(
+    private val database: ProdyDatabase
+) {
 
-    private const val TAG = "DatabaseSeeder"
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     /**
      * Seeds the database with initial content.
      * Called from database callback on first creation.
      */
-    fun seedDatabase(database: ProdyDatabase) {
+    fun seedDatabase() {
         scope.launch {
             try {
                 Log.d(TAG, "Starting database seeding...")
 
                 // Seed all content types in parallel for faster initialization
-                launch { seedQuotes(database) }
-                launch { seedProverbs(database) }
-                launch { seedIdioms(database) }
-                launch { seedPhrases(database) }
-                launch { seedVocabulary(database) }
-                launch { seedLeaderboard(database) }
-                launch { seedUserProfile(database) }
-                launch { seedAchievements(database) }
+                launch { seedQuotes() }
+                launch { seedProverbs() }
+                launch { seedIdioms() }
+                launch { seedPhrases() }
+                launch { seedVocabulary() }
+                launch { seedLeaderboard() }
+                launch { seedUserProfile() }
+                launch { seedAchievements() }
 
                 Log.d(TAG, "Database seeding initiated successfully")
             } catch (e: Exception) {
@@ -60,7 +61,7 @@ object DatabaseSeeder {
         }
     }
 
-    private suspend fun seedQuotes(database: ProdyDatabase) {
+    private suspend fun seedQuotes() {
         try {
             val quoteDao = database.quoteDao()
             quoteDao.insertQuotes(getInitialQuotes())
@@ -70,7 +71,7 @@ object DatabaseSeeder {
         }
     }
 
-    private suspend fun seedProverbs(database: ProdyDatabase) {
+    private suspend fun seedProverbs() {
         try {
             val proverbDao = database.proverbDao()
             proverbDao.insertProverbs(getInitialProverbs())
@@ -80,7 +81,7 @@ object DatabaseSeeder {
         }
     }
 
-    private suspend fun seedIdioms(database: ProdyDatabase) {
+    private suspend fun seedIdioms() {
         try {
             val idiomDao = database.idiomDao()
             idiomDao.insertIdioms(getInitialIdioms())
@@ -90,7 +91,7 @@ object DatabaseSeeder {
         }
     }
 
-    private suspend fun seedPhrases(database: ProdyDatabase) {
+    private suspend fun seedPhrases() {
         try {
             val phraseDao = database.phraseDao()
             phraseDao.insertPhrases(getInitialPhrases())
@@ -1084,7 +1085,7 @@ object DatabaseSeeder {
     // VOCABULARY - Curated words for vocabulary building
     // =========================================================================
 
-    private suspend fun seedVocabulary(database: ProdyDatabase) {
+    private suspend fun seedVocabulary() {
         try {
             val vocabularyDao = database.vocabularyDao()
             vocabularyDao.insertWords(getInitialVocabulary())
@@ -1666,7 +1667,7 @@ object DatabaseSeeder {
     // LEADERBOARD - Initial peer entries with Prashant Chataut at #1
     // =========================================================================
 
-    private suspend fun seedLeaderboard(database: ProdyDatabase) {
+    private suspend fun seedLeaderboard() {
         try {
             val userDao = database.userDao()
             userDao.insertLeaderboardEntries(getInitialLeaderboard())
@@ -1998,7 +1999,7 @@ object DatabaseSeeder {
     // USER PROFILE - Initial profile setup
     // =========================================================================
 
-    private suspend fun seedUserProfile(database: ProdyDatabase) {
+    private suspend fun seedUserProfile() {
         try {
             val userDao = database.userDao()
             // Only seed if no profile exists
@@ -2041,7 +2042,7 @@ object DatabaseSeeder {
     // ACHIEVEMENTS - Comprehensive achievement definitions
     // =========================================================================
 
-    private suspend fun seedAchievements(database: ProdyDatabase) {
+    private suspend fun seedAchievements() {
         try {
             val userDao = database.userDao()
             userDao.insertAchievements(getInitialAchievements())
@@ -2438,4 +2439,8 @@ object DatabaseSeeder {
             requirement = 50000
         )
     )
+
+    companion object {
+        private const val TAG = "DatabaseSeeder"
+    }
 }

@@ -62,13 +62,36 @@ android {
 
     signingConfigs {
         create("release") {
+            // Logic must be deferred to the execution phase for tasks like 'test'.
+            // The 'signingConfigs' block is evaluated during the configuration phase,
+            // and throwing an error here would break tasks that don't require signing.
+            val isReleaseBuild = project.gradle.startParameter.taskNames.any {
+                it.contains("assembleRelease", ignoreCase = true) ||
+                        it.contains("bundleRelease", ignoreCase = true)
+            }
+
             val keystoreFile = file("prody-release.jks")
             val rootKeystoreFile = file("../keystore/prody-release.jks")
-            storeFile = when {
+            val resolvedKeystoreFile = when {
                 keystoreFile.exists() -> keystoreFile
                 rootKeystoreFile.exists() -> rootKeystoreFile
                 else -> null
             }
+
+            if (isReleaseBuild && resolvedKeystoreFile == null) {
+                throw InvalidUserDataException(
+                    """
+                    Release keystore file not found.
+                    Please ensure 'prody-release.jks' is present in either the 'app/' or 'keystore/' directory.
+                    Also, verify that the following environment variables are set for release signing:
+                    - KEYSTORE_PASSWORD
+                    - KEY_ALIAS
+                    - KEY_PASSWORD
+                    """.trimIndent()
+                )
+            }
+
+            storeFile = resolvedKeystoreFile
             storePassword = System.getenv("KEYSTORE_PASSWORD")
             keyAlias = System.getenv("KEY_ALIAS")
             keyPassword = System.getenv("KEY_PASSWORD")

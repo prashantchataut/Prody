@@ -58,7 +58,14 @@ data class UserProfileEntity(
     val serverVersion: Long = 0
 )
 
-@Entity(tableName = "achievements")
+@Entity(
+    tableName = "achievements",
+    indices = [
+        androidx.room.Index(value = ["isUnlocked"]),
+        androidx.room.Index(value = ["category"]),
+        androidx.room.Index(value = ["rarity"])
+    ]
+)
 data class AchievementEntity(
     @PrimaryKey
     val id: String,

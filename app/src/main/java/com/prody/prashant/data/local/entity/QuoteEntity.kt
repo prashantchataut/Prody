@@ -3,7 +3,18 @@ package com.prody.prashant.data.local.entity
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "quotes")
+import androidx.room.Index
+
+@Entity(
+    tableName = "quotes",
+    indices = [
+        Index(value = ["isFavorite"]),
+        Index(value = ["category"]),
+        Index(value = ["author"]),
+        Index(value = ["content"]),
+        Index(value = ["tags"])
+    ]
+)
 data class QuoteEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,

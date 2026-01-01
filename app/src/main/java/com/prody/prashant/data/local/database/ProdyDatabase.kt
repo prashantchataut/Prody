@@ -1,11 +1,7 @@
 package com.prody.prashant.data.local.database
 
-import android.content.Context
-import android.util.Log
 import androidx.room.Database
-import androidx.room.Room
 import androidx.room.RoomDatabase
-import androidx.sqlite.db.SupportSQLiteDatabase
 import com.prody.prashant.data.local.dao.*
 import com.prody.prashant.data.local.entity.*
 
@@ -78,49 +74,4 @@ abstract class ProdyDatabase : RoomDatabase() {
     abstract fun challengeDao(): ChallengeDao
     abstract fun profileLoadoutDao(): ProfileLoadoutDao
     abstract fun seedDao(): SeedDao
-
-    companion object {
-        private const val TAG = "ProdyDatabase"
-        const val DATABASE_NAME = "prody_database"
-
-        @Volatile
-        private var INSTANCE: ProdyDatabase? = null
-
-        fun getInstance(context: Context): ProdyDatabase {
-            return INSTANCE ?: synchronized(this) {
-                INSTANCE ?: buildDatabase(context).also { INSTANCE = it }
-            }
-        }
-
-        private fun buildDatabase(context: Context): ProdyDatabase {
-            return Room.databaseBuilder(
-                context.applicationContext,
-                ProdyDatabase::class.java,
-                DATABASE_NAME
-            )
-                .fallbackToDestructiveMigration()
-                .addCallback(DatabaseCallback())
-                .build()
-        }
-
-        /**
-         * Database callback for initialization tasks
-         */
-        private class DatabaseCallback : Callback() {
-            override fun onCreate(db: SupportSQLiteDatabase) {
-                super.onCreate(db)
-                Log.d(TAG, "Database created successfully")
-            }
-
-            override fun onOpen(db: SupportSQLiteDatabase) {
-                super.onOpen(db)
-                Log.d(TAG, "Database opened")
-            }
-
-            override fun onDestructiveMigration(db: SupportSQLiteDatabase) {
-                super.onDestructiveMigration(db)
-                Log.w(TAG, "Destructive migration performed - data was cleared")
-            }
-        }
-    }
 }

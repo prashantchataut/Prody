@@ -204,29 +204,6 @@ fun PremiumXPBar(
         label = "xp_progress"
     )
 
-    // Glow animation
-    val infiniteTransition = rememberInfiniteTransition(label = "xp_glow")
-    val glowAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.3f,
-        targetValue = 0.6f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1500, easing = EaseInOutCubic),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "glow_alpha"
-    )
-
-    // Shimmer position for filled portion
-    val shimmerPosition by infiniteTransition.animateFloat(
-        initialValue = -0.5f,
-        targetValue = 1.5f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(2500, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "shimmer"
-    )
-
     Column(modifier = modifier) {
         if (showLabels) {
             Row(
@@ -267,22 +244,6 @@ fun PremiumXPBar(
                 .height(height),
             contentAlignment = Alignment.CenterStart
         ) {
-            // Flat design - subtle alpha pulse instead of blur glow
-            if (showGlow && animatedProgress > 0.05f) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth(animatedProgress)
-                        .height(height)
-                        .alpha(glowAlpha * animatedProgress * 0.3f)
-                        .background(
-                            Brush.horizontalGradient(
-                                colors = listOf(primaryColor, secondaryColor)
-                            ),
-                            RoundedCornerShape(height / 2)
-                        )
-                )
-            }
-
             // Background track
             Box(
                 modifier = Modifier
@@ -308,42 +269,6 @@ fun PremiumXPBar(
                         )
                     )
             )
-
-            // Shimmer overlay on filled portion
-            if (animatedProgress > 0.1f) {
-                Canvas(
-                    modifier = Modifier
-                        .fillMaxWidth(animatedProgress)
-                        .height(height)
-                        .clip(RoundedCornerShape(height / 2))
-                ) {
-                    val shimmerWidth = size.width * 0.3f
-                    val shimmerX = shimmerPosition * (size.width + shimmerWidth) - shimmerWidth
-
-                    drawRect(
-                        brush = Brush.horizontalGradient(
-                            colors = listOf(
-                                Color.Transparent,
-                                Color.White.copy(alpha = 0.3f),
-                                Color.White.copy(alpha = 0.5f),
-                                Color.White.copy(alpha = 0.3f),
-                                Color.Transparent
-                            ),
-                            startX = shimmerX,
-                            endX = shimmerX + shimmerWidth
-                        )
-                    )
-                }
-            }
-
-            // Particles on the bar
-            if (showParticles && animatedProgress > 0.2f) {
-                XPBarParticles(
-                    progress = animatedProgress,
-                    barHeight = height,
-                    color = Color.White
-                )
-            }
 
             // Level badge at start
             if (showLevel) {

@@ -129,12 +129,33 @@ private fun FlowingRankBanner(
     rank: Int,
     modifier: Modifier = Modifier
 ) {
-    when (rank) {
-        1 -> ChampionStarfieldBannerInline(modifier = modifier)
-        2 -> RunnerUpLiquidBannerInline(modifier = modifier)
-        3 -> BronzeAuroraBannerInline(modifier = modifier)
-        else -> return // No banner for ranks > 3
+    val gradient = when (rank) {
+        1 -> Brush.horizontalGradient(
+            colors = listOf(
+                LeaderboardRankColors.GoldPrimary.copy(alpha = 0.5f),
+                LeaderboardRankColors.GoldSecondary.copy(alpha = 0.7f)
+            )
+        )
+        2 -> Brush.horizontalGradient(
+            colors = listOf(
+                LeaderboardRankColors.SilverPrimary.copy(alpha = 0.5f),
+                LeaderboardRankColors.SilverSecondary.copy(alpha = 0.7f)
+            )
+        )
+        3 -> Brush.horizontalGradient(
+            colors = listOf(
+                LeaderboardRankColors.BronzePrimary.copy(alpha = 0.5f),
+                LeaderboardRankColors.BronzeSecondary.copy(alpha = 0.7f)
+            )
+        )
+        else -> return
     }
+
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(gradient)
+    )
 }
 
 /**
