@@ -64,14 +64,28 @@ android {
         create("release") {
             val keystoreFile = file("prody-release.jks")
             val rootKeystoreFile = file("../keystore/prody-release.jks")
-            storeFile = when {
+            val resolvedStoreFile = when {
                 keystoreFile.exists() -> keystoreFile
                 rootKeystoreFile.exists() -> rootKeystoreFile
                 else -> null
             }
-            storePassword = System.getenv("KEYSTORE_PASSWORD")
-            keyAlias = System.getenv("KEY_ALIAS")
-            keyPassword = System.getenv("KEY_PASSWORD")
+
+            if (resolvedStoreFile != null) {
+                storeFile = resolvedStoreFile
+                storePassword = System.getenv("KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("KEY_ALIAS")
+                keyPassword = System.getenv("KEY_PASSWORD")
+            } else {
+                // This check is crucial. It fails the build if a release build is attempted without the keystore.
+                // This prevents accidentally signing a release APK with a debug key.
+                if (project.gradle.startParameter.taskNames.any { it.contains("Release", ignoreCase = true) }) {
+                    throw org.gradle.api.GradleException(
+                        "Release keystore not found. " +
+                            "Ensure 'prody-release.jks' is present in 'app/' or 'keystore/' directories and that " +
+                            "KEYSTORE_PASSWORD, KEY_ALIAS, and KEY_PASSWORD environment variables are set."
+                    )
+                }
+            }
         }
     }
 
