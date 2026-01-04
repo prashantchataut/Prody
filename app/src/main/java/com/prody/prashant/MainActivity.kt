@@ -52,9 +52,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.prody.prashant.data.local.preferences.PreferencesManager
 import com.prody.prashant.notification.NotificationReceiver
 import com.prody.prashant.notification.NotificationScheduler
+import com.prody.prashant.ui.main.MainViewModel
 import com.prody.prashant.ui.navigation.BottomNavItem
 import com.prody.prashant.ui.navigation.Screen
 import com.prody.prashant.ui.screens.futuremessage.FutureMessageListScreen
@@ -75,18 +75,10 @@ import com.prody.prashant.ui.theme.ProdyPrimary
 import com.prody.prashant.ui.theme.ProdyTheme
 import com.prody.prashant.ui.theme.ThemeMode
 import dagger.hilt.android.AndroidEntryPoint
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-
-    @Inject
-    lateinit var preferencesManager: PreferencesManager
 
     @Inject
     lateinit var notificationScheduler: NotificationScheduler
@@ -121,51 +113,23 @@ class MainActivity : ComponentActivity() {
 
         enableEdgeToEdge()
 
-        // Use mutable state to update UI when preferences are loaded
-        var isOnboardingCompleted by mutableStateOf<Boolean?>(null)
-
-        // Keep splash screen visible until the essential onboarding status is loaded.
-        splashScreen.setKeepOnScreenCondition { isOnboardingCompleted == null }
-
-        // Load ONLY the essential preference to unblock the splash screen.
-        // The theme is loaded asynchronously in setContent and will update when ready.
-        lifecycleScope.launch {
-            try {
-                isOnboardingCompleted = preferencesManager.onboardingCompleted.first()
-            } catch (e: Exception) {
-                // If preferences fail, default to showing onboarding.
-                android.util.Log.e("MainActivity", "Failed to load onboarding status", e)
-                isOnboardingCompleted = false
-            }
-        }
-
         setContent {
-            // Wait until the onboarding status is loaded before showing the UI.
-            val onboardingDone = isOnboardingCompleted
-            if (onboardingDone == null) {
-                // While this is null, the splash screen is kept visible.
-                // We return here to prevent the UI from composing unnecessarily.
-                return@setContent
-            }
+            val viewModel: MainViewModel = hiltViewModel()
+            val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-            // Asynchronously collect the theme mode. It will default to "system" and then
-            // update the UI automatically when the actual preference is loaded.
-            val currentThemeModeString by preferencesManager.themeMode.collectAsStateWithLifecycle(
-                initialValue = "system"
-            )
+            // Keep the splash screen visible while the UI state is loading.
+            splashScreen.setKeepOnScreenCondition { uiState.isLoading }
 
-            val themeModeState = when (currentThemeModeString.lowercase()) {
-                "light" -> ThemeMode.LIGHT
-                "dark" -> ThemeMode.DARK
-                else -> ThemeMode.SYSTEM
-            }
-
-            ProdyTheme(
-                themeMode = themeModeState
-            ) {
-                ProdyApp(
-                    startDestination = if (onboardingDone) Screen.Home.route else Screen.Onboarding.route
-                )
+            // Only compose the main app UI when the loading is complete and we have a destination.
+            val destination = uiState.startDestination
+            if (!uiState.isLoading && destination != null) {
+                ProdyTheme(
+                    themeMode = uiState.themeMode
+                ) {
+                    ProdyApp(
+                        startDestination = destination
+                    )
+                }
             }
         }
     }
@@ -201,7 +165,8 @@ class MainActivity : ComponentActivity() {
             return
         }
 
-        lifecycleScope.launch(Dispatchers.IO) {
+        // It's safe to launch a coroutine on the lifecycle scope
+        lifecycleScope.launch {
             try {
                 if (::notificationScheduler.isInitialized) {
                     notificationScheduler.rescheduleAllNotifications()
