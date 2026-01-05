@@ -45,6 +45,8 @@ import java.text.SimpleDateFormat
 import java.util.*
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import android.app.Activity
+import android.view.WindowManager
 import com.prody.prashant.util.AccessibilityUtils
 
 @Composable
@@ -53,6 +55,17 @@ fun JournalDetailScreen(
     onNavigateBack: () -> Unit,
     viewModel: JournalDetailViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
+
+    // Security: Prevent screenshots and screen recording of sensitive journal content.
+    DisposableEffect(Unit) {
+        val window = (context as? Activity)?.window
+        window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        onDispose {
+            window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        }
+    }
+
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(entryId) {
