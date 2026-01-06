@@ -56,6 +56,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.prody.prashant.R
+import com.prody.prashant.ui.components.PreventScreenshots
 import com.prody.prashant.ui.components.TimeCapsuleSealAnimation
 import com.prody.prashant.ui.components.rememberTimeCapsuleSealState
 import com.prody.prashant.ui.theme.*
@@ -79,6 +80,9 @@ fun WriteMessageScreen(
     onMessageSaved: () -> Unit,
     viewModel: WriteMessageViewModel = hiltViewModel()
 ) {
+    // Prevent screenshots of this sensitive screen
+    PreventScreenshots()
+
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isDark = isDarkTheme()
     val context = LocalContext.current

@@ -37,6 +37,7 @@ import coil.request.ImageRequest
 import com.prody.prashant.R
 import com.prody.prashant.domain.model.Mood
 import com.prody.prashant.ui.components.ContextualAiHint
+import com.prody.prashant.ui.components.PreventScreenshots
 import com.prody.prashant.ui.components.ProdyCard
 import com.prody.prashant.ui.theme.*
 import kotlinx.coroutines.delay
@@ -53,6 +54,9 @@ fun JournalDetailScreen(
     onNavigateBack: () -> Unit,
     viewModel: JournalDetailViewModel = hiltViewModel()
 ) {
+    // Prevent screenshots of this sensitive screen
+    PreventScreenshots()
+
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(entryId) {

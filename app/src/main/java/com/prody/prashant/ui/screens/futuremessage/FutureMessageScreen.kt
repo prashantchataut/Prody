@@ -37,6 +37,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.R
 import com.prody.prashant.data.local.entity.FutureMessageEntity
 import com.prody.prashant.ui.components.DeliveryCountdownAura
+import com.prody.prashant.ui.components.PreventScreenshots
 import com.prody.prashant.ui.theme.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -59,6 +60,9 @@ fun FutureMessageListScreen(
     onNavigateToWrite: () -> Unit,
     viewModel: FutureMessageViewModel = hiltViewModel()
 ) {
+    // Prevent screenshots of this sensitive screen
+    PreventScreenshots()
+
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var selectedTab by remember { mutableIntStateOf(0) }
     var showFilterDialog by remember { mutableStateOf(false) }
