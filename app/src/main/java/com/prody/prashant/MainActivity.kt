@@ -372,9 +372,9 @@ fun ProdyApp(
                 route = Screen.VocabularyDetail.route,
                 arguments = listOf(navArgument("wordId") { type = NavType.LongType })
             ) { backStackEntry ->
-                val wordId = backStackEntry.arguments?.getLong("wordId") ?: return@composable
+                val entryId = backStackEntry.arguments?.getLong("wordId") ?: return@composable
                 VocabularyDetailScreen(
-                    wordId = wordId,
+                    wordId = entryId,
                     onNavigateBack = { navController.popBackStack() }
                 )
             }
@@ -402,127 +402,8 @@ fun ProdyApp(
                     onNavigateBack = { navController.popBackStack() },
                     onMessageSaved = { navController.popBackStack() }
                 )
+_
             }
         }
-    }
-}
-
-// =============================================================================
-// CUSTOM BOTTOM NAVIGATION BAR - Flat Design
-// =============================================================================
-
-/**
- * Premium flat-design bottom navigation bar.
- *
- * Design features:
- * - NO shadows - pure flat design
- * - Clean surface with subtle top border
- * - Animated selection indicator with accent color
- * - Minimal, focused visual hierarchy
- */
-@Composable
-private fun ProdyBottomNavBar(
-    items: List<BottomNavItem>,
-    currentRoute: String?,
-    onNavigate: (String) -> Unit
-) {
-    // Flat design - no elevation, clean surface with subtle top border
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        color = MaterialTheme.colorScheme.surface,
-        tonalElevation = 0.dp // Flat - no elevation
-    ) {
-        Column {
-            // Subtle top border for visual separation (flat design)
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(1.dp)
-                    .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
-            )
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(80.dp)
-                    .padding(horizontal = 8.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                items.forEach { item ->
-                    val isSelected = currentRoute == item.route
-
-                    ProdyNavItem(
-                        item = item,
-                        isSelected = isSelected,
-                        onClick = { onNavigate(item.route) },
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-            }
-        }
-    }
-}
-
-/**
- * Individual navigation item with animated selection state.
- */
-@Composable
-private fun ProdyNavItem(
-    item: BottomNavItem,
-    isSelected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val accentColor = ProdyPrimary
-    val accentBackground = ProdyPrimary.copy(alpha = 0.15f)
-    val inactiveColor = MaterialTheme.colorScheme.onSurfaceVariant
-
-    val scale by animateFloatAsState(
-        targetValue = if (isSelected) 1.05f else 1f,
-        animationSpec = tween(durationMillis = 200),
-        label = "scale"
-    )
-
-    Column(
-        modifier = modifier
-            .clip(RoundedCornerShape(16.dp))
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-                onClick = onClick
-            )
-            .padding(horizontal = 16.dp, vertical = 4.dp)
-            .scale(scale),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Box(
-            modifier = Modifier
-                .size(40.dp)
-                .clip(CircleShape)
-                .background(
-                    if (isSelected) accentBackground else Color.Transparent
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = if (isSelected) item.selectedIcon else item.unselectedIcon,
-                contentDescription = stringResource(item.contentDescriptionResId),
-                modifier = Modifier.size(24.dp),
-                tint = if (isSelected) accentColor else inactiveColor
-            )
-        }
-
-        Spacer(modifier = Modifier.height(4.dp))
-
-        Text(
-            text = stringResource(item.labelResId),
-            fontFamily = PoppinsFamily,
-            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-            fontSize = 11.sp,
-            color = if (isSelected) accentColor else inactiveColor,
-            letterSpacing = 0.2.sp
-        )
     }
 }
