@@ -2,7 +2,6 @@ package com.prody.prashant.data.local.preferences
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
@@ -18,13 +17,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import java.io.IOException
@@ -41,7 +36,6 @@ class PreferencesManager @Inject constructor(
     private val dataStore = context.dataStore
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-    private val _isMigrationComplete = MutableStateFlow(false)
 
     init {
         migrateToFastPreferences()
@@ -50,24 +44,16 @@ class PreferencesManager @Inject constructor(
     private fun migrateToFastPreferences() {
         if (!sharedPreferences.getBoolean(FastPreferencesKeys.MIGRATION_COMPLETE, false)) {
             scope.launch {
-                try {
-                    val currentDataStoreValues = dataStore.data.first()
-                    val onboardingCompleted = currentDataStoreValues[PreferencesKeys.ONBOARDING_COMPLETED] ?: false
-                    val themeMode = currentDataStoreValues[PreferencesKeys.THEME_MODE] ?: "system"
+                val currentDataStoreValues = dataStore.data.first()
+                val onboardingCompleted = currentDataStoreValues[PreferencesKeys.ONBOARDING_COMPLETED] ?: false
+                val themeMode = currentDataStoreValues[PreferencesKeys.THEME_MODE] ?: "system"
 
-                    sharedPreferences.edit()
-                        .putBoolean(FastPreferencesKeys.ONBOARDING_COMPLETED, onboardingCompleted)
-                        .putString(FastPreferencesKeys.THEME_MODE, themeMode)
-                        .putBoolean(FastPreferencesKeys.MIGRATION_COMPLETE, true)
-                        .apply()
-                } catch (e: Exception) {
-                    Log.e("PreferencesManager", "Failed to migrate DataStore to SharedPreferences", e)
-                } finally {
-                    _isMigrationComplete.value = true
-                }
+                sharedPreferences.edit()
+                    .putBoolean(FastPreferencesKeys.ONBOARDING_COMPLETED, onboardingCompleted)
+                    .putString(FastPreferencesKeys.THEME_MODE, themeMode)
+                    .putBoolean(FastPreferencesKeys.MIGRATION_COMPLETE, true)
+                    .apply()
             }
-        } else {
-            _isMigrationComplete.value = true
         }
     }
 
@@ -129,20 +115,16 @@ class PreferencesManager @Inject constructor(
     }
 
     // Onboarding
-    val onboardingCompleted: Flow<Boolean> = _isMigrationComplete.asStateFlow()
-        .filter { it }
-        .flatMapLatest {
-            callbackFlow {
-                val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-                    if (key == FastPreferencesKeys.ONBOARDING_COMPLETED) {
-                        trySend(sharedPreferences.getBoolean(FastPreferencesKeys.ONBOARDING_COMPLETED, false))
-                    }
-                }
+    val onboardingCompleted: Flow<Boolean> = callbackFlow {
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == FastPreferencesKeys.ONBOARDING_COMPLETED) {
                 trySend(sharedPreferences.getBoolean(FastPreferencesKeys.ONBOARDING_COMPLETED, false))
-                sharedPreferences.registerOnSharedPreferenceChangeListener(listener)
-                awaitClose { sharedPreferences.unregisterOnSharedPreferenceChangeListener(listener) }
             }
         }
+        trySend(sharedPreferences.getBoolean(FastPreferencesKeys.ONBOARDING_COMPLETED, false))
+        sharedPreferences.registerOnSharedPreferenceChangeListener(listener)
+        awaitClose { sharedPreferences.unregisterOnSharedPreferenceChangeListener(listener) }
+    }
 
     suspend fun setOnboardingCompleted(completed: Boolean) {
         sharedPreferences.edit().putBoolean(FastPreferencesKeys.ONBOARDING_COMPLETED, completed).apply()
@@ -152,20 +134,16 @@ class PreferencesManager @Inject constructor(
     }
 
     // Theme
-    val themeMode: Flow<String> = _isMigrationComplete.asStateFlow()
-        .filter { it }
-        .flatMapLatest {
-            callbackFlow {
-                val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-                    if (key == FastPreferencesKeys.THEME_MODE) {
-                        trySend(sharedPreferences.getString(FastPreferencesKeys.THEME_MODE, "system") ?: "system")
-                    }
-                }
+    val themeMode: Flow<String> = callbackFlow {
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == FastPreferencesKeys.THEME_MODE) {
                 trySend(sharedPreferences.getString(FastPreferencesKeys.THEME_MODE, "system") ?: "system")
-                sharedPreferences.registerOnSharedPreferenceChangeListener(listener)
-                awaitClose { sharedPreferences.unregisterOnSharedPreferenceChangeListener(listener) }
             }
         }
+        trySend(sharedPreferences.getString(FastPreferencesKeys.THEME_MODE, "system") ?: "system")
+        sharedPreferences.registerOnSharedPreferenceChangeListener(listener)
+        awaitClose { sharedPreferences.unregisterOnSharedPreferenceChangeListener(listener) }
+    }
 
     suspend fun setThemeMode(mode: String) {
         sharedPreferences.edit().putString(FastPreferencesKeys.THEME_MODE, mode).apply()
