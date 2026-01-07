@@ -15,6 +15,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -32,8 +33,10 @@ class PreferencesManager @Inject constructor(
 ) {
     private val dataStore = context.dataStore
 
-    // Keys
     private object PreferencesKeys {
+        // Legacy key for one-time migration to SharedPreferences
+        val ONBOARDING_COMPLETED_OLD = booleanPreferencesKey("onboarding_completed")
+
         val THEME_MODE = stringPreferencesKey("theme_mode")
         val DYNAMIC_COLORS = booleanPreferencesKey("dynamic_colors")
         val NOTIFICATIONS_ENABLED = booleanPreferencesKey("notifications_enabled")
@@ -51,16 +54,10 @@ class PreferencesManager @Inject constructor(
         val HAPTIC_FEEDBACK_ENABLED = booleanPreferencesKey("haptic_feedback")
         val FIRST_LAUNCH_TIME = longPreferencesKey("first_launch_time")
         val USER_ID = stringPreferencesKey("user_id")
-
-        // Gamification
         val GAMIFICATION_INITIALIZED = booleanPreferencesKey("gamification_initialized")
-
-        // Gemini AI Settings
         val GEMINI_API_KEY = stringPreferencesKey("gemini_api_key")
         val GEMINI_MODEL = stringPreferencesKey("gemini_model")
         val BUDDHA_AI_ENABLED = booleanPreferencesKey("buddha_ai_enabled")
-
-        // Buddha AI Feature Toggles
         val BUDDHA_DAILY_WISDOM_ENABLED = booleanPreferencesKey("buddha_daily_wisdom_enabled")
         val BUDDHA_QUOTE_EXPLANATION_ENABLED = booleanPreferencesKey("buddha_quote_explanation_enabled")
         val BUDDHA_JOURNAL_INSIGHTS_ENABLED = booleanPreferencesKey("buddha_journal_insights_enabled")
@@ -68,26 +65,29 @@ class PreferencesManager @Inject constructor(
         val BUDDHA_PLAYFUL_MODE = booleanPreferencesKey("buddha_playful_mode")
         val BUDDHA_REDUCE_AI_USAGE = booleanPreferencesKey("buddha_reduce_ai_usage")
         val BUDDHA_PERSONALITY_MODE = stringPreferencesKey("buddha_personality_mode")
-
-        // Debug: Special Badge Preview Toggles
         val DEBUG_PREVIEW_DEV_BADGE = booleanPreferencesKey("debug_preview_dev_badge")
         val DEBUG_PREVIEW_BETA_BADGE = booleanPreferencesKey("debug_preview_beta_badge")
-
-        // Debug: AI Proof Mode - Shows AI generation metadata in UI
         val DEBUG_AI_PROOF_MODE = booleanPreferencesKey("debug_ai_proof_mode")
-
-        // Privacy Mode settings
         val PRIVACY_LOCK_JOURNAL = booleanPreferencesKey("privacy_lock_journal")
         val PRIVACY_LOCK_FUTURE_MESSAGES = booleanPreferencesKey("privacy_lock_future_messages")
         val PRIVACY_LOCK_ON_BACKGROUND = booleanPreferencesKey("privacy_lock_on_background")
         val PRIVACY_LAST_UNLOCKED_AT = longPreferencesKey("privacy_last_unlocked_at")
     }
 
-    // Onboarding
     val onboardingCompleted: Flow<Boolean> = flow {
-        emit(sharedPreferences.getBoolean(KEY_ONBOARDING_COMPLETED, false))
+        if (sharedPreferences.contains(KEY_ONBOARDING_COMPLETED)) {
+            emit(sharedPreferences.getBoolean(KEY_ONBOARDING_COMPLETED, false))
+        } else {
+            val valueFromDataStore = dataStore.data
+                .map { it[PreferencesKeys.ONBOARDING_COMPLETED_OLD] ?: false }
+                .first()
+            sharedPreferences.edit().putBoolean(KEY_ONBOARDING_COMPLETED, valueFromDataStore).apply()
+            dataStore.edit { it.remove(PreferencesKeys.ONBOARDING_COMPLETED_OLD) }
+            emit(valueFromDataStore)
+        }
+    }.catch {
+        emit(false)
     }.flowOn(Dispatchers.IO)
-
 
     suspend fun setOnboardingCompleted(completed: Boolean) {
         withContext(Dispatchers.IO) {
@@ -95,7 +95,6 @@ class PreferencesManager @Inject constructor(
         }
     }
 
-    // Theme
     val themeMode: Flow<String> = dataStore.data
         .catch { exception ->
             if (exception is IOException) emit(emptyPreferences())
@@ -126,7 +125,6 @@ class PreferencesManager @Inject constructor(
         }
     }
 
-    // Notifications
     val notificationsEnabled: Flow<Boolean> = dataStore.data
         .catch { exception ->
             if (exception is IOException) emit(emptyPreferences())
@@ -197,7 +195,6 @@ class PreferencesManager @Inject constructor(
         }
     }
 
-    // Streak
     val currentStreak: Flow<Int> = dataStore.data
         .catch { exception ->
             if (exception is IOException) emit(emptyPreferences())
@@ -228,7 +225,6 @@ class PreferencesManager @Inject constructor(
         }
     }
 
-    // Wisdom
     val dailyWisdomLastShown: Flow<Long> = dataStore.data
         .catch { exception ->
             if (exception is IOException) emit(emptyPreferences())
@@ -263,7 +259,6 @@ class PreferencesManager @Inject constructor(
         }
     }
 
-    // Vocabulary
     val vocabularyDifficulty: Flow<Int> = dataStore.data
         .catch { exception ->
             if (exception is IOException) emit(emptyPreferences())
@@ -294,7 +289,6 @@ class PreferencesManager @Inject constructor(
         }
     }
 
-    // UI Preferences
     val compactCardView: Flow<Boolean> = dataStore.data
         .catch { exception ->
             if (exception is IOException) emit(emptyPreferences())
@@ -325,7 +319,6 @@ class PreferencesManager @Inject constructor(
         }
     }
 
-    // User Info
     val firstLaunchTime: Flow<Long> = dataStore.data
         .catch { exception ->
             if (exception is IOException) emit(emptyPreferences())
@@ -358,7 +351,6 @@ class PreferencesManager @Inject constructor(
         }
     }
 
-    // Gamification Initialized Flag
     val gamificationInitialized: Flow<Boolean> = dataStore.data
         .catch { exception ->
             if (exception is IOException) emit(emptyPreferences())
@@ -374,7 +366,6 @@ class PreferencesManager @Inject constructor(
         }
     }
 
-    // Gemini AI Settings
     val geminiApiKey: Flow<String> = dataStore.data
         .catch { exception ->
             if (exception is IOException) emit(emptyPreferences())
@@ -420,7 +411,6 @@ class PreferencesManager @Inject constructor(
         }
     }
 
-    // Buddha AI Feature Toggles
     val buddhaDailyWisdomEnabled: Flow<Boolean> = dataStore.data
         .catch { exception ->
             if (exception is IOException) emit(emptyPreferences())
@@ -526,10 +516,6 @@ class PreferencesManager @Inject constructor(
         }
     }
 
-    // ===== DEBUG: SPECIAL BADGE PREVIEW =====
-    // These are for previewing Dev/Beta badges without OAuth
-    // Only shown in debug builds, not in production
-
     val debugPreviewDevBadge: Flow<Boolean> = dataStore.data
         .catch { exception ->
             if (exception is IOException) emit(emptyPreferences())
@@ -560,7 +546,6 @@ class PreferencesManager @Inject constructor(
         }
     }
 
-    // Debug: AI Proof Mode - Shows AI generation metadata in UI (DEBUG builds only)
     val debugAiProofMode: Flow<Boolean> = dataStore.data
         .catch { exception ->
             if (exception is IOException) emit(emptyPreferences())
@@ -575,8 +560,6 @@ class PreferencesManager @Inject constructor(
             preferences[PreferencesKeys.DEBUG_AI_PROOF_MODE] = enabled
         }
     }
-
-    // ===== PRIVACY MODE SETTINGS =====
 
     val privacyLockJournal: Flow<Boolean> = dataStore.data
         .catch { exception ->
@@ -608,7 +591,7 @@ class PreferencesManager @Inject constructor(
         }
     }
 
-    val privacyLockOnBackground: Flow<Boolean> = dataStore.data
+    val privacyLockOnBackground: Flow<Boolean> = dataStore..data
         .catch { exception ->
             if (exception is IOException) emit(emptyPreferences())
             else throw exception
@@ -638,23 +621,16 @@ class PreferencesManager @Inject constructor(
         }
     }
 
-    // Clear all preferences
     suspend fun clearAllPreferences() {
         dataStore.edit { preferences ->
             preferences.clear()
         }
     }
 
-    /**
-     * Resets all preferences to their default values.
-     */
     suspend fun resetToDefaults() {
-        // Clear SharedPreferences for onboarding
         sharedPreferences.edit().remove(KEY_ONBOARDING_COMPLETED).apply()
-
         dataStore.edit { preferences ->
             preferences.clear()
-            // Set default values
             preferences[PreferencesKeys.THEME_MODE] = "system"
             preferences[PreferencesKeys.DYNAMIC_COLORS] = false
             preferences[PreferencesKeys.NOTIFICATIONS_ENABLED] = true
