@@ -67,6 +67,55 @@
             </intent-filter>
         </receiver>
 
+        <!-- Home Screen Widgets -->
+        <receiver
+            android:name=".widget.DailyQuoteWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_daily_quote_description">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/daily_quote_widget_info" />
+        </receiver>
+
+        <receiver
+            android:name=".widget.WordOfDayWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_word_of_day_description">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/word_of_day_widget_info" />
+        </receiver>
+
+        <receiver
+            android:name=".widget.StreakWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_streak_description">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/streak_widget_info" />
+        </receiver>
+
+        <receiver
+            android:name=".widget.QuickJournalWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_quick_journal_description">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/quick_journal_widget_info" />
+        </receiver>
+
         <service
             android:name="androidx.work.impl.foreground.SystemForegroundService"
             android:foregroundServiceType="dataSync"

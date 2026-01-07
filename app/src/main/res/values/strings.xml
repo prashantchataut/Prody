@@ -370,6 +370,20 @@
     <string name="settings_ai_patterns">Pattern Detection</string>
     <string name="settings_ai_privacy_info">Your journal entries are only used to generate insights. Nothing is stored on external servers.</string>
 
+    <!-- Buddha AI Personality Modes -->
+    <string name="settings_ai_personality">Buddha Personality</string>
+    <string name="settings_ai_personality_desc">Choose how Buddha speaks to you</string>
+    <string name="personality_stoic">Stoic Sage</string>
+    <string name="personality_stoic_desc">Classic wisdom from ancient philosophers. Calm, reflective, and grounded.</string>
+    <string name="personality_compassionate">Compassionate Guide</string>
+    <string name="personality_compassionate_desc">Gentle, nurturing, and emotionally supportive. Focuses on validation and self-care.</string>
+    <string name="personality_coach">Life Coach</string>
+    <string name="personality_coach_desc">Direct, action-oriented, and motivating. Practical advice with accountability.</string>
+    <string name="personality_playful">Playful Mentor</string>
+    <string name="personality_playful_desc">Light-hearted, witty, and creative. Wisdom through humor and analogies.</string>
+    <string name="personality_zen">Zen Master</string>
+    <string name="personality_zen_desc">Minimalist and meditative. Brief, poetic insights that invite reflection.</string>
+
     <!-- About Developer -->
     <string name="settings_developer">About Developer</string>
     <string name="developer_name">Prashant Chataut</string>
@@ -705,6 +719,14 @@
     <string name="performance_slow_connection">Slow connection detected</string>
     <string name="performance_optimizing">Optimizing…</string>
     <string name="performance_loading_cached">Loading cached data</string>
+
+    <!-- ==================== -->
+    <!-- HOME SCREEN WIDGETS -->
+    <!-- ==================== -->
+    <string name="widget_daily_quote_description">Display an inspiring daily quote from great thinkers</string>
+    <string name="widget_word_of_day_description">Learn a new word every day to expand your vocabulary</string>
+    <string name="widget_streak_description">Track your daily streak at a glance</string>
+    <string name="widget_quick_journal_description">Quick access to write a new journal entry</string>
 
     <!-- ==================== -->
     <!-- RTL SUPPORT MARKERS -->
