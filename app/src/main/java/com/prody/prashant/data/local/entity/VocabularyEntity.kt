@@ -3,7 +3,17 @@ package com.prody.prashant.data.local.entity
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "vocabulary")
+@Entity(
+    tableName = "vocabulary",
+    indices = [
+        androidx.room.Index(value = ["word"]),
+        androidx.room.Index(value = ["category"]),
+        androidx.room.Index(value = ["isLearned"]),
+        androidx.room.Index(value = ["shownAsDaily"]),
+        androidx.room.Index(value = ["isFavorite"]),
+        androidx.room.Index(value = ["nextReviewAt"])
+    ]
+)
 data class VocabularyEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,

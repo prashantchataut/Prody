@@ -53,37 +53,44 @@ class StatsViewModel @Inject constructor(
     }
 
     private fun loadStats() {
+        // Combine all stats-related flows into a single subscription to prevent
+        // multiple coroutine leaks on configuration changes
         viewModelScope.launch {
             try {
-                userDao.getUserProfile().collect { profile ->
-                    profile?.let {
+                combine(
+                    userDao.getUserProfile(),
+                    userDao.getStreakHistory(),
+                    journalDao.getMoodDistribution(),
+                    journalDao.getTotalWordCount()
+                ) { profile, history, moodCounts, wordCount ->
+                    StatsData(profile, history, moodCounts, wordCount)
+                }.collect { data ->
+                    // Process profile data
+                    data.profile?.let { profile ->
                         _uiState.update { state ->
                             state.copy(
-                                totalPoints = it.totalPoints,
-                                currentStreak = it.currentStreak,
-                                longestStreak = it.longestStreak,
-                                wordsLearned = it.wordsLearned,
-                                journalEntries = it.journalEntriesCount,
-                                futureMessages = it.futureMessagesCount,
+                                totalPoints = profile.totalPoints,
+                                currentStreak = profile.currentStreak,
+                                longestStreak = profile.longestStreak,
+                                wordsLearned = profile.wordsLearned,
+                                journalEntries = profile.journalEntriesCount,
+                                futureMessages = profile.futureMessagesCount,
                                 isLoading = false
                             )
                         }
                     }
-                }
-            } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error loading user profile", e)
-                _uiState.update { state -> state.copy(isLoading = false, error = "Failed to load stats. Please try again.") }
-            }
-        }
 
-        viewModelScope.launch {
-            try {
-                userDao.getStreakHistory().collect { history ->
-                    val daysActive = history.size
-                    val weeklyProgress = calculateWeeklyProgress(history.map { it.pointsEarned })
-                    val consistencyScore = calculateConsistencyScore(history.size)
+                    // Process streak history
+                    val daysActive = data.history.size
+                    val weeklyProgress = calculateWeeklyProgress(data.history.map { it.pointsEarned })
+                    val consistencyScore = calculateConsistencyScore(daysActive)
                     val weeklyGrowth = calculateWeeklyGrowth(weeklyProgress)
                     val learningPace = determineLearningPace(weeklyProgress)
+
+                    // Process mood distribution
+                    val moodMap = data.moodCounts
+                        .filter { it.mood.isNotBlank() }
+                        .associate { it.mood.lowercase() to it.count }
 
                     _uiState.update { state ->
                         state.copy(
@@ -91,45 +98,28 @@ class StatsViewModel @Inject constructor(
                             weeklyProgress = weeklyProgress,
                             consistencyScore = consistencyScore,
                             weeklyGrowthPercent = weeklyGrowth,
-                            learningPace = learningPace
+                            learningPace = learningPace,
+                            moodDistribution = moodMap,
+                            totalWordsWritten = data.wordCount ?: 0
                         )
                     }
                 }
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error loading streak history", e)
-            }
-        }
-
-        // Load real mood distribution from journal entries
-        viewModelScope.launch {
-            try {
-                journalDao.getMoodDistribution().collect { moodCounts ->
-                    val moodMap = moodCounts
-                        .filter { it.mood.isNotBlank() }
-                        .associate { it.mood.lowercase() to it.count }
-
-                    _uiState.update { state ->
-                        state.copy(moodDistribution = moodMap)
-                    }
-                }
-            } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error loading mood distribution", e)
-            }
-        }
-
-        // Load total words written from journals
-        viewModelScope.launch {
-            try {
-                journalDao.getTotalWordCount().collect { wordCount ->
-                    _uiState.update { state ->
-                        state.copy(totalWordsWritten = wordCount ?: 0)
-                    }
-                }
-            } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error loading total word count", e)
+                android.util.Log.e(TAG, "Error loading stats", e)
+                _uiState.update { state -> state.copy(isLoading = false, error = "Failed to load stats. Please try again.") }
             }
         }
     }
+
+    /**
+     * Helper data class for combining stats flows.
+     */
+    private data class StatsData(
+        val profile: com.prody.prashant.data.local.entity.UserProfileEntity?,
+        val history: List<com.prody.prashant.data.local.entity.StreakHistoryEntity>,
+        val moodCounts: List<com.prody.prashant.data.local.dao.MoodCount>,
+        val wordCount: Int?
+    )
 
     private fun calculateConsistencyScore(daysActive: Int): Int {
         // Calculate consistency based on streak relative to days active
@@ -172,29 +162,25 @@ class StatsViewModel @Inject constructor(
                 // Always ensure current user's leaderboard entry is synced with their profile
                 syncCurrentUserLeaderboardEntry()
 
-                userDao.getLeaderboard().collect { leaderboard ->
+                // Combine both leaderboard flows into a single subscription
+                // to prevent multiple coroutine leaks on configuration changes
+                combine(
+                    userDao.getLeaderboard(),
+                    userDao.getWeeklyLeaderboard()
+                ) { allTimeLeaderboard, weeklyLeaderboard ->
+                    Pair(allTimeLeaderboard, weeklyLeaderboard)
+                }.collect { (allTimeLeaderboard, weeklyLeaderboard) ->
+                    val currentUserRank = allTimeLeaderboard.indexOfFirst { it.isCurrentUser } + 1
                     _uiState.update { state ->
-                        val currentUserRank = leaderboard.indexOfFirst { it.isCurrentUser } + 1
                         state.copy(
-                            allTimeLeaderboard = leaderboard,
+                            allTimeLeaderboard = allTimeLeaderboard,
+                            weeklyLeaderboard = weeklyLeaderboard,
                             currentRank = if (currentUserRank > 0) currentUserRank else 0
                         )
                     }
                 }
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error loading all-time leaderboard", e)
-            }
-        }
-
-        viewModelScope.launch {
-            try {
-                userDao.getWeeklyLeaderboard().collect { leaderboard ->
-                    _uiState.update { state ->
-                        state.copy(weeklyLeaderboard = leaderboard)
-                    }
-                }
-            } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error loading weekly leaderboard", e)
+                android.util.Log.e(TAG, "Error loading leaderboard", e)
             }
         }
     }

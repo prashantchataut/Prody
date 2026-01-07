@@ -47,6 +47,16 @@ interface UserDao {
     @Query("UPDATE user_profile SET totalPoints = totalPoints + :points WHERE id = 1")
     suspend fun addPoints(points: Int)
 
+    /**
+     * Atomically add points to both user profile and daily stats.
+     * Ensures consistency between total points and daily tracking.
+     */
+    @Transaction
+    suspend fun addPointsWithDailyTracking(points: Int) {
+        addPoints(points)
+        addDailyPoints(points)
+    }
+
     @Query("UPDATE user_profile SET currentStreak = :streak, longestStreak = CASE WHEN :streak > longestStreak THEN :streak ELSE longestStreak END WHERE id = 1")
     suspend fun updateStreak(streak: Int)
 
@@ -227,6 +237,21 @@ interface UserDao {
 
     @Query("DELETE FROM motivational_messages")
     suspend fun clearMotivationalMessages()
+
+    /**
+     * Atomically clear all user data in a transaction.
+     * Use for account reset or logout functionality.
+     */
+    @Transaction
+    suspend fun clearAllUserData() {
+        deleteUserProfile()
+        clearUserStats()
+        clearStreakHistory()
+        clearAchievements()
+        clearLeaderboard()
+        clearPeerInteractions()
+        clearMotivationalMessages()
+    }
 
     // =========================================================================
     // Multi-User / Sync Methods
