@@ -66,9 +66,13 @@ import com.prody.prashant.ui.screens.vocabulary.VocabularyDetailScreen
 import com.prody.prashant.ui.screens.vocabulary.VocabularyListScreen
 import com.prody.prashant.ui.theme.PoppinsFamily
 import com.prody.prashant.ui.theme.ProdyPrimary
+import com.prody.prashant.util.Constants
+import com.prody.prashant.util.NavigationTokenManager
 import com.prody.prashant.ui.theme.ProdyTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -82,6 +86,10 @@ class MainActivity : ComponentActivity() {
 
     // Flag to track if Hilt injection is complete
     private var isInjectionComplete = false
+
+    // Channel to communicate navigation events from Activity to Composable
+    private val navigationChannel = Channel<String>(Channel.BUFFERED)
+    private val navigationFlow = navigationChannel.receiveAsFlow()
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -114,6 +122,9 @@ class MainActivity : ComponentActivity() {
 
         enableEdgeToEdge()
 
+        // Handle initial intent
+        handleIntent(intent)
+
         setContent {
             val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -123,8 +134,27 @@ class MainActivity : ComponentActivity() {
                 ) {
                     uiState.startDestination?.let { startDestination ->
                         ProdyApp(
-                            startDestination = startDestination
+                            startDestination = startDestination,
+                            navigationFlow = navigationFlow
                         )
+                    }
+                }
+            }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleIntent(intent)
+    }
+
+    private fun handleIntent(intent: Intent?) {
+        if (intent?.action == Constants.ACTION_SECURE_NAVIGATE) {
+            val token = intent.getStringExtra(Constants.EXTRA_NAVIGATION_TOKEN)
+            if (NavigationTokenManager.isTokenValid(token)) {
+                intent.getStringExtra(Constants.EXTRA_NAVIGATE_TO)?.let { route ->
+                    lifecycleScope.launch {
+                        navigationChannel.send(route)
                     }
                 }
             }
@@ -178,11 +208,19 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun ProdyApp(
-    startDestination: String
+    startDestination: String,
+    navigationFlow: kotlinx.coroutines.flow.Flow<String>
 ) {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
+
+    // Effect to handle navigation from outside Compose
+    LaunchedEffect(Unit) {
+        navigationFlow.collect { route ->
+            navController.navigate(route)
+        }
+    }
 
     // Bottom navigation items
     val bottomNavItems = listOf(

@@ -12,7 +12,9 @@ import androidx.glance.GlanceTheme
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
-import androidx.glance.appwidget.action.actionStartActivity
+import androidx.glance.action.ActionParameters
+import androidx.glance.appwidget.action.ActionCallback
+import androidx.glance.appwidget.action.actionRunCallback
 import androidx.glance.appwidget.provideContent
 import androidx.glance.background
 import androidx.glance.layout.Alignment
@@ -45,17 +47,12 @@ class QuickJournalWidget : GlanceAppWidget() {
 
     @Composable
     private fun QuickJournalContent(context: Context) {
-        val intent = Intent(context, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-            putExtra("navigate_to", "journal/new")
-        }
-
         Box(
             modifier = GlanceModifier
                 .fillMaxSize()
                 .background(Color(0xFF1A1A2E))
                 .padding(horizontal = 16.dp, vertical = 12.dp)
-                .clickable(actionStartActivity(intent)),
+                .clickable(actionRunCallback<QuickJournalClickAction>()),
             contentAlignment = Alignment.CenterStart
         ) {
             Row(
@@ -92,6 +89,19 @@ class QuickJournalWidget : GlanceAppWidget() {
                 )
             }
         }
+    }
+}
+
+class QuickJournalClickAction : ActionCallback {
+    override suspend fun onAction(
+        context: Context,
+        glanceId: GlanceId,
+        parameters: ActionParameters
+    ) {
+        val intent = Intent(context, QuickJournalActionReceiver::class.java).apply {
+            action = com.prody.prashant.util.Constants.ACTION_QUICK_JOURNAL
+        }
+        context.sendBroadcast(intent)
     }
 }
 
