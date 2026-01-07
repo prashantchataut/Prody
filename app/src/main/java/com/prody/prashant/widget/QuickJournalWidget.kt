@@ -79,7 +79,7 @@ class QuickJournalWidget : GlanceAppWidget() {
                     )
                 )
 
-                Spacer(modifier = GlanceModifier.weight(1f))
+                Spacer(modifier = GlanceModifier.defaultWeight())
 
                 // Prody label
                 Text(

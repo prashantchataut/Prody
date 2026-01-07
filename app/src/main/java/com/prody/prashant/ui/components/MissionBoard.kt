@@ -22,7 +22,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.prody.prashant.data.local.entity.DailyMissionEntity
 import com.prody.prashant.data.local.entity.WeeklyTrialEntity
-import com.prody.prashant.domain.gamification.MissionType
 
 /**
  * Mission Board - Displays the 3 daily missions in a compact, game-like format.

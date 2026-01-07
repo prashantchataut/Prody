@@ -18,7 +18,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.prody.prashant.domain.gamification.GameSkillSystem
 
 /**
  * Player Skills Card - Displays the 3 core skill stats.
@@ -110,8 +109,8 @@ private fun SkillBar(
     icon: ImageVector,
     color: Color
 ) {
-    val level = GameSkillSystem.calculateLevel(xp)
-    val (currentXp, xpToNext) = GameSkillSystem.getXpProgress(xp)
+    val level = calculateLevel(xp)
+    val (currentXp, xpToNext) = getXpProgress(xp)
     val progress = if (xpToNext > 0) currentXp.toFloat() / xpToNext else 1f
 
     val animatedProgress by animateFloatAsState(
@@ -234,17 +233,17 @@ fun CompactSkillDisplay(
     ) {
         CompactSkillChip(
             name = "Clarity",
-            level = GameSkillSystem.calculateLevel(clarityXp),
+            level = calculateLevel(clarityXp),
             color = SkillColors.Clarity
         )
         CompactSkillChip(
             name = "Discipline",
-            level = GameSkillSystem.calculateLevel(disciplineXp),
+            level = calculateLevel(disciplineXp),
             color = SkillColors.Discipline
         )
         CompactSkillChip(
             name = "Courage",
-            level = GameSkillSystem.calculateLevel(courageXp),
+            level = calculateLevel(courageXp),
             color = SkillColors.Courage
         )
     }
@@ -288,4 +287,41 @@ object SkillColors {
     val Clarity = Color(0xFF7C4DFF)    // Purple
     val Discipline = Color(0xFF00BCD4) // Cyan
     val Courage = Color(0xFFFF9800)    // Orange
+}
+
+// ==================== LOCAL SKILL CALCULATION HELPERS ====================
+
+private val LEVEL_THRESHOLDS = listOf(
+    0, 100, 250, 450, 700, 1000, 1400, 1900, 2500, 3200,
+    4000, 5000, 6200, 7600, 9200, 11000, 13000, 15500, 18500, 22000,
+    26000, 30500, 35500, 41000, 47000, 54000, 62000, 71000, 81000, 92000
+)
+
+private const val MAX_SKILL_LEVEL = 30
+
+/**
+ * Calculate level from XP amount.
+ */
+private fun calculateLevel(xp: Int): Int {
+    for (i in LEVEL_THRESHOLDS.indices.reversed()) {
+        if (xp >= LEVEL_THRESHOLDS[i]) {
+            return (i + 1).coerceAtMost(MAX_SKILL_LEVEL)
+        }
+    }
+    return 1
+}
+
+/**
+ * Get XP progress: returns Pair(currentXpInLevel, xpNeededForNextLevel)
+ */
+private fun getXpProgress(xp: Int): Pair<Int, Int> {
+    val currentLevel = calculateLevel(xp)
+    if (currentLevel >= MAX_SKILL_LEVEL) return Pair(0, 0)
+
+    val currentThreshold = LEVEL_THRESHOLDS.getOrElse(currentLevel - 1) { 0 }
+    val nextThreshold = LEVEL_THRESHOLDS.getOrElse(currentLevel) { currentThreshold + 100 }
+    val xpInLevel = xp - currentThreshold
+    val xpNeeded = nextThreshold - currentThreshold
+
+    return Pair(xpInLevel, xpNeeded)
 }
