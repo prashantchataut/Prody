@@ -144,7 +144,7 @@ fun JournalHistoryScreen(
                             onClick = { onNavigateToDetail(entry.id) },
                             isFirst = index == 0,
                             isLast = index == uiState.thisWeekEntries.lastIndex,
-                            isDarkTheme = isDarkTheme,
+                            isDarkTheme = isDark,
                             accentColor = accentColor,
                             timelineColor = timelineColor,
                             surfaceColor = surfaceColor,
@@ -175,7 +175,7 @@ fun JournalHistoryScreen(
                             onClick = { onNavigateToDetail(entry.id) },
                             isFirst = index == 0,
                             isLast = index == uiState.lastWeekEntries.lastIndex,
-                            isDarkTheme = isDarkTheme,
+                            isDarkTheme = isDark,
                             accentColor = accentColor,
                             timelineColor = timelineColor,
                             surfaceColor = surfaceColor,
@@ -207,7 +207,7 @@ fun JournalHistoryScreen(
                             onClick = { onNavigateToDetail(entry.id) },
                             isFirst = index == 0,
                             isLast = index == displayedOlder.lastIndex && uiState.displayedOlderCount >= uiState.totalOlderCount,
-                            isDarkTheme = isDarkTheme,
+                            isDarkTheme = isDark,
                             accentColor = accentColor,
                             timelineColor = timelineColor,
                             surfaceColor = surfaceColor,
@@ -267,7 +267,7 @@ fun JournalHistoryScreen(
             onDateRangeFilterChange = { viewModel.setDateRangeFilter(it) },
             onClearAllFilters = { viewModel.clearAllFilters() },
             onDismiss = { showFilterSheet = false },
-            isDarkTheme = isDarkTheme
+            isDarkTheme = isDark
         )
     }
 }

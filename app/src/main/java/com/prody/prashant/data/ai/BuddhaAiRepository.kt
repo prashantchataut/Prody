@@ -1224,6 +1224,16 @@ class BuddhaAiRepository @Inject constructor(
         return "${cal.get(java.util.Calendar.YEAR)}-${cal.get(java.util.Calendar.DAY_OF_YEAR)}"
     }
 
+    /**
+     * Gets the current Buddha personality system prompt.
+     * This is dynamically loaded based on user preference.
+     */
+    private suspend fun getCurrentPersonalityPrompt(): String {
+        val modeString = preferencesManager.buddhaPersonalityMode.first()
+        val mode = BuddhaPersonalityMode.fromString(modeString)
+        return mode.getSystemPrompt()
+    }
+
     // ==================== EXTENSION FOR GEMINI ====================
 
     private suspend fun GeminiService.generateContent(prompt: String): GeminiResult<String> {
@@ -1359,16 +1369,6 @@ enum class BuddhaLensType {
 }
 
 // ==================== PROMPTS ====================
-
-/**
- * Gets the current Buddha personality system prompt.
- * This is dynamically loaded based on user preference.
- */
-private suspend fun BuddhaAiRepository.getCurrentPersonalityPrompt(): String {
-    val modeString = preferencesManager.buddhaPersonalityMode.first()
-    val mode = BuddhaPersonalityMode.fromString(modeString)
-    return mode.getSystemPrompt()
-}
 
 /**
  * Default system prompt used when personality cannot be loaded.

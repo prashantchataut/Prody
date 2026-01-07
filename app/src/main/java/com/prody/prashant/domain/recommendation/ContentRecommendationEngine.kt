@@ -51,22 +51,16 @@ class ContentRecommendationEngine @Inject constructor(
         private const val EVENING_END = 21
 
         // Content categories based on mood
+        // Valid Mood values: HAPPY, CALM, ANXIOUS, SAD, MOTIVATED, GRATEFUL, CONFUSED, EXCITED
         private val MOOD_TO_QUOTE_CATEGORIES = mapOf(
             Mood.HAPPY to listOf("gratitude", "success", "motivation"),
-            Mood.CONTENT to listOf("wisdom", "stoic", "life"),
             Mood.CALM to listOf("mindfulness", "peace", "stoic"),
-            Mood.NEUTRAL to listOf("wisdom", "life", "motivation"),
-            Mood.THOUGHTFUL to listOf("wisdom", "stoic", "reflection"),
-            Mood.MELANCHOLY to listOf("hope", "resilience", "courage"),
             Mood.ANXIOUS to listOf("peace", "mindfulness", "stoic"),
-            Mood.FRUSTRATED to listOf("patience", "stoic", "resilience"),
             Mood.SAD to listOf("hope", "healing", "courage"),
             Mood.MOTIVATED to listOf("success", "motivation", "growth"),
             Mood.GRATEFUL to listOf("gratitude", "wisdom", "life"),
             Mood.CONFUSED to listOf("clarity", "wisdom", "stoic"),
-            Mood.EXCITED to listOf("motivation", "success", "growth"),
-            Mood.ENERGETIC to listOf("motivation", "success", "growth"),
-            Mood.INSPIRED to listOf("creativity", "motivation", "wisdom")
+            Mood.EXCITED to listOf("motivation", "success", "growth")
         )
 
         // Temporal content preferences
@@ -110,8 +104,8 @@ class ContentRecommendationEngine @Inject constructor(
                 candidates.addAll(allQuotes.take(5))
             }
 
-            // Select with weighted randomness (prefer higher-rated quotes)
-            val selected = candidates.maxByOrNull { it.timesShown * 0.1 + Math.random() * 0.9 }
+            // Select with weighted randomness (prefer favorited quotes slightly)
+            val selected = candidates.maxByOrNull { (if (it.isFavorite) 0.1 else 0.0) + Math.random() * 0.9 }
                 ?: candidates.random()
 
             RecommendedContent(
@@ -140,23 +134,21 @@ class ContentRecommendationEngine @Inject constructor(
 
             // Adjust difficulty based on mood (lower when stressed/sad)
             val adjustedDifficulty = when (dominantMood) {
-                Mood.ANXIOUS, Mood.FRUSTRATED, Mood.SAD -> (difficulty - 1).coerceAtLeast(1)
-                Mood.MOTIVATED, Mood.ENERGETIC, Mood.EXCITED -> (difficulty + 1).coerceAtMost(5)
+                Mood.ANXIOUS, Mood.SAD -> (difficulty - 1).coerceAtLeast(1)
+                Mood.MOTIVATED, Mood.EXCITED -> (difficulty + 1).coerceAtMost(5)
                 else -> difficulty
             }
 
-            // Get words at appropriate difficulty
-            val candidates = vocabularyDao.getWordsByDifficultyRange(
-                minDifficulty = adjustedDifficulty - 1,
-                maxDifficulty = adjustedDifficulty + 1
-            ).filter { !it.isLearned }
+            // Get words at appropriate difficulty using the existing getWordsByDifficulty method
+            val difficultyWords = vocabularyDao.getWordsByDifficulty(adjustedDifficulty)
+            val candidates = difficultyWords.first().filter { !it.isLearned }
 
             if (candidates.isEmpty()) {
                 // Fall back to any unlearned word
-                val anyUnlearned = vocabularyDao.getUnlearnedWords(10)
-                if (anyUnlearned.isEmpty()) return@withContext null
+                val anyUnlearned = vocabularyDao.getRandomUnlearnedWord()
+                if (anyUnlearned == null) return@withContext null
                 return@withContext RecommendedContent(
-                    content = anyUnlearned.random(),
+                    content = anyUnlearned,
                     reason = "Expand your vocabulary",
                     score = 0.7,
                     signals = listOf(RecommendationSignal.GROWTH_BASED)
@@ -166,7 +158,7 @@ class ContentRecommendationEngine @Inject constructor(
             // Prefer words not shown recently
             val recentlyShownIds = getRecentlyShownVocabIds()
             val freshCandidates = candidates.filter { it.id !in recentlyShownIds }
-            val selected = freshCandidates.randomOrNull() ?: candidates.random()
+            val selected = if (freshCandidates.isNotEmpty()) freshCandidates.random() else candidates.random()
 
             RecommendedContent(
                 content = selected,
@@ -229,7 +221,7 @@ class ContentRecommendationEngine @Inject constructor(
     private suspend fun getDominantRecentMood(): Mood {
         return try {
             val recentEntries = journalDao.getRecentEntries(7)
-            if (recentEntries.isEmpty()) return Mood.NEUTRAL
+            if (recentEntries.isEmpty()) return Mood.CALM
 
             // Count mood occurrences
             val moodCounts = recentEntries
@@ -239,9 +231,9 @@ class ContentRecommendationEngine @Inject constructor(
                 .groupingBy { it }
                 .eachCount()
 
-            moodCounts.maxByOrNull { it.value }?.key ?: Mood.NEUTRAL
+            moodCounts.maxByOrNull { it.value }?.key ?: Mood.CALM
         } catch (e: Exception) {
-            Mood.NEUTRAL
+            Mood.CALM
         }
     }
 
@@ -273,8 +265,8 @@ class ContentRecommendationEngine @Inject constructor(
         }
 
         return when (mood) {
-            Mood.ANXIOUS, Mood.FRUSTRATED -> "$timeContext Peace & perspective"
-            Mood.SAD, Mood.MELANCHOLY -> "$timeContext Hope & strength"
+            Mood.ANXIOUS -> "$timeContext Peace & perspective"
+            Mood.SAD -> "$timeContext Hope & strength"
             Mood.MOTIVATED, Mood.EXCITED -> "$timeContext Fuel your drive"
             Mood.GRATEFUL -> "$timeContext Celebrate your gratitude"
             else -> "$timeContext ${categories.firstOrNull()?.replaceFirstChar { it.uppercase() } ?: "Wisdom"}"
@@ -298,8 +290,8 @@ class ContentRecommendationEngine @Inject constructor(
         val moodCategories = MOOD_TO_QUOTE_CATEGORIES[mood] ?: emptyList()
         if (quote.category in moodCategories) score += 0.2
 
-        // Boost for popular quotes (shown more often)
-        if (quote.timesShown > 10) score += 0.1
+        // Boost for favorited quotes
+        if (quote.isFavorite) score += 0.1
 
         // Slight randomness
         score += Math.random() * 0.2
@@ -337,17 +329,17 @@ class ContentRecommendationEngine @Inject constructor(
                 "Describe a moment of joy you experienced recently.",
                 "Who or what are you most grateful for right now?"
             )
-            Mood.ANXIOUS, Mood.FRUSTRATED -> listOf(
+            Mood.ANXIOUS -> listOf(
                 "What's weighing on your mind? Let it out here.",
                 "Name one small thing you can control right now.",
                 "What would you tell a friend facing this situation?"
             )
-            Mood.SAD, Mood.MELANCHOLY -> listOf(
+            Mood.SAD -> listOf(
                 "It's okay to feel this way. What do you need right now?",
                 "What's one small comfort you can give yourself today?",
                 "Write about a time you felt strong."
             )
-            Mood.MOTIVATED, Mood.ENERGETIC -> listOf(
+            Mood.MOTIVATED -> listOf(
                 "What goal are you excited to pursue?",
                 "How will future you thank present you?",
                 "What's your plan for channeling this energy?"

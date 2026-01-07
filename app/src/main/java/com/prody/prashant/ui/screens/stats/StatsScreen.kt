@@ -685,7 +685,7 @@ private fun PremiumActivityPulseSection(
             PremiumActivityPulseVisualization(
                 data = weeklyData,
                 accentColor = accentColor,
-                isDarkTheme = isDark
+                isDarkTheme = isDarkTheme
             )
         }
     }
