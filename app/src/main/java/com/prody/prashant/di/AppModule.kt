@@ -26,7 +26,15 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import javax.inject.Qualifier
 import javax.inject.Singleton
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class ApplicationScope
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -160,9 +168,10 @@ object AppModule {
     @Provides
     @Singleton
     fun providePreferencesManager(
-        @ApplicationContext context: Context
+        @ApplicationContext context: Context,
+        @ApplicationScope externalScope: CoroutineScope
     ): PreferencesManager {
-        return PreferencesManager(context)
+        return PreferencesManager(context, externalScope)
     }
 
     @Provides
@@ -274,5 +283,12 @@ object AppModule {
         @ApplicationContext context: Context
     ): ContentModerationManager {
         return ContentModerationManager(context)
+    }
+
+    @ApplicationScope
+    @Provides
+    @Singleton
+    fun provideApplicationScope(): CoroutineScope {
+        return CoroutineScope(SupervisorJob() + Dispatchers.IO)
     }
 }
