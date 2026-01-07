@@ -39,6 +39,14 @@ data class ProfileUiState(
     // Badge flags (from debug preferences)
     val isDev: Boolean = false,
     val isBetaPioneer: Boolean = false,
+    // Player Skills (Gamification 3.0)
+    val clarityXp: Int = 0,
+    val disciplineXp: Int = 0,
+    val courageXp: Int = 0,
+    val dailyClarityXp: Int = 0,
+    val dailyDisciplineXp: Int = 0,
+    val dailyCourageXp: Int = 0,
+    val tokens: Int = 0,
     // Error state
     val error: String? = null
 )
@@ -63,6 +71,7 @@ class ProfileViewModel @Inject constructor(
         loadAchievements()
         loadWeeklyPattern()
         loadBadgePreferences()
+        loadPlayerSkills()
     }
 
     private fun loadBadgePreferences() {
@@ -138,6 +147,30 @@ class ProfileViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 android.util.Log.e(TAG, "Error loading achievements", e)
+            }
+        }
+    }
+
+    private fun loadPlayerSkills() {
+        viewModelScope.launch {
+            try {
+                userDao.observePlayerSkills().collect { skills ->
+                    skills?.let {
+                        _uiState.update { state ->
+                            state.copy(
+                                clarityXp = it.clarityXp,
+                                disciplineXp = it.disciplineXp,
+                                courageXp = it.courageXp,
+                                dailyClarityXp = it.dailyClarityXp,
+                                dailyDisciplineXp = it.dailyDisciplineXp,
+                                dailyCourageXp = it.dailyCourageXp,
+                                tokens = it.tokens
+                            )
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error loading player skills", e)
             }
         }
     }

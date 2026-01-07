@@ -5,6 +5,8 @@ import com.prody.prashant.data.local.entity.AchievementEntity
 import com.prody.prashant.data.local.entity.LeaderboardEntryEntity
 import com.prody.prashant.data.local.entity.MotivationalMessageEntity
 import com.prody.prashant.data.local.entity.PeerInteractionEntity
+import com.prody.prashant.data.local.entity.PlayerSkillsEntity
+import com.prody.prashant.data.local.entity.ProcessedRewardEntity
 import com.prody.prashant.data.local.entity.StreakHistoryEntity
 import com.prody.prashant.data.local.entity.UserProfileEntity
 import com.prody.prashant.data.local.entity.UserStatsEntity
@@ -268,4 +270,65 @@ interface UserDao {
 
     @Query("SELECT * FROM user_stats WHERE userId = :userId")
     fun getUserStatsByUser(userId: String): Flow<UserStatsEntity?>
+
+    // =========================================================================
+    // Player Skills (Gamification 3.0 - Skill System)
+    // =========================================================================
+
+    @Query("SELECT * FROM player_skills WHERE id = 1")
+    fun observePlayerSkills(): Flow<PlayerSkillsEntity?>
+
+    @Query("SELECT * FROM player_skills WHERE id = 1")
+    suspend fun getPlayerSkillsSync(): PlayerSkillsEntity?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertPlayerSkills(skills: PlayerSkillsEntity)
+
+    @Update
+    suspend fun updatePlayerSkills(skills: PlayerSkillsEntity)
+
+    @Query("UPDATE player_skills SET clarityXp = clarityXp + :amount WHERE id = 1")
+    suspend fun addClarityXp(amount: Int)
+
+    @Query("UPDATE player_skills SET disciplineXp = disciplineXp + :amount WHERE id = 1")
+    suspend fun addDisciplineXp(amount: Int)
+
+    @Query("UPDATE player_skills SET courageXp = courageXp + :amount WHERE id = 1")
+    suspend fun addCourageXp(amount: Int)
+
+    @Query("UPDATE player_skills SET dailyClarityXp = dailyClarityXp + :amount WHERE id = 1")
+    suspend fun addDailyClarityXp(amount: Int)
+
+    @Query("UPDATE player_skills SET dailyDisciplineXp = dailyDisciplineXp + :amount WHERE id = 1")
+    suspend fun addDailyDisciplineXp(amount: Int)
+
+    @Query("UPDATE player_skills SET dailyCourageXp = dailyCourageXp + :amount WHERE id = 1")
+    suspend fun addDailyCourageXp(amount: Int)
+
+    @Query("""
+        UPDATE player_skills
+        SET dailyClarityXp = 0,
+            dailyDisciplineXp = 0,
+            dailyCourageXp = 0,
+            dailyResetDate = :resetDate
+        WHERE id = 1
+    """)
+    suspend fun resetDailySkillXp(resetDate: Long = System.currentTimeMillis())
+
+    // =========================================================================
+    // Processed Rewards (Idempotency for anti-exploit)
+    // =========================================================================
+
+    @Query("SELECT COUNT(*) > 0 FROM processed_rewards WHERE rewardKey = :key")
+    suspend fun hasProcessedRewardKey(key: String): Boolean
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertProcessedReward(reward: ProcessedRewardEntity)
+
+    suspend fun markRewardKeyProcessed(key: String) {
+        insertProcessedReward(ProcessedRewardEntity(rewardKey = key))
+    }
+
+    @Query("DELETE FROM processed_rewards WHERE processedAt < :cutoffTime")
+    suspend fun deleteOldProcessedRewards(cutoffTime: Long)
 }

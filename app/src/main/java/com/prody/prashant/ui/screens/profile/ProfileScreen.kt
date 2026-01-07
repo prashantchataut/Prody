@@ -44,6 +44,7 @@ import com.prody.prashant.data.local.entity.AchievementEntity
 import com.prody.prashant.ui.components.AmbientBackground
 import com.prody.prashant.ui.components.FloatingParticles
 import com.prody.prashant.ui.components.MoodBreathingHalo
+import com.prody.prashant.ui.components.PlayerSkillsCard
 import com.prody.prashant.ui.components.getCurrentTimeOfDay
 import com.prody.prashant.ui.theme.*
 import kotlinx.coroutines.delay
@@ -237,6 +238,28 @@ fun ProfileScreen(
                         textSecondary = textSecondary,
                         textTertiary = textTertiary,
                         accentColor = accentColor
+                    )
+                }
+            }
+
+            // Player Skills Section (Gamification 3.0)
+            item {
+                AnimatedVisibility(
+                    visible = isVisible,
+                    enter = fadeIn(tween(400, delayMillis = 225)) + slideInVertically(
+                        initialOffsetY = { it / 3 },
+                        animationSpec = tween(400, delayMillis = 225, easing = EaseOutCubic)
+                    )
+                ) {
+                    PlayerSkillsCard(
+                        clarityXp = uiState.clarityXp,
+                        disciplineXp = uiState.disciplineXp,
+                        courageXp = uiState.courageXp,
+                        dailyClarityXp = uiState.dailyClarityXp,
+                        dailyDisciplineXp = uiState.dailyDisciplineXp,
+                        dailyCourageXp = uiState.dailyCourageXp,
+                        showDailyCaps = true,
+                        modifier = Modifier.padding(horizontal = 16.dp)
                     )
                 }
             }

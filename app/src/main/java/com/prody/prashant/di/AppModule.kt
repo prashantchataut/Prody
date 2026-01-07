@@ -153,6 +153,12 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun provideMissionDao(database: ProdyDatabase): MissionDao {
+        return database.missionDao()
+    }
+
+    @Provides
+    @Singleton
     fun providePreferencesManager(
         @ApplicationContext context: Context
     ): PreferencesManager {
