@@ -350,12 +350,18 @@ class NewJournalEntryViewModel @Inject constructor(
                     try {
                         val existingEntry = journalDao.getEntryById(entryId)
                         existingEntry?.let { entry ->
+                            // Compute content hash for cache invalidation
+                            val contentHash = state.content.hashCode().toString(16)
                             journalDao.updateEntry(
                                 entry.copy(
                                     aiEmotionLabel = insight.emotionLabel,
                                     aiThemes = insight.themes.joinToString(","),
                                     aiInsight = insight.insight,
-                                    aiInsightGenerated = true
+                                    aiInsightGenerated = !insight.isInsufficientContext,
+                                    aiSnippet = insight.snippet,
+                                    aiQuestion = insight.question,
+                                    aiSuggestion = insight.suggestion,
+                                    aiContentHash = contentHash
                                 )
                             )
                         }
@@ -367,10 +373,10 @@ class NewJournalEntryViewModel @Inject constructor(
                         it.copy(
                             journalInsight = insight,
                             isGeneratingInsight = false,
-                            showInsightCard = true
+                            showInsightCard = !insight.isInsufficientContext || insight.question != null
                         )
                     }
-                    android.util.Log.d(TAG, "Journal insight generated: ${insight.emotionLabel}")
+                    android.util.Log.d(TAG, "Journal insight generated: ${insight.emotionLabel}, snippet: ${insight.snippet}")
                 } else {
                     _uiState.update { it.copy(isGeneratingInsight = false) }
                 }

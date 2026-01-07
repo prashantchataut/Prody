@@ -352,7 +352,10 @@ fun JournalDetailScreen(
                         emotionLabel = entry.aiEmotionLabel,
                         themes = entry.aiThemes?.split(",")?.filter { it.isNotBlank() } ?: emptyList(),
                         insight = entry.aiInsight,
-                        modifier = Modifier.padding(horizontal = 16.dp)
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        snippet = entry.aiSnippet,
+                        question = entry.aiQuestion,
+                        suggestion = entry.aiSuggestion
                     )
                 }
 
@@ -447,7 +450,10 @@ private fun AiInsightsCard(
     emotionLabel: String?,
     themes: List<String>,
     insight: String?,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    snippet: String? = null,
+    question: String? = null,
+    suggestion: String? = null
 ) {
     val insightColor = MoodCalm
 
@@ -473,6 +479,23 @@ private fun AiInsightsCard(
                     fontWeight = FontWeight.SemiBold,
                     color = insightColor
                 )
+            }
+
+            // Snippet (evidence that AI read the content) - shown subtly
+            snippet?.let { snippetText ->
+                Spacer(modifier = Modifier.height(12.dp))
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                ) {
+                    Text(
+                        text = "\"$snippetText\"",
+                        style = MaterialTheme.typography.bodySmall,
+                        fontStyle = FontStyle.Italic,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -552,6 +575,49 @@ private fun AiInsightsCard(
 
                 Text(
                     text = insightText,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.85f),
+                    lineHeight = MaterialTheme.typography.bodyMedium.lineHeight * 1.4
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+
+            // Reflective Question
+            question?.let { questionText ->
+                Text(
+                    text = "Reflect:",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                Text(
+                    text = questionText,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontStyle = FontStyle.Italic,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
+                    lineHeight = MaterialTheme.typography.bodyMedium.lineHeight * 1.4
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+
+            // Practical Suggestion
+            suggestion?.let { suggestionText ->
+                Text(
+                    text = "Try this:",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                Text(
+                    text = suggestionText,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.85f),
                     lineHeight = MaterialTheme.typography.bodyMedium.lineHeight * 1.4
