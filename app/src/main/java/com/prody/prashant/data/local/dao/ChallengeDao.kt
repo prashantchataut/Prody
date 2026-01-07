@@ -59,6 +59,20 @@ interface ChallengeDao {
     @Query("UPDATE challenges SET isCompleted = 1, completedAt = :completedAt WHERE id = :challengeId")
     suspend fun markChallengeCompleted(challengeId: String, completedAt: Long = System.currentTimeMillis())
 
+    /**
+     * Atomically increment user progress and check for completion.
+     * Returns the new progress value.
+     */
+    @Transaction
+    suspend fun incrementProgressAndCheckCompletion(
+        challengeId: String,
+        progressIncrement: Int = 1
+    ): Int {
+        incrementUserProgress(challengeId, progressIncrement)
+        val challenge = getChallengeByIdSync(challengeId)
+        return challenge?.currentUserProgress ?: 0
+    }
+
     @Delete
     suspend fun deleteChallenge(challenge: ChallengeEntity)
 

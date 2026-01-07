@@ -1,6 +1,8 @@
 package com.prody.prashant.data.local.entity
 
 import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
 /**
@@ -8,11 +10,19 @@ import androidx.room.PrimaryKey
  */
 @Entity(
     tableName = "challenge_participation",
+    foreignKeys = [
+        ForeignKey(
+            entity = ChallengeEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["challengeId"],
+            onDelete = ForeignKey.CASCADE
+        )
+    ],
     indices = [
-        androidx.room.Index(value = ["userId"]),
-        androidx.room.Index(value = ["challengeId"]),
-        androidx.room.Index(value = ["userId", "challengeId"]),
-        androidx.room.Index(value = ["date"])
+        Index(value = ["userId"]),
+        Index(value = ["challengeId"]),
+        Index(value = ["userId", "challengeId"]),
+        Index(value = ["date"])
     ]
 )
 data class ChallengeParticipationEntity(

@@ -1,12 +1,27 @@
 package com.prody.prashant.data.local.entity
 
 import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
 /**
  * Entity for tracking challenge milestones (community achievements within challenges).
  */
-@Entity(tableName = "challenge_milestones")
+@Entity(
+    tableName = "challenge_milestones",
+    foreignKeys = [
+        ForeignKey(
+            entity = ChallengeEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["challengeId"],
+            onDelete = ForeignKey.CASCADE
+        )
+    ],
+    indices = [
+        Index(value = ["challengeId"])
+    ]
+)
 data class ChallengeMilestoneEntity(
     @PrimaryKey
     val id: String,

@@ -214,24 +214,20 @@ class HomeViewModel @Inject constructor(
 
     private fun checkOnboarding() {
         viewModelScope.launch {
-            // Check if we should show the Buddha Guide intro
-            aiOnboardingManager.shouldShowBuddhaGuide().collect { shouldShow ->
-                if (shouldShow) {
-                    _uiState.update { state ->
-                        state.copy(
-                            showBuddhaGuide = true,
-                            buddhaGuideCards = aiOnboardingManager.getBuddhaGuideCards()
-                        )
-                    }
-                }
-            }
-        }
-
-        viewModelScope.launch {
-            // Check if we should show daily wisdom hint
-            aiOnboardingManager.shouldShowHint(AiHintType.DAILY_WISDOM_TIP).collect { shouldShow ->
+            // Combine both onboarding checks into a single flow subscription
+            // to prevent multiple coroutine leaks on configuration changes
+            combine(
+                aiOnboardingManager.shouldShowBuddhaGuide(),
+                aiOnboardingManager.shouldShowHint(AiHintType.DAILY_WISDOM_TIP)
+            ) { shouldShowBuddhaGuide, shouldShowDailyWisdomHint ->
+                Pair(shouldShowBuddhaGuide, shouldShowDailyWisdomHint)
+            }.collect { (shouldShowBuddhaGuide, shouldShowDailyWisdomHint) ->
                 _uiState.update { state ->
-                    state.copy(showDailyWisdomHint = shouldShow)
+                    state.copy(
+                        showBuddhaGuide = shouldShowBuddhaGuide,
+                        buddhaGuideCards = if (shouldShowBuddhaGuide) aiOnboardingManager.getBuddhaGuideCards() else state.buddhaGuideCards,
+                        showDailyWisdomHint = shouldShowDailyWisdomHint
+                    )
                 }
             }
         }

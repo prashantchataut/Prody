@@ -3,7 +3,14 @@ package com.prody.prashant.data.local.entity
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "proverbs")
+@Entity(
+    tableName = "proverbs",
+    indices = [
+        androidx.room.Index(value = ["category"]),
+        androidx.room.Index(value = ["isFavorite"]),
+        androidx.room.Index(value = ["shownAsDaily"])
+    ]
+)
 data class ProverbEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,

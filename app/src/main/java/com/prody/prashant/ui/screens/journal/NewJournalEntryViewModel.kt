@@ -92,32 +92,43 @@ class NewJournalEntryViewModel @Inject constructor(
 
     /**
      * Observe audio recorder state changes and update UI state accordingly.
+     * Uses combine to merge all audio states into a single flow subscription,
+     * preventing multiple coroutine leaks on configuration changes.
      */
     private fun observeAudioRecorderStates() {
         viewModelScope.launch {
-            audioRecorderManager.isRecording.collect { isRecording ->
-                _uiState.update { it.copy(isRecording = isRecording) }
-            }
-        }
-        viewModelScope.launch {
-            audioRecorderManager.recordingDuration.collect { duration ->
-                _uiState.update { it.copy(recordingTimeElapsed = duration) }
-            }
-        }
-        viewModelScope.launch {
-            audioRecorderManager.isPlaying.collect { isPlaying ->
-                _uiState.update { it.copy(isPlayingVoice = isPlaying) }
-            }
-        }
-        viewModelScope.launch {
-            audioRecorderManager.error.collect { error ->
-                error?.let {
-                    _uiState.update { state -> state.copy(error = it) }
+            combine(
+                audioRecorderManager.isRecording,
+                audioRecorderManager.recordingDuration,
+                audioRecorderManager.isPlaying,
+                audioRecorderManager.error
+            ) { isRecording, duration, isPlaying, error ->
+                AudioRecorderState(isRecording, duration, isPlaying, error)
+            }.collect { audioState ->
+                _uiState.update {
+                    it.copy(
+                        isRecording = audioState.isRecording,
+                        recordingTimeElapsed = audioState.duration,
+                        isPlayingVoice = audioState.isPlaying
+                    )
+                }
+                audioState.error?.let { errorMsg ->
+                    _uiState.update { it.copy(error = errorMsg) }
                     audioRecorderManager.clearError()
                 }
             }
         }
     }
+
+    /**
+     * Helper data class for combining audio recorder states.
+     */
+    private data class AudioRecorderState(
+        val isRecording: Boolean,
+        val duration: Long,
+        val isPlaying: Boolean,
+        val error: String?
+    )
 
     private fun loadAiSettings() {
         viewModelScope.launch {
