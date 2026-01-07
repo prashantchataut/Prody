@@ -53,6 +53,11 @@
             android:noHistory="true"
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize" />
 
+        <!-- Secure receiver for Quick Journal widget action -->
+        <receiver
+            android:name=".widget.QuickJournalActionReceiver"
+            android:exported="false" />
+
         <receiver
             android:name=".notification.NotificationReceiver"
             android:exported="false" />
