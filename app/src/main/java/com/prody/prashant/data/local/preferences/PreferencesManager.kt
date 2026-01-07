@@ -56,6 +56,7 @@ class PreferencesManager @Inject constructor(
         val BUDDHA_PATTERN_TRACKING_ENABLED = booleanPreferencesKey("buddha_pattern_tracking_enabled")
         val BUDDHA_PLAYFUL_MODE = booleanPreferencesKey("buddha_playful_mode")
         val BUDDHA_REDUCE_AI_USAGE = booleanPreferencesKey("buddha_reduce_ai_usage")
+        val BUDDHA_PERSONALITY_MODE = stringPreferencesKey("buddha_personality_mode")
 
         // Debug: Special Badge Preview Toggles
         val DEBUG_PREVIEW_DEV_BADGE = booleanPreferencesKey("debug_preview_dev_badge")
@@ -500,6 +501,21 @@ class PreferencesManager @Inject constructor(
     suspend fun setBuddhaReduceAiUsage(enabled: Boolean) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.BUDDHA_REDUCE_AI_USAGE] = enabled
+        }
+    }
+
+    val buddhaPersonalityMode: Flow<String> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.BUDDHA_PERSONALITY_MODE] ?: "STOIC"
+        }
+
+    suspend fun setBuddhaPersonalityMode(mode: String) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.BUDDHA_PERSONALITY_MODE] = mode
         }
     }
 
