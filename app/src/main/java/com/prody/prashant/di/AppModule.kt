@@ -26,6 +26,11 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
+import javax.inject.Provider
 import javax.inject.Singleton
 
 @Module
@@ -34,34 +39,42 @@ object AppModule {
 
     private const val TAG = "AppModule"
 
-    @Volatile
-    private var databaseInstance: ProdyDatabase? = null
+    @Provides
+    @Singleton
+    fun provideApplicationCoroutineScope(): CoroutineScope {
+        // Provide a single CoroutineScope for background tasks
+        return CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    }
 
-    /**
-     * Database callback for initialization tasks, seeding, and logging.
-     * Seeds the database with initial wisdom content on first creation.
-     */
-    private val databaseCallback = object : RoomDatabase.Callback() {
-        override fun onCreate(db: SupportSQLiteDatabase) {
-            super.onCreate(db)
-            Log.d(TAG, "Database created successfully - initiating data seeding")
-            // Seed the database with initial content
-            databaseInstance?.let { database ->
-                DatabaseSeeder.seedDatabase(database)
+    @Provides
+    @Singleton
+    fun provideDatabaseCallback(
+        // Use Provider for lazy injection to prevent circular dependency
+        database: Provider<ProdyDatabase>,
+        scope: CoroutineScope
+    ): RoomDatabase.Callback {
+        return object : RoomDatabase.Callback() {
+            override fun onCreate(db: SupportSQLiteDatabase) {
+                super.onCreate(db)
+                Log.d(TAG, "Database created successfully - initiating data seeding")
+                // Use the injected scope to launch a coroutine for seeding
+                scope.launch {
+                    DatabaseSeeder.seedDatabase(database.get())
+                }
             }
-        }
 
-        override fun onOpen(db: SupportSQLiteDatabase) {
-            super.onOpen(db)
-            Log.d(TAG, "Database opened")
-        }
+            override fun onOpen(db: SupportSQLiteDatabase) {
+                super.onOpen(db)
+                Log.d(TAG, "Database opened")
+            }
 
-        override fun onDestructiveMigration(db: SupportSQLiteDatabase) {
-            super.onDestructiveMigration(db)
-            Log.w(TAG, "Destructive migration performed - re-seeding database")
-            // Re-seed the database after destructive migration
-            databaseInstance?.let { database ->
-                DatabaseSeeder.seedDatabase(database)
+            override fun onDestructiveMigration(db: SupportSQLiteDatabase) {
+                super.onDestructiveMigration(db)
+                Log.w(TAG, "Destructive migration performed - re-seeding database")
+                // Re-seed the database after destructive migration
+                scope.launch {
+                    DatabaseSeeder.seedDatabase(database.get())
+                }
             }
         }
     }
@@ -69,20 +82,19 @@ object AppModule {
     @Provides
     @Singleton
     fun provideDatabase(
-        @ApplicationContext context: Context
+        @ApplicationContext context: Context,
+        // Hilt will inject the callback instance provided above
+        callback: RoomDatabase.Callback
     ): ProdyDatabase {
-        return databaseInstance ?: synchronized(this) {
-            val instance = Room.databaseBuilder(
-                context.applicationContext,
-                ProdyDatabase::class.java,
-                ProdyDatabase.DATABASE_NAME
-            )
-                .fallbackToDestructiveMigration()
-                .addCallback(databaseCallback)
-                .build()
-            databaseInstance = instance
-            instance
-        }
+        // Rely on Hilt's @Singleton to manage the single instance
+        return Room.databaseBuilder(
+            context.applicationContext,
+            ProdyDatabase::class.java,
+            ProdyDatabase.DATABASE_NAME
+        )
+            .fallbackToDestructiveMigration()
+            .addCallback(callback)
+            .build()
     }
 
     @Provides
