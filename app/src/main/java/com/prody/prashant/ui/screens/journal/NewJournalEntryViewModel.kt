@@ -12,7 +12,8 @@ import com.prody.prashant.data.local.dao.JournalDao
 import com.prody.prashant.data.local.dao.UserDao
 import com.prody.prashant.data.local.entity.JournalEntryEntity
 import com.prody.prashant.data.local.preferences.PreferencesManager
-import com.prody.prashant.domain.gamification.GamificationService
+import com.prody.prashant.domain.gamification.GameSessionManager
+import com.prody.prashant.domain.gamification.SessionResult
 import com.prody.prashant.domain.model.Mood
 import com.prody.prashant.ui.theme.JournalTemplate
 import com.prody.prashant.util.AudioRecorderManager
@@ -55,9 +56,9 @@ data class NewJournalEntryUiState(
     // Unsaved changes tracking
     val hasUnsavedChanges: Boolean = false,
     val showDiscardDialog: Boolean = false,
-    // Progress feedback - points awarded on save
-    val pointsAwarded: Int = 0,
-    val showSaveSuccess: Boolean = false
+    // Session result (replaces spam feedback)
+    val sessionResult: SessionResult? = null,
+    val showSessionResult: Boolean = false
 ) {
     // Check if there are any unsaved changes
     val hasContent: Boolean
@@ -73,7 +74,7 @@ class NewJournalEntryViewModel @Inject constructor(
     private val geminiService: GeminiService,
     private val openRouterService: OpenRouterService,
     private val preferencesManager: PreferencesManager,
-    private val gamificationService: GamificationService,
+    private val gameSessionManager: GameSessionManager,
     private val buddhaAiRepository: BuddhaAiRepository,
     private val audioRecorderManager: AudioRecorderManager
 ) : ViewModel() {
@@ -240,22 +241,22 @@ class NewJournalEntryViewModel @Inject constructor(
 
                 val entryId = journalDao.insertEntry(entry)
 
-                // Use GamificationService for all points and achievements
-                val points = gamificationService.recordActivity(
-                    GamificationService.ActivityType.JOURNAL_ENTRY
+                // Use GameSessionManager for clean session result (no spam feedback)
+                val sessionResult = gameSessionManager.completeReflectSession(
+                    entryId = entryId,
+                    wordCount = state.wordCount,
+                    content = state.content,
+                    mood = state.selectedMood.name
                 )
-                android.util.Log.d(TAG, "Journal entry saved, $points points awarded")
-
-                // Check for time-based achievements (early bird, night owl)
-                gamificationService.checkTimeBasedAchievements()
+                android.util.Log.d(TAG, "Journal entry saved, session result: ${sessionResult.rewards.totalXp} XP")
 
                 _uiState.update {
                     it.copy(
                         isSaving = false,
                         isSaved = true,
                         savedEntryId = entryId,
-                        pointsAwarded = points,
-                        showSaveSuccess = true
+                        sessionResult = sessionResult,
+                        showSessionResult = true
                     )
                 }
 
@@ -406,10 +407,10 @@ class NewJournalEntryViewModel @Inject constructor(
     }
 
     /**
-     * Dismiss the save success feedback.
+     * Dismiss the session result card.
      */
-    fun dismissSaveSuccess() {
-        _uiState.update { it.copy(showSaveSuccess = false) }
+    fun dismissSessionResult() {
+        _uiState.update { it.copy(showSessionResult = false) }
     }
 
     // =========================================================================

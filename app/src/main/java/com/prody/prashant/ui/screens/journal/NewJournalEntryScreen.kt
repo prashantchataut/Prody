@@ -63,6 +63,7 @@ import com.prody.prashant.R
 import com.prody.prashant.domain.model.Mood
 import com.prody.prashant.ui.components.AmbientBackground
 import com.prody.prashant.ui.components.MoodSuggestionHint
+import com.prody.prashant.ui.components.SessionResultCard
 import com.prody.prashant.ui.components.rememberMoodSuggestionState
 import com.prody.prashant.ui.components.getCurrentTimeOfDay
 import com.prody.prashant.ui.components.mapMoodToAmbient
@@ -154,16 +155,9 @@ fun NewJournalEntryScreen(
         }
     }
 
-    // Show brief success feedback before navigating away
-    LaunchedEffect(uiState.showSaveSuccess) {
-        if (uiState.showSaveSuccess && uiState.pointsAwarded > 0) {
-            snackbarHostState.showSnackbar(
-                message = "+${uiState.pointsAwarded} XP earned",
-                duration = SnackbarDuration.Short
-            )
-            kotlinx.coroutines.delay(800) // Brief delay to let user see feedback
-            onEntrySaved()
-        } else if (uiState.isSaved) {
+    // Navigate away after save if no session result to show
+    LaunchedEffect(uiState.isSaved) {
+        if (uiState.isSaved && !uiState.showSessionResult) {
             onEntrySaved()
         }
     }
@@ -197,6 +191,17 @@ fun NewJournalEntryScreen(
                     onNavigateBack()
                 },
                 colors = colors
+            )
+        }
+
+        // Session Result Card (replaces spam toasts)
+        if (uiState.showSessionResult && uiState.sessionResult != null) {
+            SessionResultCard(
+                sessionResult = uiState.sessionResult!!,
+                onDismiss = {
+                    viewModel.dismissSessionResult()
+                    onEntrySaved()
+                }
             )
         }
 

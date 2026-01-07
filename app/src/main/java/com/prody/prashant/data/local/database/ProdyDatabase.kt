@@ -21,6 +21,8 @@ import com.prody.prashant.data.local.entity.*
  * - Future messages (letters to future self)
  * - Community challenges and leaderboards
  * - Profile loadouts and cosmetics (Identity system)
+ * - Game skill system (Clarity, Discipline, Courage)
+ * - Daily missions and weekly trials
  *
  * Migration Strategy:
  * - For development: Uses fallbackToDestructiveMigration()
@@ -35,6 +37,11 @@ import com.prody.prashant.data.local.entity.*
  *              Changed VocabularyLearningEntity to composite key (wordId, userId)
  * - Version 3: Added aiSummary field to JournalEntryEntity for short AI summaries
  * - Version 4: Added SeedEntity for Seed -> Bloom mechanic (daily wisdom application tracking)
+ * - Version 5: Gamification 3.0 - Real game systems
+ *              Added PlayerSkillsEntity (Clarity/Discipline/Courage skill XP + tokens)
+ *              Added ProcessedRewardEntity (idempotency for anti-exploit)
+ *              Added DailyMissionEntity (3 daily missions per day)
+ *              Added WeeklyTrialEntity (weekly boss challenges)
  */
 @Database(
     entities = [
@@ -59,9 +66,13 @@ import com.prody.prashant.data.local.entity.*
         ChallengeLeaderboardEntity::class,
         ProfileLoadoutEntity::class,
         PinnedBadgeEntity::class,
-        SeedEntity::class
+        SeedEntity::class,
+        PlayerSkillsEntity::class,
+        ProcessedRewardEntity::class,
+        DailyMissionEntity::class,
+        WeeklyTrialEntity::class
     ],
-    version = 4,
+    version = 5,
     exportSchema = true // Enable for migration verification
 )
 abstract class ProdyDatabase : RoomDatabase() {
@@ -78,6 +89,7 @@ abstract class ProdyDatabase : RoomDatabase() {
     abstract fun challengeDao(): ChallengeDao
     abstract fun profileLoadoutDao(): ProfileLoadoutDao
     abstract fun seedDao(): SeedDao
+    abstract fun missionDao(): MissionDao
 
     companion object {
         private const val TAG = "ProdyDatabase"

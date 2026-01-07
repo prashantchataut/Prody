@@ -6,7 +6,8 @@ import com.prody.prashant.data.local.dao.VocabularyDao
 import com.prody.prashant.data.local.dao.VocabularyLearningDao
 import com.prody.prashant.data.local.entity.VocabularyEntity
 import com.prody.prashant.data.local.entity.VocabularyLearningEntity
-import com.prody.prashant.domain.gamification.GamificationService
+import com.prody.prashant.domain.gamification.GameSessionManager
+import com.prody.prashant.domain.gamification.SessionResult
 import com.prody.prashant.domain.learning.ReviewResponse
 import com.prody.prashant.domain.learning.SpacedRepetitionEngine
 import com.prody.prashant.util.TextToSpeechManager
@@ -27,7 +28,7 @@ class FlashcardViewModel @Inject constructor(
     private val vocabularyLearningDao: VocabularyLearningDao,
     private val spacedRepetitionEngine: SpacedRepetitionEngine,
     private val textToSpeechManager: TextToSpeechManager,
-    private val gamificationService: GamificationService
+    private val gameSessionManager: GameSessionManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(FlashcardUiState())
@@ -35,6 +36,7 @@ class FlashcardViewModel @Inject constructor(
 
     private var sessionStartTime: Long = 0L
     private var cardStartTime: Long = 0L
+    private var sessionId: String = ""
 
     init {
         loadReviewCards()
@@ -66,6 +68,7 @@ class FlashcardViewModel @Inject constructor(
 
                 sessionStartTime = System.currentTimeMillis()
                 cardStartTime = System.currentTimeMillis()
+                sessionId = "sharpen_${System.currentTimeMillis()}"
 
                 _uiState.update {
                     it.copy(
@@ -74,7 +77,8 @@ class FlashcardViewModel @Inject constructor(
                         isLoading = false,
                         sessionComplete = finalCards.isEmpty(),
                         learningEntries = learningEntries.associateBy { entry -> entry.wordId },
-                        sessionXpEarned = 0
+                        sessionResult = null,
+                        showSessionResult = false
                     )
                 }
             } catch (e: Exception) {
@@ -191,23 +195,29 @@ class FlashcardViewModel @Inject constructor(
 
                 // Update UI state
                 val isCorrect = quality >= 3
-
-                // Award XP for correct answers
-                var xpEarned = 0
-                if (isCorrect) {
-                    xpEarned = gamificationService.recordActivity(
-                        GamificationService.ActivityType.WORD_LEARNED
-                    )
-                }
+                val newIndex = currentState.currentIndex + 1
+                val isSessionComplete = newIndex >= currentState.cards.size
+                val newKnownCount = if (isCorrect) currentState.knownCount + 1 else currentState.knownCount
+                val newUnknownCount = if (!isCorrect) currentState.unknownCount + 1 else currentState.unknownCount
 
                 _uiState.update {
                     it.copy(
-                        currentIndex = it.currentIndex + 1,
-                        knownCount = if (isCorrect) it.knownCount + 1 else it.knownCount,
-                        unknownCount = if (!isCorrect) it.unknownCount + 1 else it.unknownCount,
-                        sessionComplete = it.currentIndex + 1 >= it.cards.size,
-                        learningEntries = it.learningEntries + (currentWord.id to updatedLearning),
-                        sessionXpEarned = it.sessionXpEarned + xpEarned
+                        currentIndex = newIndex,
+                        knownCount = newKnownCount,
+                        unknownCount = newUnknownCount,
+                        sessionComplete = isSessionComplete,
+                        learningEntries = it.learningEntries + (currentWord.id to updatedLearning)
+                    )
+                }
+
+                // Complete session and award XP only when all cards are done
+                if (isSessionComplete) {
+                    completeSession(
+                        cardsReviewed = currentState.cards.size,
+                        correctCount = newKnownCount,
+                        accuracy = if (newKnownCount + newUnknownCount > 0) {
+                            newKnownCount.toFloat() / (newKnownCount + newUnknownCount)
+                        } else 0f
                     )
                 }
 
@@ -217,6 +227,37 @@ class FlashcardViewModel @Inject constructor(
                     it.copy(error = "Failed to save review. Please try again.")
                 }
             }
+        }
+    }
+
+    /**
+     * Complete the sharpen session and award XP.
+     */
+    private suspend fun completeSession(cardsReviewed: Int, correctCount: Int, accuracy: Float) {
+        try {
+            val result = gameSessionManager.completeSharpenSession(
+                sessionId = sessionId,
+                cardsReviewed = cardsReviewed,
+                correctCount = correctCount,
+                accuracy = accuracy
+            )
+            _uiState.update {
+                it.copy(
+                    sessionResult = result,
+                    showSessionResult = true
+                )
+            }
+        } catch (e: Exception) {
+            // Session result is optional enhancement, don't block on failure
+        }
+    }
+
+    /**
+     * Dismiss the session result card.
+     */
+    fun dismissSessionResult() {
+        _uiState.update {
+            it.copy(showSessionResult = false)
         }
     }
 
@@ -247,6 +288,7 @@ class FlashcardViewModel @Inject constructor(
      * Restart the session with the same cards.
      */
     fun restartSession() {
+        sessionId = "sharpen_${System.currentTimeMillis()}"
         _uiState.update {
             it.copy(
                 currentIndex = 0,
@@ -254,7 +296,8 @@ class FlashcardViewModel @Inject constructor(
                 unknownCount = 0,
                 skippedCount = 0,
                 sessionComplete = false,
-                sessionXpEarned = 0
+                sessionResult = null,
+                showSessionResult = false
             )
         }
         sessionStartTime = System.currentTimeMillis()
@@ -297,8 +340,9 @@ data class FlashcardUiState(
     val sessionComplete: Boolean = false,
     val error: String? = null,
     val learningEntries: Map<Long, VocabularyLearningEntity> = emptyMap(),
-    // XP tracking for session feedback
-    val sessionXpEarned: Int = 0
+    // Session result for completion feedback
+    val sessionResult: SessionResult? = null,
+    val showSessionResult: Boolean = false
 ) {
     val currentCard: VocabularyEntity?
         get() = cards.getOrNull(currentIndex)

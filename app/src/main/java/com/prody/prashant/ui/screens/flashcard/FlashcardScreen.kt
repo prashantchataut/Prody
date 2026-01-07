@@ -47,6 +47,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.prody.prashant.domain.gamification.SessionResult
+import com.prody.prashant.ui.components.SessionResultCard
 
 /**
  * Main flashcard review screen.
@@ -113,13 +115,17 @@ fun FlashcardScreen(
                     LoadingState()
                 }
                 uiState.sessionComplete -> {
+                    val xpFromSession = uiState.sessionResult?.rewards?.totalXp ?: 0
                     SessionCompleteState(
                         knownCount = uiState.knownCount,
                         unknownCount = uiState.unknownCount,
                         skippedCount = uiState.skippedCount,
                         accuracy = uiState.accuracy,
                         durationMinutes = viewModel.getSessionDurationMinutes(),
-                        xpEarned = uiState.sessionXpEarned,
+                        xpEarned = xpFromSession,
+                        sessionResult = uiState.sessionResult,
+                        showSessionResult = uiState.showSessionResult,
+                        onDismissSessionResult = { viewModel.dismissSessionResult() },
                         onRestartSession = { viewModel.restartSession() },
                         onLoadNewCards = { viewModel.loadReviewCards() },
                         onFinish = onNavigateBack
@@ -253,10 +259,21 @@ private fun SessionCompleteState(
     accuracy: Float,
     durationMinutes: Int,
     xpEarned: Int,
+    sessionResult: SessionResult?,
+    showSessionResult: Boolean,
+    onDismissSessionResult: () -> Unit,
     onRestartSession: () -> Unit,
     onLoadNewCards: () -> Unit,
     onFinish: () -> Unit
 ) {
+    // Show session result card as overlay if available
+    if (showSessionResult && sessionResult != null) {
+        SessionResultCard(
+            sessionResult = sessionResult,
+            onDismiss = onDismissSessionResult
+        )
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()

@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.prody.prashant.data.local.dao.FutureMessageDao
 import com.prody.prashant.data.local.dao.UserDao
 import com.prody.prashant.data.local.entity.FutureMessageEntity
+import com.prody.prashant.domain.gamification.GameSessionManager
+import com.prody.prashant.domain.gamification.SessionResult
 import com.prody.prashant.util.AudioRecorderManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -36,7 +38,10 @@ data class WriteMessageUiState(
     val showSealingAnimation: Boolean = false,
     // Unsaved changes
     val hasUnsavedChanges: Boolean = false,
-    val showDiscardDialog: Boolean = false
+    val showDiscardDialog: Boolean = false,
+    // Session result for completion feedback
+    val sessionResult: SessionResult? = null,
+    val showSessionResult: Boolean = false
 ) {
     val canSave: Boolean
         get() = title.isNotBlank() && content.isNotBlank()
@@ -57,7 +62,8 @@ private fun getDefaultDeliveryDate(): Long {
 class WriteMessageViewModel @Inject constructor(
     private val futureMessageDao: FutureMessageDao,
     private val userDao: UserDao,
-    private val audioRecorderManager: AudioRecorderManager
+    private val audioRecorderManager: AudioRecorderManager,
+    private val gameSessionManager: GameSessionManager
 ) : ViewModel() {
 
     companion object {
@@ -207,11 +213,17 @@ class WriteMessageViewModel @Inject constructor(
                     voiceRecordingDuration = state.voiceRecordingDuration
                 )
 
-                futureMessageDao.insertMessage(message)
+                val messageId = futureMessageDao.insertMessage(message)
 
-                // Update user stats
+                // Update user stats (legacy tracking)
                 userDao.incrementFutureMessages()
-                userDao.addPoints(75) // Points for sending future message
+
+                // Complete the Commit session via the game system
+                val sessionResult = gameSessionManager.completeCommitSession(
+                    messageId = messageId,
+                    content = state.content,
+                    deliveryDate = state.deliveryDate
+                )
 
                 // Update achievements
                 updateFutureMessageAchievements()
@@ -221,7 +233,9 @@ class WriteMessageViewModel @Inject constructor(
                         isSaving = false,
                         isSaved = true,
                         showSealingAnimation = false,
-                        hasUnsavedChanges = false
+                        hasUnsavedChanges = false,
+                        sessionResult = sessionResult,
+                        showSessionResult = true
                     )
                 }
             } catch (e: Exception) {
@@ -238,6 +252,13 @@ class WriteMessageViewModel @Inject constructor(
 
     fun clearError() {
         _uiState.update { it.copy(error = null) }
+    }
+
+    /**
+     * Dismiss the session result card.
+     */
+    fun dismissSessionResult() {
+        _uiState.update { it.copy(showSessionResult = false) }
     }
 
     private suspend fun updateFutureMessageAchievements() {
