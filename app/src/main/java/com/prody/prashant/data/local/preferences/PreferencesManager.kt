@@ -1,13 +1,16 @@
 package com.prody.prashant.data.local.preferences
 
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.runBlocking
 import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -16,9 +19,43 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
 
 @Singleton
 class PreferencesManager @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val sharedPreferences: SharedPreferences
 ) {
     private val dataStore = context.dataStore
+
+    init {
+        // CRITICAL: One-time migration for the onboarding flag.
+        // This MUST be synchronous to ensure the first launch after this update
+        // correctly determines the start destination without a flicker or delay.
+        // runBlocking is acceptable here as a one-time, critical migration path.
+        if (!sharedPreferences.contains(KEY_ONBOARDING_COMPLETED)) {
+            runBlocking {
+                val onboardingCompletedFromDataStore = dataStore.data.map { preferences ->
+                    preferences[PreferencesKeys.ONBOARDING_COMPLETED] ?: false
+                }.first()
+                with(sharedPreferences.edit()) {
+                    putBoolean(KEY_ONBOARDING_COMPLETED, onboardingCompletedFromDataStore)
+                    apply()
+                }
+            }
+        }
+    }
+
+    companion object {
+        // Key for fast, synchronous access to onboarding status.
+        const val KEY_ONBOARDING_COMPLETED = "onboarding_completed_sync"
+    }
+
+    /**
+     * Synchronously checks if onboarding is complete.
+     * This is critical for a fast startup decision.
+     */
+    fun isOnboardingCompleted(): Boolean {
+        // On first run, this will be false, which is the correct default.
+        // When the user completes onboarding, `setOnboardingCompleted` will write to SharedPreferences.
+        return sharedPreferences.getBoolean(KEY_ONBOARDING_COMPLETED, false)
+    }
 
     // Keys
     private object PreferencesKeys {
@@ -83,8 +120,13 @@ class PreferencesManager @Inject constructor(
         }
 
     suspend fun setOnboardingCompleted(completed: Boolean) {
+        // Write to both DataStore (for existing consumers) and SharedPreferences (for fast startup).
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.ONBOARDING_COMPLETED] = completed
+        }
+        with(sharedPreferences.edit()) {
+            putBoolean(KEY_ONBOARDING_COMPLETED, completed)
+            apply()
         }
     }
 
