@@ -12,7 +12,7 @@ import androidx.glance.GlanceTheme
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
-import androidx.glance.appwidget.action.actionStartActivity
+import androidx.glance.appwidget.action.actionSendBroadcast
 import androidx.glance.appwidget.provideContent
 import androidx.glance.background
 import androidx.glance.layout.Alignment
@@ -27,7 +27,6 @@ import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
-import com.prody.prashant.MainActivity
 
 /**
  * Quick Journal Entry Widget (4x1)
@@ -45,9 +44,8 @@ class QuickJournalWidget : GlanceAppWidget() {
 
     @Composable
     private fun QuickJournalContent(context: Context) {
-        val intent = Intent(context, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-            putExtra("navigate_to", "journal/new")
+        val broadcastIntent = Intent(context, SecureWidgetActionReceiver::class.java).apply {
+            action = SecureWidgetActionReceiver.ACTION_QUICK_JOURNAL
         }
 
         Box(
@@ -55,7 +53,7 @@ class QuickJournalWidget : GlanceAppWidget() {
                 .fillMaxSize()
                 .background(Color(0xFF1A1A2E))
                 .padding(horizontal = 16.dp, vertical = 12.dp)
-                .clickable(actionStartActivity(intent)),
+                .clickable(actionSendBroadcast(broadcastIntent)),
             contentAlignment = Alignment.CenterStart
         ) {
             Row(
