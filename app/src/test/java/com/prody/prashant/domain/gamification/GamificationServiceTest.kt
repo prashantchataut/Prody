@@ -5,9 +5,12 @@ import com.prody.prashant.data.local.entity.AchievementEntity
 import com.prody.prashant.data.local.entity.UserProfileEntity
 import com.prody.prashant.data.local.entity.UserStatsEntity
 import com.prody.prashant.util.MainDispatcherRule
+import com.prody.prashant.data.local.dao.ChallengeDao
+import com.prody.prashant.data.local.preferences.PreferencesManager
 import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -34,12 +37,23 @@ class GamificationServiceTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     private lateinit var userDao: UserDao
+    private lateinit var challengeDao: ChallengeDao
+    private lateinit var preferencesManager: PreferencesManager
     private lateinit var gamificationService: GamificationService
 
     @Before
     fun setup() {
         userDao = mockk(relaxed = true)
-        gamificationService = GamificationService(userDao)
+        challengeDao = mockk(relaxed = true)
+        preferencesManager = mockk(relaxed = true)
+
+        // Mock preferencesManager to return false for gamificationInitialized
+        every { preferencesManager.gamificationInitialized } returns flowOf(true)
+
+        // Mock challengeDao to return empty list for joined challenges
+        coEvery { challengeDao.getJoinedChallengesByTypeSync(any()) } returns emptyList()
+
+        gamificationService = GamificationService(userDao, challengeDao, preferencesManager)
     }
 
     // ==========================================================================
