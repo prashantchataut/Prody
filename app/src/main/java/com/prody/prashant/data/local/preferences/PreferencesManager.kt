@@ -1,13 +1,18 @@
 package com.prody.prashant.data.local.preferences
 
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.runBlocking
 import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -16,13 +21,71 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
 
 @Singleton
 class PreferencesManager @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val sharedPreferences: SharedPreferences
 ) {
     private val dataStore = context.dataStore
 
+    // StateFlow to signal when the one-time migration is complete.
+    // This is crucial for any downstream flows that might depend on the migrated value.
+    private val _migrationCompleted = MutableStateFlow(false)
+    val migrationCompleted = _migrationCompleted.asStateFlow()
+
+    init {
+        // Run the migration synchronously on initialization.
+        // This is a rare case where runBlocking is acceptable in a singleton's init,
+        // as the onboarding decision is critical for the first frame of the app.
+        // This ensures that by the time the ViewModel asks for the value, it's already
+        // available in SharedPreferences.
+        runBlocking {
+            migrateOnboardingStatus()
+        }
+    }
+
+    private suspend fun migrateOnboardingStatus() {
+        // Check if the key already exists in SharedPreferences.
+        // If it does, migration has already been performed.
+        if (sharedPreferences.contains(PreferencesKeys.ONBOARDING_COMPLETED_SYNC.name)) {
+            _migrationCompleted.value = true
+            return
+        }
+
+        try {
+            // Read the value from DataStore. Default to false if not present.
+            val onboardingStatusFromDataStore = dataStore.data
+                .map { preferences ->
+                    preferences[PreferencesKeys.ONBOARDING_COMPLETED] ?: false
+                }
+                .first() // We only need the first emitted value
+
+            // Write the value to SharedPreferences.
+            sharedPreferences.edit().putBoolean(PreferencesKeys.ONBOARDING_COMPLETED_SYNC.name, onboardingStatusFromDataStore).apply()
+
+
+            // IMPORTANT: Remove the old key from DataStore to ensure this migration
+            // only ever runs once.
+            dataStore.edit { preferences ->
+                preferences.remove(PreferencesKeys.ONBOARDING_COMPLETED)
+            }
+        } catch (e: Exception) {
+            // If any error occurs (e.g., IOException reading DataStore),
+            // default to 'false' in SharedPreferences to be safe.
+            // This ensures the app doesn't get stuck in a broken state.
+            sharedPreferences.edit().putBoolean(PreferencesKeys.ONBOARDING_COMPLETED_SYNC.name, false).apply()
+        } finally {
+            // Signal that migration is complete, regardless of outcome.
+            _migrationCompleted.value = true
+        }
+    }
+
     // Keys
     private object PreferencesKeys {
+        // DEPRECATED: Kept for migration purposes. Will be removed from DataStore.
         val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
+
+        // SYNC KEY: New key for SharedPreferences.
+        val ONBOARDING_COMPLETED_SYNC = "onboarding_completed_sync"
+
         val THEME_MODE = stringPreferencesKey("theme_mode")
         val DYNAMIC_COLORS = booleanPreferencesKey("dynamic_colors")
         val NOTIFICATIONS_ENABLED = booleanPreferencesKey("notifications_enabled")
@@ -72,21 +135,14 @@ class PreferencesManager @Inject constructor(
         val PRIVACY_LAST_UNLOCKED_AT = longPreferencesKey("privacy_last_unlocked_at")
     }
 
-    // Onboarding
-    val onboardingCompleted: Flow<Boolean> = dataStore.data
-        .catch { exception ->
-            if (exception is IOException) emit(emptyPreferences())
-            else throw exception
-        }
-        .map { preferences ->
-            preferences[PreferencesKeys.ONBOARDING_COMPLETED] ?: false
-        }
+    // Onboarding - Now synchronous from SharedPreferences
+    val onboardingCompleted: Boolean
+        get() = sharedPreferences.getBoolean(PreferencesKeys.ONBOARDING_COMPLETED_SYNC.name, false)
 
     suspend fun setOnboardingCompleted(completed: Boolean) {
-        dataStore.edit { preferences ->
-            preferences[PreferencesKeys.ONBOARDING_COMPLETED] = completed
-        }
+        sharedPreferences.edit().putBoolean(PreferencesKeys.ONBOARDING_COMPLETED_SYNC.name, completed).apply()
     }
+
 
     // Theme
     val themeMode: Flow<String> = dataStore.data
@@ -645,7 +701,6 @@ class PreferencesManager @Inject constructor(
         dataStore.edit { preferences ->
             preferences.clear()
             // Set default values
-            preferences[PreferencesKeys.ONBOARDING_COMPLETED] = false
             preferences[PreferencesKeys.THEME_MODE] = "system"
             preferences[PreferencesKeys.DYNAMIC_COLORS] = false
             preferences[PreferencesKeys.NOTIFICATIONS_ENABLED] = true
@@ -669,5 +724,7 @@ class PreferencesManager @Inject constructor(
             preferences[PreferencesKeys.PRIVACY_LOCK_FUTURE_MESSAGES] = false
             preferences[PreferencesKeys.PRIVACY_LOCK_ON_BACKGROUND] = true
         }
+        // Also reset the SharedPreferences value
+        setOnboardingCompleted(false)
     }
 }
