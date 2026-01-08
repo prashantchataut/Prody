@@ -116,6 +116,15 @@
                 android:resource="@xml/quick_journal_widget_info" />
         </receiver>
 
+        <!-- Secure Trampoline Receiver for Widget Actions -->
+        <receiver
+            android:name=".widget.SecureWidgetActionReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.prody.prashant.widget.action.QUICK_JOURNAL" />
+            </intent-filter>
+        </receiver>
+
         <service
             android:name="androidx.work.impl.foreground.SystemForegroundService"
             android:foregroundServiceType="dataSync"
