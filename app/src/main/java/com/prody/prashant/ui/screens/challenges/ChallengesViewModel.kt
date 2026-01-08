@@ -192,7 +192,8 @@ class ChallengesViewModel @Inject constructor(
         challengeId: String,
         targetCount: Int
     ): List<ChallengeLeaderboardEntity> {
-        val names = listOf(
+        // Competitive community names for realistic feel
+        val communityNames = listOf(
             "MindfulSeeker", "WisdomWanderer", "GrowthGuru", "ReflectionRider",
             "ThoughtTracker", "WordWizard", "JourneyJournal", "PeacePursuer",
             "ZenMaster", "StreakStar", "DailyDevoter", "InsightInquirer",
@@ -200,18 +201,44 @@ class ChallengesViewModel @Inject constructor(
             "SoulSearcher", "BalanceBuilder", "PathPioneer", "HarmonyHunter"
         )
 
-        return names.mapIndexed { index, name ->
+        val entries = mutableListOf<ChallengeLeaderboardEntity>()
+
+        // Add Prashant (developer) as #1 with top progress
+        val prashantProgress = (targetCount * 0.95f).toInt() + Random.nextInt(0, 3)
+        entries.add(
             ChallengeLeaderboardEntity(
-                odId = "user_$index",
+                odId = "prashant_dev",
                 challengeId = challengeId,
-                displayName = name,
-                avatarId = "avatar_${index % 10}",
-                progress = (targetCount * (1f - index * 0.04f).coerceAtLeast(0.1f)).toInt() +
-                        Random.nextInt(-5, 5).coerceAtLeast(0),
-                rank = index + 1,
+                displayName = "Prashant",
+                avatarId = "avatar_dev",
+                progress = prashantProgress,
+                rank = 1,
                 isCurrentUser = false
             )
-        }.sortedByDescending { it.progress }
+        )
+
+        // Generate community members with competitive but lower progress
+        communityNames.forEachIndexed { index, name ->
+            // Progress decreases gradually from ~90% down to ~20% of target
+            val progressFraction = (0.90f - index * 0.035f).coerceAtLeast(0.15f)
+            val baseProgress = (targetCount * progressFraction).toInt()
+            val variation = Random.nextInt(-3, 4).coerceAtLeast(0)
+
+            entries.add(
+                ChallengeLeaderboardEntity(
+                    odId = "user_$index",
+                    challengeId = challengeId,
+                    displayName = name,
+                    avatarId = "avatar_${index % 10}",
+                    progress = (baseProgress + variation).coerceAtMost(prashantProgress - 1),
+                    rank = index + 2,
+                    isCurrentUser = false
+                )
+            )
+        }
+
+        // Sort by progress descending and reassign ranks
+        return entries.sortedByDescending { it.progress }
             .mapIndexed { index, entry -> entry.copy(rank = index + 1) }
     }
 

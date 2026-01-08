@@ -20,14 +20,18 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
+import com.prody.prashant.BuildConfig
 import com.prody.prashant.data.ai.AiStats
 import com.prody.prashant.data.ai.BuddhaAiRepository
+import com.prody.prashant.data.local.preferences.PreferencesManager
+import com.prody.prashant.notification.NotificationScheduler
 import com.prody.prashant.ui.components.ProdyCard
 import com.prody.prashant.ui.theme.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -211,6 +215,118 @@ fun AiDebugScreen(
                 Text("Clear AI Cache")
             }
 
+            // Debug Badge Preview Section (DEBUG builds only)
+            if (BuildConfig.DEBUG) {
+                DebugSectionCard(
+                    title = "Badge Preview",
+                    icon = Icons.Filled.Verified
+                ) {
+                    Text(
+                        text = "Preview special badges on your profile without OAuth",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text(
+                                text = "DEV Badge",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Medium
+                            )
+                            Text(
+                                text = "Shows developer badge (1 holder)",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Switch(
+                            checked = uiState.showDevBadge,
+                            onCheckedChange = { viewModel.setDevBadgePreview(it) }
+                        )
+                    }
+
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text(
+                                text = "BETA PIONEER Badge",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Medium
+                            )
+                            Text(
+                                text = "Shows beta tester badge (2-3 holders)",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Switch(
+                            checked = uiState.showBetaBadge,
+                            onCheckedChange = { viewModel.setBetaBadgePreview(it) }
+                        )
+                    }
+                }
+
+                // Notification Testing Section
+                DebugSectionCard(
+                    title = "Test Notifications",
+                    icon = Icons.Filled.Notifications
+                ) {
+                    Text(
+                        text = "Trigger test notifications immediately",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        FilledTonalButton(
+                            onClick = { viewModel.triggerTestNotification("morning") },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text("Morning", style = MaterialTheme.typography.labelSmall)
+                        }
+                        FilledTonalButton(
+                            onClick = { viewModel.triggerTestNotification("evening") },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text("Evening", style = MaterialTheme.typography.labelSmall)
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        FilledTonalButton(
+                            onClick = { viewModel.triggerTestNotification("journal") },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text("Journal", style = MaterialTheme.typography.labelSmall)
+                        }
+                        FilledTonalButton(
+                            onClick = { viewModel.triggerTestNotification("streak") },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text("Streak", style = MaterialTheme.typography.labelSmall)
+                        }
+                    }
+                }
+            }
+
             // Privacy Note
             Box(
                 modifier = Modifier
@@ -313,12 +429,17 @@ private fun formatTimestamp(timestamp: Long): String {
 // ViewModel
 data class AiDebugUiState(
     val stats: AiStats = AiStats(),
-    val isLoading: Boolean = false
+    val isLoading: Boolean = false,
+    // Debug Badge Previews (DEBUG builds only)
+    val showDevBadge: Boolean = false,
+    val showBetaBadge: Boolean = false
 )
 
 @HiltViewModel
 class AiDebugViewModel @Inject constructor(
-    private val buddhaAiRepository: BuddhaAiRepository
+    private val buddhaAiRepository: BuddhaAiRepository,
+    private val preferencesManager: PreferencesManager,
+    private val notificationScheduler: NotificationScheduler
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AiDebugUiState())
@@ -326,6 +447,23 @@ class AiDebugViewModel @Inject constructor(
 
     init {
         refreshStats()
+        loadBadgePreferences()
+    }
+
+    private fun loadBadgePreferences() {
+        viewModelScope.launch {
+            combine(
+                preferencesManager.debugPreviewDevBadge,
+                preferencesManager.debugPreviewBetaBadge
+            ) { devBadge, betaBadge ->
+                Pair(devBadge, betaBadge)
+            }.collect { (devBadge, betaBadge) ->
+                _uiState.value = _uiState.value.copy(
+                    showDevBadge = devBadge,
+                    showBetaBadge = betaBadge
+                )
+            }
+        }
     }
 
     fun refreshStats() {
@@ -339,5 +477,21 @@ class AiDebugViewModel @Inject constructor(
             buddhaAiRepository.clearCache()
             refreshStats()
         }
+    }
+
+    fun setDevBadgePreview(enabled: Boolean) {
+        viewModelScope.launch {
+            preferencesManager.setDebugPreviewDevBadge(enabled)
+        }
+    }
+
+    fun setBetaBadgePreview(enabled: Boolean) {
+        viewModelScope.launch {
+            preferencesManager.setDebugPreviewBetaBadge(enabled)
+        }
+    }
+
+    fun triggerTestNotification(type: String) {
+        notificationScheduler.debugTriggerNotificationNow(type)
     }
 }
