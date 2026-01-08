@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.prody.prashant.domain.gamification.GameSkillSystem
 
 /**
  * Player Skills Card - Displays the 3 core skill stats.

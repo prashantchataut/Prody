@@ -88,7 +88,7 @@ class ContentRecommendationEngine @Inject constructor(
             val candidates = mutableListOf<QuoteEntity>()
 
             for (category in prioritizedCategories) {
-                val quotesInCategory = quoteDao.getQuotesByCategory(category)
+                val quotesInCategory = quoteDao.getQuotesByCategory(category).first()
                     .filter { it.id !in recentlyShownIds }
                     .take(3)
                 candidates.addAll(quotesInCategory)
@@ -220,18 +220,18 @@ class ContentRecommendationEngine @Inject constructor(
 
     private suspend fun getDominantRecentMood(): Mood {
         return try {
-            val recentEntries = journalDao.getRecentEntries(7)
+            val recentEntries = journalDao.getRecentEntries(7).first()
             if (recentEntries.isEmpty()) return Mood.CALM
 
             // Count mood occurrences
-            val moodCounts = recentEntries
+            val moodCounts: Map<Mood, Int> = recentEntries
                 .mapNotNull { entry ->
                     try { Mood.valueOf(entry.mood) } catch (e: Exception) { null }
                 }
-                .groupingBy { it }
+                .groupingBy { mood: Mood -> mood }
                 .eachCount()
 
-            moodCounts.maxByOrNull { it.value }?.key ?: Mood.CALM
+            moodCounts.maxByOrNull { entry: Map.Entry<Mood, Int> -> entry.value }?.key ?: Mood.CALM
         } catch (e: Exception) {
             Mood.CALM
         }
