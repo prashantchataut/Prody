@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.outlined.ArrowForward
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
@@ -131,6 +132,15 @@ fun HomeScreen(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(bottom = 100.dp)
             ) {
+                // AI Configuration Warning Banner
+                if (uiState.aiConfigurationStatus == AiConfigurationStatus.MISSING) {
+                    item {
+                        AiConfigurationWarningBanner(
+                            onDismiss = { /* Could store dismiss preference in DataStore */ }
+                        )
+                    }
+                }
+
             // Header with greeting and stats
             item {
                 PremiumHeader(
@@ -338,6 +348,62 @@ fun HomeScreen(
                     )
                 }
             }
+            }
+        }
+    }
+}
+
+// =============================================================================
+// AI CONFIGURATION WARNING BANNER
+// =============================================================================
+
+@Composable
+private fun AiConfigurationWarningBanner(
+    onDismiss: () -> Unit
+) {
+    val backgroundColor = ProdyWarning.copy(alpha = 0.15f)
+    val borderColor = ProdyWarning.copy(alpha = 0.3f)
+
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp, vertical = 8.dp),
+        shape = RoundedCornerShape(12.dp),
+        color = backgroundColor,
+        tonalElevation = 0.dp
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Warning,
+                contentDescription = null,
+                tint = ProdyWarning,
+                modifier = Modifier.size(24.dp)
+            )
+
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = "AI Features Disabled",
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 14.sp,
+                    color = ProdyWarning
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = "Add your Gemini API key in local.properties to enable Buddha AI features.",
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Normal,
+                    fontSize = 12.sp,
+                    color = ProdyWarning.copy(alpha = 0.8f)
+                )
             }
         }
     }

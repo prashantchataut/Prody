@@ -6,6 +6,8 @@ import com.prody.prashant.BuildConfig
 import com.prody.prashant.data.local.preferences.PreferencesManager
 import com.prody.prashant.notification.NotificationScheduler
 import dagger.hilt.android.lifecycle.HiltViewModel
+import com.prody.prashant.data.ai.AiConfigStatus
+import com.prody.prashant.data.ai.GeminiService
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -16,6 +18,10 @@ data class SettingsUiState(
     val notificationsEnabled: Boolean = true,
     val wisdomNotificationsEnabled: Boolean = true,
     val journalRemindersEnabled: Boolean = true,
+    val morningHour: Int = 9,
+    val morningMinute: Int = 0,
+    val eveningHour: Int = 20,
+    val eveningMinute: Int = 0,
     val hapticFeedbackEnabled: Boolean = true,
     val compactView: Boolean = false,
     val buddhaAiEnabled: Boolean = true,
@@ -42,13 +48,16 @@ data class SettingsUiState(
     val isDebugBuild: Boolean = BuildConfig.DEBUG,
     val debugNotificationSent: String? = null,
     // Debug: AI Proof Mode - Shows AI generation metadata in UI
-    val debugAiProofMode: Boolean = false
+    val debugAiProofMode: Boolean = false,
+    // AI Configuration Status
+    val aiConfigStatus: AiConfigStatus = AiConfigStatus.READY
 )
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val preferencesManager: PreferencesManager,
-    private val notificationScheduler: NotificationScheduler
+    private val notificationScheduler: NotificationScheduler,
+    private val geminiService: GeminiService
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SettingsUiState())
@@ -71,14 +80,23 @@ class SettingsViewModel @Inject constructor(
                     preferencesManager.dynamicColors,
                     preferencesManager.notificationsEnabled,
                     preferencesManager.wisdomNotificationEnabled,
-                    preferencesManager.journalReminderEnabled
-                ) { themeMode, dynamicColors, notificationsEnabled, wisdomEnabled, journalEnabled ->
+                    preferencesManager.journalReminderEnabled,
+                    preferencesManager.dailyReminderHour,
+                    preferencesManager.dailyReminderMinute,
+                    preferencesManager.eveningReminderHour,
+                    preferencesManager.eveningReminderMinute
+                ) { themeMode, dynamicColors, notificationsEnabled, wisdomEnabled, journalEnabled,
+                    morningHour, morningMinute, eveningHour, eveningMinute ->
                     AppearanceAndNotificationSettings(
                         themeMode = themeMode,
                         dynamicColors = dynamicColors,
                         notificationsEnabled = notificationsEnabled,
                         wisdomNotificationsEnabled = wisdomEnabled,
-                        journalRemindersEnabled = journalEnabled
+                        journalRemindersEnabled = journalEnabled,
+                        morningHour = morningHour,
+                        morningMinute = morningMinute,
+                        eveningHour = eveningHour,
+                        eveningMinute = eveningMinute
                     )
                 }
 
@@ -137,6 +155,10 @@ class SettingsViewModel @Inject constructor(
                         notificationsEnabled = appearance.notificationsEnabled,
                         wisdomNotificationsEnabled = appearance.wisdomNotificationsEnabled,
                         journalRemindersEnabled = appearance.journalRemindersEnabled,
+                        morningHour = appearance.morningHour,
+                        morningMinute = appearance.morningMinute,
+                        eveningHour = appearance.eveningHour,
+                        eveningMinute = appearance.eveningMinute,
                         hapticFeedbackEnabled = prefs.hapticFeedbackEnabled,
                         compactView = prefs.compactView,
                         buddhaAiEnabled = prefs.buddhaAiEnabled,
@@ -152,7 +174,9 @@ class SettingsViewModel @Inject constructor(
                         privacyLockOnBackground = privacy.lockOnBackground
                     )
                 }.collect { state ->
-                    _uiState.value = state
+                    _uiState.value = state.copy(
+                        aiConfigStatus = geminiService.getConfigStatus()
+                    )
                 }
             } catch (e: Exception) {
                 android.util.Log.e(TAG, "Error loading settings", e)
@@ -165,7 +189,11 @@ class SettingsViewModel @Inject constructor(
         val dynamicColors: Boolean,
         val notificationsEnabled: Boolean,
         val wisdomNotificationsEnabled: Boolean,
-        val journalRemindersEnabled: Boolean
+        val journalRemindersEnabled: Boolean,
+        val morningHour: Int,
+        val morningMinute: Int,
+        val eveningHour: Int,
+        val eveningMinute: Int
     )
 
     private data class PreferenceSettings(
@@ -239,6 +267,28 @@ class SettingsViewModel @Inject constructor(
                 preferencesManager.setJournalReminderEnabled(enabled)
             } catch (e: Exception) {
                 android.util.Log.e(TAG, "Error setting journal reminders", e)
+            }
+        }
+    }
+
+    fun setMorningNotificationTime(hour: Int, minute: Int) {
+        viewModelScope.launch {
+            try {
+                preferencesManager.setDailyReminderTime(hour, minute)
+                notificationScheduler.rescheduleAllNotifications()
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error setting morning notification time", e)
+            }
+        }
+    }
+
+    fun setEveningNotificationTime(hour: Int, minute: Int) {
+        viewModelScope.launch {
+            try {
+                preferencesManager.setEveningReminderTime(hour, minute)
+                notificationScheduler.rescheduleAllNotifications()
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error setting evening notification time", e)
             }
         }
     }

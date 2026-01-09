@@ -45,6 +45,7 @@ import com.prody.prashant.ui.theme.MoodGrateful
 import com.prody.prashant.ui.components.ProdyCard
 import androidx.compose.ui.graphics.Brush
 import kotlinx.coroutines.delay
+import com.prody.prashant.data.ai.AiConfigStatus
 
 // =============================================================================
 // COLOR DEFINITIONS - Exact colors from design specs
@@ -119,6 +120,23 @@ fun SettingsScreen(
                 .verticalScroll(rememberScrollState())
                 .background(backgroundColor)
         ) {
+            // AI Configuration Alert
+            if (uiState.aiConfigStatus != AiConfigStatus.READY) {
+                AnimatedVisibility(
+                    visible = isVisible,
+                    enter = fadeIn(tween(400)) + slideInVertically(
+                        initialOffsetY = { -it },
+                        animationSpec = tween(400, easing = EaseOutCubic)
+                    )
+                ) {
+                    AiConfigAlert(
+                        status = uiState.aiConfigStatus,
+                        isDark = isDark
+                    )
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
             // APPEARANCE Section
             AnimatedVisibility(
                 visible = isVisible,
@@ -198,6 +216,28 @@ fun SettingsScreen(
                         onCheckedChange = { viewModel.setJournalReminders(it) },
                         enabled = uiState.notificationsEnabled,
                         isDark = isDark
+                    )
+
+                    // Morning Notification Time
+                    SettingsRowWithTimePicker(
+                        icon = Icons.Filled.WbSunny,
+                        title = "Morning Time",
+                        subtitle = formatTime(uiState.morningHour, uiState.morningMinute),
+                        isDark = isDark,
+                        enabled = uiState.notificationsEnabled && uiState.wisdomNotificationsEnabled,
+                        onTimeSelected = { hour, minute -> viewModel.setMorningNotificationTime(hour, minute) }
+                    )
+
+                    SettingsDivider(isDark)
+
+                    // Evening Notification Time
+                    SettingsRowWithTimePicker(
+                        icon = Icons.Filled.NightsStay,
+                        title = "Evening Time",
+                        subtitle = formatTime(uiState.eveningHour, uiState.eveningMinute),
+                        isDark = isDark,
+                        enabled = uiState.notificationsEnabled && uiState.journalRemindersEnabled,
+                        onTimeSelected = { hour, minute -> viewModel.setEveningNotificationTime(hour, minute) }
                     )
                 }
             }
@@ -826,6 +866,128 @@ private fun SettingsDivider(isDark: Boolean) {
         modifier = Modifier.padding(horizontal = 16.dp),
         color = dividerColor
     )
+}
+
+// =============================================================================
+// TIME FORMATTER
+// =============================================================================
+
+private fun formatTime(hour: Int, minute: Int): String {
+    val period = if (hour < 12) "AM" else "PM"
+    val displayHour = when {
+        hour == 0 -> 12
+        hour > 12 -> hour - 12
+        else -> hour
+    }
+    return "%d:%02d %s".format(displayHour, minute, period)
+}
+
+// =============================================================================
+// SETTINGS ROW WITH TIME PICKER
+// =============================================================================
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SettingsRowWithTimePicker(
+    icon: ImageVector,
+    title: String,
+    subtitle: String,
+    isDark: Boolean,
+    enabled: Boolean = true,
+    onTimeSelected: (Int, Int) -> Unit
+) {
+    var showTimePicker by remember { mutableStateOf(false) }
+    val timePickerState = rememberTimePickerState(
+        initialHour = 9,
+        initialMinute = 0,
+        is24Hour = false
+    )
+
+    val iconBackground = if (isDark) DarkIconBackground else LightIconBackground
+    val iconColor = if (isDark) DarkIconColor else LightIconColor
+    val primaryText = if (isDark) DarkPrimaryText else LightPrimaryText
+    val secondaryText = if (isDark) DarkSecondaryText else LightSecondaryText
+
+    if (showTimePicker) {
+        AlertDialog(
+            onDismissRequest = { showTimePicker = false },
+            title = { Text("Select Time") },
+            text = {
+                TimePicker(
+                    state = timePickerState,
+                    is24Hour = false
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onTimeSelected(timePickerState.hour, timePickerState.minute)
+                        showTimePicker = false
+                    }
+                ) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showTimePicker = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(
+                enabled = enabled,
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null
+            ) { showTimePicker = true }
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // Icon with circular background
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .clip(CircleShape)
+                .background(if (enabled) iconBackground else iconBackground.copy(alpha = 0.5f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = if (enabled) iconColor else iconColor.copy(alpha = 0.5f),
+                modifier = Modifier.size(20.dp)
+            )
+        }
+
+        Spacer(modifier = Modifier.width(14.dp))
+
+        // Title and Subtitle
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Medium,
+                color = if (enabled) primaryText else primaryText.copy(alpha = 0.5f)
+            )
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.bodySmall,
+                color = secondaryText
+            )
+        }
+
+        // Chevron
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+            contentDescription = "Select time",
+            tint = if (enabled) primaryText else primaryText.copy(alpha = 0.5f),
+            modifier = Modifier.size(24.dp)
+        )
+    }
 }
 
 // =============================================================================
@@ -1779,5 +1941,58 @@ private fun PolicySection(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             lineHeight = 18.sp
         )
+    }
+}
+@Composable
+private fun AiConfigAlert(
+    status: AiConfigStatus,
+    isDark: Boolean
+) {
+    val containerColor = if (isDark) Color(0xFF3F2B1A) else Color(0xFFFFF8F0)
+    val contentColor = if (isDark) Color(0xFFFFD8A3) else Color(0xFFC05600)
+    val title = when (status) {
+        AiConfigStatus.MISSING_API_KEY -> "AI Features Offline"
+        AiConfigStatus.ERROR -> "AI Initialization Error"
+        else -> "AI Status Unknown"
+    }
+    val message = when (status) {
+        AiConfigStatus.MISSING_API_KEY -> "Gemini API key missing in local.properties. Buddha is using limited fallback mode."
+        AiConfigStatus.ERROR -> "Problem starting AI service. Please checks logs or connection."
+        else -> "Buddha is unavailable."
+    }
+
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        shape = RoundedCornerShape(16.dp),
+        color = containerColor,
+        border = BorderStroke(1.dp, contentColor.copy(alpha = 0.3f))
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Warning,
+                contentDescription = null,
+                tint = contentColor,
+                modifier = Modifier.size(24.dp)
+            )
+            Column {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = contentColor
+                )
+                Text(
+                    text = message,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = contentColor.copy(alpha = 0.8f)
+                )
+            }
+        }
     }
 }

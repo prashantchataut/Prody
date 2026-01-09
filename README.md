@@ -64,6 +64,18 @@
 - Customizable profile with banners and badges
 - Visual journey timeline
 
+### Notifications (NEW)
+- User-configurable morning notification time
+- User-configurable evening notification time
+- Separate toggles for wisdom and journal reminders
+- Schedule adjusts automatically when times change
+
+### AI Configuration (NEW)
+- AI configuration status indicator on home screen
+- Warning banner when API key is not configured
+- Secure API key storage infrastructure
+- Fallback to curated content when AI unavailable
+
 ## Tech Stack
 
 | Component | Technology |
@@ -96,7 +108,6 @@ Prody features a comprehensive design system:
 - Android Studio Hedgehog (2023.1.1) or newer
 - JDK 17+
 - Android SDK 35
-- (Optional) AI API keys for Buddha functionality
 
 ### AI Features (Optional)
 To enable Buddha AI features:
@@ -105,10 +116,17 @@ To enable Buddha AI features:
 2. Create/edit `local.properties` in project root:
    ```
    AI_API_KEY=your_api_key_here
+   OPENROUTER_API_KEY=optional_openrouter_key
    ```
 3. Rebuild the project
 
-*Note: Without an API key, the app works with static content from the wisdom library.*
+*Note: Without an API key, the app works with static content from the wisdom library. A warning banner will appear on the home screen indicating AI features are disabled.*
+
+### Notification Settings
+- Notifications can be configured in Settings > Notifications
+- Morning notification time (default: 9:00 AM)
+- Evening notification time (default: 8:00 PM)
+- Separate toggles for Daily Wisdom and Journal Reminders
 
 ### Build Steps
 

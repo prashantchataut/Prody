@@ -88,39 +88,53 @@ class NotificationScheduler @Inject constructor(
     }
 
     fun scheduleMorningWisdom() {
-        val calendar = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, 8)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            if (timeInMillis <= System.currentTimeMillis()) {
-                add(Calendar.DAY_OF_YEAR, 1)
-            }
-        }
+        try {
+            val hour = preferencesManager.dailyReminderHour.first()
+            val minute = preferencesManager.dailyReminderMinute.first()
 
-        scheduleRepeatingAlarm(
-            action = NotificationReceiver.ACTION_MORNING_WISDOM,
-            requestCode = REQUEST_MORNING,
-            triggerTime = calendar.timeInMillis,
-            intervalMillis = AlarmManager.INTERVAL_DAY
-        )
+            val calendar = Calendar.getInstance().apply {
+                set(Calendar.HOUR_OF_DAY, hour)
+                set(Calendar.MINUTE, minute)
+                set(Calendar.SECOND, 0)
+                if (timeInMillis <= System.currentTimeMillis()) {
+                    add(Calendar.DAY_OF_YEAR, 1)
+                }
+            }
+
+            scheduleRepeatingAlarm(
+                action = NotificationReceiver.ACTION_MORNING_WISDOM,
+                requestCode = REQUEST_MORNING,
+                triggerTime = calendar.timeInMillis,
+                intervalMillis = AlarmManager.INTERVAL_DAY
+            )
+        } catch (e: Exception) {
+            android.util.Log.e(TAG, "Failed to schedule morning wisdom", e)
+        }
     }
 
     fun scheduleEveningReflection() {
-        val calendar = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, 20)
-            set(Calendar.MINUTE, 30)
-            set(Calendar.SECOND, 0)
-            if (timeInMillis <= System.currentTimeMillis()) {
-                add(Calendar.DAY_OF_YEAR, 1)
-            }
-        }
+        try {
+            val hour = preferencesManager.eveningReminderHour.first()
+            val minute = preferencesManager.eveningReminderMinute.first()
 
-        scheduleRepeatingAlarm(
-            action = NotificationReceiver.ACTION_EVENING_REFLECTION,
-            requestCode = REQUEST_EVENING,
-            triggerTime = calendar.timeInMillis,
-            intervalMillis = AlarmManager.INTERVAL_DAY
-        )
+            val calendar = Calendar.getInstance().apply {
+                set(Calendar.HOUR_OF_DAY, hour)
+                set(Calendar.MINUTE, minute)
+                set(Calendar.SECOND, 0)
+                if (timeInMillis <= System.currentTimeMillis()) {
+                    add(Calendar.DAY_OF_YEAR, 1)
+                }
+            }
+
+            scheduleRepeatingAlarm(
+                action = NotificationReceiver.ACTION_EVENING_REFLECTION,
+                requestCode = REQUEST_EVENING,
+                triggerTime = calendar.timeInMillis,
+                intervalMillis = AlarmManager.INTERVAL_DAY
+            )
+        } catch (e: Exception) {
+            android.util.Log.e(TAG, "Failed to schedule evening reflection", e)
+        }
     }
 
     fun scheduleWordOfDay() {

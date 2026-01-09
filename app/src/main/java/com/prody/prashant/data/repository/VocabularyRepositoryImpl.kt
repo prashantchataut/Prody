@@ -10,12 +10,20 @@ import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 import javax.inject.Singleton
 
+import com.prody.prashant.data.local.dao.VocabularyLearningDao
+import com.prody.prashant.domain.learning.SpacedRepetitionEngine
+import com.prody.prashant.data.local.entity.VocabularyLearningEntity
+import javax.inject.Inject
+import javax.inject.Singleton
+
 /**
  * Implementation of VocabularyRepository using Room database.
  */
 @Singleton
 class VocabularyRepositoryImpl @Inject constructor(
-    private val vocabularyDao: VocabularyDao
+    private val vocabularyDao: VocabularyDao,
+    private val vocabularyLearningDao: VocabularyLearningDao,
+    private val spacedRepetitionEngine: SpacedRepetitionEngine
 ) : VocabularyRepository {
 
     override fun getAllWords(): Flow<List<VocabularyEntity>> {
@@ -138,6 +146,51 @@ class VocabularyRepositoryImpl @Inject constructor(
                 nextReview = nextReviewAt,
                 mastery = masteryLevel
             )
+        }
+    }
+
+    override suspend fun processWordReview(wordId: Long, quality: Int): Result<Unit> {
+        return runSuspendCatching(ErrorType.PROCESSING, "Failed to process review") {
+            // 1. Get current learning data or create new if not exists
+            var currentData = vocabularyLearningDao.getLearningForWord(wordId)
+            
+            if (currentData == null) {
+                currentData = spacedRepetitionEngine.createInitialLearningEntity(wordId)
+            }
+
+            // 2. Calculate new state using SRS Engine
+            val reviewResult = spacedRepetitionEngine.calculateNextReview(quality, currentData)
+
+            // 3. Update learning entity with new values
+            val updatedData = currentData.copy(
+                easeFactor = reviewResult.newEaseFactor,
+                interval = reviewResult.newInterval,
+                repetitions = reviewResult.newRepetitions,
+                nextReviewDate = reviewResult.nextReviewDate,
+                boxLevel = reviewResult.newBoxLevel,
+                stage = reviewResult.newStage.name,
+                correctStreak = reviewResult.newCorrectStreak,
+                lastReviewDate = System.currentTimeMillis(),
+                totalReviews = currentData.totalReviews + 1,
+                correctReviews = if (quality >= 3) currentData.correctReviews + 1 else currentData.correctReviews,
+                masteredDate = if (reviewResult.isMastered && currentData.masteredDate == null) System.currentTimeMillis() else currentData.masteredDate
+            )
+
+            // 4. Save to database
+            vocabularyLearningDao.insertLearning(updatedData)
+
+            // 5. Also update the simpler VocabularyEntity stats for backward compatibility/UI
+            vocabularyDao.updateReviewProgress(
+                id = wordId,
+                reviewedAt = System.currentTimeMillis(),
+                nextReview = reviewResult.nextReviewDate,
+                mastery = reviewResult.newBoxLevel
+            )
+            
+            // 6. If mastered, ensure isLearned is set
+            if (reviewResult.isMastered) {
+                vocabularyDao.markAsLearned(wordId)
+            }
         }
     }
 }

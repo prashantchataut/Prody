@@ -19,6 +19,7 @@ import com.prody.prashant.data.monitoring.PerformanceMonitor
 import com.prody.prashant.data.network.NetworkConnectivityManager
 import com.prody.prashant.data.onboarding.AiOnboardingManager
 import com.prody.prashant.data.security.EncryptionManager
+import com.prody.prashant.data.security.SecurityPreferences
 import com.prody.prashant.data.sync.SyncManager
 import com.prody.prashant.util.TextToSpeechManager
 import dagger.Module
@@ -77,7 +78,8 @@ object AppModule {
                 ProdyDatabase::class.java,
                 ProdyDatabase.DATABASE_NAME
             )
-                .fallbackToDestructiveMigration()
+                .addMigrations(ProdyDatabase.MIGRATION_4_5)
+                .fallbackToDestructiveMigration(prefix = "v5_to_v6")
                 .addCallback(databaseCallback)
                 .build()
             databaseInstance = instance
@@ -101,6 +103,12 @@ object AppModule {
     @Singleton
     fun provideVocabularyDao(database: ProdyDatabase): VocabularyDao {
         return database.vocabularyDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideVocabularyLearningDao(database: ProdyDatabase): VocabularyLearningDao {
+        return database.vocabularyLearningDao()
     }
 
     @Provides
@@ -274,5 +282,13 @@ object AppModule {
         @ApplicationContext context: Context
     ): ContentModerationManager {
         return ContentModerationManager(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideSecurityPreferences(
+        @ApplicationContext context: Context
+    ): SecurityPreferences {
+        return SecurityPreferences(context)
     }
 }

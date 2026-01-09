@@ -36,6 +36,15 @@ data class AiProofModeInfo(
     val isAiConfigured: Boolean = true   // Whether API key is configured
 )
 
+/**
+ * AI configuration status for the home screen.
+ */
+enum class AiConfigurationStatus {
+    CONFIGURED,
+    MISSING,
+    ERROR
+}
+
 data class HomeUiState(
     val userName: String = "Growth Seeker",
     val currentStreak: Int = 0,
@@ -63,6 +72,8 @@ data class HomeUiState(
     val isLoading: Boolean = true,
     val hasLoadError: Boolean = false,
     val error: String? = null,
+    // AI configuration status for showing warning banner
+    val aiConfigurationStatus: AiConfigurationStatus = AiConfigurationStatus.CONFIGURED,
     // Onboarding state
     val showBuddhaGuide: Boolean = false,
     val buddhaGuideCards: List<BuddhaGuideCard> = emptyList(),
@@ -119,6 +130,24 @@ class HomeViewModel @Inject constructor(
         loadActiveProgress()
         loadDailySeed()
         observeAiProofMode()
+        checkAiConfiguration()
+    }
+
+    /**
+     * Check AI configuration and update UI state accordingly.
+     */
+    private fun checkAiConfiguration() {
+        val isConfigured = buddhaAiRepository.isAiConfigured()
+        val status = if (isConfigured) AiConfigurationStatus.CONFIGURED else AiConfigurationStatus.MISSING
+        _uiState.update { it.copy(aiConfigurationStatus = status) }
+    }
+
+    /**
+     * Get the current AI configuration status.
+     * Called from UI to determine if warning banner should be shown.
+     */
+    fun getAiConfigurationStatus(): AiConfigurationStatus {
+        return _uiState.value.aiConfigurationStatus
     }
 
     /**

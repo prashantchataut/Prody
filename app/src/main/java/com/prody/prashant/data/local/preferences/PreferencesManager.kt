@@ -28,6 +28,8 @@ class PreferencesManager @Inject constructor(
         val NOTIFICATIONS_ENABLED = booleanPreferencesKey("notifications_enabled")
         val DAILY_REMINDER_HOUR = intPreferencesKey("daily_reminder_hour")
         val DAILY_REMINDER_MINUTE = intPreferencesKey("daily_reminder_minute")
+        val EVENING_REMINDER_HOUR = intPreferencesKey("evening_reminder_hour")
+        val EVENING_REMINDER_MINUTE = intPreferencesKey("evening_reminder_minute")
         val WISDOM_NOTIFICATION_ENABLED = booleanPreferencesKey("wisdom_notification_enabled")
         val JOURNAL_REMINDER_ENABLED = booleanPreferencesKey("journal_reminder_enabled")
         val CURRENT_STREAK = intPreferencesKey("current_streak")
@@ -187,6 +189,31 @@ class PreferencesManager @Inject constructor(
     suspend fun setJournalReminderEnabled(enabled: Boolean) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.JOURNAL_REMINDER_ENABLED] = enabled
+        }
+    }
+
+    val eveningReminderHour: Flow<Int> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.EVENING_REMINDER_HOUR] ?: 20
+        }
+
+    val eveningReminderMinute: Flow<Int> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.EVENING_REMINDER_MINUTE] ?: 0
+        }
+
+    suspend fun setEveningReminderTime(hour: Int, minute: Int) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.EVENING_REMINDER_HOUR] = hour
+            preferences[PreferencesKeys.EVENING_REMINDER_MINUTE] = minute
         }
     }
 
@@ -651,6 +678,8 @@ class PreferencesManager @Inject constructor(
             preferences[PreferencesKeys.NOTIFICATIONS_ENABLED] = true
             preferences[PreferencesKeys.DAILY_REMINDER_HOUR] = 9
             preferences[PreferencesKeys.DAILY_REMINDER_MINUTE] = 0
+            preferences[PreferencesKeys.EVENING_REMINDER_HOUR] = 20
+            preferences[PreferencesKeys.EVENING_REMINDER_MINUTE] = 0
             preferences[PreferencesKeys.WISDOM_NOTIFICATION_ENABLED] = true
             preferences[PreferencesKeys.JOURNAL_REMINDER_ENABLED] = true
             preferences[PreferencesKeys.CURRENT_STREAK] = 0

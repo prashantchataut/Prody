@@ -28,6 +28,13 @@ enum class GeminiModel(val modelId: String, val displayName: String, val descrip
     GEMINI_1_0_PRO("gemini-1.0-pro", "Gemini 1.0 Pro", "Stable and reliable")
 }
 
+enum class AiConfigStatus {
+    READY,
+    MISSING_API_KEY,
+    NOT_INITIALIZED,
+    ERROR
+}
+
 /**
  * Result wrapper for AI responses
  */
@@ -391,23 +398,33 @@ class GeminiService @Inject constructor() {
     /**
      * Initializes or reinitializes the Gemini model with the provided API key and model.
      */
+    /**
+     * Initializes or reinitializes the Gemini model with the provided API key and model.
+     */
     fun initialize(apiKey: String, model: GeminiModel = GeminiModel.GEMINI_1_5_FLASH) {
         if (apiKey.isBlank()) {
+            android.util.Log.e("GeminiService", "Cannot initialize: API key is blank")
             generativeModel = null
             currentApiKey = null
             return
         }
 
         if (apiKey != currentApiKey || model != currentModel) {
-            currentApiKey = apiKey
-            currentModel = model
+            try {
+                android.util.Log.d("GeminiService", "Initializing Gemini with model: ${model.displayName}")
+                currentApiKey = apiKey
+                currentModel = model
 
-            generativeModel = GenerativeModel(
-                modelName = model.modelId,
-                apiKey = apiKey,
-                generationConfig = generationConfiguration,
-                safetySettings = safetySettings
-            )
+                generativeModel = GenerativeModel(
+                    modelName = model.modelId,
+                    apiKey = apiKey,
+                    generationConfig = generationConfiguration,
+                    safetySettings = safetySettings
+                )
+            } catch (e: Exception) {
+                android.util.Log.e("GeminiService", "Failed to initialize Gemini", e)
+                generativeModel = null
+            }
         }
     }
 
@@ -420,7 +437,28 @@ class GeminiService @Inject constructor() {
         if (generativeModel == null && !isAutoInitialized) {
             autoInitializeFromBuildConfig()
         }
-        return generativeModel != null && !currentApiKey.isNullOrBlank()
+        
+        val configured = generativeModel != null && !currentApiKey.isNullOrBlank()
+        if (!configured) {
+            android.util.Log.w("GeminiService", "GeminiService is NOT configured. API Key present: ${!currentApiKey.isNullOrBlank()}")
+        }
+        val configured = generativeModel != null && !currentApiKey.isNullOrBlank()
+        if (!configured) {
+            android.util.Log.w("GeminiService", "GeminiService is NOT configured. API Key present: ${!currentApiKey.isNullOrBlank()}")
+        }
+        return configured
+    }
+
+    /**
+     * Gets the detailed configuration status.
+     */
+    fun getConfigStatus(): AiConfigStatus {
+        if (currentApiKey.isNullOrBlank()) return AiConfigStatus.MISSING_API_KEY
+        if (generativeModel == null) {
+            autoInitializeFromBuildConfig()
+            if (generativeModel == null) return AiConfigStatus.ERROR
+        }
+        return AiConfigStatus.READY
     }
 
     /**

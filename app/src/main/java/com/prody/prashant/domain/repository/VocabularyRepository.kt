@@ -127,4 +127,12 @@ interface VocabularyRepository {
         nextReviewAt: Long,
         masteryLevel: Int
     ): Result<Unit>
+
+    /**
+     * Process a review session for a word using SRS algorithm.
+     * @param wordId The ID of the word reviewed
+     * @param quality The quality rating of the recall (0-5)
+     * @return Result containing updated review stats
+     */
+    suspend fun processWordReview(wordId: Long, quality: Int): Result<Unit>
 }
