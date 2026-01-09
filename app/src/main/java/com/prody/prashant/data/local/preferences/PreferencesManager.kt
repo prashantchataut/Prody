@@ -1,13 +1,19 @@
 package com.prody.prashant.data.local.preferences
 
 import android.content.Context
+import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -16,9 +22,42 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
 
 @Singleton
 class PreferencesManager @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val startupPreferences: StartupPreferences
 ) {
     private val dataStore = context.dataStore
+    private val migrationScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+
+    init {
+        // Perform a one-time migration of the onboarding flag from DataStore to SharedPreferences.
+        // This ensures existing users retain their state while new users will use the faster
+        // SharedPreferences from the start.
+        performOnboardingMigration()
+    }
+
+    private fun performOnboardingMigration() {
+        migrationScope.launch {
+            try {
+                val preferences = dataStore.data.firstOrNull()
+                val onboardingInDataStore = preferences?.get(PreferencesKeys.ONBOARDING_COMPLETED)
+
+                // If the value exists in DataStore, we need to migrate it.
+                if (onboardingInDataStore != null) {
+                    Log.d("PreferencesManager", "Migrating onboarding status ($onboardingInDataStore) to SharedPreferences.")
+                    // Write to the new fast storage
+                    startupPreferences.setOnboardingCompleted(onboardingInDataStore)
+
+                    // Remove from the old slow storage to prevent re-migration
+                    dataStore.edit { prefs ->
+                        prefs.remove(PreferencesKeys.ONBOARDING_COMPLETED)
+                    }
+                    Log.d("PreferencesManager", "Migration successful. Removed key from DataStore.")
+                }
+            } catch (e: Exception) {
+                Log.e("PreferencesManager", "Error during onboarding preference migration", e)
+            }
+        }
+    }
 
     // Keys
     private object PreferencesKeys {
@@ -74,20 +113,13 @@ class PreferencesManager @Inject constructor(
         val PRIVACY_LAST_UNLOCKED_AT = longPreferencesKey("privacy_last_unlocked_at")
     }
 
-    // Onboarding
-    val onboardingCompleted: Flow<Boolean> = dataStore.data
-        .catch { exception ->
-            if (exception is IOException) emit(emptyPreferences())
-            else throw exception
-        }
-        .map { preferences ->
-            preferences[PreferencesKeys.ONBOARDING_COMPLETED] ?: false
-        }
-
+    /**
+     * Sets the onboarding completed status.
+     * This now writes directly to the fast SharedPreferences store.
+     * The DataStore value is obsolete and has been migrated.
+     */
     suspend fun setOnboardingCompleted(completed: Boolean) {
-        dataStore.edit { preferences ->
-            preferences[PreferencesKeys.ONBOARDING_COMPLETED] = completed
-        }
+        startupPreferences.setOnboardingCompleted(completed)
     }
 
     // Theme
