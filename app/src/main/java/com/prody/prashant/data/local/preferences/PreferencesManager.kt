@@ -1,13 +1,17 @@
 package com.prody.prashant.data.local.preferences
 
 import android.content.Context
+import android.content.SharedPreferences
+import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.runBlocking
 import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -16,9 +20,46 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
 
 @Singleton
 class PreferencesManager @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val sharedPreferences: SharedPreferences
 ) {
     private val dataStore = context.dataStore
+
+    companion object {
+        // Key for SharedPreferences. Using a different name to avoid potential conflicts
+        // with DataStore keys, although not strictly necessary.
+        const val KEY_ONBOARDING_COMPLETED_SP = "onboarding_completed_sync"
+    }
+
+    init {
+        // CRITICAL: One-time migration for startup performance.
+        // This moves the 'onboardingCompleted' flag from the asynchronous DataStore
+        // to the synchronous SharedPreferences. This allows the MainViewModel to
+        // determine the start destination WITHOUT waiting for a Flow to emit,
+        // dramatically reducing the time the splash screen is shown.
+        if (!sharedPreferences.contains(KEY_ONBOARDING_COMPLETED_SP)) {
+            Log.d("PreferencesManager", "Onboarding flag not in SharedPreferences, attempting migration from DataStore.")
+            // runBlocking is acceptable here as this is a critical, one-time operation
+            // that MUST complete before the UI can be drawn correctly.
+            runBlocking {
+                try {
+                    // Read directly from the DataStore flow to get the current value
+                    val onboardingCompletedFromDataStore = dataStore.data
+                        .map { preferences ->
+                            preferences[PreferencesKeys.ONBOARDING_COMPLETED] ?: false
+                        }.first()
+
+                    Log.d("PreferencesManager", "Migrating onboarding_completed flag ($onboardingCompletedFromDataStore) to SharedPreferences.")
+                    setOnboardingCompletedSync(onboardingCompletedFromDataStore)
+                } catch (e: Exception) {
+                    // If migration fails (e.g., I/O error on DataStore), default to 'false'.
+                    // This is a safe fallback, ensuring the app starts into the onboarding flow.
+                    Log.e("PreferencesManager", "Failed to migrate onboarding_completed flag from DataStore", e)
+                    setOnboardingCompletedSync(false)
+                }
+            }
+        }
+    }
 
     // Keys
     private object PreferencesKeys {
@@ -73,6 +114,21 @@ class PreferencesManager @Inject constructor(
     }
 
     // Onboarding
+    /**
+     * Synchronously checks if the onboarding process has been completed.
+     * This is critical for making an immediate decision on the start destination
+     * of the app, avoiding a long splash screen wait time.
+     * It reads from SharedPreferences, which is populated by a one-time
+     * migration from DataStore in the init block.
+     */
+    fun getOnboardingCompletedSync(): Boolean {
+        return sharedPreferences.getBoolean(KEY_ONBOARDING_COMPLETED_SP, false)
+    }
+
+    /**
+     * The reactive Flow for onboarding completion status.
+     * Continues to be used by parts of the app that need to react to this change.
+     */
     val onboardingCompleted: Flow<Boolean> = dataStore.data
         .catch { exception ->
             if (exception is IOException) emit(emptyPreferences())
@@ -82,10 +138,24 @@ class PreferencesManager @Inject constructor(
             preferences[PreferencesKeys.ONBOARDING_COMPLETED] ?: false
         }
 
+    /**
+     * Asynchronously sets the onboarding completion status.
+     * This writes to BOTH the fast, synchronous SharedPreferences and the
+     * persistent, asynchronous DataStore to ensure data consistency.
+     */
     suspend fun setOnboardingCompleted(completed: Boolean) {
+        setOnboardingCompletedSync(completed)
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.ONBOARDING_COMPLETED] = completed
         }
+    }
+
+    /**
+     * Synchronously writes the onboarding status to SharedPreferences.
+     * This is used by the migration logic and the public async setter.
+     */
+    private fun setOnboardingCompletedSync(completed: Boolean) {
+        sharedPreferences.edit().putBoolean(KEY_ONBOARDING_COMPLETED_SP, completed).apply()
     }
 
     // Theme
