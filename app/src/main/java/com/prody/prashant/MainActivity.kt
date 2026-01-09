@@ -52,6 +52,8 @@ import com.prody.prashant.ui.components.NavigationBreathingGlow
 import com.prody.prashant.ui.main.MainViewModel
 import com.prody.prashant.ui.navigation.BottomNavItem
 import com.prody.prashant.ui.navigation.Screen
+import com.prody.prashant.util.TokenManager
+import com.prody.prashant.widget.SecureWidgetActionReceiver
 import com.prody.prashant.ui.screens.futuremessage.FutureMessageListScreen
 import com.prody.prashant.ui.screens.futuremessage.WriteMessageScreen
 import com.prody.prashant.ui.screens.home.HomeScreen
@@ -119,12 +121,23 @@ class MainActivity : ComponentActivity() {
             val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
             if (!uiState.isLoading) {
+                // Securely handle navigation from widget intent
+                val startRoute = intent.getStringExtra(SecureWidgetActionReceiver.EXTRA_NAVIGATE_TO)
+                val token = intent.getStringExtra(SecureWidgetActionReceiver.EXTRA_NAVIGATION_TOKEN)
+
+                val validatedRoute = if (TokenManager.isValidToken(this, token)) {
+                    startRoute
+                } else {
+                    null // Token is invalid or not present, proceed with normal flow
+                }
+
                 ProdyTheme(
                     themeMode = uiState.themeMode
                 ) {
                     uiState.startDestination?.let { startDestination ->
                         ProdyApp(
-                            startDestination = startDestination
+                            startDestination = startDestination,
+                            startRoute = validatedRoute
                         )
                     }
                 }
@@ -179,7 +192,8 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun ProdyApp(
-    startDestination: String
+    startDestination: String,
+    startRoute: String? = null
 ) {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -200,6 +214,13 @@ fun ProdyApp(
         Screen.Stats.route,
         Screen.Profile.route
     )
+
+    // Handle one-time navigation from widget
+    LaunchedEffect(startRoute) {
+        if (startRoute != null) {
+            navController.navigate(startRoute)
+        }
+    }
 
     Scaffold(
         bottomBar = {
