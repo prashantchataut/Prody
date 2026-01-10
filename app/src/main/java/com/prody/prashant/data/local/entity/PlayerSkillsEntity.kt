@@ -11,8 +11,14 @@ import androidx.room.PrimaryKey
  * Discipline (Sharpen): Flashcards/vocabulary consistency
  * Courage (Commit): Future messages + confronting themes
  *
- * Each skill has its own XP pool that levels independently.
- * Daily XP caps prevent exploit/spam grinding.
+ * Each skill has its own XP pool that levels independently (max level 10).
+ * Daily and weekly XP caps prevent exploit/spam grinding.
+ *
+ * Level progression uses these thresholds (cumulative):
+ * Level 1: 0, Level 2: 50, Level 3: 120, Level 4: 220, Level 5: 360,
+ * Level 6: 550, Level 7: 800, Level 8: 1150, Level 9: 1600, Level 10: 2200
+ *
+ * Daily XP Caps: Clarity 150, Discipline 150, Courage 100
  */
 @Entity(
     tableName = "player_skills",
@@ -32,7 +38,13 @@ data class PlayerSkillsEntity(
     val dailyClarityXp: Int = 0,
     val dailyDisciplineXp: Int = 0,
     val dailyCourageXp: Int = 0,
-    val dailyResetDate: Long = 0, // Timestamp of last reset
+    val dailyResetDate: Long = 0, // Timestamp of last daily reset
+
+    // Weekly XP tracking (reset on Monday at midnight)
+    val weeklyClarityXp: Int = 0,
+    val weeklyDisciplineXp: Int = 0,
+    val weeklyCourageXp: Int = 0,
+    val weeklyResetDate: Long = 0, // Timestamp of last weekly reset (Monday)
 
     // Token currency (cosmetic unlocks)
     val tokens: Int = 0,

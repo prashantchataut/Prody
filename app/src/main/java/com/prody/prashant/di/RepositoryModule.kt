@@ -1,7 +1,9 @@
 package com.prody.prashant.di
 
+import com.prody.prashant.data.repository.GamificationRepositoryImpl
 import com.prody.prashant.data.repository.JournalRepositoryImpl
 import com.prody.prashant.data.repository.VocabularyRepositoryImpl
+import com.prody.prashant.domain.repository.GamificationRepository
 import com.prody.prashant.domain.repository.JournalRepository
 import com.prody.prashant.domain.repository.VocabularyRepository
 import dagger.Binds
@@ -29,4 +31,10 @@ abstract class RepositoryModule {
     abstract fun bindJournalRepository(
         impl: JournalRepositoryImpl
     ): JournalRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindGamificationRepository(
+        impl: GamificationRepositoryImpl
+    ): GamificationRepository
 }
