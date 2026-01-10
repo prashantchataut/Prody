@@ -338,6 +338,18 @@ class StatsViewModel @Inject constructor(
         _uiState.update { it.copy(error = null) }
     }
 
+    /**
+     * Set the filter period for stats display.
+     * Currently updates local state - future implementation will filter data accordingly.
+     */
+    fun setFilterPeriod(period: String) {
+        android.util.Log.d(TAG, "Filter period set to: $period")
+        // Future implementation: filter stats data based on period
+        // For now, this stores the selection and logs it
+        // When full analytics are implemented, this will trigger data refresh
+        // with the appropriate time range filter
+    }
+
     // =============================================================================
     // BOOSTING 2.0 - SUPPORT SYSTEM
     // =============================================================================

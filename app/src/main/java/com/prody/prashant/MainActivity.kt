@@ -24,6 +24,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -49,30 +50,10 @@ import com.prody.prashant.ui.main.MainViewModel
 import com.prody.prashant.ui.navigation.BottomNavItem
 import com.prody.prashant.ui.navigation.ProdyNavHost
 import com.prody.prashant.ui.navigation.Screen
-import com.prody.prashant.ui.screens.challenges.ChallengesScreen
-import com.prody.prashant.ui.screens.futuremessage.FutureMessageListScreen
-import com.prody.prashant.ui.screens.futuremessage.WriteMessageScreen
-import com.prody.prashant.ui.screens.home.HomeScreen
-import com.prody.prashant.ui.screens.journal.JournalDetailScreen
-import com.prody.prashant.ui.screens.journal.JournalHistoryScreen
-import com.prody.prashant.ui.screens.journal.JournalListScreen
-import com.prody.prashant.ui.screens.journal.NewJournalEntryScreen
-import com.prody.prashant.ui.screens.meditation.MeditationTimerScreen
-import com.prody.prashant.ui.screens.onboarding.OnboardingScreen
-import com.prody.prashant.ui.screens.profile.AchievementsCollectionScreen
-import com.prody.prashant.ui.screens.profile.BannerSelectionScreen
-import com.prody.prashant.ui.screens.profile.EditProfileScreen
-import com.prody.prashant.ui.screens.profile.ProfileScreen
-import com.prody.prashant.ui.screens.profile.SettingsScreen
-import com.prody.prashant.ui.screens.quotes.QuotesScreen
-import com.prody.prashant.ui.screens.quotes.WisdomTab
-import com.prody.prashant.ui.screens.search.SearchScreen
-import com.prody.prashant.ui.screens.stats.StatsScreen
-import com.prody.prashant.ui.screens.vocabulary.VocabularyDetailScreen
-import com.prody.prashant.ui.screens.vocabulary.VocabularyListScreen
 import com.prody.prashant.ui.theme.PoppinsFamily
 import com.prody.prashant.ui.theme.ProdyPrimary
 import com.prody.prashant.ui.theme.ProdyTheme
+import com.prody.prashant.util.LocalHapticEnabled
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -127,10 +108,14 @@ class MainActivity : ComponentActivity() {
                 ProdyTheme(
                     themeMode = uiState.themeMode
                 ) {
-                    uiState.startDestination?.let { startDestination ->
-                        ProdyApp(
-                            startDestination = startDestination
-                        )
+                    CompositionLocalProvider(
+                        LocalHapticEnabled provides uiState.hapticFeedbackEnabled
+                    ) {
+                        uiState.startDestination?.let { startDestination ->
+                            ProdyApp(
+                                startDestination = startDestination
+                            )
+                        }
                     }
                 }
             }
@@ -262,260 +247,8 @@ fun ProdyApp(
         ProdyNavHost(
             navController = navController,
             startDestination = startDestination,
-            modifier = Modifier.padding(innerPadding),
-            enterTransition = {
-                fadeIn(animationSpec = tween(300)) + slideInHorizontally(
-                    initialOffsetX = { it / 4 },
-                    animationSpec = tween(300)
-                )
-            },
-            exitTransition = {
-                fadeOut(animationSpec = tween(300))
-            },
-            popEnterTransition = {
-                fadeIn(animationSpec = tween(300))
-            },
-            popExitTransition = {
-                fadeOut(animationSpec = tween(300)) + slideOutHorizontally(
-                    targetOffsetX = { it / 4 },
-                    animationSpec = tween(300)
-                )
-            }
-        ) {
-            // Onboarding
-            composable(Screen.Onboarding.route) {
-                OnboardingScreen(
-                    onComplete = {
-                        navController.navigate(Screen.Home.route) {
-                            popUpTo(Screen.Onboarding.route) { inclusive = true }
-                        }
-                    }
-                )
-            }
-
-            // Home
-            composable(Screen.Home.route) {
-                HomeScreen(
-                    onNavigateToJournal = {
-                        navController.navigate(Screen.JournalList.route)
-                    },
-                    onNavigateToVocabulary = {
-                        navController.navigate(Screen.VocabularyList.route)
-                    },
-                    onNavigateToQuotes = {
-                        navController.navigate(Screen.Quotes.createRoute("quotes"))
-                    },
-                    onNavigateToIdioms = {
-                        navController.navigate(Screen.Quotes.createRoute("idioms"))
-                    },
-                    onNavigateToProverbs = {
-                        navController.navigate(Screen.Quotes.createRoute("proverbs"))
-                    },
-                    onNavigateToFutureMessage = {
-                        navController.navigate(Screen.FutureMessageList.route)
-                    },
-                    onNavigateToMeditation = {
-                        navController.navigate(Screen.Meditation.route)
-                    },
-                    onNavigateToChallenges = {
-                        navController.navigate(Screen.Challenges.route)
-                    },
-                    onNavigateToSearch = {
-                        navController.navigate(Screen.Search.route)
-                    }
-                )
-            }
-
-            // Journal List
-            composable(Screen.JournalList.route) {
-                JournalListScreen(
-                    onNavigateToNewEntry = {
-                        navController.navigate(Screen.NewJournalEntry.route)
-                    },
-                    onNavigateToDetail = { entryId ->
-                        navController.navigate(Screen.JournalDetail.createRoute(entryId))
-                    },
-                    onNavigateToHistory = {
-                        navController.navigate(Screen.JournalHistory.route)
-                    }
-                )
-            }
-
-            // Journal History
-            composable(Screen.JournalHistory.route) {
-                JournalHistoryScreen(
-                    onNavigateBack = { navController.popBackStack() },
-                    onNavigateToDetail = { entryId ->
-                        navController.navigate(Screen.JournalDetail.createRoute(entryId))
-                    }
-                )
-            }
-
-            // New Journal Entry
-            composable(Screen.NewJournalEntry.route) {
-                NewJournalEntryScreen(
-                    onNavigateBack = { navController.popBackStack() },
-                    onEntrySaved = { navController.popBackStack() }
-                )
-            }
-
-            // Journal Detail
-            composable(
-                route = Screen.JournalDetail.route,
-                arguments = listOf(navArgument("entryId") { type = NavType.LongType })
-            ) { backStackEntry ->
-                val entryId = backStackEntry.arguments?.getLong("entryId") ?: return@composable
-                JournalDetailScreen(
-                    entryId = entryId,
-                    onNavigateBack = { navController.popBackStack() }
-                )
-            }
-
-            // Stats
-            composable(Screen.Stats.route) {
-                StatsScreen()
-            }
-
-            // Profile
-            composable(Screen.Profile.route) {
-                ProfileScreen(
-                    onNavigateToSettings = {
-                        navController.navigate(Screen.Settings.route)
-                    },
-                    onNavigateToEditProfile = {
-                        navController.navigate(Screen.EditProfile.route)
-                    },
-                    onNavigateToAchievements = {
-                        navController.navigate(Screen.AchievementsCollection.route)
-                    }
-                )
-            }
-
-            // Edit Profile
-            composable(Screen.EditProfile.route) {
-                EditProfileScreen(
-                    onNavigateBack = { navController.popBackStack() },
-                    onNavigateToBannerSelection = {
-                        navController.navigate(Screen.BannerSelection.route)
-                    }
-                )
-            }
-
-            // Banner Selection
-            composable(Screen.BannerSelection.route) {
-                BannerSelectionScreen(
-                    onNavigateBack = { navController.popBackStack() }
-                )
-            }
-
-            // Achievements Collection
-            composable(Screen.AchievementsCollection.route) {
-                AchievementsCollectionScreen(
-                    onNavigateBack = { navController.popBackStack() }
-                )
-            }
-
-            // Settings
-            composable(Screen.Settings.route) {
-                SettingsScreen(
-                    onNavigateBack = { navController.popBackStack() }
-                )
-            }
-
-            // Vocabulary List
-            composable(Screen.VocabularyList.route) {
-                VocabularyListScreen(
-                    onNavigateBack = { navController.popBackStack() },
-                    onNavigateToDetail = { wordId ->
-                        navController.navigate(Screen.VocabularyDetail.createRoute(wordId))
-                    }
-                )
-            }
-
-            // Vocabulary Detail
-            composable(
-                route = Screen.VocabularyDetail.route,
-                arguments = listOf(navArgument("wordId") { type = NavType.LongType })
-            ) { backStackEntry ->
-                val wordId = backStackEntry.arguments?.getLong("wordId") ?: return@composable
-                VocabularyDetailScreen(
-                    wordId = wordId,
-                    onNavigateBack = { navController.popBackStack() }
-                )
-            }
-
-            // Quotes / Wisdom Collection
-            composable(
-                route = Screen.Quotes.route,
-                arguments = listOf(navArgument("tab") {
-                    type = NavType.StringType
-                    defaultValue = "quotes"
-                })
-            ) { backStackEntry ->
-                val tabName = backStackEntry.arguments?.getString("tab") ?: "quotes"
-                val initialTab = when (tabName.lowercase()) {
-                    "proverbs" -> WisdomTab.PROVERBS
-                    "idioms" -> WisdomTab.IDIOMS
-                    "phrases" -> WisdomTab.PHRASES
-                    else -> WisdomTab.QUOTES
-                }
-                QuotesScreen(
-                    onNavigateBack = { navController.popBackStack() },
-                    initialTab = initialTab
-                )
-            }
-
-            // Future Message List
-            composable(Screen.FutureMessageList.route) {
-                FutureMessageListScreen(
-                    onNavigateBack = { navController.popBackStack() },
-                    onNavigateToWrite = {
-                        navController.navigate(Screen.WriteMessage.route)
-                    }
-                )
-            }
-
-            // Write Message
-            composable(Screen.WriteMessage.route) {
-                WriteMessageScreen(
-                    onNavigateBack = { navController.popBackStack() },
-                    onMessageSaved = { navController.popBackStack() }
-                )
-            }
-
-            // Meditation Timer
-            composable(Screen.Meditation.route) {
-                MeditationTimerScreen(
-                    onNavigateBack = { navController.popBackStack() }
-                )
-            }
-
-            // Challenges
-            composable(Screen.Challenges.route) {
-                ChallengesScreen(
-                    onNavigateBack = { navController.popBackStack() }
-                )
-            }
-
-            // Global Search
-            composable(Screen.Search.route) {
-                SearchScreen(
-                    onNavigateBack = { navController.popBackStack() },
-                    onNavigateToJournalEntry = { entryId ->
-                        navController.navigate(Screen.JournalDetail.createRoute(entryId))
-                    },
-                    onNavigateToQuote = { quoteId ->
-                        navController.navigate(Screen.Quotes.createRoute("quotes"))
-                    },
-                    onNavigateToVocabulary = { wordId ->
-                        navController.navigate(Screen.VocabularyDetail.createRoute(wordId))
-                    },
-                    onNavigateToFutureMessage = { messageId ->
-                        navController.navigate(Screen.FutureMessageList.route)
-                    }
-                )
-            }
-        }
+            modifier = Modifier.padding(innerPadding)
+        )
     }
 }
 

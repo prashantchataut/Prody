@@ -366,17 +366,19 @@ private fun WisdomListItem(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.Top
             ) {
-                // Type badge
-                AssistChip(
-                    onClick = {},
-                    label = {
-                        Text(
-                            text = getTypeDisplayName(wisdom.type),
-                            style = MaterialTheme.typography.labelSmall
-                        )
-                    },
+                // Type badge (display only, not interactive)
+                Surface(
+                    color = MaterialTheme.colorScheme.secondaryContainer,
+                    shape = RoundedCornerShape(8.dp),
                     modifier = Modifier.height(24.dp)
-                )
+                ) {
+                    Text(
+                        text = getTypeDisplayName(wisdom.type),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+                    )
+                }
 
                 Box {
                     IconButton(
@@ -475,11 +477,18 @@ private fun WisdomDetailSheet(
                 .fillMaxWidth()
                 .padding(24.dp)
         ) {
-            // Type badge
-            AssistChip(
-                onClick = {},
-                label = { Text(getTypeDisplayName(wisdom.type)) }
-            )
+            // Type badge (display only, not interactive)
+            Surface(
+                color = MaterialTheme.colorScheme.secondaryContainer,
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Text(
+                    text = getTypeDisplayName(wisdom.type),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                )
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 

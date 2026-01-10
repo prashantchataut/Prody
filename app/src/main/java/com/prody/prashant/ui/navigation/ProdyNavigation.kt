@@ -94,6 +94,9 @@ sealed class Screen(val route: String) {
     data object Meditation : Screen("meditation")
     data object Challenges : Screen("challenges")
     data object Search : Screen("search")
+    data object IdiomDetail : Screen("idiom/{idiomId}") {
+        fun createRoute(idiomId: Long) = "idiom/$idiomId"
+    }
 
     // Daily Engagement Features
     data object WisdomCollection : Screen("wisdom_collection")
@@ -444,6 +447,20 @@ fun ProdyNavHost(
             QuotesScreen(
                 onNavigateBack = { navController.popBackStack() },
                 initialTab = initialTab
+            )
+        }
+
+        // =====================================================================
+        // IDIOM DETAIL
+        // =====================================================================
+        composable(
+            route = Screen.IdiomDetail.route,
+            arguments = listOf(navArgument("idiomId") { type = NavType.LongType })
+        ) { backStackEntry ->
+            val idiomId = backStackEntry.arguments?.getLong("idiomId") ?: return@composable
+            IdiomDetailScreen(
+                idiomId = idiomId,
+                onNavigateBack = { navController.popBackStack() }
             )
         }
 

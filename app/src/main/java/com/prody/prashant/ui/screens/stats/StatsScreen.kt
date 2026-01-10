@@ -118,6 +118,7 @@ fun StatsScreen(
 
     // Filter dialog state
     var showFilterDialog by remember { mutableStateOf(false) }
+    var selectedFilterPeriod by remember { mutableStateOf("This Week") }
 
     // Entry animation
     var isVisible by remember { mutableStateOf(false) }
@@ -173,6 +174,11 @@ fun StatsScreen(
     // Stats filter dialog
     if (showFilterDialog) {
         StatsFilterDialog(
+            selectedPeriod = selectedFilterPeriod,
+            onPeriodSelected = { period ->
+                selectedFilterPeriod = period
+                viewModel.setFilterPeriod(period)
+            },
             onDismiss = { showFilterDialog = false },
             isDarkTheme = isDark,
             surfaceColor = surfaceColor,
@@ -1396,6 +1402,8 @@ private fun PremiumSupportActionButton(
 
 @Composable
 private fun StatsFilterDialog(
+    selectedPeriod: String,
+    onPeriodSelected: (String) -> Unit,
     onDismiss: () -> Unit,
     isDarkTheme: Boolean,
     surfaceColor: Color,
@@ -1432,12 +1440,16 @@ private fun StatsFilterDialog(
                 // Filter options
                 val filterOptions = listOf("This Week", "This Month", "Last 3 Months", "This Year", "All Time")
                 filterOptions.forEach { option ->
+                    val isSelected = option == selectedPeriod
                     Surface(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(12.dp))
-                            .clickable { onDismiss() },
-                        color = if (option == "This Week") accentColor.copy(alpha = 0.15f) else Color.Transparent,
+                            .clickable {
+                                onPeriodSelected(option)
+                                onDismiss()
+                            },
+                        color = if (isSelected) accentColor.copy(alpha = 0.15f) else Color.Transparent,
                         shape = RoundedCornerShape(12.dp)
                     ) {
                         Row(
@@ -1450,11 +1462,11 @@ private fun StatsFilterDialog(
                             Text(
                                 text = option,
                                 fontFamily = PoppinsFamily,
-                                fontWeight = if (option == "This Week") FontWeight.SemiBold else FontWeight.Normal,
+                                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
                                 fontSize = 14.sp,
-                                color = if (option == "This Week") accentColor else textPrimary
+                                color = if (isSelected) accentColor else textPrimary
                             )
-                            if (option == "This Week") {
+                            if (isSelected) {
                                 Icon(
                                     imageVector = Icons.Filled.Check,
                                     contentDescription = "Selected",
