@@ -155,6 +155,12 @@ Remember: Be specific to what they wrote, not generic. Reference details from th
 - Help them channel excitement into action
 - Balance excitement with grounded planning
 - Encourage them to capture this energy"""
+
+            Mood.NOSTALGIC -> """
+- Honor their connection to the past
+- Help them find meaning in memories
+- Balance remembrance with present awareness
+- Guide them to see how the past shapes their growth"""
         }
     }
 

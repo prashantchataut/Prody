@@ -31,6 +31,11 @@ import com.prody.prashant.ui.screens.stats.StatsScreen
 import com.prody.prashant.ui.screens.vocabulary.VocabularyDetailScreen
 import com.prody.prashant.ui.screens.vocabulary.VocabularyListScreen
 import com.prody.prashant.ui.screens.search.SearchScreen
+import com.prody.prashant.ui.screens.wisdom.WisdomCollectionScreen
+import com.prody.prashant.ui.screens.microjournal.MicroJournalScreen
+import com.prody.prashant.ui.screens.ritual.DailyRitualScreen
+import com.prody.prashant.ui.screens.digest.WeeklyDigestScreen
+import com.prody.prashant.ui.screens.futuremessage.FutureMessageReplyScreen
 
 /**
  * Prody Navigation - Screen Routes & Navigation Graph
@@ -88,6 +93,15 @@ sealed class Screen(val route: String) {
     data object Meditation : Screen("meditation")
     data object Challenges : Screen("challenges")
     data object Search : Screen("search")
+
+    // Daily Engagement Features
+    data object WisdomCollection : Screen("wisdom_collection")
+    data object MicroJournal : Screen("micro_journal")
+    data object DailyRitual : Screen("daily_ritual")
+    data object WeeklyDigest : Screen("weekly_digest")
+    data object FutureMessageReply : Screen("future_message/reply/{messageId}") {
+        fun createRoute(messageId: Long) = "future_message/reply/$messageId"
+    }
 }
 
 // =============================================================================
@@ -499,6 +513,92 @@ fun ProdyNavHost(
                 onNavigateToFutureMessage = { messageId ->
                     // Navigate to future message list (detail not implemented separately)
                     navController.navigate(Screen.FutureMessageList.route)
+                }
+            )
+        }
+
+        // =====================================================================
+        // DAILY ENGAGEMENT FEATURES
+        // =====================================================================
+
+        // Wisdom Collection - saved quotes, words, proverbs
+        composable(Screen.WisdomCollection.route) {
+            WisdomCollectionScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        // Micro-Journaling - quick thought capture
+        composable(Screen.MicroJournal.route) {
+            MicroJournalScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToJournalWithContent = { content, microEntryId ->
+                    // Navigate to journal with prefilled content
+                    // The micro entry ID can be used to mark it as expanded after save
+                    navController.navigate(Screen.NewJournalEntry.route)
+                }
+            )
+        }
+
+        // Daily Ritual - morning/evening check-ins
+        composable(
+            route = Screen.DailyRitual.route,
+            // Special calming transition for ritual
+            enterTransition = {
+                fadeIn(tween(400, easing = EaseOutQuart)) + scaleIn(
+                    initialScale = 0.96f,
+                    animationSpec = tween(400, easing = EaseOutQuart)
+                )
+            },
+            popExitTransition = {
+                fadeOut(tween(300)) + scaleOut(
+                    targetScale = 0.96f,
+                    animationSpec = tween(300, easing = EaseInQuart)
+                )
+            }
+        ) {
+            DailyRitualScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToJournal = { prefilledContent ->
+                    // Navigate to journal with prefilled content from ritual
+                    navController.navigate(Screen.NewJournalEntry.route)
+                }
+            )
+        }
+
+        // Weekly Digest - weekly summaries and patterns
+        composable(Screen.WeeklyDigest.route) {
+            WeeklyDigestScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToEntry = { entryId ->
+                    navController.navigate(Screen.JournalDetail.createRoute(entryId))
+                }
+            )
+        }
+
+        // Future Message Reply - reply to past self
+        composable(
+            route = Screen.FutureMessageReply.route,
+            arguments = listOf(navArgument("messageId") { type = NavType.LongType }),
+            // Slide up for reply screen
+            enterTransition = {
+                fadeIn(tween(FADE_DURATION)) + slideInVertically(
+                    initialOffsetY = { it / 4 },
+                    animationSpec = tween(TRANSITION_DURATION, easing = EaseOutQuart)
+                )
+            },
+            popExitTransition = {
+                fadeOut(tween(FADE_DURATION)) + slideOutVertically(
+                    targetOffsetY = { it / 4 },
+                    animationSpec = tween(TRANSITION_DURATION, easing = EaseInQuart)
+                )
+            }
+        ) { backStackEntry ->
+            val messageId = backStackEntry.arguments?.getLong("messageId") ?: return@composable
+            FutureMessageReplyScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToJournal = { prefilledContent ->
+                    navController.navigate(Screen.NewJournalEntry.route)
                 }
             )
         }

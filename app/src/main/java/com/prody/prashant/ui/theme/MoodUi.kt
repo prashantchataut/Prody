@@ -4,6 +4,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.HelpOutline
 import androidx.compose.material.icons.filled.Celebration
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.HistoryEdu
 import androidx.compose.material.icons.filled.LocalFireDepartment
 import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.filled.SelfImprovement
@@ -34,6 +35,7 @@ val Mood.icon: ImageVector
         Mood.GRATEFUL -> Icons.Filled.Favorite
         Mood.CONFUSED -> Icons.AutoMirrored.Filled.HelpOutline
         Mood.EXCITED -> Icons.Filled.Celebration
+        Mood.NOSTALGIC -> Icons.Filled.HistoryEdu
     }
 
 /**
@@ -49,4 +51,5 @@ val Mood.color: Color
         Mood.GRATEFUL -> MoodGrateful
         Mood.CONFUSED -> MoodConfused
         Mood.EXCITED -> MoodExcited
+        Mood.NOSTALGIC -> MoodNostalgic
     }

@@ -162,6 +162,40 @@ object AppModule {
         return database.missionDao()
     }
 
+    // ============================================================================
+    // NEW DAOs FOR DAILY ENGAGEMENT FEATURES
+    // ============================================================================
+
+    @Provides
+    @Singleton
+    fun provideSavedWisdomDao(database: ProdyDatabase): SavedWisdomDao {
+        return database.savedWisdomDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideMicroEntryDao(database: ProdyDatabase): MicroEntryDao {
+        return database.microEntryDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideWeeklyDigestDao(database: ProdyDatabase): WeeklyDigestDao {
+        return database.weeklyDigestDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideDailyRitualDao(database: ProdyDatabase): DailyRitualDao {
+        return database.dailyRitualDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideFutureMessageReplyDao(database: ProdyDatabase): FutureMessageReplyDao {
+        return database.futureMessageReplyDao()
+    }
+
     @Provides
     @Singleton
     fun providePreferencesManager(

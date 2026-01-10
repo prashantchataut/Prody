@@ -262,6 +262,7 @@ object BuddhaWisdom {
             Mood.GRATEFUL -> "Appreciation has colored your week - the wisest lens."
             Mood.CONFUSED -> "You've sat with uncertainty rather than fleeing it - that takes strength."
             Mood.EXCITED -> "Enthusiasm has fueled your days - harness it for growth."
+            Mood.NOSTALGIC -> "You've honored your memories while staying present - the path of wisdom."
         }
     }
 }

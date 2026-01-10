@@ -130,4 +130,4 @@ val Mood.isNegative: Boolean
  * Extension to check if mood is neutral.
  */
 val Mood.isNeutral: Boolean
-    get() = this == Mood.CONFUSED
+    get() = this in listOf(Mood.CONFUSED, Mood.NOSTALGIC)

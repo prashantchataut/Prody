@@ -104,6 +104,13 @@ abstract class ProdyDatabase : RoomDatabase() {
     abstract fun seedDao(): SeedDao
     abstract fun missionDao(): MissionDao
 
+    // New DAOs for Daily Engagement Features
+    abstract fun savedWisdomDao(): SavedWisdomDao
+    abstract fun microEntryDao(): MicroEntryDao
+    abstract fun weeklyDigestDao(): WeeklyDigestDao
+    abstract fun dailyRitualDao(): DailyRitualDao
+    abstract fun futureMessageReplyDao(): FutureMessageReplyDao
+
     companion object {
         private const val TAG = "ProdyDatabase"
         const val DATABASE_NAME = "prody_database"
