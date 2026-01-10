@@ -52,6 +52,14 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import com.prody.prashant.util.AccessibilityUtils
 import androidx.compose.ui.unit.sp
@@ -61,6 +69,8 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.prody.prashant.R
 import com.prody.prashant.domain.model.Mood
+import com.prody.prashant.domain.validation.ContentValidation
+import com.prody.prashant.domain.validation.ContentValidator
 import com.prody.prashant.ui.components.AmbientBackground
 import com.prody.prashant.ui.components.MoodSuggestionHint
 import com.prody.prashant.ui.components.SessionResultCard
@@ -127,16 +137,36 @@ fun NewJournalEntryScreen(
         }
     }
 
-    // Function to handle voice button click with permission check
+    // Function to handle voice button click - now supports transcription mode
+    // Long press for audio recording, short tap for voice-to-text
     val handleVoiceClick: () -> Unit = {
-        if (uiState.isRecording) {
+        if (uiState.isTranscribing) {
+            // Stop transcription if in progress
+            viewModel.stopTranscription()
+        } else if (uiState.isRecording) {
+            // Stop recording if in progress
             viewModel.stopRecording()
         } else {
+            // Start voice-to-text transcription (requires permission)
             if (hasRecordingPermission) {
-                viewModel.startRecording()
+                if (uiState.transcriptionAvailable) {
+                    viewModel.startTranscription()
+                } else {
+                    // Fallback to recording if transcription not available
+                    viewModel.startRecording()
+                }
             } else {
                 audioPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
             }
+        }
+    }
+
+    // Handle audio recording (for voice memo attachments)
+    val handleRecordingStart: () -> Unit = {
+        if (hasRecordingPermission) {
+            viewModel.startRecording()
+        } else {
+            audioPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
         }
     }
 
@@ -178,6 +208,9 @@ fun NewJournalEntryScreen(
             onNavigateBack()
         }
     }
+
+    // Focus management for keyboard navigation
+    val contentFocusRequester = remember { FocusRequester() }
 
     JournalTheme {
         val colors = LocalJournalThemeColors.current
@@ -243,6 +276,7 @@ fun NewJournalEntryScreen(
                 TitleInputField(
                     title = uiState.title,
                     onTitleChanged = { viewModel.updateTitle(it) },
+                    onNext = { contentFocusRequester.requestFocus() },
                     colors = colors
                 )
 
@@ -286,6 +320,17 @@ fun NewJournalEntryScreen(
                     },
                     isRecording = uiState.isRecording,
                     recordingTimeElapsed = uiState.recordingTimeElapsed,
+                    contentValidation = uiState.contentValidation,
+                    completionProgress = uiState.contentCompletionProgress,
+                    colors = colors,
+                    focusRequester = contentFocusRequester
+                )
+
+                // Content Validation Hint (shows helpful guidance)
+                ContentValidationHint(
+                    validation = uiState.contentValidation,
+                    validationHint = uiState.validationHint,
+                    completionProgress = uiState.contentCompletionProgress,
                     colors = colors
                 )
 
@@ -313,13 +358,25 @@ fun NewJournalEntryScreen(
                     )
                 }
 
-                // Recording Indicator (NEW)
+                // Recording Indicator (for voice memo attachments)
                 if (uiState.isRecording) {
                     Spacer(modifier = Modifier.height(16.dp))
                     RecordingIndicator(
                         timeElapsed = uiState.recordingTimeElapsed,
                         onStop = { viewModel.stopRecording() },
                         onCancel = { viewModel.cancelRecording() },
+                        colors = colors
+                    )
+                }
+
+                // Transcription Indicator (for voice-to-text)
+                if (uiState.isTranscribing) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    TranscriptionIndicator(
+                        partialText = uiState.transcriptionPartial,
+                        soundLevel = uiState.transcriptionSoundLevel,
+                        onStop = { viewModel.stopTranscription() },
+                        onCancel = { viewModel.cancelTranscription() },
                         colors = colors
                     )
                 }
@@ -948,6 +1005,7 @@ private fun CustomIntensitySlider(
 private fun TitleInputField(
     title: String,
     onTitleChanged: (String) -> Unit,
+    onNext: () -> Unit,
     colors: JournalThemeColors
 ) {
     Column(modifier = Modifier.padding(horizontal = 16.dp)) {
@@ -964,6 +1022,13 @@ private fun TitleInputField(
             ),
             cursorBrush = SolidColor(colors.accent),
             singleLine = true,
+            keyboardOptions = KeyboardOptions(
+                capitalization = KeyboardCapitalization.Sentences,
+                imeAction = ImeAction.Next
+            ),
+            keyboardActions = KeyboardActions(
+                onNext = { onNext() }
+            ),
             decorationBox = { innerTextField ->
                 Box {
                     if (title.isEmpty()) {
@@ -999,7 +1064,10 @@ private fun JournalInputField(
     onListClick: () -> Unit,
     isRecording: Boolean,
     recordingTimeElapsed: Long,
-    colors: JournalThemeColors
+    contentValidation: ContentValidation,
+    completionProgress: Float,
+    colors: JournalThemeColors,
+    focusRequester: FocusRequester
 ) {
     Column(modifier = Modifier.padding(horizontal = 16.dp)) {
         Box(
@@ -1020,7 +1088,8 @@ private fun JournalInputField(
                     onValueChange = onContentChanged,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .heightIn(min = 120.dp),
+                        .heightIn(min = 120.dp)
+                        .focusRequester(focusRequester),
                     textStyle = TextStyle(
                         fontFamily = PoppinsFamily,
                         fontWeight = FontWeight.Normal,
@@ -1029,6 +1098,10 @@ private fun JournalInputField(
                         color = colors.primaryText
                     ),
                     cursorBrush = SolidColor(colors.accent),
+                    keyboardOptions = KeyboardOptions(
+                        capitalization = KeyboardCapitalization.Sentences,
+                        imeAction = ImeAction.Default // Multi-line, default behavior
+                    ),
                     decorationBox = { innerTextField ->
                         Box {
                             if (content.isEmpty()) {
@@ -1110,16 +1183,145 @@ private fun JournalInputField(
                         }
                     }
 
-                    // Word Count
+                    // Word Count with Progress Indicator
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        // Circular progress indicator
+                        if (content.isNotEmpty()) {
+                            Box(
+                                modifier = Modifier.size(16.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator(
+                                    progress = { completionProgress },
+                                    modifier = Modifier.fillMaxSize(),
+                                    strokeWidth = 2.dp,
+                                    color = when (contentValidation) {
+                                        is ContentValidation.Valid -> colors.accent
+                                        is ContentValidation.MinimalContent -> colors.accent.copy(alpha = 0.7f)
+                                        else -> colors.placeholderText
+                                    },
+                                    trackColor = colors.sliderInactive
+                                )
+                                // Checkmark when complete
+                                if (contentValidation is ContentValidation.Valid) {
+                                    Icon(
+                                        imageVector = Icons.Filled.Check,
+                                        contentDescription = "Content complete",
+                                        tint = colors.accent,
+                                        modifier = Modifier.size(10.dp)
+                                    )
+                                }
+                            }
+                        }
+
+                        Text(
+                            text = "$wordCount WORDS",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontFamily = PoppinsFamily,
+                                fontWeight = FontWeight.Medium,
+                                letterSpacing = 1.sp
+                            ),
+                            color = when (contentValidation) {
+                                is ContentValidation.Valid -> colors.accent
+                                is ContentValidation.MinimalContent -> colors.secondaryText
+                                else -> colors.placeholderText
+                            }
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+// =============================================================================
+// CONTENT VALIDATION HINT
+// =============================================================================
+
+/**
+ * Displays helpful validation hints to guide the user toward writing
+ * more meaningful journal entries. Non-intrusive, appears only when helpful.
+ */
+@Composable
+private fun ContentValidationHint(
+    validation: ContentValidation,
+    validationHint: String?,
+    completionProgress: Float,
+    colors: JournalThemeColors
+) {
+    // Only show hint when there's something useful to display
+    val shouldShow = validation !is ContentValidation.Empty &&
+            validation !is ContentValidation.Valid &&
+            validationHint != null
+
+    AnimatedVisibility(
+        visible = shouldShow,
+        enter = fadeIn() + expandVertically(),
+        exit = fadeOut() + shrinkVertically()
+    ) {
+        if (validationHint != null) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.Top,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                // Icon based on validation type
+                val (icon, iconColor) = when (validation) {
+                    is ContentValidation.TooShort -> Icons.Filled.Edit to Color(0xFFFF9800)
+                    is ContentValidation.TooVague -> Icons.Filled.Lightbulb to Color(0xFF2196F3)
+                    is ContentValidation.MinimalContent -> Icons.Filled.TipsAndUpdates to colors.accent
+                    else -> Icons.Filled.Info to colors.secondaryText
+                }
+
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = iconColor,
+                    modifier = Modifier.size(18.dp)
+                )
+
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "$wordCount WORDS",
-                        style = MaterialTheme.typography.labelSmall.copy(
+                        text = validationHint,
+                        style = MaterialTheme.typography.bodySmall.copy(
                             fontFamily = PoppinsFamily,
-                            fontWeight = FontWeight.Medium,
-                            letterSpacing = 1.sp
+                            fontWeight = FontWeight.Normal,
+                            lineHeight = 18.sp
                         ),
-                        color = colors.placeholderText
+                        color = colors.secondaryText
                     )
+
+                    // Show minimum words hint for TooShort
+                    if (validation is ContentValidation.TooShort) {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "${validation.currentWords}/${validation.minimumWords} words minimum",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontFamily = PoppinsFamily,
+                                fontWeight = FontWeight.Medium
+                            ),
+                            color = colors.placeholderText
+                        )
+                    }
+
+                    // Show progress hint for MinimalContent
+                    if (validation is ContentValidation.MinimalContent) {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        val targetWords = ContentValidator.getRecommendedMinimumWords()
+                        Text(
+                            text = "${validation.wordCount}/$targetWords words for best insights",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontFamily = PoppinsFamily,
+                                fontWeight = FontWeight.Medium
+                            ),
+                            color = colors.accent.copy(alpha = 0.7f)
+                        )
+                    }
                 }
             }
         }
@@ -1375,6 +1577,150 @@ private fun RecordingIndicator(
                 fontWeight = FontWeight.SemiBold,
                 color = colors.accent
             )
+        }
+    }
+}
+
+// =============================================================================
+// TRANSCRIPTION INDICATOR
+// =============================================================================
+
+/**
+ * Shows active voice transcription state with sound level visualization,
+ * partial transcription preview, and cancel/stop controls.
+ */
+@Composable
+private fun TranscriptionIndicator(
+    partialText: String,
+    soundLevel: Float,
+    onStop: () -> Unit,
+    onCancel: () -> Unit,
+    colors: JournalThemeColors
+) {
+    val infiniteTransition = rememberInfiniteTransition(label = "transcription_pulse")
+    val pulseScale by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 1.15f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(600, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "mic_pulse"
+    )
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(colors.surface)
+            .padding(16.dp)
+    ) {
+        // Top row with mic icon and sound level visualization
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            // Pulsing mic icon
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .scale(pulseScale)
+                    .clip(CircleShape)
+                    .background(colors.accent),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Mic,
+                    contentDescription = "Listening",
+                    tint = Color.White,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+
+            // Sound level visualization bars
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(2.dp),
+                modifier = Modifier
+                    .weight(1f)
+                    .height(32.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                repeat(15) { index ->
+                    // Calculate bar height based on sound level and position
+                    val baseHeight = 8 + (index * 3) % 12
+                    val animatedHeight = (baseHeight + soundLevel * 16).dp
+
+                    Box(
+                        modifier = Modifier
+                            .width(4.dp)
+                            .height(animatedHeight.coerceIn(4.dp, 28.dp))
+                            .clip(RoundedCornerShape(2.dp))
+                            .background(colors.accent.copy(alpha = 0.4f + soundLevel * 0.5f))
+                    )
+                }
+            }
+
+            // Listening indicator text
+            Text(
+                text = "Listening...",
+                fontFamily = PoppinsFamily,
+                fontWeight = FontWeight.Medium,
+                fontSize = 14.sp,
+                color = colors.accent
+            )
+        }
+
+        // Partial transcription preview (if any)
+        if (partialText.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(12.dp))
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(colors.background)
+                    .padding(12.dp)
+            ) {
+                Text(
+                    text = partialText,
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Normal,
+                    fontSize = 14.sp,
+                    lineHeight = 20.sp,
+                    color = colors.secondaryText.copy(alpha = 0.8f),
+                    maxLines = 3
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Control buttons
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            TextButton(onClick = onCancel) {
+                Text(
+                    text = "Cancel",
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Medium,
+                    color = colors.secondaryText
+                )
+            }
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            TextButton(onClick = onStop) {
+                Text(
+                    text = "Done",
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.SemiBold,
+                    color = colors.accent
+                )
+            }
         }
     }
 }

@@ -437,11 +437,7 @@ class GeminiService @Inject constructor() {
         if (generativeModel == null && !isAutoInitialized) {
             autoInitializeFromBuildConfig()
         }
-        
-        val configured = generativeModel != null && !currentApiKey.isNullOrBlank()
-        if (!configured) {
-            android.util.Log.w("GeminiService", "GeminiService is NOT configured. API Key present: ${!currentApiKey.isNullOrBlank()}")
-        }
+
         val configured = generativeModel != null && !currentApiKey.isNullOrBlank()
         if (!configured) {
             android.util.Log.w("GeminiService", "GeminiService is NOT configured. API Key present: ${!currentApiKey.isNullOrBlank()}")

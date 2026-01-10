@@ -14,6 +14,7 @@ import com.prody.prashant.ui.screens.challenges.ChallengesScreen
 import com.prody.prashant.ui.screens.futuremessage.FutureMessageListScreen
 import com.prody.prashant.ui.screens.futuremessage.WriteMessageScreen
 import com.prody.prashant.ui.screens.home.HomeScreen
+import com.prody.prashant.ui.screens.idiom.IdiomDetailScreen
 import com.prody.prashant.ui.screens.journal.JournalDetailScreen
 import com.prody.prashant.ui.screens.journal.JournalHistoryScreen
 import com.prody.prashant.ui.screens.journal.JournalListScreen
@@ -80,6 +81,9 @@ sealed class Screen(val route: String) {
     data object VocabularyList : Screen("vocabulary")
     data object VocabularyDetail : Screen("vocabulary/{wordId}") {
         fun createRoute(wordId: Long) = "vocabulary/$wordId"
+    }
+    data object IdiomDetail : Screen("idiom/{idiomId}") {
+        fun createRoute(idiomId: Long) = "idiom/$idiomId"
     }
     data object Quotes : Screen("quotes")
     data object Meditation : Screen("meditation")
@@ -208,6 +212,9 @@ fun ProdyNavHost(
                 },
                 onNavigateToSearch = {
                     navController.navigate(Screen.Search.route)
+                },
+                onNavigateToIdiomDetail = { idiomId ->
+                    navController.navigate(Screen.IdiomDetail.createRoute(idiomId))
                 }
             )
         }
@@ -393,6 +400,20 @@ fun ProdyNavHost(
             val wordId = backStackEntry.arguments?.getLong("wordId") ?: return@composable
             VocabularyDetailScreen(
                 wordId = wordId,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        // =====================================================================
+        // IDIOM DETAIL
+        // =====================================================================
+        composable(
+            route = Screen.IdiomDetail.route,
+            arguments = listOf(navArgument("idiomId") { type = NavType.LongType })
+        ) { backStackEntry ->
+            val idiomId = backStackEntry.arguments?.getLong("idiomId") ?: return@composable
+            IdiomDetailScreen(
+                idiomId = idiomId,
                 onNavigateBack = { navController.popBackStack() }
             )
         }

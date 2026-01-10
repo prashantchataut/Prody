@@ -41,30 +41,14 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
-import androidx.navigation.NavType
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
 import com.prody.prashant.notification.NotificationScheduler
 import com.prody.prashant.ui.components.NavigationBreathingGlow
 import com.prody.prashant.ui.main.MainViewModel
 import com.prody.prashant.ui.navigation.BottomNavItem
+import com.prody.prashant.ui.navigation.ProdyNavHost
 import com.prody.prashant.ui.navigation.Screen
-import com.prody.prashant.ui.screens.futuremessage.FutureMessageListScreen
-import com.prody.prashant.ui.screens.futuremessage.WriteMessageScreen
-import com.prody.prashant.ui.screens.home.HomeScreen
-import com.prody.prashant.ui.screens.journal.JournalDetailScreen
-import com.prody.prashant.ui.screens.journal.JournalListScreen
-import com.prody.prashant.ui.screens.journal.NewJournalEntryScreen
-import com.prody.prashant.ui.screens.onboarding.OnboardingScreen
-import com.prody.prashant.ui.screens.profile.ProfileScreen
-import com.prody.prashant.ui.screens.profile.SettingsScreen
-import com.prody.prashant.ui.screens.quotes.QuotesScreen
-import com.prody.prashant.ui.screens.stats.StatsScreen
-import com.prody.prashant.ui.screens.vocabulary.VocabularyDetailScreen
-import com.prody.prashant.ui.screens.vocabulary.VocabularyListScreen
 import com.prody.prashant.ui.theme.PoppinsFamily
 import com.prody.prashant.ui.theme.ProdyPrimary
 import com.prody.prashant.ui.theme.ProdyTheme
@@ -193,7 +177,7 @@ fun ProdyApp(
         BottomNavItem.Profile
     )
 
-    // Determine if bottom nav should be shown
+    // Determine if bottom nav should be shown (only on main tabs)
     val showBottomBar = currentDestination?.route in listOf(
         Screen.Home.route,
         Screen.JournalList.route,
@@ -253,158 +237,12 @@ fun ProdyApp(
             }
         }
     ) { innerPadding ->
-        NavHost(
+        // Use the complete ProdyNavHost with all routes properly configured
+        ProdyNavHost(
             navController = navController,
             startDestination = startDestination,
-            modifier = Modifier.padding(innerPadding),
-            enterTransition = {
-                fadeIn(animationSpec = tween(300)) + slideInHorizontally(
-                    initialOffsetX = { it / 4 },
-                    animationSpec = tween(300)
-                )
-            },
-            exitTransition = {
-                fadeOut(animationSpec = tween(300))
-            },
-            popEnterTransition = {
-                fadeIn(animationSpec = tween(300))
-            },
-            popExitTransition = {
-                fadeOut(animationSpec = tween(300)) + slideOutHorizontally(
-                    targetOffsetX = { it / 4 },
-                    animationSpec = tween(300)
-                )
-            }
-        ) {
-            // Onboarding
-            composable(Screen.Onboarding.route) {
-                OnboardingScreen(
-                    onComplete = {
-                        navController.navigate(Screen.Home.route) {
-                            popUpTo(Screen.Onboarding.route) { inclusive = true }
-                        }
-                    }
-                )
-            }
-
-            // Home
-            composable(Screen.Home.route) {
-                HomeScreen(
-                    onNavigateToJournal = {
-                        navController.navigate(Screen.JournalList.route)
-                    },
-                    onNavigateToVocabulary = {
-                        navController.navigate(Screen.VocabularyList.route)
-                    },
-                    onNavigateToQuotes = {
-                        navController.navigate(Screen.Quotes.route)
-                    },
-                    onNavigateToFutureMessage = {
-                        navController.navigate(Screen.FutureMessageList.route)
-                    }
-                )
-            }
-
-            // Journal List
-            composable(Screen.JournalList.route) {
-                JournalListScreen(
-                    onNavigateToNewEntry = {
-                        navController.navigate(Screen.NewJournalEntry.route)
-                    },
-                    onNavigateToDetail = { entryId ->
-                        navController.navigate(Screen.JournalDetail.createRoute(entryId))
-                    }
-                )
-            }
-
-            // New Journal Entry
-            composable(Screen.NewJournalEntry.route) {
-                NewJournalEntryScreen(
-                    onNavigateBack = { navController.popBackStack() },
-                    onEntrySaved = { navController.popBackStack() }
-                )
-            }
-
-            // Journal Detail
-            composable(
-                route = Screen.JournalDetail.route,
-                arguments = listOf(navArgument("entryId") { type = NavType.LongType })
-            ) { backStackEntry ->
-                val entryId = backStackEntry.arguments?.getLong("entryId") ?: return@composable
-                JournalDetailScreen(
-                    entryId = entryId,
-                    onNavigateBack = { navController.popBackStack() }
-                )
-            }
-
-            // Stats
-            composable(Screen.Stats.route) {
-                StatsScreen()
-            }
-
-            // Profile
-            composable(Screen.Profile.route) {
-                ProfileScreen(
-                    onNavigateToSettings = {
-                        navController.navigate(Screen.Settings.route)
-                    }
-                )
-            }
-
-            // Settings
-            composable(Screen.Settings.route) {
-                SettingsScreen(
-                    onNavigateBack = { navController.popBackStack() }
-                )
-            }
-
-            // Vocabulary List
-            composable(Screen.VocabularyList.route) {
-                VocabularyListScreen(
-                    onNavigateBack = { navController.popBackStack() },
-                    onNavigateToDetail = { wordId ->
-                        navController.navigate(Screen.VocabularyDetail.createRoute(wordId))
-                    }
-                )
-            }
-
-            // Vocabulary Detail
-            composable(
-                route = Screen.VocabularyDetail.route,
-                arguments = listOf(navArgument("wordId") { type = NavType.LongType })
-            ) { backStackEntry ->
-                val wordId = backStackEntry.arguments?.getLong("wordId") ?: return@composable
-                VocabularyDetailScreen(
-                    wordId = wordId,
-                    onNavigateBack = { navController.popBackStack() }
-                )
-            }
-
-            // Quotes
-            composable(Screen.Quotes.route) {
-                QuotesScreen(
-                    onNavigateBack = { navController.popBackStack() }
-                )
-            }
-
-            // Future Message List
-            composable(Screen.FutureMessageList.route) {
-                FutureMessageListScreen(
-                    onNavigateBack = { navController.popBackStack() },
-                    onNavigateToWrite = {
-                        navController.navigate(Screen.WriteMessage.route)
-                    }
-                )
-            }
-
-            // Write Message
-            composable(Screen.WriteMessage.route) {
-                WriteMessageScreen(
-                    onNavigateBack = { navController.popBackStack() },
-                    onMessageSaved = { navController.popBackStack() }
-                )
-            }
-        }
+            modifier = Modifier.padding(innerPadding)
+        )
     }
 }
 

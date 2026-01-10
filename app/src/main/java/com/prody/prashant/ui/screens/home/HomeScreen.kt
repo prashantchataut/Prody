@@ -90,6 +90,7 @@ fun HomeScreen(
     onNavigateToMeditation: () -> Unit = {},
     onNavigateToChallenges: () -> Unit = {},
     onNavigateToSearch: () -> Unit = {},
+    onNavigateToIdiomDetail: (Long) -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -323,8 +324,15 @@ fun HomeScreen(
                     idiom = uiState.dailyIdiom,
                     idiomMeaning = uiState.idiomMeaning,
                     idiomExample = uiState.idiomExample,
+                    idiomId = uiState.idiomId,
                     onWordClick = onNavigateToVocabulary,
-                    onIdiomClick = onNavigateToVocabulary,
+                    onIdiomClick = { idiomId ->
+                        if (idiomId > 0) {
+                            onNavigateToIdiomDetail(idiomId)
+                        } else {
+                            onNavigateToVocabulary()
+                        }
+                    },
                     surfaceColor = surfaceColor,
                     primaryTextColor = primaryTextColor,
                     secondaryTextColor = secondaryTextColor,
@@ -1286,8 +1294,9 @@ private fun WordAndIdiomSection(
     idiom: String,
     idiomMeaning: String,
     idiomExample: String,
+    idiomId: Long,
     onWordClick: () -> Unit,
-    onIdiomClick: () -> Unit,
+    onIdiomClick: (Long) -> Unit,
     surfaceColor: Color,
     primaryTextColor: Color,
     secondaryTextColor: Color,
@@ -1316,6 +1325,7 @@ private fun WordAndIdiomSection(
         // Idiom Card - Full width for better readability
         IdiomCard(
             modifier = Modifier.fillMaxWidth(),
+            idiomId = idiomId,
             idiom = idiom,
             meaning = idiomMeaning,
             example = idiomExample,
@@ -1444,10 +1454,11 @@ private fun WordCard(
 @Composable
 private fun IdiomCard(
     modifier: Modifier = Modifier,
+    idiomId: Long,
     idiom: String,
     meaning: String,
     example: String,
-    onClick: () -> Unit,
+    onClick: (Long) -> Unit,
     surfaceColor: Color,
     primaryTextColor: Color,
     secondaryTextColor: Color,
@@ -1456,7 +1467,7 @@ private fun IdiomCard(
     Surface(
         modifier = modifier
             .clip(RoundedCornerShape(20.dp))
-            .clickable(onClick = onClick),
+            .clickable(onClick = { onClick(idiomId) }),
         shape = RoundedCornerShape(20.dp),
         color = surfaceColor,
         tonalElevation = 0.dp

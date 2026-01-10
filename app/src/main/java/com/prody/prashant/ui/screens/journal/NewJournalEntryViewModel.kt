@@ -18,6 +18,11 @@ import com.prody.prashant.domain.model.Mood
 import com.prody.prashant.ui.theme.JournalTemplate
 import com.prody.prashant.util.AudioRecorderManager
 import com.prody.prashant.util.BuddhaWisdom
+import com.prody.prashant.util.TranscriptionError
+import com.prody.prashant.util.TranscriptionResult
+import com.prody.prashant.util.VoiceTranscriptionService
+import com.prody.prashant.domain.validation.ContentValidation
+import com.prody.prashant.domain.validation.ContentValidator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -58,7 +63,17 @@ data class NewJournalEntryUiState(
     val showDiscardDialog: Boolean = false,
     // Session result (replaces spam feedback)
     val sessionResult: SessionResult? = null,
-    val showSessionResult: Boolean = false
+    val showSessionResult: Boolean = false,
+    // Content validation state - provides real-time feedback
+    val contentValidation: ContentValidation = ContentValidation.Empty,
+    val contentCompletionProgress: Float = 0f,
+    val validationHint: String? = null,
+    // Voice transcription state
+    val isTranscribing: Boolean = false,
+    val transcriptionText: String = "",
+    val transcriptionPartial: String = "",
+    val transcriptionSoundLevel: Float = 0f,
+    val transcriptionAvailable: Boolean = true
 ) {
     // Check if there are any unsaved changes
     val hasContent: Boolean
@@ -76,7 +91,8 @@ class NewJournalEntryViewModel @Inject constructor(
     private val preferencesManager: PreferencesManager,
     private val gameSessionManager: GameSessionManager,
     private val buddhaAiRepository: BuddhaAiRepository,
-    private val audioRecorderManager: AudioRecorderManager
+    private val audioRecorderManager: AudioRecorderManager,
+    private val voiceTranscriptionService: VoiceTranscriptionService
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(NewJournalEntryUiState())
@@ -89,6 +105,16 @@ class NewJournalEntryViewModel @Inject constructor(
     init {
         loadAiSettings()
         observeAudioRecorderStates()
+        checkTranscriptionAvailability()
+    }
+
+    /**
+     * Check if voice transcription is available on this device.
+     */
+    private fun checkTranscriptionAvailability() {
+        _uiState.update {
+            it.copy(transcriptionAvailable = voiceTranscriptionService.isAvailable())
+        }
     }
 
     /**
@@ -166,8 +192,17 @@ class NewJournalEntryViewModel @Inject constructor(
 
     fun updateContent(content: String) {
         val wordCount = if (content.isBlank()) 0 else content.trim().split("\\s+".toRegex()).size
+        val validation = ContentValidator.validate(content)
+        val completionProgress = ContentValidator.getCompletionProgress(content)
         _uiState.update {
-            it.copy(content = content, wordCount = wordCount, hasUnsavedChanges = true)
+            it.copy(
+                content = content,
+                wordCount = wordCount,
+                hasUnsavedChanges = true,
+                contentValidation = validation,
+                contentCompletionProgress = completionProgress,
+                validationHint = validation.getMessage()
+            )
         }
     }
 
@@ -209,10 +244,30 @@ class NewJournalEntryViewModel @Inject constructor(
         viewModelScope.launch {
             val state = _uiState.value
 
-            // Don't save empty entries
-            if (state.content.isBlank()) {
-                _uiState.update { it.copy(error = "Please write something before saving") }
-                return@launch
+            // Validate content before saving
+            val validation = state.contentValidation
+            when (validation) {
+                is ContentValidation.Empty -> {
+                    _uiState.update { it.copy(error = "Please write something before saving") }
+                    return@launch
+                }
+                is ContentValidation.TooShort -> {
+                    _uiState.update {
+                        it.copy(error = "Your entry needs a bit more detail. ${validation.suggestion}")
+                    }
+                    return@launch
+                }
+                is ContentValidation.TooVague -> {
+                    // TooVague can still be saved, but show the hint
+                    _uiState.update { it.copy(validationHint = validation.suggestion) }
+                    // Continue with save - vague content is still valid
+                }
+                is ContentValidation.MinimalContent -> {
+                    // MinimalContent is fine to save, just a hint
+                }
+                is ContentValidation.Valid -> {
+                    // Perfect - proceed
+                }
             }
 
             _uiState.update { it.copy(isSaving = true, isGeneratingAiResponse = true, error = null) }
@@ -545,11 +600,116 @@ class NewJournalEntryViewModel @Inject constructor(
     }
 
     /**
-     * Clean up audio resources when ViewModel is cleared.
+     * Clean up audio and transcription resources when ViewModel is cleared.
      */
     override fun onCleared() {
         super.onCleared()
         audioRecorderManager.release()
+        voiceTranscriptionService.release()
+    }
+
+    // =========================================================================
+    // VOICE TRANSCRIPTION METHODS
+    // =========================================================================
+
+    /**
+     * Start voice-to-text transcription.
+     * Appends transcribed text to the current content.
+     */
+    fun startTranscription() {
+        if (!voiceTranscriptionService.isAvailable()) {
+            _uiState.update { it.copy(error = "Voice transcription is not available on this device") }
+            return
+        }
+
+        if (_uiState.value.isTranscribing) {
+            android.util.Log.w(TAG, "Transcription already in progress")
+            return
+        }
+
+        viewModelScope.launch {
+            _uiState.update {
+                it.copy(
+                    isTranscribing = true,
+                    transcriptionText = "",
+                    transcriptionPartial = ""
+                )
+            }
+
+            voiceTranscriptionService.transcribe()
+                .collect { result ->
+                    when (result) {
+                        is TranscriptionResult.Ready -> {
+                            android.util.Log.d(TAG, "Transcription ready")
+                        }
+                        is TranscriptionResult.Started -> {
+                            android.util.Log.d(TAG, "Transcription started")
+                        }
+                        is TranscriptionResult.Partial -> {
+                            _uiState.update { it.copy(transcriptionPartial = result.text) }
+                        }
+                        is TranscriptionResult.Final -> {
+                            // Append transcribed text to content
+                            val currentContent = _uiState.value.content
+                            val separator = if (currentContent.isNotEmpty() && !currentContent.endsWith(" ")) " " else ""
+                            val newContent = currentContent + separator + result.text
+
+                            updateContent(newContent)
+
+                            _uiState.update {
+                                it.copy(
+                                    isTranscribing = false,
+                                    transcriptionText = result.text,
+                                    transcriptionPartial = ""
+                                )
+                            }
+                            android.util.Log.d(TAG, "Transcription complete: ${result.text}")
+                        }
+                        is TranscriptionResult.SoundLevel -> {
+                            _uiState.update { it.copy(transcriptionSoundLevel = result.level) }
+                        }
+                        is TranscriptionResult.Ended -> {
+                            android.util.Log.d(TAG, "Speech ended, processing...")
+                        }
+                        is TranscriptionResult.Error -> {
+                            _uiState.update {
+                                it.copy(
+                                    isTranscribing = false,
+                                    error = result.error.message
+                                )
+                            }
+                            android.util.Log.e(TAG, "Transcription error: ${result.error.message}")
+                        }
+                    }
+                }
+        }
+    }
+
+    /**
+     * Stop the current voice transcription.
+     */
+    fun stopTranscription() {
+        voiceTranscriptionService.stopListening()
+        _uiState.update {
+            it.copy(
+                isTranscribing = false,
+                transcriptionPartial = ""
+            )
+        }
+    }
+
+    /**
+     * Cancel the current voice transcription without saving.
+     */
+    fun cancelTranscription() {
+        voiceTranscriptionService.cancel()
+        _uiState.update {
+            it.copy(
+                isTranscribing = false,
+                transcriptionPartial = "",
+                transcriptionSoundLevel = 0f
+            )
+        }
     }
 
     // =========================================================================
