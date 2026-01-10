@@ -777,3 +777,101 @@ val EmotionNeutral = MoodNeutral
 val EmotionReflective = MoodConfused
 val EmotionFocused = Color(0xFF4FC3F7)
 val EmotionDetermined = Color(0xFFFF7043)
+
+// =============================================================================
+// YEARLY WRAPPED COLORS - Vibrant, Celebratory Gradients
+// =============================================================================
+
+// Wrapped gradient colors
+val WrappedPurple1 = Color(0xFF6B5CE7)
+val WrappedPurple2 = Color(0xFF8B7EF0)
+val WrappedPurple3 = Color(0xFFB39DDB)
+
+val WrappedPink1 = Color(0xFFE91E63)
+val WrappedPink2 = Color(0xFFF06292)
+val WrappedPink3 = Color(0xFFFF80AB)
+
+val WrappedOrange1 = Color(0xFFFF6F00)
+val WrappedOrange2 = Color(0xFFFF8F00)
+val WrappedOrange3 = Color(0xFFFFB74D)
+
+val WrappedBlue1 = Color(0xFF1565C0)
+val WrappedBlue2 = Color(0xFF42A5F5)
+val WrappedBlue3 = Color(0xFF90CAF9)
+
+val WrappedTeal1 = Color(0xFF00695C)
+val WrappedTeal2 = Color(0xFF26A69A)
+val WrappedTeal3 = Color(0xFF80CBC4)
+
+val WrappedGreen1 = Color(0xFF2ED56B)
+val WrappedGreen2 = Color(0xFF36F97F)
+val WrappedGreen3 = Color(0xFF5DFA96)
+
+val WrappedYellow1 = Color(0xFFF57F17)
+val WrappedYellow2 = Color(0xFFFFEB3B)
+val WrappedYellow3 = Color(0xFFFFF176)
+
+val WrappedIndigo1 = Color(0xFF283593)
+val WrappedIndigo2 = Color(0xFF5C6BC0)
+val WrappedIndigo3 = Color(0xFF9FA8DA)
+
+// Wrapped card background colors
+val WrappedCardBackgroundLight = Color(0xFFFFFFFF)
+val WrappedCardBackgroundDark = Color(0xFF1A3633)
+
+// Wrapped text colors
+val WrappedTextOnGradient = Color(0xFFFFFFFF)
+val WrappedTextSecondaryOnGradient = Color(0xE6FFFFFF)
+
+// Wrapped celebration colors
+val WrappedConfettiRed = Color(0xFFE53935)
+val WrappedConfettiOrange = Color(0xFFFF6F00)
+val WrappedConfettiYellow = Color(0xFFFFEB3B)
+val WrappedConfettiGreen = Color(0xFF36F97F)
+val WrappedConfettiBlue = Color(0xFF42A5F5)
+val WrappedConfettiPurple = Color(0xFF8B7EF0)
+val WrappedConfettiPink = Color(0xFFE91E63)
+
+object WrappedGradients {
+    // Opening slide - Vibrant purple to pink
+    val opening = listOf(WrappedPurple1, WrappedPurple2, WrappedPink1)
+
+    // Stats slides - Bold and energetic
+    val stats = listOf(WrappedGreen1, WrappedGreen2, WrappedGreen3)
+    val writingStats = listOf(WrappedOrange1, WrappedOrange2, WrappedOrange3)
+    val engagement = listOf(WrappedBlue1, WrappedBlue2, WrappedBlue3)
+    val learning = listOf(WrappedPurple1, WrappedPurple2, WrappedPurple3)
+
+    // Mood journey - Calming and reflective
+    val moodJourney = listOf(WrappedTeal1, WrappedTeal2, WrappedTeal3)
+    val moodHighlights = listOf(WrappedBlue1, WrappedBlue2, WrappedBlue3)
+
+    // Themes and growth - Inspiring
+    val themes = listOf(WrappedIndigo1, WrappedIndigo2, WrappedIndigo3)
+    val growth = listOf(WrappedGreen1, WrappedGreen2, WrappedGreen3)
+    val challenges = listOf(WrappedOrange1, WrappedOrange2, WrappedOrange3)
+
+    // Key moments - Warm and personal
+    val keyMoments = listOf(WrappedYellow1, WrappedYellow2, WrappedYellow3)
+    val patterns = listOf(WrappedPink1, WrappedPink2, WrappedPink3)
+
+    // Narratives - Deep and meaningful
+    val narratives = listOf(WrappedPurple1, WrappedIndigo2, WrappedBlue2)
+
+    // Looking ahead - Hopeful and bright
+    val lookingAhead = listOf(WrappedGreen1, WrappedBlue2, WrappedPurple3)
+
+    // Celebration - Full spectrum
+    val celebration = listOf(
+        WrappedPurple1, WrappedPink1, WrappedOrange1,
+        WrappedYellow1, WrappedGreen1, WrappedBlue1, WrappedIndigo1
+    )
+
+    // Shareable cards - Each has unique gradient
+    val shareCardTotalWords = listOf(WrappedGreen1, WrappedGreen2, WrappedGreen3)
+    val shareCardStreak = listOf(WrappedOrange1, WrappedOrange2, WrappedOrange3)
+    val shareCardMood = listOf(WrappedBlue1, WrappedBlue2, WrappedBlue3)
+    val shareCardTheme = listOf(WrappedPurple1, WrappedPurple2, WrappedPurple3)
+    val shareCardGrowth = listOf(WrappedTeal1, WrappedTeal2, WrappedTeal3)
+    val shareCardActiveDays = listOf(WrappedYellow1, WrappedYellow2, WrappedYellow3)
+}

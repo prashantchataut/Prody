@@ -72,6 +72,34 @@ class PreferencesManager @Inject constructor(
         val PRIVACY_LOCK_FUTURE_MESSAGES = booleanPreferencesKey("privacy_lock_future_messages")
         val PRIVACY_LOCK_ON_BACKGROUND = booleanPreferencesKey("privacy_lock_on_background")
         val PRIVACY_LAST_UNLOCKED_AT = longPreferencesKey("privacy_last_unlocked_at")
+
+        // Weekly Summary settings
+        val WEEKLY_SUMMARY_ENABLED = booleanPreferencesKey("weekly_summary_enabled")
+        val WEEKLY_SUMMARY_DAY = intPreferencesKey("weekly_summary_day") // 0-6 (Sunday-Saturday)
+        val LAST_WEEKLY_SUMMARY_SHOWN = longPreferencesKey("last_weekly_summary_shown")
+        val WEEKLY_SUMMARY_NOTIFICATIONS = booleanPreferencesKey("weekly_summary_notifications")
+
+        // Daily Ritual settings
+        val MORNING_RITUAL_ENABLED = booleanPreferencesKey("morning_ritual_enabled")
+        val EVENING_RITUAL_ENABLED = booleanPreferencesKey("evening_ritual_enabled")
+        val MORNING_RITUAL_START_HOUR = intPreferencesKey("morning_ritual_start_hour")
+        val MORNING_RITUAL_END_HOUR = intPreferencesKey("morning_ritual_end_hour")
+        val EVENING_RITUAL_START_HOUR = intPreferencesKey("evening_ritual_start_hour")
+        val RITUAL_REMINDER_ENABLED = booleanPreferencesKey("ritual_reminder_enabled")
+
+        // Quiet Mode settings
+        val QUIET_MODE_ENABLED = booleanPreferencesKey("quiet_mode_enabled")
+        val QUIET_MODE_AUTO_SUGGEST_THRESHOLD = intPreferencesKey("quiet_mode_auto_suggest_threshold")
+        val QUIET_MODE_LAST_SUGGESTED_AT = longPreferencesKey("quiet_mode_last_suggested_at")
+        val QUIET_MODE_ENABLED_AT = longPreferencesKey("quiet_mode_enabled_at")
+        val QUIET_MODE_LAST_CHECK_IN_AT = longPreferencesKey("quiet_mode_last_check_in_at")
+
+        // Haven Personal Therapist settings
+        val HAVEN_ENABLED = booleanPreferencesKey("haven_enabled")
+        val HAVEN_NOTIFICATIONS_ENABLED = booleanPreferencesKey("haven_notifications_enabled")
+        val HAVEN_DAILY_CHECK_IN_TIME = intPreferencesKey("haven_daily_check_in_time")
+        val HAVEN_LAST_SESSION_AT = longPreferencesKey("haven_last_session_at")
+        val THERAPIST_API_KEY = stringPreferencesKey("therapist_api_key")
     }
 
     // Onboarding
@@ -658,6 +686,311 @@ class PreferencesManager @Inject constructor(
         }
     }
 
+    // ===== WEEKLY SUMMARY SETTINGS =====
+
+    val weeklySummaryEnabled: Flow<Boolean> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.WEEKLY_SUMMARY_ENABLED] ?: true
+        }
+
+    suspend fun setWeeklySummaryEnabled(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.WEEKLY_SUMMARY_ENABLED] = enabled
+        }
+    }
+
+    val weeklySummaryDay: Flow<Int> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.WEEKLY_SUMMARY_DAY] ?: 0 // Default Sunday (0)
+        }
+
+    suspend fun setWeeklySummaryDay(dayOfWeek: Int) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.WEEKLY_SUMMARY_DAY] = dayOfWeek.coerceIn(0, 6)
+        }
+    }
+
+    val lastWeeklySummaryShown: Flow<Long> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.LAST_WEEKLY_SUMMARY_SHOWN] ?: 0L
+        }
+
+    suspend fun setLastWeeklySummaryShown(timestamp: Long) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.LAST_WEEKLY_SUMMARY_SHOWN] = timestamp
+        }
+    }
+
+    val weeklySummaryNotifications: Flow<Boolean> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.WEEKLY_SUMMARY_NOTIFICATIONS] ?: true
+        }
+
+    suspend fun setWeeklySummaryNotifications(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.WEEKLY_SUMMARY_NOTIFICATIONS] = enabled
+        }
+    }
+
+    // ===== DAILY RITUAL SETTINGS =====
+
+    val morningRitualEnabled: Flow<Boolean> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.MORNING_RITUAL_ENABLED] ?: true
+        }
+
+    suspend fun setMorningRitualEnabled(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.MORNING_RITUAL_ENABLED] = enabled
+        }
+    }
+
+    val eveningRitualEnabled: Flow<Boolean> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.EVENING_RITUAL_ENABLED] ?: true
+        }
+
+    suspend fun setEveningRitualEnabled(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.EVENING_RITUAL_ENABLED] = enabled
+        }
+    }
+
+    val morningRitualStartHour: Flow<Int> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.MORNING_RITUAL_START_HOUR] ?: 5
+        }
+
+    suspend fun setMorningRitualStartHour(hour: Int) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.MORNING_RITUAL_START_HOUR] = hour
+        }
+    }
+
+    val morningRitualEndHour: Flow<Int> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.MORNING_RITUAL_END_HOUR] ?: 12
+        }
+
+    suspend fun setMorningRitualEndHour(hour: Int) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.MORNING_RITUAL_END_HOUR] = hour
+        }
+    }
+
+    val eveningRitualStartHour: Flow<Int> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.EVENING_RITUAL_START_HOUR] ?: 18
+        }
+
+    suspend fun setEveningRitualStartHour(hour: Int) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.EVENING_RITUAL_START_HOUR] = hour
+        }
+    }
+
+    val ritualReminderEnabled: Flow<Boolean> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.RITUAL_REMINDER_ENABLED] ?: true
+        }
+
+    suspend fun setRitualReminderEnabled(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.RITUAL_REMINDER_ENABLED] = enabled
+        }
+    }
+
+    // ===== QUIET MODE SETTINGS =====
+
+    val quietModeEnabled: Flow<Boolean> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.QUIET_MODE_ENABLED] ?: false
+        }
+
+    suspend fun setQuietModeEnabled(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.QUIET_MODE_ENABLED] = enabled
+            if (enabled) {
+                preferences[PreferencesKeys.QUIET_MODE_ENABLED_AT] = System.currentTimeMillis()
+            }
+        }
+    }
+
+    val quietModeAutoSuggestThreshold: Flow<Int> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.QUIET_MODE_AUTO_SUGGEST_THRESHOLD] ?: 3 // Default: 3 negative entries
+        }
+
+    suspend fun setQuietModeAutoSuggestThreshold(threshold: Int) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.QUIET_MODE_AUTO_SUGGEST_THRESHOLD] = threshold
+        }
+    }
+
+    val quietModeLastSuggestedAt: Flow<Long> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.QUIET_MODE_LAST_SUGGESTED_AT] ?: 0L
+        }
+
+    suspend fun setQuietModeLastSuggestedAt(timestamp: Long) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.QUIET_MODE_LAST_SUGGESTED_AT] = timestamp
+        }
+    }
+
+    val quietModeEnabledAt: Flow<Long> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.QUIET_MODE_ENABLED_AT] ?: 0L
+        }
+
+    val quietModeLastCheckInAt: Flow<Long> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.QUIET_MODE_LAST_CHECK_IN_AT] ?: 0L
+        }
+
+    suspend fun setQuietModeLastCheckInAt(timestamp: Long) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.QUIET_MODE_LAST_CHECK_IN_AT] = timestamp
+        }
+    }
+
+    // ===== HAVEN PERSONAL THERAPIST SETTINGS =====
+
+    val havenEnabled: Flow<Boolean> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.HAVEN_ENABLED] ?: true
+        }
+
+    suspend fun setHavenEnabled(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.HAVEN_ENABLED] = enabled
+        }
+    }
+
+    val havenNotificationsEnabled: Flow<Boolean> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.HAVEN_NOTIFICATIONS_ENABLED] ?: true
+        }
+
+    suspend fun setHavenNotificationsEnabled(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.HAVEN_NOTIFICATIONS_ENABLED] = enabled
+        }
+    }
+
+    val havenDailyCheckInTime: Flow<Int> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.HAVEN_DAILY_CHECK_IN_TIME] ?: 9
+        }
+
+    suspend fun setHavenDailyCheckInTime(hour: Int) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.HAVEN_DAILY_CHECK_IN_TIME] = hour
+        }
+    }
+
+    val havenLastSessionAt: Flow<Long> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.HAVEN_LAST_SESSION_AT] ?: 0L
+        }
+
+    suspend fun setHavenLastSessionAt(timestamp: Long) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.HAVEN_LAST_SESSION_AT] = timestamp
+        }
+    }
+
+    val therapistApiKey: Flow<String> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.THERAPIST_API_KEY] ?: ""
+        }
+
+    suspend fun setTherapistApiKey(apiKey: String) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.THERAPIST_API_KEY] = apiKey
+        }
+    }
+
     // Clear all preferences
     suspend fun clearAllPreferences() {
         dataStore.edit { preferences ->
@@ -697,6 +1030,15 @@ class PreferencesManager @Inject constructor(
             preferences[PreferencesKeys.PRIVACY_LOCK_JOURNAL] = false
             preferences[PreferencesKeys.PRIVACY_LOCK_FUTURE_MESSAGES] = false
             preferences[PreferencesKeys.PRIVACY_LOCK_ON_BACKGROUND] = true
+            preferences[PreferencesKeys.WEEKLY_SUMMARY_ENABLED] = true
+            preferences[PreferencesKeys.WEEKLY_SUMMARY_DAY] = 0 // Sunday
+            preferences[PreferencesKeys.WEEKLY_SUMMARY_NOTIFICATIONS] = true
+            preferences[PreferencesKeys.MORNING_RITUAL_ENABLED] = true
+            preferences[PreferencesKeys.EVENING_RITUAL_ENABLED] = true
+            preferences[PreferencesKeys.MORNING_RITUAL_START_HOUR] = 5
+            preferences[PreferencesKeys.MORNING_RITUAL_END_HOUR] = 12
+            preferences[PreferencesKeys.EVENING_RITUAL_START_HOUR] = 18
+            preferences[PreferencesKeys.RITUAL_REMINDER_ENABLED] = true
         }
     }
 }

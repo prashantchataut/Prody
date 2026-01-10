@@ -8,6 +8,9 @@ import com.prody.prashant.data.local.entity.SavedWisdomEntity
 import com.prody.prashant.domain.model.Mood
 import com.prody.prashant.domain.repository.DailyRitualRepository
 import com.prody.prashant.domain.repository.WisdomCollectionRepository
+import com.prody.prashant.domain.ritual.EveningReflectionEngine
+import com.prody.prashant.domain.ritual.IntentionOutcome
+import com.prody.prashant.domain.ritual.MorningIntentionEngine
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -60,11 +63,16 @@ data class DailyRitualUiState(
     val selectedMood: Mood? = null,
     val intention: String = "",
     val wisdomForMorning: SavedWisdomEntity? = null,
+    val intentionSource: String = DailyRitualEntity.INTENTION_SOURCE_WRITTEN,
+    val intentionSuggestions: List<String> = emptyList(),
     // Evening ritual inputs
     val dayRating: DayRating? = null,
     val eveningReflection: String = "",
+    val morningIntention: String? = null, // To reference in evening
+    val intentionOutcome: IntentionOutcome? = null,
     // Prompts
     val currentPrompt: String = "",
+    val reflectionPrompt: String = "",
     // Progress
     val isSaving: Boolean = false,
     val isComplete: Boolean = false,
@@ -81,7 +89,9 @@ data class DailyRitualUiState(
 class DailyRitualViewModel @Inject constructor(
     private val dailyRitualRepository: DailyRitualRepository,
     private val wisdomRepository: WisdomCollectionRepository,
-    private val writingCompanionService: WritingCompanionService
+    private val writingCompanionService: WritingCompanionService,
+    private val morningIntentionEngine: MorningIntentionEngine,
+    private val eveningReflectionEngine: EveningReflectionEngine
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(DailyRitualUiState())
@@ -138,6 +148,7 @@ class DailyRitualViewModel @Inject constructor(
     fun startRitual() {
         viewModelScope.launch {
             val mode = _uiState.value.ritualMode
+            val streak = _uiState.value.currentStreak
 
             // Load wisdom for morning ritual
             if (mode == RitualMode.MORNING) {
@@ -149,18 +160,41 @@ class DailyRitualViewModel @Inject constructor(
                     }
             }
 
-            // Generate prompt
+            // Generate smart contextual prompts using the engines
             val prompt = when (mode) {
-                RitualMode.MORNING -> writingCompanionService.getStartingPrompt(
-                    mood = null,
-                    recentThemes = emptyList(),
-                    timeOfDay = WritingCompanionService.TimeOfDay.MORNING
-                )
-                RitualMode.EVENING -> writingCompanionService.getStartingPrompt(
-                    mood = null,
-                    recentThemes = emptyList(),
-                    timeOfDay = WritingCompanionService.TimeOfDay.EVENING
-                )
+                RitualMode.MORNING -> {
+                    // Check if yesterday was difficult
+                    val wasYesterdayDifficult = morningIntentionEngine.wasYesterdayDifficult(userId)
+
+                    // Generate smart morning prompt
+                    val morningPrompt = morningIntentionEngine.generateMorningPrompt(
+                        userId = userId,
+                        currentStreak = streak,
+                        wasYesterdayDifficult = wasYesterdayDifficult
+                    )
+
+                    // Generate intention suggestions based on patterns
+                    val suggestions = morningIntentionEngine.generateIntentionSuggestions(userId, limit = 3)
+                    _uiState.update { it.copy(intentionSuggestions = suggestions) }
+
+                    morningPrompt
+                }
+                RitualMode.EVENING -> {
+                    // Get today's ritual to check for morning intention
+                    val todayDate = DailyRitualEntity.getTodayDate()
+                    val todayRitual = dailyRitualRepository.getRitualForDate(userId, todayDate)
+                        .getOrNull()
+
+                    val morningIntention = todayRitual?.morningIntention
+                    _uiState.update { it.copy(morningIntention = morningIntention) }
+
+                    // Generate evening prompt (may reference morning intention)
+                    eveningReflectionEngine.generateEveningPrompt(
+                        userId = userId,
+                        morningIntention = morningIntention,
+                        dayRating = null // Not set yet
+                    )
+                }
             }
 
             _uiState.update { it.copy(
@@ -232,7 +266,29 @@ class DailyRitualViewModel @Inject constructor(
     }
 
     fun onDayRatingSelected(rating: DayRating) {
-        _uiState.update { it.copy(dayRating = rating) }
+        viewModelScope.launch {
+            // Generate a follow-up reflection prompt based on the rating
+            val reflectionPrompt = eveningReflectionEngine.generateReflectionPrompt(
+                dayRating = rating.value,
+                morningIntention = _uiState.value.morningIntention
+            )
+
+            _uiState.update { it.copy(
+                dayRating = rating,
+                reflectionPrompt = reflectionPrompt
+            )}
+        }
+    }
+
+    fun onIntentionOutcomeSelected(outcome: IntentionOutcome) {
+        _uiState.update { it.copy(intentionOutcome = outcome) }
+    }
+
+    fun selectIntentionSuggestion(suggestion: String) {
+        _uiState.update { it.copy(
+            intention = suggestion,
+            intentionSource = DailyRitualEntity.INTENTION_SOURCE_SUGGESTED
+        )}
     }
 
     fun onEveningReflectionChanged(reflection: String) {
@@ -257,6 +313,13 @@ class DailyRitualViewModel @Inject constructor(
                     )
                 }
                 RitualMode.EVENING -> {
+                    // Infer intention outcome if not explicitly set
+                    val outcome = state.intentionOutcome ?: eveningReflectionEngine.inferIntentionOutcome(
+                        morningIntention = state.morningIntention,
+                        eveningReflection = state.eveningReflection.takeIf { it.isNotBlank() },
+                        dayRating = state.dayRating?.value
+                    )
+
                     dailyRitualRepository.completeEveningRitual(
                         userId = userId,
                         dayRating = state.dayRating?.value ?: "neutral",
@@ -268,10 +331,22 @@ class DailyRitualViewModel @Inject constructor(
 
             result
                 .onSuccess {
+                    // Generate warm, personal completion message using engines
                     val message = when (state.ritualMode) {
-                        RitualMode.MORNING -> "Morning ritual complete! Have a great day."
-                        RitualMode.EVENING -> "Evening ritual complete. Rest well."
+                        RitualMode.MORNING -> {
+                            morningIntentionEngine.getMorningCompletionMessage(
+                                hasIntention = state.intention.isNotBlank()
+                            )
+                        }
+                        RitualMode.EVENING -> {
+                            eveningReflectionEngine.getEveningCompletionMessage(
+                                dayRating = state.dayRating?.value,
+                                intentionOutcome = state.intentionOutcome,
+                                currentStreak = state.currentStreak
+                            )
+                        }
                     }
+
                     _uiState.update { it.copy(
                         isSaving = false,
                         isComplete = true,
@@ -376,10 +451,15 @@ class DailyRitualViewModel @Inject constructor(
             currentStep = RitualStep.WELCOME,
             selectedMood = null,
             intention = "",
+            intentionSource = DailyRitualEntity.INTENTION_SOURCE_WRITTEN,
+            intentionSuggestions = emptyList(),
             dayRating = null,
             eveningReflection = "",
+            morningIntention = null,
+            intentionOutcome = null,
             isComplete = false,
-            completionMessage = ""
+            completionMessage = "",
+            reflectionPrompt = ""
         )}
     }
 }

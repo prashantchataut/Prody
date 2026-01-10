@@ -116,7 +116,22 @@ data class VocabularyLearningEntity(
     /**
      * Date when the word was mastered (box level 5)
      */
-    val masteredDate: Long? = null
+    val masteredDate: Long? = null,
+
+    /**
+     * Whether the word has been used in context (journal entries)
+     */
+    val usedInContext: Boolean = false,
+
+    /**
+     * Timestamp when the word was last used in context
+     */
+    val lastUsedAt: Long? = null,
+
+    /**
+     * Number of times the word has been used in journal entries
+     */
+    val timesUsed: Int = 0
 ) {
     /**
      * Returns the accuracy percentage for this word

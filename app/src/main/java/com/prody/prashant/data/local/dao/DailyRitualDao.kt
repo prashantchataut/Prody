@@ -56,6 +56,7 @@ interface DailyRitualDao {
             morningIntention = :intention,
             morningMood = :mood,
             morningWisdomId = :wisdomId,
+            intentionSource = :intentionSource,
             updatedAt = :completedAt
         WHERE id = :id
     """)
@@ -64,6 +65,7 @@ interface DailyRitualDao {
         intention: String?,
         mood: String?,
         wisdomId: Long?,
+        intentionSource: String? = null,
         completedAt: Long = System.currentTimeMillis()
     )
 
@@ -72,6 +74,13 @@ interface DailyRitualDao {
      */
     @Query("SELECT morningCompleted FROM daily_rituals WHERE userId = :userId AND date = :date AND isDeleted = 0")
     suspend fun isMorningRitualComplete(userId: String, date: Long): Boolean?
+
+    /**
+     * Check if morning ritual is complete (returns boolean, not nullable)
+     */
+    suspend fun isMorningRitualCompleted(userId: String, date: Long): Boolean {
+        return isMorningRitualComplete(userId, date) ?: false
+    }
 
     // ==================== EVENING RITUAL ====================
 
@@ -85,6 +94,8 @@ interface DailyRitualDao {
             eveningDayRating = :dayRating,
             eveningReflection = :reflection,
             eveningMood = :mood,
+            intentionOutcome = :intentionOutcome,
+            outcomeReflection = :outcomeReflection,
             updatedAt = :completedAt
         WHERE id = :id
     """)
@@ -93,6 +104,8 @@ interface DailyRitualDao {
         dayRating: String?,
         reflection: String?,
         mood: String?,
+        intentionOutcome: String? = null,
+        outcomeReflection: String? = null,
         completedAt: Long = System.currentTimeMillis()
     )
 
@@ -101,6 +114,13 @@ interface DailyRitualDao {
      */
     @Query("SELECT eveningCompleted FROM daily_rituals WHERE userId = :userId AND date = :date AND isDeleted = 0")
     suspend fun isEveningRitualComplete(userId: String, date: Long): Boolean?
+
+    /**
+     * Check if evening ritual is complete (returns boolean, not nullable)
+     */
+    suspend fun isEveningRitualCompleted(userId: String, date: Long): Boolean {
+        return isEveningRitualComplete(userId, date) ?: false
+    }
 
     // ==================== EXPANSION TRACKING ====================
 
@@ -119,7 +139,42 @@ interface DailyRitualDao {
     // ==================== STATISTICS ====================
 
     /**
+     * Get all rituals for a user
+     */
+    @Query("""
+        SELECT * FROM daily_rituals
+        WHERE userId = :userId
+        AND isDeleted = 0
+        ORDER BY date DESC
+    """)
+    fun getAllRituals(userId: String): Flow<List<DailyRitualEntity>>
+
+    /**
      * Get ritual history for a date range
+     */
+    @Query("""
+        SELECT * FROM daily_rituals
+        WHERE userId = :userId
+        AND date BETWEEN :startDate AND :endDate
+        AND isDeleted = 0
+        ORDER BY date DESC
+    """)
+    fun getRitualsForDateRange(userId: String, startDate: Long, endDate: Long): Flow<List<DailyRitualEntity>>
+
+    /**
+     * Get recent rituals
+     */
+    @Query("""
+        SELECT * FROM daily_rituals
+        WHERE userId = :userId
+        AND isDeleted = 0
+        ORDER BY date DESC
+        LIMIT :limit
+    """)
+    fun getRecentRituals(userId: String, limit: Int): Flow<List<DailyRitualEntity>>
+
+    /**
+     * Get ritual history for a date range (old name for compatibility)
      */
     @Query("""
         SELECT * FROM daily_rituals
@@ -191,6 +246,70 @@ interface DailyRitualDao {
     """)
     suspend fun getRecentIntentions(userId: String, limit: Int = 10): List<String>
 
+    /**
+     * Get intention outcomes for analytics
+     */
+    @Query("""
+        SELECT intentionOutcome, COUNT(*) as count
+        FROM daily_rituals
+        WHERE userId = :userId
+        AND intentionOutcome IS NOT NULL
+        AND date >= :since
+        AND isDeleted = 0
+        GROUP BY intentionOutcome
+    """)
+    suspend fun getIntentionOutcomeDistribution(userId: String, since: Long): List<IntentionOutcomeCount>
+
+    /**
+     * Get today's morning intention
+     */
+    @Query("""
+        SELECT morningIntention FROM daily_rituals
+        WHERE userId = :userId
+        AND date = :date
+        AND morningIntention IS NOT NULL
+        AND isDeleted = 0
+        LIMIT 1
+    """)
+    suspend fun getTodayMorningIntention(userId: String, date: Long): String?
+
+    /**
+     * Get intention success rate (met + partially / total)
+     */
+    @Query("""
+        SELECT COUNT(*) FROM daily_rituals
+        WHERE userId = :userId
+        AND intentionOutcome IN ('met', 'partially')
+        AND date >= :since
+        AND isDeleted = 0
+    """)
+    suspend fun getIntentionSuccessCount(userId: String, since: Long): Int
+
+    /**
+     * Get total intentions with outcomes
+     */
+    @Query("""
+        SELECT COUNT(*) FROM daily_rituals
+        WHERE userId = :userId
+        AND intentionOutcome IS NOT NULL
+        AND date >= :since
+        AND isDeleted = 0
+    """)
+    suspend fun getTotalIntentionsWithOutcomes(userId: String, since: Long): Int
+
+    /**
+     * Get intention source distribution
+     */
+    @Query("""
+        SELECT intentionSource, COUNT(*) as count
+        FROM daily_rituals
+        WHERE userId = :userId
+        AND intentionSource IS NOT NULL
+        AND isDeleted = 0
+        GROUP BY intentionSource
+    """)
+    suspend fun getIntentionSourceDistribution(userId: String): List<IntentionSourceCount>
+
     // ==================== SYNC ====================
 
     @Query("SELECT * FROM daily_rituals WHERE syncStatus = 'pending' AND isDeleted = 0")
@@ -221,5 +340,21 @@ interface DailyRitualDao {
  */
 data class DayRatingCount(
     val rating: String?,
+    val count: Int
+)
+
+/**
+ * Data class for intention outcome distribution query
+ */
+data class IntentionOutcomeCount(
+    val intentionOutcome: String?,
+    val count: Int
+)
+
+/**
+ * Data class for intention source distribution query
+ */
+data class IntentionSourceCount(
+    val intentionSource: String?,
     val count: Int
 )

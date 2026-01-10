@@ -11,6 +11,7 @@ import com.prody.prashant.domain.common.Result
 import com.prody.prashant.domain.common.runSuspendCatching
 import com.prody.prashant.domain.model.Mood
 import com.prody.prashant.domain.repository.WeeklyDigestRepository
+import com.prody.prashant.domain.summary.WeeklySummaryEngine
 import com.prody.prashant.util.BuddhaWisdom
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
@@ -23,12 +24,14 @@ import javax.inject.Singleton
 
 /**
  * Implementation of WeeklyDigestRepository using Room database.
+ * Now enhanced with WeeklySummaryEngine for richer insights.
  */
 @Singleton
 class WeeklyDigestRepositoryImpl @Inject constructor(
     private val weeklyDigestDao: WeeklyDigestDao,
     private val journalDao: JournalDao,
-    private val microEntryDao: MicroEntryDao
+    private val microEntryDao: MicroEntryDao,
+    private val weeklySummaryEngine: WeeklySummaryEngine
 ) : WeeklyDigestRepository {
 
     // ==================== RETRIEVAL ====================
@@ -92,7 +95,10 @@ class WeeklyDigestRepositoryImpl @Inject constructor(
 
     override suspend fun generateWeeklyDigest(userId: String): Result<WeeklyDigestEntity> {
         return runSuspendCatching(ErrorType.DATABASE, "Failed to generate weekly digest") {
-            val (weekStartDate, weekEndDate) = getPreviousWeekRange()
+            val previousWeekDate = LocalDate.now().minusWeeks(1)
+            val (weekStart, weekEnd) = getWeekRange(previousWeekDate)
+            val weekStartDate = weekStart.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+            val weekEndDate = weekEnd.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
 
             // Check if already exists
             val existing = weeklyDigestDao.getDigestForWeek(userId, weekStartDate)
@@ -100,78 +106,35 @@ class WeeklyDigestRepositoryImpl @Inject constructor(
                 return@runSuspendCatching existing
             }
 
-            // Get journal entries for the week
-            val entries = journalDao.getAllEntriesSync().filter { entry ->
-                entry.createdAt in weekStartDate..weekEndDate && !entry.isDeleted
-            }
+            // Use the new WeeklySummaryEngine for comprehensive analysis
+            val summary = weeklySummaryEngine.generate(userId, previousWeekDate)
 
-            // Get micro entries for the week
-            val microEntries = microEntryDao.getAllMicroEntriesSync().filter { entry ->
-                entry.createdAt in weekStartDate..weekEndDate && !entry.isDeleted
-            }
-
-            // Calculate statistics
-            val entriesCount = entries.size
-            val microEntriesCount = microEntries.size
-            val totalWordsWritten = entries.sumOf { it.wordCount } +
-                microEntries.sumOf { it.content.split("\\s+".toRegex()).filter { w -> w.isNotBlank() }.size }
-
-            val activeDays = calculateActiveDays(entries, microEntries, weekStartDate)
-            val averageWordsPerEntry = if (entriesCount > 0) totalWordsWritten / entriesCount else 0
-
-            // Mood analysis
-            val dominantMood = calculateDominantMood(entries, microEntries)
-            val moodDistribution = calculateMoodDistribution(entries, microEntries)
-            val moodTrend = calculateMoodTrend(entries)
-
-            // Theme analysis
-            val topThemes = extractTopThemes(entries, microEntries)
-            val recurringPatterns = detectPatterns(entries)
-
-            // Get previous week data for comparison
-            val (prevWeekStart, prevWeekEnd) = getPreviousWeekRange(weekStartDate)
-            val prevWeekEntries = journalDao.getAllEntriesSync().filter { entry ->
-                entry.createdAt in prevWeekStart..prevWeekEnd && !entry.isDeleted
-            }
-            val prevWeekWords = prevWeekEntries.sumOf { it.wordCount }
-
-            // Calculate changes
-            val entriesChangePercent = calculateChangePercent(entriesCount, prevWeekEntries.size)
-            val wordsChangePercent = calculateChangePercent(totalWordsWritten, prevWeekWords)
-
-            // Find highlight entry
-            val highlightEntry = entries.maxByOrNull { it.wordCount }
-            val highlightQuote = highlightEntry?.let { extractHighlightQuote(it.content) }
-
-            // Generate Buddha reflection
-            val buddhaReflection = generateBuddhaReflection(
-                entriesCount = entriesCount,
-                dominantMood = dominantMood,
-                topThemes = topThemes,
-                moodTrend = moodTrend
-            )
-
+            // Convert WeeklySummary to WeeklyDigestEntity
             val digest = WeeklyDigestEntity(
                 userId = userId,
                 weekStartDate = weekStartDate,
                 weekEndDate = weekEndDate,
-                entriesCount = entriesCount,
-                microEntriesCount = microEntriesCount,
-                totalWordsWritten = totalWordsWritten,
-                activeDays = activeDays,
-                averageWordsPerEntry = averageWordsPerEntry,
-                dominantMood = dominantMood,
-                moodTrend = moodTrend,
-                moodDistribution = moodDistribution,
-                topThemes = topThemes,
-                recurringPatterns = recurringPatterns,
-                buddhaReflection = buddhaReflection,
-                entriesChangePercent = entriesChangePercent,
-                wordsChangePercent = wordsChangePercent,
-                previousWeekEntriesCount = prevWeekEntries.size,
-                previousWeekWordsWritten = prevWeekWords,
-                highlightEntryId = highlightEntry?.id,
-                highlightQuote = highlightQuote,
+                entriesCount = summary.entriesCount,
+                microEntriesCount = summary.microEntriesCount,
+                totalWordsWritten = summary.totalWords,
+                activeDays = summary.activeDays,
+                averageWordsPerEntry = summary.averageWordsPerEntry,
+                dominantMood = summary.dominantMood?.name,
+                moodTrend = summary.moodTrend.name.lowercase(),
+                moodDistribution = formatMoodDistribution(summary.moodDistribution),
+                topThemes = summary.topThemes.joinToString(","),
+                recurringPatterns = summary.patterns.take(5).map { it.type.name.lowercase() }.joinToString(","),
+                buddhaReflection = summary.buddhaInsight,
+                entriesChangePercent = summary.previousWeekComparison?.entriesChangePercent ?: 0,
+                wordsChangePercent = summary.previousWeekComparison?.wordsChangePercent ?: 0,
+                previousWeekEntriesCount = if (summary.previousWeekComparison != null) {
+                    summary.entriesCount - summary.previousWeekComparison.entriesChange
+                } else 0,
+                previousWeekWordsWritten = if (summary.previousWeekComparison != null) {
+                    summary.totalWords - summary.previousWeekComparison.wordsChange
+                } else 0,
+                highlightEntryId = summary.highlightEntry?.id,
+                highlightQuote = summary.highlightEntry?.let { extractHighlightQuote(it.content) },
                 generatedAt = System.currentTimeMillis()
             )
 
@@ -216,6 +179,17 @@ class WeeklyDigestRepositoryImpl @Inject constructor(
     }
 
     // ==================== PRIVATE HELPERS ====================
+
+    private fun formatMoodDistribution(distribution: Map<Mood, Int>): String {
+        if (distribution.isEmpty()) return ""
+        return distribution.entries.joinToString(",") { "${it.key.name}:${it.value}" }
+    }
+
+    private fun getWeekRange(date: LocalDate): Pair<LocalDate, LocalDate> {
+        val weekStart = date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+        val weekEnd = weekStart.plusDays(6)
+        return Pair(weekStart, weekEnd)
+    }
 
     private fun getCurrentWeekRange(): Pair<Long, Long> {
         val now = LocalDate.now()

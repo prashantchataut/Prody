@@ -36,6 +36,7 @@ data class DailyRitualEntity(
     val morningIntention: String? = null,  // "What's one thing you want to focus on today?"
     val morningMood: String? = null,
     val morningWisdomId: Long? = null,     // ID of the seed/quote shown
+    val intentionSource: String? = null,    // "WRITTEN", "SUGGESTED", "VOICE"
 
     // Evening ritual data
     val eveningCompleted: Boolean = false,
@@ -43,6 +44,8 @@ data class DailyRitualEntity(
     val eveningDayRating: String? = null,  // "good", "neutral", "tough"
     val eveningReflection: String? = null, // Quick evening capture
     val eveningMood: String? = null,
+    val intentionOutcome: String? = null,  // "met", "partially", "missed", "forgot"
+    val outcomeReflection: String? = null, // How the intention went specifically
 
     // Tracking
     val createdAt: Long = System.currentTimeMillis(),
@@ -58,9 +61,21 @@ data class DailyRitualEntity(
     val isDeleted: Boolean = false
 ) {
     companion object {
+        // Day rating constants
         const val DAY_RATING_GOOD = "good"
         const val DAY_RATING_NEUTRAL = "neutral"
         const val DAY_RATING_TOUGH = "tough"
+
+        // Intention source constants
+        const val INTENTION_SOURCE_WRITTEN = "WRITTEN"
+        const val INTENTION_SOURCE_SUGGESTED = "SUGGESTED"
+        const val INTENTION_SOURCE_VOICE = "VOICE"
+
+        // Intention outcome constants
+        const val OUTCOME_MET = "met"
+        const val OUTCOME_PARTIALLY = "partially"
+        const val OUTCOME_MISSED = "missed"
+        const val OUTCOME_FORGOT = "forgot"
 
         /**
          * Get the date timestamp for today (midnight)

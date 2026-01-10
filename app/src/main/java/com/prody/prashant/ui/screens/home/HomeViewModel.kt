@@ -16,6 +16,8 @@ import com.prody.prashant.domain.progress.NextAction
 import com.prody.prashant.domain.progress.NextActionType
 import com.prody.prashant.domain.progress.SeedBloomService
 import com.prody.prashant.domain.progress.TodayProgress
+import com.prody.prashant.domain.streak.DualStreakManager
+import com.prody.prashant.domain.streak.DualStreakStatus
 import com.prody.prashant.util.BuddhaWisdom
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -95,7 +97,10 @@ data class HomeUiState(
     val progressFeedbackMessage: String = "",
     // ============== AI PROOF MODE ==============
     // Debug info for Buddha Wisdom (shown when AI Proof Mode is enabled)
-    val buddhaWisdomProofInfo: AiProofModeInfo = AiProofModeInfo()
+    val buddhaWisdomProofInfo: AiProofModeInfo = AiProofModeInfo(),
+    // ============== DUAL STREAK SYSTEM ==============
+    // Two independent streaks: Wisdom and Reflection
+    val dualStreakStatus: DualStreakStatus = DualStreakStatus.empty()
 )
 
 @HiltViewModel
@@ -110,7 +115,8 @@ class HomeViewModel @Inject constructor(
     private val buddhaAiRepository: BuddhaAiRepository,
     private val aiOnboardingManager: AiOnboardingManager,
     private val activeProgressService: ActiveProgressService,
-    private val seedBloomService: SeedBloomService
+    private val seedBloomService: SeedBloomService,
+    private val dualStreakManager: DualStreakManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -132,6 +138,7 @@ class HomeViewModel @Inject constructor(
         loadDailySeed()
         observeAiProofMode()
         checkAiConfiguration()
+        loadDualStreakStatus()
     }
 
     /**
@@ -240,6 +247,55 @@ class HomeViewModel @Inject constructor(
 
     fun dismissProgressFeedback() {
         _uiState.update { it.copy(showProgressFeedback = false) }
+    }
+
+    // ============== DUAL STREAK SYSTEM ==============
+
+    /**
+     * Load dual streak status (reactive).
+     */
+    private fun loadDualStreakStatus() {
+        viewModelScope.launch {
+            try {
+                dualStreakManager.getDualStreakStatusFlow().collect { status ->
+                    _uiState.update { it.copy(dualStreakStatus = status) }
+                }
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error loading dual streak status", e)
+            }
+        }
+    }
+
+    /**
+     * Trigger wisdom streak maintenance when user views wisdom content.
+     * Call this when user views quote, word, proverb, or idiom.
+     */
+    fun onWisdomContentViewed() {
+        viewModelScope.launch {
+            try {
+                val result = dualStreakManager.maintainWisdomStreak()
+                // Result can be used to show feedback/celebration if needed
+                android.util.Log.d(TAG, "Wisdom streak result: $result")
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error maintaining wisdom streak", e)
+            }
+        }
+    }
+
+    /**
+     * Trigger reflection streak maintenance when user writes journal or completes reflection.
+     * Call this when user saves a journal entry or completes evening reflection.
+     */
+    fun onReflectionCompleted() {
+        viewModelScope.launch {
+            try {
+                val result = dualStreakManager.maintainReflectionStreak()
+                // Result can be used to show feedback/celebration if needed
+                android.util.Log.d(TAG, "Reflection streak result: $result")
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error maintaining reflection streak", e)
+            }
+        }
     }
 
     private fun checkOnboarding() {
