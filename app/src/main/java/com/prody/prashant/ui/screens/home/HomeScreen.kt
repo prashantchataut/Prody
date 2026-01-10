@@ -46,6 +46,7 @@ import com.prody.prashant.ui.components.AmbientBackground
 import com.prody.prashant.ui.components.BuddhaContemplatingAnimation
 import com.prody.prashant.ui.components.BuddhaGuideIntro
 import com.prody.prashant.ui.components.ContextualAiHint
+import com.prody.prashant.ui.components.DualStreakCard
 import com.prody.prashant.ui.components.getCurrentTimeOfDay
 import com.prody.prashant.ui.theme.*
 import androidx.compose.ui.semantics.contentDescription
@@ -193,6 +194,21 @@ fun HomeScreen(
                     secondaryTextColor = secondaryTextColor,
                     accentColor = accentColor,
                     isDarkTheme = isDark
+                )
+            }
+
+            // Spacer
+            item { Spacer(modifier = Modifier.height(16.dp)) }
+
+            // ============== DUAL STREAK CARD ==============
+            // Shows both Wisdom and Reflection streaks
+            item {
+                DualStreakCard(
+                    dualStreakStatus = uiState.dualStreakStatus,
+                    onTapForDetails = {
+                        // Can implement detail dialog here if needed
+                        // For now, just log it
+                    }
                 )
             }
 

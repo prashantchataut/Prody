@@ -80,7 +80,16 @@ object AppModule {
             )
                 .addMigrations(
                     ProdyDatabase.MIGRATION_4_5,
-                    ProdyDatabase.MIGRATION_5_6
+                    ProdyDatabase.MIGRATION_5_6,
+                    ProdyDatabase.MIGRATION_6_7,
+                    ProdyDatabase.MIGRATION_7_8,
+                    ProdyDatabase.MIGRATION_8_9,
+                    ProdyDatabase.MIGRATION_9_10,
+                    ProdyDatabase.MIGRATION_10_11,
+                    ProdyDatabase.MIGRATION_11_12,
+                    ProdyDatabase.MIGRATION_12_13,
+                    ProdyDatabase.MIGRATION_13_14,
+                    ProdyDatabase.MIGRATION_14_15
                 )
                 .fallbackToDestructiveMigration()
                 .addCallback(databaseCallback)
@@ -194,6 +203,66 @@ object AppModule {
     @Singleton
     fun provideFutureMessageReplyDao(database: ProdyDatabase): FutureMessageReplyDao {
         return database.futureMessageReplyDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideLearningPathDao(database: ProdyDatabase): LearningPathDao {
+        return database.learningPathDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideDeepDiveDao(database: ProdyDatabase): DeepDiveDao {
+        return database.deepDiveDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideSocialDao(database: ProdyDatabase): SocialDao {
+        return database.socialDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideHavenDao(database: ProdyDatabase): HavenDao {
+        return database.havenDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideYearlyWrappedDao(database: ProdyDatabase): YearlyWrappedDao {
+        return database.yearlyWrappedDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideCollaborativeMessageDao(database: ProdyDatabase): CollaborativeMessageDao {
+        return database.collaborativeMessageDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideDualStreakDao(database: ProdyDatabase): DualStreakDao {
+        return database.dualStreakDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideWordUsageDao(database: ProdyDatabase): WordUsageDao {
+        return database.wordUsageDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideMonthlyLetterDao(database: ProdyDatabase): MonthlyLetterDao {
+        return database.monthlyLetterDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideMessageAnniversaryDao(database: ProdyDatabase): MessageAnniversaryDao {
+        return database.messageAnniversaryDao()
     }
 
     @Provides
@@ -321,5 +390,37 @@ object AppModule {
         @ApplicationContext context: Context
     ): SecurityPreferences {
         return SecurityPreferences(context)
+    }
+
+    // ============================================================================
+    // LEARNING PATH PROVIDERS
+    // ============================================================================
+
+    @Provides
+    @Singleton
+    fun provideLearningPathRepository(
+        learningPathDao: LearningPathDao,
+        journalDao: JournalDao,
+        pathRecommender: com.prody.prashant.domain.learning.PathRecommender,
+        pathContentProvider: com.prody.prashant.domain.learning.PathContentProvider
+    ): com.prody.prashant.domain.repository.LearningPathRepository {
+        return com.prody.prashant.domain.repository.LearningPathRepository(
+            learningPathDao,
+            journalDao,
+            pathRecommender,
+            pathContentProvider
+        )
+    }
+
+    @Provides
+    @Singleton
+    fun providePathRecommender(): com.prody.prashant.domain.learning.PathRecommender {
+        return com.prody.prashant.domain.learning.PathRecommender()
+    }
+
+    @Provides
+    @Singleton
+    fun providePathContentProvider(): com.prody.prashant.domain.learning.PathContentProvider {
+        return com.prody.prashant.domain.learning.PathContentProvider
     }
 }

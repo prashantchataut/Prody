@@ -52,6 +52,13 @@ android {
             "OPENROUTER_API_KEY",
             "\"${localProperties.getProperty("OPENROUTER_API_KEY", "")}\""
         )
+        // Haven Therapist API Key - separate key for therapeutic AI
+        // Add to local.properties: THERAPIST_API_KEY=your_gemini_api_key_here
+        buildConfigField(
+            "String",
+            "THERAPIST_API_KEY",
+            "\"${localProperties.getProperty("THERAPIST_API_KEY", "")}\""
+        )
     }
 
     sourceSets {

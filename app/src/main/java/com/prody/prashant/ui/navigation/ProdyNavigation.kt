@@ -106,6 +106,12 @@ sealed class Screen(val route: String) {
     data object FutureMessageReply : Screen("future_message/reply/{messageId}") {
         fun createRoute(messageId: Long) = "future_message/reply/$messageId"
     }
+    data object TimeCapsuleReveal : Screen("time_capsule/reveal/{messageId}") {
+        fun createRoute(messageId: Long) = "time_capsule/reveal/$messageId"
+    }
+    data object IdiomDetail : Screen("idiom/{idiomId}") {
+        fun createRoute(idiomId: Long) = "idiom/$idiomId"
+    }
 }
 
 // =============================================================================
@@ -621,6 +627,49 @@ fun ProdyNavHost(
                 onNavigateToJournal = { prefilledContent ->
                     navController.navigate(Screen.NewJournalEntry.route)
                 }
+            )
+        }
+
+        // Time Capsule Reveal - immersive message opening experience
+        composable(
+            route = Screen.TimeCapsuleReveal.route,
+            arguments = listOf(navArgument("messageId") { type = NavType.LongType }),
+            // Special magical reveal transition
+            enterTransition = {
+                fadeIn(tween(600, easing = EaseOutQuart)) + scaleIn(
+                    initialScale = 0.92f,
+                    animationSpec = tween(600, easing = EaseOutQuart)
+                )
+            },
+            exitTransition = {
+                fadeOut(tween(300))
+            },
+            popExitTransition = {
+                fadeOut(tween(400)) + scaleOut(
+                    targetScale = 0.92f,
+                    animationSpec = tween(400, easing = EaseInQuart)
+                )
+            }
+        ) { backStackEntry ->
+            val messageId = backStackEntry.arguments?.getLong("messageId") ?: return@composable
+            TimeCapsuleRevealScreen(
+                messageId = messageId,
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToJournal = { prefilledContent ->
+                    navController.navigate(Screen.NewJournalEntry.route)
+                }
+            )
+        }
+
+        // Idiom Detail Screen
+        composable(
+            route = Screen.IdiomDetail.route,
+            arguments = listOf(navArgument("idiomId") { type = NavType.LongType })
+        ) { backStackEntry ->
+            val idiomId = backStackEntry.arguments?.getLong("idiomId") ?: return@composable
+            IdiomDetailScreen(
+                idiomId = idiomId,
+                onNavigateBack = { navController.popBackStack() }
             )
         }
     }

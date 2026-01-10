@@ -245,7 +245,41 @@ private fun DigestContent(
             item {
                 WeekComparisonCard(digest = currentDigest, viewModel = viewModel)
             }
+
+            // Celebration or encouragement message
+            item {
+                CelebrationCard(
+                    message = getCelebrationMessage(currentDigest),
+                    entriesCount = currentDigest.entriesCount,
+                    activeDays = currentDigest.activeDays
+                )
+            }
+
+            // Share button
+            item {
+                ShareSummaryButton(
+                    onClick = { /* TODO: Implement share */ },
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
+            }
+
+            // Bottom spacing
+            item {
+                Spacer(modifier = Modifier.height(16.dp))
+            }
         }
+    }
+}
+
+@Composable
+private fun getCelebrationMessage(digest: WeeklyDigestEntity): String {
+    return when {
+        digest.activeDays == 7 -> "Seven days, seven entries. You showed up for yourself every single day this week! 🌟"
+        digest.entriesCount >= 7 -> "You journaled ${digest.entriesCount} times this week. That kind of consistency compounds."
+        digest.entriesCount >= 5 -> "You maintained a strong practice this week. ${digest.entriesCount} entries - that's dedication."
+        digest.entriesCount >= 3 -> "You've been checking in with yourself regularly. Keep showing up."
+        digest.entriesCount >= 1 -> "Even in busy weeks, you made time for reflection. That matters."
+        else -> "Life gets busy, and that's okay. Your journal is here whenever you're ready to return."
     }
 }
 
@@ -786,6 +820,99 @@ private fun ComparisonItem(
                 text = "${if (changePercent > 0) "+" else ""}$changePercent%",
                 style = MaterialTheme.typography.labelSmall,
                 color = if (changePercent > 0) Color(0xFF4CAF50) else Color(0xFFFF5722)
+            )
+        }
+    }
+}
+
+@Composable
+private fun CelebrationCard(
+    message: String,
+    entriesCount: Int,
+    activeDays: Int
+) {
+    ProdyCard(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    Brush.horizontalGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f),
+                            MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.3f)
+                        )
+                    )
+                )
+                .padding(24.dp)
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                // Celebration icon
+                Icon(
+                    imageVector = when {
+                        activeDays == 7 -> Icons.Default.EmojiEvents
+                        entriesCount >= 5 -> Icons.Default.AutoAwesome
+                        entriesCount >= 3 -> Icons.Default.LocalFireDepartment
+                        else -> Icons.Default.FavoriteBorder
+                    },
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(48.dp)
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text(
+                    text = message,
+                    style = MaterialTheme.typography.bodyLarge,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Text(
+                    text = "Keep going. Your practice is building something lasting.",
+                    style = MaterialTheme.typography.bodySmall,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontStyle = FontStyle.Italic
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ShareSummaryButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    ProdyCard(
+        modifier = modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(onClick = onClick)
+                .padding(20.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.Share,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "Share Your Weekly Summary",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.primary
             )
         }
     }

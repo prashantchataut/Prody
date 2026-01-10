@@ -727,3 +727,108 @@ val StatsLabelStyle = TextStyle(
     lineHeight = 16.sp,
     letterSpacing = 0.5.sp
 )
+
+// =============================================================================
+// MONTHLY LETTER TYPOGRAPHY - Beautiful, letter-like reading experience
+// =============================================================================
+
+/**
+ * Letter greeting - warm, personal opening
+ */
+val LetterGreetingStyle = TextStyle(
+    fontFamily = PoppinsFamily,
+    fontWeight = FontWeight.Light,
+    fontSize = 20.sp,
+    lineHeight = 32.sp,
+    letterSpacing = 0.1.sp,
+    fontStyle = FontStyle.Italic
+)
+
+/**
+ * Letter body text - comfortable reading for letter content
+ */
+val LetterBodyStyle = TextStyle(
+    fontFamily = PoppinsFamily,
+    fontWeight = FontWeight.Normal,
+    fontSize = 16.sp,
+    lineHeight = 28.sp,
+    letterSpacing = 0.2.sp
+)
+
+/**
+ * Letter section header - distinguishes different parts of the letter
+ */
+val LetterSectionHeaderStyle = TextStyle(
+    fontFamily = PoppinsFamily,
+    fontWeight = FontWeight.SemiBold,
+    fontSize = 14.sp,
+    lineHeight = 20.sp,
+    letterSpacing = 1.0.sp
+)
+
+/**
+ * Letter highlight quote - for featured quotes from user's entries
+ */
+val LetterQuoteStyle = TextStyle(
+    fontFamily = PoppinsFamily,
+    fontWeight = FontWeight.Light,
+    fontSize = 18.sp,
+    lineHeight = 30.sp,
+    letterSpacing = 0.15.sp,
+    fontStyle = FontStyle.Italic
+)
+
+/**
+ * Letter closing - warm, personal sign-off
+ */
+val LetterClosingStyle = TextStyle(
+    fontFamily = PoppinsFamily,
+    fontWeight = FontWeight.Normal,
+    fontSize = 16.sp,
+    lineHeight = 28.sp,
+    letterSpacing = 0.2.sp
+)
+
+/**
+ * Letter metadata - dates, stats presented elegantly
+ */
+val LetterMetadataStyle = TextStyle(
+    fontFamily = PoppinsFamily,
+    fontWeight = FontWeight.Normal,
+    fontSize = 12.sp,
+    lineHeight = 18.sp,
+    letterSpacing = 0.4.sp
+)
+
+/**
+ * Letter title - month and year display
+ */
+val LetterTitleStyle = TextStyle(
+    fontFamily = PoppinsFamily,
+    fontWeight = FontWeight.SemiBold,
+    fontSize = 24.sp,
+    lineHeight = 32.sp,
+    letterSpacing = 0.sp
+)
+
+/**
+ * Letter stat number - for presenting numbers in letter
+ */
+val LetterStatNumberStyle = TextStyle(
+    fontFamily = PoppinsFamily,
+    fontWeight = FontWeight.Bold,
+    fontSize = 28.sp,
+    lineHeight = 36.sp,
+    letterSpacing = (-0.5).sp
+)
+
+/**
+ * Letter stat label - for stat descriptions in letter
+ */
+val LetterStatLabelStyle = TextStyle(
+    fontFamily = PoppinsFamily,
+    fontWeight = FontWeight.Normal,
+    fontSize = 14.sp,
+    lineHeight = 20.sp,
+    letterSpacing = 0.3.sp
+)
