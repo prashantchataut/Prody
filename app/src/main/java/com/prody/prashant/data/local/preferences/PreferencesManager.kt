@@ -5,9 +5,12 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
+import android.content.SharedPreferences
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.runBlocking
 import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -16,9 +19,15 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
 
 @Singleton
 class PreferencesManager @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val sharedPreferences: SharedPreferences
 ) {
     private val dataStore = context.dataStore
+
+    // Keys for SharedPreferences (Fast, Synchronous Access)
+    private object FastAccessKeys {
+        const val ONBOARDING_COMPLETED = "onboarding_completed_sync"
+    }
 
     // Keys
     private object PreferencesKeys {
@@ -74,6 +83,41 @@ class PreferencesManager @Inject constructor(
         val PRIVACY_LAST_UNLOCKED_AT = longPreferencesKey("privacy_last_unlocked_at")
     }
 
+    /**
+     * Retrieves the onboarding completion status with maximum speed.
+     * This method is SYNCHRONOUS and designed for critical startup paths.
+     * It uses SharedPreferences for an instant read and includes a one-time
+     * migration from DataStore for existing users.
+     */
+    fun getOnboardingCompleted(): Boolean {
+        // If the migration has been completed, read directly from SharedPreferences.
+        if (sharedPreferences.contains(FastAccessKeys.ONBOARDING_COMPLETED)) {
+            return sharedPreferences.getBoolean(FastAccessKeys.ONBOARDING_COMPLETED, false)
+        }
+
+        // --- One-Time Migration Logic ---
+        // This part runs only once for existing users to move the setting
+        // from the slower DataStore to the faster SharedPreferences.
+        return runBlocking {
+            try {
+                // Block the thread to read the value from DataStore once.
+                val valueFromDataStore = onboardingCompleted.first()
+
+                // Write the value to SharedPreferences and mark migration as done.
+                sharedPreferences.edit()
+                    .putBoolean(FastAccessKeys.ONBOARDING_COMPLETED, valueFromDataStore)
+                    .apply()
+
+                valueFromDataStore
+            } catch (e: Exception) {
+                // If DataStore read fails, default to 'false' to be safe.
+                // This ensures the app doesn't crash on startup due to a migration issue.
+                false
+            }
+        }
+    }
+
+
     // Onboarding
     val onboardingCompleted: Flow<Boolean> = dataStore.data
         .catch { exception ->
@@ -85,9 +129,13 @@ class PreferencesManager @Inject constructor(
         }
 
     suspend fun setOnboardingCompleted(completed: Boolean) {
+        // Write to both DataStore (for consistency) and SharedPreferences (for speed).
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.ONBOARDING_COMPLETED] = completed
         }
+        sharedPreferences.edit()
+            .putBoolean(FastAccessKeys.ONBOARDING_COMPLETED, completed)
+            .apply()
     }
 
     // Theme
