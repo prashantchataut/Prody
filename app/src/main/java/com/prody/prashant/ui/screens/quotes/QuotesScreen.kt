@@ -46,10 +46,14 @@ enum class WisdomTab(val title: String) {
 @Composable
 fun QuotesScreen(
     onNavigateBack: () -> Unit,
+    initialTab: WisdomTab = WisdomTab.QUOTES,
     viewModel: QuotesViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val pagerState = rememberPagerState(pageCount = { WisdomTab.entries.size })
+    val pagerState = rememberPagerState(
+        initialPage = initialTab.ordinal,
+        pageCount = { WisdomTab.entries.size }
+    )
     val scope = rememberCoroutineScope()
 
     Scaffold(

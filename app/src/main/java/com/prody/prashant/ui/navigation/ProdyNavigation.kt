@@ -26,6 +26,7 @@ import com.prody.prashant.ui.screens.profile.EditProfileScreen
 import com.prody.prashant.ui.screens.profile.ProfileScreen
 import com.prody.prashant.ui.screens.profile.SettingsScreen
 import com.prody.prashant.ui.screens.quotes.QuotesScreen
+import com.prody.prashant.ui.screens.quotes.WisdomTab
 import com.prody.prashant.ui.screens.stats.StatsScreen
 import com.prody.prashant.ui.screens.vocabulary.VocabularyDetailScreen
 import com.prody.prashant.ui.screens.vocabulary.VocabularyListScreen
@@ -86,7 +87,9 @@ sealed class Screen(val route: String) {
     data object VocabularyDetail : Screen("vocabulary/{wordId}") {
         fun createRoute(wordId: Long) = "vocabulary/$wordId"
     }
-    data object Quotes : Screen("quotes")
+    data object Quotes : Screen("quotes/{tab}") {
+        fun createRoute(tab: String = "quotes") = "quotes/$tab"
+    }
     data object Meditation : Screen("meditation")
     data object Challenges : Screen("challenges")
     data object Search : Screen("search")
@@ -206,7 +209,13 @@ fun ProdyNavHost(
                     navController.navigate(Screen.VocabularyList.route)
                 },
                 onNavigateToQuotes = {
-                    navController.navigate(Screen.Quotes.route)
+                    navController.navigate(Screen.Quotes.createRoute("quotes"))
+                },
+                onNavigateToIdioms = {
+                    navController.navigate(Screen.Quotes.createRoute("idioms"))
+                },
+                onNavigateToProverbs = {
+                    navController.navigate(Screen.Quotes.createRoute("proverbs"))
                 },
                 onNavigateToJournal = {
                     navController.navigate(Screen.JournalList.route)
@@ -412,11 +421,25 @@ fun ProdyNavHost(
         }
 
         // =====================================================================
-        // QUOTES
+        // QUOTES / WISDOM COLLECTION
         // =====================================================================
-        composable(Screen.Quotes.route) {
+        composable(
+            route = Screen.Quotes.route,
+            arguments = listOf(navArgument("tab") {
+                type = NavType.StringType
+                defaultValue = "quotes"
+            })
+        ) { backStackEntry ->
+            val tabName = backStackEntry.arguments?.getString("tab") ?: "quotes"
+            val initialTab = when (tabName.lowercase()) {
+                "proverbs" -> WisdomTab.PROVERBS
+                "idioms" -> WisdomTab.IDIOMS
+                "phrases" -> WisdomTab.PHRASES
+                else -> WisdomTab.QUOTES
+            }
             QuotesScreen(
-                onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = { navController.popBackStack() },
+                initialTab = initialTab
             )
         }
 
@@ -481,8 +504,8 @@ fun ProdyNavHost(
                     navController.navigate(Screen.JournalDetail.createRoute(entryId))
                 },
                 onNavigateToQuote = { quoteId ->
-                    // Navigate to quotes screen (quote detail not implemented separately)
-                    navController.navigate(Screen.Quotes.route)
+                    // Navigate to quotes screen with Quotes tab selected
+                    navController.navigate(Screen.Quotes.createRoute("quotes"))
                 },
                 onNavigateToVocabulary = { wordId ->
                     navController.navigate(Screen.VocabularyDetail.createRoute(wordId))

@@ -24,11 +24,7 @@ import com.prody.prashant.data.local.entity.*
  * - Profile loadouts and cosmetics (Identity system)
  * - Game skill system (Clarity, Discipline, Courage)
  * - Daily missions and weekly trials
- * - Wisdom Collection (saved quotes, words, proverbs)
- * - Micro-journaling entries
- * - Weekly digests
- * - Daily rituals
- * - Future message replies (time capsule chains)
+ * - Enhanced streak system with Mindful Breaks
  *
  * Migration Strategy:
  * - For development: Uses fallbackToDestructiveMigration()
@@ -48,13 +44,13 @@ import com.prody.prashant.data.local.entity.*
  *              Added ProcessedRewardEntity (idempotency for anti-exploit)
  *              Added DailyMissionEntity (3 daily missions per day)
  *              Added WeeklyTrialEntity (weekly boss challenges)
- * - Version 6: Daily Engagement Features
- *              Added SavedWisdomEntity (Wisdom Collection)
- *              Added MicroEntryEntity (Micro-journaling)
- *              Added WeeklyDigestEntity (Weekly summaries)
- *              Added DailyRitualEntity (Daily ritual tracking)
- *              Added FutureMessageReplyEntity (Time capsule chains)
- *              Added WritingCompanionSuggestionEntity (AI Writing Companion tracking)
+ * - Version 6: Gamification 4.0 - Enhanced systems
+ *              Added weekly XP tracking to PlayerSkillsEntity
+ *              Added StreakDataEntity with Mindful Break support (2 freezes/month)
+ *              Added DailyActivityEntity for detailed activity tracking
+ *              Added MindfulBreakUsageEntity for freeze audit trail
+ *              Enhanced SeedEntity with state field (planted/growing/bloomed)
+ *              Added content matching helpers to SeedEntity
  */
 @Database(
     entities = [
@@ -84,13 +80,10 @@ import com.prody.prashant.data.local.entity.*
         ProcessedRewardEntity::class,
         DailyMissionEntity::class,
         WeeklyTrialEntity::class,
-        // New entities for Daily Engagement Features
-        SavedWisdomEntity::class,
-        MicroEntryEntity::class,
-        WeeklyDigestEntity::class,
-        DailyRitualEntity::class,
-        FutureMessageReplyEntity::class,
-        WritingCompanionSuggestionEntity::class
+        // Gamification 4.0 entities
+        StreakDataEntity::class,
+        DailyActivityEntity::class,
+        MindfulBreakUsageEntity::class
     ],
     version = 6,
     exportSchema = true // Enable for migration verification
@@ -189,172 +182,86 @@ abstract class ProdyDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * Migration 5 -> 6: Gamification 4.0 - Enhanced systems
+         *
+         * Changes:
+         * - Add weekly XP tracking to player_skills
+         * - Create streak_data table with Mindful Break support
+         * - Create daily_activity table for detailed tracking
+         * - Create mindful_break_usage table for audit trail
+         * - Add new fields to daily_seeds (state, variations, keywords, etc.)
+         */
         val MIGRATION_5_6: Migration = object : Migration(5, 6) {
             override fun migrate(db: SupportSQLiteDatabase) {
-                // SavedWisdomEntity - Wisdom Collection
-                db.execSQL("""
-                    CREATE TABLE IF NOT EXISTS saved_wisdom (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-                        userId TEXT NOT NULL DEFAULT 'local',
-                        type TEXT NOT NULL,
-                        content TEXT NOT NULL,
-                        author TEXT,
-                        secondaryContent TEXT,
-                        sourceId INTEGER,
-                        tags TEXT NOT NULL DEFAULT '',
-                        theme TEXT,
-                        savedAt INTEGER NOT NULL DEFAULT 0,
-                        lastShownAt INTEGER,
-                        timesShown INTEGER NOT NULL DEFAULT 0,
-                        timesViewed INTEGER NOT NULL DEFAULT 0,
-                        lastViewedAt INTEGER,
-                        userNote TEXT,
-                        syncStatus TEXT NOT NULL DEFAULT 'pending',
-                        lastSyncedAt INTEGER,
-                        isDeleted INTEGER NOT NULL DEFAULT 0
-                    )
-                """.trimIndent())
-                db.execSQL("CREATE INDEX IF NOT EXISTS index_saved_wisdom_userId ON saved_wisdom(userId)")
-                db.execSQL("CREATE INDEX IF NOT EXISTS index_saved_wisdom_type ON saved_wisdom(type)")
-                db.execSQL("CREATE INDEX IF NOT EXISTS index_saved_wisdom_savedAt ON saved_wisdom(savedAt)")
-                db.execSQL("CREATE INDEX IF NOT EXISTS index_saved_wisdom_userId_type ON saved_wisdom(userId, type)")
-                db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS index_saved_wisdom_sourceId_type ON saved_wisdom(sourceId, type)")
+                // Add weekly XP tracking columns to player_skills
+                db.execSQL("ALTER TABLE player_skills ADD COLUMN weeklyClarityXp INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE player_skills ADD COLUMN weeklyDisciplineXp INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE player_skills ADD COLUMN weeklyCourageXp INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE player_skills ADD COLUMN weeklyResetDate INTEGER NOT NULL DEFAULT 0")
 
-                // MicroEntryEntity - Micro-journaling
+                // Create streak_data table with Mindful Break support
                 db.execSQL("""
-                    CREATE TABLE IF NOT EXISTS micro_entries (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-                        userId TEXT NOT NULL DEFAULT 'local',
-                        content TEXT NOT NULL,
-                        mood TEXT,
-                        moodIntensity INTEGER,
+                    CREATE TABLE IF NOT EXISTS streak_data (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        userId TEXT NOT NULL,
+                        currentStreak INTEGER NOT NULL DEFAULT 0,
+                        longestStreak INTEGER NOT NULL DEFAULT 0,
+                        lastActiveDate INTEGER NOT NULL DEFAULT 0,
+                        freezesAvailable INTEGER NOT NULL DEFAULT 2,
+                        freezesUsedThisMonth INTEGER NOT NULL DEFAULT 0,
+                        lastFreezeResetMonth INTEGER NOT NULL DEFAULT 0,
+                        totalDaysActive INTEGER NOT NULL DEFAULT 0,
+                        streakBrokenCount INTEGER NOT NULL DEFAULT 0,
                         createdAt INTEGER NOT NULL DEFAULT 0,
-                        expandedToEntryId INTEGER,
-                        expandedAt INTEGER,
-                        captureContext TEXT,
-                        locationContext TEXT,
-                        syncStatus TEXT NOT NULL DEFAULT 'pending',
-                        lastSyncedAt INTEGER,
-                        isDeleted INTEGER NOT NULL DEFAULT 0
+                        updatedAt INTEGER NOT NULL DEFAULT 0
                     )
                 """.trimIndent())
-                db.execSQL("CREATE INDEX IF NOT EXISTS index_micro_entries_userId ON micro_entries(userId)")
-                db.execSQL("CREATE INDEX IF NOT EXISTS index_micro_entries_createdAt ON micro_entries(createdAt)")
-                db.execSQL("CREATE INDEX IF NOT EXISTS index_micro_entries_userId_createdAt ON micro_entries(userId, createdAt)")
-                db.execSQL("CREATE INDEX IF NOT EXISTS index_micro_entries_expandedToEntryId ON micro_entries(expandedToEntryId)")
+                db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS idx_streak_data_user ON streak_data(userId)")
 
-                // WeeklyDigestEntity - Weekly summaries
+                // Create daily_activity table
                 db.execSQL("""
-                    CREATE TABLE IF NOT EXISTS weekly_digests (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-                        userId TEXT NOT NULL DEFAULT 'local',
-                        weekStartDate INTEGER NOT NULL,
-                        weekEndDate INTEGER NOT NULL,
-                        entriesCount INTEGER NOT NULL DEFAULT 0,
-                        microEntriesCount INTEGER NOT NULL DEFAULT 0,
-                        totalWordsWritten INTEGER NOT NULL DEFAULT 0,
-                        activeDays INTEGER NOT NULL DEFAULT 0,
-                        averageWordsPerEntry INTEGER NOT NULL DEFAULT 0,
-                        dominantMood TEXT,
-                        moodTrend TEXT NOT NULL DEFAULT 'stable',
-                        moodDistribution TEXT NOT NULL DEFAULT '',
-                        topThemes TEXT NOT NULL DEFAULT '',
-                        recurringPatterns TEXT NOT NULL DEFAULT '',
-                        buddhaReflection TEXT,
-                        entriesChangePercent INTEGER NOT NULL DEFAULT 0,
-                        wordsChangePercent INTEGER NOT NULL DEFAULT 0,
-                        previousWeekEntriesCount INTEGER NOT NULL DEFAULT 0,
-                        previousWeekWordsWritten INTEGER NOT NULL DEFAULT 0,
-                        highlightEntryId INTEGER,
-                        highlightQuote TEXT,
-                        isRead INTEGER NOT NULL DEFAULT 0,
-                        readAt INTEGER,
-                        generatedAt INTEGER NOT NULL DEFAULT 0,
-                        syncStatus TEXT NOT NULL DEFAULT 'pending',
-                        lastSyncedAt INTEGER,
-                        isDeleted INTEGER NOT NULL DEFAULT 0
-                    )
-                """.trimIndent())
-                db.execSQL("CREATE INDEX IF NOT EXISTS index_weekly_digests_userId ON weekly_digests(userId)")
-                db.execSQL("CREATE INDEX IF NOT EXISTS index_weekly_digests_weekStartDate ON weekly_digests(weekStartDate)")
-                db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS index_weekly_digests_userId_weekStartDate ON weekly_digests(userId, weekStartDate)")
-
-                // DailyRitualEntity - Daily ritual tracking
-                db.execSQL("""
-                    CREATE TABLE IF NOT EXISTS daily_rituals (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                    CREATE TABLE IF NOT EXISTS daily_activity (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
                         userId TEXT NOT NULL DEFAULT 'local',
                         date INTEGER NOT NULL,
-                        morningCompleted INTEGER NOT NULL DEFAULT 0,
-                        morningCompletedAt INTEGER,
-                        morningIntention TEXT,
-                        morningMood TEXT,
-                        morningWisdomId INTEGER,
-                        eveningCompleted INTEGER NOT NULL DEFAULT 0,
-                        eveningCompletedAt INTEGER,
-                        eveningDayRating TEXT,
-                        eveningReflection TEXT,
-                        eveningMood TEXT,
-                        createdAt INTEGER NOT NULL DEFAULT 0,
-                        updatedAt INTEGER NOT NULL DEFAULT 0,
-                        expandedToJournalId INTEGER,
-                        expandedToMicroEntryId INTEGER,
-                        syncStatus TEXT NOT NULL DEFAULT 'pending',
-                        lastSyncedAt INTEGER,
-                        isDeleted INTEGER NOT NULL DEFAULT 0
+                        hasJournalEntry INTEGER NOT NULL DEFAULT 0,
+                        hasMicroEntry INTEGER NOT NULL DEFAULT 0,
+                        hasBloom INTEGER NOT NULL DEFAULT 0,
+                        hasFutureMessage INTEGER NOT NULL DEFAULT 0,
+                        hasFlashcardSession INTEGER NOT NULL DEFAULT 0,
+                        hasWisdomEngagement INTEGER NOT NULL DEFAULT 0,
+                        clarityXpEarned INTEGER NOT NULL DEFAULT 0,
+                        disciplineXpEarned INTEGER NOT NULL DEFAULT 0,
+                        courageXpEarned INTEGER NOT NULL DEFAULT 0,
+                        streakDayNumber INTEGER NOT NULL DEFAULT 0,
+                        usedMindfulBreak INTEGER NOT NULL DEFAULT 0,
+                        createdAt INTEGER NOT NULL DEFAULT 0
                     )
                 """.trimIndent())
-                db.execSQL("CREATE INDEX IF NOT EXISTS index_daily_rituals_userId ON daily_rituals(userId)")
-                db.execSQL("CREATE INDEX IF NOT EXISTS index_daily_rituals_date ON daily_rituals(date)")
-                db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS index_daily_rituals_userId_date ON daily_rituals(userId, date)")
+                db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS idx_daily_activity_user_date ON daily_activity(userId, date)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_daily_activity_date ON daily_activity(date)")
 
-                // FutureMessageReplyEntity - Time capsule chains
+                // Create mindful_break_usage table
                 db.execSQL("""
-                    CREATE TABLE IF NOT EXISTS future_message_replies (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                    CREATE TABLE IF NOT EXISTS mindful_break_usage (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
                         userId TEXT NOT NULL DEFAULT 'local',
-                        originalMessageId INTEGER NOT NULL,
-                        replyContent TEXT NOT NULL,
-                        promptShown TEXT,
-                        reactionMood TEXT,
-                        chainedMessageId INTEGER,
-                        repliedAt INTEGER NOT NULL DEFAULT 0,
-                        savedAsJournalId INTEGER,
-                        syncStatus TEXT NOT NULL DEFAULT 'pending',
-                        lastSyncedAt INTEGER,
-                        isDeleted INTEGER NOT NULL DEFAULT 0,
-                        FOREIGN KEY (originalMessageId) REFERENCES future_messages(id) ON DELETE CASCADE
+                        usedAt INTEGER NOT NULL DEFAULT 0,
+                        preservedStreak INTEGER NOT NULL DEFAULT 0,
+                        missedDate INTEGER NOT NULL DEFAULT 0
                     )
                 """.trimIndent())
-                db.execSQL("CREATE INDEX IF NOT EXISTS index_future_message_replies_userId ON future_message_replies(userId)")
-                db.execSQL("CREATE INDEX IF NOT EXISTS index_future_message_replies_originalMessageId ON future_message_replies(originalMessageId)")
-                db.execSQL("CREATE INDEX IF NOT EXISTS index_future_message_replies_userId_originalMessageId ON future_message_replies(userId, originalMessageId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_mindful_break_user ON mindful_break_usage(userId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_mindful_break_time ON mindful_break_usage(usedAt)")
 
-                // WritingCompanionSuggestionEntity - AI Writing Companion tracking
-                db.execSQL("""
-                    CREATE TABLE IF NOT EXISTS writing_suggestions (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-                        userId TEXT NOT NULL DEFAULT 'local',
-                        journalEntryId INTEGER,
-                        suggestionType TEXT NOT NULL,
-                        suggestionText TEXT NOT NULL,
-                        triggerContext TEXT NOT NULL,
-                        timeOfDay TEXT,
-                        currentMood TEXT,
-                        recentThemes TEXT,
-                        wasAccepted INTEGER NOT NULL DEFAULT 0,
-                        wasDismissed INTEGER NOT NULL DEFAULT 0,
-                        acceptedAt INTEGER,
-                        dismissedAt INTEGER,
-                        shownAt INTEGER NOT NULL DEFAULT 0,
-                        syncStatus TEXT NOT NULL DEFAULT 'pending',
-                        isDeleted INTEGER NOT NULL DEFAULT 0
-                    )
-                """.trimIndent())
-                db.execSQL("CREATE INDEX IF NOT EXISTS index_writing_suggestions_userId ON writing_suggestions(userId)")
-                db.execSQL("CREATE INDEX IF NOT EXISTS index_writing_suggestions_journalEntryId ON writing_suggestions(journalEntryId)")
-                db.execSQL("CREATE INDEX IF NOT EXISTS index_writing_suggestions_suggestionType ON writing_suggestions(suggestionType)")
-                db.execSQL("CREATE INDEX IF NOT EXISTS index_writing_suggestions_shownAt ON writing_suggestions(shownAt)")
+                // Add new fields to daily_seeds for enhanced Seed -> Bloom
+                db.execSQL("ALTER TABLE daily_seeds ADD COLUMN state TEXT NOT NULL DEFAULT 'planted'")
+                db.execSQL("ALTER TABLE daily_seeds ADD COLUMN rewardXp INTEGER NOT NULL DEFAULT 15")
+                db.execSQL("ALTER TABLE daily_seeds ADD COLUMN rewardTokens INTEGER NOT NULL DEFAULT 5")
+                db.execSQL("ALTER TABLE daily_seeds ADD COLUMN variations TEXT NOT NULL DEFAULT ''")
+                db.execSQL("ALTER TABLE daily_seeds ADD COLUMN keywords TEXT NOT NULL DEFAULT ''")
+                db.execSQL("ALTER TABLE daily_seeds ADD COLUMN keyPhrase TEXT")
             }
         }
 

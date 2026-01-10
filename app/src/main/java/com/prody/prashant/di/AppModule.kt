@@ -78,7 +78,10 @@ object AppModule {
                 ProdyDatabase::class.java,
                 ProdyDatabase.DATABASE_NAME
             )
-                .addMigrations(ProdyDatabase.MIGRATION_4_5, ProdyDatabase.MIGRATION_5_6)
+                .addMigrations(
+                    ProdyDatabase.MIGRATION_4_5,
+                    ProdyDatabase.MIGRATION_5_6
+                )
                 .fallbackToDestructiveMigration()
                 .addCallback(databaseCallback)
                 .build()
