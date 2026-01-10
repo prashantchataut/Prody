@@ -85,6 +85,8 @@ import java.util.Locale
 fun HomeScreen(
     onNavigateToVocabulary: () -> Unit,
     onNavigateToQuotes: () -> Unit,
+    onNavigateToIdioms: () -> Unit = onNavigateToQuotes,
+    onNavigateToProverbs: () -> Unit = onNavigateToQuotes,
     onNavigateToJournal: () -> Unit,
     onNavigateToFutureMessage: () -> Unit,
     onNavigateToMeditation: () -> Unit = {},
@@ -324,7 +326,7 @@ fun HomeScreen(
                     idiomMeaning = uiState.idiomMeaning,
                     idiomExample = uiState.idiomExample,
                     onWordClick = onNavigateToVocabulary,
-                    onIdiomClick = onNavigateToVocabulary,
+                    onIdiomClick = onNavigateToIdioms,
                     surfaceColor = surfaceColor,
                     primaryTextColor = primaryTextColor,
                     secondaryTextColor = secondaryTextColor,
@@ -340,6 +342,7 @@ fun HomeScreen(
                     ProverbSection(
                         proverb = uiState.dailyProverb,
                         origin = uiState.proverbOrigin,
+                        onClick = onNavigateToProverbs,
                         surfaceColor = surfaceColor,
                         primaryTextColor = primaryTextColor,
                         secondaryTextColor = secondaryTextColor,
@@ -348,7 +351,7 @@ fun HomeScreen(
                     )
                 }
             }
-            }
+        }
         }
     }
 }
@@ -1566,6 +1569,7 @@ private fun IdiomCard(
 private fun ProverbSection(
     proverb: String,
     origin: String,
+    onClick: () -> Unit,
     surfaceColor: Color,
     primaryTextColor: Color,
     secondaryTextColor: Color,
@@ -1575,7 +1579,8 @@ private fun ProverbSection(
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 24.dp),
+            .padding(horizontal = 24.dp)
+            .clickable(onClick = onClick),
         shape = RoundedCornerShape(20.dp),
         color = surfaceColor,
         tonalElevation = 0.dp

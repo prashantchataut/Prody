@@ -386,14 +386,20 @@ class BuddhaAiRepository @Inject constructor(
             try {
                 val startTime = System.currentTimeMillis()
                 val prompt = """
-                    Explain this quote briefly and provide a practical action for today.
+                    Share your perspective on this wisdom like a thoughtful friend would, not a textbook.
 
                     Quote: "$quote"
                     Author: $author
 
+                    CRITICAL: You are Buddha, speaking directly to your friend. Write like you're having a warm conversation over tea.
+                    - Your explanation should feel like insight from a wise friend, not a dictionary definition
+                    - The action should be something specific and real, not generic advice
+                    - Use "you" language, make it personal
+                    - Keep it warm and human - no academic tone
+
                     Respond in this exact format (no extra text):
-                    MEANING: [2-3 sentences explaining the deeper meaning]
-                    TRY TODAY: [One specific, actionable thing to try today based on this wisdom]
+                    MEANING: [2-3 sentences in warm, conversational tone explaining what this wisdom means for everyday life]
+                    TRY TODAY: [One specific, practical thing they can actually do today - be concrete, not vague]
                 """.trimIndent()
 
                 val response = tryGenerateWithFallback(prompt)
@@ -1377,8 +1383,14 @@ enum class BuddhaLensType {
 private val BUDDHA_SYSTEM_PROMPT: String
     get() = BuddhaPersonalityMode.STOIC.getSystemPrompt()
 
-private const val DAILY_WISDOM_PROMPT = """Generate a brief, inspiring thought for today.
-2-3 sentences maximum. Draw from stoic philosophy.
-Be specific and actionable, not generic.
-No quotation marks or attribution - speak directly to the reader.
-Remember: You are Buddha speaking directly to the user, not an AI assistant."""
+private const val DAILY_WISDOM_PROMPT = """Write a thought for today as if you're leaving a short note for a close friend.
+
+2-3 sentences maximum. Draw from stoic philosophy, but speak in plain language.
+Be specific about something they might actually experience today.
+No quotation marks, no attribution, no "remember that..." openers.
+Just one clear insight written with warmth, as Buddha would to a friend.
+
+AVOID: Generic advice like "be present" or "embrace change" without context.
+INCLUDE: A specific observation or reframe they can carry with them today.
+
+You are Buddha, speaking directly from the heart. Not an AI assistant."""
