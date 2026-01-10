@@ -6,11 +6,13 @@ import com.prody.prashant.data.local.preferences.PreferencesManager
 import com.prody.prashant.ui.navigation.Screen
 import com.prody.prashant.ui.theme.ThemeMode
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -21,6 +23,13 @@ class MainViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(MainActivityUiState())
     val uiState: StateFlow<MainActivityUiState> = _uiState.asStateFlow()
+
+    private val _navigationChannel = Channel<String>()
+    val navigationChannel = _navigationChannel.receiveAsFlow()
+
+    // Security: A whitelist of routes that can be navigated to from an external Intent.
+    // This prevents malicious apps from forcing navigation to arbitrary screens.
+    private val externalNavigationAllowList = setOf("journal/new")
 
     init {
         viewModelScope.launch {
@@ -42,6 +51,15 @@ class MainViewModel @Inject constructor(
                 )
             }.collect { newState ->
                 _uiState.value = newState
+            }
+        }
+    }
+
+    fun onNavigationIntent(route: String?) {
+        // Security: Only process the route if it's in the allow-list.
+        if (route != null && route in externalNavigationAllowList) {
+            viewModelScope.launch {
+                _navigationChannel.send(route)
             }
         }
     }
