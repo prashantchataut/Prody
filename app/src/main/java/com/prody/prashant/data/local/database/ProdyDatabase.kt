@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.prody.prashant.data.local.dao.*
 import com.prody.prashant.data.local.entity.*
@@ -175,7 +176,7 @@ abstract class ProdyDatabase : RoomDatabase() {
                 DATABASE_NAME
             )
                 .addMigrations(MIGRATION_4_5)
-                .fallbackToDestructiveMigration(prefix = "v5_to_v6")
+                .fallbackToDestructiveMigration()
                 .addCallback(DatabaseCallback())
                 .build()
         }

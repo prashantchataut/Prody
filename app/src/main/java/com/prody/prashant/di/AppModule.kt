@@ -79,7 +79,7 @@ object AppModule {
                 ProdyDatabase.DATABASE_NAME
             )
                 .addMigrations(ProdyDatabase.MIGRATION_4_5)
-                .fallbackToDestructiveMigration(prefix = "v5_to_v6")
+                .fallbackToDestructiveMigration()
                 .addCallback(databaseCallback)
                 .build()
             databaseInstance = instance
@@ -145,12 +145,6 @@ object AppModule {
     @Singleton
     fun provideChallengeDao(database: ProdyDatabase): ChallengeDao {
         return database.challengeDao()
-    }
-
-    @Provides
-    @Singleton
-    fun provideVocabularyLearningDao(database: ProdyDatabase): VocabularyLearningDao {
-        return database.vocabularyLearningDao()
     }
 
     @Provides
