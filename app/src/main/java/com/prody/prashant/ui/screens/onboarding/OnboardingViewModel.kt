@@ -10,6 +10,7 @@ import com.prody.prashant.data.local.entity.UserStatsEntity
 import com.prody.prashant.data.local.preferences.PreferencesManager
 import com.prody.prashant.ui.theme.Achievements
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.UUID
 import javax.inject.Inject
@@ -30,7 +31,7 @@ class OnboardingViewModel @Inject constructor(
     }
 
     fun completeOnboarding() {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             try {
                 // Mark onboarding as completed
                 preferencesManager.setOnboardingCompleted(true)
