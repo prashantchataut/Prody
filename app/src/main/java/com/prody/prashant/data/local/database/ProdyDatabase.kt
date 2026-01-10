@@ -24,6 +24,7 @@ import com.prody.prashant.data.local.entity.*
  * - Profile loadouts and cosmetics (Identity system)
  * - Game skill system (Clarity, Discipline, Courage)
  * - Daily missions and weekly trials
+ * - Enhanced streak system with Mindful Breaks
  *
  * Migration Strategy:
  * - For development: Uses fallbackToDestructiveMigration()
@@ -43,6 +44,13 @@ import com.prody.prashant.data.local.entity.*
  *              Added ProcessedRewardEntity (idempotency for anti-exploit)
  *              Added DailyMissionEntity (3 daily missions per day)
  *              Added WeeklyTrialEntity (weekly boss challenges)
+ * - Version 6: Gamification 4.0 - Enhanced systems
+ *              Added weekly XP tracking to PlayerSkillsEntity
+ *              Added StreakDataEntity with Mindful Break support (2 freezes/month)
+ *              Added DailyActivityEntity for detailed activity tracking
+ *              Added MindfulBreakUsageEntity for freeze audit trail
+ *              Enhanced SeedEntity with state field (planted/growing/bloomed)
+ *              Added content matching helpers to SeedEntity
  */
 @Database(
     entities = [
@@ -71,9 +79,13 @@ import com.prody.prashant.data.local.entity.*
         PlayerSkillsEntity::class,
         ProcessedRewardEntity::class,
         DailyMissionEntity::class,
-        WeeklyTrialEntity::class
+        WeeklyTrialEntity::class,
+        // Gamification 4.0 entities
+        StreakDataEntity::class,
+        DailyActivityEntity::class,
+        MindfulBreakUsageEntity::class
     ],
-    version = 5,
+    version = 6,
     exportSchema = true // Enable for migration verification
 )
 abstract class ProdyDatabase : RoomDatabase() {
@@ -91,6 +103,13 @@ abstract class ProdyDatabase : RoomDatabase() {
     abstract fun profileLoadoutDao(): ProfileLoadoutDao
     abstract fun seedDao(): SeedDao
     abstract fun missionDao(): MissionDao
+
+    // New DAOs for Daily Engagement Features
+    abstract fun savedWisdomDao(): SavedWisdomDao
+    abstract fun microEntryDao(): MicroEntryDao
+    abstract fun weeklyDigestDao(): WeeklyDigestDao
+    abstract fun dailyRitualDao(): DailyRitualDao
+    abstract fun futureMessageReplyDao(): FutureMessageReplyDao
 
     companion object {
         private const val TAG = "ProdyDatabase"
@@ -163,6 +182,89 @@ abstract class ProdyDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * Migration 5 -> 6: Gamification 4.0 - Enhanced systems
+         *
+         * Changes:
+         * - Add weekly XP tracking to player_skills
+         * - Create streak_data table with Mindful Break support
+         * - Create daily_activity table for detailed tracking
+         * - Create mindful_break_usage table for audit trail
+         * - Add new fields to daily_seeds (state, variations, keywords, etc.)
+         */
+        val MIGRATION_5_6: Migration = object : Migration(5, 6) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Add weekly XP tracking columns to player_skills
+                db.execSQL("ALTER TABLE player_skills ADD COLUMN weeklyClarityXp INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE player_skills ADD COLUMN weeklyDisciplineXp INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE player_skills ADD COLUMN weeklyCourageXp INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE player_skills ADD COLUMN weeklyResetDate INTEGER NOT NULL DEFAULT 0")
+
+                // Create streak_data table with Mindful Break support
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS streak_data (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        userId TEXT NOT NULL,
+                        currentStreak INTEGER NOT NULL DEFAULT 0,
+                        longestStreak INTEGER NOT NULL DEFAULT 0,
+                        lastActiveDate INTEGER NOT NULL DEFAULT 0,
+                        freezesAvailable INTEGER NOT NULL DEFAULT 2,
+                        freezesUsedThisMonth INTEGER NOT NULL DEFAULT 0,
+                        lastFreezeResetMonth INTEGER NOT NULL DEFAULT 0,
+                        totalDaysActive INTEGER NOT NULL DEFAULT 0,
+                        streakBrokenCount INTEGER NOT NULL DEFAULT 0,
+                        createdAt INTEGER NOT NULL DEFAULT 0,
+                        updatedAt INTEGER NOT NULL DEFAULT 0
+                    )
+                """.trimIndent())
+                db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS idx_streak_data_user ON streak_data(userId)")
+
+                // Create daily_activity table
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS daily_activity (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        userId TEXT NOT NULL DEFAULT 'local',
+                        date INTEGER NOT NULL,
+                        hasJournalEntry INTEGER NOT NULL DEFAULT 0,
+                        hasMicroEntry INTEGER NOT NULL DEFAULT 0,
+                        hasBloom INTEGER NOT NULL DEFAULT 0,
+                        hasFutureMessage INTEGER NOT NULL DEFAULT 0,
+                        hasFlashcardSession INTEGER NOT NULL DEFAULT 0,
+                        hasWisdomEngagement INTEGER NOT NULL DEFAULT 0,
+                        clarityXpEarned INTEGER NOT NULL DEFAULT 0,
+                        disciplineXpEarned INTEGER NOT NULL DEFAULT 0,
+                        courageXpEarned INTEGER NOT NULL DEFAULT 0,
+                        streakDayNumber INTEGER NOT NULL DEFAULT 0,
+                        usedMindfulBreak INTEGER NOT NULL DEFAULT 0,
+                        createdAt INTEGER NOT NULL DEFAULT 0
+                    )
+                """.trimIndent())
+                db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS idx_daily_activity_user_date ON daily_activity(userId, date)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_daily_activity_date ON daily_activity(date)")
+
+                // Create mindful_break_usage table
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS mindful_break_usage (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        userId TEXT NOT NULL DEFAULT 'local',
+                        usedAt INTEGER NOT NULL DEFAULT 0,
+                        preservedStreak INTEGER NOT NULL DEFAULT 0,
+                        missedDate INTEGER NOT NULL DEFAULT 0
+                    )
+                """.trimIndent())
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_mindful_break_user ON mindful_break_usage(userId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_mindful_break_time ON mindful_break_usage(usedAt)")
+
+                // Add new fields to daily_seeds for enhanced Seed -> Bloom
+                db.execSQL("ALTER TABLE daily_seeds ADD COLUMN state TEXT NOT NULL DEFAULT 'planted'")
+                db.execSQL("ALTER TABLE daily_seeds ADD COLUMN rewardXp INTEGER NOT NULL DEFAULT 15")
+                db.execSQL("ALTER TABLE daily_seeds ADD COLUMN rewardTokens INTEGER NOT NULL DEFAULT 5")
+                db.execSQL("ALTER TABLE daily_seeds ADD COLUMN variations TEXT NOT NULL DEFAULT ''")
+                db.execSQL("ALTER TABLE daily_seeds ADD COLUMN keywords TEXT NOT NULL DEFAULT ''")
+                db.execSQL("ALTER TABLE daily_seeds ADD COLUMN keyPhrase TEXT")
+            }
+        }
+
         fun getInstance(context: Context): ProdyDatabase {
             return INSTANCE ?: synchronized(this) {
                 INSTANCE ?: buildDatabase(context).also { INSTANCE = it }
@@ -175,7 +277,7 @@ abstract class ProdyDatabase : RoomDatabase() {
                 ProdyDatabase::class.java,
                 DATABASE_NAME
             )
-                .addMigrations(MIGRATION_4_5)
+                .addMigrations(MIGRATION_4_5, MIGRATION_5_6)
                 .fallbackToDestructiveMigration()
                 .addCallback(DatabaseCallback())
                 .build()

@@ -27,10 +27,16 @@ import com.prody.prashant.ui.screens.profile.EditProfileScreen
 import com.prody.prashant.ui.screens.profile.ProfileScreen
 import com.prody.prashant.ui.screens.profile.SettingsScreen
 import com.prody.prashant.ui.screens.quotes.QuotesScreen
+import com.prody.prashant.ui.screens.quotes.WisdomTab
 import com.prody.prashant.ui.screens.stats.StatsScreen
 import com.prody.prashant.ui.screens.vocabulary.VocabularyDetailScreen
 import com.prody.prashant.ui.screens.vocabulary.VocabularyListScreen
 import com.prody.prashant.ui.screens.search.SearchScreen
+import com.prody.prashant.ui.screens.wisdom.WisdomCollectionScreen
+import com.prody.prashant.ui.screens.microjournal.MicroJournalScreen
+import com.prody.prashant.ui.screens.ritual.DailyRitualScreen
+import com.prody.prashant.ui.screens.digest.WeeklyDigestScreen
+import com.prody.prashant.ui.screens.futuremessage.FutureMessageReplyScreen
 
 /**
  * Prody Navigation - Screen Routes & Navigation Graph
@@ -82,13 +88,21 @@ sealed class Screen(val route: String) {
     data object VocabularyDetail : Screen("vocabulary/{wordId}") {
         fun createRoute(wordId: Long) = "vocabulary/$wordId"
     }
-    data object IdiomDetail : Screen("idiom/{idiomId}") {
-        fun createRoute(idiomId: Long) = "idiom/$idiomId"
+    data object Quotes : Screen("quotes/{tab}") {
+        fun createRoute(tab: String = "quotes") = "quotes/$tab"
     }
-    data object Quotes : Screen("quotes")
     data object Meditation : Screen("meditation")
     data object Challenges : Screen("challenges")
     data object Search : Screen("search")
+
+    // Daily Engagement Features
+    data object WisdomCollection : Screen("wisdom_collection")
+    data object MicroJournal : Screen("micro_journal")
+    data object DailyRitual : Screen("daily_ritual")
+    data object WeeklyDigest : Screen("weekly_digest")
+    data object FutureMessageReply : Screen("future_message/reply/{messageId}") {
+        fun createRoute(messageId: Long) = "future_message/reply/$messageId"
+    }
 }
 
 // =============================================================================
@@ -196,7 +210,13 @@ fun ProdyNavHost(
                     navController.navigate(Screen.VocabularyList.route)
                 },
                 onNavigateToQuotes = {
-                    navController.navigate(Screen.Quotes.route)
+                    navController.navigate(Screen.Quotes.createRoute("quotes"))
+                },
+                onNavigateToIdioms = {
+                    navController.navigate(Screen.Quotes.createRoute("idioms"))
+                },
+                onNavigateToProverbs = {
+                    navController.navigate(Screen.Quotes.createRoute("proverbs"))
                 },
                 onNavigateToJournal = {
                     navController.navigate(Screen.JournalList.route)
@@ -405,25 +425,25 @@ fun ProdyNavHost(
         }
 
         // =====================================================================
-        // IDIOM DETAIL
+        // QUOTES / WISDOM COLLECTION
         // =====================================================================
         composable(
-            route = Screen.IdiomDetail.route,
-            arguments = listOf(navArgument("idiomId") { type = NavType.LongType })
+            route = Screen.Quotes.route,
+            arguments = listOf(navArgument("tab") {
+                type = NavType.StringType
+                defaultValue = "quotes"
+            })
         ) { backStackEntry ->
-            val idiomId = backStackEntry.arguments?.getLong("idiomId") ?: return@composable
-            IdiomDetailScreen(
-                idiomId = idiomId,
-                onNavigateBack = { navController.popBackStack() }
-            )
-        }
-
-        // =====================================================================
-        // QUOTES
-        // =====================================================================
-        composable(Screen.Quotes.route) {
+            val tabName = backStackEntry.arguments?.getString("tab") ?: "quotes"
+            val initialTab = when (tabName.lowercase()) {
+                "proverbs" -> WisdomTab.PROVERBS
+                "idioms" -> WisdomTab.IDIOMS
+                "phrases" -> WisdomTab.PHRASES
+                else -> WisdomTab.QUOTES
+            }
             QuotesScreen(
-                onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = { navController.popBackStack() },
+                initialTab = initialTab
             )
         }
 
@@ -488,8 +508,8 @@ fun ProdyNavHost(
                     navController.navigate(Screen.JournalDetail.createRoute(entryId))
                 },
                 onNavigateToQuote = { quoteId ->
-                    // Navigate to quotes screen (quote detail not implemented separately)
-                    navController.navigate(Screen.Quotes.route)
+                    // Navigate to quotes screen with Quotes tab selected
+                    navController.navigate(Screen.Quotes.createRoute("quotes"))
                 },
                 onNavigateToVocabulary = { wordId ->
                     navController.navigate(Screen.VocabularyDetail.createRoute(wordId))
@@ -497,6 +517,92 @@ fun ProdyNavHost(
                 onNavigateToFutureMessage = { messageId ->
                     // Navigate to future message list (detail not implemented separately)
                     navController.navigate(Screen.FutureMessageList.route)
+                }
+            )
+        }
+
+        // =====================================================================
+        // DAILY ENGAGEMENT FEATURES
+        // =====================================================================
+
+        // Wisdom Collection - saved quotes, words, proverbs
+        composable(Screen.WisdomCollection.route) {
+            WisdomCollectionScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        // Micro-Journaling - quick thought capture
+        composable(Screen.MicroJournal.route) {
+            MicroJournalScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToJournalWithContent = { content, microEntryId ->
+                    // Navigate to journal with prefilled content
+                    // The micro entry ID can be used to mark it as expanded after save
+                    navController.navigate(Screen.NewJournalEntry.route)
+                }
+            )
+        }
+
+        // Daily Ritual - morning/evening check-ins
+        composable(
+            route = Screen.DailyRitual.route,
+            // Special calming transition for ritual
+            enterTransition = {
+                fadeIn(tween(400, easing = EaseOutQuart)) + scaleIn(
+                    initialScale = 0.96f,
+                    animationSpec = tween(400, easing = EaseOutQuart)
+                )
+            },
+            popExitTransition = {
+                fadeOut(tween(300)) + scaleOut(
+                    targetScale = 0.96f,
+                    animationSpec = tween(300, easing = EaseInQuart)
+                )
+            }
+        ) {
+            DailyRitualScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToJournal = { prefilledContent ->
+                    // Navigate to journal with prefilled content from ritual
+                    navController.navigate(Screen.NewJournalEntry.route)
+                }
+            )
+        }
+
+        // Weekly Digest - weekly summaries and patterns
+        composable(Screen.WeeklyDigest.route) {
+            WeeklyDigestScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToEntry = { entryId ->
+                    navController.navigate(Screen.JournalDetail.createRoute(entryId))
+                }
+            )
+        }
+
+        // Future Message Reply - reply to past self
+        composable(
+            route = Screen.FutureMessageReply.route,
+            arguments = listOf(navArgument("messageId") { type = NavType.LongType }),
+            // Slide up for reply screen
+            enterTransition = {
+                fadeIn(tween(FADE_DURATION)) + slideInVertically(
+                    initialOffsetY = { it / 4 },
+                    animationSpec = tween(TRANSITION_DURATION, easing = EaseOutQuart)
+                )
+            },
+            popExitTransition = {
+                fadeOut(tween(FADE_DURATION)) + slideOutVertically(
+                    targetOffsetY = { it / 4 },
+                    animationSpec = tween(TRANSITION_DURATION, easing = EaseInQuart)
+                )
+            }
+        ) { backStackEntry ->
+            val messageId = backStackEntry.arguments?.getLong("messageId") ?: return@composable
+            FutureMessageReplyScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToJournal = { prefilledContent ->
+                    navController.navigate(Screen.NewJournalEntry.route)
                 }
             )
         }

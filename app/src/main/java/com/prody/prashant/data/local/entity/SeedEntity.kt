@@ -7,10 +7,16 @@ import androidx.room.PrimaryKey
 /**
  * Seed Entity - Tracks the "Seed -> Bloom" mechanic.
  *
- * Every day, Prody surfaces ONE "Seed" item (word/proverb/idea) from the content library.
- * - Seed starts as "Unapplied"
- * - It "Blooms" when the user uses it in a journal entry OR future message
- * - Bloom triggers a reward and a subtle visual marker
+ * Every day, Prody surfaces ONE "Seed" item (word/proverb/quote/phrase) from the content library.
+ *
+ * Seed States:
+ * - PLANTED: Shown to user, waiting for engagement
+ * - GROWING: User engaged with it (viewed detail, saved to collection)
+ * - BLOOMED: User applied it (used in journal entry or future message)
+ *
+ * Bloom triggers rewards:
+ * - 15 Discipline XP
+ * - 5 Tokens
  *
  * This makes wisdom actionable and creates a unique progression loop.
  */
@@ -26,31 +32,103 @@ data class SeedEntity(
     val id: Long = 0,
     val userId: String = "local",
     val date: Long, // Day timestamp (start of day)
-    val seedType: String, // "word", "proverb", "quote", "idea"
+    val seedType: String, // "word", "proverb", "quote", "phrase"
     val seedContent: String, // The actual word/phrase/quote
     val seedSource: String = "", // "vocabulary", "quotes", "proverbs", "ai"
     val sourceId: Long? = null, // Reference to source entity if applicable
+
+    // Seed state: "planted", "growing", "bloomed"
+    val state: String = "planted",
+
+    // Legacy compatibility field
     val hasBloomedToday: Boolean = false,
+
+    // Bloom tracking
     val bloomedAt: Long? = null,
     val bloomedIn: String? = null, // "journal", "future_message"
     val bloomedEntryId: Long? = null, // Reference to the entry where it bloomed
+
+    // Reward tracking
     val rewardClaimed: Boolean = false,
-    val rewardPoints: Int = 25,
+    val rewardPoints: Int = 25, // Legacy - replaced by rewardXp
+    val rewardXp: Int = 15, // Discipline XP for blooming
+    val rewardTokens: Int = 5, // Bonus tokens for blooming
+
+    // Content matching helpers (populated at creation)
+    val variations: String = "", // JSON array of word variations for matching
+    val keywords: String = "", // JSON array of keywords for proverbs
+    val keyPhrase: String? = null, // Key phrase for quote matching
+
     val createdAt: Long = System.currentTimeMillis()
 ) {
     /**
-     * Check if this seed is currently active (today's seed, not yet bloomed)
+     * Check if this seed is currently active (not yet bloomed)
      */
-    fun isActive(): Boolean = !hasBloomedToday
+    fun isActive(): Boolean = state != "bloomed" && !hasBloomedToday
 
     /**
-     * Check if this seed matches content (case-insensitive word matching)
+     * Check if this seed is in growing state
+     */
+    fun isGrowing(): Boolean = state == "growing"
+
+    /**
+     * Check if this seed has bloomed
+     */
+    fun hasBloomed(): Boolean = state == "bloomed" || hasBloomedToday
+
+    /**
+     * Check if this seed matches content (case-insensitive matching)
      */
     fun matchesContent(text: String): Boolean {
         val lowerText = text.lowercase()
-        val seedWords = seedContent.lowercase().split(" ", ",", ";")
-        return seedWords.any { word ->
-            word.length >= 3 && lowerText.contains(word.trim())
+
+        return when (seedType) {
+            "word" -> {
+                // Check main content and variations
+                val mainWord = seedContent.lowercase()
+                if (lowerText.contains(mainWord)) return true
+
+                // Check variations if provided
+                if (variations.isNotEmpty()) {
+                    try {
+                        val varList = variations.removeSurrounding("[", "]")
+                            .split(",")
+                            .map { it.trim().removeSurrounding("\"") }
+                        return varList.any { lowerText.contains(it.lowercase()) }
+                    } catch (_: Exception) {
+                        // Fall back to basic matching
+                    }
+                }
+                false
+            }
+            "quote" -> {
+                // Check key phrase
+                keyPhrase?.let { lowerText.contains(it.lowercase()) } ?: false
+            }
+            "proverb" -> {
+                // Check keywords
+                if (keywords.isNotEmpty()) {
+                    try {
+                        val keywordList = keywords.removeSurrounding("[", "]")
+                            .split(",")
+                            .map { it.trim().removeSurrounding("\"") }
+                        return keywordList.any { lowerText.contains(it.lowercase()) }
+                    } catch (_: Exception) {
+                        // Fall back to basic matching
+                    }
+                }
+                // Fallback: check if any meaningful words match
+                val seedWords = seedContent.lowercase().split(" ", ",", ";")
+                seedWords.any { word -> word.length >= 4 && lowerText.contains(word.trim()) }
+            }
+            "phrase" -> {
+                lowerText.contains(seedContent.lowercase())
+            }
+            else -> {
+                // Fallback for unknown types
+                val seedWords = seedContent.lowercase().split(" ", ",", ";")
+                seedWords.any { word -> word.length >= 3 && lowerText.contains(word.trim()) }
+            }
         }
     }
 }

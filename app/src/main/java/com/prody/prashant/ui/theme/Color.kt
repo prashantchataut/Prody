@@ -111,6 +111,7 @@ val MoodConfused = Color(0xFFB39DDB)                  // Soft lavender - reflect
 val MoodExcited = Color(0xFFFF7B5A)                   // Vibrant coral - enthusiasm
 val MoodEnergetic = Color(0xFFFF8F42)                 // Dynamic orange - vitality
 val MoodInspired = Color(0xFF9B6DD4)                  // Creative purple - imagination
+val MoodNostalgic = Color(0xFFD4A574)                 // Warm sepia - remembrance
 
 // =============================================================================
 // GAMIFICATION COLORS - Leaderboard & Achievements (Flat)
