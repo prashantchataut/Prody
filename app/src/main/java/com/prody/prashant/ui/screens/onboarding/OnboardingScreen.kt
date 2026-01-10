@@ -2529,6 +2529,7 @@ private fun LoginInputField(
                     color = textColor
                 ),
                 singleLine = true,
+                cursorBrush = SolidColor(AccentGreen),
                 visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None,
                 keyboardOptions = KeyboardOptions(
                     keyboardType = if (isPassword) KeyboardType.Password else KeyboardType.Email,

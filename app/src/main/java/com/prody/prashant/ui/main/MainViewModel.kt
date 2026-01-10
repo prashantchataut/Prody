@@ -26,8 +26,9 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             combine(
                 preferencesManager.onboardingCompleted.catch { emit(false) },
-                preferencesManager.themeMode.catch { emit("system") }
-            ) { onboardingCompleted, themeModeString ->
+                preferencesManager.themeMode.catch { emit("system") },
+                preferencesManager.hapticFeedbackEnabled.catch { emit(true) }
+            ) { onboardingCompleted, themeModeString, hapticEnabled ->
                 val themeMode = when (themeModeString.lowercase()) {
                     "light" -> ThemeMode.LIGHT
                     "dark" -> ThemeMode.DARK
@@ -38,7 +39,8 @@ class MainViewModel @Inject constructor(
                 MainActivityUiState(
                     isLoading = false,
                     startDestination = startDestination,
-                    themeMode = themeMode
+                    themeMode = themeMode,
+                    hapticFeedbackEnabled = hapticEnabled
                 )
             }.collect { newState ->
                 _uiState.value = newState

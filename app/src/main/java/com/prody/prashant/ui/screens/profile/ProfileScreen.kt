@@ -113,8 +113,8 @@ private object IdentityRoomColors {
 @Composable
 fun ProfileScreen(
     onNavigateToSettings: () -> Unit,
-    onNavigateToEditProfile: () -> Unit = {},
-    onNavigateToAchievements: () -> Unit = {},
+    onNavigateToEditProfile: () -> Unit,
+    onNavigateToAchievements: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()

@@ -49,9 +49,8 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
+import com.prody.prashant.util.rememberProdyHaptic
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.prody.prashant.data.local.entity.LeaderboardEntryEntity
@@ -657,7 +656,7 @@ fun ProdyLeaderboardRow(
     hasUserSupportedToday: Boolean = false,
     onSupportClick: () -> Unit = {}
 ) {
-    val haptic = LocalHapticFeedback.current
+    val haptic = rememberProdyHaptic()
     val interactionSource = remember { MutableInteractionSource() }
 
     var isPressed by remember { mutableStateOf(false) }
@@ -692,7 +691,7 @@ fun ProdyLeaderboardRow(
                 indication = null,
                 onClick = onRowClick,
                 onLongClick = {
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    haptic.longPress()
                     onLongPress()
                 }
             ),
@@ -937,7 +936,7 @@ fun ProdyCompactLeaderboardRow(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val haptic = LocalHapticFeedback.current
+    val haptic = rememberProdyHaptic()
 
     Surface(
         modifier = modifier
@@ -945,7 +944,7 @@ fun ProdyCompactLeaderboardRow(
             .combinedClickable(
                 onClick = onClick,
                 onLongClick = {
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    haptic.longPress()
                 }
             ),
         shape = RoundedCornerShape(ProdyTokens.Radius.sm),

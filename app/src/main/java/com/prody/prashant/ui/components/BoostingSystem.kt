@@ -71,9 +71,8 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
+import com.prody.prashant.util.rememberProdyHaptic
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.prody.prashant.ui.theme.ProdyTokens
@@ -176,7 +175,7 @@ fun ProdySupportIconButton(
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
-    val haptic = LocalHapticFeedback.current
+    val haptic = rememberProdyHaptic()
 
     val scale by animateFloatAsState(
         targetValue = if (isPressed && enabled) 0.85f else 1f,
@@ -196,7 +195,7 @@ fun ProdySupportIconButton(
     IconButton(
         onClick = {
             if (enabled && !hasSupported) {
-                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                haptic.success()
                 onSupportClick()
             }
         },
@@ -318,7 +317,7 @@ private fun SupportOptionCard(
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
-    val haptic = LocalHapticFeedback.current
+    val haptic = rememberProdyHaptic()
 
     val scale by animateFloatAsState(
         targetValue = if (isPressed && enabled) 0.98f else 1f,
@@ -332,7 +331,7 @@ private fun SupportOptionCard(
     Card(
         onClick = {
             if (enabled) {
-                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                haptic.click()
                 onClick()
             }
         },

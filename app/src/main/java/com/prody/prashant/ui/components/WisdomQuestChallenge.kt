@@ -33,9 +33,8 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
+import com.prody.prashant.util.rememberProdyHaptic
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
@@ -70,7 +69,7 @@ fun WisdomQuestChallenge(
     onSkip: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val haptic = LocalHapticFeedback.current
+    val haptic = rememberProdyHaptic()
 
     var userAnswer by remember { mutableStateOf("") }
     var showHint by remember { mutableStateOf(false) }
@@ -135,7 +134,7 @@ fun WisdomQuestChallenge(
                     userAnswer = userAnswer,
                     onAnswerChange = { userAnswer = it },
                     onSubmit = {
-                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                        haptic.click()
                         onAnswerSubmit(userAnswer)
                     }
                 )
@@ -145,7 +144,7 @@ fun WisdomQuestChallenge(
                     word = challenge.word.word,
                     options = challenge.options ?: emptyList(),
                     onOptionSelected = { selectedOption ->
-                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                        haptic.selection()
                         onAnswerSubmit(selectedOption)
                     }
                 )
@@ -156,7 +155,7 @@ fun WisdomQuestChallenge(
                     userAnswer = userAnswer,
                     onAnswerChange = { userAnswer = it },
                     onSubmit = {
-                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                        haptic.click()
                         onAnswerSubmit(userAnswer)
                     },
                     showHint = showHint,
@@ -551,7 +550,7 @@ private fun MultipleChoiceChallenge(
     options: List<String>,
     onOptionSelected: (String) -> Unit
 ) {
-    val haptic = LocalHapticFeedback.current
+    val haptic = rememberProdyHaptic()
     var selectedOption by remember { mutableStateOf<String?>(null) }
 
     Column(
@@ -588,7 +587,7 @@ private fun MultipleChoiceChallenge(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null
                     ) {
-                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                        haptic.selection()
                         selectedOption = option
                         onOptionSelected(option)
                     },
@@ -796,11 +795,11 @@ fun WisdomQuestResult(
     onContinue: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val haptic = LocalHapticFeedback.current
+    val haptic = rememberProdyHaptic()
 
     LaunchedEffect(result.isCorrect) {
         if (result.isCorrect) {
-            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+            haptic.success()
         }
     }
 
@@ -997,7 +996,7 @@ fun DailyFocusSelector(
     onFocusSelected: (WisdomQuestEngine.DailyFocus) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val haptic = LocalHapticFeedback.current
+    val haptic = rememberProdyHaptic()
 
     Column(
         modifier = modifier
@@ -1054,7 +1053,7 @@ fun DailyFocusSelector(
                             modifier = Modifier
                                 .weight(1f)
                                 .clickable {
-                                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                    haptic.selection()
                                     onFocusSelected(focus)
                                 },
                             shape = RoundedCornerShape(ProdyTokens.Radius.md),
