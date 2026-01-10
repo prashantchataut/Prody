@@ -129,11 +129,28 @@ class MainActivity : ComponentActivity() {
                 ) {
                     uiState.startDestination?.let { startDestination ->
                         ProdyApp(
-                            startDestination = startDestination
+                            startDestination = startDestination,
+                            viewModel = viewModel
                         )
                     }
                 }
             }
+        }
+
+        handleIntent(intent)
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        handleIntent(intent)
+    }
+
+    private fun handleIntent(intent: Intent?) {
+        if (intent?.hasExtra("navigate_to") == true) {
+            val route = intent.getStringExtra("navigate_to")
+            viewModel.onNavigationIntent(route)
+            // To prevent re-processing, remove the extra.
+            intent.removeExtra("navigate_to")
         }
     }
 
@@ -184,11 +201,18 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun ProdyApp(
-    startDestination: String
+    startDestination: String,
+    viewModel: MainViewModel
 ) {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
+
+    LaunchedEffect(Unit) {
+        viewModel.navigationChannel.collect { route ->
+            navController.navigate(route)
+        }
+    }
 
     // Bottom navigation items
     val bottomNavItems = listOf(
