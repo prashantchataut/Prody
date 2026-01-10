@@ -48,7 +48,13 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -140,6 +146,9 @@ fun WriteMessageScreen(
         }
     }
 
+    // Focus management for keyboard navigation
+    val contentFocusRequester = remember { FocusRequester() }
+
     // Magical sealing animation state
     val sealState = rememberTimeCapsuleSealState()
 
@@ -222,6 +231,7 @@ fun WriteMessageScreen(
             TimeCapsuleTitleInput(
                 value = uiState.title,
                 onValueChange = { viewModel.updateTitle(it) },
+                onNext = { contentFocusRequester.requestFocus() },
                 placeholderColor = placeholderColor,
                 activeTextColor = activeTextColor,
                 modifier = Modifier.padding(horizontal = 24.dp)
@@ -235,6 +245,7 @@ fun WriteMessageScreen(
                 onValueChange = { viewModel.updateContent(it) },
                 placeholderColor = placeholderColor,
                 activeTextColor = activeTextColor,
+                focusRequester = contentFocusRequester,
                 modifier = Modifier.padding(horizontal = 24.dp)
             )
 
@@ -459,6 +470,7 @@ private fun TimeCapsuleTopBar(
 private fun TimeCapsuleTitleInput(
     value: String,
     onValueChange: (String) -> Unit,
+    onNext: () -> Unit,
     placeholderColor: Color,
     activeTextColor: Color,
     modifier: Modifier = Modifier
@@ -475,6 +487,13 @@ private fun TimeCapsuleTitleInput(
         ),
         singleLine = true,
         cursorBrush = SolidColor(TimeCapsuleAccent),
+        keyboardOptions = KeyboardOptions(
+            capitalization = KeyboardCapitalization.Sentences,
+            imeAction = ImeAction.Next
+        ),
+        keyboardActions = KeyboardActions(
+            onNext = { onNext() }
+        ),
         decorationBox = { innerTextField ->
             Box {
                 if (value.isEmpty()) {
@@ -501,6 +520,7 @@ private fun TimeCapsuleMessageInput(
     onValueChange: (String) -> Unit,
     placeholderColor: Color,
     activeTextColor: Color,
+    focusRequester: FocusRequester,
     modifier: Modifier = Modifier
 ) {
     BasicTextField(
@@ -508,7 +528,8 @@ private fun TimeCapsuleMessageInput(
         onValueChange = onValueChange,
         modifier = modifier
             .fillMaxWidth()
-            .heightIn(min = 120.dp),
+            .heightIn(min = 120.dp)
+            .focusRequester(focusRequester),
         textStyle = TextStyle(
             fontFamily = PoppinsFamily,
             fontWeight = FontWeight.Normal,
@@ -517,6 +538,10 @@ private fun TimeCapsuleMessageInput(
             lineHeight = 24.sp
         ),
         cursorBrush = SolidColor(TimeCapsuleAccent),
+        keyboardOptions = KeyboardOptions(
+            capitalization = KeyboardCapitalization.Sentences,
+            imeAction = ImeAction.Default // Multi-line, default behavior
+        ),
         decorationBox = { innerTextField ->
             Box {
                 if (value.isEmpty()) {

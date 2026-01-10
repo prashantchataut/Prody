@@ -14,6 +14,7 @@ import com.prody.prashant.ui.screens.challenges.ChallengesScreen
 import com.prody.prashant.ui.screens.futuremessage.FutureMessageListScreen
 import com.prody.prashant.ui.screens.futuremessage.WriteMessageScreen
 import com.prody.prashant.ui.screens.home.HomeScreen
+import com.prody.prashant.ui.screens.idiom.IdiomDetailScreen
 import com.prody.prashant.ui.screens.journal.JournalDetailScreen
 import com.prody.prashant.ui.screens.journal.JournalHistoryScreen
 import com.prody.prashant.ui.screens.journal.JournalListScreen
@@ -231,6 +232,9 @@ fun ProdyNavHost(
                 },
                 onNavigateToSearch = {
                     navController.navigate(Screen.Search.route)
+                },
+                onNavigateToIdiomDetail = { idiomId ->
+                    navController.navigate(Screen.IdiomDetail.createRoute(idiomId))
                 }
             )
         }

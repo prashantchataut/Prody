@@ -23,6 +23,9 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextStyle
@@ -92,6 +95,7 @@ fun SearchScreen(
                 onNavigateBack()
             },
             onClear = viewModel::clearSearch,
+            onSearch = { focusManager.clearFocus() },
             isDark = isDark,
             focusRequester = focusRequester
         )
@@ -169,6 +173,7 @@ private fun SearchHeader(
     onQueryChange: (String) -> Unit,
     onBack: () -> Unit,
     onClear: () -> Unit,
+    onSearch: () -> Unit,
     isDark: Boolean,
     focusRequester: FocusRequester
 ) {
@@ -242,7 +247,13 @@ private fun SearchHeader(
                                 color = textColor
                             ),
                             cursorBrush = SolidColor(AccentGreen),
-                            singleLine = true
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(
+                                imeAction = ImeAction.Search
+                            ),
+                            keyboardActions = KeyboardActions(
+                                onSearch = { onSearch() }
+                            )
                         )
                     }
 

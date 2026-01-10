@@ -41,16 +41,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
-import androidx.navigation.NavType
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
 import com.prody.prashant.notification.NotificationScheduler
 import com.prody.prashant.ui.components.NavigationBreathingGlow
 import com.prody.prashant.ui.main.MainViewModel
 import com.prody.prashant.ui.navigation.BottomNavItem
+import com.prody.prashant.ui.navigation.ProdyNavHost
 import com.prody.prashant.ui.navigation.Screen
 import com.prody.prashant.ui.screens.challenges.ChallengesScreen
 import com.prody.prashant.ui.screens.futuremessage.FutureMessageListScreen
@@ -201,7 +198,7 @@ fun ProdyApp(
         BottomNavItem.Profile
     )
 
-    // Determine if bottom nav should be shown
+    // Determine if bottom nav should be shown (only on main tabs)
     val showBottomBar = currentDestination?.route in listOf(
         Screen.Home.route,
         Screen.JournalList.route,
@@ -261,7 +258,8 @@ fun ProdyApp(
             }
         }
     ) { innerPadding ->
-        NavHost(
+        // Use the complete ProdyNavHost with all routes properly configured
+        ProdyNavHost(
             navController = navController,
             startDestination = startDestination,
             modifier = Modifier.padding(innerPadding),

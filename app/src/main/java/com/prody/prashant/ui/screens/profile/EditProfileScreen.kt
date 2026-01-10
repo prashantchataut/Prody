@@ -31,8 +31,14 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -105,6 +111,9 @@ fun EditProfileScreen(
         }
     }
 
+    // Focus management for keyboard navigation
+    val bioFocusRequester = remember { FocusRequester() }
+
     // Discard changes confirmation dialog
     if (uiState.showDiscardDialog) {
         DiscardChangesDialog(
@@ -166,6 +175,7 @@ fun EditProfileScreen(
                     DisplayNameSection(
                         displayName = uiState.displayName,
                         onDisplayNameChange = { viewModel.updateDisplayName(it) },
+                        onNext = { bioFocusRequester.requestFocus() },
                         isDarkMode = isDarkMode
                     )
                 }
@@ -175,6 +185,7 @@ fun EditProfileScreen(
                     BioSection(
                         bio = uiState.bio,
                         onBioChange = { viewModel.updateBio(it) },
+                        focusRequester = bioFocusRequester,
                         isDarkMode = isDarkMode
                     )
                 }
@@ -451,6 +462,7 @@ private fun AvatarOptionItem(
 private fun DisplayNameSection(
     displayName: String,
     onDisplayNameChange: (String) -> Unit,
+    onNext: () -> Unit,
     isDarkMode: Boolean
 ) {
     Column(
@@ -499,6 +511,13 @@ private fun DisplayNameSection(
                 if (isDarkMode) EditProfileColors.AccentGreen
                 else EditProfileColors.AccentGreenLight
             ),
+            keyboardOptions = KeyboardOptions(
+                capitalization = KeyboardCapitalization.Words,
+                imeAction = ImeAction.Next
+            ),
+            keyboardActions = KeyboardActions(
+                onNext = { onNext() }
+            ),
             decorationBox = { innerTextField ->
                 Box {
                     if (displayName.isEmpty()) {
@@ -532,6 +551,7 @@ private fun DisplayNameSection(
 private fun BioSection(
     bio: String,
     onBioChange: (String) -> Unit,
+    focusRequester: FocusRequester,
     isDarkMode: Boolean
 ) {
     Column(
@@ -568,7 +588,8 @@ private fun BioSection(
                             else EditProfileColors.BorderLight,
                     shape = RoundedCornerShape(12.dp)
                 )
-                .padding(16.dp),
+                .padding(16.dp)
+                .focusRequester(focusRequester),
             textStyle = TextStyle(
                 fontFamily = PoppinsFamily,
                 fontWeight = FontWeight.Normal,
@@ -580,6 +601,10 @@ private fun BioSection(
             cursorBrush = SolidColor(
                 if (isDarkMode) EditProfileColors.AccentGreen
                 else EditProfileColors.AccentGreenLight
+            ),
+            keyboardOptions = KeyboardOptions(
+                capitalization = KeyboardCapitalization.Sentences,
+                imeAction = ImeAction.Default // Multi-line, default behavior
             ),
             decorationBox = { innerTextField ->
                 Box {
