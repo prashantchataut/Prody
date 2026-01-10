@@ -93,6 +93,7 @@ WHAT TO AVOID:
             Mood.GRATEFUL -> "Deeply affirm their gratitude practice and help them explore it more deeply."
             Mood.CONFUSED -> "Normalize uncertainty as part of growth and guide them to clarity through questioning."
             Mood.EXCITED -> "Share in their enthusiasm and help them channel excitement into action."
+            Mood.NOSTALGIC -> "Honor their connection to the past and help them find meaning in memories."
         }
 
         return """$SYSTEM_PROMPT

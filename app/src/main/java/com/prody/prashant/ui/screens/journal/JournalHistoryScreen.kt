@@ -1195,6 +1195,7 @@ private fun getMoodColorPremium(mood: Mood): Color {
         Mood.CONFUSED -> Color(0xFFB39DDB)   // Soft lavender
         Mood.SAD -> Color(0xFF8BA8B9)        // Muted slate
         Mood.MOTIVATED -> Color(0xFF36F97F)  // Neon green
+        Mood.NOSTALGIC -> Color(0xFFD4A574)  // Warm sepia
     }
 }
 
@@ -1211,5 +1212,6 @@ private fun getMoodIconPremium(mood: Mood): ImageVector {
         Mood.GRATEFUL -> Icons.Filled.Favorite
         Mood.CONFUSED -> Icons.Outlined.HelpOutline
         Mood.EXCITED -> Icons.Filled.Celebration
+        Mood.NOSTALGIC -> Icons.Filled.HistoryEdu
     }
 }

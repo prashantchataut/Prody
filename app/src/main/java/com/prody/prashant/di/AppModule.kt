@@ -78,7 +78,7 @@ object AppModule {
                 ProdyDatabase::class.java,
                 ProdyDatabase.DATABASE_NAME
             )
-                .addMigrations(ProdyDatabase.MIGRATION_4_5)
+                .addMigrations(ProdyDatabase.MIGRATION_4_5, ProdyDatabase.MIGRATION_5_6)
                 .fallbackToDestructiveMigration()
                 .addCallback(databaseCallback)
                 .build()
@@ -157,6 +157,40 @@ object AppModule {
     @Singleton
     fun provideMissionDao(database: ProdyDatabase): MissionDao {
         return database.missionDao()
+    }
+
+    // ============================================================================
+    // NEW DAOs FOR DAILY ENGAGEMENT FEATURES
+    // ============================================================================
+
+    @Provides
+    @Singleton
+    fun provideSavedWisdomDao(database: ProdyDatabase): SavedWisdomDao {
+        return database.savedWisdomDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideMicroEntryDao(database: ProdyDatabase): MicroEntryDao {
+        return database.microEntryDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideWeeklyDigestDao(database: ProdyDatabase): WeeklyDigestDao {
+        return database.weeklyDigestDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideDailyRitualDao(database: ProdyDatabase): DailyRitualDao {
+        return database.dailyRitualDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideFutureMessageReplyDao(database: ProdyDatabase): FutureMessageReplyDao {
+        return database.futureMessageReplyDao()
     }
 
     @Provides
