@@ -2,12 +2,10 @@ package com.prody.prashant.domain.intelligence
 
 import com.prody.prashant.data.local.dao.HavenDao
 import com.prody.prashant.data.local.dao.JournalDao
-import com.prody.prashant.data.local.entity.FutureMessageEntity
 import com.prody.prashant.data.local.entity.HavenSessionEntity
 import com.prody.prashant.data.local.entity.JournalEntryEntity
 import com.prody.prashant.data.local.preferences.PreferencesManager
 import com.prody.prashant.domain.model.Mood
-import com.prody.prashant.domain.repository.FutureMessageRepository
 import com.prody.prashant.domain.streak.DualStreakManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -53,7 +51,6 @@ import kotlin.random.Random
 class MemoryEngine @Inject constructor(
     private val journalDao: JournalDao,
     private val havenDao: HavenDao,
-    private val futureMessageRepository: FutureMessageRepository,
     private val preferencesManager: PreferencesManager,
     private val dualStreakManager: DualStreakManager
 ) {

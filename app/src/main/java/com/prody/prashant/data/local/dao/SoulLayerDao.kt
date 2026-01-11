@@ -316,7 +316,7 @@ interface SoulLayerDao {
     suspend fun getRecentContentOfType(userId: String = "local", type: String, since: Long): List<TemporalContentHistoryEntity>
 
     @Query("SELECT contentId FROM temporal_content_history WHERE userId = :userId AND contentType = :type AND shownAt > :since")
-    suspend fun getRecentlyShownContentIds(userId: String = "local", type: String, since: Long): List<String?>
+    suspend fun getRecentlyShownContentIds(userId: String = "local", type: String, since: Long): List<String>
 
     @Query("""
         UPDATE temporal_content_history
