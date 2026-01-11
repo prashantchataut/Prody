@@ -6,6 +6,7 @@ import com.prody.prashant.data.repository.JournalRepositoryImpl
 import com.prody.prashant.data.repository.MicroEntryRepositoryImpl
 import com.prody.prashant.data.repository.VocabularyRepositoryImpl
 import com.prody.prashant.data.repository.WeeklyDigestRepositoryImpl
+import com.prody.prashant.data.repository.YearlyWrappedRepositoryImpl
 import com.prody.prashant.domain.repository.CollaborativeMessageRepository
 import com.prody.prashant.domain.repository.GamificationRepository
 import com.prody.prashant.domain.repository.JournalRepository
@@ -13,6 +14,7 @@ import com.prody.prashant.domain.repository.MicroEntryRepository
 import com.prody.prashant.domain.repository.VocabularyRepository
 import com.prody.prashant.domain.repository.WeeklyDigestRepository
 import com.prody.prashant.domain.repository.WisdomCollectionRepository
+import com.prody.prashant.domain.repository.YearlyWrappedRepository
 import com.prody.prashant.domain.summary.WeeklySummaryEngine
 import com.prody.prashant.domain.summary.WeeklySummaryEngineImpl
 import dagger.Binds
@@ -64,4 +66,10 @@ abstract class RepositoryModule {
     abstract fun bindCollaborativeMessageRepository(
         impl: CollaborativeMessageRepositoryImpl
     ): CollaborativeMessageRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindYearlyWrappedRepository(
+        impl: YearlyWrappedRepositoryImpl
+    ): YearlyWrappedRepository
 }
