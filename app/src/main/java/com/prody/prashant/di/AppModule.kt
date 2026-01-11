@@ -398,28 +398,10 @@ object AppModule {
     // LEARNING PATH PROVIDERS
     // ============================================================================
 
-    @Provides
-    @Singleton
-    fun provideLearningPathRepository(
-        learningPathDao: LearningPathDao,
-        journalDao: JournalDao,
-        pathRecommender: com.prody.prashant.domain.learning.PathRecommender,
-        pathContentProvider: com.prody.prashant.domain.learning.PathContentProvider
-    ): com.prody.prashant.domain.repository.LearningPathRepository {
-        return com.prody.prashant.domain.repository.LearningPathRepository(
-            learningPathDao,
-            journalDao,
-            pathRecommender,
-            pathContentProvider
-        )
-    }
-
-    @Provides
-    @Singleton
-    fun providePathRecommender(): com.prody.prashant.domain.learning.PathRecommender {
-        return com.prody.prashant.domain.learning.PathRecommender()
-    }
-
+    /**
+     * Provides PathContentProvider object singleton.
+     * Required because PathContentProvider is a Kotlin object and cannot use @Inject constructor.
+     */
     @Provides
     @Singleton
     fun providePathContentProvider(): com.prody.prashant.domain.learning.PathContentProvider {
