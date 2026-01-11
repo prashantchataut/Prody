@@ -100,6 +100,46 @@ class PreferencesManager @Inject constructor(
         val HAVEN_DAILY_CHECK_IN_TIME = intPreferencesKey("haven_daily_check_in_time")
         val HAVEN_LAST_SESSION_AT = longPreferencesKey("haven_last_session_at")
         val THERAPIST_API_KEY = stringPreferencesKey("therapist_api_key")
+
+        // ===== SOUL LAYER PREFERENCES =====
+
+        // First Week Journey
+        val FIRST_WEEK_MILESTONES = stringPreferencesKey("first_week_milestones")
+
+        // Memory surfacing
+        val LAST_MEMORY_SURFACED_AT = longPreferencesKey("last_memory_surfaced_at")
+        val MEMORY_SURFACING_ENABLED = booleanPreferencesKey("memory_surfacing_enabled")
+        val MEMORY_SURFACING_FREQUENCY = intPreferencesKey("memory_surfacing_frequency") // 1=rarely, 2=sometimes, 3=often
+
+        // Notification intelligence
+        val MORNING_REMINDER_ENABLED = booleanPreferencesKey("morning_reminder_enabled_v2")
+        val EVENING_REFLECTION_ENABLED = booleanPreferencesKey("evening_reflection_enabled_v2")
+        val QUIET_MODE_START = intPreferencesKey("quiet_mode_start_hour")
+        val QUIET_MODE_END = intPreferencesKey("quiet_mode_end_hour")
+        val LAST_NOTIFICATION_SENT_AT = longPreferencesKey("last_notification_sent_at")
+        val NOTIFICATIONS_SENT_TODAY = intPreferencesKey("notifications_sent_today")
+        val NOTIFICATION_RESET_DATE = longPreferencesKey("notification_reset_date")
+        val LAST_APP_OPEN_AT = longPreferencesKey("last_app_open_at")
+
+        // User context caching
+        val USER_DISPLAY_NAME = stringPreferencesKey("user_display_name")
+        val USER_BIRTHDAY_TIMESTAMP = longPreferencesKey("user_birthday_timestamp")
+        val CACHED_USER_ARCHETYPE = stringPreferencesKey("cached_user_archetype")
+        val CACHED_TRUST_LEVEL = stringPreferencesKey("cached_trust_level")
+        val CACHED_CONTEXT_UPDATED_AT = longPreferencesKey("cached_context_updated_at")
+
+        // Haven session tracking
+        val HAVEN_SESSION_COUNT = intPreferencesKey("haven_session_count")
+        val LAST_HAVEN_SESSION_SUMMARY = stringPreferencesKey("last_haven_session_summary")
+        val HAVEN_CRISIS_HISTORY = booleanPreferencesKey("haven_crisis_history")
+
+        // Buddha interaction tracking
+        val LAST_BUDDHA_INTERACTION_AT = longPreferencesKey("last_buddha_interaction_at")
+        val PREFERRED_WISDOM_STYLE = stringPreferencesKey("preferred_wisdom_style")
+
+        // Temporal content
+        val LAST_TEMPORAL_GREETING_DATE = longPreferencesKey("last_temporal_greeting_date")
+        val LAST_TEMPORAL_PROMPT_DATE = longPreferencesKey("last_temporal_prompt_date")
     }
 
     // Onboarding
@@ -988,6 +1028,361 @@ class PreferencesManager @Inject constructor(
     suspend fun setTherapistApiKey(apiKey: String) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.THERAPIST_API_KEY] = apiKey
+        }
+    }
+
+    // ===== SOUL LAYER PREFERENCES ACCESSORS =====
+
+    // First Week Journey
+    val firstWeekMilestones: Flow<Set<String>> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.FIRST_WEEK_MILESTONES]
+                ?.split(",")
+                ?.filter { it.isNotBlank() }
+                ?.toSet()
+                ?: emptySet()
+        }
+
+    suspend fun updateFirstWeekMilestones(milestones: Set<String>) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.FIRST_WEEK_MILESTONES] = milestones.joinToString(",")
+        }
+    }
+
+    // Memory Surfacing
+    val lastMemorySurfacedAt: Flow<Long> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.LAST_MEMORY_SURFACED_AT] ?: 0L
+        }
+
+    suspend fun setLastMemorySurfacedAt(timestamp: Long) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.LAST_MEMORY_SURFACED_AT] = timestamp
+        }
+    }
+
+    val memorySurfacingEnabled: Flow<Boolean> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.MEMORY_SURFACING_ENABLED] ?: true
+        }
+
+    suspend fun setMemorySurfacingEnabled(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.MEMORY_SURFACING_ENABLED] = enabled
+        }
+    }
+
+    val memorySurfacingFrequency: Flow<Int> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.MEMORY_SURFACING_FREQUENCY] ?: 2 // Default: sometimes
+        }
+
+    suspend fun setMemorySurfacingFrequency(frequency: Int) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.MEMORY_SURFACING_FREQUENCY] = frequency.coerceIn(1, 3)
+        }
+    }
+
+    // Notification Intelligence
+    val morningReminderEnabled: Flow<Boolean> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.MORNING_REMINDER_ENABLED] ?: true
+        }
+
+    suspend fun setMorningReminderEnabled(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.MORNING_REMINDER_ENABLED] = enabled
+        }
+    }
+
+    val eveningReflectionEnabled: Flow<Boolean> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.EVENING_REFLECTION_ENABLED] ?: true
+        }
+
+    suspend fun setEveningReflectionEnabled(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.EVENING_REFLECTION_ENABLED] = enabled
+        }
+    }
+
+    val quietModeStart: Flow<Int> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.QUIET_MODE_START] ?: 22 // Default: 10 PM
+        }
+
+    suspend fun setQuietModeStart(hour: Int) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.QUIET_MODE_START] = hour.coerceIn(0, 23)
+        }
+    }
+
+    val quietModeEnd: Flow<Int> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.QUIET_MODE_END] ?: 7 // Default: 7 AM
+        }
+
+    suspend fun setQuietModeEnd(hour: Int) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.QUIET_MODE_END] = hour.coerceIn(0, 23)
+        }
+    }
+
+    val lastNotificationSentAt: Flow<Long> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.LAST_NOTIFICATION_SENT_AT] ?: 0L
+        }
+
+    suspend fun setLastNotificationSentAt(timestamp: Long) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.LAST_NOTIFICATION_SENT_AT] = timestamp
+        }
+    }
+
+    val notificationsSentToday: Flow<Int> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.NOTIFICATIONS_SENT_TODAY] ?: 0
+        }
+
+    suspend fun incrementNotificationsSentToday() {
+        dataStore.edit { preferences ->
+            val current = preferences[PreferencesKeys.NOTIFICATIONS_SENT_TODAY] ?: 0
+            preferences[PreferencesKeys.NOTIFICATIONS_SENT_TODAY] = current + 1
+            preferences[PreferencesKeys.LAST_NOTIFICATION_SENT_AT] = System.currentTimeMillis()
+        }
+    }
+
+    suspend fun resetNotificationsSentToday() {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.NOTIFICATIONS_SENT_TODAY] = 0
+            preferences[PreferencesKeys.NOTIFICATION_RESET_DATE] = System.currentTimeMillis()
+        }
+    }
+
+    val lastAppOpenAt: Flow<Long> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.LAST_APP_OPEN_AT] ?: 0L
+        }
+
+    suspend fun setLastAppOpenAt(timestamp: Long) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.LAST_APP_OPEN_AT] = timestamp
+        }
+    }
+
+    // User Context Caching
+    val userDisplayName: Flow<String> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.USER_DISPLAY_NAME] ?: "Friend"
+        }
+
+    suspend fun setUserDisplayName(name: String) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.USER_DISPLAY_NAME] = name
+        }
+    }
+
+    val userBirthdayTimestamp: Flow<Long> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.USER_BIRTHDAY_TIMESTAMP] ?: 0L
+        }
+
+    suspend fun setUserBirthdayTimestamp(timestamp: Long) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.USER_BIRTHDAY_TIMESTAMP] = timestamp
+        }
+    }
+
+    val cachedUserArchetype: Flow<String> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.CACHED_USER_ARCHETYPE] ?: "EXPLORER"
+        }
+
+    suspend fun setCachedUserArchetype(archetype: String) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.CACHED_USER_ARCHETYPE] = archetype
+            preferences[PreferencesKeys.CACHED_CONTEXT_UPDATED_AT] = System.currentTimeMillis()
+        }
+    }
+
+    val cachedTrustLevel: Flow<String> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.CACHED_TRUST_LEVEL] ?: "NEW"
+        }
+
+    suspend fun setCachedTrustLevel(trustLevel: String) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.CACHED_TRUST_LEVEL] = trustLevel
+            preferences[PreferencesKeys.CACHED_CONTEXT_UPDATED_AT] = System.currentTimeMillis()
+        }
+    }
+
+    // Haven Session Tracking
+    val havenSessionCount: Flow<Int> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.HAVEN_SESSION_COUNT] ?: 0
+        }
+
+    suspend fun incrementHavenSessionCount() {
+        dataStore.edit { preferences ->
+            val current = preferences[PreferencesKeys.HAVEN_SESSION_COUNT] ?: 0
+            preferences[PreferencesKeys.HAVEN_SESSION_COUNT] = current + 1
+        }
+    }
+
+    val lastHavenSessionSummary: Flow<String> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.LAST_HAVEN_SESSION_SUMMARY] ?: ""
+        }
+
+    suspend fun setLastHavenSessionSummary(summary: String) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.LAST_HAVEN_SESSION_SUMMARY] = summary
+        }
+    }
+
+    val havenCrisisHistory: Flow<Boolean> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.HAVEN_CRISIS_HISTORY] ?: false
+        }
+
+    suspend fun setHavenCrisisHistory(hasCrisisHistory: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.HAVEN_CRISIS_HISTORY] = hasCrisisHistory
+        }
+    }
+
+    // Buddha Interaction Tracking
+    val lastBuddhaInteractionAt: Flow<Long> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.LAST_BUDDHA_INTERACTION_AT] ?: 0L
+        }
+
+    suspend fun setLastBuddhaInteractionAt(timestamp: Long) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.LAST_BUDDHA_INTERACTION_AT] = timestamp
+        }
+    }
+
+    val preferredWisdomStyle: Flow<String> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.PREFERRED_WISDOM_STYLE] ?: "STOIC"
+        }
+
+    suspend fun setPreferredWisdomStyle(style: String) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.PREFERRED_WISDOM_STYLE] = style
+        }
+    }
+
+    // Temporal Content Tracking
+    val lastTemporalGreetingDate: Flow<Long> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.LAST_TEMPORAL_GREETING_DATE] ?: 0L
+        }
+
+    suspend fun setLastTemporalGreetingDate(timestamp: Long) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.LAST_TEMPORAL_GREETING_DATE] = timestamp
+        }
+    }
+
+    val lastTemporalPromptDate: Flow<Long> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.LAST_TEMPORAL_PROMPT_DATE] ?: 0L
+        }
+
+    suspend fun setLastTemporalPromptDate(timestamp: Long) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.LAST_TEMPORAL_PROMPT_DATE] = timestamp
         }
     }
 

@@ -30,20 +30,23 @@ import androidx.glance.unit.ColorProvider
 import com.prody.prashant.data.content.VocabularyContent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.time.LocalDateTime
 import java.util.Calendar
 
 /**
  * Word of the Day Widget (2x2)
  * Displays the daily vocabulary word with its definition.
+ * Powered by Soul Layer intelligence for time-aware learning prompts.
  */
 class WordOfDayWidget : GlanceAppWidget() {
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
-        val wordData = getDailyWord()
+        val wordData = getDailyWordData()
 
         provideContent {
             GlanceTheme {
                 WordOfDayContent(
+                    label = wordData.label,
                     word = wordData.word,
                     partOfSpeech = wordData.partOfSpeech,
                     definition = wordData.definition
@@ -52,35 +55,40 @@ class WordOfDayWidget : GlanceAppWidget() {
         }
     }
 
-    private data class WordData(
-        val word: String,
-        val partOfSpeech: String,
-        val definition: String
-    )
-
-    private suspend fun getDailyWord(): WordData = withContext(Dispatchers.IO) {
+    /**
+     * Get daily word with intelligent, time-aware label.
+     */
+    private suspend fun getDailyWordData(): IntelligentWordData = withContext(Dispatchers.IO) {
         val words = VocabularyContent.allWords
-        if (words.isEmpty()) {
-            return@withContext WordData(
-                word = "Resilience",
-                partOfSpeech = "noun",
-                definition = "The capacity to recover quickly from difficulties"
-            )
+        val (word, partOfSpeech, definition) = if (words.isEmpty()) {
+            Triple("Resilience", "noun", "The capacity to recover quickly from difficulties")
+        } else {
+            // Use day of year to get consistent daily word
+            val dayOfYear = Calendar.getInstance().get(Calendar.DAY_OF_YEAR)
+            val index = dayOfYear % words.size
+            val w = words[index]
+            Triple(w.word, w.partOfSpeech, w.definition)
         }
 
-        // Use day of year to get consistent daily word
-        val dayOfYear = Calendar.getInstance().get(Calendar.DAY_OF_YEAR)
-        val index = dayOfYear % words.size
-        val word = words[index]
-        WordData(
-            word = word.word,
-            partOfSpeech = word.partOfSpeech,
-            definition = word.definition
+        // Get time-aware label
+        val hour = LocalDateTime.now().hour
+        val label = when (hour) {
+            in 5..9 -> "MORNING WORD"
+            in 10..16 -> "WORD OF THE DAY"
+            in 17..21 -> "EVENING WORD"
+            else -> "NIGHT WORD"
+        }
+
+        IntelligentWordData(
+            label = label,
+            word = word,
+            partOfSpeech = partOfSpeech,
+            definition = definition
         )
     }
 
     @Composable
-    private fun WordOfDayContent(word: String, partOfSpeech: String, definition: String) {
+    private fun WordOfDayContent(label: String, word: String, partOfSpeech: String, definition: String) {
         Box(
             modifier = GlanceModifier
                 .fillMaxSize()
@@ -93,9 +101,9 @@ class WordOfDayWidget : GlanceAppWidget() {
                 modifier = GlanceModifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Label
+                // Time-aware label
                 Text(
-                    text = "WORD OF THE DAY",
+                    text = label,
                     style = TextStyle(
                         color = ColorProvider(Color(0xFF6C63FF)),
                         fontSize = 8.sp,
@@ -139,6 +147,16 @@ class WordOfDayWidget : GlanceAppWidget() {
         }
     }
 }
+
+/**
+ * Data class for intelligent word information.
+ */
+private data class IntelligentWordData(
+    val label: String,
+    val word: String,
+    val partOfSpeech: String,
+    val definition: String
+)
 
 class RefreshWordAction : androidx.glance.appwidget.action.ActionCallback {
     override suspend fun onAction(

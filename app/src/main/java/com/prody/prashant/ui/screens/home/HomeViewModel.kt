@@ -11,11 +11,13 @@ import com.prody.prashant.data.onboarding.AiHint
 import com.prody.prashant.data.onboarding.AiHintType
 import com.prody.prashant.data.onboarding.AiOnboardingManager
 import com.prody.prashant.data.onboarding.BuddhaGuideCard
+import com.prody.prashant.domain.intelligence.*
 import com.prody.prashant.domain.progress.ActiveProgressService
 import com.prody.prashant.domain.progress.NextAction
 import com.prody.prashant.domain.progress.NextActionType
 import com.prody.prashant.domain.progress.SeedBloomService
 import com.prody.prashant.domain.progress.TodayProgress
+import com.prody.prashant.domain.repository.SoulLayerRepository
 import com.prody.prashant.domain.streak.DualStreakManager
 import com.prody.prashant.domain.streak.DualStreakStatus
 import com.prody.prashant.util.BuddhaWisdom
@@ -100,7 +102,28 @@ data class HomeUiState(
     val buddhaWisdomProofInfo: AiProofModeInfo = AiProofModeInfo(),
     // ============== DUAL STREAK SYSTEM ==============
     // Two independent streaks: Wisdom and Reflection
-    val dualStreakStatus: DualStreakStatus = DualStreakStatus.empty()
+    val dualStreakStatus: DualStreakStatus = DualStreakStatus.empty(),
+    // ============== SOUL LAYER INTELLIGENCE ==============
+    // Context-aware greeting from Soul Layer
+    val intelligentGreeting: String = "",
+    val greetingSubtext: String = "",
+    // First week journey state (null if graduated)
+    val isInFirstWeek: Boolean = false,
+    val firstWeekDayNumber: Int = 0,
+    val firstWeekProgress: FirstWeekProgress? = null,
+    val firstWeekDayContent: FirstWeekDayContent? = null,
+    val showFirstWeekCelebration: Boolean = false,
+    val firstWeekCelebration: CelebrationContent? = null,
+    // Surfaced memory (null if none to show)
+    val surfacedMemory: SurfacedMemory? = null,
+    val showMemoryCard: Boolean = false,
+    // Anniversary memories for today
+    val anniversaryMemories: List<AnniversaryMemory> = emptyList(),
+    // User context for personalization
+    val userArchetype: UserArchetype = UserArchetype.EXPLORER,
+    val trustLevel: TrustLevel = TrustLevel.NEW,
+    val isUserStruggling: Boolean = false,
+    val isUserThriving: Boolean = false
 )
 
 @HiltViewModel
@@ -116,7 +139,8 @@ class HomeViewModel @Inject constructor(
     private val aiOnboardingManager: AiOnboardingManager,
     private val activeProgressService: ActiveProgressService,
     private val seedBloomService: SeedBloomService,
-    private val dualStreakManager: DualStreakManager
+    private val dualStreakManager: DualStreakManager,
+    private val soulLayerRepository: SoulLayerRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -139,6 +163,7 @@ class HomeViewModel @Inject constructor(
         observeAiProofMode()
         checkAiConfiguration()
         loadDualStreakStatus()
+        loadSoulLayerContent()
     }
 
     /**
@@ -294,6 +319,240 @@ class HomeViewModel @Inject constructor(
                 android.util.Log.d(TAG, "Reflection streak result: $result")
             } catch (e: Exception) {
                 android.util.Log.e(TAG, "Error maintaining reflection streak", e)
+            }
+        }
+    }
+
+    // ============== SOUL LAYER INTELLIGENCE ==============
+
+    /**
+     * Load all Soul Layer content for the home screen.
+     * This includes:
+     * - Context-aware greeting
+     * - First week journey state (if applicable)
+     * - Memory to surface (if any)
+     * - Anniversary memories
+     * - User context for personalization
+     */
+    private fun loadSoulLayerContent() {
+        viewModelScope.launch {
+            try {
+                // Load user context first - it's the foundation
+                val context = soulLayerRepository.getCurrentContext()
+
+                // Update basic context info
+                _uiState.update { state ->
+                    state.copy(
+                        userArchetype = context.userArchetype,
+                        trustLevel = context.trustLevel,
+                        isUserStruggling = context.isStruggling,
+                        isUserThriving = context.isThriving,
+                        isInFirstWeek = context.isInFirstWeek
+                    )
+                }
+
+                // Load greeting (intelligent, time-of-day aware)
+                loadIntelligentGreeting()
+
+                // Load first week state if in first week
+                if (context.isInFirstWeek) {
+                    loadFirstWeekState()
+                }
+
+                // Load memory to surface (if conditions are right)
+                loadSurfacedMemory()
+
+                // Load anniversary memories
+                loadAnniversaryMemories()
+
+                android.util.Log.d(TAG, "Soul Layer content loaded - Archetype: ${context.userArchetype}, Trust: ${context.trustLevel}")
+
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error loading Soul Layer content", e)
+            }
+        }
+    }
+
+    /**
+     * Load the context-aware intelligent greeting.
+     * This considers:
+     * - Time of day
+     * - User's name
+     * - User's emotional state
+     * - Special occasions
+     * - First week stage
+     */
+    private suspend fun loadIntelligentGreeting() {
+        try {
+            val greeting = soulLayerRepository.getGreeting()
+            _uiState.update { state ->
+                state.copy(
+                    intelligentGreeting = greeting.greeting,
+                    greetingSubtext = greeting.subtext
+                )
+            }
+        } catch (e: Exception) {
+            android.util.Log.e(TAG, "Error loading greeting", e)
+            // Fallback to generic greeting
+            _uiState.update { state ->
+                state.copy(
+                    intelligentGreeting = "Welcome back",
+                    greetingSubtext = "What's on your mind today?"
+                )
+            }
+        }
+    }
+
+    /**
+     * Load first week journey state.
+     * Shows special content for users in their first 7 days.
+     */
+    private suspend fun loadFirstWeekState() {
+        try {
+            val state = soulLayerRepository.getFirstWeekState()
+            val dayContent = soulLayerRepository.getFirstWeekDayContent()
+            val progress = soulLayerRepository.getFirstWeekProgress()
+
+            _uiState.update { uiState ->
+                uiState.copy(
+                    firstWeekDayNumber = state?.currentDayNumber ?: 1,
+                    firstWeekProgress = progress,
+                    firstWeekDayContent = dayContent
+                )
+            }
+        } catch (e: Exception) {
+            android.util.Log.e(TAG, "Error loading first week state", e)
+        }
+    }
+
+    /**
+     * Load a memory to surface if conditions are right.
+     * Memories create "magic moments" that delight users.
+     */
+    private suspend fun loadSurfacedMemory() {
+        try {
+            val memory = soulLayerRepository.getMemoryToSurface(MemorySurfaceContext.APP_OPEN)
+            _uiState.update { state ->
+                state.copy(
+                    surfacedMemory = memory,
+                    showMemoryCard = memory != null
+                )
+            }
+
+            if (memory != null) {
+                android.util.Log.d(TAG, "Surfaced memory: ${memory.surfaceReason} - ${memory.preview.take(50)}...")
+            }
+        } catch (e: Exception) {
+            android.util.Log.e(TAG, "Error loading surfaced memory", e)
+        }
+    }
+
+    /**
+     * Load anniversary memories for today.
+     * "On this day X years ago..."
+     */
+    private suspend fun loadAnniversaryMemories() {
+        try {
+            val anniversaries = soulLayerRepository.getAnniversaryMemories()
+            _uiState.update { state ->
+                state.copy(anniversaryMemories = anniversaries)
+            }
+
+            if (anniversaries.isNotEmpty()) {
+                android.util.Log.d(TAG, "Found ${anniversaries.size} anniversary memories for today")
+            }
+        } catch (e: Exception) {
+            android.util.Log.e(TAG, "Error loading anniversary memories", e)
+        }
+    }
+
+    /**
+     * Called when user interacts with a surfaced memory.
+     */
+    fun onMemoryInteracted(interactionType: String) {
+        viewModelScope.launch {
+            try {
+                val memory = _uiState.value.surfacedMemory ?: return@launch
+
+                // Track the interaction in Soul Layer
+                // This helps the system learn what memories resonate
+                android.util.Log.d(TAG, "Memory interaction: $interactionType for entry ${memory.entryId}")
+
+                // Mark memory as interacted
+                // The repository will handle persistence
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error handling memory interaction", e)
+            }
+        }
+    }
+
+    /**
+     * Dismiss the memory card.
+     */
+    fun dismissMemoryCard() {
+        _uiState.update { it.copy(showMemoryCard = false) }
+        onMemoryInteracted("dismissed")
+    }
+
+    /**
+     * Expand the memory card for full view.
+     */
+    fun expandMemoryCard() {
+        onMemoryInteracted("expanded")
+        // Navigation handled by UI
+    }
+
+    /**
+     * Called when user completes a first week milestone.
+     */
+    fun onFirstWeekMilestoneCompleted(milestone: FirstWeekMilestone) {
+        viewModelScope.launch {
+            try {
+                // Mark milestone as completed
+                soulLayerRepository.markFirstWeekMilestone(milestone)
+
+                // Get celebration content
+                val celebration = soulLayerRepository.getCelebrationContent(milestone)
+
+                _uiState.update { state ->
+                    state.copy(
+                        showFirstWeekCelebration = true,
+                        firstWeekCelebration = celebration
+                    )
+                }
+
+                // Refresh first week state
+                loadFirstWeekState()
+
+                android.util.Log.d(TAG, "First week milestone completed: $milestone")
+
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error handling first week milestone", e)
+            }
+        }
+    }
+
+    /**
+     * Dismiss the first week celebration.
+     */
+    fun dismissFirstWeekCelebration() {
+        _uiState.update { it.copy(showFirstWeekCelebration = false, firstWeekCelebration = null) }
+    }
+
+    /**
+     * Refresh Soul Layer content.
+     * Called when user triggers a refresh or after significant actions.
+     */
+    fun refreshSoulLayerContent() {
+        viewModelScope.launch {
+            try {
+                // Force refresh the context
+                soulLayerRepository.refreshContext()
+
+                // Reload all Soul Layer content
+                loadSoulLayerContent()
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error refreshing Soul Layer content", e)
             }
         }
     }
