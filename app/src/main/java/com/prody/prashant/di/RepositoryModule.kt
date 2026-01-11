@@ -4,6 +4,7 @@ import com.prody.prashant.data.repository.CollaborativeMessageRepositoryImpl
 import com.prody.prashant.data.repository.GamificationRepositoryImpl
 import com.prody.prashant.data.repository.JournalRepositoryImpl
 import com.prody.prashant.data.repository.MicroEntryRepositoryImpl
+import com.prody.prashant.data.repository.SoulLayerRepositoryImpl
 import com.prody.prashant.data.repository.VocabularyRepositoryImpl
 import com.prody.prashant.data.repository.WeeklyDigestRepositoryImpl
 import com.prody.prashant.data.repository.YearlyWrappedRepositoryImpl
@@ -11,6 +12,7 @@ import com.prody.prashant.domain.repository.CollaborativeMessageRepository
 import com.prody.prashant.domain.repository.GamificationRepository
 import com.prody.prashant.domain.repository.JournalRepository
 import com.prody.prashant.domain.repository.MicroEntryRepository
+import com.prody.prashant.domain.repository.SoulLayerRepository
 import com.prody.prashant.domain.repository.VocabularyRepository
 import com.prody.prashant.domain.repository.WeeklyDigestRepository
 import com.prody.prashant.domain.repository.WisdomCollectionRepository
@@ -72,4 +74,10 @@ abstract class RepositoryModule {
     abstract fun bindYearlyWrappedRepository(
         impl: YearlyWrappedRepositoryImpl
     ): YearlyWrappedRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindSoulLayerRepository(
+        impl: SoulLayerRepositoryImpl
+    ): SoulLayerRepository
 }

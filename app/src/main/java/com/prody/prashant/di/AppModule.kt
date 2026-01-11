@@ -91,7 +91,9 @@ object AppModule {
                     ProdyDatabase.MIGRATION_11_12,
                     ProdyDatabase.MIGRATION_12_13,
                     ProdyDatabase.MIGRATION_13_14,
-                    ProdyDatabase.MIGRATION_14_15
+                    ProdyDatabase.MIGRATION_14_15,
+                    ProdyDatabase.MIGRATION_15_16,
+                    ProdyDatabase.MIGRATION_16_17
                 )
                 .fallbackToDestructiveMigration()
                 .addCallback(databaseCallback)
@@ -265,6 +267,16 @@ object AppModule {
     @Singleton
     fun provideMessageAnniversaryDao(database: ProdyDatabase): MessageAnniversaryDao {
         return database.messageAnniversaryDao()
+    }
+
+    // ============================================================================
+    // SOUL LAYER INTELLIGENCE DAO
+    // ============================================================================
+
+    @Provides
+    @Singleton
+    fun provideSoulLayerDao(database: ProdyDatabase): SoulLayerDao {
+        return database.soulLayerDao()
     }
 
     @Provides

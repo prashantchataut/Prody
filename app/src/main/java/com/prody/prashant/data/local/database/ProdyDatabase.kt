@@ -104,6 +104,15 @@ import com.prody.prashant.data.local.entity.*
  *              Added MYTHIC rarity tier to achievements
  *              Added isHidden, isSecret, xpReward to AchievementEntity
  *              Updated skill system from 10 to 20 levels with perk unlocks
+ * - Version 17: Soul Layer Intelligence System
+ *              Added SurfacedMemoryEntity for memory surfacing tracking
+ *              Added UserContextCacheEntity for user context caching
+ *              Added NotificationHistoryEntity for notification intelligence
+ *              Added DetectedPatternEntity for pattern detection
+ *              Added BuddhaInteractionEntity for Buddha AI tracking
+ *              Added HavenInsightEntity for Haven therapeutic insights
+ *              Added TemporalContentHistoryEntity for temporal content tracking
+ *              Added FirstWeekProgressEntity for first week journey tracking
  */
 @Database(
     entities = [
@@ -180,9 +189,18 @@ import com.prody.prashant.data.local.entity.*
         CircleChallengeEntity::class,
         CirclePrivacySettingsEntity::class,
         CircleNotificationEntity::class,
-        CircleMemberStatsCacheEntity::class
+        CircleMemberStatsCacheEntity::class,
+        // Soul Layer Intelligence System
+        SurfacedMemoryEntity::class,
+        UserContextCacheEntity::class,
+        NotificationHistoryEntity::class,
+        DetectedPatternEntity::class,
+        BuddhaInteractionEntity::class,
+        HavenInsightEntity::class,
+        TemporalContentHistoryEntity::class,
+        FirstWeekProgressEntity::class
     ],
-    version = 16,
+    version = 17,
     exportSchema = true // Enable for migration verification
 )
 abstract class ProdyDatabase : RoomDatabase() {
@@ -235,6 +253,9 @@ abstract class ProdyDatabase : RoomDatabase() {
 
     // Social Accountability Circles DAO
     abstract fun socialDao(): SocialDao
+
+    // Soul Layer Intelligence DAO
+    abstract fun soulLayerDao(): SoulLayerDao
 
     companion object {
         private const val TAG = "ProdyDatabase"
@@ -1283,6 +1304,238 @@ abstract class ProdyDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * Migration 16 -> 17: Soul Layer Intelligence System
+         *
+         * Changes:
+         * - Create surfaced_memories table for memory surfacing tracking
+         * - Create user_context_cache table for user context caching
+         * - Create notification_history table for notification intelligence
+         * - Create detected_patterns table for pattern detection
+         * - Create buddha_interactions table for Buddha AI tracking
+         * - Create haven_insights table for Haven therapeutic insights
+         * - Create temporal_content_history table for temporal content tracking
+         * - Create first_week_progress table for first week journey tracking
+         */
+        val MIGRATION_16_17: Migration = object : Migration(16, 17) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Create surfaced_memories table
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS surfaced_memories (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        userId TEXT NOT NULL DEFAULT 'local',
+                        journalEntryId INTEGER NOT NULL,
+                        surfaceReason TEXT NOT NULL,
+                        surfaceContext TEXT NOT NULL,
+                        surfacedAt INTEGER NOT NULL,
+                        wasInteractedWith INTEGER NOT NULL DEFAULT 0,
+                        interactionType TEXT,
+                        interactedAt INTEGER,
+                        memoryPreview TEXT NOT NULL,
+                        originalMood TEXT,
+                        originalDate INTEGER NOT NULL,
+                        yearsAgo INTEGER NOT NULL DEFAULT 0
+                    )
+                """.trimIndent())
+
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_surfaced_memories_user ON surfaced_memories(userId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_surfaced_memories_entry ON surfaced_memories(journalEntryId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_surfaced_memories_surfaced ON surfaced_memories(surfacedAt)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_surfaced_memories_user_surfaced ON surfaced_memories(userId, surfacedAt)")
+
+                // Create user_context_cache table
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS user_context_cache (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        userId TEXT NOT NULL DEFAULT 'local',
+                        userArchetype TEXT NOT NULL,
+                        trustLevel TEXT NOT NULL,
+                        engagementLevel TEXT NOT NULL,
+                        dominantMood TEXT,
+                        moodTrend TEXT NOT NULL,
+                        emotionalEnergy TEXT NOT NULL,
+                        isStruggling INTEGER NOT NULL DEFAULT 0,
+                        isThriving INTEGER NOT NULL DEFAULT 0,
+                        stressSignalsJson TEXT NOT NULL DEFAULT '[]',
+                        recentThemesJson TEXT NOT NULL DEFAULT '[]',
+                        recurringPatternsJson TEXT NOT NULL DEFAULT '[]',
+                        recentWinsJson TEXT NOT NULL DEFAULT '[]',
+                        recurringChallengesJson TEXT NOT NULL DEFAULT '[]',
+                        totalEntries INTEGER NOT NULL DEFAULT 0,
+                        daysWithPrody INTEGER NOT NULL DEFAULT 0,
+                        daysSinceLastEntry INTEGER NOT NULL DEFAULT 0,
+                        averageWordsPerEntry INTEGER NOT NULL DEFAULT 0,
+                        preferredTone TEXT NOT NULL DEFAULT 'WARM',
+                        preferredJournalTime TEXT,
+                        computedAt INTEGER NOT NULL,
+                        validUntil INTEGER NOT NULL
+                    )
+                """.trimIndent())
+
+                db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS idx_user_context_cache_user ON user_context_cache(userId)")
+
+                // Create notification_history table
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS notification_history (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        userId TEXT NOT NULL DEFAULT 'local',
+                        notificationType TEXT NOT NULL,
+                        decision TEXT NOT NULL,
+                        decisionReason TEXT,
+                        title TEXT,
+                        body TEXT,
+                        scheduledAt INTEGER NOT NULL,
+                        sentAt INTEGER,
+                        wasOpened INTEGER NOT NULL DEFAULT 0,
+                        openedAt INTEGER,
+                        resultedInAction INTEGER NOT NULL DEFAULT 0,
+                        actionType TEXT,
+                        actionAt INTEGER,
+                        userArchetypeAtTime TEXT,
+                        wasUserStruggling INTEGER NOT NULL DEFAULT 0,
+                        hourOfDay INTEGER NOT NULL,
+                        dayOfWeek INTEGER NOT NULL
+                    )
+                """.trimIndent())
+
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_notification_history_user ON notification_history(userId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_notification_history_type ON notification_history(notificationType)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_notification_history_sent ON notification_history(sentAt)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_notification_history_user_sent ON notification_history(userId, sentAt)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_notification_history_user_type ON notification_history(userId, notificationType)")
+
+                // Create detected_patterns table
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS detected_patterns (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        userId TEXT NOT NULL DEFAULT 'local',
+                        patternType TEXT NOT NULL,
+                        patternDescription TEXT NOT NULL,
+                        confidence REAL NOT NULL,
+                        supportingEvidence TEXT NOT NULL,
+                        firstDetectedAt INTEGER NOT NULL,
+                        lastConfirmedAt INTEGER NOT NULL,
+                        occurrenceCount INTEGER NOT NULL DEFAULT 1,
+                        isActive INTEGER NOT NULL DEFAULT 1,
+                        wasShownToUser INTEGER NOT NULL DEFAULT 0,
+                        shownAt INTEGER,
+                        userFeedback TEXT,
+                        feedbackAt INTEGER,
+                        detectedAt INTEGER NOT NULL
+                    )
+                """.trimIndent())
+
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_detected_patterns_user ON detected_patterns(userId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_detected_patterns_type ON detected_patterns(patternType)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_detected_patterns_user_type ON detected_patterns(userId, patternType)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_detected_patterns_detected ON detected_patterns(detectedAt)")
+
+                // Create buddha_interactions table
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS buddha_interactions (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        userId TEXT NOT NULL DEFAULT 'local',
+                        interactionType TEXT NOT NULL,
+                        contextMood TEXT,
+                        contextMoodIntensity INTEGER,
+                        responseWisdomStyle TEXT,
+                        responseLength INTEGER NOT NULL DEFAULT 0,
+                        wasHelpful INTEGER,
+                        helpfulnessRating INTEGER,
+                        wasExpanded INTEGER NOT NULL DEFAULT 0,
+                        wasSaved INTEGER NOT NULL DEFAULT 0,
+                        wasShared INTEGER NOT NULL DEFAULT 0,
+                        timeSpentViewingMs INTEGER,
+                        interactedAt INTEGER NOT NULL,
+                        journalEntryId INTEGER,
+                        journalWordCount INTEGER
+                    )
+                """.trimIndent())
+
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_buddha_interactions_user ON buddha_interactions(userId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_buddha_interactions_type ON buddha_interactions(interactionType)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_buddha_interactions_interacted ON buddha_interactions(interactedAt)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_buddha_interactions_user_interacted ON buddha_interactions(userId, interactedAt)")
+
+                // Create haven_insights table
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS haven_insights (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        userId TEXT NOT NULL DEFAULT 'local',
+                        sessionId INTEGER NOT NULL,
+                        sessionType TEXT NOT NULL,
+                        insightType TEXT NOT NULL,
+                        insightContent TEXT NOT NULL,
+                        confidence REAL NOT NULL DEFAULT 0.5,
+                        therapeuticApproachUsed TEXT,
+                        wasEffective INTEGER,
+                        moodBefore INTEGER,
+                        moodAfter INTEGER,
+                        moodImprovement INTEGER,
+                        createdAt INTEGER NOT NULL,
+                        wasUsedInFutureSession INTEGER NOT NULL DEFAULT 0
+                    )
+                """.trimIndent())
+
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_haven_insights_user ON haven_insights(userId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_haven_insights_session ON haven_insights(sessionId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_haven_insights_created ON haven_insights(createdAt)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_haven_insights_user_created ON haven_insights(userId, createdAt)")
+
+                // Create temporal_content_history table
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS temporal_content_history (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        userId TEXT NOT NULL DEFAULT 'local',
+                        contentType TEXT NOT NULL,
+                        contentId TEXT,
+                        contentPreview TEXT NOT NULL,
+                        timeOfDay TEXT NOT NULL,
+                        dayOfWeek INTEGER NOT NULL,
+                        seasonalContext TEXT,
+                        shownAt INTEGER NOT NULL,
+                        wasEngaged INTEGER NOT NULL DEFAULT 0,
+                        engagementType TEXT,
+                        engagedAt INTEGER
+                    )
+                """.trimIndent())
+
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_temporal_content_user ON temporal_content_history(userId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_temporal_content_type ON temporal_content_history(contentType)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_temporal_content_shown ON temporal_content_history(shownAt)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_temporal_content_user_type_shown ON temporal_content_history(userId, contentType, shownAt)")
+
+                // Create first_week_progress table
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS first_week_progress (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        userId TEXT NOT NULL DEFAULT 'local',
+                        startedAt INTEGER NOT NULL,
+                        graduatedAt INTEGER,
+                        isGraduated INTEGER NOT NULL DEFAULT 0,
+                        day1ProgressJson TEXT NOT NULL DEFAULT '{}',
+                        day2ProgressJson TEXT NOT NULL DEFAULT '{}',
+                        day3ProgressJson TEXT NOT NULL DEFAULT '{}',
+                        day4ProgressJson TEXT NOT NULL DEFAULT '{}',
+                        day5ProgressJson TEXT NOT NULL DEFAULT '{}',
+                        day6ProgressJson TEXT NOT NULL DEFAULT '{}',
+                        day7ProgressJson TEXT NOT NULL DEFAULT '{}',
+                        completedMilestonesJson TEXT NOT NULL DEFAULT '[]',
+                        celebrationsShownJson TEXT NOT NULL DEFAULT '[]',
+                        totalEntriesInFirstWeek INTEGER NOT NULL DEFAULT 0,
+                        totalWordsInFirstWeek INTEGER NOT NULL DEFAULT 0,
+                        featuresExploredJson TEXT NOT NULL DEFAULT '[]',
+                        longestStreakInFirstWeek INTEGER NOT NULL DEFAULT 0,
+                        totalXpEarned INTEGER NOT NULL DEFAULT 0,
+                        totalTokensEarned INTEGER NOT NULL DEFAULT 0,
+                        updatedAt INTEGER NOT NULL
+                    )
+                """.trimIndent())
+
+                db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS idx_first_week_progress_user ON first_week_progress(userId)")
+            }
+        }
+
         fun getInstance(context: Context): ProdyDatabase {
             return INSTANCE ?: synchronized(this) {
                 INSTANCE ?: buildDatabase(context).also { INSTANCE = it }
@@ -1298,7 +1551,8 @@ abstract class ProdyDatabase : RoomDatabase() {
                 .addMigrations(
                     MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8,
                     MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12,
-                    MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16
+                    MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16,
+                    MIGRATION_16_17
                 )
                 .fallbackToDestructiveMigration()
                 .addCallback(DatabaseCallback())

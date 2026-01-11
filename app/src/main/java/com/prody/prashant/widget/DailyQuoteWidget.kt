@@ -33,45 +33,66 @@ import androidx.glance.unit.ColorProvider
 import com.prody.prashant.data.content.WisdomContent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.time.LocalDateTime
 import java.util.Calendar
 
 /**
  * Daily Quote Widget (4x2)
  * Displays an inspiring quote that changes daily with the author name.
+ * Powered by Soul Layer intelligence for time-aware introductions.
  */
 class DailyQuoteWidget : GlanceAppWidget() {
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
-        val quote = getDailyQuote()
+        val quoteData = getDailyQuoteData()
 
         provideContent {
             GlanceTheme {
                 DailyQuoteContent(
-                    quote = quote.first,
-                    author = quote.second
+                    introduction = quoteData.introduction,
+                    quote = quoteData.quote,
+                    author = quoteData.author
                 )
             }
         }
     }
 
-    private suspend fun getDailyQuote(): Pair<String, String> = withContext(Dispatchers.IO) {
+    /**
+     * Get daily quote with intelligent, time-aware introduction.
+     */
+    private suspend fun getDailyQuoteData(): IntelligentQuoteData = withContext(Dispatchers.IO) {
         val quotes = WisdomContent.allQuotes
-        if (quotes.isEmpty()) {
-            return@withContext Pair(
-                "The obstacle is the way.",
-                "Marcus Aurelius"
-            )
+        val (quote, author) = if (quotes.isEmpty()) {
+            Pair("The obstacle is the way.", "Marcus Aurelius")
+        } else {
+            // Use day of year to get consistent daily quote
+            val dayOfYear = Calendar.getInstance().get(Calendar.DAY_OF_YEAR)
+            val index = dayOfYear % quotes.size
+            val q = quotes[index]
+            Pair(q.text, q.source)
         }
 
-        // Use day of year to get consistent daily quote
-        val dayOfYear = Calendar.getInstance().get(Calendar.DAY_OF_YEAR)
-        val index = dayOfYear % quotes.size
-        val quote = quotes[index]
-        Pair(quote.text, quote.source)
+        // Get time-aware introduction
+        val hour = LocalDateTime.now().hour
+        val introduction = when (hour) {
+            in 5..6 -> "Early morning wisdom"
+            in 7..9 -> "Morning wisdom"
+            in 10..11 -> "Midday reflection"
+            in 12..16 -> "Afternoon inspiration"
+            in 17..20 -> "Evening reflection"
+            in 21..23 -> "Night thoughts"
+            else -> "Late night wisdom"
+        }
+
+        IntelligentQuoteData(
+            introduction = introduction,
+            quote = quote,
+            author = author
+        )
     }
 
     @Composable
-    private fun DailyQuoteContent(quote: String, author: String) {
+    private fun DailyQuoteContent(introduction: String, quote: String, author: String) {
         Box(
             modifier = GlanceModifier
                 .fillMaxSize()
@@ -84,17 +105,29 @@ class DailyQuoteWidget : GlanceAppWidget() {
                 modifier = GlanceModifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                // Time-aware introduction
+                Text(
+                    text = introduction,
+                    style = TextStyle(
+                        color = ColorProvider(Color(0xFF6C63FF)),
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                )
+
+                Spacer(modifier = GlanceModifier.height(4.dp))
+
                 // Quote icon
                 Text(
                     text = "❝",
                     style = TextStyle(
                         color = ColorProvider(Color(0xFF6C63FF)),
-                        fontSize = 24.sp,
+                        fontSize = 20.sp,
                         fontWeight = FontWeight.Bold
                     )
                 )
 
-                Spacer(modifier = GlanceModifier.height(8.dp))
+                Spacer(modifier = GlanceModifier.height(6.dp))
 
                 // Quote text
                 Text(
@@ -107,7 +140,7 @@ class DailyQuoteWidget : GlanceAppWidget() {
                     maxLines = 3
                 )
 
-                Spacer(modifier = GlanceModifier.height(8.dp))
+                Spacer(modifier = GlanceModifier.height(6.dp))
 
                 // Author
                 Text(
@@ -134,6 +167,15 @@ class DailyQuoteWidget : GlanceAppWidget() {
         }
     }
 }
+
+/**
+ * Data class for intelligent quote information.
+ */
+private data class IntelligentQuoteData(
+    val introduction: String,
+    val quote: String,
+    val author: String
+)
 
 class RefreshQuoteAction : ActionCallback {
     override suspend fun onAction(
