@@ -115,4 +115,43 @@ interface FutureMessageDao {
      */
     @Query("SELECT COUNT(*) FROM future_messages WHERE isDeleted = 0")
     suspend fun getTotalMessageCount(): Int
+
+    // ==================== TIME CAPSULE REVEAL FEATURES ====================
+
+    /**
+     * Toggle favorite status for a message
+     */
+    @Query("UPDATE future_messages SET isFavorite = :isFavorite WHERE id = :id")
+    suspend fun setFavorite(id: Long, isFavorite: Boolean)
+
+    /**
+     * Get all favorite messages
+     */
+    @Query("SELECT * FROM future_messages WHERE isFavorite = 1 AND isDeleted = 0 ORDER BY deliveredAt DESC")
+    fun getFavoriteMessages(): Flow<List<FutureMessageEntity>>
+
+    /**
+     * Link a reply journal entry to a message
+     */
+    @Query("UPDATE future_messages SET replyJournalEntryId = :journalId WHERE id = :id")
+    suspend fun setReplyJournalEntry(id: Long, journalId: Long)
+
+    /**
+     * Mark message as read with timestamp
+     */
+    @Query("UPDATE future_messages SET isRead = 1, readAt = :readAt WHERE id = :id")
+    suspend fun markAsReadWithTimestamp(id: Long, readAt: Long = System.currentTimeMillis())
+
+    /**
+     * Get messages for anniversary reminders (1 year ago, 2 years ago, etc.)
+     */
+    @Query("""
+        SELECT * FROM future_messages
+        WHERE isDelivered = 1
+        AND isDeleted = 0
+        AND createdAt <= :maxCreatedAt
+        AND createdAt >= :minCreatedAt
+        ORDER BY createdAt DESC
+    """)
+    suspend fun getMessagesForAnniversaries(minCreatedAt: Long, maxCreatedAt: Long): List<FutureMessageEntity>
 }

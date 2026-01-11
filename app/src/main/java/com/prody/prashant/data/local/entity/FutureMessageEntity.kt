@@ -34,5 +34,9 @@ data class FutureMessageEntity(
     val syncStatus: String = "pending", // pending, synced, conflict
     val lastSyncedAt: Long? = null,
     val serverVersion: Long = 0,
-    val isDeleted: Boolean = false
+    val isDeleted: Boolean = false,
+    // Time Capsule Reveal enhancements
+    val isFavorite: Boolean = false, // Mark special messages as favorites
+    val replyJournalEntryId: Long? = null, // Link to journal entry created as reply to past self
+    val readAt: Long? = null // Timestamp when message was actually read/opened
 )
