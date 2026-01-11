@@ -2,6 +2,7 @@ package com.prody.prashant.data.repository
 
 import com.prody.prashant.data.local.dao.CollaborativeMessageDao
 import com.prody.prashant.domain.collaborative.*
+import com.prody.prashant.domain.common.ErrorType
 import com.prody.prashant.domain.common.Result
 import com.prody.prashant.domain.repository.CollaborativeMessageRepository
 import com.prody.prashant.domain.repository.ContactStats
@@ -37,10 +38,10 @@ class CollaborativeMessageRepositoryImpl @Inject constructor(
             if (entity != null) {
                 Result.Success(CollaborativeMessage.fromEntity(entity))
             } else {
-                Result.Error("Message not found")
+                Result.error(Exception("Message not found"), "Message not found", ErrorType.NOT_FOUND)
             }
         } catch (e: Exception) {
-            Result.Error(e.message ?: "Failed to get message")
+            Result.error(e, "Failed to get message", ErrorType.DATABASE)
         }
     }
 
@@ -79,7 +80,7 @@ class CollaborativeMessageRepositoryImpl @Inject constructor(
             dao.insertMessage(message.toEntity())
             Result.Success(message.id)
         } catch (e: Exception) {
-            Result.Error(e.message ?: "Failed to create message")
+            Result.error(e, "Failed to create message", ErrorType.DATABASE)
         }
     }
 
@@ -94,7 +95,7 @@ class CollaborativeMessageRepositoryImpl @Inject constructor(
 
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error(e.message ?: "Failed to update message")
+            Result.error(e, "Failed to update message", ErrorType.DATABASE)
         }
     }
 
@@ -105,7 +106,7 @@ class CollaborativeMessageRepositoryImpl @Inject constructor(
             dao.softDeleteMessage(messageId)
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error(e.message ?: "Failed to delete message")
+            Result.error(e, "Failed to delete message", ErrorType.DATABASE)
         }
     }
 
@@ -116,7 +117,7 @@ class CollaborativeMessageRepositoryImpl @Inject constructor(
             scheduler.scheduleMessageDelivery(updatedMessage)
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error(e.message ?: "Failed to schedule message")
+            Result.error(e, "Failed to schedule message", ErrorType.DATABASE)
         }
     }
 
@@ -126,7 +127,7 @@ class CollaborativeMessageRepositoryImpl @Inject constructor(
             dao.updateMessageStatus(messageId, MessageStatus.PENDING.name.lowercase())
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error(e.message ?: "Failed to cancel scheduled message")
+            Result.error(e, "Failed to cancel scheduled message", ErrorType.DATABASE)
         }
     }
 
@@ -148,10 +149,10 @@ class CollaborativeMessageRepositoryImpl @Inject constructor(
             if (entity != null) {
                 Result.Success(ReceivedCollaborativeMessage.fromEntity(entity))
             } else {
-                Result.Error("Message not found")
+                Result.error(Exception("Message not found"), "Message not found", ErrorType.NOT_FOUND)
             }
         } catch (e: Exception) {
-            Result.Error(e.message ?: "Failed to get received message")
+            Result.error(e, "Failed to get received message", ErrorType.DATABASE)
         }
     }
 
@@ -182,7 +183,7 @@ class CollaborativeMessageRepositoryImpl @Inject constructor(
             dao.markReceivedAsRead(messageId)
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error(e.message ?: "Failed to mark message as read")
+            Result.error(e, "Failed to mark message as read", ErrorType.DATABASE)
         }
     }
 
@@ -191,7 +192,7 @@ class CollaborativeMessageRepositoryImpl @Inject constructor(
             dao.updateReceivedFavoriteStatus(messageId, isFavorite)
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error(e.message ?: "Failed to update favorite status")
+            Result.error(e, "Failed to update favorite status", ErrorType.DATABASE)
         }
     }
 
@@ -200,7 +201,7 @@ class CollaborativeMessageRepositoryImpl @Inject constructor(
             dao.setReplyMessage(messageId, replyMessageId)
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error(e.message ?: "Failed to set reply message")
+            Result.error(e, "Failed to set reply message", ErrorType.DATABASE)
         }
     }
 
@@ -209,7 +210,7 @@ class CollaborativeMessageRepositoryImpl @Inject constructor(
             dao.softDeleteReceivedMessage(messageId)
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error(e.message ?: "Failed to delete received message")
+            Result.error(e, "Failed to delete received message", ErrorType.DATABASE)
         }
     }
 
@@ -227,10 +228,10 @@ class CollaborativeMessageRepositoryImpl @Inject constructor(
             if (entity != null) {
                 Result.Success(MessageContact.fromEntity(entity))
             } else {
-                Result.Error("Contact not found")
+                Result.error(Exception("Contact not found"), "Contact not found", ErrorType.NOT_FOUND)
             }
         } catch (e: Exception) {
-            Result.Error(e.message ?: "Failed to get contact")
+            Result.error(e, "Failed to get contact", ErrorType.DATABASE)
         }
     }
 
@@ -257,7 +258,7 @@ class CollaborativeMessageRepositoryImpl @Inject constructor(
             dao.insertContact(contact.toEntity())
             Result.Success(contact.id)
         } catch (e: Exception) {
-            Result.Error(e.message ?: "Failed to create contact")
+            Result.error(e, "Failed to create contact", ErrorType.DATABASE)
         }
     }
 
@@ -266,7 +267,7 @@ class CollaborativeMessageRepositoryImpl @Inject constructor(
             dao.updateContact(contact.toEntity())
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error(e.message ?: "Failed to update contact")
+            Result.error(e, "Failed to update contact", ErrorType.DATABASE)
         }
     }
 
@@ -275,7 +276,7 @@ class CollaborativeMessageRepositoryImpl @Inject constructor(
             dao.softDeleteContact(contactId)
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error(e.message ?: "Failed to delete contact")
+            Result.error(e, "Failed to delete contact", ErrorType.DATABASE)
         }
     }
 
@@ -284,7 +285,7 @@ class CollaborativeMessageRepositoryImpl @Inject constructor(
             dao.updateContactFavoriteStatus(contactId, isFavorite)
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error(e.message ?: "Failed to update contact favorite status")
+            Result.error(e, "Failed to update contact favorite status", ErrorType.DATABASE)
         }
     }
 
@@ -306,10 +307,10 @@ class CollaborativeMessageRepositoryImpl @Inject constructor(
             if (entity != null) {
                 Result.Success(MessageOccasion.fromEntity(entity))
             } else {
-                Result.Error("Occasion not found")
+                Result.error(Exception("Occasion not found"), "Occasion not found", ErrorType.NOT_FOUND)
             }
         } catch (e: Exception) {
-            Result.Error(e.message ?: "Failed to get occasion")
+            Result.error(e, "Failed to get occasion", ErrorType.DATABASE)
         }
     }
 
@@ -345,7 +346,7 @@ class CollaborativeMessageRepositoryImpl @Inject constructor(
 
             Result.Success(occasion.id)
         } catch (e: Exception) {
-            Result.Error(e.message ?: "Failed to create occasion")
+            Result.error(e, "Failed to create occasion", ErrorType.DATABASE)
         }
     }
 
@@ -363,7 +364,7 @@ class CollaborativeMessageRepositoryImpl @Inject constructor(
 
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error(e.message ?: "Failed to update occasion")
+            Result.error(e, "Failed to update occasion", ErrorType.DATABASE)
         }
     }
 
@@ -373,7 +374,7 @@ class CollaborativeMessageRepositoryImpl @Inject constructor(
             dao.softDeleteOccasion(occasionId)
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error(e.message ?: "Failed to delete occasion")
+            Result.error(e, "Failed to delete occasion", ErrorType.DATABASE)
         }
     }
 
@@ -428,13 +429,14 @@ class CollaborativeMessageRepositoryImpl @Inject constructor(
                 if (deliveryResult.isSuccess) {
                     Result.Success(Unit)
                 } else {
-                    Result.Error("Delivery failed: ${(deliveryResult as DeliveryResult.Failure).error}")
+                    val errorMsg = "Delivery failed: ${(deliveryResult as DeliveryResult.Failure).error}"
+                    Result.error(Exception(errorMsg), errorMsg, ErrorType.UNKNOWN)
                 }
             } else {
-                Result.Error("Message not found")
+                Result.error(Exception("Message not found"), "Message not found", ErrorType.NOT_FOUND)
             }
         } catch (e: Exception) {
-            Result.Error(e.message ?: "Failed to deliver message")
+            Result.error(e, "Failed to deliver message", ErrorType.UNKNOWN)
         }
     }
 
@@ -445,10 +447,11 @@ class CollaborativeMessageRepositoryImpl @Inject constructor(
             if (deliveryResult.isSuccess) {
                 Result.Success(Unit)
             } else {
-                Result.Error("Retry failed: ${(deliveryResult as DeliveryResult.Failure).error}")
+                val errorMsg = "Retry failed: ${(deliveryResult as DeliveryResult.Failure).error}"
+                Result.error(Exception(errorMsg), errorMsg, ErrorType.UNKNOWN)
             }
         } catch (e: Exception) {
-            Result.Error(e.message ?: "Failed to retry message")
+            Result.error(e, "Failed to retry message", ErrorType.UNKNOWN)
         }
     }
 }

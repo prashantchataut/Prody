@@ -3,6 +3,8 @@ package com.prody.prashant.data.ai
 import android.util.Log
 import com.prody.prashant.domain.intelligence.*
 import com.prody.prashant.domain.model.Mood
+import com.prody.prashant.domain.model.isPositive
+import com.prody.prashant.domain.model.isNegative
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -38,9 +40,7 @@ class ContextAwareBuddhaService @Inject constructor(
     private val userContextEngine: UserContextEngine,
     private val geminiService: GeminiService
 ) {
-    companion object {
-        private const val TAG = "ContextAwareBuddha"
-    }
+    private val TAG = "ContextAwareBuddha"
 
     // =========================================================================
     // CONTEXT-AWARE JOURNAL RESPONSES
@@ -547,7 +547,6 @@ class ContextAwareBuddhaService @Inject constructor(
             CommunicationTone.GENTLE -> "Gentle and supportive"
             CommunicationTone.DIRECT -> "Direct and clear"
             CommunicationTone.PLAYFUL -> "Playful with occasional humor"
-            CommunicationTone.FORMAL -> "More formal and professional"
         }
     }
 

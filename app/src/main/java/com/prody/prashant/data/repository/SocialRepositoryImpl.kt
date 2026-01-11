@@ -2,6 +2,7 @@ package com.prody.prashant.data.repository
 
 import com.prody.prashant.data.local.dao.SocialDao
 import com.prody.prashant.data.local.entity.*
+import com.prody.prashant.domain.common.ErrorType
 import com.prody.prashant.domain.common.Result
 import com.prody.prashant.domain.repository.SocialRepository
 import com.prody.prashant.domain.social.*
@@ -51,10 +52,10 @@ class SocialRepositoryImpl @Inject constructor(
             if (entity != null) {
                 Result.Success(entity.toDomain("", socialDao))
             } else {
-                Result.Error("Circle not found")
+                Result.error(Exception("Circle not found"), "Circle not found", ErrorType.NOT_FOUND)
             }
         } catch (e: Exception) {
-            Result.Error("Failed to get circle: ${e.message}")
+            Result.error(e, "Failed to get circle: ${e.message}", ErrorType.DATABASE)
         }
     }
 
@@ -105,7 +106,7 @@ class SocialRepositoryImpl @Inject constructor(
 
             Result.Success(circle.toDomain(userId, socialDao))
         } catch (e: Exception) {
-            Result.Error("Failed to create circle: ${e.message}")
+            Result.error(e, "Failed to create circle: ${e.message}", ErrorType.DATABASE)
         }
     }
 
@@ -116,21 +117,21 @@ class SocialRepositoryImpl @Inject constructor(
     ): Result<Circle> {
         return try {
             val circle = socialDao.getCircleByInviteCode(inviteCode)
-                ?: return Result.Error("Invalid invite code")
+                ?: return Result.error(Exception("Invalid invite code"), "Invalid invite code", ErrorType.VALIDATION)
 
             if (!circle.isActive) {
-                return Result.Error("This circle is no longer active")
+                return Result.error(Exception("This circle is no longer active"), "This circle is no longer active", ErrorType.VALIDATION)
             }
 
             val memberCount = socialDao.getActiveMemberCount(circle.id)
             if (memberCount >= circle.maxMembers) {
-                return Result.Error("Circle is full")
+                return Result.error(Exception("Circle is full"), "Circle is full", ErrorType.VALIDATION)
             }
 
             // Check if already a member
             val existingMember = socialDao.getCircleMember(circle.id, userId)
             if (existingMember != null && existingMember.isActive) {
-                return Result.Error("You're already in this circle")
+                return Result.error(Exception("You're already in this circle"), "You're already in this circle", ErrorType.VALIDATION)
             }
 
             val memberId = "${circle.id}_$userId"
@@ -156,7 +157,7 @@ class SocialRepositoryImpl @Inject constructor(
 
             Result.Success(circle.toDomain(userId, socialDao))
         } catch (e: Exception) {
-            Result.Error("Failed to join circle: ${e.message}")
+            Result.error(e, "Failed to join circle: ${e.message}", ErrorType.DATABASE)
         }
     }
 
@@ -165,7 +166,7 @@ class SocialRepositoryImpl @Inject constructor(
             socialDao.leaveCircle(userId, circleId)
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error("Failed to leave circle: ${e.message}")
+            Result.error(e, "Failed to leave circle: ${e.message}", ErrorType.DATABASE)
         }
     }
 
@@ -178,7 +179,7 @@ class SocialRepositoryImpl @Inject constructor(
     ): Result<Unit> {
         return try {
             val circle = socialDao.getCircleById(circleId)
-                ?: return Result.Error("Circle not found")
+                ?: return Result.error(Exception("Circle not found"), "Circle not found", ErrorType.NOT_FOUND)
 
             val updated = circle.copy(
                 name = name ?: circle.name,
@@ -191,7 +192,7 @@ class SocialRepositoryImpl @Inject constructor(
             socialDao.updateCircle(updated)
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error("Failed to update circle: ${e.message}")
+            Result.error(e, "Failed to update circle: ${e.message}", ErrorType.DATABASE)
         }
     }
 
@@ -200,20 +201,20 @@ class SocialRepositoryImpl @Inject constructor(
             socialDao.deleteCircleCompletely(circleId)
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error("Failed to delete circle: ${e.message}")
+            Result.error(e, "Failed to delete circle: ${e.message}", ErrorType.DATABASE)
         }
     }
 
     override suspend fun regenerateInviteCode(circleId: String): Result<String> {
         return try {
             val circle = socialDao.getCircleById(circleId)
-                ?: return Result.Error("Circle not found")
+                ?: return Result.error(Exception("Circle not found"), "Circle not found", ErrorType.NOT_FOUND)
 
             val newCode = generateInviteCode()
             socialDao.updateCircle(circle.copy(inviteCode = newCode))
             Result.Success(newCode)
         } catch (e: Exception) {
-            Result.Error("Failed to regenerate invite code: ${e.message}")
+            Result.error(e, "Failed to regenerate invite code: ${e.message}", ErrorType.DATABASE)
         }
     }
 
@@ -233,10 +234,10 @@ class SocialRepositoryImpl @Inject constructor(
             if (entity != null) {
                 Result.Success(entity.toDomain())
             } else {
-                Result.Error("Member not found")
+                Result.error(Exception("Member not found"), "Member not found", ErrorType.NOT_FOUND)
             }
         } catch (e: Exception) {
-            Result.Error("Failed to get member: ${e.message}")
+            Result.error(e, "Failed to get member: ${e.message}", ErrorType.DATABASE)
         }
     }
 
@@ -247,12 +248,12 @@ class SocialRepositoryImpl @Inject constructor(
     ): Result<Unit> {
         return try {
             val member = socialDao.getCircleMember(circleId, userId)
-                ?: return Result.Error("Member not found")
+                ?: return Result.error(Exception("Member not found"), "Member not found", ErrorType.NOT_FOUND)
 
             socialDao.updateMember(member.copy(role = newRole.name))
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error("Failed to update role: ${e.message}")
+            Result.error(e, "Failed to update role: ${e.message}", ErrorType.DATABASE)
         }
     }
 
@@ -267,7 +268,7 @@ class SocialRepositoryImpl @Inject constructor(
             socialDao.updateMemberCount(circleId, count)
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error("Failed to remove member: ${e.message}")
+            Result.error(e, "Failed to remove member: ${e.message}", ErrorType.DATABASE)
         }
     }
 
@@ -286,7 +287,7 @@ class SocialRepositoryImpl @Inject constructor(
             }
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error("Failed to update member stats: ${e.message}")
+            Result.error(e, "Failed to update member stats: ${e.message}", ErrorType.DATABASE)
         }
     }
 
@@ -322,7 +323,7 @@ class SocialRepositoryImpl @Inject constructor(
             }
             Result.Success(updates)
         } catch (e: Exception) {
-            Result.Error("Failed to get updates: ${e.message}")
+            Result.error(e, "Failed to get updates: ${e.message}", ErrorType.DATABASE)
         }
     }
 
@@ -334,25 +335,25 @@ class SocialRepositoryImpl @Inject constructor(
     ): Result<CircleUpdate> {
         return try {
             if (!privacyManager.isContentSafe(message)) {
-                return Result.Error("Message contains sensitive content")
+                return Result.error(Exception("Message contains sensitive content"), "Message contains sensitive content", ErrorType.VALIDATION)
             }
 
             updateGenerator.generateEncouragementUpdate(userId, displayName, circleId, message)
 
             val updates = socialDao.getCircleUpdates(circleId, limit = 1)
             val update = updates.firstOrNull()?.toDomain(socialDao)
-                ?: return Result.Error("Failed to retrieve posted update")
+                ?: return Result.error(Exception("Failed to retrieve posted update"), "Failed to retrieve posted update", ErrorType.UNKNOWN)
 
             Result.Success(update)
         } catch (e: Exception) {
-            Result.Error("Failed to post update: ${e.message}")
+            Result.error(e, "Failed to post update: ${e.message}", ErrorType.DATABASE)
         }
     }
 
     override suspend fun reactToUpdate(updateId: Long, userId: String, emoji: String): Result<Unit> {
         return try {
             val update = socialDao.getUpdateById(updateId)
-                ?: return Result.Error("Update not found")
+                ?: return Result.error(Exception("Update not found"), "Update not found", ErrorType.NOT_FOUND)
 
             val reactions = JSONObject(update.reactionsJson)
             val usersList = reactions.optJSONArray(emoji) ?: JSONArray()
@@ -377,14 +378,14 @@ class SocialRepositoryImpl @Inject constructor(
 
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error("Failed to react: ${e.message}")
+            Result.error(e, "Failed to react: ${e.message}", ErrorType.DATABASE)
         }
     }
 
     override suspend fun removeReaction(updateId: Long, userId: String): Result<Unit> {
         return try {
             val update = socialDao.getUpdateById(updateId)
-                ?: return Result.Error("Update not found")
+                ?: return Result.error(Exception("Update not found"), "Update not found", ErrorType.NOT_FOUND)
 
             val reactions = JSONObject(update.reactionsJson)
             val keys = reactions.keys()
@@ -408,23 +409,23 @@ class SocialRepositoryImpl @Inject constructor(
             socialDao.updateReactions(updateId, reactions.toString(), reactionCount)
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error("Failed to remove reaction: ${e.message}")
+            Result.error(e, "Failed to remove reaction: ${e.message}", ErrorType.DATABASE)
         }
     }
 
     override suspend fun deleteUpdate(updateId: Long, userId: String): Result<Unit> {
         return try {
             val update = socialDao.getUpdateById(updateId)
-                ?: return Result.Error("Update not found")
+                ?: return Result.error(Exception("Update not found"), "Update not found", ErrorType.NOT_FOUND)
 
             if (update.userId != userId) {
-                return Result.Error("You can only delete your own updates")
+                return Result.error(Exception("You can only delete your own updates"), "You can only delete your own updates", ErrorType.PERMISSION)
             }
 
             socialDao.deleteUpdate(update)
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error("Failed to delete update: ${e.message}")
+            Result.error(e, "Failed to delete update: ${e.message}", ErrorType.DATABASE)
         }
     }
 
@@ -460,7 +461,7 @@ class SocialRepositoryImpl @Inject constructor(
             // Check privacy settings
             val settings = privacyManager.getPrivacySettings(toUserId, circleId)
             if (!settings.allowNudgesFromMembers) {
-                return Result.Error("This member has disabled nudges")
+                return Result.error(Exception("This member has disabled nudges"), "This member has disabled nudges", ErrorType.PERMISSION)
             }
 
             val nudge = CircleNudgeEntity(
@@ -490,10 +491,10 @@ class SocialRepositoryImpl @Inject constructor(
             )
 
             val savedNudge = socialDao.getUserNudges(toUserId, 1).firstOrNull()
-                ?: return Result.Error("Failed to save nudge")
+                ?: return Result.error(Exception("Failed to save nudge"), "Failed to save nudge", ErrorType.DATABASE)
             Result.Success(savedNudge.toDomain(socialDao))
         } catch (e: Exception) {
-            Result.Error("Failed to send nudge: ${e.message}")
+            Result.error(e, "Failed to send nudge: ${e.message}", ErrorType.DATABASE)
         }
     }
 
@@ -502,7 +503,7 @@ class SocialRepositoryImpl @Inject constructor(
             socialDao.markNudgeAsRead(nudgeId)
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error("Failed to mark nudge as read: ${e.message}")
+            Result.error(e, "Failed to mark nudge as read: ${e.message}", ErrorType.DATABASE)
         }
     }
 
@@ -511,7 +512,7 @@ class SocialRepositoryImpl @Inject constructor(
             socialDao.markAllNudgesAsRead(userId)
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error("Failed to mark all nudges as read: ${e.message}")
+            Result.error(e, "Failed to mark all nudges as read: ${e.message}", ErrorType.DATABASE)
         }
     }
 
@@ -531,10 +532,10 @@ class SocialRepositoryImpl @Inject constructor(
             if (entity != null) {
                 Result.Success(entity.toDomain())
             } else {
-                Result.Error("Challenge not found")
+                Result.error(Exception("Challenge not found"), "Challenge not found", ErrorType.NOT_FOUND)
             }
         } catch (e: Exception) {
-            Result.Error("Failed to get challenge: ${e.message}")
+            Result.error(e, "Failed to get challenge: ${e.message}", ErrorType.DATABASE)
         }
     }
 
@@ -581,14 +582,14 @@ class SocialRepositoryImpl @Inject constructor(
 
             Result.Success(challenge.toDomain())
         } catch (e: Exception) {
-            Result.Error("Failed to create challenge: ${e.message}")
+            Result.error(e, "Failed to create challenge: ${e.message}", ErrorType.DATABASE)
         }
     }
 
     override suspend fun joinChallenge(userId: String, challengeId: String): Result<Unit> {
         return try {
             val challenge = socialDao.getChallengeById(challengeId)
-                ?: return Result.Error("Challenge not found")
+                ?: return Result.error(Exception("Challenge not found"), "Challenge not found", ErrorType.NOT_FOUND)
 
             val participants = JSONArray(challenge.participantsJson)
             val participantsList = mutableListOf<String>()
@@ -611,14 +612,14 @@ class SocialRepositoryImpl @Inject constructor(
 
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error("Failed to join challenge: ${e.message}")
+            Result.error(e, "Failed to join challenge: ${e.message}", ErrorType.DATABASE)
         }
     }
 
     override suspend fun leaveChallenge(userId: String, challengeId: String): Result<Unit> {
         return try {
             val challenge = socialDao.getChallengeById(challengeId)
-                ?: return Result.Error("Challenge not found")
+                ?: return Result.error(Exception("Challenge not found"), "Challenge not found", ErrorType.NOT_FOUND)
 
             val participants = JSONArray(challenge.participantsJson)
             val newList = JSONArray()
@@ -632,7 +633,7 @@ class SocialRepositoryImpl @Inject constructor(
             socialDao.updateChallengeParticipants(challengeId, newList.toString())
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error("Failed to leave challenge: ${e.message}")
+            Result.error(e, "Failed to leave challenge: ${e.message}", ErrorType.DATABASE)
         }
     }
 
@@ -643,7 +644,7 @@ class SocialRepositoryImpl @Inject constructor(
     ): Result<Unit> {
         return try {
             val challenge = socialDao.getChallengeById(challengeId)
-                ?: return Result.Error("Challenge not found")
+                ?: return Result.error(Exception("Challenge not found"), "Challenge not found", ErrorType.NOT_FOUND)
 
             val progressObj = JSONObject(challenge.progressJson)
             progressObj.put(userId, progress)
@@ -667,14 +668,14 @@ class SocialRepositoryImpl @Inject constructor(
 
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error("Failed to update progress: ${e.message}")
+            Result.error(e, "Failed to update progress: ${e.message}", ErrorType.DATABASE)
         }
     }
 
     override suspend fun getChallengeLeaderboard(challengeId: String): Result<ChallengeLeaderboard> {
         return try {
             val challenge = socialDao.getChallengeById(challengeId)
-                ?: return Result.Error("Challenge not found")
+                ?: return Result.error(Exception("Challenge not found"), "Challenge not found", ErrorType.NOT_FOUND)
 
             val progressObj = JSONObject(challenge.progressJson)
             val rankings = mutableListOf<ChallengeRanking>()
@@ -711,7 +712,7 @@ class SocialRepositoryImpl @Inject constructor(
                 )
             )
         } catch (e: Exception) {
-            Result.Error("Failed to get leaderboard: ${e.message}")
+            Result.error(e, "Failed to get leaderboard: ${e.message}", ErrorType.DATABASE)
         }
     }
 
@@ -720,7 +721,7 @@ class SocialRepositoryImpl @Inject constructor(
             socialDao.deactivateChallenge(challengeId)
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error("Failed to end challenge: ${e.message}")
+            Result.error(e, "Failed to end challenge: ${e.message}", ErrorType.DATABASE)
         }
     }
 
@@ -733,7 +734,7 @@ class SocialRepositoryImpl @Inject constructor(
             val settings = privacyManager.getPrivacySettings(userId, circleId)
             Result.Success(settings)
         } catch (e: Exception) {
-            Result.Error("Failed to get privacy settings: ${e.message}")
+            Result.error(e, "Failed to get privacy settings: ${e.message}", ErrorType.DATABASE)
         }
     }
 
@@ -749,7 +750,7 @@ class SocialRepositoryImpl @Inject constructor(
             privacyManager.updateGlobalPrivacySettings(userId, settings)
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error("Failed to update privacy settings: ${e.message}")
+            Result.error(e, "Failed to update privacy settings: ${e.message}", ErrorType.DATABASE)
         }
     }
 
@@ -762,7 +763,7 @@ class SocialRepositoryImpl @Inject constructor(
             privacyManager.updateCirclePrivacySettings(userId, circleId, settings)
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error("Failed to update circle privacy settings: ${e.message}")
+            Result.error(e, "Failed to update circle privacy settings: ${e.message}", ErrorType.DATABASE)
         }
     }
 
@@ -785,7 +786,7 @@ class SocialRepositoryImpl @Inject constructor(
             socialDao.markNotificationAsRead(notificationId)
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error("Failed to mark notification as read: ${e.message}")
+            Result.error(e, "Failed to mark notification as read: ${e.message}", ErrorType.DATABASE)
         }
     }
 
@@ -794,7 +795,7 @@ class SocialRepositoryImpl @Inject constructor(
             socialDao.markAllNotificationsAsRead(userId)
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error("Failed to mark all notifications as read: ${e.message}")
+            Result.error(e, "Failed to mark all notifications as read: ${e.message}", ErrorType.DATABASE)
         }
     }
 
@@ -805,7 +806,7 @@ class SocialRepositoryImpl @Inject constructor(
     override suspend fun getCircleSummary(circleId: String): Result<CircleSummary> {
         return try {
             val circle = socialDao.getCircleById(circleId)
-                ?: return Result.Error("Circle not found")
+                ?: return Result.error(Exception("Circle not found"), "Circle not found", ErrorType.NOT_FOUND)
 
             val recentUpdates = socialDao.getCircleUpdates(circleId, limit = 10)
                 .mapNotNull { it.toDomain(socialDao) }
@@ -822,7 +823,7 @@ class SocialRepositoryImpl @Inject constructor(
 
             Result.Success(summary)
         } catch (e: Exception) {
-            Result.Error("Failed to get circle summary: ${e.message}")
+            Result.error(e, "Failed to get circle summary: ${e.message}", ErrorType.DATABASE)
         }
     }
 
@@ -832,10 +833,10 @@ class SocialRepositoryImpl @Inject constructor(
             if (cache != null) {
                 Result.Success(cache.toDomain())
             } else {
-                Result.Error("Stats not found")
+                Result.error(Exception("Stats not found"), "Stats not found", ErrorType.NOT_FOUND)
             }
         } catch (e: Exception) {
-            Result.Error("Failed to get member stats: ${e.message}")
+            Result.error(e, "Failed to get member stats: ${e.message}", ErrorType.DATABASE)
         }
     }
 
@@ -845,10 +846,10 @@ class SocialRepositoryImpl @Inject constructor(
             if (circle != null && circle.isActive) {
                 Result.Success(circle.toDomain("", socialDao))
             } else {
-                Result.Error("Invalid or inactive invite code")
+                Result.error(Exception("Invalid or inactive invite code"), "Invalid or inactive invite code", ErrorType.VALIDATION)
             }
         } catch (e: Exception) {
-            Result.Error("Failed to validate invite code: ${e.message}")
+            Result.error(e, "Failed to validate invite code: ${e.message}", ErrorType.DATABASE)
         }
     }
 
@@ -866,7 +867,7 @@ class SocialRepositoryImpl @Inject constructor(
             socialDao.cleanupOldStatsCache(thirtyDaysAgo)
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error("Failed to cleanup: ${e.message}")
+            Result.error(e, "Failed to cleanup: ${e.message}", ErrorType.DATABASE)
         }
     }
 
@@ -878,7 +879,7 @@ class SocialRepositoryImpl @Inject constructor(
             }
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error("Failed to sync stats: ${e.message}")
+            Result.error(e, "Failed to sync stats: ${e.message}", ErrorType.DATABASE)
         }
     }
 

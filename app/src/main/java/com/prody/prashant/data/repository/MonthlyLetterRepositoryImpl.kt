@@ -1,6 +1,7 @@
 package com.prody.prashant.data.repository
 
 import com.prody.prashant.data.local.dao.MonthlyLetterDao
+import com.prody.prashant.domain.common.ErrorType
 import com.prody.prashant.domain.common.Result
 import com.prody.prashant.domain.letter.MonthlyLetterGenerator
 import com.prody.prashant.domain.model.MonthlyLetter
@@ -34,10 +35,10 @@ class MonthlyLetterRepositoryImpl @Inject constructor(
             if (entity != null) {
                 Result.Success(MonthlyLetter.fromEntity(entity))
             } else {
-                Result.Error("Letter not found")
+                Result.error(NoSuchElementException("Letter not found"), "Letter not found", ErrorType.NOT_FOUND)
             }
         } catch (e: Exception) {
-            Result.Error("Failed to get letter: ${e.message}")
+            Result.error(e, "Failed to get letter: ${e.message}", ErrorType.DATABASE)
         }
     }
 
@@ -52,7 +53,7 @@ class MonthlyLetterRepositoryImpl @Inject constructor(
             val entity = monthlyLetterDao.getLetterForMonth(userId, monthYear.monthValue, monthYear.year)
             Result.Success(entity?.let { MonthlyLetter.fromEntity(it) })
         } catch (e: Exception) {
-            Result.Error("Failed to get letter for month: ${e.message}")
+            Result.error(e, "Failed to get letter for month: ${e.message}", ErrorType.DATABASE)
         }
     }
 
@@ -67,7 +68,7 @@ class MonthlyLetterRepositoryImpl @Inject constructor(
             val entity = monthlyLetterDao.getMostRecentLetter(userId)
             Result.Success(entity?.let { MonthlyLetter.fromEntity(it) })
         } catch (e: Exception) {
-            Result.Error("Failed to get most recent letter: ${e.message}")
+            Result.error(e, "Failed to get most recent letter: ${e.message}", ErrorType.DATABASE)
         }
     }
 
@@ -112,7 +113,7 @@ class MonthlyLetterRepositoryImpl @Inject constructor(
             val id = monthlyLetterDao.insertLetter(letter.toEntity())
             Result.Success(id)
         } catch (e: Exception) {
-            Result.Error("Failed to save letter: ${e.message}")
+            Result.error(e, "Failed to save letter: ${e.message}", ErrorType.DATABASE)
         }
     }
 
@@ -121,7 +122,7 @@ class MonthlyLetterRepositoryImpl @Inject constructor(
             monthlyLetterDao.markAsRead(letterId)
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error("Failed to mark letter as read: ${e.message}")
+            Result.error(e, "Failed to mark letter as read: ${e.message}", ErrorType.DATABASE)
         }
     }
 
@@ -130,7 +131,7 @@ class MonthlyLetterRepositoryImpl @Inject constructor(
             monthlyLetterDao.updateFavoriteStatus(letterId, isFavorite)
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error("Failed to toggle favorite: ${e.message}")
+            Result.error(e, "Failed to toggle favorite: ${e.message}", ErrorType.DATABASE)
         }
     }
 
@@ -139,7 +140,7 @@ class MonthlyLetterRepositoryImpl @Inject constructor(
             monthlyLetterDao.updateSharedTimestamp(letterId)
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error("Failed to mark as shared: ${e.message}")
+            Result.error(e, "Failed to mark as shared: ${e.message}", ErrorType.DATABASE)
         }
     }
 
@@ -155,7 +156,11 @@ class MonthlyLetterRepositoryImpl @Inject constructor(
 
             // Check if there's enough data
             if (!letterGenerator.canGenerate(userId, monthYear)) {
-                return Result.Error("Not enough data to generate letter for this month")
+                return Result.error(
+                    IllegalStateException("Not enough data to generate letter for this month"),
+                    "Not enough data to generate letter for this month",
+                    ErrorType.VALIDATION
+                )
             }
 
             // Generate the letter
@@ -167,7 +172,7 @@ class MonthlyLetterRepositoryImpl @Inject constructor(
             // Return the saved letter with ID
             Result.Success(letter.copy(id = id))
         } catch (e: Exception) {
-            Result.Error("Failed to generate letter: ${e.message}")
+            Result.error(e, "Failed to generate letter: ${e.message}", ErrorType.AI_SERVICE)
         }
     }
 
@@ -192,7 +197,7 @@ class MonthlyLetterRepositoryImpl @Inject constructor(
 
             Result.Success(letter.copy(id = id))
         } catch (e: Exception) {
-            Result.Error("Failed to generate letter for previous month: ${e.message}")
+            Result.error(e, "Failed to generate letter for previous month: ${e.message}", ErrorType.AI_SERVICE)
         }
     }
 
@@ -247,7 +252,7 @@ class MonthlyLetterRepositoryImpl @Inject constructor(
             monthlyLetterDao.softDeleteLetter(letterId)
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error("Failed to delete letter: ${e.message}")
+            Result.error(e, "Failed to delete letter: ${e.message}", ErrorType.DATABASE)
         }
     }
 
@@ -256,7 +261,7 @@ class MonthlyLetterRepositoryImpl @Inject constructor(
             monthlyLetterDao.deleteOldLetters(userId, keepCount)
             Result.Success(keepCount)
         } catch (e: Exception) {
-            Result.Error("Failed to delete old letters: ${e.message}")
+            Result.error(e, "Failed to delete old letters: ${e.message}", ErrorType.DATABASE)
         }
     }
 }
