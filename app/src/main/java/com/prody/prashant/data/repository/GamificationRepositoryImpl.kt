@@ -114,7 +114,7 @@ class GamificationRepositoryImpl @Inject constructor(
         userDao.markRewardKeyProcessed(rewardKey)
 
         // Get new state
-        val newSkills = userDao.getPlayerSkillsSync()!!
+        val newSkills = userDao.getPlayerSkillsSync() ?: createInitialSkills()
         val newTotalXp = newSkills.getXpForSkill(skill)
         val newLevel = Skill.calculateLevel(newTotalXp)
 

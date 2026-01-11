@@ -490,7 +490,8 @@ class SocialRepositoryImpl @Inject constructor(
             )
 
             val savedNudge = socialDao.getUserNudges(toUserId, 1).firstOrNull()
-            Result.Success(savedNudge!!.toDomain(socialDao))
+                ?: return Result.Error("Failed to save nudge")
+            Result.Success(savedNudge.toDomain(socialDao))
         } catch (e: Exception) {
             Result.Error("Failed to send nudge: ${e.message}")
         }

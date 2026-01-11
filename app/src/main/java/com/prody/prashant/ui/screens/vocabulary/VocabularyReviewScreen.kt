@@ -302,7 +302,10 @@ private fun WordsUsedSection(
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            items(words) { word ->
+            items(
+                items = words,
+                key = { word -> "used_${word.id}" }
+            ) { word ->
                 WordChip(
                     word = word,
                     isUsed = true,
@@ -356,7 +359,10 @@ private fun WordsNotUsedSection(
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            items(words) { word ->
+            items(
+                items = words,
+                key = { word -> "practice_${word.id}" }
+            ) { word ->
                 WordChip(
                     word = word,
                     isUsed = false,
@@ -410,7 +416,10 @@ private fun WordsNeedingPracticeSection(
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            items(words) { word ->
+            items(
+                items = words,
+                key = { word -> "refresh_${word.id}" }
+            ) { word ->
                 WordChip(
                     word = word,
                     isUsed = false,

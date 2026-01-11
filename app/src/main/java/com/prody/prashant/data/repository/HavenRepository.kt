@@ -184,7 +184,8 @@ class HavenRepository @Inject constructor(
                 havenDao.updateSessionMoodAfter(sessionId, moodAfter)
             }
 
-            val updatedSession = havenDao.getSessionById(sessionId)!!
+            val updatedSession = havenDao.getSessionById(sessionId)
+                ?: return@withContext Result.failure(IllegalStateException("Session not found"))
 
             // Build summary
             val summary = SessionSummary(
@@ -195,9 +196,11 @@ class HavenRepository @Inject constructor(
                 exercisesCompleted = emptyList(), // Would need to query exercise completions
                 moodBefore = updatedSession.moodBefore,
                 moodAfter = updatedSession.moodAfter,
-                moodChange = if (updatedSession.moodBefore != null && updatedSession.moodAfter != null) {
-                    updatedSession.moodAfter!! - updatedSession.moodBefore!!
-                } else null,
+                moodChange = run {
+                    val before = updatedSession.moodBefore
+                    val after = updatedSession.moodAfter
+                    if (before != null && after != null) after - before else null
+                },
                 keyInsights = insights,
                 suggestedFollowUp = null,
                 containedCrisis = updatedSession.containedCrisisDetection
