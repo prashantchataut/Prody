@@ -3,15 +3,80 @@ package com.prody.prashant.domain.gamification
 import androidx.compose.ui.graphics.Color
 
 /**
+ * Enhanced Achievement System
+ *
+ * Achievements are meaningful milestones that celebrate progress and unlock
+ * cosmetic rewards (banners, titles, avatars). Each achievement has:
+ *
+ * - Category: Groups achievements by theme
+ * - Rarity: Determines XP reward and visual prominence
+ * - Requirement: Specific condition to unlock
+ * - Rewards: Optional cosmetics unlocked on completion
+ *
+ * Philosophy:
+ * - Achievements should feel earned, not given
+ * - Each achievement tells a story of progress
+ * - Rare achievements should be memorable moments
+ * - Legendary/Mythic achievements require true dedication
+ */
+
+/**
  * Achievement categories for meaningful milestones.
  */
-enum class AchievementCategory(val id: String, val displayName: String) {
-    REFLECTION("reflection", "Reflection"),
-    WISDOM("wisdom", "Wisdom"),
-    TIME("time", "Time"),
-    MASTERY("mastery", "Mastery"),
-    JOURNEY("journey", "Journey"),
-    SPECIAL("special", "Special")
+enum class AchievementCategory(
+    val id: String,
+    val displayName: String,
+    val description: String,
+    val iconName: String
+) {
+    REFLECTION(
+        "reflection",
+        "Reflection",
+        "Journaling milestones",
+        "ic_category_reflection"
+    ),
+    WISDOM(
+        "wisdom",
+        "Wisdom",
+        "Learning and vocabulary mastery",
+        "ic_category_wisdom"
+    ),
+    TIME(
+        "time",
+        "Time",
+        "Temporal milestones and streaks",
+        "ic_category_time"
+    ),
+    MASTERY(
+        "mastery",
+        "Mastery",
+        "Skill level achievements",
+        "ic_category_mastery"
+    ),
+    JOURNEY(
+        "journey",
+        "Journey",
+        "Overall progress milestones",
+        "ic_category_journey"
+    ),
+    FUTURE(
+        "future",
+        "Future Self",
+        "Time capsule achievements",
+        "ic_category_future"
+    ),
+    SOCIAL(
+        "social",
+        "Community",
+        "Social and collaborative achievements",
+        "ic_category_social"
+    ),
+    SPECIAL(
+        "special",
+        "Special",
+        "Rare and hidden achievements",
+        "ic_category_special"
+    )
 }
 
 /**
@@ -21,13 +86,58 @@ enum class AchievementRarity(
     val id: String,
     val displayName: String,
     val color: Color,
-    val sortOrder: Int
+    val glowColor: Color,
+    val sortOrder: Int,
+    val xpMultiplier: Float
 ) {
-    COMMON("common", "Common", Color(0xFF9E9E9E), 1),
-    UNCOMMON("uncommon", "Uncommon", Color(0xFF4CAF50), 2),
-    RARE("rare", "Rare", Color(0xFF2196F3), 3),
-    EPIC("epic", "Epic", Color(0xFF9C27B0), 4),
-    LEGENDARY("legendary", "Legendary", Color(0xFFFFD700), 5)
+    COMMON(
+        "common",
+        "Common",
+        Color(0xFF78909C),
+        Color(0x3378909C),
+        1,
+        1.0f
+    ),
+    UNCOMMON(
+        "uncommon",
+        "Uncommon",
+        Color(0xFF66BB6A),
+        Color(0x3366BB6A),
+        2,
+        1.5f
+    ),
+    RARE(
+        "rare",
+        "Rare",
+        Color(0xFF42A5F5),
+        Color(0x3342A5F5),
+        3,
+        2.0f
+    ),
+    EPIC(
+        "epic",
+        "Epic",
+        Color(0xFFAB47BC),
+        Color(0x33AB47BC),
+        4,
+        3.0f
+    ),
+    LEGENDARY(
+        "legendary",
+        "Legendary",
+        Color(0xFFD4AF37),
+        Color(0x33D4AF37),
+        5,
+        5.0f
+    ),
+    MYTHIC(
+        "mythic",
+        "Mythic",
+        Color(0xFFFFD700),
+        Color(0x66FFD700),
+        6,
+        10.0f
+    )
 }
 
 /**
@@ -46,6 +156,9 @@ sealed class AchievementRequirement {
     /** Combined skill level requirement */
     data class CombinedLevel(val totalLevel: Int) : AchievementRequirement()
 
+    /** All skills at minimum level requirement */
+    data class AllSkillsMinLevel(val minLevel: Int) : AchievementRequirement()
+
     /** Time-based requirement (e.g., use app for 7 days) */
     data class DaysOnApp(val days: Int) : AchievementRequirement()
 
@@ -58,11 +171,50 @@ sealed class AchievementRequirement {
     /** Word count requirement */
     data class WordCount(val minWords: Int) : AchievementRequirement()
 
+    /** Total words written requirement */
+    data class TotalWords(val words: Int) : AchievementRequirement()
+
     /** Bloom streak requirement */
     data class BloomStreak(val days: Int) : AchievementRequirement()
 
     /** Bloom count requirement */
     data class BloomCount(val count: Int) : AchievementRequirement()
+
+    /** Future message requirement (e.g., send 5 messages) */
+    data class FutureMessages(val count: Int) : AchievementRequirement()
+
+    /** Future message with minimum delay */
+    data class FutureMessageDelay(val minDays: Int, val count: Int) : AchievementRequirement()
+
+    /** Flashcard review requirement */
+    data class FlashcardReviews(val count: Int) : AchievementRequirement()
+
+    /** Vocabulary mastered requirement */
+    data class VocabularyMastered(val count: Int) : AchievementRequirement()
+
+    /** Challenge completion requirement */
+    data class ChallengesCompleted(val count: Int) : AchievementRequirement()
+
+    /** Weekly challenge streak */
+    data class WeeklyChallengeStreak(val weeks: Int) : AchievementRequirement()
+
+    /** Leaderboard position */
+    data class LeaderboardPosition(val maxPosition: Int) : AchievementRequirement()
+
+    /** Freeze token usage */
+    data class FreezeTokensEarned(val count: Int) : AchievementRequirement()
+
+    /** Streak recovery (times streak was saved) */
+    data class StreakRecoveries(val count: Int) : AchievementRequirement()
+
+    /** XP milestone */
+    data class TotalXp(val xp: Int) : AchievementRequirement()
+
+    /** Perfect week (all 7 days with activity) */
+    data class PerfectWeeks(val count: Int) : AchievementRequirement()
+
+    /** Perfect month (all days in a month with activity) */
+    data class PerfectMonths(val count: Int) : AchievementRequirement()
 }
 
 /**
@@ -79,8 +231,11 @@ data class Achievement(
     val rewardBannerId: String? = null,
     val rewardAvatarId: String? = null,
     val rewardTitleId: String? = null,
-    val xpReward: Int = PointCalculator.AchievementRewards.getReward(rarity),
-    val celebrationMessage: String = ""
+    val rewardFrameId: String? = null,
+    val xpReward: Int = calculateBaseXpReward(rarity),
+    val celebrationMessage: String = "",
+    val isHidden: Boolean = false, // Hidden achievements not shown until unlocked
+    val hint: String? = null // Hint shown for hidden achievements
 ) {
     /**
      * Check if requirement is met.
@@ -93,8 +248,24 @@ data class Achievement(
             is AchievementRequirement.BloomStreak -> currentValue >= requirement.days
             is AchievementRequirement.BloomCount -> currentValue >= requirement.count
             is AchievementRequirement.WordCount -> currentValue >= requirement.minWords
+            is AchievementRequirement.TotalWords -> currentValue >= requirement.words
             is AchievementRequirement.TimeOfDay -> currentValue >= requirement.count
-            else -> false
+            is AchievementRequirement.FutureMessages -> currentValue >= requirement.count
+            is AchievementRequirement.FutureMessageDelay -> currentValue >= requirement.count
+            is AchievementRequirement.FlashcardReviews -> currentValue >= requirement.count
+            is AchievementRequirement.VocabularyMastered -> currentValue >= requirement.count
+            is AchievementRequirement.ChallengesCompleted -> currentValue >= requirement.count
+            is AchievementRequirement.WeeklyChallengeStreak -> currentValue >= requirement.weeks
+            is AchievementRequirement.LeaderboardPosition -> currentValue <= requirement.maxPosition && currentValue > 0
+            is AchievementRequirement.FreezeTokensEarned -> currentValue >= requirement.count
+            is AchievementRequirement.StreakRecoveries -> currentValue >= requirement.count
+            is AchievementRequirement.TotalXp -> currentValue >= requirement.xp
+            is AchievementRequirement.PerfectWeeks -> currentValue >= requirement.count
+            is AchievementRequirement.PerfectMonths -> currentValue >= requirement.count
+            is AchievementRequirement.SkillLevel,
+            is AchievementRequirement.CombinedLevel,
+            is AchievementRequirement.AllSkillsMinLevel,
+            is AchievementRequirement.SingleAction -> false // Handled separately with context
         }
     }
 
@@ -102,17 +273,59 @@ data class Achievement(
      * Calculate progress percentage (0.0 to 1.0).
      */
     fun calculateProgress(currentValue: Int): Float {
-        val target = when (requirement) {
+        val target = getRequirementTarget()
+        if (target <= 0) return 0f
+        // For leaderboard positions, lower is better
+        if (requirement is AchievementRequirement.LeaderboardPosition) {
+            return if (currentValue <= requirement.maxPosition && currentValue > 0) 1f else 0f
+        }
+        return (currentValue.toFloat() / target).coerceIn(0f, 1f)
+    }
+
+    /**
+     * Get the target value for this achievement's requirement.
+     */
+    fun getRequirementTarget(): Int {
+        return when (requirement) {
             is AchievementRequirement.Count -> requirement.target
             is AchievementRequirement.Streak -> requirement.days
+            is AchievementRequirement.SkillLevel -> requirement.level
+            is AchievementRequirement.CombinedLevel -> requirement.totalLevel
+            is AchievementRequirement.AllSkillsMinLevel -> requirement.minLevel * 3
             is AchievementRequirement.DaysOnApp -> requirement.days
             is AchievementRequirement.BloomStreak -> requirement.days
             is AchievementRequirement.BloomCount -> requirement.count
             is AchievementRequirement.WordCount -> requirement.minWords
+            is AchievementRequirement.TotalWords -> requirement.words
             is AchievementRequirement.TimeOfDay -> requirement.count
-            else -> 1
+            is AchievementRequirement.FutureMessages -> requirement.count
+            is AchievementRequirement.FutureMessageDelay -> requirement.count
+            is AchievementRequirement.FlashcardReviews -> requirement.count
+            is AchievementRequirement.VocabularyMastered -> requirement.count
+            is AchievementRequirement.ChallengesCompleted -> requirement.count
+            is AchievementRequirement.WeeklyChallengeStreak -> requirement.weeks
+            is AchievementRequirement.LeaderboardPosition -> requirement.maxPosition
+            is AchievementRequirement.FreezeTokensEarned -> requirement.count
+            is AchievementRequirement.StreakRecoveries -> requirement.count
+            is AchievementRequirement.TotalXp -> requirement.xp
+            is AchievementRequirement.PerfectWeeks -> requirement.count
+            is AchievementRequirement.PerfectMonths -> requirement.count
+            is AchievementRequirement.SingleAction -> 1
         }
-        return (currentValue.toFloat() / target).coerceIn(0f, 1f)
+    }
+
+    companion object {
+        /**
+         * Calculate base XP reward based on rarity.
+         */
+        fun calculateBaseXpReward(rarity: AchievementRarity): Int = when (rarity) {
+            AchievementRarity.COMMON -> 25
+            AchievementRarity.UNCOMMON -> 50
+            AchievementRarity.RARE -> 100
+            AchievementRarity.EPIC -> 200
+            AchievementRarity.LEGENDARY -> 500
+            AchievementRarity.MYTHIC -> 1000
+        }
     }
 }
 
@@ -143,6 +356,9 @@ data class AchievementWithProgress(
 
 /**
  * All achievements defined for the app.
+ *
+ * Organized by category with progressive difficulty.
+ * Each category has achievements from Common to Mythic rarity.
  */
 object Achievements {
 
@@ -205,6 +421,18 @@ object Achievements {
             celebrationMessage = "A year of pages, each one a step on your path."
         ),
         Achievement(
+            id = "prolific_writer",
+            name = "Prolific Writer",
+            description = "Write 1000 journal entries",
+            category = AchievementCategory.REFLECTION,
+            rarity = AchievementRarity.LEGENDARY,
+            iconName = "ic_achievement_prolific",
+            requirement = AchievementRequirement.Count(1000),
+            rewardTitleId = "master_scribe",
+            rewardBannerId = "infinite_pages",
+            celebrationMessage = "A thousand reflections. A thousand steps forward."
+        ),
+        Achievement(
             id = "deep_diver",
             name = "Deep Diver",
             description = "Write an entry over 500 words",
@@ -223,6 +451,50 @@ object Achievements {
             iconName = "ic_achievement_stream",
             requirement = AchievementRequirement.WordCount(1000),
             celebrationMessage = "Words flowed like a river from your mind."
+        ),
+        Achievement(
+            id = "novelist",
+            name = "Novelist",
+            description = "Write 50,000 total words",
+            category = AchievementCategory.REFLECTION,
+            rarity = AchievementRarity.EPIC,
+            iconName = "ic_achievement_novelist",
+            requirement = AchievementRequirement.TotalWords(50000),
+            rewardBannerId = "writers_sanctuary",
+            celebrationMessage = "You've written a novel's worth of reflection."
+        ),
+        Achievement(
+            id = "epic_saga",
+            name = "Epic Saga",
+            description = "Write 100,000 total words",
+            category = AchievementCategory.REFLECTION,
+            rarity = AchievementRarity.LEGENDARY,
+            iconName = "ic_achievement_epic_saga",
+            requirement = AchievementRequirement.TotalWords(100000),
+            rewardTitleId = "epic_writer",
+            rewardBannerId = "library_of_self",
+            celebrationMessage = "Your words could fill a library."
+        ),
+        Achievement(
+            id = "perfect_week",
+            name = "Perfect Week",
+            description = "Journal every day for a week",
+            category = AchievementCategory.REFLECTION,
+            rarity = AchievementRarity.UNCOMMON,
+            iconName = "ic_achievement_perfect_week",
+            requirement = AchievementRequirement.PerfectWeeks(1),
+            celebrationMessage = "Seven days of unbroken reflection."
+        ),
+        Achievement(
+            id = "perfect_month",
+            name = "Perfect Month",
+            description = "Journal every day for a month",
+            category = AchievementCategory.REFLECTION,
+            rarity = AchievementRarity.RARE,
+            iconName = "ic_achievement_perfect_month",
+            requirement = AchievementRequirement.PerfectMonths(1),
+            rewardBannerId = "monthly_devotion",
+            celebrationMessage = "A perfect moon cycle of dedication."
         )
     )
 
@@ -363,18 +635,28 @@ object Achievements {
     )
 
     // =========================================================================
-    // JOURNEY CATEGORY (Overall progress)
+    // JOURNEY CATEGORY (Overall progress with 20-level system)
     // =========================================================================
 
     private val journeyAchievements = listOf(
         Achievement(
+            id = "first_steps",
+            name = "First Steps",
+            description = "Reach combined skill level of 6",
+            category = AchievementCategory.JOURNEY,
+            rarity = AchievementRarity.COMMON,
+            iconName = "ic_achievement_first_steps",
+            requirement = AchievementRequirement.CombinedLevel(6),
+            celebrationMessage = "Your journey has begun."
+        ),
+        Achievement(
             id = "triple_digit",
             name = "Triple Digit",
-            description = "Reach combined skill level of 10",
+            description = "Reach combined skill level of 15",
             category = AchievementCategory.JOURNEY,
             rarity = AchievementRarity.UNCOMMON,
             iconName = "ic_achievement_triple_digit",
-            requirement = AchievementRequirement.CombinedLevel(10),
+            requirement = AchievementRequirement.CombinedLevel(15),
             celebrationMessage = "Balance across all paths."
         ),
         Achievement(
@@ -384,32 +666,87 @@ object Achievements {
             category = AchievementCategory.JOURNEY,
             rarity = AchievementRarity.RARE,
             iconName = "ic_achievement_well_rounded",
-            requirement = AchievementRequirement.CombinedLevel(15),
+            requirement = AchievementRequirement.AllSkillsMinLevel(5),
             rewardBannerId = "contemplative_garden",
             celebrationMessage = "Harmony in all aspects of growth."
         ),
         Achievement(
-            id = "journey_milestone",
-            name = "Journey Milestone",
-            description = "Reach combined skill level of 25",
+            id = "balanced_seeker",
+            name = "Balanced Seeker",
+            description = "Reach Level 10 in all three skills",
             category = AchievementCategory.JOURNEY,
             rarity = AchievementRarity.EPIC,
-            iconName = "ic_achievement_journey_milestone",
-            requirement = AchievementRequirement.CombinedLevel(25),
+            iconName = "ic_achievement_balanced_seeker",
+            requirement = AchievementRequirement.AllSkillsMinLevel(10),
             rewardBannerId = "sages_vista",
             celebrationMessage = "The vista from the heights of understanding."
         ),
         Achievement(
-            id = "true_seeker",
-            name = "True Seeker",
-            description = "Reach Level 10 in all three skills",
+            id = "journey_milestone",
+            name = "Journey Milestone",
+            description = "Reach combined skill level of 45",
+            category = AchievementCategory.JOURNEY,
+            rarity = AchievementRarity.EPIC,
+            iconName = "ic_achievement_journey_milestone",
+            requirement = AchievementRequirement.CombinedLevel(45),
+            rewardBannerId = "mountain_peak",
+            celebrationMessage = "Halfway to true mastery."
+        ),
+        Achievement(
+            id = "enlightened_one",
+            name = "Enlightened One",
+            description = "Reach Level 15 in all three skills",
             category = AchievementCategory.JOURNEY,
             rarity = AchievementRarity.LEGENDARY,
-            iconName = "ic_achievement_true_seeker",
-            requirement = AchievementRequirement.CombinedLevel(30),
+            iconName = "ic_achievement_enlightened",
+            requirement = AchievementRequirement.AllSkillsMinLevel(15),
             rewardBannerId = "awakened_sky",
-            rewardTitleId = "awakened",
-            celebrationMessage = "You have reached the summit. True seeing is yours."
+            rewardTitleId = "enlightened",
+            celebrationMessage = "True wisdom flows through you."
+        ),
+        Achievement(
+            id = "true_master",
+            name = "True Master",
+            description = "Reach Level 20 in all three skills",
+            category = AchievementCategory.JOURNEY,
+            rarity = AchievementRarity.MYTHIC,
+            iconName = "ic_achievement_true_master",
+            requirement = AchievementRequirement.AllSkillsMinLevel(20),
+            rewardBannerId = "celestial_summit",
+            rewardTitleId = "awakened_master",
+            rewardFrameId = "golden_aura",
+            celebrationMessage = "You have achieved perfection. The summit is yours."
+        ),
+        Achievement(
+            id = "xp_milestone_1k",
+            name = "Thousand Steps",
+            description = "Earn 1,000 total XP",
+            category = AchievementCategory.JOURNEY,
+            rarity = AchievementRarity.COMMON,
+            iconName = "ic_achievement_xp_1k",
+            requirement = AchievementRequirement.TotalXp(1000),
+            celebrationMessage = "The first thousand steps."
+        ),
+        Achievement(
+            id = "xp_milestone_10k",
+            name = "Ten Thousand Steps",
+            description = "Earn 10,000 total XP",
+            category = AchievementCategory.JOURNEY,
+            rarity = AchievementRarity.RARE,
+            iconName = "ic_achievement_xp_10k",
+            requirement = AchievementRequirement.TotalXp(10000),
+            celebrationMessage = "Ten thousand steps on the path."
+        ),
+        Achievement(
+            id = "xp_milestone_50k",
+            name = "Fifty Thousand Steps",
+            description = "Earn 50,000 total XP",
+            category = AchievementCategory.JOURNEY,
+            rarity = AchievementRarity.EPIC,
+            iconName = "ic_achievement_xp_50k",
+            requirement = AchievementRequirement.TotalXp(50000),
+            rewardBannerId = "golden_path",
+            celebrationMessage = "Fifty thousand moments of growth."
         )
     )
 

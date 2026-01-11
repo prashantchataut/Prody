@@ -58,6 +58,27 @@ data class UserProfileEntity(
     val serverVersion: Long = 0
 )
 
+/**
+ * Achievement Entity - Tracks user achievements and badges.
+ *
+ * Categories: wisdom, reflection, consistency, presence, temporal, mastery, social, special
+ *
+ * Rarities (6 tiers):
+ * - common: Basic achievements, easily obtainable
+ * - uncommon: Requires some effort
+ * - rare: Requires dedicated commitment
+ * - epic: Significant milestone achievements
+ * - legendary: Exceptional accomplishments
+ * - mythic: Rarest achievements, true mastery or special circumstances
+ *
+ * Rewards scale with rarity:
+ * - Common: 50 XP
+ * - Uncommon: 100 XP
+ * - Rare: 200 XP
+ * - Epic: 350 XP
+ * - Legendary: 500 XP + cosmetic unlock
+ * - Mythic: 750 XP + exclusive cosmetic
+ */
 @Entity(tableName = "achievements")
 data class AchievementEntity(
     @PrimaryKey
@@ -65,15 +86,18 @@ data class AchievementEntity(
     val name: String,
     val description: String,
     val iconId: String,
-    val category: String, // wisdom, reflection, consistency, presence, temporal, mastery
+    val category: String, // wisdom, reflection, consistency, presence, temporal, mastery, social, special
     val requirement: Int, // Number needed to unlock
     val currentProgress: Int = 0,
     val isUnlocked: Boolean = false,
     val unlockedAt: Long? = null,
-    val rewardType: String = "points", // points, avatar, banner, title
+    val rewardType: String = "points", // points, avatar, banner, title, cosmetic
     val rewardValue: String = "100", // Points amount or reward ID
-    val rarity: String = "common", // common, uncommon, rare, epic, legendary
-    val celebrationMessage: String = "" // Elegant message shown when unlocked
+    val rarity: String = "common", // common, uncommon, rare, epic, legendary, mythic
+    val celebrationMessage: String = "", // Elegant message shown when unlocked
+    val isHidden: Boolean = false, // Hidden achievements show "???" until unlocked
+    val isSecret: Boolean = false, // Secret achievements don't show at all until unlocked
+    val xpReward: Int = 50 // Direct XP reward (scaled by rarity)
 ) {
     companion object {
         /**
@@ -88,8 +112,21 @@ data class AchievementEntity(
             iconName: String,
             requirement: Int,
             celebrationMessage: String,
-            rewardPoints: Int = 100
+            rewardPoints: Int = 100,
+            isHidden: Boolean = false,
+            isSecret: Boolean = false
         ): AchievementEntity {
+            // Calculate XP reward based on rarity
+            val xpReward = when (rarity.lowercase()) {
+                "common" -> 50
+                "uncommon" -> 100
+                "rare" -> 200
+                "epic" -> 350
+                "legendary" -> 500
+                "mythic" -> 750
+                else -> 50
+            }
+
             return AchievementEntity(
                 id = id,
                 name = name,
@@ -103,8 +140,24 @@ data class AchievementEntity(
                 unlockedAt = null,
                 rewardType = "points",
                 rewardValue = rewardPoints.toString(),
-                celebrationMessage = celebrationMessage
+                celebrationMessage = celebrationMessage,
+                isHidden = isHidden,
+                isSecret = isSecret,
+                xpReward = xpReward
             )
+        }
+
+        /**
+         * Maps rarity string to display name.
+         */
+        fun rarityDisplayName(rarity: String): String = when (rarity.lowercase()) {
+            "common" -> "Common"
+            "uncommon" -> "Uncommon"
+            "rare" -> "Rare"
+            "epic" -> "Epic"
+            "legendary" -> "Legendary"
+            "mythic" -> "Mythic"
+            else -> "Common"
         }
     }
 }

@@ -19,6 +19,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.prody.prashant.domain.gamification.GameSkillSystem
+import com.prody.prashant.ui.theme.ClaritySkillColor
+import com.prody.prashant.ui.theme.DisciplineSkillColor
+import com.prody.prashant.ui.theme.CourageSkillColor
 
 /**
  * Player Skills Card - Displays the 3 core skill stats.
@@ -283,22 +286,46 @@ private fun CompactSkillChip(
 
 /**
  * Skill colors matching the game's identity system.
+ * Uses the canonical colors defined in Color.kt for consistency.
  */
 object SkillColors {
-    val Clarity = Color(0xFF7C4DFF)    // Purple
-    val Discipline = Color(0xFF00BCD4) // Cyan
-    val Courage = Color(0xFFFF9800)    // Orange
+    val Clarity = ClaritySkillColor    // Serene sky blue (#6CB4D4)
+    val Discipline = DisciplineSkillColor // Creative purple (#9B6DD4)
+    val Courage = CourageSkillColor    // Vibrant coral (#FF7B5A)
 }
 
 // ==================== LOCAL SKILL CALCULATION HELPERS ====================
 
+/**
+ * XP thresholds for each level (cumulative) - 20-level system.
+ * Matches the Skill.kt domain model.
+ *
+ * Level 1 starts at 0 XP, Level 20 (True Mastery) requires 15,300 total XP.
+ */
 private val LEVEL_THRESHOLDS = listOf(
-    0, 100, 250, 450, 700, 1000, 1400, 1900, 2500, 3200,
-    4000, 5000, 6200, 7600, 9200, 11000, 13000, 15500, 18500, 22000,
-    26000, 30500, 35500, 41000, 47000, 54000, 62000, 71000, 81000, 92000
+    0,       // Level 1  - Starting point
+    50,      // Level 2  - Getting started
+    120,     // Level 3  - Building momentum
+    220,     // Level 4  - Finding rhythm
+    360,     // Level 5  - First milestone (unlocks: Advanced templates)
+    550,     // Level 6  - Developing habits
+    800,     // Level 7  - Growing stronger
+    1150,    // Level 8  - Gaining mastery
+    1600,    // Level 9  - Nearly there
+    2200,    // Level 10 - Mastery I (unlocks: Weekly insight summaries)
+    2900,    // Level 11 - Beyond mastery
+    3700,    // Level 12 - Expert
+    4600,    // Level 13 - Advanced expert
+    5600,    // Level 14 - Nearly legendary
+    6700,    // Level 15 - Legendary I (unlocks: Premium features)
+    8000,    // Level 16 - Transcendent
+    9500,    // Level 17 - Enlightened
+    11200,   // Level 18 - Awakened
+    13100,   // Level 19 - Nearly perfect
+    15300    // Level 20 - True Mastery (unlocks: Ultimate badge + banner)
 )
 
-private const val MAX_SKILL_LEVEL = 30
+private const val MAX_SKILL_LEVEL = 20
 
 /**
  * Calculate level from XP amount.
@@ -320,7 +347,7 @@ private fun getXpProgress(xp: Int): Pair<Int, Int> {
     if (currentLevel >= MAX_SKILL_LEVEL) return Pair(0, 0)
 
     val currentThreshold = LEVEL_THRESHOLDS.getOrElse(currentLevel - 1) { 0 }
-    val nextThreshold = LEVEL_THRESHOLDS.getOrElse(currentLevel) { currentThreshold + 100 }
+    val nextThreshold = LEVEL_THRESHOLDS.getOrElse(currentLevel) { currentThreshold + 50 }
     val xpInLevel = xp - currentThreshold
     val xpNeeded = nextThreshold - currentThreshold
 

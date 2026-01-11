@@ -11,14 +11,26 @@ import androidx.room.PrimaryKey
  * Discipline (Sharpen): Flashcards/vocabulary consistency
  * Courage (Commit): Future messages + confronting themes
  *
- * Each skill has its own XP pool that levels independently (max level 10).
+ * Each skill has its own XP pool that levels independently (max level 20).
  * Daily and weekly XP caps prevent exploit/spam grinding.
  *
- * Level progression uses these thresholds (cumulative):
+ * Level progression uses these thresholds (cumulative) - 20 levels total:
  * Level 1: 0, Level 2: 50, Level 3: 120, Level 4: 220, Level 5: 360,
- * Level 6: 550, Level 7: 800, Level 8: 1150, Level 9: 1600, Level 10: 2200
+ * Level 6: 550, Level 7: 800, Level 8: 1150, Level 9: 1600, Level 10: 2200,
+ * Level 11: 2900, Level 12: 3700, Level 13: 4600, Level 14: 5600, Level 15: 6700,
+ * Level 16: 8000, Level 17: 9500, Level 18: 11200, Level 19: 13100, Level 20: 15300
+ *
+ * Approximate time to reach milestones:
+ * - Level 5: ~1 week of consistent use
+ * - Level 10: ~1 month of consistent use
+ * - Level 15: ~3 months of consistent use
+ * - Level 20 (True Mastery): ~6 months of dedicated use
  *
  * Daily XP Caps: Clarity 150, Discipline 150, Courage 100
+ * Weekly XP Caps: Clarity 800, Discipline 800, Courage 500
+ *
+ * Perks are unlocked at specific levels and stored in unlockedPerkIds (JSON array).
+ * Freeze tokens from perks are accumulated and tracked separately from monthly resets.
  */
 @Entity(
     tableName = "player_skills",
@@ -48,6 +60,13 @@ data class PlayerSkillsEntity(
 
     // Token currency (cosmetic unlocks)
     val tokens: Int = 0,
+
+    // Perk tracking - JSON array of unlocked perk IDs (e.g., ["clarity_l5_templates", "discipline_l5_streak_shield"])
+    val unlockedPerkIds: String = "[]",
+
+    // Freeze tokens earned from perks (separate from monthly mindful breaks)
+    val perkFreezeTokens: Int = 0,
+    val perkFreezeTokensUsed: Int = 0, // Tracks how many perk-granted tokens have been used
 
     // Timestamps
     val createdAt: Long = System.currentTimeMillis(),

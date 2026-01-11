@@ -99,6 +99,11 @@ import com.prody.prashant.data.local.entity.*
  *              Added CirclePrivacySettingsEntity for privacy controls
  *              Added CircleNotificationEntity for circle notifications
  *              Added CircleMemberStatsCacheEntity for cached member stats
+ * - Version 16: Gamification 5.0 - Enhanced Skills & Achievements
+ *              Added perk tracking to PlayerSkillsEntity (unlockedPerkIds, perkFreezeTokens)
+ *              Added MYTHIC rarity tier to achievements
+ *              Added isHidden, isSecret, xpReward to AchievementEntity
+ *              Updated skill system from 10 to 20 levels with perk unlocks
  */
 @Database(
     entities = [
@@ -177,7 +182,7 @@ import com.prody.prashant.data.local.entity.*
         CircleNotificationEntity::class,
         CircleMemberStatsCacheEntity::class
     ],
-    version = 15,
+    version = 16,
     exportSchema = true // Enable for migration verification
 )
 abstract class ProdyDatabase : RoomDatabase() {
@@ -1243,6 +1248,41 @@ abstract class ProdyDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * Migration 15 -> 16: Gamification 5.0 - Enhanced Skills & Achievements
+         *
+         * Changes:
+         * - Add perk tracking fields to player_skills (unlockedPerkIds, perkFreezeTokens, perkFreezeTokensUsed)
+         * - Add hidden/secret achievement support to achievements
+         * - Add direct XP rewards to achievements with MYTHIC rarity tier
+         *
+         * The 20-level skill system with perks:
+         * - Each skill (Clarity, Discipline, Courage) now has 20 levels
+         * - Perks unlock at levels 2, 3, 5, 7, 10, 12, 15, 17, 20
+         * - Discipline perks at L5 and L12 grant streak freeze tokens
+         *
+         * Achievement rarity tiers and XP rewards:
+         * - Common: 50 XP
+         * - Uncommon: 100 XP
+         * - Rare: 200 XP
+         * - Epic: 350 XP
+         * - Legendary: 500 XP
+         * - Mythic: 750 XP (NEW)
+         */
+        val MIGRATION_15_16: Migration = object : Migration(15, 16) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Add perk tracking fields to player_skills
+                db.execSQL("ALTER TABLE player_skills ADD COLUMN unlockedPerkIds TEXT NOT NULL DEFAULT '[]'")
+                db.execSQL("ALTER TABLE player_skills ADD COLUMN perkFreezeTokens INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE player_skills ADD COLUMN perkFreezeTokensUsed INTEGER NOT NULL DEFAULT 0")
+
+                // Add hidden/secret achievement support and XP rewards to achievements
+                db.execSQL("ALTER TABLE achievements ADD COLUMN isHidden INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE achievements ADD COLUMN isSecret INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE achievements ADD COLUMN xpReward INTEGER NOT NULL DEFAULT 50")
+            }
+        }
+
         fun getInstance(context: Context): ProdyDatabase {
             return INSTANCE ?: synchronized(this) {
                 INSTANCE ?: buildDatabase(context).also { INSTANCE = it }
@@ -1258,7 +1298,7 @@ abstract class ProdyDatabase : RoomDatabase() {
                 .addMigrations(
                     MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8,
                     MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12,
-                    MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15
+                    MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16
                 )
                 .fallbackToDestructiveMigration()
                 .addCallback(DatabaseCallback())

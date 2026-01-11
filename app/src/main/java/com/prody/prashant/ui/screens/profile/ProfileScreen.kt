@@ -874,7 +874,7 @@ private fun PremiumStoryOfGrowthSection(
                 title = "Dedicated Writer",
                 description = "$journalEntries journal entries and counting",
                 icon = Icons.Filled.AutoStories,
-                color = Color(0xFF6CB4D4)
+                color = MoodCalm // Serene blue from design system
             )
             wordsLearned >= 100 -> GrowthHighlight(
                 title = "Word Collector",

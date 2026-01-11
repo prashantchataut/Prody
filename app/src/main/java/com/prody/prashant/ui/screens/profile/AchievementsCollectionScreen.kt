@@ -69,12 +69,13 @@ private object AchievementColors {
     val TextTertiaryLight = Color(0xFF8A9B93)
     val BorderLight = Color(0xFFE0E8E4)
 
-    // Rarity Colors
-    val RarityCommon = Color(0xFF78909C)
-    val RarityUncommon = Color(0xFF66BB6A)
-    val RarityRare = Color(0xFF42A5F5)
-    val RarityEpic = Color(0xFFAB47BC)
-    val RarityLegendary = Color(0xFFD4AF37)
+    // Rarity Colors (6 tiers)
+    val RarityCommon = Color(0xFF78909C)      // Slate gray
+    val RarityUncommon = Color(0xFF66BB6A)    // Fresh green
+    val RarityRare = Color(0xFF42A5F5)        // Bright blue
+    val RarityEpic = Color(0xFFAB47BC)        // Rich purple
+    val RarityLegendary = Color(0xFFD4AF37)   // Gold
+    val RarityMythic = Color(0xFFFFD700)      // Brilliant gold - rarest tier
 
     // Locked state
     val LockedOverlay = Color(0xFF3A4F4D)
@@ -406,6 +407,12 @@ private fun AchievementCard(
     val rarity = getRarityColor(achievement.rarity)
     val isUnlocked = achievement.isUnlocked
 
+    // Hidden achievements show "???" until unlocked
+    // Secret achievements are filtered out in ViewModel (won't reach here unless unlocked)
+    val showMystery = achievement.isHidden && !isUnlocked
+    val displayName = if (showMystery) "???" else achievement.name
+    val displayDescription = if (showMystery) "This achievement is hidden. Keep exploring to discover it!" else achievement.description
+
     var isAnimated by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
         delay(100)
@@ -458,6 +465,14 @@ private fun AchievementCard(
                         tint = rarity,
                         modifier = Modifier.size(28.dp)
                     )
+                } else if (showMystery) {
+                    // Mystery icon for hidden achievements
+                    Icon(
+                        imageVector = Icons.Filled.Help,
+                        contentDescription = "Hidden achievement",
+                        tint = AchievementColors.LockedOverlay,
+                        modifier = Modifier.size(24.dp)
+                    )
                 } else {
                     Icon(
                         imageVector = Icons.Filled.Lock,
@@ -477,7 +492,7 @@ private fun AchievementCard(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        text = achievement.name,
+                        text = displayName,
                         fontFamily = PoppinsFamily,
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 15.sp,
@@ -492,17 +507,19 @@ private fun AchievementCard(
                         overflow = TextOverflow.Ellipsis
                     )
 
-                    // Rarity Badge
-                    RarityBadge(
-                        rarity = achievement.rarity,
-                        isDarkMode = isDarkMode
-                    )
+                    // Rarity Badge (hide for mystery achievements)
+                    if (!showMystery) {
+                        RarityBadge(
+                            rarity = achievement.rarity,
+                            isDarkMode = isDarkMode
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = achievement.description,
+                    text = displayDescription,
                     fontFamily = PoppinsFamily,
                     fontSize = 12.sp,
                     color = if (isDarkMode) AchievementColors.TextTertiaryDark
@@ -793,6 +810,7 @@ private fun getRarityColor(rarity: String): Color {
         "rare" -> AchievementColors.RarityRare
         "epic" -> AchievementColors.RarityEpic
         "legendary" -> AchievementColors.RarityLegendary
+        "mythic" -> AchievementColors.RarityMythic
         else -> AchievementColors.RarityCommon
     }
 }

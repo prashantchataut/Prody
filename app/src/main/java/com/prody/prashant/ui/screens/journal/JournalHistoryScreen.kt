@@ -1183,19 +1183,19 @@ private fun getMoodColorForHistory(mood: Mood): Color = getMoodColorPremium(mood
 private fun getMoodIconForHistory(mood: Mood): ImageVector = getMoodIconPremium(mood)
 
 /**
- * Premium mood color mapping - using neon green accent and updated palette
+ * Premium mood color mapping - using canonical colors from design system
  */
 private fun getMoodColorPremium(mood: Mood): Color {
     return when (mood) {
-        Mood.HAPPY -> Color(0xFF36F97F)      // Neon green
-        Mood.EXCITED -> Color(0xFFFFD166)    // Energetic amber
-        Mood.CALM -> Color(0xFF6CB4D4)       // Serene blue
-        Mood.GRATEFUL -> Color(0xFF7EC8A3)   // Soft sage
-        Mood.ANXIOUS -> Color(0xFFE8A87C)    // Soft coral
-        Mood.CONFUSED -> Color(0xFFB39DDB)   // Soft lavender
-        Mood.SAD -> Color(0xFF8BA8B9)        // Muted slate
-        Mood.MOTIVATED -> Color(0xFF36F97F)  // Neon green
-        Mood.NOSTALGIC -> Color(0xFFD4A574)  // Warm sepia
+        Mood.HAPPY -> MoodHappy               // Sunshine gold
+        Mood.EXCITED -> MoodExcited           // Vibrant coral
+        Mood.CALM -> MoodCalm                 // Serene sky blue
+        Mood.GRATEFUL -> MoodGrateful         // Soft sage
+        Mood.ANXIOUS -> MoodAnxious           // Soft coral
+        Mood.CONFUSED -> MoodConfused         // Soft lavender
+        Mood.SAD -> MoodSad                   // Muted slate blue
+        Mood.MOTIVATED -> MoodMotivated       // Energetic amber
+        Mood.NOSTALGIC -> MoodNostalgic       // Warm sepia
     }
 }
 

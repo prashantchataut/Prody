@@ -616,6 +616,7 @@ val XpBarGlow = Color(0x6636F97F)
 val XpBarFillAlt = Color(0xFF36F97F)
 
 val SuccessColor = ProdySuccess
+val SuccessGreen = ProdySuccess
 val WarningColor = ProdyWarning
 val ErrorColor = ProdyError
 val InfoColor = ProdyInfo
@@ -875,3 +876,51 @@ object WrappedGradients {
     val shareCardGrowth = listOf(WrappedTeal1, WrappedTeal2, WrappedTeal3)
     val shareCardActiveDays = listOf(WrappedYellow1, WrappedYellow2, WrappedYellow3)
 }
+
+// =============================================================================
+// SKILL COLORS - Three Core Skills
+// =============================================================================
+
+/** Clarity skill - Associated with journaling and self-reflection */
+val ClaritySkillColor = Color(0xFF6CB4D4)                   // Serene sky blue
+
+/** Discipline skill - Associated with learning and vocabulary */
+val DisciplineSkillColor = Color(0xFF9B6DD4)                // Creative purple
+
+/** Courage skill - Associated with future self messages */
+val CourageSkillColor = Color(0xFFFF7B5A)                   // Vibrant coral
+
+// Skill color variants for different contexts
+val ClaritySkillLight = Color(0xFF8CC8E0)
+val ClaritySkillDark = Color(0xFF4A9CC0)
+val DisciplineSkillLight = Color(0xFFB38AE0)
+val DisciplineSkillDark = Color(0xFF7B50C0)
+val CourageSkillLight = Color(0xFFFF9A7D)
+val CourageSkillDark = Color(0xFFE65C37)
+
+// =============================================================================
+// BLOOM SYSTEM COLORS - Vocabulary Growth
+// =============================================================================
+
+/** Seed state - Word learned but not yet ready to bloom */
+val SeedDormant = Color(0xFF8D6E63)                         // Earth brown
+
+/** Growing state - Word in transition */
+val BloomGrowing = Color(0xFF81C784)                        // Fresh green
+
+/** Ready state - Word ready to be used */
+val BloomReady = Color(0xFF66BB6A)                          // Vibrant green
+
+/** Flourishing state - Word fully mastered */
+val BloomFlourishing = Color(0xFF4CAF50)                    // Deep green
+
+// Bloom gradient colors
+val BloomSeedLight = Color(0xFFA1887F)
+val BloomGrowingLight = Color(0xFFA5D6A7)
+val BloomReadyLight = Color(0xFF81C784)
+
+// =============================================================================
+// WISDOM PERSPECTIVE COLOR (referenced in ChallengeComponents)
+// =============================================================================
+
+val WisdomPerspective = Color(0xFF7E57C2)                   // Purple for perspective
