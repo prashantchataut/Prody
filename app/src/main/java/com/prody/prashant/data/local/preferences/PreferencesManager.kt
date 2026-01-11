@@ -1,13 +1,22 @@
 package com.prody.prashant.data.local.preferences
 
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.*
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.emptyPreferences
+import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.runBlocking
 import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -16,7 +25,8 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
 
 @Singleton
 class PreferencesManager @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val sharedPreferences: SharedPreferences
 ) {
     private val dataStore = context.dataStore
 
@@ -152,10 +162,36 @@ class PreferencesManager @Inject constructor(
             preferences[PreferencesKeys.ONBOARDING_COMPLETED] ?: false
         }
 
+    /**
+     * Synchronously checks if onboarding is completed.
+     * This is critical for making an immediate decision on the start destination
+     * without waiting for DataStore to load.
+     *
+     * It uses a one-time migration strategy:
+     * 1. Check SharedPreferences (fast).
+     * 2. If not found, block and read from DataStore (slow) once.
+     * 3. Save the value to SharedPreferences for future fast access.
+     */
+    fun isOnboardingCompleted(): Boolean {
+        val key = PreferencesKeys.ONBOARDING_COMPLETED.name
+        if (sharedPreferences.contains(key)) {
+            return sharedPreferences.getBoolean(key, false)
+        } else {
+            // One-time migration: block to read from DataStore and write to SharedPreferences
+            val valueFromDataStore = runBlocking {
+                onboardingCompleted.first()
+            }
+            sharedPreferences.edit().putBoolean(key, valueFromDataStore).apply()
+            return valueFromDataStore
+        }
+    }
+
     suspend fun setOnboardingCompleted(completed: Boolean) {
+        // Write to both for consistency
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.ONBOARDING_COMPLETED] = completed
         }
+        sharedPreferences.edit().putBoolean(PreferencesKeys.ONBOARDING_COMPLETED.name, completed).apply()
     }
 
     // Theme
