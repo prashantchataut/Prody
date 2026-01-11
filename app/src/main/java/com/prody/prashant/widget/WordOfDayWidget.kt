@@ -41,6 +41,11 @@ import java.util.Calendar
 class WordOfDayWidget : GlanceAppWidget() {
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
+        // Security: Rate-limit widget updates to prevent DoS attacks.
+        if (!WidgetUpdateThrottler.shouldUpdate(context, this::class.java)) {
+            return
+        }
+
         val wordData = getDailyWordData()
 
         provideContent {

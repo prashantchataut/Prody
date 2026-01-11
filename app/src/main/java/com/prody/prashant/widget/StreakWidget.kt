@@ -38,6 +38,11 @@ import kotlinx.coroutines.withContext
 class StreakWidget : GlanceAppWidget() {
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
+        // Security: Rate-limit widget updates to prevent DoS attacks.
+        if (!WidgetUpdateThrottler.shouldUpdate(context, this::class.java)) {
+            return
+        }
+
         // Get streak from shared preferences (widget-accessible storage)
         val prefs = context.getSharedPreferences("prody_widget_prefs", Context.MODE_PRIVATE)
         val streak = prefs.getInt("current_streak", 0)
