@@ -4,7 +4,6 @@ import android.content.Context
 import com.prody.prashant.data.local.dao.JournalDao
 import com.prody.prashant.data.local.dao.UserDao
 import com.prody.prashant.data.local.preferences.PreferencesManager
-import com.prody.prashant.domain.intelligence.TimeOfDay
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -428,3 +427,16 @@ data class WidgetMemoryTeaser(
     val preview: String,
     val yearsAgo: Int
 )
+
+/**
+ * Time of day enum for widget-specific granularity.
+ */
+private enum class TimeOfDay {
+    EARLY_MORNING,  // 5-6am
+    MORNING,        // 7-9am
+    LATE_MORNING,   // 10-11am
+    AFTERNOON,      // 12-4pm
+    EVENING,        // 5-8pm
+    NIGHT,          // 9-11pm
+    LATE_NIGHT      // 12-4am
+}

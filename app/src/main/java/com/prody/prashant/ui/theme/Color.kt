@@ -919,8 +919,4 @@ val BloomSeedLight = Color(0xFFA1887F)
 val BloomGrowingLight = Color(0xFFA5D6A7)
 val BloomReadyLight = Color(0xFF81C784)
 
-// =============================================================================
-// WISDOM PERSPECTIVE COLOR (referenced in ChallengeComponents)
-// =============================================================================
-
-val WisdomPerspective = Color(0xFF7E57C2)                   // Purple for perspective
+// Note: WisdomPerspective color is defined above in "Wisdom category colors" section

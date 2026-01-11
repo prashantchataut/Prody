@@ -267,11 +267,13 @@ class ContextAwareHavenService @Inject constructor(
         val exerciseResult = havenAiService.suggestExercise(
             sessionType,
             HavenContext(
-                userName = userContext.displayName,
-                sessionNumber = havenContext.sessionCount + 1,
+                sessionType = sessionType,
+                previousMessages = emptyList(),
                 moodBefore = userContext.dominantMood?.ordinal,
+                userName = userContext.displayName,
                 hasUsedTechniquesBefore = emptyList(),
-                previousMessages = emptyList()
+                preferredExercises = emptyList(),
+                sessionNumber = havenContext.sessionCount + 1
             )
         )
 
@@ -303,10 +305,14 @@ class ContextAwareHavenService @Inject constructor(
         // Note: We're working with the existing HavenContext structure
         // and enriching it with Soul Layer data
 
-        return baseContext.copy(
+        return HavenContext(
+            sessionType = baseContext.sessionType,
+            previousMessages = baseContext.previousMessages,
+            moodBefore = baseContext.moodBefore ?: userContext.dominantMood?.ordinal,
             userName = userContext.displayName,
-            sessionNumber = soulLayerContext.sessionCount + 1,
-            moodBefore = baseContext.moodBefore ?: userContext.dominantMood?.ordinal
+            hasUsedTechniquesBefore = baseContext.hasUsedTechniquesBefore,
+            preferredExercises = baseContext.preferredExercises,
+            sessionNumber = soulLayerContext.sessionCount + 1
         )
     }
 
@@ -326,6 +332,9 @@ class ContextAwareHavenService @Inject constructor(
             StressSignalType.NEGATIVE_LANGUAGE, StressSignalType.LOW_SELF_WORTH -> SessionType.SADNESS
             StressSignalType.WORK_STRESS -> SessionType.STRESS
             StressSignalType.SLEEP_ISSUES -> SessionType.ANXIETY
+            StressSignalType.ISOLATION -> SessionType.SADNESS
+            StressSignalType.RELATIONSHIP_STRAIN -> SessionType.GENERAL
+            StressSignalType.HEALTH_CONCERNS -> SessionType.CHECK_IN
         }
     }
 

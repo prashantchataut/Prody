@@ -82,7 +82,7 @@ class NewGameSessionManager @Inject constructor(
                 builder.addSkillXp(Skill.CLARITY, result.actualAmountAwarded)
                 if (result.didLevelUp) {
                     builder.addLevelUp(
-                        SkillLevelUpEvent(
+                        SessionSkillLevelUp(
                             skill = Skill.CLARITY,
                             previousLevel = result.previousLevel,
                             newLevel = result.newLevel,
@@ -163,7 +163,7 @@ class NewGameSessionManager @Inject constructor(
                 builder.addSkillXp(Skill.CLARITY, result.actualAmountAwarded)
                 if (result.didLevelUp) {
                     builder.addLevelUp(
-                        SkillLevelUpEvent(
+                        SessionSkillLevelUp(
                             skill = Skill.CLARITY,
                             previousLevel = result.previousLevel,
                             newLevel = result.newLevel,
@@ -244,7 +244,7 @@ class NewGameSessionManager @Inject constructor(
                 builder.addSkillXp(Skill.DISCIPLINE, result.actualAmountAwarded)
                 if (result.didLevelUp) {
                     builder.addLevelUp(
-                        SkillLevelUpEvent(
+                        SessionSkillLevelUp(
                             skill = Skill.DISCIPLINE,
                             previousLevel = result.previousLevel,
                             newLevel = result.newLevel,
@@ -367,7 +367,7 @@ class NewGameSessionManager @Inject constructor(
                 builder.addSkillXp(Skill.COURAGE, result.actualAmountAwarded)
                 if (result.didLevelUp) {
                     builder.addLevelUp(
-                        SkillLevelUpEvent(
+                        SessionSkillLevelUp(
                             skill = Skill.COURAGE,
                             previousLevel = result.previousLevel,
                             newLevel = result.newLevel,
@@ -439,7 +439,7 @@ class NewGameSessionManager @Inject constructor(
                 builder.addSkillXp(Skill.COURAGE, result.actualAmountAwarded)
                 if (result.didLevelUp) {
                     builder.addLevelUp(
-                        SkillLevelUpEvent(
+                        SessionSkillLevelUp(
                             skill = Skill.COURAGE,
                             previousLevel = result.previousLevel,
                             newLevel = result.newLevel,
@@ -484,7 +484,7 @@ class NewGameSessionManager @Inject constructor(
                 builder.addSkillXp(Skill.COURAGE, result.actualAmountAwarded)
                 if (result.didLevelUp) {
                     builder.addLevelUp(
-                        SkillLevelUpEvent(
+                        SessionSkillLevelUp(
                             skill = Skill.COURAGE,
                             previousLevel = result.previousLevel,
                             newLevel = result.newLevel,
@@ -666,7 +666,7 @@ data class SessionCompletionResult(
     val details: List<String>,
     val skillXpAwarded: Map<Skill, Int>,
     val tokensAwarded: Int,
-    val levelUps: List<SkillLevelUpEvent>,
+    val levelUps: List<SessionSkillLevelUp>,
     val seedBloom: SeedBloomEvent?,
     val streakUpdate: StreakUpdateEvent?,
     val rankUp: RankUpEvent?,
@@ -686,9 +686,9 @@ data class SessionCompletionResult(
 }
 
 /**
- * Skill level up event.
+ * Simple skill level up event for session tracking.
  */
-data class SkillLevelUpEvent(
+data class SessionSkillLevelUp(
     val skill: Skill,
     val previousLevel: Int,
     val newLevel: Int,
@@ -732,7 +732,7 @@ private class SessionCompletionResultBuilder(private val mode: SessionMode) {
     private val details = mutableListOf<String>()
     private val skillXpAwarded = mutableMapOf<Skill, Int>()
     private var tokensAwarded: Int = 0
-    private val levelUps = mutableListOf<SkillLevelUpEvent>()
+    private val levelUps = mutableListOf<SessionSkillLevelUp>()
     private var seedBloom: SeedBloomEvent? = null
     private var streakUpdate: StreakUpdateEvent? = null
     private var rankUp: RankUpEvent? = null
@@ -754,7 +754,7 @@ private class SessionCompletionResultBuilder(private val mode: SessionMode) {
         tokensAwarded += amount
     }
 
-    fun addLevelUp(event: SkillLevelUpEvent) {
+    fun addLevelUp(event: SessionSkillLevelUp) {
         levelUps.add(event)
         tokensAwarded += event.tokenReward
     }

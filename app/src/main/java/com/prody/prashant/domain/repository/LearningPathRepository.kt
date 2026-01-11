@@ -4,6 +4,7 @@ import com.prody.prashant.data.local.dao.LearningPathDao
 import com.prody.prashant.data.local.dao.JournalDao
 import com.prody.prashant.data.local.entity.*
 import com.prody.prashant.domain.common.Result
+import com.prody.prashant.domain.common.ErrorType
 import com.prody.prashant.domain.learning.*
 import com.google.gson.Gson
 import kotlinx.coroutines.flow.Flow
@@ -77,7 +78,11 @@ class LearningPathRepository @Inject constructor(
             // Check if path already exists
             val existing = learningPathDao.getPathByType(userId, pathType.id)
             if (existing != null) {
-                return Result.Error("You've already started this path")
+                return Result.error(
+                    Exception("You've already started this path"),
+                    "You've already started this path",
+                    ErrorType.VALIDATION
+                )
             }
 
             // Create path with lessons
@@ -88,7 +93,7 @@ class LearningPathRepository @Inject constructor(
 
             Result.Success(mapToLearningPath(pathEntity))
         } catch (e: Exception) {
-            Result.Error("Failed to start path: ${e.message}")
+            Result.error(e, "Failed to start path: ${e.message}", ErrorType.DATABASE)
         }
     }
 
@@ -100,7 +105,7 @@ class LearningPathRepository @Inject constructor(
             learningPathDao.updateLastAccessed(pathId)
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error("Failed to resume path: ${e.message}")
+            Result.error(e, "Failed to resume path: ${e.message}", ErrorType.DATABASE)
         }
     }
 
@@ -124,10 +129,14 @@ class LearningPathRepository @Inject constructor(
             if (lesson != null) {
                 Result.Success(mapToLesson(lesson))
             } else {
-                Result.Error("Lesson not found")
+                Result.error(
+                    Exception("Lesson not found"),
+                    "Lesson not found",
+                    ErrorType.NOT_FOUND
+                )
             }
         } catch (e: Exception) {
-            Result.Error("Failed to get lesson: ${e.message}")
+            Result.error(e, "Failed to get lesson: ${e.message}", ErrorType.DATABASE)
         }
     }
 
@@ -201,7 +210,7 @@ class LearningPathRepository @Inject constructor(
 
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error("Failed to complete lesson: ${e.message}")
+            Result.error(e, "Failed to complete lesson: ${e.message}", ErrorType.DATABASE)
         }
     }
 
@@ -219,7 +228,7 @@ class LearningPathRepository @Inject constructor(
             learningPathDao.insertNote(note)
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error("Failed to save notes: ${e.message}")
+            Result.error(e, "Failed to save notes: ${e.message}", ErrorType.DATABASE)
         }
     }
 
@@ -249,7 +258,7 @@ class LearningPathRepository @Inject constructor(
             val id = learningPathDao.insertReflection(reflection)
             Result.Success(id)
         } catch (e: Exception) {
-            Result.Error("Failed to save reflection: ${e.message}")
+            Result.error(e, "Failed to save reflection: ${e.message}", ErrorType.DATABASE)
         }
     }
 
@@ -279,7 +288,7 @@ class LearningPathRepository @Inject constructor(
             learningPathDao.updateReflectionBookmark(reflectionId, bookmarked)
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error("Failed to bookmark reflection: ${e.message}")
+            Result.error(e, "Failed to bookmark reflection: ${e.message}", ErrorType.DATABASE)
         }
     }
 
@@ -325,7 +334,7 @@ class LearningPathRepository @Inject constructor(
 
             Result.Success(recommendations)
         } catch (e: Exception) {
-            Result.Error("Failed to generate recommendations: ${e.message}")
+            Result.error(e, "Failed to generate recommendations: ${e.message}", ErrorType.AI_SERVICE)
         }
     }
 
@@ -362,13 +371,21 @@ class LearningPathRepository @Inject constructor(
                 if (pathType != null) {
                     startPath(pathType)
                 } else {
-                    Result.Error("Invalid path type")
+                    Result.error(
+                        Exception("Invalid path type"),
+                        "Invalid path type",
+                        ErrorType.VALIDATION
+                    )
                 }
             } else {
-                Result.Error("Recommendation not found")
+                Result.error(
+                    Exception("Recommendation not found"),
+                    "Recommendation not found",
+                    ErrorType.NOT_FOUND
+                )
             }
         } catch (e: Exception) {
-            Result.Error("Failed to accept recommendation: ${e.message}")
+            Result.error(e, "Failed to accept recommendation: ${e.message}", ErrorType.DATABASE)
         }
     }
 
@@ -380,7 +397,7 @@ class LearningPathRepository @Inject constructor(
             learningPathDao.dismissRecommendation(recommendationId)
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error("Failed to dismiss recommendation: ${e.message}")
+            Result.error(e, "Failed to dismiss recommendation: ${e.message}", ErrorType.DATABASE)
         }
     }
 
@@ -423,7 +440,7 @@ class LearningPathRepository @Inject constructor(
             )
             Result.Success(stats)
         } catch (e: Exception) {
-            Result.Error("Failed to get stats: ${e.message}")
+            Result.error(e, "Failed to get stats: ${e.message}", ErrorType.DATABASE)
         }
     }
 
