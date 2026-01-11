@@ -50,6 +50,19 @@ sealed class Result<out T> {
         return this
     }
 
+    /**
+     * Fold function to handle success and error cases.
+     * This provides a way to transform the Result into a single value type.
+     */
+    inline fun <R> fold(
+        onSuccess: (T) -> R,
+        onError: (Error) -> R
+    ): R = when (this) {
+        is Success -> onSuccess(data)
+        is Error -> onError(this)
+        is Loading -> throw IllegalStateException("Cannot fold a Loading result")
+    }
+
     companion object {
         fun <T> success(data: T): Result<T> = Success(data)
 
@@ -127,4 +140,25 @@ suspend inline fun <T> runSuspendCatching(
     } catch (e: Exception) {
         Result.error(e, errorMessage, errorType)
     }
+}
+
+/**
+ * Top-level fold extension function for Result.
+ * Allows folding a Result into a single value by handling both success and error cases.
+ *
+ * Usage:
+ * ```
+ * result.fold(
+ *     onSuccess = { data -> /* handle success */ },
+ *     onError = { error -> /* handle error */ }
+ * )
+ * ```
+ */
+inline fun <T, R> Result<T>.fold(
+    onSuccess: (T) -> R,
+    onError: (Result.Error) -> R
+): R = when (this) {
+    is Result.Success -> onSuccess(data)
+    is Result.Error -> onError(this)
+    is Result.Loading -> throw IllegalStateException("Cannot fold a Loading result")
 }

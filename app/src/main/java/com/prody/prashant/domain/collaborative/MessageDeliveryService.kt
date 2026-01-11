@@ -38,10 +38,9 @@ class MessageDeliveryService @Inject constructor(
                 Log.d(TAG, "Attempting to deliver message ${message.id} via ${message.recipient.method}")
 
                 val result = when (message.recipient.method) {
-                    ContactMethod.IN_APP -> deliverInApp(message)
+                    ContactMethod.APP_USER -> deliverInApp(message)
                     ContactMethod.EMAIL -> deliverViaEmail(message)
                     ContactMethod.PHONE -> deliverViaSMS(message)
-                    else -> DeliveryResult.Failure("Unknown delivery method")
                 }
 
                 when (result) {
@@ -274,7 +273,7 @@ class MessageDeliveryService @Inject constructor(
             )
 
             when (recipient.method) {
-                ContactMethod.IN_APP -> DeliveryResult.Success("In-app delivery available")
+                ContactMethod.APP_USER -> DeliveryResult.Success("In-app delivery available")
                 ContactMethod.EMAIL -> {
                     if (android.util.Patterns.EMAIL_ADDRESS.matcher(recipient.contactValue).matches()) {
                         DeliveryResult.Success("Email address is valid")
@@ -289,7 +288,6 @@ class MessageDeliveryService @Inject constructor(
                         DeliveryResult.Failure("Invalid phone number")
                     }
                 }
-                else -> DeliveryResult.Failure("Unknown delivery method")
             }
         }
     }

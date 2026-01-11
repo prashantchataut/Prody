@@ -424,8 +424,8 @@ class GamificationRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getBloomSummary(): BloomSummary {
-        val seeds = seedDao.getAllSeeds()
-        val bloomedSeeds = seeds.filter { it.hasBloomed() }
+        val seeds = seedDao.getAllSeedsSync()
+        val bloomedSeeds = seeds.filter { it.hasBloomedToday }
         return BloomSummary(
             totalSeeds = seeds.size,
             totalBloomed = bloomedSeeds.size,

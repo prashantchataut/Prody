@@ -16,10 +16,22 @@ interface SeedDao {
     suspend fun getSeedForDate(date: Long, userId: String = "local"): SeedEntity?
 
     @Query("SELECT * FROM daily_seeds WHERE date = :date AND userId = :userId LIMIT 1")
+    suspend fun getSeedByDate(date: Long, userId: String = "local"): SeedEntity?
+
+    @Query("SELECT * FROM daily_seeds WHERE id = :id LIMIT 1")
+    suspend fun getSeedById(id: Long): SeedEntity?
+
+    @Query("SELECT * FROM daily_seeds WHERE date = :date AND userId = :userId LIMIT 1")
     fun observeSeedForDate(date: Long, userId: String = "local"): Flow<SeedEntity?>
+
+    @Query("SELECT * FROM daily_seeds WHERE date = :date AND userId = :userId LIMIT 1")
+    fun observeSeedByDate(date: Long, userId: String = "local"): Flow<SeedEntity?>
 
     @Query("SELECT * FROM daily_seeds WHERE userId = :userId ORDER BY date DESC")
     fun getAllSeeds(userId: String = "local"): Flow<List<SeedEntity>>
+
+    @Query("SELECT * FROM daily_seeds WHERE userId = :userId ORDER BY date DESC")
+    suspend fun getAllSeedsSync(userId: String = "local"): List<SeedEntity>
 
     @Query("SELECT * FROM daily_seeds WHERE userId = :userId ORDER BY date DESC LIMIT :limit")
     fun getRecentSeeds(limit: Int, userId: String = "local"): Flow<List<SeedEntity>>
@@ -63,6 +75,27 @@ interface SeedDao {
 
     @Query("UPDATE daily_seeds SET rewardClaimed = 1 WHERE id = :seedId")
     suspend fun markRewardClaimed(seedId: Long)
+
+    @Query("UPDATE daily_seeds SET state = :state WHERE id = :seedId")
+    suspend fun updateSeedState(seedId: Long, state: String)
+
+    /**
+     * Alternative name for markSeedAsBloomed for repository compatibility
+     */
+    @Query("""
+        UPDATE daily_seeds
+        SET hasBloomedToday = 1,
+            bloomedAt = :bloomedAt,
+            bloomedIn = :bloomedIn,
+            bloomedEntryId = :bloomedEntryId
+        WHERE id = :seedId
+    """)
+    suspend fun bloomSeed(
+        seedId: Long,
+        bloomedAt: Long = System.currentTimeMillis(),
+        bloomedIn: String,
+        bloomedEntryId: Long? = null
+    )
 
     // ==================== DELETE ====================
 

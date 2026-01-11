@@ -1,8 +1,16 @@
 package com.prody.prashant.data.ai
 
 import android.util.Log
-import com.prody.prashant.domain.haven.*
-import com.prody.prashant.domain.intelligence.*
+import com.prody.prashant.domain.haven.ExerciseType
+import com.prody.prashant.domain.haven.HavenAiResponse
+import com.prody.prashant.domain.haven.HavenAiService
+import com.prody.prashant.domain.haven.HavenMessage
+import com.prody.prashant.domain.haven.SessionType
+import com.prody.prashant.domain.intelligence.StressSignal
+import com.prody.prashant.domain.intelligence.StressSignalType
+import com.prody.prashant.domain.intelligence.TrustLevel
+import com.prody.prashant.domain.intelligence.UserContext
+import com.prody.prashant.domain.intelligence.UserContextEngine
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -10,6 +18,10 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
+
+// Type alias to disambiguate between the two HavenContext classes
+private typealias HavenSessionContext = com.prody.prashant.domain.haven.HavenContext
+private typealias SoulLayerHavenContext = com.prody.prashant.domain.intelligence.HavenContext
 
 /**
  * ================================================================================================
@@ -52,7 +64,7 @@ class ContextAwareHavenService @Inject constructor(
     suspend fun startContextAwareSession(
         sessionType: SessionType,
         userName: String?,
-        baseContext: HavenContext
+        baseContext: HavenSessionContext
     ): Result<HavenAiResponse> = withContext(Dispatchers.IO) {
         Log.d(TAG, "Starting context-aware Haven session")
 
@@ -71,7 +83,7 @@ class ContextAwareHavenService @Inject constructor(
      */
     suspend fun continueContextAwareConversation(
         sessionType: SessionType,
-        baseContext: HavenContext,
+        baseContext: HavenSessionContext,
         userMessage: String
     ): Result<HavenAiResponse> = withContext(Dispatchers.IO) {
         Log.d(TAG, "Continuing context-aware conversation")
@@ -87,7 +99,7 @@ class ContextAwareHavenService @Inject constructor(
      */
     fun continueContextAwareConversationStream(
         sessionType: SessionType,
-        baseContext: HavenContext,
+        baseContext: HavenSessionContext,
         userMessage: String
     ): Flow<Result<HavenAiResponse>> = flow {
         Log.d(TAG, "Starting context-aware streaming conversation")
@@ -266,7 +278,7 @@ class ContextAwareHavenService @Inject constructor(
         // Get base exercise suggestion
         val exerciseResult = havenAiService.suggestExercise(
             sessionType,
-            HavenContext(
+            HavenSessionContext(
                 sessionType = sessionType,
                 previousMessages = emptyList(),
                 moodBefore = userContext.dominantMood?.ordinal,
@@ -296,16 +308,16 @@ class ContextAwareHavenService @Inject constructor(
      * Enriches base HavenContext with Soul Layer intelligence.
      */
     private fun enrichHavenContext(
-        baseContext: HavenContext,
-        soulLayerContext: com.prody.prashant.domain.intelligence.HavenContext
-    ): HavenContext {
+        baseContext: HavenSessionContext,
+        soulLayerContext: SoulLayerHavenContext
+    ): HavenSessionContext {
         val userContext = soulLayerContext.userContext
 
         // Create enriched context with additional information
         // Note: We're working with the existing HavenContext structure
         // and enriching it with Soul Layer data
 
-        return HavenContext(
+        return HavenSessionContext(
             sessionType = baseContext.sessionType,
             previousMessages = baseContext.previousMessages,
             moodBefore = baseContext.moodBefore ?: userContext.dominantMood?.ordinal,
@@ -363,7 +375,7 @@ class ContextAwareHavenService @Inject constructor(
     }
 
     private fun generateContextualPrompts(
-        havenContext: com.prody.prashant.domain.intelligence.HavenContext,
+        havenContext: SoulLayerHavenContext,
         userContext: UserContext
     ): List<String> {
         val prompts = mutableListOf<String>()
@@ -400,8 +412,8 @@ class ContextAwareHavenService @Inject constructor(
     }
 
     private fun getApproachReason(
-        approach: com.prody.prashant.domain.intelligence.HavenContext.TherapeuticApproach,
-        havenContext: com.prody.prashant.domain.intelligence.HavenContext
+        approach: SoulLayerHavenContext.TherapeuticApproach,
+        havenContext: SoulLayerHavenContext
     ): String {
         val basedOnHistory = if (havenContext.sessionCount > 0) {
             "Based on our previous conversations, "
@@ -410,23 +422,23 @@ class ContextAwareHavenService @Inject constructor(
         }
 
         return when (approach) {
-            com.prody.prashant.domain.intelligence.HavenContext.TherapeuticApproach.CBT ->
+            SoulLayerHavenContext.TherapeuticApproach.CBT ->
                 "${basedOnHistory}cognitive-behavioral techniques seem to resonate with you."
-            com.prody.prashant.domain.intelligence.HavenContext.TherapeuticApproach.DBT ->
+            SoulLayerHavenContext.TherapeuticApproach.DBT ->
                 "${basedOnHistory}dialectical techniques help you process emotions effectively."
-            com.prody.prashant.domain.intelligence.HavenContext.TherapeuticApproach.MINDFULNESS ->
+            SoulLayerHavenContext.TherapeuticApproach.MINDFULNESS ->
                 "${basedOnHistory}mindfulness practices work well for you."
-            com.prody.prashant.domain.intelligence.HavenContext.TherapeuticApproach.ACT ->
+            SoulLayerHavenContext.TherapeuticApproach.ACT ->
                 "${basedOnHistory}acceptance-based approaches help you find peace."
-            com.prody.prashant.domain.intelligence.HavenContext.TherapeuticApproach.GENERAL ->
+            SoulLayerHavenContext.TherapeuticApproach.GENERAL ->
                 "${basedOnHistory}we'll find what works best for you."
         }
     }
 
     private fun getAlternativeApproaches(
-        primary: com.prody.prashant.domain.intelligence.HavenContext.TherapeuticApproach
-    ): List<com.prody.prashant.domain.intelligence.HavenContext.TherapeuticApproach> {
-        return com.prody.prashant.domain.intelligence.HavenContext.TherapeuticApproach.entries
+        primary: SoulLayerHavenContext.TherapeuticApproach
+    ): List<SoulLayerHavenContext.TherapeuticApproach> {
+        return SoulLayerHavenContext.TherapeuticApproach.entries
             .filter { it != primary }
             .take(2)
     }
@@ -464,7 +476,7 @@ class ContextAwareHavenService @Inject constructor(
 
     private fun hasUsedExerciseBefore(
         exercise: ExerciseType,
-        havenContext: com.prody.prashant.domain.intelligence.HavenContext
+        havenContext: SoulLayerHavenContext
     ): Boolean {
         // This would need to check session history - simplified for now
         return havenContext.sessionCount > 3
@@ -540,9 +552,9 @@ enum class HavenTone {
  * Recommendation for therapeutic approach.
  */
 data class TherapeuticApproachRecommendation(
-    val primaryApproach: com.prody.prashant.domain.intelligence.HavenContext.TherapeuticApproach,
+    val primaryApproach: SoulLayerHavenContext.TherapeuticApproach,
     val reason: String,
-    val alternativeApproaches: List<com.prody.prashant.domain.intelligence.HavenContext.TherapeuticApproach>,
+    val alternativeApproaches: List<SoulLayerHavenContext.TherapeuticApproach>,
     val basedOnHistory: Boolean
 )
 

@@ -192,16 +192,40 @@ interface DailyRitualDao {
     suspend fun getMorningRitualsCompletedCount(userId: String): Int
 
     /**
+     * Alias for getMorningRitualsCompletedCount for repository compatibility
+     */
+    @Query("SELECT COUNT(*) FROM daily_rituals WHERE userId = :userId AND morningCompleted = 1 AND isDeleted = 0")
+    suspend fun getMorningCompletedCount(userId: String): Int
+
+    /**
      * Get count of completed evening rituals
      */
     @Query("SELECT COUNT(*) FROM daily_rituals WHERE userId = :userId AND eveningCompleted = 1 AND isDeleted = 0")
     suspend fun getEveningRitualsCompletedCount(userId: String): Int
 
     /**
+     * Alias for getEveningRitualsCompletedCount for repository compatibility
+     */
+    @Query("SELECT COUNT(*) FROM daily_rituals WHERE userId = :userId AND eveningCompleted = 1 AND isDeleted = 0")
+    suspend fun getEveningCompletedCount(userId: String): Int
+
+    /**
      * Get count of fully completed days (both rituals)
      */
     @Query("SELECT COUNT(*) FROM daily_rituals WHERE userId = :userId AND morningCompleted = 1 AND eveningCompleted = 1 AND isDeleted = 0")
     suspend fun getFullyCompletedDaysCount(userId: String): Int
+
+    /**
+     * Alias for getFullyCompletedDaysCount for repository compatibility
+     */
+    @Query("SELECT COUNT(*) FROM daily_rituals WHERE userId = :userId AND morningCompleted = 1 AND eveningCompleted = 1 AND isDeleted = 0")
+    suspend fun getFullRitualDaysCount(userId: String): Int
+
+    /**
+     * Get total count of completed rituals (morning OR evening)
+     */
+    @Query("SELECT COUNT(*) FROM daily_rituals WHERE userId = :userId AND (morningCompleted = 1 OR eveningCompleted = 1) AND isDeleted = 0")
+    suspend fun getCompletedRitualsCount(userId: String): Int
 
     /**
      * Get ritual completion streak
@@ -217,6 +241,31 @@ interface DailyRitualDao {
         )
     """)
     suspend fun getRitualStreakDays(userId: String, streakStartDate: Long): Int
+
+    /**
+     * Get current streak (number of consecutive days with at least one completed ritual)
+     * This is a simplified implementation that counts recent completed days
+     */
+    @Query("""
+        SELECT COUNT(DISTINCT date) FROM daily_rituals
+        WHERE userId = :userId
+        AND (morningCompleted = 1 OR eveningCompleted = 1)
+        AND isDeleted = 0
+        AND date >= :todayMinus30Days
+    """)
+    suspend fun getCurrentStreak(userId: String, todayMinus30Days: Long = System.currentTimeMillis() - 30L * 24 * 60 * 60 * 1000): Int
+
+    /**
+     * Get number of ritual days this week
+     */
+    @Query("""
+        SELECT COUNT(DISTINCT date) FROM daily_rituals
+        WHERE userId = :userId
+        AND (morningCompleted = 1 OR eveningCompleted = 1)
+        AND isDeleted = 0
+        AND date >= :weekStartDate
+    """)
+    suspend fun getWeekRitualDays(userId: String, weekStartDate: Long): Int
 
     /**
      * Get day ratings distribution for a period

@@ -230,7 +230,13 @@ class DailyRitualRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getDayRatingDistribution(userId: String): Map<String, Int> {
-        val ratingCounts = dailyRitualDao.getDayRatingDistribution(userId)
+        // Get distribution from the last 30 days
+        val since = LocalDate.now()
+            .minusDays(30)
+            .atStartOfDay(ZoneId.systemDefault())
+            .toInstant()
+            .toEpochMilli()
+        val ratingCounts = dailyRitualDao.getDayRatingsDistribution(userId, since)
         return ratingCounts.associate { (it.rating ?: "unrated") to it.count }
     }
 
