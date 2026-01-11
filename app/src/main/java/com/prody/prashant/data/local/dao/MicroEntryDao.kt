@@ -36,6 +36,9 @@ interface MicroEntryDao {
     fun getAllMicroEntries(): Flow<List<MicroEntryEntity>>
 
     @Query("SELECT * FROM micro_entries WHERE userId = :userId AND isDeleted = 0 ORDER BY createdAt DESC")
+    fun getAllMicroEntries(userId: String): Flow<List<MicroEntryEntity>>
+
+    @Query("SELECT * FROM micro_entries WHERE userId = :userId AND isDeleted = 0 ORDER BY createdAt DESC")
     fun getMicroEntriesByUser(userId: String): Flow<List<MicroEntryEntity>>
 
     @Query("SELECT * FROM micro_entries WHERE id = :id AND isDeleted = 0")
@@ -47,6 +50,9 @@ interface MicroEntryDao {
     @Query("SELECT * FROM micro_entries WHERE isDeleted = 0 ORDER BY createdAt DESC LIMIT :limit")
     fun getRecentMicroEntries(limit: Int): Flow<List<MicroEntryEntity>>
 
+    @Query("SELECT * FROM micro_entries WHERE userId = :userId AND isDeleted = 0 ORDER BY createdAt DESC LIMIT :limit")
+    fun getRecentMicroEntries(userId: String, limit: Int): Flow<List<MicroEntryEntity>>
+
     // ==================== DATE RANGE QUERIES ====================
 
     @Query("""
@@ -56,6 +62,14 @@ interface MicroEntryDao {
         ORDER BY createdAt DESC
     """)
     fun getMicroEntriesByDateRange(startDate: Long, endDate: Long): Flow<List<MicroEntryEntity>>
+
+    @Query("""
+        SELECT * FROM micro_entries
+        WHERE userId = :userId AND isDeleted = 0
+        AND createdAt BETWEEN :startDate AND :endDate
+        ORDER BY createdAt DESC
+    """)
+    fun getMicroEntriesByDateRange(userId: String, startDate: Long, endDate: Long): Flow<List<MicroEntryEntity>>
 
     @Query("""
         SELECT * FROM micro_entries
@@ -71,10 +85,16 @@ interface MicroEntryDao {
     @Query("SELECT * FROM micro_entries WHERE mood = :mood AND isDeleted = 0 ORDER BY createdAt DESC")
     fun getMicroEntriesByMood(mood: String): Flow<List<MicroEntryEntity>>
 
+    @Query("SELECT * FROM micro_entries WHERE userId = :userId AND mood = :mood AND isDeleted = 0 ORDER BY createdAt DESC")
+    fun getMicroEntriesByMood(userId: String, mood: String): Flow<List<MicroEntryEntity>>
+
     // ==================== CONTEXT QUERIES ====================
 
     @Query("SELECT * FROM micro_entries WHERE captureContext = :context AND isDeleted = 0 ORDER BY createdAt DESC")
     fun getMicroEntriesByContext(context: String): Flow<List<MicroEntryEntity>>
+
+    @Query("SELECT * FROM micro_entries WHERE userId = :userId AND captureContext = :context AND isDeleted = 0 ORDER BY createdAt DESC")
+    fun getMicroEntriesByContext(userId: String, context: String): Flow<List<MicroEntryEntity>>
 
     @Query("""
         SELECT * FROM micro_entries
@@ -94,6 +114,12 @@ interface MicroEntryDao {
     @Query("SELECT * FROM micro_entries WHERE expandedToEntryId IS NULL AND isDeleted = 0 ORDER BY createdAt DESC")
     fun getUnexpandedMicroEntries(): Flow<List<MicroEntryEntity>>
 
+    @Query("SELECT * FROM micro_entries WHERE userId = :userId AND expandedToEntryId IS NULL AND isDeleted = 0 ORDER BY createdAt DESC")
+    fun getUnexpandedMicroEntries(userId: String): Flow<List<MicroEntryEntity>>
+
+    @Query("SELECT COUNT(*) FROM micro_entries WHERE userId = :userId AND expandedToEntryId IS NULL AND isDeleted = 0")
+    suspend fun getUnexpandedCount(userId: String): Int
+
     /**
      * Mark a micro entry as expanded to a full journal entry
      */
@@ -111,8 +137,17 @@ interface MicroEntryDao {
     @Query("SELECT COUNT(*) FROM micro_entries WHERE isDeleted = 0")
     fun getTotalMicroEntryCount(): Flow<Int>
 
+    @Query("SELECT COUNT(*) FROM micro_entries WHERE userId = :userId AND isDeleted = 0")
+    fun getMicroEntryCount(userId: String): Flow<Int>
+
     @Query("SELECT COUNT(*) FROM micro_entries WHERE createdAt >= :startOfDay AND isDeleted = 0")
     suspend fun getTodayMicroEntryCount(startOfDay: Long): Int
+
+    @Query("SELECT COUNT(*) FROM micro_entries WHERE userId = :userId AND createdAt >= :startOfDay AND isDeleted = 0")
+    suspend fun getTodayMicroEntryCount(userId: String, startOfDay: Long): Int
+
+    @Query("SELECT COUNT(*) FROM micro_entries WHERE userId = :userId AND createdAt >= :startOfWeek AND isDeleted = 0")
+    suspend fun getWeekMicroEntryCount(userId: String, startOfWeek: Long): Int
 
     @Query("SELECT COUNT(*) FROM micro_entries WHERE createdAt >= :since AND isDeleted = 0")
     suspend fun getMicroEntryCountSince(since: Long): Int
@@ -129,6 +164,15 @@ interface MicroEntryDao {
     """)
     fun getMoodDistribution(): Flow<List<MicroEntryMoodCount>>
 
+    @Query("""
+        SELECT mood, COUNT(*) as count
+        FROM micro_entries
+        WHERE userId = :userId AND mood IS NOT NULL AND isDeleted = 0
+        GROUP BY mood
+        ORDER BY count DESC
+    """)
+    suspend fun getMoodDistribution(userId: String): List<MicroEntryMoodCount>
+
     // ==================== SEARCH ====================
 
     @Query("""
@@ -138,6 +182,14 @@ interface MicroEntryDao {
         ORDER BY createdAt DESC
     """)
     fun searchMicroEntries(query: String): Flow<List<MicroEntryEntity>>
+
+    @Query("""
+        SELECT * FROM micro_entries
+        WHERE userId = :userId AND isDeleted = 0
+        AND content LIKE '%' || :query || '%'
+        ORDER BY createdAt DESC
+    """)
+    fun searchMicroEntries(userId: String, query: String): Flow<List<MicroEntryEntity>>
 
     // ==================== SYNC ====================
 
