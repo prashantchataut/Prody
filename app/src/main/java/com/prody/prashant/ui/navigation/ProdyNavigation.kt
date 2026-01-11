@@ -37,6 +37,21 @@ import com.prody.prashant.ui.screens.microjournal.MicroJournalScreen
 import com.prody.prashant.ui.screens.ritual.DailyRitualScreen
 import com.prody.prashant.ui.screens.digest.WeeklyDigestScreen
 import com.prody.prashant.ui.screens.futuremessage.FutureMessageReplyScreen
+import com.prody.prashant.ui.screens.futuremessage.TimeCapsuleRevealScreen
+import com.prody.prashant.ui.screens.haven.HavenHomeScreen
+import com.prody.prashant.ui.screens.haven.HavenChatScreen
+import com.prody.prashant.ui.screens.haven.HavenExerciseScreen
+import com.prody.prashant.domain.haven.SessionType
+import com.prody.prashant.domain.haven.ExerciseType
+import com.prody.prashant.ui.screens.learning.LearningHomeScreen
+import com.prody.prashant.ui.screens.learning.PathDetailScreen
+import com.prody.prashant.ui.screens.learning.LessonScreen
+import com.prody.prashant.ui.screens.deepdive.DeepDiveHomeScreen
+import com.prody.prashant.ui.screens.deepdive.DeepDiveSessionScreen
+import com.prody.prashant.ui.screens.missions.MissionsScreen
+import com.prody.prashant.ui.screens.collaborative.CollaborativeHomeScreen
+import com.prody.prashant.ui.screens.collaborative.ComposeMessageScreen
+import com.prody.prashant.ui.screens.collaborative.MessageDetailScreen
 
 /**
  * Prody Navigation - Screen Routes & Navigation Graph
@@ -109,8 +124,56 @@ sealed class Screen(val route: String) {
     data object TimeCapsuleReveal : Screen("time_capsule/reveal/{messageId}") {
         fun createRoute(messageId: Long) = "time_capsule/reveal/$messageId"
     }
-    data object IdiomDetail : Screen("idiom/{idiomId}") {
-        fun createRoute(idiomId: Long) = "idiom/$idiomId"
+
+    // Haven - Therapeutic Support
+    data object HavenHome : Screen("haven")
+    data object HavenChat : Screen("haven/chat/{sessionType}?sessionId={sessionId}") {
+        fun createRoute(sessionType: SessionType, sessionId: Long? = null): String {
+            val base = "haven/chat/${sessionType.name}"
+            return if (sessionId != null) "$base?sessionId=$sessionId" else base
+        }
+    }
+    data object HavenExercise : Screen("haven/exercise/{exerciseType}") {
+        fun createRoute(exerciseType: ExerciseType) = "haven/exercise/${exerciseType.name}"
+    }
+
+    // Learning Paths - Structured Growth Journeys
+    data object LearningHome : Screen("learning")
+    data object PathDetail : Screen("learning/path/{pathId}") {
+        fun createRoute(pathId: String) = "learning/path/$pathId"
+    }
+    data object Lesson : Screen("learning/path/{pathId}/lesson/{lessonId}") {
+        fun createRoute(pathId: String, lessonId: String) = "learning/path/$pathId/lesson/$lessonId"
+    }
+
+    // Deep Dive Days - Weekly themed reflection sessions
+    data object DeepDiveHome : Screen("deep_dive")
+    data object DeepDiveSession : Screen("deep_dive/session/{deepDiveId}") {
+        fun createRoute(deepDiveId: Long) = "deep_dive/session/$deepDiveId"
+    }
+
+    // Missions - Daily missions & weekly trials
+    data object Missions : Screen("missions")
+
+    // Collaborative Messages - Send messages to contacts
+    data object CollaborativeHome : Screen("collaborative")
+    data object ComposeMessage : Screen("collaborative/compose?contactId={contactId}&occasion={occasion}") {
+        fun createRoute(contactId: String? = null, occasion: String? = null): String {
+            val params = mutableListOf<String>()
+            contactId?.let { params.add("contactId=$it") }
+            occasion?.let { params.add("occasion=$it") }
+            return if (params.isEmpty()) {
+                "collaborative/compose"
+            } else {
+                "collaborative/compose?${params.joinToString("&")}"
+            }
+        }
+    }
+    data object SentMessageDetail : Screen("collaborative/sent/{messageId}") {
+        fun createRoute(messageId: String) = "collaborative/sent/$messageId"
+    }
+    data object ReceivedMessageDetail : Screen("collaborative/received/{messageId}") {
+        fun createRoute(messageId: String) = "collaborative/received/$messageId"
     }
 }
 
@@ -661,16 +724,367 @@ fun ProdyNavHost(
             )
         }
 
-        // Idiom Detail Screen
+        // =====================================================================
+        // HAVEN - THERAPEUTIC SUPPORT
+        // =====================================================================
+
+        // Haven Home - Session type selection and overview
         composable(
-            route = Screen.IdiomDetail.route,
-            arguments = listOf(navArgument("idiomId") { type = NavType.LongType })
+            route = Screen.HavenHome.route,
+            // Calming transition for Haven
+            enterTransition = {
+                fadeIn(tween(400, easing = EaseOutQuart)) + scaleIn(
+                    initialScale = 0.96f,
+                    animationSpec = tween(400, easing = EaseOutQuart)
+                )
+            },
+            popExitTransition = {
+                fadeOut(tween(300)) + scaleOut(
+                    targetScale = 0.96f,
+                    animationSpec = tween(300, easing = EaseInQuart)
+                )
+            }
+        ) {
+            HavenHomeScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onStartSession = { sessionType ->
+                    navController.navigate(Screen.HavenChat.createRoute(sessionType))
+                },
+                onResumeSession = { sessionId, sessionType ->
+                    navController.navigate(Screen.HavenChat.createRoute(sessionType, sessionId))
+                },
+                onStartExercise = { exerciseType ->
+                    navController.navigate(Screen.HavenExercise.createRoute(exerciseType))
+                }
+            )
+        }
+
+        // Haven Chat - Therapeutic conversation
+        composable(
+            route = Screen.HavenChat.route,
+            arguments = listOf(
+                navArgument("sessionType") { type = NavType.StringType },
+                navArgument("sessionId") {
+                    type = NavType.LongType
+                    defaultValue = -1L
+                }
+            ),
+            // Slide up for chat
+            enterTransition = {
+                fadeIn(tween(FADE_DURATION)) + slideInVertically(
+                    initialOffsetY = { it / 4 },
+                    animationSpec = tween(TRANSITION_DURATION, easing = EaseOutQuart)
+                )
+            },
+            popExitTransition = {
+                fadeOut(tween(FADE_DURATION)) + slideOutVertically(
+                    targetOffsetY = { it / 4 },
+                    animationSpec = tween(TRANSITION_DURATION, easing = EaseInQuart)
+                )
+            }
         ) { backStackEntry ->
-            val idiomId = backStackEntry.arguments?.getLong("idiomId") ?: return@composable
-            IdiomDetailScreen(
-                idiomId = idiomId,
+            val sessionTypeStr = backStackEntry.arguments?.getString("sessionType") ?: return@composable
+            val sessionType = try {
+                SessionType.valueOf(sessionTypeStr)
+            } catch (e: IllegalArgumentException) {
+                SessionType.GENERAL
+            }
+            val sessionId = backStackEntry.arguments?.getLong("sessionId")?.takeIf { it != -1L }
+
+            HavenChatScreen(
+                sessionType = sessionType,
+                sessionId = sessionId,
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToExercise = { exerciseType ->
+                    navController.navigate(Screen.HavenExercise.createRoute(exerciseType))
+                },
+                onSessionComplete = {
+                    navController.popBackStack(Screen.HavenHome.route, inclusive = false)
+                }
+            )
+        }
+
+        // Haven Exercise - Guided exercises
+        composable(
+            route = Screen.HavenExercise.route,
+            arguments = listOf(navArgument("exerciseType") { type = NavType.StringType }),
+            // Calm scale transition for exercises
+            enterTransition = {
+                fadeIn(tween(500, easing = EaseOutQuart)) + scaleIn(
+                    initialScale = 0.95f,
+                    animationSpec = tween(500, easing = EaseOutQuart)
+                )
+            },
+            popExitTransition = {
+                fadeOut(tween(400)) + scaleOut(
+                    targetScale = 0.95f,
+                    animationSpec = tween(400, easing = EaseInQuart)
+                )
+            }
+        ) { backStackEntry ->
+            val exerciseTypeStr = backStackEntry.arguments?.getString("exerciseType") ?: return@composable
+            val exerciseType = try {
+                ExerciseType.valueOf(exerciseTypeStr)
+            } catch (e: IllegalArgumentException) {
+                ExerciseType.BOX_BREATHING
+            }
+
+            HavenExerciseScreen(
+                exerciseType = exerciseType,
+                onNavigateBack = { navController.popBackStack() },
+                onExerciseComplete = { navController.popBackStack() }
+            )
+        }
+
+        // =====================================================================
+        // LEARNING PATHS - STRUCTURED GROWTH JOURNEYS
+        // =====================================================================
+
+        // Learning Home - Dashboard with paths and progress
+        composable(Screen.LearningHome.route) {
+            LearningHomeScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToPath = { pathId ->
+                    navController.navigate(Screen.PathDetail.createRoute(pathId))
+                }
+            )
+        }
+
+        // Path Detail - Individual path with lessons
+        composable(
+            route = Screen.PathDetail.route,
+            arguments = listOf(navArgument("pathId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val pathId = backStackEntry.arguments?.getString("pathId") ?: return@composable
+            PathDetailScreen(
+                pathId = pathId,
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToLesson = { lessonId ->
+                    navController.navigate(Screen.Lesson.createRoute(pathId, lessonId))
+                },
+                onPathComplete = { navController.popBackStack() }
+            )
+        }
+
+        // Lesson - Individual lesson content
+        composable(
+            route = Screen.Lesson.route,
+            arguments = listOf(
+                navArgument("pathId") { type = NavType.StringType },
+                navArgument("lessonId") { type = NavType.StringType }
+            ),
+            // Slide up transition for lesson content
+            enterTransition = {
+                fadeIn(tween(FADE_DURATION)) + slideInVertically(
+                    initialOffsetY = { it / 4 },
+                    animationSpec = tween(TRANSITION_DURATION, easing = EaseOutQuart)
+                )
+            },
+            popExitTransition = {
+                fadeOut(tween(FADE_DURATION)) + slideOutVertically(
+                    targetOffsetY = { it / 4 },
+                    animationSpec = tween(TRANSITION_DURATION, easing = EaseInQuart)
+                )
+            }
+        ) { backStackEntry ->
+            val pathId = backStackEntry.arguments?.getString("pathId") ?: return@composable
+            val lessonId = backStackEntry.arguments?.getString("lessonId") ?: return@composable
+            LessonScreen(
+                pathId = pathId,
+                lessonId = lessonId,
+                onNavigateBack = { navController.popBackStack() },
+                onLessonComplete = { navController.popBackStack() }
+            )
+        }
+
+        // =====================================================================
+        // DEEP DIVE DAYS - WEEKLY THEMED REFLECTION SESSIONS
+        // =====================================================================
+
+        // Deep Dive Home - Dashboard with sessions and analytics
+        composable(
+            route = Screen.DeepDiveHome.route,
+            // Calming transition for Deep Dive
+            enterTransition = {
+                fadeIn(tween(400, easing = EaseOutQuart)) + scaleIn(
+                    initialScale = 0.96f,
+                    animationSpec = tween(400, easing = EaseOutQuart)
+                )
+            },
+            popExitTransition = {
+                fadeOut(tween(300)) + scaleOut(
+                    targetScale = 0.96f,
+                    animationSpec = tween(300, easing = EaseInQuart)
+                )
+            }
+        ) {
+            DeepDiveHomeScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToSession = { deepDiveId ->
+                    navController.navigate(Screen.DeepDiveSession.createRoute(deepDiveId))
+                }
+            )
+        }
+
+        // Deep Dive Session - Guided reflection experience
+        composable(
+            route = Screen.DeepDiveSession.route,
+            arguments = listOf(navArgument("deepDiveId") { type = NavType.LongType }),
+            // Immersive transition for session
+            enterTransition = {
+                fadeIn(tween(500, easing = EaseOutQuart)) + scaleIn(
+                    initialScale = 0.94f,
+                    animationSpec = tween(500, easing = EaseOutQuart)
+                )
+            },
+            exitTransition = {
+                fadeOut(tween(300))
+            },
+            popExitTransition = {
+                fadeOut(tween(400)) + scaleOut(
+                    targetScale = 0.94f,
+                    animationSpec = tween(400, easing = EaseInQuart)
+                )
+            }
+        ) { backStackEntry ->
+            val deepDiveId = backStackEntry.arguments?.getLong("deepDiveId") ?: return@composable
+            DeepDiveSessionScreen(
+                deepDiveId = deepDiveId,
+                onNavigateBack = { navController.popBackStack() },
+                onSessionComplete = { navController.popBackStack() }
+            )
+        }
+
+        // =====================================================================
+        // MISSIONS - DAILY MISSIONS & WEEKLY TRIALS
+        // =====================================================================
+
+        composable(Screen.Missions.route) {
+            MissionsScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToJournal = {
+                    navController.navigate(Screen.NewJournalEntry.route)
+                },
+                onNavigateToVocabulary = {
+                    navController.navigate(Screen.VocabularyList.route)
+                },
+                onNavigateToFutureMessage = {
+                    navController.navigate(Screen.WriteMessage.route)
+                }
+            )
+        }
+
+        // =====================================================================
+        // COLLABORATIVE MESSAGES - SEND MESSAGES TO CONTACTS
+        // =====================================================================
+
+        // Collaborative Messages Home - Inbox, Sent, Contacts tabs
+        composable(
+            route = Screen.CollaborativeHome.route,
+            enterTransition = {
+                fadeIn(tween(300, easing = EaseOutQuart)) + slideInHorizontally(
+                    initialOffsetX = { it / 6 },
+                    animationSpec = tween(300, easing = EaseOutQuart)
+                )
+            },
+            popExitTransition = {
+                fadeOut(tween(250)) + slideOutHorizontally(
+                    targetOffsetX = { it / 6 },
+                    animationSpec = tween(250, easing = EaseInQuart)
+                )
+            }
+        ) {
+            CollaborativeHomeScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToCompose = { contact, occasion ->
+                    navController.navigate(
+                        Screen.ComposeMessage.createRoute(
+                            contactId = contact?.id,
+                            occasion = occasion?.id
+                        )
+                    )
+                },
+                onNavigateToSentDetail = { messageId ->
+                    navController.navigate(Screen.SentMessageDetail.createRoute(messageId))
+                },
+                onNavigateToReceivedDetail = { messageId ->
+                    navController.navigate(Screen.ReceivedMessageDetail.createRoute(messageId))
+                }
+            )
+        }
+
+        // Compose Message - Create and send messages
+        composable(
+            route = Screen.ComposeMessage.route,
+            arguments = listOf(
+                navArgument("contactId") {
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
+                },
+                navArgument("occasion") {
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
+                }
+            ),
+            enterTransition = {
+                fadeIn(tween(300)) + slideInVertically(
+                    initialOffsetY = { it / 4 },
+                    animationSpec = tween(300, easing = EaseOutQuart)
+                )
+            },
+            popExitTransition = {
+                fadeOut(tween(250)) + slideOutVertically(
+                    targetOffsetY = { it / 4 },
+                    animationSpec = tween(250, easing = EaseInQuart)
+                )
+            }
+        ) { backStackEntry ->
+            val contactId = backStackEntry.arguments?.getString("contactId")
+            val occasion = backStackEntry.arguments?.getString("occasion")
+
+            ComposeMessageScreen(
+                preSelectedContactId = contactId,
+                preSelectedOccasion = occasion,
+                onNavigateBack = { navController.popBackStack() },
+                onMessageSent = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        // Sent Message Detail
+        composable(
+            route = Screen.SentMessageDetail.route,
+            arguments = listOf(
+                navArgument("messageId") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val messageId = backStackEntry.arguments?.getString("messageId") ?: return@composable
+
+            MessageDetailScreen(
+                messageId = messageId,
+                isReceived = false,
                 onNavigateBack = { navController.popBackStack() }
             )
         }
+
+        // Received Message Detail
+        composable(
+            route = Screen.ReceivedMessageDetail.route,
+            arguments = listOf(
+                navArgument("messageId") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val messageId = backStackEntry.arguments?.getString("messageId") ?: return@composable
+
+            MessageDetailScreen(
+                messageId = messageId,
+                isReceived = true,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
     }
 }

@@ -3,6 +3,7 @@ package com.prody.prashant.domain.gamification
 import android.util.Log
 import com.prody.prashant.domain.common.Result
 import com.prody.prashant.domain.common.fold
+import com.prody.prashant.domain.repository.ActivityType
 import com.prody.prashant.domain.repository.GamificationRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first

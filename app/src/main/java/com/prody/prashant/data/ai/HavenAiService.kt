@@ -305,6 +305,12 @@ Are you safe right now? Can you reach out to one of these resources?
     fun isConfigured(): Boolean = isInitialized && generativeModel != null
 
     /**
+     * Get the generative model or throw if not configured
+     */
+    private fun requireModel(): GenerativeModel = generativeModel
+        ?: throw IllegalStateException("Haven AI Service not configured. Please check THERAPIST_API_KEY.")
+
+    /**
      * Start a new Haven session
      */
     suspend fun startSession(
@@ -323,7 +329,7 @@ This is the start of the session. Greet ${userName ?: "the user"} warmly and ask
 Be brief (2-3 sentences) and inviting. Set a safe, non-judgmental tone.
 """
 
-            val response = generativeModel!!.generateContent(prompt)
+            val response = requireModel().generateContent(prompt)
             val text = response.text?.trim() ?: throw Exception("Empty response from AI")
 
             val crisisDetected = detectCrisis(text)
@@ -392,7 +398,7 @@ Respond to the user's message. Remember:
 Your response:
 """
 
-            val response = generativeModel!!.generateContent(prompt)
+            val response = requireModel().generateContent(prompt)
             val text = response.text?.trim() ?: throw Exception("Empty response from AI")
 
             // Check response for crisis markers
@@ -462,7 +468,7 @@ Your response:
 """
 
             var fullResponse = ""
-            generativeModel!!.generateContentStream(prompt).collect { chunk ->
+            requireModel().generateContentStream(prompt).collect { chunk ->
                 chunk.text?.let { text ->
                     fullResponse += text
 
@@ -556,7 +562,7 @@ $conversation
 Provide insights as a simple list, one per line. No numbers or bullets.
 """
 
-            val response = generativeModel!!.generateContent(prompt)
+            val response = requireModel().generateContent(prompt)
             val text = response.text?.trim() ?: throw Exception("Empty response")
 
             val insights = text.split("\n")
