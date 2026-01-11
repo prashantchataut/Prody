@@ -5,6 +5,8 @@ import android.util.Log
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import com.prody.prashant.data.ai.BuddhaAiService
 import com.prody.prashant.data.ai.GeminiService
 import com.prody.prashant.data.ai.OpenRouterService
@@ -422,5 +424,18 @@ object AppModule {
     @Singleton
     fun providePathContentProvider(): com.prody.prashant.domain.learning.PathContentProvider {
         return com.prody.prashant.domain.learning.PathContentProvider
+    }
+
+    // ============================================================================
+    // SERIALIZATION PROVIDERS
+    // ============================================================================
+
+    @Provides
+    @Singleton
+    fun provideGson(): Gson {
+        return GsonBuilder()
+            .setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+            .serializeNulls()
+            .create()
     }
 }
