@@ -9,6 +9,7 @@ import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId
 import javax.inject.Inject
+import javax.inject.Singleton
 import kotlin.math.roundToInt
 
 /**
@@ -23,6 +24,7 @@ import kotlin.math.roundToInt
  * - Encouraging, not patronizing
  * - Specific, not generic
  */
+@Singleton
 class MonthlyLetterGenerator @Inject constructor(
     private val journalDao: JournalDao,
     private val microEntryDao: MicroEntryDao

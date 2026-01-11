@@ -10,12 +10,14 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.time.YearMonth
 import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * Implementation of MonthlyLetterRepository.
  *
  * Manages monthly letter persistence and generation.
  */
+@Singleton
 class MonthlyLetterRepositoryImpl @Inject constructor(
     private val monthlyLetterDao: MonthlyLetterDao,
     private val letterGenerator: MonthlyLetterGenerator

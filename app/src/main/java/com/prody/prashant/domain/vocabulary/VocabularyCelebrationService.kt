@@ -7,6 +7,7 @@ import com.prody.prashant.data.local.entity.WordUsageEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * Service for celebrating vocabulary word usage in journal entries.
@@ -17,6 +18,7 @@ import javax.inject.Inject
  * - Awards bonus discipline points for vocabulary application
  * - Tracks word usage statistics
  */
+@Singleton
 class VocabularyCelebrationService @Inject constructor(
     private val wordUsageDao: WordUsageDao,
     private val vocabularyLearningDao: VocabularyLearningDao

@@ -12,6 +12,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.util.UUID
 import javax.inject.Inject
+import javax.inject.Singleton
 import kotlin.random.Random
 
 /**
@@ -19,6 +20,7 @@ import kotlin.random.Random
  *
  * Handles all social accountability circle operations with privacy-first approach.
  */
+@Singleton
 class SocialRepositoryImpl @Inject constructor(
     private val socialDao: SocialDao,
     private val privacyManager: SocialPrivacyManager,
