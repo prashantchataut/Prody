@@ -44,6 +44,11 @@ import java.util.Calendar
 class DailyQuoteWidget : GlanceAppWidget() {
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
+        // Security: Rate-limit widget updates to prevent DoS attacks.
+        if (!WidgetUpdateThrottler.shouldUpdate(context, this::class.java)) {
+            return
+        }
+
         val quoteData = getDailyQuoteData()
 
         provideContent {
