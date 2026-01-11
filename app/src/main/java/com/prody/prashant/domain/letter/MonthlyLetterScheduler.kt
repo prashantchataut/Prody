@@ -16,6 +16,7 @@ import kotlinx.coroutines.withContext
 import java.time.YearMonth
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * Scheduler for automatic monthly letter generation.
@@ -23,6 +24,7 @@ import javax.inject.Inject
  * Schedules generation to run on the first day of each month,
  * creating a letter for the previous month.
  */
+@Singleton
 class MonthlyLetterScheduler @Inject constructor(
     @ApplicationContext private val context: Context
 ) {

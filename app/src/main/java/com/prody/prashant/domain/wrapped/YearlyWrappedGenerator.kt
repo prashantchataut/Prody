@@ -8,6 +8,7 @@ import java.time.*
 import java.time.format.TextStyle
 import java.util.*
 import javax.inject.Inject
+import javax.inject.Singleton
 import kotlin.math.roundToInt
 
 /**
@@ -16,6 +17,7 @@ import kotlin.math.roundToInt
  * Analyzes all user data from the specified year to create a beautiful,
  * insightful celebration of their journaling journey.
  */
+@Singleton
 class YearlyWrappedGenerator @Inject constructor(
     private val journalDao: JournalDao,
     private val microEntryDao: MicroEntryDao,

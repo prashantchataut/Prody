@@ -4,6 +4,7 @@ import com.prody.prashant.data.local.entity.VocabularyEntity
 import java.time.Instant
 import java.util.Locale
 import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * Implementation of VocabularyDetector that provides smart word detection.
@@ -14,6 +15,7 @@ import javax.inject.Inject
  * - Ensures word boundary matching (no partial matches)
  * - Extracts complete sentences for context
  */
+@Singleton
 class VocabularyDetectorImpl @Inject constructor(
     private val config: DetectionConfig = DetectionConfig()
 ) : VocabularyDetector {

@@ -7,6 +7,7 @@ import com.prody.prashant.data.local.entity.VocabularyEntity
 import kotlinx.coroutines.flow.first
 import java.util.Locale
 import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * Engine for suggesting relevant vocabulary words while writing.
@@ -18,6 +19,7 @@ import javax.inject.Inject
  * - Non-intrusive: shows only highly relevant suggestions
  * - One-tap insertion into text
  */
+@Singleton
 class VocabularySuggestionEngine @Inject constructor(
     private val vocabularyDao: VocabularyDao,
     private val vocabularyLearningDao: VocabularyLearningDao,
