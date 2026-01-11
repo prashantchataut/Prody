@@ -804,7 +804,7 @@ private fun PremiumSummaryCardsSection(
             value = entries,
             label = "Entries",
             icon = Icons.Filled.AutoStories,
-            iconColor = Color(0xFF6CB4D4), // Serene blue
+            iconColor = MoodCalm, // Serene blue
             surfaceColor = surfaceColor,
             textPrimary = textPrimary,
             textSecondary = textSecondary,

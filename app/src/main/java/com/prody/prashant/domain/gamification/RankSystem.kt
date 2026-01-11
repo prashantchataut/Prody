@@ -6,7 +6,10 @@ import androidx.compose.ui.graphics.Color
  * Rank System - Based on Combined Skill Levels
  *
  * Combined level = Clarity level + Discipline level + Courage level
- * Maximum combined level = 30 (all three skills at level 10)
+ * Maximum combined level = 60 (all three skills at level 20)
+ *
+ * With the updated 20-level skill system, ranks are distributed across
+ * a wider range to create meaningful milestones throughout the journey.
  *
  * This creates a meaningful progression where rank reflects balanced growth
  * across all three domains, not just total points accumulated.
@@ -50,7 +53,7 @@ enum class Rank(
         id = "learner",
         displayName = "Learner",
         description = "One who actively engages with knowledge",
-        minCombinedLevel = 5,
+        minCombinedLevel = 6,
         color = Color(0xFF78909C),
         philosophicalOrigin = "The foundation of all wisdom traditions"
     ),
@@ -58,7 +61,7 @@ enum class Rank(
         id = "initiate",
         displayName = "Initiate",
         description = "One who has committed to the practice",
-        minCombinedLevel = 8,
+        minCombinedLevel = 12,
         color = Color(0xFF607D8B),
         philosophicalOrigin = "Ancient mystery school traditions"
     ),
@@ -66,7 +69,7 @@ enum class Rank(
         id = "student",
         displayName = "Student of Life",
         description = "One who learns from every experience",
-        minCombinedLevel = 11,
+        minCombinedLevel = 18,
         color = Color(0xFF5C6BC0),
         philosophicalOrigin = "Socratic tradition of perpetual learning"
     ),
@@ -74,7 +77,7 @@ enum class Rank(
         id = "practitioner",
         displayName = "Practitioner",
         description = "One who embodies wisdom in daily action",
-        minCombinedLevel = 14,
+        minCombinedLevel = 24,
         color = Color(0xFF26A69A),
         philosophicalOrigin = "Stoic philosophy of praxis"
     ),
@@ -82,7 +85,7 @@ enum class Rank(
         id = "contemplative",
         displayName = "Contemplative",
         description = "One who sees deeply into the nature of things",
-        minCombinedLevel = 17,
+        minCombinedLevel = 30,
         color = Color(0xFF4ECDC4),
         philosophicalOrigin = "Meditative traditions East and West"
     ),
@@ -90,7 +93,7 @@ enum class Rank(
         id = "philosopher",
         displayName = "Philosopher",
         description = "A lover of wisdom who questions and reflects",
-        minCombinedLevel = 20,
+        minCombinedLevel = 36,
         color = Color(0xFF6B5CE7),
         philosophicalOrigin = "Greek: philos (lover) + sophia (wisdom)"
     ),
@@ -98,7 +101,7 @@ enum class Rank(
         id = "sage",
         displayName = "Sage",
         description = "One whose wisdom has been tempered by time",
-        minCombinedLevel = 24,
+        minCombinedLevel = 45,
         color = Color(0xFFAC32E4),
         philosophicalOrigin = "Universal archetype of the wise elder"
     ),
@@ -106,7 +109,7 @@ enum class Rank(
         id = "luminary",
         displayName = "Luminary",
         description = "One whose presence illuminates the path for others",
-        minCombinedLevel = 27,
+        minCombinedLevel = 54,
         color = Color(0xFFD4AF37),
         philosophicalOrigin = "Latin: lumen - light"
     ),
@@ -114,14 +117,14 @@ enum class Rank(
         id = "awakened",
         displayName = "Awakened",
         description = "One who has achieved mastery across all domains",
-        minCombinedLevel = 30,
-        color = Color(0xFFD4AF37),
+        minCombinedLevel = 60,
+        color = Color(0xFFFFD700),
         philosophicalOrigin = "Buddhist concept of Bodhi - full enlightenment"
     );
 
     companion object {
-        /** Maximum combined level (all three skills at level 10) */
-        const val MAX_COMBINED_LEVEL = 30
+        /** Maximum combined level (all three skills at level 20) */
+        const val MAX_COMBINED_LEVEL = 60
 
         /**
          * Determines the appropriate rank for a given combined level.
@@ -136,9 +139,9 @@ enum class Rank(
         /**
          * Determines rank from individual skill levels.
          *
-         * @param clarityLevel Level 1-10
-         * @param disciplineLevel Level 1-10
-         * @param courageLevel Level 1-10
+         * @param clarityLevel Level 1-20
+         * @param disciplineLevel Level 1-20
+         * @param courageLevel Level 1-20
          */
         fun fromSkillLevels(clarityLevel: Int, disciplineLevel: Int, courageLevel: Int): Rank {
             val combined = clarityLevel + disciplineLevel + courageLevel
