@@ -9,6 +9,11 @@ on:
     branches: [ main, develop ]
   workflow_dispatch:
 
+env:
+  # Global memory settings for all Gradle operations
+  GRADLE_OPTS: "-Xmx4g -XX:MaxMetaspaceSize=512m -XX:+HeapDumpOnOutOfMemoryError -XX:+UseParallelGC -Dfile.encoding=UTF-8"
+  JAVA_OPTS: "-Xmx4g"
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -22,7 +27,12 @@ jobs:
       with:
         java-version: '17'
         distribution: 'temurin'
-        cache: gradle
+
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v3
+      with:
+        gradle-home-cache-cleanup: true
+        cache-read-only: false
 
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
@@ -70,20 +80,28 @@ jobs:
           echo $ENCODED_STRING | base64 -di > app/prody-release.jks
         fi
 
+    - name: Clean build directory
+      run: ./gradlew clean --no-configuration-cache
+
     - name: Build Debug APK
-      run: ./gradlew assembleDebug --stacktrace
+      run: ./gradlew assembleDebug --stacktrace --no-configuration-cache
+      env:
+        GRADLE_OPTS: "-Xmx4g -XX:MaxMetaspaceSize=512m -XX:+HeapDumpOnOutOfMemoryError -XX:+UseParallelGC -Dfile.encoding=UTF-8"
+        JAVA_OPTS: "-Xmx4g"
 
     - name: Build Release APK
       env:
         KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
         KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
         KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        GRADLE_OPTS: "-Xmx4g -XX:MaxMetaspaceSize=512m -XX:+HeapDumpOnOutOfMemoryError -XX:+UseParallelGC -Dfile.encoding=UTF-8"
+        JAVA_OPTS: "-Xmx4g"
       run: |
         # Use default values for open source builds
         export KEYSTORE_PASSWORD="${KEYSTORE_PASSWORD:-prody2024}"
         export KEY_ALIAS="${KEY_ALIAS:-prody}"
         export KEY_PASSWORD="${KEY_PASSWORD:-prody2024}"
-        ./gradlew assembleRelease --stacktrace
+        ./gradlew assembleRelease --stacktrace --no-configuration-cache
 
     - name: Upload Debug APK
       uses: actions/upload-artifact@v4
@@ -150,7 +168,12 @@ jobs:
       with:
         java-version: '17'
         distribution: 'temurin'
-        cache: gradle
+
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v3
+      with:
+        gradle-home-cache-cleanup: true
+        cache-read-only: false
 
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
@@ -174,7 +197,10 @@ jobs:
         fi
 
     - name: Run Lint
-      run: ./gradlew lint --stacktrace
+      run: ./gradlew lintDebug --stacktrace --no-configuration-cache
+      env:
+        GRADLE_OPTS: "-Xmx4g -XX:MaxMetaspaceSize=512m -XX:+HeapDumpOnOutOfMemoryError -XX:+UseParallelGC -Dfile.encoding=UTF-8"
+        JAVA_OPTS: "-Xmx4g"
 
     - name: Upload Lint Report
       uses: actions/upload-artifact@v4
@@ -196,7 +222,12 @@ jobs:
       with:
         java-version: '17'
         distribution: 'temurin'
-        cache: gradle
+
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v3
+      with:
+        gradle-home-cache-cleanup: true
+        cache-read-only: false
 
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
@@ -220,7 +251,10 @@ jobs:
         fi
 
     - name: Run Unit Tests
-      run: ./gradlew test --stacktrace
+      run: ./gradlew testDebugUnitTest --stacktrace --no-configuration-cache
+      env:
+        GRADLE_OPTS: "-Xmx4g -XX:MaxMetaspaceSize=512m -XX:+HeapDumpOnOutOfMemoryError -XX:+UseParallelGC -Dfile.encoding=UTF-8"
+        JAVA_OPTS: "-Xmx4g"
 
     - name: Upload Test Reports
       uses: actions/upload-artifact@v4
