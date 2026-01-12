@@ -1,6 +1,7 @@
 package com.prody.prashant.di
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.util.Log
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -282,9 +283,10 @@ object AppModule {
     @Provides
     @Singleton
     fun providePreferencesManager(
-        @ApplicationContext context: Context
+        @ApplicationContext context: Context,
+        sharedPreferences: SharedPreferences
     ): PreferencesManager {
-        return PreferencesManager(context)
+        return PreferencesManager(context, sharedPreferences)
     }
 
     @Provides
