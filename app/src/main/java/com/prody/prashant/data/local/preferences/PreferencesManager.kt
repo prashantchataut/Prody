@@ -1,13 +1,16 @@
 package com.prody.prashant.data.local.preferences
 
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.runBlocking
 import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -16,7 +19,8 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
 
 @Singleton
 class PreferencesManager @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val sharedPreferences: SharedPreferences
 ) {
     private val dataStore = context.dataStore
 
@@ -143,6 +147,30 @@ class PreferencesManager @Inject constructor(
     }
 
     // Onboarding
+    fun isOnboardingCompleted(): Boolean {
+        // First, check the fast, synchronous SharedPreferences
+        if (sharedPreferences.contains(PreferencesKeys.ONBOARDING_COMPLETED.name)) {
+            return sharedPreferences.getBoolean(PreferencesKeys.ONBOARDING_COMPLETED.name, false)
+        }
+
+        // If not in SharedPreferences, perform a one-time migration from DataStore.
+        // runBlocking is acceptable here as this is a critical, one-time operation
+        // that must complete before the UI can proceed.
+        val completed = runBlocking {
+            try {
+                onboardingCompleted.first()
+            } catch (e: Exception) {
+                // If DataStore fails, default to false
+                false
+            }
+        }
+
+        // Write the migrated value to SharedPreferences for future fast access
+        sharedPreferences.edit().putBoolean(PreferencesKeys.ONBOARDING_COMPLETED.name, completed).apply()
+
+        return completed
+    }
+
     val onboardingCompleted: Flow<Boolean> = dataStore.data
         .catch { exception ->
             if (exception is IOException) emit(emptyPreferences())
@@ -153,6 +181,8 @@ class PreferencesManager @Inject constructor(
         }
 
     suspend fun setOnboardingCompleted(completed: Boolean) {
+        // Write to both SharedPreferences and DataStore for consistency
+        sharedPreferences.edit().putBoolean(PreferencesKeys.ONBOARDING_COMPLETED.name, completed).apply()
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.ONBOARDING_COMPLETED] = completed
         }
