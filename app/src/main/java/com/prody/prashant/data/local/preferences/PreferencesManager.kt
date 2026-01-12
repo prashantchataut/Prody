@@ -1,13 +1,16 @@
 package com.prody.prashant.data.local.preferences
 
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.runBlocking
 import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -16,13 +19,15 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
 
 @Singleton
 class PreferencesManager @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val sharedPreferences: SharedPreferences
 ) {
     private val dataStore = context.dataStore
 
     // Keys
     private object PreferencesKeys {
         val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
+        const val ONBOARDING_COMPLETED_SYNC = "onboarding_completed_sync"
         val THEME_MODE = stringPreferencesKey("theme_mode")
         val DYNAMIC_COLORS = booleanPreferencesKey("dynamic_colors")
         val NOTIFICATIONS_ENABLED = booleanPreferencesKey("notifications_enabled")
@@ -152,10 +157,29 @@ class PreferencesManager @Inject constructor(
             preferences[PreferencesKeys.ONBOARDING_COMPLETED] ?: false
         }
 
+    fun getOnboardingCompletedSync(): Boolean {
+        // First, check the fast SharedPreferences
+        if (sharedPreferences.contains(PreferencesKeys.ONBOARDING_COMPLETED_SYNC)) {
+            return sharedPreferences.getBoolean(PreferencesKeys.ONBOARDING_COMPLETED_SYNC, false)
+        }
+
+        // If not found, migrate from DataStore blocking (one-time operation)
+        val valueFromDataStore = runBlocking {
+            onboardingCompleted.first()
+        }
+
+        // Save to SharedPreferences for future fast access
+        sharedPreferences.edit().putBoolean(PreferencesKeys.ONBOARDING_COMPLETED_SYNC, valueFromDataStore).apply()
+
+        return valueFromDataStore
+    }
+
     suspend fun setOnboardingCompleted(completed: Boolean) {
+        // Write to both storages for consistency
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.ONBOARDING_COMPLETED] = completed
         }
+        sharedPreferences.edit().putBoolean(PreferencesKeys.ONBOARDING_COMPLETED_SYNC, completed).apply()
     }
 
     // Theme
