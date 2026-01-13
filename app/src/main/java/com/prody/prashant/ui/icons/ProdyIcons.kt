@@ -1878,67 +1878,6 @@ object ProdyIcons {
 
     val Diversity3: ImageVector by lazy { Person }
 
-    val Visibility: ImageVector by lazy {
-        createIcon("Visibility") {
-            path(fill = SolidColor(Color.Black)) {
-                moveTo(12f, 4.5f)
-                curveTo(7f, 4.5f, 2.73f, 7.61f, 1f, 12f)
-                curveToRelative(1.73f, 4.39f, 6f, 7.5f, 11f, 7.5f)
-                reflectiveCurveToRelative(9.27f, -3.11f, 11f, -7.5f)
-                curveToRelative(-1.73f, -4.39f, -6f, -7.5f, -11f, -7.5f)
-                close()
-                moveTo(12f, 17f)
-                curveToRelative(-2.76f, 0f, -5f, -2.24f, -5f, -5f)
-                reflectiveCurveToRelative(2.24f, -5f, 5f, -5f)
-                reflectiveCurveToRelative(5f, 2.24f, 5f, 5f)
-                reflectiveCurveToRelative(-2.24f, 5f, -5f, 5f)
-                close()
-                moveTo(12f, 9f)
-                curveToRelative(-1.66f, 0f, -3f, 1.34f, -3f, 3f)
-                reflectiveCurveToRelative(1.34f, 3f, 3f, 3f)
-                reflectiveCurveToRelative(3f, -1.34f, 3f, -3f)
-                reflectiveCurveToRelative(-1.34f, -3f, -3f, -3f)
-                close()
-            }
-        }
-    }
-
-    val FitnessCenter: ImageVector by lazy {
-        createIcon("FitnessCenter") {
-            path(fill = SolidColor(Color.Black)) {
-                moveTo(20.57f, 14.86f)
-                lineTo(22f, 13.43f)
-                lineTo(20.57f, 12f)
-                lineTo(17f, 15.57f)
-                lineTo(8.43f, 7f)
-                lineTo(12f, 3.43f)
-                lineTo(10.57f, 2f)
-                lineTo(9.14f, 3.43f)
-                lineTo(7.71f, 2f)
-                lineTo(5.57f, 4.14f)
-                lineTo(4.14f, 2.71f)
-                lineTo(2.71f, 4.14f)
-                lineToRelative(1.43f, 1.43f)
-                lineTo(2f, 7.71f)
-                lineToRelative(1.43f, 1.43f)
-                lineTo(2f, 10.57f)
-                lineTo(3.43f, 12f)
-                lineTo(7f, 8.43f)
-                lineTo(15.57f, 17f)
-                lineTo(12f, 20.57f)
-                lineTo(13.43f, 22f)
-                lineToRelative(1.43f, -1.43f)
-                lineTo(16.29f, 22f)
-                lineToRelative(2.14f, -2.14f)
-                lineToRelative(1.43f, 1.43f)
-                lineToRelative(1.43f, -1.43f)
-                lineToRelative(-1.43f, -1.43f)
-                lineTo(22f, 16.29f)
-                close()
-            }
-        }
-    }
-
     // Outlined versions - these are aliased to filled versions since we don't have the outlined library
     // In practice, the visual difference is minimal for most use cases
     object Outlined {

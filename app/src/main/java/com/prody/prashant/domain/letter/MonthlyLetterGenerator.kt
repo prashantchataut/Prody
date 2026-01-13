@@ -285,6 +285,10 @@ class MonthlyLetterGenerator @Inject constructor(
             MoodTrend.IMPROVING -> parts.add("Your mood lifted as the month went on. I noticed.")
             MoodTrend.DECLINING -> parts.add("Things got heavier toward the end. That's worth noting.")
             MoodTrend.STABLE -> parts.add("Your emotional state stayed pretty consistent.")
+            MoodTrend.VOLATILE -> parts.add("Your emotions went through many shifts this month.")
+            MoodTrend.VARIABLE -> parts.add("You experienced quite a range of emotions this month.")
+            MoodTrend.FLUCTUATING -> parts.add("Your mood fluctuated throughout the month.")
+            MoodTrend.INSUFFICIENT_DATA -> parts.add("I'm still learning your patterns.")
         }
 
         return parts.joinToString(" ")

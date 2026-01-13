@@ -177,6 +177,12 @@ Write ONLY the reflection, nothing else. Make it feel like you actually read the
                     }
                 }
             }
+            MoodTrend.VOLATILE, MoodTrend.VARIABLE, MoodTrend.FLUCTUATING -> {
+                insights.add("Your emotions have been shifting this week. Notice what triggers these changes.")
+            }
+            MoodTrend.INSUFFICIENT_DATA -> {
+                // Not enough data yet, skip mood trend insight
+            }
         }
 
         // Writing frequency insights

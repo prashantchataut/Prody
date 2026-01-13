@@ -5,6 +5,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import com.prody.prashant.data.local.preferences.PreferencesManager
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 /**
  * QuietModeExtensions - Helper extensions for using Quiet Mode throughout the app
@@ -80,7 +81,7 @@ inline fun Boolean.whenQuietModeInactive(block: () -> Unit) {
  * Helper function to get a Flow that emits whether a specific feature should be shown.
  */
 fun PreferencesManager.shouldShowFeature(feature: Feature): Flow<Boolean> {
-    return this.quietModeEnabled.kotlinx.coroutines.flow.map { isActive ->
+    return this.quietModeEnabled.map { isActive ->
         QuietModeFeatures.shouldShowFeature(feature, isActive)
     }
 }

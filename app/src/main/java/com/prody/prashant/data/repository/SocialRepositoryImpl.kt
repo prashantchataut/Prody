@@ -153,7 +153,7 @@ class SocialRepositoryImpl @Inject constructor(
             notifyCircleMembers(
                 circle.id,
                 userId,
-                NotificationType.NEW_MEMBER,
+                SocialNotificationType.NEW_MEMBER,
                 "New member joined",
                 "$displayName joined ${circle.name}"
             )
@@ -483,7 +483,7 @@ class SocialRepositoryImpl @Inject constructor(
                 CircleNotificationEntity(
                     userId = toUserId,
                     circleId = circleId,
-                    notificationType = NotificationType.NUDGE.name,
+                    notificationType = SocialNotificationType.NUDGE.name,
                     title = "Nudge from $fromDisplayName",
                     message = message ?: nudgeType.defaultMessage,
                     actionType = NotificationAction.RESPOND_NUDGE.name,
@@ -578,7 +578,7 @@ class SocialRepositoryImpl @Inject constructor(
             notifyCircleMembers(
                 circleId,
                 userId,
-                NotificationType.CHALLENGE_UPDATE,
+                SocialNotificationType.CHALLENGE_UPDATE,
                 "New Challenge",
                 "A new challenge '$title' has been created!"
             )
@@ -899,7 +899,7 @@ class SocialRepositoryImpl @Inject constructor(
     private suspend fun notifyCircleMembers(
         circleId: String,
         excludeUserId: String,
-        type: NotificationType,
+        type: SocialNotificationType,
         title: String,
         message: String
     ) {
@@ -1069,7 +1069,7 @@ private fun CircleNotificationEntity.toDomain(): CircleNotification {
     return CircleNotification(
         id = id,
         circleId = circleId,
-        type = NotificationType.fromString(notificationType),
+        type = SocialNotificationType.fromString(notificationType),
         title = title,
         message = message,
         actionType = NotificationAction.fromString(actionType),
