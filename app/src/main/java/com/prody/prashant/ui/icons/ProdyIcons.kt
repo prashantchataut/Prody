@@ -1977,4 +1977,235 @@ object ProdyIcons {
 
     // The "let" is probably a typo - it's not a real icon
     val let: ImageVector by lazy { Info }
+
+    // =========================================================================
+    // Additional missing icons for UI screens
+    // These are aliased to semantically similar existing icons
+    // =========================================================================
+
+    // Email/Communication icons
+    val AlternateEmail: ImageVector by lazy { Email }
+
+    // Analytics/Data icons
+    val Analytics: ImageVector by lazy { BarChart }
+
+    // Document/Content icons
+    val Article: ImageVector by lazy { MenuBook }
+    val StickyNote2: ImageVector by lazy { NoteAlt }
+    val Summarize: ImageVector by lazy { MenuBook }
+
+    // Calendar/Time icons
+    val CalendarToday: ImageVector by lazy { CalendarMonth }
+
+    // Shape/UI icons
+    val Circle: ImageVector by lazy {
+        createIcon("Circle") {
+            path(fill = SolidColor(Color.Black)) {
+                moveTo(12f, 2f)
+                curveTo(6.47f, 2f, 2f, 6.47f, 2f, 12f)
+                reflectiveCurveToRelative(4.47f, 10f, 10f, 10f)
+                reflectiveCurveToRelative(10f, -4.47f, 10f, -10f)
+                reflectiveCurveTo(17.53f, 2f, 12f, 2f)
+                close()
+            }
+        }
+    }
+
+    // Contact/People icons
+    val Contacts: ImageVector by lazy { Person }
+
+    // Fitness/Activity icons
+    val FitnessCenter: ImageVector by lazy {
+        createIcon("FitnessCenter") {
+            path(fill = SolidColor(Color.Black)) {
+                moveTo(20.57f, 14.86f)
+                lineTo(22f, 13.43f)
+                lineTo(20.57f, 12f)
+                lineTo(17f, 15.57f)
+                lineTo(8.43f, 7f)
+                lineTo(12f, 3.43f)
+                lineTo(10.57f, 2f)
+                lineTo(9.14f, 3.43f)
+                lineTo(7.71f, 2f)
+                lineTo(5.57f, 4.14f)
+                lineTo(4.14f, 2.71f)
+                lineTo(2.71f, 4.14f)
+                lineToRelative(1.43f, 1.43f)
+                lineTo(2f, 7.71f)
+                lineToRelative(1.43f, 1.43f)
+                lineTo(2f, 10.57f)
+                lineTo(3.43f, 12f)
+                lineTo(7f, 8.43f)
+                lineTo(15.57f, 17f)
+                lineTo(12f, 20.57f)
+                lineTo(13.43f, 22f)
+                lineToRelative(1.43f, -1.43f)
+                lineToRelative(1.43f, 1.43f)
+                lineToRelative(2.14f, -2.14f)
+                lineToRelative(1.43f, 1.43f)
+                lineToRelative(1.43f, -1.43f)
+                lineToRelative(-1.43f, -1.43f)
+                lineTo(22f, 16.29f)
+                close()
+            }
+        }
+    }
+
+    // Health/Safety icons
+    val HealthAndSafety: ImageVector by lazy { Shield }
+
+    // Inventory/Storage icons
+    val Inventory2: ImageVector by lazy { Dashboard }
+
+    // Loop/Repeat icons
+    val Loop: ImageVector by lazy { Refresh }
+
+    // Menu/Options icons
+    val MoreHoriz: ImageVector by lazy {
+        createIcon("MoreHoriz") {
+            path(fill = SolidColor(Color.Black)) {
+                moveTo(6f, 10f)
+                curveToRelative(-1.1f, 0f, -2f, 0.9f, -2f, 2f)
+                reflectiveCurveToRelative(0.9f, 2f, 2f, 2f)
+                reflectiveCurveToRelative(2f, -0.9f, 2f, -2f)
+                reflectiveCurveToRelative(-0.9f, -2f, -2f, -2f)
+                close()
+                moveTo(18f, 10f)
+                curveToRelative(-1.1f, 0f, -2f, 0.9f, -2f, 2f)
+                reflectiveCurveToRelative(0.9f, 2f, 2f, 2f)
+                reflectiveCurveToRelative(2f, -0.9f, 2f, -2f)
+                reflectiveCurveToRelative(-0.9f, -2f, -2f, -2f)
+                close()
+                moveTo(12f, 10f)
+                curveToRelative(-1.1f, 0f, -2f, 0.9f, -2f, 2f)
+                reflectiveCurveToRelative(0.9f, 2f, 2f, 2f)
+                reflectiveCurveToRelative(2f, -0.9f, 2f, -2f)
+                reflectiveCurveToRelative(-0.9f, -2f, -2f, -2f)
+                close()
+            }
+        }
+    }
+
+    // Expand/Fullscreen icons
+    val OpenInFull: ImageVector by lazy {
+        createIcon("OpenInFull") {
+            path(fill = SolidColor(Color.Black)) {
+                moveTo(21f, 11f)
+                verticalLineTo(3f)
+                horizontalLineToRelative(-8f)
+                lineToRelative(3.29f, 3.29f)
+                lineToRelative(-10f, 10f)
+                lineTo(3f, 13f)
+                verticalLineToRelative(8f)
+                horizontalLineToRelative(8f)
+                lineToRelative(-3.29f, -3.29f)
+                lineToRelative(10f, -10f)
+                close()
+            }
+        }
+    }
+
+    // Quiz/Question icons
+    val Quiz: ImageVector by lazy { Help }
+
+    // Shuffle/Randomize icons
+    val Shuffle: ImageVector by lazy {
+        createIcon("Shuffle") {
+            path(fill = SolidColor(Color.Black)) {
+                moveTo(10.59f, 9.17f)
+                lineTo(5.41f, 4f)
+                lineTo(4f, 5.41f)
+                lineToRelative(5.17f, 5.17f)
+                close()
+                moveTo(14.5f, 4f)
+                lineToRelative(2.04f, 2.04f)
+                lineTo(4f, 18.59f)
+                lineTo(5.41f, 20f)
+                lineTo(17.96f, 7.46f)
+                lineTo(20f, 9.5f)
+                verticalLineTo(4f)
+                close()
+                moveTo(14.83f, 13.41f)
+                lineToRelative(-1.41f, 1.41f)
+                lineToRelative(3.13f, 3.13f)
+                lineTo(14.5f, 20f)
+                horizontalLineTo(20f)
+                verticalLineToRelative(-5.5f)
+                lineToRelative(-2.04f, 2.04f)
+                close()
+            }
+        }
+    }
+
+    // Swap/Exchange icons
+    val SwapHoriz: ImageVector by lazy {
+        createIcon("SwapHoriz") {
+            path(fill = SolidColor(Color.Black)) {
+                moveTo(6.99f, 11f)
+                lineTo(3f, 15f)
+                lineToRelative(3.99f, 4f)
+                verticalLineToRelative(-3f)
+                horizontalLineTo(14f)
+                verticalLineToRelative(-2f)
+                horizontalLineTo(6.99f)
+                close()
+                moveTo(21f, 9f)
+                lineToRelative(-3.99f, -4f)
+                verticalLineToRelative(3f)
+                horizontalLineTo(10f)
+                verticalLineToRelative(2f)
+                horizontalLineToRelative(7.01f)
+                verticalLineToRelative(3f)
+                close()
+            }
+        }
+    }
+
+    // Tag/Label icons
+    val Tag: ImageVector by lazy { LocalOffer }
+
+    // Tips/Help icons
+    val Tips: ImageVector by lazy { Lightbulb }
+
+    // Trend icons
+    val TrendingFlat: ImageVector by lazy {
+        createIcon("TrendingFlat") {
+            path(fill = SolidColor(Color.Black)) {
+                moveTo(22f, 12f)
+                lineToRelative(-4f, -4f)
+                verticalLineToRelative(3f)
+                horizontalLineTo(3f)
+                verticalLineToRelative(2f)
+                horizontalLineToRelative(15f)
+                verticalLineToRelative(3f)
+                close()
+            }
+        }
+    }
+
+    // Visibility icons
+    val Visibility: ImageVector by lazy {
+        createIcon("Visibility") {
+            path(fill = SolidColor(Color.Black)) {
+                moveTo(12f, 4.5f)
+                curveTo(7f, 4.5f, 2.73f, 7.61f, 1f, 12f)
+                curveToRelative(1.73f, 4.39f, 6f, 7.5f, 11f, 7.5f)
+                reflectiveCurveToRelative(9.27f, -3.11f, 11f, -7.5f)
+                curveToRelative(-1.73f, -4.39f, -6f, -7.5f, -11f, -7.5f)
+                close()
+                moveTo(12f, 17f)
+                curveToRelative(-2.76f, 0f, -5f, -2.24f, -5f, -5f)
+                reflectiveCurveToRelative(2.24f, -5f, 5f, -5f)
+                reflectiveCurveToRelative(5f, 2.24f, 5f, 5f)
+                reflectiveCurveToRelative(-2.24f, 5f, -5f, 5f)
+                close()
+                moveTo(12f, 9f)
+                curveToRelative(-1.66f, 0f, -3f, 1.34f, -3f, 3f)
+                reflectiveCurveToRelative(1.34f, 3f, 3f, 3f)
+                reflectiveCurveToRelative(3f, -1.34f, 3f, -3f)
+                reflectiveCurveToRelative(-1.34f, -3f, -3f, -3f)
+                close()
+            }
+        }
+    }
 }
