@@ -372,7 +372,8 @@ class YearlyWrappedGenerator @Inject constructor(
                 evolution = when {
                     entriesCount > 10 -> GrowthEvolution.BREAKTHROUGH
                     entriesCount > 5 -> GrowthEvolution.STEADY
-                    else -> GrowthEvolution.EMERGING
+                    entriesCount > 2 -> GrowthEvolution.EMERGING
+                    else -> GrowthEvolution.CHALLENGED
                 }
             )
         }
@@ -552,6 +553,9 @@ class YearlyWrappedGenerator @Inject constructor(
                 MoodTrend.STABLE -> append("You maintained emotional stability throughout the year. ")
                 MoodTrend.DECLINING -> append("You faced challenges this year, and still kept showing up. ")
                 MoodTrend.FLUCTUATING -> append("You experienced a full spectrum of emotions this year. ")
+                MoodTrend.VOLATILE -> append("You experienced a full spectrum of emotions this year. ")
+                MoodTrend.VARIABLE -> append("Your emotions varied throughout the year. ")
+                MoodTrend.INSUFFICIENT_DATA -> append("You're building your emotional awareness journey. ")
             }
             append("That takes courage.")
         }
@@ -632,6 +636,9 @@ class YearlyWrappedGenerator @Inject constructor(
                 MoodTrend.STABLE -> "Finding my emotional balance"
                 MoodTrend.DECLINING -> "Facing challenges with courage"
                 MoodTrend.FLUCTUATING -> "Feeling all the feelings"
+                MoodTrend.VOLATILE -> "Feeling all the feelings"
+                MoodTrend.VARIABLE -> "Experiencing emotional variety"
+                MoodTrend.INSUFFICIENT_DATA -> "Building emotional awareness"
             },
             stat = "${moodJourney.moodVariety} different moods",
             backgroundGradient = listOf("#6CB4D4", "#42A5F5", "#7EC8A3")
