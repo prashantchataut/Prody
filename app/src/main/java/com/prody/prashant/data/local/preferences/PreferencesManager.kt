@@ -1,13 +1,16 @@
 package com.prody.prashant.data.local.preferences
 
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.runBlocking
 import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -16,9 +19,14 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
 
 @Singleton
 class PreferencesManager @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val sharedPreferences: SharedPreferences
 ) {
     private val dataStore = context.dataStore
+
+    private object SharedPrefsKeys {
+        const val ONBOARDING_COMPLETED = "onboarding_completed_sync"
+    }
 
     // Keys
     private object PreferencesKeys {
@@ -143,6 +151,11 @@ class PreferencesManager @Inject constructor(
     }
 
     // Onboarding
+    /**
+     * [NEVER_USE_IN_UI] This is the slow, async Flow for onboarding status.
+     * It's preserved for existing consumers but should NOT be used for UI-critical paths
+     * like the splash screen, which need synchronous access.
+     */
     val onboardingCompleted: Flow<Boolean> = dataStore.data
         .catch { exception ->
             if (exception is IOException) emit(emptyPreferences())
@@ -152,7 +165,41 @@ class PreferencesManager @Inject constructor(
             preferences[PreferencesKeys.ONBOARDING_COMPLETED] ?: false
         }
 
+    /**
+     * [PERFORMANCE] Gets the onboarding status synchronously for fast startup.
+     * Includes a one-time migration from DataStore for existing users.
+     */
+    fun getOnboardingCompleted(): Boolean {
+        // Check fast SharedPreferences first
+        if (sharedPreferences.contains(SharedPrefsKeys.ONBOARDING_COMPLETED)) {
+            return sharedPreferences.getBoolean(SharedPrefsKeys.ONBOARDING_COMPLETED, false)
+        }
+
+        // One-time migration: If not in SharedPreferences, read from slow DataStore
+        // runBlocking is acceptable here because this is a one-time, critical-path migration
+        // that MUST complete before the UI can proceed. It will not run on subsequent launches.
+        val valueFromDataStore = runBlocking {
+            try {
+                onboardingCompleted.first()
+            } catch (e: Exception) {
+                // If DataStore fails, default to false (show onboarding)
+                false
+            }
+        }
+
+        // Write the migrated value to SharedPreferences for next time
+        sharedPreferences.edit().putBoolean(SharedPrefsKeys.ONBOARDING_COMPLETED, valueFromDataStore).apply()
+        return valueFromDataStore
+    }
+
+    /**
+     * [PERFORMANCE] Sets the onboarding status in both fast SharedPreferences and slow DataStore.
+     * This ensures data consistency for any legacy consumers of the DataStore Flow.
+     */
     suspend fun setOnboardingCompleted(completed: Boolean) {
+        // Write to fast storage first
+        sharedPreferences.edit().putBoolean(SharedPrefsKeys.ONBOARDING_COMPLETED, completed).apply()
+        // Then write to slow storage
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.ONBOARDING_COMPLETED] = completed
         }
