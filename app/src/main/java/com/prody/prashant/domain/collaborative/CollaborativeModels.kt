@@ -59,7 +59,9 @@ enum class DeliveryMethod(val displayName: String) {
  * Enum representing message status
  */
 enum class MessageStatus(val displayName: String) {
-    PENDING("Draft"),
+    DRAFT("Draft"),
+    PENDING("Pending"),
+    SENT("Sent"),
     SCHEDULED("Scheduled"),
     DELIVERED("Delivered"),
     READ("Read"),
@@ -78,7 +80,9 @@ enum class MessageStatus(val displayName: String) {
 enum class ContactMethod(val displayName: String) {
     APP_USER("Prody User"),
     EMAIL("Email"),
-    PHONE("Phone Number");
+    PHONE("Phone Number"),
+    WHATSAPP("WhatsApp"),
+    IN_APP("In-App");
 
     companion object {
         fun fromString(value: String?): ContactMethod {
@@ -94,20 +98,21 @@ enum class CardTheme(
     val displayName: String,
     val primaryColor: Long,
     val secondaryColor: Long,
-    val textColor: Long = 0xFF212121
+    val textColor: Long = 0xFF212121,
+    val colorDark: Long = 0xFF212121
 ) {
-    DEFAULT("Classic", 0xFFFFFFFF, 0xFFF5F5F5, 0xFF212121),
-    CELEBRATION("Celebration", 0xFFFFE082, 0xFFFFCA28, 0xFF5D4037),
-    ROMANTIC("Romantic", 0xFFFFCDD2, 0xFFE91E63, 0xFF880E4F),
-    NATURE("Nature", 0xFFC8E6C9, 0xFF4CAF50, 0xFF1B5E20),
-    OCEAN("Ocean", 0xFFB3E5FC, 0xFF03A9F4, 0xFF01579B),
-    SUNSET("Sunset", 0xFFFFCCBC, 0xFFFF5722, 0xFFBF360C),
-    MIDNIGHT("Midnight", 0xFF7986CB, 0xFF3F51B5, 0xFFFFFFFF),
-    FESTIVE("Festive", 0xFFC62828, 0xFF2E7D32, 0xFFFFFFFF),
-    ELEGANT("Elegant", 0xFF424242, 0xFF212121, 0xFFFFFFFF),
-    SOFT("Soft & Warm", 0xFFFFF3E0, 0xFFFFE0B2, 0xFF5D4037),
-    LAVENDER("Lavender Dreams", 0xFFE1BEE7, 0xFF9C27B0, 0xFF4A148C),
-    MINT("Mint Fresh", 0xFFB2DFDB, 0xFF009688, 0xFF004D40);
+    DEFAULT("Classic", 0xFFFFFFFF, 0xFFF5F5F5, 0xFF212121, 0xFF424242),
+    CELEBRATION("Celebration", 0xFFFFE082, 0xFFFFCA28, 0xFF5D4037, 0xFF5D4037),
+    ROMANTIC("Romantic", 0xFFFFCDD2, 0xFFE91E63, 0xFF880E4F, 0xFF880E4F),
+    NATURE("Nature", 0xFFC8E6C9, 0xFF4CAF50, 0xFF1B5E20, 0xFF1B5E20),
+    OCEAN("Ocean", 0xFFB3E5FC, 0xFF03A9F4, 0xFF01579B, 0xFF01579B),
+    SUNSET("Sunset", 0xFFFFCCBC, 0xFFFF5722, 0xFFBF360C, 0xFFBF360C),
+    MIDNIGHT("Midnight", 0xFF7986CB, 0xFF3F51B5, 0xFFFFFFFF, 0xFF1A237E),
+    FESTIVE("Festive", 0xFFC62828, 0xFF2E7D32, 0xFFFFFFFF, 0xFF1B5E20),
+    ELEGANT("Elegant", 0xFF424242, 0xFF212121, 0xFFFFFFFF, 0xFF000000),
+    SOFT("Soft & Warm", 0xFFFFF3E0, 0xFFFFE0B2, 0xFF5D4037, 0xFF5D4037),
+    LAVENDER("Lavender Dreams", 0xFFE1BEE7, 0xFF9C27B0, 0xFF4A148C, 0xFF4A148C),
+    MINT("Mint Fresh", 0xFFB2DFDB, 0xFF009688, 0xFF004D40, 0xFF004D40);
 
     fun getPrimaryColor(): Color = Color(primaryColor)
     fun getSecondaryColor(): Color = Color(secondaryColor)
@@ -311,6 +316,12 @@ data class ReceivedCollaborativeMessage(
     val isFavorite: Boolean = false,
     val replyMessageId: String? = null
 ) {
+    /** Convenience property for sender name */
+    val senderName: String get() = sender.name
+
+    /** Alias for deliveredAt for UI compatibility */
+    val receivedAt: LocalDateTime get() = deliveredAt
+
     fun toEntity(): ReceivedCollaborativeMessageEntity {
         return ReceivedCollaborativeMessageEntity(
             id = id,
@@ -476,4 +487,10 @@ data class MessageOccasion(
             )
         }
     }
+
+    /**
+     * Extension function to convert MessageOccasion to its Occasion type.
+     * Used in UI navigation when selecting an occasion to compose a message.
+     */
+    fun toOccasion(): Occasion = occasionType
 }

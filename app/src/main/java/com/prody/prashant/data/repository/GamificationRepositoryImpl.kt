@@ -210,7 +210,11 @@ class GamificationRepositoryImpl @Inject constructor(
 
             when (status) {
                 StreakStatus.SAME_DAY -> {
-                    StreakUpdateResult.Maintained(profile.currentStreak)
+                    val currentTier = StreakTier.forStreak(profile.currentStreak)
+                    StreakUpdateResult.Maintained(
+                        streak = profile.currentStreak,
+                        tier = currentTier
+                    )
                 }
                 StreakStatus.CONSECUTIVE -> {
                     val newStreak = profile.currentStreak + 1
@@ -218,11 +222,16 @@ class GamificationRepositoryImpl @Inject constructor(
                     userDao.updateStreak(newStreak)
                     userDao.updateLastActiveDate(System.currentTimeMillis())
                     val milestone = StreakCalculator.getMilestoneReached(profile.currentStreak, newStreak)
+                    val previousTier = StreakTier.forStreak(profile.currentStreak)
+                    val newTier = StreakTier.forStreak(newStreak)
                     StreakUpdateResult.Incremented(
                         newStreak = newStreak,
                         previousStreak = profile.currentStreak,
                         isNewLongest = isNewLongest,
-                        milestoneReached = milestone
+                        milestoneReached = milestone,
+                        newTier = newTier,
+                        previousTier = previousTier,
+                        tierChanged = newTier != previousTier
                     )
                 }
                 StreakStatus.CAN_FREEZE -> {
@@ -231,7 +240,9 @@ class GamificationRepositoryImpl @Inject constructor(
                         previousStreak = profile.currentStreak,
                         newStreak = 1,
                         daysMissed = 1,
-                        canUseFreeze = true
+                        canUseGracePeriod = false,
+                        canUseFreezeToken = true,
+                        freezeTokensAvailable = 1
                     )
                 }
                 StreakStatus.BROKEN -> {
@@ -242,7 +253,9 @@ class GamificationRepositoryImpl @Inject constructor(
                         previousStreak = profile.currentStreak,
                         newStreak = 1,
                         daysMissed = 2,
-                        canUseFreeze = false
+                        canUseGracePeriod = false,
+                        canUseFreezeToken = false,
+                        freezeTokensAvailable = 0
                     )
                 }
             }

@@ -1,6 +1,9 @@
 package com.prody.prashant.domain.gamification
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 
 /**
  * Rank System - Based on Combined Skill Levels
@@ -39,7 +42,8 @@ enum class Rank(
     val description: String,
     val minCombinedLevel: Int,
     val color: Color,
-    val philosophicalOrigin: String
+    val philosophicalOrigin: String,
+    val icon: ImageVector
 ) {
     SEEKER(
         id = "seeker",
@@ -47,7 +51,8 @@ enum class Rank(
         description = "One who has begun the path of inquiry",
         minCombinedLevel = 0,
         color = Color(0xFF9E9E9E),
-        philosophicalOrigin = "The first step in any journey of wisdom"
+        philosophicalOrigin = "The first step in any journey of wisdom",
+        icon = Icons.Default.Search
     ),
     LEARNER(
         id = "learner",
@@ -55,7 +60,8 @@ enum class Rank(
         description = "One who actively engages with knowledge",
         minCombinedLevel = 6,
         color = Color(0xFF78909C),
-        philosophicalOrigin = "The foundation of all wisdom traditions"
+        philosophicalOrigin = "The foundation of all wisdom traditions",
+        icon = Icons.Default.MenuBook
     ),
     INITIATE(
         id = "initiate",
@@ -63,7 +69,8 @@ enum class Rank(
         description = "One who has committed to the practice",
         minCombinedLevel = 12,
         color = Color(0xFF607D8B),
-        philosophicalOrigin = "Ancient mystery school traditions"
+        philosophicalOrigin = "Ancient mystery school traditions",
+        icon = Icons.Default.Visibility
     ),
     STUDENT(
         id = "student",
@@ -71,7 +78,8 @@ enum class Rank(
         description = "One who learns from every experience",
         minCombinedLevel = 18,
         color = Color(0xFF5C6BC0),
-        philosophicalOrigin = "Socratic tradition of perpetual learning"
+        philosophicalOrigin = "Socratic tradition of perpetual learning",
+        icon = Icons.Default.School
     ),
     PRACTITIONER(
         id = "practitioner",
@@ -79,7 +87,8 @@ enum class Rank(
         description = "One who embodies wisdom in daily action",
         minCombinedLevel = 24,
         color = Color(0xFF26A69A),
-        philosophicalOrigin = "Stoic philosophy of praxis"
+        philosophicalOrigin = "Stoic philosophy of praxis",
+        icon = Icons.Default.FitnessCenter
     ),
     CONTEMPLATIVE(
         id = "contemplative",
@@ -87,7 +96,8 @@ enum class Rank(
         description = "One who sees deeply into the nature of things",
         minCombinedLevel = 30,
         color = Color(0xFF4ECDC4),
-        philosophicalOrigin = "Meditative traditions East and West"
+        philosophicalOrigin = "Meditative traditions East and West",
+        icon = Icons.Default.SelfImprovement
     ),
     PHILOSOPHER(
         id = "philosopher",
@@ -95,7 +105,8 @@ enum class Rank(
         description = "A lover of wisdom who questions and reflects",
         minCombinedLevel = 36,
         color = Color(0xFF6B5CE7),
-        philosophicalOrigin = "Greek: philos (lover) + sophia (wisdom)"
+        philosophicalOrigin = "Greek: philos (lover) + sophia (wisdom)",
+        icon = Icons.Default.Psychology
     ),
     SAGE(
         id = "sage",
@@ -103,7 +114,8 @@ enum class Rank(
         description = "One whose wisdom has been tempered by time",
         minCombinedLevel = 45,
         color = Color(0xFFAC32E4),
-        philosophicalOrigin = "Universal archetype of the wise elder"
+        philosophicalOrigin = "Universal archetype of the wise elder",
+        icon = Icons.Default.Elderly
     ),
     LUMINARY(
         id = "luminary",
@@ -111,7 +123,8 @@ enum class Rank(
         description = "One whose presence illuminates the path for others",
         minCombinedLevel = 54,
         color = Color(0xFFD4AF37),
-        philosophicalOrigin = "Latin: lumen - light"
+        philosophicalOrigin = "Latin: lumen - light",
+        icon = Icons.Default.WbSunny
     ),
     AWAKENED(
         id = "awakened",
@@ -119,7 +132,8 @@ enum class Rank(
         description = "One who has achieved mastery across all domains",
         minCombinedLevel = 60,
         color = Color(0xFFFFD700),
-        philosophicalOrigin = "Buddhist concept of Bodhi - full enlightenment"
+        philosophicalOrigin = "Buddhist concept of Bodhi - full enlightenment",
+        icon = Icons.Default.Stars
     );
 
     companion object {

@@ -46,7 +46,7 @@ data class ReflectionContext(
             MoodTrend.IMPROVING -> "Your mood has been improving recently"
             MoodTrend.STABLE -> "Your emotional state has been fairly consistent"
             MoodTrend.DECLINING -> "You've been going through some challenging times"
-            MoodTrend.VARIABLE -> "Your emotions have been fluctuating"
+            MoodTrend.VARIABLE, MoodTrend.VOLATILE, MoodTrend.FLUCTUATING -> "Your emotions have been fluctuating"
             MoodTrend.INSUFFICIENT_DATA -> "We're still getting to know your patterns"
         }
     }
@@ -98,17 +98,6 @@ data class EntrySummary(
         } else ""
         return "$moodPart$themePart"
     }
-}
-
-/**
- * Enumeration for mood trend over time
- */
-enum class MoodTrend(val description: String) {
-    IMPROVING("improving"),
-    STABLE("stable"),
-    DECLINING("declining"),
-    VARIABLE("variable"),
-    INSUFFICIENT_DATA("insufficient_data")
 }
 
 /**
