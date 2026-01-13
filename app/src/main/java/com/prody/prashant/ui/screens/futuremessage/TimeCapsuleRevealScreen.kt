@@ -357,7 +357,7 @@ private fun EnvelopeReveal(
 private fun CategoryBadge(category: String) {
     val (icon, label, color) = when (category) {
         "goal" -> Triple(ProdyIcons.Flag, "Goal", Color(0xFF4CAF50))
-        "promise" -> Triple(ProdyIcons.HandshakeOutlined, "Promise", Color(0xFF2196F3))
+        "promise" -> Triple(ProdyIcons.Outlined.Handshake, "Promise", Color(0xFF2196F3))
         "motivation" -> Triple(ProdyIcons.LocalFireDepartment, "Motivation", Color(0xFFFF9800))
         "reminder" -> Triple(ProdyIcons.NotificationsActive, "Reminder", Color(0xFF9C27B0))
         else -> Triple(ProdyIcons.MailOutline, "Message", Color(0xFF607D8B))

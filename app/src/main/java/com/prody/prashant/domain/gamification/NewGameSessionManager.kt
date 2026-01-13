@@ -587,12 +587,12 @@ class NewGameSessionManager @Inject constructor(
                                 newStreak = result.newStreak,
                                 previousStreak = result.previousStreak,
                                 isNewLongest = result.isNewLongest,
-                                milestoneReached = result.milestoneReached
+                                milestoneReached = result.milestoneReached?.days
                             )
                         )
                         // Award tokens for milestone
                         result.milestoneReached?.let { milestone ->
-                            PointCalculator.Tokens.getStreakMilestoneTokens(milestone)?.let { tokens ->
+                            PointCalculator.Tokens.getStreakMilestoneTokens(milestone.days)?.let { tokens ->
                                 gamificationRepository.awardTokens(
                                     amount = tokens,
                                     rewardKey = "streak_milestone_${result.newStreak}"
