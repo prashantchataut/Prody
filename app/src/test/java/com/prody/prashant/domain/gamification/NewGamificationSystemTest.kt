@@ -700,14 +700,15 @@ class NewGamificationSystemTest {
     }
 
     @Test
-    fun `AchievementRarity - ordering is Common to Legendary`() {
-        assertTrue(AchievementRarity.COMMON.ordinal < AchievementRarity.LEGENDARY.ordinal)
+    fun `AchievementRarity - ordering is Common to Mythic`() {
+        assertTrue(AchievementRarity.COMMON.ordinal < AchievementRarity.MYTHIC.ordinal)
         assertEquals(listOf(
             AchievementRarity.COMMON,
             AchievementRarity.UNCOMMON,
             AchievementRarity.RARE,
             AchievementRarity.EPIC,
-            AchievementRarity.LEGENDARY
+            AchievementRarity.LEGENDARY,
+            AchievementRarity.MYTHIC
         ), AchievementRarity.entries)
     }
 

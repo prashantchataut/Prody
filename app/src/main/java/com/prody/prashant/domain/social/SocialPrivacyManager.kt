@@ -151,7 +151,7 @@ class SocialPrivacyManager @Inject constructor(
     ): String {
         return when (updateType) {
             UpdateType.STREAK_MILESTONE -> {
-                val milestone = value?.let { StreakMilestone.fromStreak(it) }
+                val milestone = value?.let { SocialStreakMilestone.fromStreak(it) }
                 "$displayName reached a ${milestone?.days ?: value}-day streak! ${milestone?.emoji ?: "🔥"}"
             }
             UpdateType.ENTRY_COUNT -> {

@@ -889,7 +889,7 @@ private fun QuizContent(
 @Composable
 private fun QuestionItem(
     questionNumber: Int,
-    question: QuizQuestion,
+    question: LearningQuizQuestion,
     selectedAnswer: Int?,
     onAnswerSelected: (Int) -> Unit,
     showResult: Boolean

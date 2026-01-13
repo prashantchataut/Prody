@@ -911,10 +911,18 @@ fun MilestoneCard(
 ) {
     val milestoneColor = when (milestone.celebrationType) {
         CelebrationType.CONFETTI -> Color(0xFFFFD700)
-        CelebrationType.SPARKLE -> Color(0xFF8B5CF6)
+        CelebrationType.SPARKLE, CelebrationType.SPARKLES -> Color(0xFF8B5CF6)
         CelebrationType.GENTLE_GLOW -> Color(0xFF6366F1)
         CelebrationType.WARM_FADE -> Color(0xFFE8B4B8)
         CelebrationType.FIREWORKS -> Color(0xFFFF6B6B)
+        CelebrationType.FIRST_ENTRY -> Color(0xFF10B981)
+        CelebrationType.STREAK_MILESTONE -> Color(0xFFF59E0B)
+        CelebrationType.WEEK_COMPLETE -> Color(0xFF3B82F6)
+        CelebrationType.FEATURE_DISCOVERED -> Color(0xFF8B5CF6)
+        CelebrationType.GROWTH_MOMENT -> Color(0xFF22C55E)
+        CelebrationType.VULNERABILITY_SHARED -> Color(0xFFEC4899)
+        CelebrationType.PATTERN_BROKEN -> Color(0xFF14B8A6)
+        CelebrationType.ACHIEVEMENT -> Color(0xFFF97316)
     }
 
     ProdyClickableCard(
