@@ -4,6 +4,7 @@ import com.prody.prashant.data.ai.GeminiResult
 import com.prody.prashant.data.ai.GeminiService
 import com.prody.prashant.data.local.entity.JournalEntryEntity
 import com.prody.prashant.domain.model.Mood
+import com.prody.prashant.domain.model.MoodTrend
 import java.time.DayOfWeek
 import java.time.Instant
 import java.time.ZoneId

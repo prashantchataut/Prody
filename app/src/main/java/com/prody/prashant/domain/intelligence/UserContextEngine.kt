@@ -10,6 +10,7 @@ import com.prody.prashant.domain.analytics.MoodAnalyticsEngine
 import com.prody.prashant.domain.model.AnalyticsPeriod
 import com.prody.prashant.domain.model.Mood
 import com.prody.prashant.domain.model.MoodShift
+import com.prody.prashant.domain.model.MoodTrend
 import com.prody.prashant.domain.model.TimeOfDay
 import com.prody.prashant.domain.model.isNegative
 import com.prody.prashant.domain.model.isPositive
