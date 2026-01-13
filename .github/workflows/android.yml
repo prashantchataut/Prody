@@ -29,9 +29,8 @@ jobs:
         distribution: 'temurin'
 
     - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@v3
+      uses: gradle/actions/setup-gradle@v4
       with:
-        gradle-home-cache-cleanup: true
         cache-read-only: false
 
     - name: Grant execute permission for gradlew
@@ -170,9 +169,8 @@ jobs:
         distribution: 'temurin'
 
     - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@v3
+      uses: gradle/actions/setup-gradle@v4
       with:
-        gradle-home-cache-cleanup: true
         cache-read-only: false
 
     - name: Grant execute permission for gradlew
@@ -224,9 +222,8 @@ jobs:
         distribution: 'temurin'
 
     - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@v3
+      uses: gradle/actions/setup-gradle@v4
       with:
-        gradle-home-cache-cleanup: true
         cache-read-only: false
 
     - name: Grant execute permission for gradlew
