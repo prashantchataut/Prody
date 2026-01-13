@@ -3,6 +3,7 @@ package com.prody.prashant.data.ai
 import android.util.Log
 import com.prody.prashant.domain.intelligence.*
 import com.prody.prashant.domain.model.Mood
+import com.prody.prashant.domain.model.MoodTrend
 import com.prody.prashant.domain.model.isPositive
 import com.prody.prashant.domain.model.isNegative
 import kotlinx.coroutines.Dispatchers
@@ -520,6 +521,9 @@ class ContextAwareBuddhaService @Inject constructor(
             MoodTrend.DECLINING -> "Trending downward"
             MoodTrend.STABLE -> "Stable"
             MoodTrend.VOLATILE -> "Up and down (volatile)"
+            MoodTrend.VARIABLE -> "Variable patterns"
+            MoodTrend.FLUCTUATING -> "Fluctuating frequently"
+            MoodTrend.INSUFFICIENT_DATA -> "Still gathering data"
         }
     }
 

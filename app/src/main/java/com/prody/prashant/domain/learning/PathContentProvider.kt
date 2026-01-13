@@ -289,7 +289,7 @@ object PathContentProvider {
                     title = "Emotional Intelligence Mastery",
                     description = "Test your understanding of emotional intelligence concepts and practices. This quiz helps consolidate your learning.",
                     questions = listOf(
-                        QuizQuestion(
+                        LearningQuizQuestion(
                             id = "eq1",
                             question = "What is the primary purpose of emotions?",
                             options = listOf(
@@ -301,7 +301,7 @@ object PathContentProvider {
                             correctAnswer = 1,
                             explanation = "Emotions are messengers that provide valuable information about our needs, values, boundaries, and environment. They're not meant to control us, but to inform us."
                         ),
-                        QuizQuestion(
+                        LearningQuizQuestion(
                             id = "eq2",
                             question = "Which statement about emotional regulation is most accurate?",
                             options = listOf(
@@ -313,7 +313,7 @@ object PathContentProvider {
                             correctAnswer = 2,
                             explanation = "Emotional regulation isn't about eliminating or suppressing emotions. It's about developing the skills to respond to them wisely rather than reacting automatically."
                         ),
-                        QuizQuestion(
+                        LearningQuizQuestion(
                             id = "eq3",
                             question = "What is empathy?",
                             options = listOf(
@@ -325,7 +325,7 @@ object PathContentProvider {
                             correctAnswer = 2,
                             explanation = "Empathy is the ability to understand and share the feelings of another. It's about seeing their perspective and validating their experience, not agreeing, pitying, or fixing."
                         ),
-                        QuizQuestion(
+                        LearningQuizQuestion(
                             id = "eq4",
                             question = "When sitting with uncomfortable emotions, we should:",
                             options = listOf(
@@ -337,7 +337,7 @@ object PathContentProvider {
                             correctAnswer = 2,
                             explanation = "The practice is to observe emotions with curiosity and breathe, creating space for them without trying to fix, suppress, or over-analyze. This builds emotional tolerance."
                         ),
-                        QuizQuestion(
+                        LearningQuizQuestion(
                             id = "eq5",
                             question = "Emotional triggers are best understood as:",
                             options = listOf(
@@ -617,7 +617,7 @@ object PathContentProvider {
                     title = "Testing Your Understanding",
                     description = "Assess your grasp of core mindfulness concepts and practices.",
                     questions = listOf(
-                        QuizQuestion(
+                        LearningQuizQuestion(
                             id = "mf1",
                             question = "What is the primary aim of mindfulness?",
                             options = listOf(
@@ -629,7 +629,7 @@ object PathContentProvider {
                             correctAnswer = 2,
                             explanation = "Mindfulness is about present-moment awareness with acceptance—not about achieving a particular state or avoiding difficult experiences."
                         ),
-                        QuizQuestion(
+                        LearningQuizQuestion(
                             id = "mf2",
                             question = "When your mind wanders during meditation, you should:",
                             options = listOf(
@@ -641,7 +641,7 @@ object PathContentProvider {
                             correctAnswer = 1,
                             explanation = "Mind wandering is natural and expected. Each time you notice and return is a success, not a failure. The practice IS the returning."
                         ),
-                        QuizQuestion(
+                        LearningQuizQuestion(
                             id = "mf3",
                             question = "Which statement about thoughts is most aligned with mindfulness?",
                             options = listOf(
@@ -653,7 +653,7 @@ object PathContentProvider {
                             correctAnswer = 1,
                             explanation = "Mindfulness teaches us that thoughts are mental events we can observe, not facts we must believe or aspects of our identity."
                         ),
-                        QuizQuestion(
+                        LearningQuizQuestion(
                             id = "mf4",
                             question = "Mindfulness can be practiced:",
                             options = listOf(
@@ -665,7 +665,7 @@ object PathContentProvider {
                             correctAnswer = 2,
                             explanation = "Mindfulness can be brought to any moment and any activity. Washing dishes, walking, listening—all can be mindfulness practices."
                         ),
-                        QuizQuestion(
+                        LearningQuizQuestion(
                             id = "mf5",
                             question = "The purpose of the body scan is to:",
                             options = listOf(
@@ -934,7 +934,7 @@ object PathContentProvider {
                     title = "Test Your Understanding",
                     description = "Assess your grasp of confidence-building principles.",
                     questions = listOf(
-                        QuizQuestion(
+                        LearningQuizQuestion(
                             id = "conf1",
                             question = "True confidence is best described as:",
                             options = listOf(
@@ -946,7 +946,7 @@ object PathContentProvider {
                             correctAnswer = 2,
                             explanation = "Confidence is trust in your ability to handle challenges and adapt, not the absence of fear or comparison to others."
                         ),
-                        QuizQuestion(
+                        LearningQuizQuestion(
                             id = "conf2",
                             question = "How is confidence primarily built?",
                             options = listOf(
@@ -958,7 +958,7 @@ object PathContentProvider {
                             correctAnswer = 1,
                             explanation = "Confidence is built through action, experience, and learning from both successes and failures—not through avoidance or external validation alone."
                         ),
-                        QuizQuestion(
+                        LearningQuizQuestion(
                             id = "conf3",
                             question = "The best way to view failure is as:",
                             options = listOf(
@@ -970,7 +970,7 @@ object PathContentProvider {
                             correctAnswer = 2,
                             explanation = "Failure is valuable feedback that helps you learn, adjust, and grow. It's a necessary part of building genuine confidence and competence."
                         ),
-                        QuizQuestion(
+                        LearningQuizQuestion(
                             id = "conf4",
                             question = "A growth mindset means believing:",
                             options = listOf(
@@ -982,7 +982,7 @@ object PathContentProvider {
                             correctAnswer = 1,
                             explanation = "A growth mindset is the belief that abilities can be developed through dedication and hard work, making challenges opportunities rather than threats."
                         ),
-                        QuizQuestion(
+                        LearningQuizQuestion(
                             id = "conf5",
                             question = "When facing self-doubt, you should:",
                             options = listOf(

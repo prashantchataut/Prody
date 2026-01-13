@@ -195,7 +195,7 @@ interface SavedWisdomDao {
     fun getSavedWisdomCount(userId: String): Flow<Int>
 
     @Query("SELECT type, COUNT(*) as count FROM saved_wisdom WHERE userId = :userId AND isDeleted = 0 GROUP BY type ORDER BY count DESC")
-    suspend fun getCountByType(userId: String): List<WisdomTypeCount>
+    suspend fun getTypeCountForUser(userId: String): List<WisdomTypeCount>
 
     @Query("SELECT type, COUNT(*) as count FROM saved_wisdom WHERE isDeleted = 0 GROUP BY type ORDER BY count DESC")
     fun getTypeDistribution(): Flow<List<WisdomTypeCount>>

@@ -28,7 +28,7 @@ class CircleUpdateGenerator @Inject constructor(
         streakDays: Int
     ) {
         // Only generate for milestones
-        if (!StreakMilestone.isStreakMilestone(streakDays)) return
+        if (!SocialStreakMilestone.isStreakMilestone(streakDays)) return
 
         val circles = socialDao.getUserCircles(userId)
         circles.forEach { circle ->
@@ -45,7 +45,7 @@ class CircleUpdateGenerator @Inject constructor(
 
             val metadata = JSONObject().apply {
                 put("streakDays", streakDays)
-                put("milestone", StreakMilestone.fromStreak(streakDays)?.days ?: streakDays)
+                put("milestone", SocialStreakMilestone.fromStreak(streakDays)?.days ?: streakDays)
             }
 
             val update = CircleUpdateEntity(

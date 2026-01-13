@@ -132,19 +132,19 @@ fun SessionResultCard(
 
 @Composable
 private fun SessionHeader(
-    sessionType: SessionType,
+    sessionType: GameSessionType,
     headline: String
 ) {
     val icon = when (sessionType) {
-        SessionType.REFLECT -> ProdyIcons.Edit
-        SessionType.SHARPEN -> ProdyIcons.Psychology
-        SessionType.COMMIT -> ProdyIcons.Schedule
+        GameSessionType.REFLECT -> ProdyIcons.Edit
+        GameSessionType.SHARPEN -> ProdyIcons.Psychology
+        GameSessionType.COMMIT -> ProdyIcons.Schedule
     }
 
     val color = when (sessionType) {
-        SessionType.REFLECT -> MaterialTheme.colorScheme.primary
-        SessionType.SHARPEN -> MaterialTheme.colorScheme.secondary
-        SessionType.COMMIT -> MaterialTheme.colorScheme.tertiary
+        GameSessionType.REFLECT -> MaterialTheme.colorScheme.primary
+        GameSessionType.SHARPEN -> MaterialTheme.colorScheme.secondary
+        GameSessionType.COMMIT -> MaterialTheme.colorScheme.tertiary
     }
 
     Row(
