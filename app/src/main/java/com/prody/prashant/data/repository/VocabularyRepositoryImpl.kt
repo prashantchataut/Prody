@@ -147,7 +147,7 @@ class VocabularyRepositoryImpl @Inject constructor(
     }
 
     override suspend fun processWordReview(wordId: Long, quality: Int): Result<Unit> {
-        return runSuspendCatching(ErrorType.PROCESSING, "Failed to process review") {
+        return runSuspendCatching(ErrorType.DATABASE, "Failed to process review") {
             // 1. Get current learning data or create new if not exists
             var currentData = vocabularyLearningDao.getLearningForWord(wordId)
             

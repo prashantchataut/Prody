@@ -253,7 +253,7 @@ class ContentRecommendationEngine @Inject constructor(
             TimeOfDay.MORNING -> MORNING_CATEGORIES
             TimeOfDay.AFTERNOON -> AFTERNOON_CATEGORIES
             TimeOfDay.EVENING -> EVENING_CATEGORIES
-            TimeOfDay.NIGHT -> NIGHT_CATEGORIES
+            TimeOfDay.NIGHT, TimeOfDay.LATE_NIGHT -> NIGHT_CATEGORIES
         }
     }
 
@@ -262,7 +262,7 @@ class ContentRecommendationEngine @Inject constructor(
             TimeOfDay.MORNING -> "Start your day with"
             TimeOfDay.AFTERNOON -> "Afternoon wisdom:"
             TimeOfDay.EVENING -> "Evening reflection:"
-            TimeOfDay.NIGHT -> "Night thoughts:"
+            TimeOfDay.NIGHT, TimeOfDay.LATE_NIGHT -> "Night thoughts:"
         }
 
         return when (mood) {
@@ -361,7 +361,7 @@ class ContentRecommendationEngine @Inject constructor(
                 "What was the highlight of your day?",
                 "What did you learn about yourself today?"
             )
-            TimeOfDay.NIGHT -> listOf(
+            TimeOfDay.NIGHT, TimeOfDay.LATE_NIGHT -> listOf(
                 "As you wind down, what thoughts need releasing?",
                 "What are you grateful for from today?"
             )

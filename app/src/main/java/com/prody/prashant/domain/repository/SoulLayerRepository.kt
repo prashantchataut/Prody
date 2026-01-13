@@ -221,5 +221,5 @@ interface SoulLayerRepository {
     /**
      * Get error copy.
      */
-    fun getErrorCopy(error: ErrorType): ErrorCopy
+    fun getErrorCopy(error: VoiceErrorType): ErrorCopy
 }

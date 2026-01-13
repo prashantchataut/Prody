@@ -8,7 +8,9 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
-import java.io.FileInputStream
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
+import java.io.File
 import java.util.Properties
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -48,9 +50,9 @@ class SecurityPreferences @Inject constructor(
      */
     private fun loadLocalProperties() {
         try {
-            val localPropertiesFile = context.getLocalPropertiesFile()
+            val localPropertiesFile = getLocalPropertiesFile()
             if (localPropertiesFile.exists()) {
-                FileInputStream(localPropertiesFile).use { input ->
+                localPropertiesFile.inputStream().use { input ->
                     properties.load(input)
                 }
                 Log.d(TAG, "Loaded API keys from local.properties")
@@ -62,7 +64,7 @@ class SecurityPreferences @Inject constructor(
         }
     }
 
-    private fun context.getLocalPropertiesFile() = context.absoluteFile.resolve(LOCAL_PROPERTIES_FILE)
+    private fun getLocalPropertiesFile(): File = File(context.filesDir, LOCAL_PROPERTIES_FILE)
 
     /**
      * Get the Gemini API key.
@@ -71,9 +73,9 @@ class SecurityPreferences @Inject constructor(
     fun getGeminiApiKey(): String {
         return try {
             // First check encrypted storage
-            val encryptedKey = runCatching {
-                dataStore.data.first()[ENCRYPTED_AI_API_KEY]
-            }.getOrNull()
+            val encryptedKey = runBlocking {
+                runCatching { dataStore.data.first()[ENCRYPTED_AI_API_KEY] }.getOrNull()
+            }
 
             if (!encryptedKey.isNullOrEmpty()) {
                 decryptKey(encryptedKey)
@@ -82,7 +84,7 @@ class SecurityPreferences @Inject constructor(
                 val key = properties.getProperty(KEY_AI_API_KEY, "").trim()
                 if (key.isNotEmpty()) {
                     // Store in encrypted storage for next time
-                    storeGeminiApiKey(key)
+                    runBlocking { storeGeminiApiKey(key) }
                 }
                 key
             }
@@ -97,16 +99,16 @@ class SecurityPreferences @Inject constructor(
      */
     fun getOpenRouterApiKey(): String {
         return try {
-            val encryptedKey = runCatching {
-                dataStore.data.first()[ENCRYPTED_OPENROUTER_API_KEY]
-            }.getOrNull()
+            val encryptedKey = runBlocking {
+                runCatching { dataStore.data.first()[ENCRYPTED_OPENROUTER_API_KEY] }.getOrNull()
+            }
 
             if (!encryptedKey.isNullOrEmpty()) {
                 decryptKey(encryptedKey)
             } else {
                 val key = properties.getProperty(KEY_OPENROUTER_API_KEY, "").trim()
                 if (key.isNotEmpty()) {
-                    storeOpenRouterApiKey(key)
+                    runBlocking { storeOpenRouterApiKey(key) }
                 }
                 key
             }

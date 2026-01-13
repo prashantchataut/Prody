@@ -39,7 +39,7 @@ class DeepDiveScheduler @Inject constructor(
 ) {
 
     companion object {
-        private const val NOTIFICATION_CHANNEL_ID = "deep_dive_channel"
+        const val NOTIFICATION_CHANNEL_ID = "deep_dive_channel"
         private const val NOTIFICATION_CHANNEL_NAME = "Deep Dive Reminders"
         private const val NOTIFICATION_REQUEST_CODE_BASE = 9000
 

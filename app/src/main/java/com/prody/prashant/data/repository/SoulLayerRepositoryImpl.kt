@@ -209,7 +209,7 @@ class SoulLayerRepositoryImpl @Inject constructor(
         return prodyVoice.getEmptyStateCopy(location, context)
     }
 
-    override fun getErrorCopy(error: ErrorType): ErrorCopy {
+    override fun getErrorCopy(error: VoiceErrorType): ErrorCopy {
         // Error copy doesn't need async context - use empty context for consistent behavior
         return prodyVoice.getErrorCopy(error, UserContext.empty())
     }

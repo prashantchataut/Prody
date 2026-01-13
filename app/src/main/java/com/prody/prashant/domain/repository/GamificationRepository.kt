@@ -2,6 +2,7 @@ package com.prody.prashant.domain.repository
 
 import com.prody.prashant.domain.common.Result
 import com.prody.prashant.domain.gamification.*
+import com.prody.prashant.domain.summary.WeeklySummary
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 

@@ -244,7 +244,7 @@ class YearlyWrappedGenerator @Inject constructor(
 
     private fun analyzeMoodJourney(
         entries: List<com.prody.prashant.data.local.entity.JournalEntryEntity>
-    ): MoodJourney {
+    ): YearlyMoodJourney {
         val moodIntensities = entries.map { it.moodIntensity.toFloat() }
         val averageMood = if (moodIntensities.isNotEmpty()) {
             moodIntensities.average().toFloat()
@@ -298,7 +298,7 @@ class YearlyWrappedGenerator @Inject constructor(
             .maxByOrNull { it.value.size }
             ?.key
 
-        return MoodJourney(
+        return YearlyMoodJourney(
             averageMood = averageMood,
             trend = moodTrend,
             mostCommonMood = mostCommonMood,
@@ -476,7 +476,7 @@ class YearlyWrappedGenerator @Inject constructor(
         }
         if (morningEntries > entries.size * 0.6) {
             patterns.add(Pattern(
-                type = PatternType.MORNING_WRITER,
+                type = WrappedPatternType.MORNING_WRITER,
                 description = "You prefer journaling in the morning",
                 occurrences = morningEntries
             ))
@@ -491,7 +491,7 @@ class YearlyWrappedGenerator @Inject constructor(
         }
         if (eveningEntries > entries.size * 0.6) {
             patterns.add(Pattern(
-                type = PatternType.EVENING_REFLECTOR,
+                type = WrappedPatternType.EVENING_REFLECTOR,
                 description = "You prefer reflecting in the evening",
                 occurrences = eveningEntries
             ))
@@ -501,7 +501,7 @@ class YearlyWrappedGenerator @Inject constructor(
         val avgWords = entries.map { it.wordCount }.average()
         if (avgWords > 200) {
             patterns.add(Pattern(
-                type = PatternType.DEEP_THINKER,
+                type = WrappedPatternType.DEEP_THINKER,
                 description = "You write detailed, thoughtful entries",
                 occurrences = entries.count { it.wordCount > avgWords.toInt() }
             ))
@@ -514,7 +514,7 @@ class YearlyWrappedGenerator @Inject constructor(
             .size
         if (activeDays > 100) {
             patterns.add(Pattern(
-                type = PatternType.CONSISTENT_JOURNALER,
+                type = WrappedPatternType.CONSISTENT_JOURNALER,
                 description = "You journal regularly throughout the year",
                 occurrences = activeDays
             ))
@@ -526,7 +526,7 @@ class YearlyWrappedGenerator @Inject constructor(
     private fun generateNarratives(
         year: Int,
         stats: YearStats,
-        moodJourney: MoodJourney,
+        moodJourney: YearlyMoodJourney,
         themes: List<ThemeHighlight>,
         growthAreas: List<GrowthArea>,
         entries: List<com.prody.prashant.data.local.entity.JournalEntryEntity>
@@ -599,7 +599,7 @@ class YearlyWrappedGenerator @Inject constructor(
 
     private fun createShareableCards(
         stats: YearStats,
-        moodJourney: MoodJourney,
+        moodJourney: YearlyMoodJourney,
         themes: List<ThemeHighlight>,
         narratives: YearNarratives
     ): List<ShareableCard> {

@@ -8,6 +8,7 @@ import com.prody.prashant.domain.common.Result
 import com.prody.prashant.domain.common.runSuspendCatching
 import com.prody.prashant.domain.gamification.*
 import com.prody.prashant.domain.repository.*
+import com.prody.prashant.domain.summary.WeeklySummary
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -624,7 +625,8 @@ class GamificationRepositoryImpl @Inject constructor(
             combinedLevel = Skill.calculateLevel(clarityXp) +
                     Skill.calculateLevel(disciplineXp) +
                     Skill.calculateLevel(courageXp),
-            tokens = tokens
+            tokens = tokens,
+            freezeTokensFromPerks = perkFreezeTokens - perkFreezeTokensUsed
         )
     }
 
@@ -703,9 +705,9 @@ class GamificationRepositoryImpl @Inject constructor(
             rarity = AchievementRarity.entries.find { it.name.equals(entity.rarity, ignoreCase = true) }
                 ?: AchievementRarity.COMMON,
             iconName = entity.iconId,
-            requirement = AchievementRequirement.Count(entity.id, entity.requirement),
+            requirement = AchievementRequirement.Count(entity.requirement),
             celebrationMessage = entity.celebrationMessage,
-            rewardTokens = 0
+            xpReward = entity.xpReward
         )
     }
 }

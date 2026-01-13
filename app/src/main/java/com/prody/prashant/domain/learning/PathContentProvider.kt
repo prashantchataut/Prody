@@ -128,11 +128,11 @@ object PathContentProvider {
                     title = "Expanding Your Emotional Vocabulary",
                     description = "The Emotion Wheel exercise helps you identify and name emotions with greater precision. Research shows that accurately labeling emotions reduces their intensity and helps us respond more effectively.",
                     steps = listOf(
-                        ExerciseStep(1, "Look at the emotion wheel image or list. Start with the core emotions in the center.", 3),
-                        ExerciseStep(2, "Think of a recent emotional experience. Which core emotion was present?", 2),
-                        ExerciseStep(3, "Move outward to find more specific words that describe your feeling. For example: angry → frustrated → overwhelmed.", 5),
-                        ExerciseStep(4, "Write down the specific emotion word and what triggered it.", 5),
-                        ExerciseStep(5, "Notice how naming the emotion precisely changes your relationship to it.", 5, "Precision creates perspective.")
+                        LearningExerciseStep(1, "Look at the emotion wheel image or list. Start with the core emotions in the center.", 3),
+                        LearningExerciseStep(2, "Think of a recent emotional experience. Which core emotion was present?", 2),
+                        LearningExerciseStep(3, "Move outward to find more specific words that describe your feeling. For example: angry → frustrated → overwhelmed.", 5),
+                        LearningExerciseStep(4, "Write down the specific emotion word and what triggered it.", 5),
+                        LearningExerciseStep(5, "Notice how naming the emotion precisely changes your relationship to it.", 5, "Precision creates perspective.")
                     ),
                     duration = 20,
                     materials = listOf("Journal or notes app", "Emotion wheel reference (optional)")
@@ -251,11 +251,11 @@ object PathContentProvider {
                     title = "Your Emotional Regulation Toolkit",
                     description = "Learn and practice five evidence-based techniques for managing intense emotions. These tools help you respond skillfully rather than react automatically.",
                     steps = listOf(
-                        ExerciseStep(1, "STOP Technique: Stop, Take a breath, Observe your experience, Proceed with awareness. Practice this now with a recent challenging moment.", 5),
-                        ExerciseStep(2, "5-4-3-2-1 Grounding: Name 5 things you see, 4 you hear, 3 you can touch, 2 you smell, 1 you taste. This brings you to the present.", 5),
-                        ExerciseStep(3, "Opposite Action: When an emotion urges you toward unhelpful behavior, do the opposite. Feeling withdrawn? Reach out. Feeling impulsive? Pause.", 5),
-                        ExerciseStep(4, "Emotion Surfing: Imagine riding your emotion like a wave. Notice it rise, peak, and naturally fall. Don't fight it or feed it—just ride it.", 5),
-                        ExerciseStep(5, "Self-Compassion Break: Place hand on heart. Say: 'This is hard. Everyone struggles. May I be kind to myself.' Repeat three times.", 5)
+                        LearningExerciseStep(1, "STOP Technique: Stop, Take a breath, Observe your experience, Proceed with awareness. Practice this now with a recent challenging moment.", 5),
+                        LearningExerciseStep(2, "5-4-3-2-1 Grounding: Name 5 things you see, 4 you hear, 3 you can touch, 2 you smell, 1 you taste. This brings you to the present.", 5),
+                        LearningExerciseStep(3, "Opposite Action: When an emotion urges you toward unhelpful behavior, do the opposite. Feeling withdrawn? Reach out. Feeling impulsive? Pause.", 5),
+                        LearningExerciseStep(4, "Emotion Surfing: Imagine riding your emotion like a wave. Notice it rise, peak, and naturally fall. Don't fight it or feed it—just ride it.", 5),
+                        LearningExerciseStep(5, "Self-Compassion Break: Place hand on heart. Say: 'This is hard. Everyone struggles. May I be kind to myself.' Repeat three times.", 5)
                     ),
                     duration = 25
                 )
@@ -466,11 +466,11 @@ object PathContentProvider {
                     title = "Bringing Mindfulness to Daily Life",
                     description = "Transform ordinary activities into mindfulness practice. This exercise helps you weave awareness into your daily routine.",
                     steps = listOf(
-                        ExerciseStep(1, "Choose three daily activities (brushing teeth, making coffee, walking to your car, etc.)", 3),
-                        ExerciseStep(2, "For each activity today, pause before starting. Take one conscious breath.", 2),
-                        ExerciseStep(3, "Engage all your senses. What do you see, hear, feel, smell, taste? Notice details you usually miss.", 5),
-                        ExerciseStep(4, "When your mind wanders to past or future, gently return to sensory experience.", 3),
-                        ExerciseStep(5, "At day's end, journal about what you noticed. How was this different from autopilot?", 5, "Consistency matters more than duration")
+                        LearningExerciseStep(1, "Choose three daily activities (brushing teeth, making coffee, walking to your car, etc.)", 3),
+                        LearningExerciseStep(2, "For each activity today, pause before starting. Take one conscious breath.", 2),
+                        LearningExerciseStep(3, "Engage all your senses. What do you see, hear, feel, smell, taste? Notice details you usually miss.", 5),
+                        LearningExerciseStep(4, "When your mind wanders to past or future, gently return to sensory experience.", 3),
+                        LearningExerciseStep(5, "At day's end, journal about what you noticed. How was this different from autopilot?", 5, "Consistency matters more than duration")
                     ),
                     duration = 15,
                     materials = listOf("Your usual daily activities", "Journal for reflection")
@@ -556,11 +556,11 @@ object PathContentProvider {
                     title = "The Art of Deep Listening",
                     description = "Most of us listen to respond, not to understand. This exercise teaches you to listen with your full presence—a gift to both yourself and others.",
                     steps = listOf(
-                        ExerciseStep(1, "Choose someone to practice with (or recall a recent conversation).", 2),
-                        ExerciseStep(2, "As they speak, bring your full attention to their words. Notice the urge to interrupt, plan your response, or judge. Don't act on it.", 5),
-                        ExerciseStep(3, "Notice their tone, pace, body language. What emotions might be present?", 3),
-                        ExerciseStep(4, "When they finish, pause for three breaths before responding.", 2),
-                        ExerciseStep(5, "Reflect back what you heard without adding interpretation: 'What I'm hearing is...'", 3)
+                        LearningExerciseStep(1, "Choose someone to practice with (or recall a recent conversation).", 2),
+                        LearningExerciseStep(2, "As they speak, bring your full attention to their words. Notice the urge to interrupt, plan your response, or judge. Don't act on it.", 5),
+                        LearningExerciseStep(3, "Notice their tone, pace, body language. What emotions might be present?", 3),
+                        LearningExerciseStep(4, "When they finish, pause for three breaths before responding.", 2),
+                        LearningExerciseStep(5, "Reflect back what you heard without adding interpretation: 'What I'm hearing is...'", 3)
                     ),
                     duration = 15,
                     materials = listOf("A willing conversation partner or recent memory")
@@ -767,10 +767,10 @@ object PathContentProvider {
                     title = "Transforming Inner Criticism",
                     description = "Learn to recognize and reframe the voice of self-doubt. This exercise helps you shift from harsh self-criticism to supportive self-coaching.",
                     steps = listOf(
-                        ExerciseStep(1, "Write down three recent self-critical thoughts you've had.", 4),
-                        ExerciseStep(2, "For each, ask: Is this 100% true? What evidence contradicts it?", 5),
-                        ExerciseStep(3, "Reframe each criticism as a growth opportunity. Instead of 'I'm terrible at this,' try 'I'm learning this.'", 6),
-                        ExerciseStep(4, "Write what you'd tell a good friend in the same situation. Then offer that kindness to yourself.", 5)
+                        LearningExerciseStep(1, "Write down three recent self-critical thoughts you've had.", 4),
+                        LearningExerciseStep(2, "For each, ask: Is this 100% true? What evidence contradicts it?", 5),
+                        LearningExerciseStep(3, "Reframe each criticism as a growth opportunity. Instead of 'I'm terrible at this,' try 'I'm learning this.'", 6),
+                        LearningExerciseStep(4, "Write what you'd tell a good friend in the same situation. Then offer that kindness to yourself.", 5)
                     ),
                     duration = 20,
                     materials = listOf("Journal or notebook", "Honest self-reflection")
@@ -786,11 +786,11 @@ object PathContentProvider {
                     title = "Your Body Shapes Your Mind",
                     description = "Research shows that body posture affects confidence. Expansive postures increase feelings of power and risk tolerance. This exercise teaches you to use your body to shift your state.",
                     steps = listOf(
-                        ExerciseStep(1, "Stand in a 'power pose': feet wide, hands on hips or raised overhead, chest open. Hold for 2 minutes.", 2, "Feel silly? Do it anyway!"),
-                        ExerciseStep(2, "Notice sensations in your body. What shifts? How's your breathing?", 3),
-                        ExerciseStep(3, "Try a 'low power' pose: shoulders rolled forward, arms crossed, head down. Hold 2 minutes.", 2),
-                        ExerciseStep(4, "Compare how you feel. Which position makes you feel more capable?", 3),
-                        ExerciseStep(5, "Before challenging situations, spend 2 minutes in your power pose.", 5)
+                        LearningExerciseStep(1, "Stand in a 'power pose': feet wide, hands on hips or raised overhead, chest open. Hold for 2 minutes.", 2, "Feel silly? Do it anyway!"),
+                        LearningExerciseStep(2, "Notice sensations in your body. What shifts? How's your breathing?", 3),
+                        LearningExerciseStep(3, "Try a 'low power' pose: shoulders rolled forward, arms crossed, head down. Hold 2 minutes.", 2),
+                        LearningExerciseStep(4, "Compare how you feel. Which position makes you feel more capable?", 3),
+                        LearningExerciseStep(5, "Before challenging situations, spend 2 minutes in your power pose.", 5)
                     ),
                     duration = 15
                 )
@@ -914,11 +914,11 @@ object PathContentProvider {
                     title = "Building Confidence Through Strategic Action",
                     description = "Create a concrete action plan for building confidence in one specific area. This structured approach ensures you take consistent, progressive steps.",
                     steps = listOf(
-                        ExerciseStep(1, "Choose one specific area where you want more confidence (public speaking, dating, career advancement, etc.)", 5),
-                        ExerciseStep(2, "List 3-5 concrete actions, ordered from least to most challenging. Start small!", 7),
-                        ExerciseStep(3, "For each action, identify: What's the worst that could happen? How would I handle it?", 7),
-                        ExerciseStep(4, "Schedule the first action in your calendar with a specific date and time.", 3),
-                        ExerciseStep(5, "Commit to reflecting after each action: What did I learn? What's my next step?", 3)
+                        LearningExerciseStep(1, "Choose one specific area where you want more confidence (public speaking, dating, career advancement, etc.)", 5),
+                        LearningExerciseStep(2, "List 3-5 concrete actions, ordered from least to most challenging. Start small!", 7),
+                        LearningExerciseStep(3, "For each action, identify: What's the worst that could happen? How would I handle it?", 7),
+                        LearningExerciseStep(4, "Schedule the first action in your calendar with a specific date and time.", 3),
+                        LearningExerciseStep(5, "Commit to reflecting after each action: What did I learn? What's my next step?", 3)
                     ),
                     duration = 25,
                     materials = listOf("Journal", "Calendar", "Honesty and courage")

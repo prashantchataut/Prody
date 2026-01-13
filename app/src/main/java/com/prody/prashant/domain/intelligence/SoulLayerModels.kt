@@ -510,6 +510,17 @@ data class BuddhaContext(
 }
 
 /**
+ * Therapeutic approach types for Haven therapy sessions.
+ */
+enum class TherapeuticApproach {
+    CBT,         // Cognitive Behavioral Therapy techniques
+    DBT,         // Dialectical Behavior Therapy
+    MINDFULNESS, // Mindfulness-based approaches
+    ACT,         // Acceptance and Commitment Therapy
+    GENERAL      // General supportive counseling
+}
+
+/**
  * Context optimized for Haven therapy sessions.
  */
 data class HavenContext(
@@ -520,15 +531,7 @@ data class HavenContext(
     val preferredTherapeuticApproach: TherapeuticApproach,
     val crisisHistory: Boolean,
     val sensitiveTriggers: List<String>
-) {
-    enum class TherapeuticApproach {
-        CBT,         // Cognitive Behavioral Therapy techniques
-        DBT,         // Dialectical Behavior Therapy
-        MINDFULNESS, // Mindfulness-based approaches
-        ACT,         // Acceptance and Commitment Therapy
-        GENERAL      // General supportive counseling
-    }
-}
+)
 
 /**
  * Context optimized for notification decisions.
