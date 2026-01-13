@@ -2,6 +2,7 @@ package com.prody.prashant.domain.summary
 
 import com.prody.prashant.data.local.entity.JournalEntryEntity
 import com.prody.prashant.domain.model.Mood
+import com.prody.prashant.domain.model.MoodTrend
 import java.time.LocalDate
 
 /**
@@ -82,22 +83,6 @@ data class WeeklySummary(
 
     val averageWordsPerEntry: Int
         get() = if (entriesCount > 0) totalWords / entriesCount else 0
-}
-
-/**
- * Mood trend classification.
- */
-enum class MoodTrend {
-    IMPROVING,
-    STABLE,
-    DECLINING;
-
-    val description: String
-        get() = when (this) {
-            IMPROVING -> "Your mood has been getting better"
-            STABLE -> "Your emotional state has been consistent"
-            DECLINING -> "You've been going through challenges"
-        }
 }
 
 /**

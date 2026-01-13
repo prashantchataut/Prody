@@ -1,5 +1,6 @@
 package com.prody.prashant.domain.wrapped
 
+import com.prody.prashant.domain.model.MoodTrend
 import java.time.DayOfWeek
 import java.time.Month
 
@@ -80,16 +81,6 @@ data class MoodJourney(
     val mostReflectiveMonth: Month?,
     val monthlyAverages: List<Float> // 12 values, one per month
 )
-
-/**
- * Mood trend throughout the year
- */
-enum class MoodTrend {
-    IMPROVING,    // Mood generally getting better
-    STABLE,       // Mood relatively consistent
-    DECLINING,    // Mood generally getting worse
-    FLUCTUATING   // Highly variable mood
-}
 
 /**
  * Time of day categorization

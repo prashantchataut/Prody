@@ -1,6 +1,7 @@
 package com.prody.prashant.domain.intelligence
 
 import com.prody.prashant.domain.model.Mood
+import com.prody.prashant.domain.model.MoodTrend
 import com.prody.prashant.domain.model.TimeOfDay
 import com.prody.prashant.domain.streak.DualStreakStatus
 import java.time.DayOfWeek
@@ -181,16 +182,6 @@ enum class UserArchetype(
 // ================================================================================================
 // MOOD & EMOTIONAL PATTERNS
 // ================================================================================================
-
-/**
- * Trend direction for mood over recent period.
- */
-enum class MoodTrend(val description: String) {
-    IMPROVING("Getting better - more positive entries over time"),
-    STABLE("Consistent emotional state"),
-    DECLINING("Showing signs of struggle"),
-    VOLATILE("Frequent mood swings - needs stability")
-}
 
 /**
  * Inferred energy level from writing patterns and engagement.
@@ -455,14 +446,29 @@ data class Celebration(
     val tokensReward: Int = 0
 )
 
+/**
+ * Types of celebrations - combines event types and visual effects.
+ * Event types: Used to categorize what is being celebrated
+ * Visual effects: Used to determine how to render the celebration
+ */
 enum class CelebrationType {
+    // Event types
     FIRST_ENTRY,
     STREAK_MILESTONE,
     WEEK_COMPLETE,
     FEATURE_DISCOVERED,
     GROWTH_MOMENT,
     VULNERABILITY_SHARED,
-    PATTERN_BROKEN
+    PATTERN_BROKEN,
+
+    // Visual effect types
+    CONFETTI,
+    FIREWORKS,
+    SPARKLE,
+    SPARKLES,
+    GENTLE_GLOW,
+    WARM_FADE,
+    ACHIEVEMENT
 }
 
 /**

@@ -160,9 +160,9 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-    // Material Icons Core - contains common icons (Home, Add, Settings, etc.)
-    // material-icons-extended removed to prevent OOM during build (18k+ icons)
+    // Material Icons - Core and Extended for full icon coverage
     implementation(libs.androidx.material.icons.core)
+    implementation("androidx.compose.material:material-icons-extended")
     implementation(libs.material)
     implementation(libs.androidx.navigation.compose)
 

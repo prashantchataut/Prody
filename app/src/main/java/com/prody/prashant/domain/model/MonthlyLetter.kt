@@ -267,11 +267,7 @@ data class MoodJourney(
                 emptyList()
             }
 
-            val trend = when (trendStr.lowercase()) {
-                "improving" -> MoodTrend.IMPROVING
-                "declining" -> MoodTrend.DECLINING
-                else -> MoodTrend.STABLE
-            }
+            val trend = MoodTrend.fromString(trendStr)
 
             return MoodJourney(dataPoints, dominantMood, narrative, trend)
         }
@@ -283,12 +279,6 @@ data class MoodDataPoint(
     val mood: String,
     val intensity: Int
 )
-
-enum class MoodTrend {
-    IMPROVING,
-    STABLE,
-    DECLINING
-}
 
 /**
  * Buddha's personalized insight

@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.prody.prashant.domain.intelligence.CelebrationType
 import com.prody.prashant.ui.theme.*
 import kotlinx.coroutines.delay
 import kotlin.math.PI
@@ -248,13 +249,6 @@ class CelebrationState {
     }
 }
 
-enum class CelebrationType {
-    CONFETTI,       // Colorful falling confetti
-    FIREWORKS,      // Burst pattern
-    SPARKLES,       // Twinkling stars
-    ACHIEVEMENT     // Gold particles with shine
-}
-
 @Composable
 fun rememberCelebrationState(): CelebrationState {
     return remember { CelebrationState() }
@@ -288,6 +282,8 @@ fun CelebrationOverlay(
         CelebrationType.FIREWORKS -> FireworksCelebration()
         CelebrationType.SPARKLES -> SparklesCelebration()
         CelebrationType.ACHIEVEMENT -> AchievementCelebration()
+        // Event types use default confetti celebration
+        else -> ConfettiCelebration()
     }
 }
 

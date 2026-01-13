@@ -195,6 +195,19 @@ class ProdyVoice @Inject constructor() {
                 message = "You've disrupted an old pattern. That takes awareness and effort.",
                 encouragement = "New patterns start forming with consistency."
             )
+
+            // Visual effect types - provide default celebration copy
+            CelebrationType.CONFETTI,
+            CelebrationType.FIREWORKS,
+            CelebrationType.SPARKLE,
+            CelebrationType.SPARKLES,
+            CelebrationType.GENTLE_GLOW,
+            CelebrationType.WARM_FADE,
+            CelebrationType.ACHIEVEMENT -> CelebrationCopy(
+                title = "Celebration!",
+                message = "Something wonderful happened!",
+                encouragement = "Keep up the great work!"
+            )
         }
     }
 

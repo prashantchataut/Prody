@@ -33,6 +33,9 @@ interface WeeklyDigestDao {
     fun getAllDigests(): Flow<List<WeeklyDigestEntity>>
 
     @Query("SELECT * FROM weekly_digests WHERE userId = :userId AND isDeleted = 0 ORDER BY weekStartDate DESC")
+    fun getAllDigests(userId: String): Flow<List<WeeklyDigestEntity>>
+
+    @Query("SELECT * FROM weekly_digests WHERE userId = :userId AND isDeleted = 0 ORDER BY weekStartDate DESC")
     fun getDigestsByUser(userId: String): Flow<List<WeeklyDigestEntity>>
 
     @Query("SELECT * FROM weekly_digests WHERE id = :id AND isDeleted = 0")
@@ -47,8 +50,14 @@ interface WeeklyDigestDao {
     @Query("SELECT * FROM weekly_digests WHERE isDeleted = 0 ORDER BY weekStartDate DESC LIMIT 1")
     suspend fun getLatestDigest(): WeeklyDigestEntity?
 
+    @Query("SELECT * FROM weekly_digests WHERE userId = :userId AND isDeleted = 0 ORDER BY weekStartDate DESC LIMIT 1")
+    suspend fun getLatestDigest(userId: String): WeeklyDigestEntity?
+
     @Query("SELECT * FROM weekly_digests WHERE isDeleted = 0 ORDER BY weekStartDate DESC LIMIT 1")
     fun observeLatestDigest(): Flow<WeeklyDigestEntity?>
+
+    @Query("SELECT * FROM weekly_digests WHERE userId = :userId AND isDeleted = 0 ORDER BY weekStartDate DESC LIMIT 1")
+    fun observeLatestDigest(userId: String): Flow<WeeklyDigestEntity?>
 
     /**
      * Get digest for a specific week
@@ -79,8 +88,14 @@ interface WeeklyDigestDao {
     @Query("SELECT * FROM weekly_digests WHERE isRead = 0 AND isDeleted = 0 ORDER BY weekStartDate DESC")
     fun getUnreadDigests(): Flow<List<WeeklyDigestEntity>>
 
+    @Query("SELECT * FROM weekly_digests WHERE userId = :userId AND isRead = 0 AND isDeleted = 0 ORDER BY weekStartDate DESC")
+    fun getUnreadDigests(userId: String): Flow<List<WeeklyDigestEntity>>
+
     @Query("SELECT COUNT(*) FROM weekly_digests WHERE isRead = 0 AND isDeleted = 0")
     fun getUnreadCount(): Flow<Int>
+
+    @Query("SELECT COUNT(*) FROM weekly_digests WHERE userId = :userId AND isRead = 0 AND isDeleted = 0")
+    suspend fun getUnreadCount(userId: String): Int
 
     /**
      * Mark digest as read
@@ -93,6 +108,9 @@ interface WeeklyDigestDao {
      */
     @Query("UPDATE weekly_digests SET isRead = 1, readAt = :readAt WHERE isRead = 0")
     suspend fun markAllAsRead(readAt: Long = System.currentTimeMillis())
+
+    @Query("UPDATE weekly_digests SET isRead = 1, readAt = :readAt WHERE userId = :userId AND isRead = 0")
+    suspend fun markAllAsRead(userId: String, readAt: Long = System.currentTimeMillis())
 
     // ==================== EXISTENCE CHECKS ====================
 
@@ -118,13 +136,16 @@ interface WeeklyDigestDao {
         )
         AND userId = :userId
     """)
-    suspend fun cleanupOldDigests(userId: String, keepCount: Int = WeeklyDigestEntity.MAX_STORED_DIGESTS)
+    suspend fun cleanupOldDigests(userId: String, keepCount: Int = WeeklyDigestEntity.MAX_STORED_DIGESTS): Int
 
     /**
      * Get count of stored digests
      */
     @Query("SELECT COUNT(*) FROM weekly_digests WHERE userId = :userId AND isDeleted = 0")
     suspend fun getDigestCountForUser(userId: String): Int
+
+    @Query("SELECT COUNT(*) FROM weekly_digests WHERE userId = :userId AND isDeleted = 0")
+    fun getDigestCount(userId: String): Flow<Int>
 
     // ==================== STATISTICS ====================
 
