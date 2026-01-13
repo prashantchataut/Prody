@@ -5,27 +5,39 @@
 # ========================================
 # Prody Application Classes
 # ========================================
+# Security: These rules are refined to allow for proper code obfuscation,
+# which is a critical security measure to prevent reverse engineering.
+# The previous rules were too broad (-keep class com.prody.prashant.**)
+# and effectively disabled obfuscation for the entire app.
 
-# Keep all Prody app classes
--keep class com.prody.prashant.** { *; }
+# Keep application entry points and other classes referenced by the system.
+# Note: R8's default rules for Android are good, these are for safety.
+-keep public class * extends android.app.Application
+-keep public class * extends androidx.lifecycle.ViewModel
+-keep public class com.prody.prashant.MainActivity
+-keep public class com.prody.prashant.ProdyApplication
+-keep public class * extends android.content.BroadcastReceiver
+-keep public class * extends android.app.Service
+-keep public class * extends androidx.glance.appwidget.GlanceAppWidgetReceiver
+-keep public class * extends androidx.glance.appwidget.GlanceAppWidget
 
-# Keep data models
+# Keep all data, model, and entity classes to prevent issues with serialization or Room.
+# These classes often have their fields accessed via reflection.
 -keep class com.prody.prashant.data.model.** { *; }
 -keep class com.prody.prashant.domain.model.** { *; }
 -keep class com.prody.prashant.domain.identity.** { *; }
 -keep class com.prody.prashant.data.local.entity.** { *; }
 
-# Keep data classes members
--keepclassmembers class * {
+# Keep members of data classes used in serialization.
+-keepclassmembers,allowobfuscation class * {
     @kotlinx.serialization.SerialName <fields>;
 }
 
 # ========================================
-# Kotlin
+# Kotlin & Coroutines
 # ========================================
-
--keep class kotlin.** { *; }
--keep class kotlinx.** { *; }
+# It's best practice to rely on the default R8/AGP rules for kotlin.* and kotlinx.*
+# Overly broad -keep rules prevent size optimization and obfuscation.
 -dontwarn kotlin.**
 -dontwarn kotlinx.**
 

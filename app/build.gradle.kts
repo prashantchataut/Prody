@@ -69,13 +69,25 @@ android {
 
     signingConfigs {
         create("release") {
+            // Security: This logic prevents silently falling back to a debug key.
+            // It ensures the build fails if the release keystore is missing during a release build.
+            val isReleaseTask = project.gradle.startParameter.taskNames.any {
+                it.contains("assembleRelease", ignoreCase = true) || it.contains("bundleRelease", ignoreCase = true)
+            }
+
             val keystoreFile = file("prody-release.jks")
             val rootKeystoreFile = file("../keystore/prody-release.jks")
-            storeFile = when {
+            val resolvedStoreFile = when {
                 keystoreFile.exists() -> keystoreFile
                 rootKeystoreFile.exists() -> rootKeystoreFile
                 else -> null
             }
+
+            if (isReleaseTask && resolvedStoreFile == null) {
+                throw org.gradle.api.GradleException("Release keystore file not found. Could not find 'prody-release.jks' in 'app/' or 'keystore/'. Place the keystore file in the correct location or configure the path in 'app/build.gradle.kts'.")
+            }
+
+            storeFile = resolvedStoreFile
             storePassword = System.getenv("KEYSTORE_PASSWORD")
             keyAlias = System.getenv("KEY_ALIAS")
             keyPassword = System.getenv("KEY_PASSWORD")
