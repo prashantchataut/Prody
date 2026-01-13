@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.components
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
@@ -84,7 +85,7 @@ fun BuddhaGuideIntro(
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
-                                imageVector = Icons.Filled.AutoAwesome,
+                                imageVector = ProdyIcons.AutoAwesome,
                                 contentDescription = null,
                                 tint = Color.White,
                                 modifier = Modifier.size(18.dp)
@@ -105,7 +106,7 @@ fun BuddhaGuideIntro(
                         modifier = Modifier.size(32.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Filled.Close,
+                            imageVector = ProdyIcons.Close,
                             contentDescription = "Close",
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -201,10 +202,10 @@ private fun BuddhaGuideCardContent(card: BuddhaGuideCard) {
     ) {
         // Icon
         val icon = when (card.iconName) {
-            "auto_awesome" -> Icons.Filled.AutoAwesome
-            "lock" -> Icons.Filled.Lock
-            "psychology" -> Icons.Filled.Psychology
-            else -> Icons.Filled.Stars
+            "auto_awesome" -> ProdyIcons.AutoAwesome
+            "lock" -> ProdyIcons.Lock
+            "psychology" -> ProdyIcons.Psychology
+            else -> ProdyIcons.Stars
         }
 
         Box(
@@ -293,7 +294,7 @@ fun ContextualAiHint(
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.AutoAwesome,
+                        imageVector = ProdyIcons.AutoAwesome,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(16.dp)
@@ -365,7 +366,7 @@ fun ContextualAiHint(
                     modifier = Modifier.size(24.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.Close,
+                        imageVector = ProdyIcons.Close,
                         contentDescription = "Dismiss",
                         tint = MaterialTheme.colorScheme.onPrimaryContainer,
                         modifier = Modifier.size(16.dp)
@@ -387,9 +388,9 @@ fun SyncStatusIndicator(
     modifier: Modifier = Modifier
 ) {
     val icon = when {
-        !isOnline -> Icons.Filled.CloudOff
-        pendingChanges > 0 -> Icons.Filled.CloudSync
-        else -> Icons.Filled.CloudDone
+        !isOnline -> ProdyIcons.CloudOff
+        pendingChanges > 0 -> ProdyIcons.CloudSync
+        else -> ProdyIcons.CloudDone
     }
 
     val color = when {
@@ -452,7 +453,7 @@ fun OfflineBanner(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    imageVector = Icons.Filled.WifiOff,
+                    imageVector = ProdyIcons.WifiOff,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onErrorContainer,
                     modifier = Modifier.size(16.dp)
@@ -501,7 +502,7 @@ fun PerformanceWarning(
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Filled.Warning,
+                    imageVector = ProdyIcons.Warning,
                     contentDescription = null,
                     tint = MoodAnxious,
                     modifier = Modifier.size(20.dp)
@@ -522,7 +523,7 @@ fun PerformanceWarning(
                     modifier = Modifier.size(24.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.Close,
+                        imageVector = ProdyIcons.Close,
                         contentDescription = "Dismiss",
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(16.dp)

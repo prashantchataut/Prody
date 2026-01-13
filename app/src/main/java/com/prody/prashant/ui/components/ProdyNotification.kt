@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.components
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.EaseInOutCubic
@@ -116,42 +117,42 @@ enum class ProdyNotificationType(
     val gradientColors: List<Color>
 ) {
     STREAK_REMINDER(
-        icon = Icons.Filled.LocalFireDepartment,
+        icon = ProdyIcons.LocalFireDepartment,
         primaryColor = NotificationStreak,
         gradientColors = ProdyGradients.streakNotificationGradient
     ),
     STREAK_MILESTONE(
-        icon = Icons.Filled.LocalFireDepartment,
+        icon = ProdyIcons.LocalFireDepartment,
         primaryColor = GoldTier,
         gradientColors = ProdyGradients.celebrationGradient
     ),
     ACHIEVEMENT_UNLOCKED(
-        icon = Icons.Filled.EmojiEvents,
+        icon = ProdyIcons.EmojiEvents,
         primaryColor = NotificationAchievement,
         gradientColors = ProdyGradients.achievementGradient
     ),
     DAILY_MOTIVATION(
-        icon = Icons.Filled.TipsAndUpdates,
+        icon = ProdyIcons.TipsAndUpdates,
         primaryColor = NotificationMotivation,
         gradientColors = ProdyGradients.motivationGradient
     ),
     GENTLE_REMINDER(
-        icon = Icons.Filled.Notifications,
+        icon = ProdyIcons.Notifications,
         primaryColor = NotificationReminder,
         gradientColors = ProdyGradients.oceanGradient
     ),
     CELEBRATION(
-        icon = Icons.Filled.Celebration,
+        icon = ProdyIcons.Celebration,
         primaryColor = NotificationCelebration,
         gradientColors = ProdyGradients.celebrationGradient
     ),
     SUCCESS(
-        icon = Icons.Filled.Verified,
+        icon = ProdyIcons.Verified,
         primaryColor = NotificationSuccess,
         gradientColors = ProdyGradients.growthGradient
     ),
     ENCOURAGEMENT(
-        icon = Icons.Filled.Favorite,
+        icon = ProdyIcons.Favorite,
         primaryColor = NotificationPrimary,
         gradientColors = ProdyGradients.serenityGradient
     )
@@ -321,7 +322,7 @@ fun ProdyNotificationBanner(
                     modifier = Modifier.size(32.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.Close,
+                        imageVector = ProdyIcons.Close,
                         contentDescription = "Dismiss notification",
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(20.dp)
@@ -455,7 +456,7 @@ fun StreakNotification(
                     )
 
                     Icon(
-                        imageVector = Icons.Filled.LocalFireDepartment,
+                        imageVector = ProdyIcons.LocalFireDepartment,
                         contentDescription = null,
                         tint = StreakFire,
                         modifier = Modifier
@@ -647,7 +648,7 @@ fun AchievementNotification(
 
                     // Sparkle effects
                     Icon(
-                        imageVector = Icons.Filled.AutoAwesome,
+                        imageVector = ProdyIcons.AutoAwesome,
                         contentDescription = null,
                         tint = GoldTier,
                         modifier = Modifier
@@ -658,7 +659,7 @@ fun AchievementNotification(
                     )
 
                     Icon(
-                        imageVector = Icons.Filled.Star,
+                        imageVector = ProdyIcons.Star,
                         contentDescription = null,
                         tint = GoldTier,
                         modifier = Modifier
@@ -669,7 +670,7 @@ fun AchievementNotification(
                     )
 
                     Icon(
-                        imageVector = Icons.Filled.AutoAwesome,
+                        imageVector = ProdyIcons.AutoAwesome,
                         contentDescription = null,
                         tint = GoldTier,
                         modifier = Modifier
@@ -690,7 +691,7 @@ fun AchievementNotification(
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = Icons.Filled.EmojiEvents,
+                            imageVector = ProdyIcons.EmojiEvents,
                             contentDescription = null,
                             tint = Color.White,
                             modifier = Modifier
@@ -823,7 +824,7 @@ fun MotivationalNotification(
                 horizontalArrangement = Arrangement.spacedBy(ProdyTokens.Spacing.md)
             ) {
                 Icon(
-                    imageVector = Icons.Filled.TipsAndUpdates,
+                    imageVector = ProdyIcons.TipsAndUpdates,
                     contentDescription = null,
                     tint = NotificationMotivation,
                     modifier = Modifier

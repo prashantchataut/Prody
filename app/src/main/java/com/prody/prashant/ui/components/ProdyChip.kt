@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.components
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Spring
@@ -170,7 +171,7 @@ fun ProdyFilterChip(
         ) {
             if (selected && showCheckmark) {
                 Icon(
-                    imageVector = Icons.Default.Check,
+                    imageVector = ProdyIcons.Check,
                     contentDescription = null,
                     modifier = Modifier.size(ChipDefaults.IconSize),
                     tint = contentColor
@@ -360,7 +361,7 @@ fun ProdyInputChip(
                 contentColor = contentColor
             ) {
                 Icon(
-                    imageVector = Icons.Default.Close,
+                    imageVector = ProdyIcons.Close,
                     contentDescription = "Remove",
                     modifier = Modifier
                         .padding(4.dp)

@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.components
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
@@ -73,7 +74,7 @@ fun PlayerSkillsCard(
                 dailyXp = dailyClarityXp,
                 dailyCap = GameSkillSystem.DAILY_CLARITY_CAP,
                 showDailyCap = showDailyCaps,
-                icon = Icons.Filled.Lightbulb,
+                icon = ProdyIcons.Lightbulb,
                 color = SkillColors.Clarity
             )
 
@@ -84,7 +85,7 @@ fun PlayerSkillsCard(
                 dailyXp = dailyDisciplineXp,
                 dailyCap = GameSkillSystem.DAILY_DISCIPLINE_CAP,
                 showDailyCap = showDailyCaps,
-                icon = Icons.Filled.School,
+                icon = ProdyIcons.School,
                 color = SkillColors.Discipline
             )
 
@@ -95,7 +96,7 @@ fun PlayerSkillsCard(
                 dailyXp = dailyCourageXp,
                 dailyCap = GameSkillSystem.DAILY_COURAGE_CAP,
                 showDailyCap = showDailyCaps,
-                icon = Icons.Filled.Favorite,
+                icon = ProdyIcons.Favorite,
                 color = SkillColors.Courage
             )
         }

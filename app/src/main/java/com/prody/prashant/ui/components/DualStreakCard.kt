@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -25,6 +24,7 @@ import androidx.compose.ui.unit.sp
 import com.prody.prashant.domain.streak.DualStreakStatus
 import com.prody.prashant.domain.streak.StreakInfo
 import com.prody.prashant.domain.streak.StreakType
+import com.prody.prashant.ui.icons.ProdyIcons
 import com.prody.prashant.ui.theme.*
 
 /**
@@ -80,7 +80,7 @@ fun DualStreakCard(
                 )
 
                 Icon(
-                    imageVector = Icons.Outlined.Info,
+                    imageVector = ProdyIcons.Outlined.Info,
                     contentDescription = "Tap for details",
                     tint = secondaryTextColor,
                     modifier = Modifier.size(16.dp)
@@ -97,7 +97,7 @@ fun DualStreakCard(
                 // Wisdom Streak (Left)
                 StreakColumn(
                     streakInfo = dualStreakStatus.wisdomStreak,
-                    icon = Icons.Outlined.LocalFireDepartment,
+                    icon = ProdyIcons.Outlined.LocalFireDepartment,
                     iconColor = StreakFire,
                     title = "Wisdom",
                     subtitle = "Daily learning",
@@ -118,7 +118,7 @@ fun DualStreakCard(
                 // Reflection Streak (Right)
                 StreakColumn(
                     streakInfo = dualStreakStatus.reflectionStreak,
-                    icon = Icons.Outlined.Edit,
+                    icon = ProdyIcons.Outlined.Edit,
                     iconColor = ProdyAccent,
                     title = "Reflection",
                     subtitle = "Deep work",
@@ -271,7 +271,7 @@ private fun StreakStatusIndicator(
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Outlined.CheckCircle,
+                    imageVector = ProdyIcons.Outlined.CheckCircle,
                     contentDescription = null,
                     tint = accentColor,
                     modifier = Modifier.size(14.dp)
@@ -292,7 +292,7 @@ private fun StreakStatusIndicator(
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Outlined.Shield,
+                    imageVector = ProdyIcons.Outlined.Shield,
                     contentDescription = null,
                     tint = LeaderboardGold,
                     modifier = Modifier.size(14.dp)
@@ -313,7 +313,7 @@ private fun StreakStatusIndicator(
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Outlined.Warning,
+                    imageVector = ProdyIcons.Outlined.Warning,
                     contentDescription = null,
                     tint = ProdyError,
                     modifier = Modifier.size(14.dp)
@@ -378,7 +378,7 @@ private fun GracePeriodIndicator(
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Outlined.Shield,
+                        imageVector = ProdyIcons.Outlined.Shield,
                         contentDescription = null,
                         tint = LeaderboardGold,
                         modifier = Modifier.size(16.dp)
@@ -474,7 +474,7 @@ fun DualStreakDetailDialog(
                 // Wisdom Streak Details
                 StreakDetailSection(
                     streakInfo = dualStreakStatus.wisdomStreak,
-                    icon = Icons.Outlined.LocalFireDepartment,
+                    icon = ProdyIcons.Outlined.LocalFireDepartment,
                     iconColor = StreakFire,
                     title = "Wisdom Streak"
                 )
@@ -484,7 +484,7 @@ fun DualStreakDetailDialog(
                 // Reflection Streak Details
                 StreakDetailSection(
                     streakInfo = dualStreakStatus.reflectionStreak,
-                    icon = Icons.Outlined.Edit,
+                    icon = ProdyIcons.Outlined.Edit,
                     iconColor = ProdyAccent,
                     title = "Reflection Streak"
                 )
@@ -502,7 +502,7 @@ fun DualStreakDetailDialog(
                             horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Outlined.Shield,
+                                imageVector = ProdyIcons.Outlined.Shield,
                                 contentDescription = null,
                                 tint = LeaderboardGold,
                                 modifier = Modifier.size(18.dp)

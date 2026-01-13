@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.screens.haven
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
@@ -68,7 +69,7 @@ fun HavenExerciseScreen(
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            imageVector = ProdyIcons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.back)
                         )
                     }
@@ -400,7 +401,7 @@ private fun GroundingExerciseContent(
                     )
                 } else {
                     Icon(
-                        imageVector = Icons.Default.SelfImprovement,
+                        imageVector = ProdyIcons.SelfImprovement,
                         contentDescription = null,
                         modifier = Modifier.size(48.dp),
                         tint = ProdyAccentGreen
@@ -442,7 +443,7 @@ private fun GroundingExerciseContent(
                     Text("Next Step", color = Color.Black)
                     Spacer(modifier = Modifier.width(8.dp))
                     Icon(
-                        imageVector = Icons.Default.ArrowForward,
+                        imageVector = ProdyIcons.ArrowForward,
                         contentDescription = null,
                         tint = Color.Black
                     )
@@ -456,7 +457,7 @@ private fun GroundingExerciseContent(
                     Text("Complete", color = Color.Black)
                     Spacer(modifier = Modifier.width(8.dp))
                     Icon(
-                        imageVector = Icons.Default.Check,
+                        imageVector = ProdyIcons.Check,
                         contentDescription = null,
                         tint = Color.Black
                     )
@@ -760,7 +761,7 @@ private fun ExerciseCompletionScreen(
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                imageVector = Icons.Default.CheckCircle,
+                imageVector = ProdyIcons.CheckCircle,
                 contentDescription = null,
                 modifier = Modifier.size(64.dp),
                 tint = ProdySuccess

@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.components
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
@@ -141,7 +142,7 @@ fun StreakBadge(
             horizontalArrangement = Arrangement.spacedBy(size.iconSpacing)
         ) {
             Icon(
-                imageVector = if (streakDays >= 30) Icons.Filled.Whatshot else Icons.Filled.LocalFireDepartment,
+                imageVector = if (streakDays >= 30) ProdyIcons.Whatshot else ProdyIcons.LocalFireDepartment,
                 contentDescription = null, // Description handled by parent
                 tint = if (streakDays > 0) primaryColor else Color.Gray,
                 modifier = Modifier.size(size.iconSize)
@@ -223,7 +224,7 @@ fun CompactStreakIndicator(
         horizontalArrangement = Arrangement.spacedBy(2.dp)
     ) {
         Icon(
-            imageVector = Icons.Filled.LocalFireDepartment,
+            imageVector = ProdyIcons.LocalFireDepartment,
             contentDescription = null,
             tint = if (streakDays > 0) primaryColor else Color.Gray.copy(alpha = 0.5f),
             modifier = Modifier.size(14.dp)

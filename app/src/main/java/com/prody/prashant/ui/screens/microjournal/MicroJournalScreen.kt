@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.screens.microjournal
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
@@ -77,7 +78,7 @@ fun MicroJournalScreen(
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            imageVector = ProdyIcons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back"
                         )
                     }
@@ -90,7 +91,7 @@ fun MicroJournalScreen(
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 onClick = { viewModel.showQuickCapture() },
-                icon = { Icon(Icons.Default.Add, contentDescription = null) },
+                icon = { Icon(ProdyIcons.Add, contentDescription = null) },
                 text = { Text("Capture") },
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary
@@ -268,7 +269,7 @@ private fun QuickCaptureSheet(
                         color = MaterialTheme.colorScheme.onPrimary
                     )
                 } else {
-                    Icon(Icons.Default.Check, contentDescription = null)
+                    Icon(ProdyIcons.Check, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
                     Text("Save")
                 }
@@ -391,7 +392,7 @@ private fun MicroEntryList(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Lightbulb,
+                            imageVector = ProdyIcons.Lightbulb,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.secondary,
                             modifier = Modifier.size(20.dp)
@@ -465,7 +466,7 @@ private fun MicroEntryCard(
                     contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.OpenInFull,
+                        imageVector = ProdyIcons.OpenInFull,
                         contentDescription = null,
                         modifier = Modifier.size(16.dp)
                     )
@@ -481,7 +482,7 @@ private fun MicroEntryCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = Icons.Default.CheckCircle,
+                        imageVector = ProdyIcons.CheckCircle,
                         contentDescription = null,
                         modifier = Modifier.size(14.dp),
                         tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
@@ -570,7 +571,7 @@ private fun MicroEntryDetailSheet(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
-                            imageVector = Icons.Default.CheckCircle,
+                            imageVector = ProdyIcons.CheckCircle,
                             contentDescription = null,
                             modifier = Modifier.size(18.dp),
                             tint = MaterialTheme.colorScheme.primary
@@ -598,7 +599,7 @@ private fun MicroEntryDetailSheet(
                         modifier = Modifier.weight(1f)
                     ) {
                         Icon(
-                            imageVector = Icons.Default.OpenInFull,
+                            imageVector = ProdyIcons.OpenInFull,
                             contentDescription = null,
                             modifier = Modifier.size(18.dp)
                         )
@@ -615,7 +616,7 @@ private fun MicroEntryDetailSheet(
                     modifier = Modifier.weight(1f)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Delete,
+                        imageVector = ProdyIcons.Delete,
                         contentDescription = null,
                         modifier = Modifier.size(18.dp)
                     )
@@ -667,7 +668,7 @@ private fun EmptyMicroJournal(onCaptureClick: () -> Unit) {
             modifier = Modifier.padding(32.dp)
         ) {
             Icon(
-                imageVector = Icons.Default.Bolt,
+                imageVector = ProdyIcons.Bolt,
                 contentDescription = null,
                 modifier = Modifier.size(64.dp),
                 tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
@@ -687,7 +688,7 @@ private fun EmptyMicroJournal(onCaptureClick: () -> Unit) {
             )
             Spacer(modifier = Modifier.height(24.dp))
             Button(onClick = onCaptureClick) {
-                Icon(Icons.Default.Add, contentDescription = null)
+                Icon(ProdyIcons.Add, contentDescription = null)
                 Spacer(modifier = Modifier.width(8.dp))
                 Text("Capture First Thought")
             }

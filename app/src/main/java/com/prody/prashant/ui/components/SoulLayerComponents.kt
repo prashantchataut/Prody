@@ -10,7 +10,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowForward
-import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -29,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.prody.prashant.domain.intelligence.*
+import com.prody.prashant.ui.icons.ProdyIcons
 import com.prody.prashant.ui.theme.ProdyTokens
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
@@ -123,7 +123,7 @@ fun SurfacedMemoryCard(
                     modifier = Modifier.size(32.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Rounded.Close,
+                        imageVector = ProdyIcons.Rounded.Close,
                         contentDescription = "Dismiss memory",
                         tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                         modifier = Modifier.size(18.dp)
@@ -181,7 +181,7 @@ fun SurfacedMemoryCard(
                 Text(text = memory.actionText)
                 Spacer(modifier = Modifier.width(ProdyTokens.Spacing.xs))
                 Icon(
-                    imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
+                    imageVector = ProdyIcons.AutoMirrored.Rounded.ArrowForward,
                     contentDescription = null,
                     modifier = Modifier.size(16.dp)
                 )
@@ -264,7 +264,7 @@ fun AnniversaryMemoryCard(
                         horizontalArrangement = Arrangement.spacedBy(ProdyTokens.Spacing.sm)
                     ) {
                         Icon(
-                            imageVector = Icons.Rounded.AutoAwesome,
+                            imageVector = ProdyIcons.Rounded.AutoAwesome,
                             contentDescription = null,
                             tint = Color(0xFFD4A574),
                             modifier = Modifier.size(20.dp)
@@ -289,7 +289,7 @@ fun AnniversaryMemoryCard(
                         modifier = Modifier.size(32.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Rounded.Close,
+                            imageVector = ProdyIcons.Rounded.Close,
                             contentDescription = "Dismiss",
                             tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                             modifier = Modifier.size(18.dp)
@@ -601,7 +601,7 @@ fun CelebrationDialog(
                         ) {
                             if (celebration.xpReward > 0) {
                                 RewardItem(
-                                    icon = Icons.Rounded.Star,
+                                    icon = ProdyIcons.Rounded.Star,
                                     value = "+${celebration.xpReward}",
                                     label = "XP",
                                     color = Color(0xFF6366F1)
@@ -609,7 +609,7 @@ fun CelebrationDialog(
                             }
                             if (celebration.tokensReward > 0) {
                                 RewardItem(
-                                    icon = Icons.Rounded.Token,
+                                    icon = ProdyIcons.Rounded.Token,
                                     value = "+${celebration.tokensReward}",
                                     label = "Tokens",
                                     color = Color(0xFFD4A574)
@@ -736,7 +736,7 @@ fun IntelligentGreetingHeader(
                 horizontalArrangement = Arrangement.spacedBy(ProdyTokens.Spacing.xs)
             ) {
                 Icon(
-                    imageVector = Icons.Rounded.Favorite,
+                    imageVector = ProdyIcons.Rounded.Favorite,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.tertiary,
                     modifier = Modifier.size(16.dp)
@@ -787,7 +787,7 @@ fun GrowthContrastCard(
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Rounded.TrendingUp,
+                        imageVector = ProdyIcons.Rounded.TrendingUp,
                         contentDescription = null,
                         tint = Color(0xFF10B981),
                         modifier = Modifier.size(18.dp)
@@ -1007,13 +1007,13 @@ private fun getMemoryTypeColor(type: MemoryType): Color {
 
 private fun getMemoryTypeIcon(type: MemoryType): ImageVector {
     return when (type) {
-        MemoryType.JOURNAL_ENTRY -> Icons.Rounded.Book
-        MemoryType.FUTURE_MESSAGE_SENT -> Icons.Rounded.Send
-        MemoryType.FUTURE_MESSAGE_RECEIVED -> Icons.Rounded.Mail
-        MemoryType.MILESTONE_ACHIEVED -> Icons.Rounded.EmojiEvents
-        MemoryType.HAVEN_BREAKTHROUGH -> Icons.Rounded.Psychology
-        MemoryType.FIRST_OF_KIND -> Icons.Rounded.Stars
-        MemoryType.STREAK_ACHIEVEMENT -> Icons.Rounded.LocalFireDepartment
+        MemoryType.JOURNAL_ENTRY -> ProdyIcons.Rounded.Book
+        MemoryType.FUTURE_MESSAGE_SENT -> ProdyIcons.Rounded.Send
+        MemoryType.FUTURE_MESSAGE_RECEIVED -> ProdyIcons.Rounded.Mail
+        MemoryType.MILESTONE_ACHIEVED -> ProdyIcons.Rounded.EmojiEvents
+        MemoryType.HAVEN_BREAKTHROUGH -> ProdyIcons.Rounded.Psychology
+        MemoryType.FIRST_OF_KIND -> ProdyIcons.Rounded.Stars
+        MemoryType.STREAK_ACHIEVEMENT -> ProdyIcons.Rounded.LocalFireDepartment
     }
 }
 
@@ -1036,24 +1036,24 @@ private fun getMoodEmoji(mood: Mood): String {
 
 private fun getCelebrationIcon(animation: CelebrationAnimation): ImageVector {
     return when (animation) {
-        CelebrationAnimation.CONFETTI -> Icons.Rounded.Celebration
-        CelebrationAnimation.SPARKLE -> Icons.Rounded.AutoAwesome
-        CelebrationAnimation.GENTLE_PULSE -> Icons.Rounded.Favorite
-        CelebrationAnimation.WARM_GLOW -> Icons.Rounded.WbSunny
-        CelebrationAnimation.FIREWORKS -> Icons.Rounded.Stars
+        CelebrationAnimation.CONFETTI -> ProdyIcons.Rounded.Celebration
+        CelebrationAnimation.SPARKLE -> ProdyIcons.Rounded.AutoAwesome
+        CelebrationAnimation.GENTLE_PULSE -> ProdyIcons.Rounded.Favorite
+        CelebrationAnimation.WARM_GLOW -> ProdyIcons.Rounded.WbSunny
+        CelebrationAnimation.FIREWORKS -> ProdyIcons.Rounded.Stars
     }
 }
 
 private fun getMilestoneIcon(type: MilestoneType): ImageVector {
     return when (type) {
-        MilestoneType.ENTRY_COUNT -> Icons.Rounded.EditNote
-        MilestoneType.STREAK_LENGTH -> Icons.Rounded.LocalFireDepartment
-        MilestoneType.WORDS_WRITTEN -> Icons.Rounded.TextFields
-        MilestoneType.DAYS_WITH_PRODY -> Icons.Rounded.CalendarMonth
-        MilestoneType.BLOOM_COUNT -> Icons.Rounded.Eco
-        MilestoneType.VOCABULARY_MASTERED -> Icons.Rounded.School
-        MilestoneType.HAVEN_SESSIONS -> Icons.Rounded.Psychology
-        MilestoneType.FUTURE_MESSAGES -> Icons.Rounded.Schedule
+        MilestoneType.ENTRY_COUNT -> ProdyIcons.Rounded.EditNote
+        MilestoneType.STREAK_LENGTH -> ProdyIcons.Rounded.LocalFireDepartment
+        MilestoneType.WORDS_WRITTEN -> ProdyIcons.Rounded.TextFields
+        MilestoneType.DAYS_WITH_PRODY -> ProdyIcons.Rounded.CalendarMonth
+        MilestoneType.BLOOM_COUNT -> ProdyIcons.Rounded.Eco
+        MilestoneType.VOCABULARY_MASTERED -> ProdyIcons.Rounded.School
+        MilestoneType.HAVEN_SESSIONS -> ProdyIcons.Rounded.Psychology
+        MilestoneType.FUTURE_MESSAGES -> ProdyIcons.Rounded.Schedule
     }
 }
 

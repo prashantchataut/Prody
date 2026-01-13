@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.screens.social
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -142,7 +143,7 @@ fun CircleCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Star,
+                        imageVector = ProdyIcons.Star,
                         contentDescription = null,
                         tint = ProdyAccentGreen,
                         modifier = Modifier.size(16.dp)
@@ -493,7 +494,7 @@ fun ChallengeProgressCard(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
-                            imageVector = Icons.Default.CheckCircle,
+                            imageVector = ProdyIcons.CheckCircle,
                             contentDescription = null,
                             tint = ProdySuccess,
                             modifier = Modifier.size(16.dp)
@@ -593,7 +594,7 @@ fun InviteCodeDisplay(
                     modifier = Modifier.weight(1f)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Check,
+                        imageVector = ProdyIcons.Check,
                         contentDescription = null,
                         modifier = Modifier.size(18.dp)
                     )
@@ -605,7 +606,7 @@ fun InviteCodeDisplay(
                     modifier = Modifier.weight(1f)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Share,
+                        imageVector = ProdyIcons.Share,
                         contentDescription = null,
                         modifier = Modifier.size(18.dp)
                     )

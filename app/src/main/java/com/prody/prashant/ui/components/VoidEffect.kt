@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.components
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
@@ -225,7 +226,7 @@ private fun VoidPromptOverlay(
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Default.AutoStories,
+                    imageVector = ProdyIcons.AutoStories,
                     contentDescription = null,
                     modifier = Modifier.size(28.dp),
                     tint = ProdyAccentGreen
@@ -254,7 +255,7 @@ private fun VoidPromptOverlay(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Icon(
-                    imageVector = Icons.Default.Edit,
+                    imageVector = ProdyIcons.Edit,
                     contentDescription = null,
                     modifier = Modifier.size(18.dp)
                 )

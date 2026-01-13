@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.screens.profile
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
@@ -19,7 +20,6 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -271,7 +271,7 @@ private fun EditProfileHeader(
             modifier = Modifier.size(48.dp)
         ) {
             Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                imageVector = ProdyIcons.AutoMirrored.Filled.ArrowBack,
                 contentDescription = stringResource(R.string.back),
                 tint = if (isDarkMode) EditProfileColors.TextPrimaryDark
                        else EditProfileColors.TextPrimaryLight,
@@ -349,7 +349,7 @@ private fun AvatarSection(
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Filled.Edit,
+                    imageVector = ProdyIcons.Edit,
                     contentDescription = "Change avatar",
                     tint = Color.Black,
                     modifier = Modifier.size(16.dp)
@@ -438,7 +438,7 @@ private fun AvatarOptionItem(
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Filled.Lock,
+                    imageVector = ProdyIcons.Lock,
                     contentDescription = "Locked",
                     tint = EditProfileColors.LockedIcon,
                     modifier = Modifier.size(20.dp)
@@ -723,7 +723,7 @@ private fun TitleOptionChip(
     ) {
         if (title.isLocked) {
             Icon(
-                imageVector = Icons.Filled.Lock,
+                imageVector = ProdyIcons.Lock,
                 contentDescription = "Locked",
                 tint = EditProfileColors.LockedIcon,
                 modifier = Modifier.size(14.dp)
@@ -775,7 +775,7 @@ private fun BannerSelectionLink(
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.Wallpaper,
+                        imageVector = ProdyIcons.Wallpaper,
                         contentDescription = null,
                         tint = if (isDarkMode) EditProfileColors.AccentGreen
                                else EditProfileColors.AccentGreenLight,
@@ -802,7 +802,7 @@ private fun BannerSelectionLink(
             }
 
             Icon(
-                imageVector = Icons.Filled.ChevronRight,
+                imageVector = ProdyIcons.ChevronRight,
                 contentDescription = "Go to banner selection",
                 tint = if (isDarkMode) EditProfileColors.TextTertiaryDark
                        else EditProfileColors.TextTertiaryLight,
@@ -849,7 +849,7 @@ private fun SaveProfileButton(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Filled.Check,
+                    imageVector = ProdyIcons.Check,
                     contentDescription = null,
                     tint = Color.Black,
                     modifier = Modifier.size(20.dp)
@@ -914,18 +914,18 @@ private fun DiscardChangesDialog(
  */
 private fun getAvatarIcon(avatarId: String): ImageVector {
     return when (avatarId) {
-        "default" -> Icons.Filled.Person
-        "lotus" -> Icons.Filled.Spa
-        "mountain" -> Icons.Filled.Terrain
-        "river" -> Icons.Filled.Water
-        "tree" -> Icons.Filled.Park
-        "sun" -> Icons.Filled.WbSunny
-        "moon" -> Icons.Filled.DarkMode
-        "star" -> Icons.Filled.Star
-        "flame" -> Icons.Filled.LocalFireDepartment
-        "diamond" -> Icons.Filled.Diamond
-        "crown" -> Icons.Filled.EmojiEvents
-        "phoenix" -> Icons.Filled.Whatshot
-        else -> Icons.Filled.Person
+        "default" -> ProdyIcons.Person
+        "lotus" -> ProdyIcons.Spa
+        "mountain" -> ProdyIcons.Terrain
+        "river" -> ProdyIcons.Water
+        "tree" -> ProdyIcons.Park
+        "sun" -> ProdyIcons.WbSunny
+        "moon" -> ProdyIcons.DarkMode
+        "star" -> ProdyIcons.Star
+        "flame" -> ProdyIcons.LocalFireDepartment
+        "diamond" -> ProdyIcons.Diamond
+        "crown" -> ProdyIcons.EmojiEvents
+        "phoenix" -> ProdyIcons.Whatshot
+        else -> ProdyIcons.Person
     }
 }

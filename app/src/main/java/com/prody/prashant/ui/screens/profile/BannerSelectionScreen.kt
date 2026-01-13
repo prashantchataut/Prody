@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.screens.profile
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
@@ -215,7 +216,7 @@ private fun BannerSelectionHeader(
             modifier = Modifier.size(48.dp)
         ) {
             Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                imageVector = ProdyIcons.AutoMirrored.Filled.ArrowBack,
                 contentDescription = stringResource(R.string.back),
                 tint = if (isDarkMode) BannerColors.TextPrimaryDark
                        else BannerColors.TextPrimaryLight,
@@ -420,7 +421,7 @@ private fun BannerOptionCard(
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.Lock,
+                        imageVector = ProdyIcons.Lock,
                         contentDescription = "Locked",
                         tint = Color.White,
                         modifier = Modifier.size(24.dp)
@@ -453,7 +454,7 @@ private fun BannerOptionCard(
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Filled.Check,
+                    imageVector = ProdyIcons.Check,
                     contentDescription = "Selected",
                     tint = Color.Black,
                     modifier = Modifier.size(16.dp)
@@ -500,7 +501,7 @@ private fun ApplyBannerButton(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Filled.Wallpaper,
+                    imageVector = ProdyIcons.Wallpaper,
                     contentDescription = null,
                     tint = Color.Black,
                     modifier = Modifier.size(20.dp)

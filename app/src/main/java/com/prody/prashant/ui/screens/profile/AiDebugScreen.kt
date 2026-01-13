@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.screens.profile
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -68,7 +69,7 @@ fun AiDebugScreen(
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            imageVector = ProdyIcons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back"
                         )
                     }
@@ -76,7 +77,7 @@ fun AiDebugScreen(
                 actions = {
                     IconButton(onClick = { viewModel.refreshStats() }) {
                         Icon(
-                            imageVector = Icons.Filled.Refresh,
+                            imageVector = ProdyIcons.Refresh,
                             contentDescription = "Refresh"
                         )
                     }
@@ -98,7 +99,7 @@ fun AiDebugScreen(
             // Cache Statistics Card
             DebugSectionCard(
                 title = "Cache Performance",
-                icon = Icons.Filled.Cached
+                icon = ProdyIcons.Cached
             ) {
                 StatRow(
                     label = "Cache Hit Rate",
@@ -119,7 +120,7 @@ fun AiDebugScreen(
             // API Statistics Card
             DebugSectionCard(
                 title = "API Usage",
-                icon = Icons.Filled.Api
+                icon = ProdyIcons.Api
             ) {
                 StatRow(
                     label = "Total API Calls",
@@ -136,7 +137,7 @@ fun AiDebugScreen(
             // Last Call Info Card
             DebugSectionCard(
                 title = "Last Call Info",
-                icon = Icons.Filled.History
+                icon = ProdyIcons.History
             ) {
                 if (uiState.stats.lastCallTimestamp > 0) {
                     StatRow(
@@ -207,7 +208,7 @@ fun AiDebugScreen(
                 )
             ) {
                 Icon(
-                    imageVector = Icons.Filled.Delete,
+                    imageVector = ProdyIcons.Delete,
                     contentDescription = null,
                     modifier = Modifier.size(18.dp)
                 )
@@ -219,7 +220,7 @@ fun AiDebugScreen(
             if (BuildConfig.DEBUG) {
                 DebugSectionCard(
                     title = "Badge Preview",
-                    icon = Icons.Filled.Verified
+                    icon = ProdyIcons.Verified
                 ) {
                     Text(
                         text = "Preview special badges on your profile without OAuth",
@@ -280,7 +281,7 @@ fun AiDebugScreen(
                 // Notification Testing Section
                 DebugSectionCard(
                     title = "Test Notifications",
-                    icon = Icons.Filled.Notifications
+                    icon = ProdyIcons.Notifications
                 ) {
                     Text(
                         text = "Trigger test notifications immediately",
@@ -340,7 +341,7 @@ fun AiDebugScreen(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.Shield,
+                        imageVector = ProdyIcons.Shield,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(16.dp)

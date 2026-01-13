@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.components
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
@@ -239,7 +240,7 @@ fun PremiumXPBar(
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.Stars,
+                        imageVector = ProdyIcons.Stars,
                         contentDescription = null,
                         tint = secondaryColor,
                         modifier = Modifier.size(16.dp)
@@ -724,7 +725,7 @@ fun PointBurst(
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Filled.Stars,
+                    imageVector = ProdyIcons.Stars,
                     contentDescription = null,
                     tint = Color.White,
                     modifier = Modifier.size(16.dp)
@@ -801,7 +802,7 @@ fun StreakCounter(
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.LocalFireDepartment,
+                        imageVector = ProdyIcons.LocalFireDepartment,
                         contentDescription = "Streak fire",
                         tint = Color.White,
                         modifier = Modifier.size(18.dp)

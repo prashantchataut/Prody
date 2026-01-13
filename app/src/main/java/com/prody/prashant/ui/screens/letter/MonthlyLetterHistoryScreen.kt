@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.screens.letter
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -41,7 +42,7 @@ fun MonthlyLetterHistoryScreen(
                 title = { Text("Letter History") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, "Back")
+                        Icon(ProdyIcons.ArrowBack, "Back")
                     }
                 },
                 actions = {
@@ -50,7 +51,7 @@ fun MonthlyLetterHistoryScreen(
                         onClick = { showFavoritesOnly = !showFavoritesOnly },
                         label = { Text("Favorites") },
                         leadingIcon = if (showFavoritesOnly) {
-                            { Icon(Icons.Default.FilterList, null, Modifier.size(18.dp)) }
+                            { Icon(ProdyIcons.FilterList, null, Modifier.size(18.dp)) }
                         } else null,
                         modifier = Modifier.padding(end = 8.dp)
                     )

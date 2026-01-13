@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.screens.haven
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
@@ -66,7 +67,7 @@ fun HavenHomeScreen(
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            imageVector = ProdyIcons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.back)
                         )
                     }
@@ -471,7 +472,7 @@ private fun SessionHistoryCard(
             // Status indicator
             if (session.isCompleted) {
                 Icon(
-                    imageVector = Icons.Default.CheckCircle,
+                    imageVector = ProdyIcons.CheckCircle,
                     contentDescription = "Completed",
                     tint = ProdySuccess,
                     modifier = Modifier.size(20.dp)
@@ -486,7 +487,7 @@ private fun SessionHistoryCard(
 
             IconButton(onClick = { showDeleteDialog = true }) {
                 Icon(
-                    imageVector = Icons.Default.MoreVert,
+                    imageVector = ProdyIcons.MoreVert,
                     contentDescription = "Options",
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -541,7 +542,7 @@ private fun CrisisResourcesCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    imageVector = Icons.Default.HealthAndSafety,
+                    imageVector = ProdyIcons.HealthAndSafety,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.error
                 )
@@ -559,7 +560,7 @@ private fun CrisisResourcesCard(
                     )
                 }
                 Icon(
-                    imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                    imageVector = if (expanded) ProdyIcons.ExpandLess else ProdyIcons.ExpandMore,
                     contentDescription = if (expanded) "Collapse" else "Expand"
                 )
             }
@@ -621,7 +622,7 @@ private fun HavenNotConfiguredState(
             modifier = Modifier.padding(32.dp)
         ) {
             Icon(
-                imageVector = Icons.Default.Settings,
+                imageVector = ProdyIcons.Settings,
                 contentDescription = null,
                 modifier = Modifier.size(64.dp),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)

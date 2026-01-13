@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.screens.flashcard
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -77,7 +78,7 @@ fun FlashcardScreen(
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            imageVector = ProdyIcons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back"
                         )
                     }
@@ -86,14 +87,14 @@ fun FlashcardScreen(
                     if (!uiState.sessionComplete && uiState.currentIndex > 0) {
                         IconButton(onClick = { viewModel.undoLastAction() }) {
                             Icon(
-                                imageVector = Icons.AutoMirrored.Filled.Undo,
+                                imageVector = ProdyIcons.AutoMirrored.Filled.Undo,
                                 contentDescription = "Undo"
                             )
                         }
                     }
                     IconButton(onClick = onNavigateToSettings) {
                         Icon(
-                            imageVector = Icons.Filled.Settings,
+                            imageVector = ProdyIcons.Settings,
                             contentDescription = "Settings"
                         )
                     }
@@ -287,7 +288,7 @@ private fun SessionCompleteState(
             exit = scaleOut() + fadeOut()
         ) {
             Icon(
-                imageVector = Icons.Filled.CheckCircle,
+                imageVector = ProdyIcons.CheckCircle,
                 contentDescription = null,
                 modifier = Modifier.size(80.dp),
                 tint = MaterialTheme.colorScheme.primary
@@ -376,7 +377,7 @@ private fun SessionCompleteState(
             modifier = Modifier.fillMaxWidth()
         ) {
             Icon(
-                imageVector = Icons.Filled.Refresh,
+                imageVector = ProdyIcons.Refresh,
                 contentDescription = null,
                 modifier = Modifier.size(18.dp)
             )

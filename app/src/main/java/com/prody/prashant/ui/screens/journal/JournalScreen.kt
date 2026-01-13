@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.screens.journal
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
@@ -74,15 +75,15 @@ fun JournalListScreen(
                 actions = {
                     IconButton(onClick = onNavigateToHistory) {
                         Icon(
-                            imageVector = Icons.Filled.History,
+                            imageVector = ProdyIcons.History,
                             contentDescription = "View journal history",
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                     IconButton(onClick = { viewModel.toggleBookmarkFilter() }) {
                         Icon(
-                            imageVector = if (uiState.showBookmarkedOnly) Icons.Filled.Bookmark
-                            else Icons.Filled.BookmarkBorder,
+                            imageVector = if (uiState.showBookmarkedOnly) ProdyIcons.Bookmark
+                            else ProdyIcons.BookmarkBorder,
                             contentDescription = "Filter bookmarks",
                             tint = if (uiState.showBookmarkedOnly) MaterialTheme.colorScheme.primary
                             else MaterialTheme.colorScheme.onSurfaceVariant
@@ -99,7 +100,7 @@ fun JournalListScreen(
                 onClick = onNavigateToNewEntry,
                 icon = {
                     Icon(
-                        imageVector = Icons.Filled.Edit,
+                        imageVector = ProdyIcons.Edit,
                         contentDescription = null
                     )
                 },
@@ -224,8 +225,8 @@ private fun JournalEntryCard(
                     modifier = Modifier.size(48.dp)  // Minimum 48dp touch target for accessibility
                 ) {
                     Icon(
-                        imageVector = if (entry.isBookmarked) Icons.Filled.Bookmark
-                        else Icons.Filled.BookmarkBorder,
+                        imageVector = if (entry.isBookmarked) ProdyIcons.Bookmark
+                        else ProdyIcons.BookmarkBorder,
                         contentDescription = if (entry.isBookmarked) "Remove bookmark" else "Add bookmark",
                         tint = if (entry.isBookmarked) MaterialTheme.colorScheme.primary
                         else MaterialTheme.colorScheme.onSurfaceVariant,
@@ -251,7 +252,7 @@ private fun JournalEntryCard(
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.SelfImprovement,
+                        imageVector = ProdyIcons.SelfImprovement,
                         contentDescription = "Buddha wisdom available",
                         tint = ProdyPrimary,
                         modifier = Modifier.size(14.dp)
@@ -304,7 +305,7 @@ private fun EmptyJournalState(
         verticalArrangement = Arrangement.Center
     ) {
         Icon(
-            imageVector = Icons.Filled.AutoStories,
+            imageVector = ProdyIcons.AutoStories,
             contentDescription = null,
             modifier = Modifier.size(80.dp),
             tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
@@ -329,7 +330,7 @@ private fun EmptyJournalState(
             )
         ) {
             Icon(
-                imageVector = Icons.Filled.Edit,
+                imageVector = ProdyIcons.Edit,
                 contentDescription = null,
                 modifier = Modifier.size(18.dp)
             )

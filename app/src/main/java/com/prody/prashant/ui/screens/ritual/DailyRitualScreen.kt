@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.screens.ritual
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.animateFloatAsState
@@ -93,7 +94,7 @@ fun DailyRitualScreen(
                     navigationIcon = {
                         IconButton(onClick = viewModel::previousStep) {
                             Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                imageVector = ProdyIcons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = "Back"
                             )
                         }
@@ -209,7 +210,7 @@ private fun WelcomeStep(
             horizontalArrangement = Arrangement.End
         ) {
             IconButton(onClick = onClose) {
-                Icon(Icons.Default.Close, contentDescription = "Close")
+                Icon(ProdyIcons.Close, contentDescription = "Close")
             }
         }
 
@@ -251,7 +252,7 @@ private fun WelcomeStep(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = Icons.Default.LocalFireDepartment,
+                        imageVector = ProdyIcons.LocalFireDepartment,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(24.dp)
@@ -295,7 +296,7 @@ private fun WelcomeStep(
                 mode = RitualMode.MORNING,
                 isSelected = ritualMode == RitualMode.MORNING,
                 isCompleted = isMorningCompleted,
-                icon = Icons.Default.WbSunny,
+                icon = ProdyIcons.WbSunny,
                 title = "Morning",
                 subtitle = "Set your intention",
                 onClick = { onModeSelected(RitualMode.MORNING) },
@@ -306,7 +307,7 @@ private fun WelcomeStep(
                 mode = RitualMode.EVENING,
                 isSelected = ritualMode == RitualMode.EVENING,
                 isCompleted = isEveningCompleted,
-                icon = Icons.Default.NightsStay,
+                icon = ProdyIcons.NightsStay,
                 title = "Evening",
                 subtitle = "Reflect on your day",
                 onClick = { onModeSelected(RitualMode.EVENING) },
@@ -332,9 +333,9 @@ private fun WelcomeStep(
             if (canStart) {
                 Text("Begin Ritual")
                 Spacer(modifier = Modifier.width(8.dp))
-                Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
+                Icon(ProdyIcons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
             } else {
-                Icon(Icons.Default.CheckCircle, contentDescription = null)
+                Icon(ProdyIcons.CheckCircle, contentDescription = null)
                 Spacer(modifier = Modifier.width(8.dp))
                 Text("Already Completed")
             }
@@ -374,7 +375,7 @@ private fun RitualModeCard(
         ) {
             if (isCompleted) {
                 Icon(
-                    imageVector = Icons.Default.CheckCircle,
+                    imageVector = ProdyIcons.CheckCircle,
                     contentDescription = "Completed",
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(32.dp)
@@ -419,7 +420,7 @@ private fun WisdomStep(
         verticalArrangement = Arrangement.Center
     ) {
         Icon(
-            imageVector = Icons.Default.AutoAwesome,
+            imageVector = ProdyIcons.AutoAwesome,
             contentDescription = null,
             tint = MaterialTheme.colorScheme.primary,
             modifier = Modifier.size(40.dp)
@@ -472,7 +473,7 @@ private fun WisdomStep(
         ) {
             Text("Continue")
             Spacer(modifier = Modifier.width(8.dp))
-            Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
+            Icon(ProdyIcons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
         }
     }
 }
@@ -545,7 +546,7 @@ private fun MoodStep(
         ) {
             Text("Continue")
             Spacer(modifier = Modifier.width(8.dp))
-            Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
+            Icon(ProdyIcons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
         }
     }
 }
@@ -673,7 +674,7 @@ private fun IntentionStep(
         ) {
             Text("Continue")
             Spacer(modifier = Modifier.width(8.dp))
-            Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
+            Icon(ProdyIcons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
         }
     }
 }
@@ -783,7 +784,7 @@ private fun ReflectionStep(
             } else {
                 Text("Complete Ritual")
                 Spacer(modifier = Modifier.width(8.dp))
-                Icon(Icons.Default.Check, contentDescription = null)
+                Icon(ProdyIcons.Check, contentDescription = null)
             }
         }
     }
@@ -812,7 +813,7 @@ private fun CompleteStep(
         ) {
             Box(contentAlignment = Alignment.Center) {
                 Icon(
-                    imageVector = Icons.Default.Check,
+                    imageVector = ProdyIcons.Check,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(48.dp)
@@ -849,7 +850,7 @@ private fun CompleteStep(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = Icons.Default.LocalFireDepartment,
+                        imageVector = ProdyIcons.LocalFireDepartment,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.secondary
                     )
@@ -871,7 +872,7 @@ private fun CompleteStep(
             onClick = onExpandToJournal,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Icon(Icons.Default.Edit, contentDescription = null)
+            Icon(ProdyIcons.Edit, contentDescription = null)
             Spacer(modifier = Modifier.width(8.dp))
             Text("Write more in journal")
         }

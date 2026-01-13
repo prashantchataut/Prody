@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.screens.flashcard
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
@@ -396,7 +397,7 @@ private fun FlashcardFront(
         ) {
             // Left swipe indicator (Don't Know)
             Icon(
-                imageVector = Icons.Filled.Close,
+                imageVector = ProdyIcons.Close,
                 contentDescription = "Don't Know",
                 tint = Color.Red.copy(
                     alpha = if (swipeState.direction == SwipeDirection.LEFT)
@@ -407,7 +408,7 @@ private fun FlashcardFront(
 
             // Up swipe indicator (Skip)
             Icon(
-                imageVector = Icons.Filled.SkipNext,
+                imageVector = ProdyIcons.SkipNext,
                 contentDescription = "Skip",
                 tint = Color(0xFFFFA000).copy(
                     alpha = if (swipeState.direction == SwipeDirection.UP)
@@ -418,7 +419,7 @@ private fun FlashcardFront(
 
             // Right swipe indicator (Know)
             Icon(
-                imageVector = Icons.Filled.Check,
+                imageVector = ProdyIcons.Check,
                 contentDescription = "Know",
                 tint = Color(0xFF4CAF50).copy(
                     alpha = if (swipeState.direction == SwipeDirection.RIGHT)
@@ -452,7 +453,7 @@ private fun FlashcardFront(
                 )
                 IconButton(onClick = onSpeak) {
                     Icon(
-                        imageVector = Icons.AutoMirrored.Filled.VolumeUp,
+                        imageVector = ProdyIcons.AutoMirrored.Filled.VolumeUp,
                         contentDescription = "Pronounce",
                         tint = MaterialTheme.colorScheme.primary
                     )
@@ -763,7 +764,7 @@ fun FlashcardControls(
                 )
             ) {
                 Icon(
-                    imageVector = Icons.Filled.Close,
+                    imageVector = ProdyIcons.Close,
                     contentDescription = "Don't Know",
                     modifier = Modifier.size(32.dp)
                 )
@@ -779,7 +780,7 @@ fun FlashcardControls(
                 )
             ) {
                 Icon(
-                    imageVector = Icons.Filled.SkipNext,
+                    imageVector = ProdyIcons.SkipNext,
                     contentDescription = "Skip",
                     modifier = Modifier.size(24.dp)
                 )
@@ -795,7 +796,7 @@ fun FlashcardControls(
                 )
             ) {
                 Icon(
-                    imageVector = Icons.Filled.Check,
+                    imageVector = ProdyIcons.Check,
                     contentDescription = "Know",
                     modifier = Modifier.size(32.dp)
                 )
@@ -960,7 +961,7 @@ fun EmptyFlashcardState(modifier: Modifier = Modifier) {
         verticalArrangement = Arrangement.Center
     ) {
         Icon(
-            imageVector = Icons.Filled.Refresh,
+            imageVector = ProdyIcons.Refresh,
             contentDescription = null,
             modifier = Modifier.size(64.dp),
             tint = MaterialTheme.colorScheme.onSurfaceVariant

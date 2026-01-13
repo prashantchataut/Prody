@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.components
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
@@ -749,7 +750,7 @@ fun ProdyLeaderboardRow(
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Person,
+                            imageVector = ProdyIcons.Person,
                             contentDescription = null,
                             modifier = Modifier.size(24.dp),
                             tint = MaterialTheme.colorScheme.onPrimaryContainer
@@ -879,7 +880,7 @@ private fun RankChangeIndicator(
                 modifier = Modifier.padding(horizontal = ProdyTokens.Spacing.xs)
             ) {
                 Icon(
-                    imageVector = Icons.Default.TrendingUp,
+                    imageVector = ProdyIcons.TrendingUp,
                     contentDescription = "Rank up",
                     modifier = Modifier.size(14.dp),
                     tint = ProdySuccess
@@ -898,7 +899,7 @@ private fun RankChangeIndicator(
                 modifier = Modifier.padding(horizontal = ProdyTokens.Spacing.xs)
             ) {
                 Icon(
-                    imageVector = Icons.Default.TrendingDown,
+                    imageVector = ProdyIcons.TrendingDown,
                     contentDescription = "Rank down",
                     modifier = Modifier.size(14.dp),
                     tint = ProdyError
@@ -1072,7 +1073,7 @@ private fun PodiumPlace(
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Default.Person,
+                    imageVector = ProdyIcons.Person,
                     contentDescription = null,
                     modifier = Modifier.size(if (place == 1) 32.dp else 24.dp),
                     tint = MaterialTheme.colorScheme.onPrimaryContainer

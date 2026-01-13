@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.components
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
@@ -168,7 +169,7 @@ fun AchievementBadge(
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = if (isUnlocked) Icons.Filled.EmojiEvents else Icons.Filled.Lock,
+                    imageVector = if (isUnlocked) ProdyIcons.EmojiEvents else ProdyIcons.Lock,
                     contentDescription = null,
                     tint = if (isUnlocked) Color.White else Color.Gray,
                     modifier = Modifier.size(dimensions.iconSize / 2)
@@ -282,7 +283,7 @@ fun AchievementCard(
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = if (isUnlocked) Icons.Filled.EmojiEvents else Icons.Filled.Lock,
+                    imageVector = if (isUnlocked) ProdyIcons.EmojiEvents else ProdyIcons.Lock,
                     contentDescription = null,
                     tint = if (isUnlocked) rarityColor else Color.Gray,
                     modifier = Modifier.size(28.dp)
@@ -371,7 +372,7 @@ fun AchievementCard(
                             horizontalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Filled.Stars,
+                                imageVector = ProdyIcons.Stars,
                                 contentDescription = null,
                                 tint = GoldTier,
                                 modifier = Modifier.size(14.dp)
@@ -388,7 +389,7 @@ fun AchievementCard(
                     if (isUnlocked) {
                         Spacer(modifier = Modifier.height(4.dp))
                         Icon(
-                            imageVector = Icons.Filled.CheckCircle,
+                            imageVector = ProdyIcons.CheckCircle,
                             contentDescription = "Unlocked",
                             tint = SuccessGreen,
                             modifier = Modifier.size(20.dp)
@@ -492,7 +493,7 @@ fun AchievementCelebration(
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.EmojiEvents,
+                        imageVector = ProdyIcons.EmojiEvents,
                         contentDescription = null,
                         tint = Color.White,
                         modifier = Modifier.size(40.dp)
@@ -540,7 +541,7 @@ fun AchievementCelebration(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Filled.Stars,
+                            imageVector = ProdyIcons.Stars,
                             contentDescription = null,
                             tint = GoldTier,
                             modifier = Modifier.size(20.dp)
@@ -599,7 +600,7 @@ fun AchievementSummaryCard(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.EmojiEvents,
+                        imageVector = ProdyIcons.EmojiEvents,
                         contentDescription = null,
                         tint = GoldTier,
                         modifier = Modifier.size(24.dp)
@@ -637,7 +638,7 @@ fun AchievementSummaryCard(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.NewReleases,
+                        imageVector = ProdyIcons.NewReleases,
                         contentDescription = null,
                         tint = SuccessGreen,
                         modifier = Modifier.size(16.dp)

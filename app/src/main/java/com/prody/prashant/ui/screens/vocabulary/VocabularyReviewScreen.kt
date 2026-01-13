@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.screens.vocabulary
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
@@ -74,7 +75,7 @@ fun VocabularyReviewScreen(
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            imageVector = ProdyIcons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back"
                         )
                     }
@@ -82,7 +83,7 @@ fun VocabularyReviewScreen(
                 actions = {
                     IconButton(onClick = { viewModel.refresh() }) {
                         Icon(
-                            imageVector = Icons.Filled.Refresh,
+                            imageVector = ProdyIcons.Refresh,
                             contentDescription = "Refresh"
                         )
                     }
@@ -176,7 +177,7 @@ private fun StatisticsSection(uiState: VocabularyReviewUiState) {
         ) {
             StatCard(
                 modifier = Modifier.weight(1f),
-                icon = Icons.Filled.School,
+                icon = ProdyIcons.School,
                 label = "Learned",
                 value = "${uiState.totalWordsLearned}",
                 subtitle = "+${uiState.wordsLearnedThisWeek} this week",
@@ -185,7 +186,7 @@ private fun StatisticsSection(uiState: VocabularyReviewUiState) {
 
             StatCard(
                 modifier = Modifier.weight(1f),
-                icon = Icons.Filled.CheckCircle,
+                icon = ProdyIcons.CheckCircle,
                 label = "Used",
                 value = "${uiState.totalWordsUsed}",
                 subtitle = "${uiState.usagePercentage}% applied",
@@ -196,7 +197,7 @@ private fun StatisticsSection(uiState: VocabularyReviewUiState) {
         if (uiState.totalBonusPoints > 0) {
             StatCard(
                 modifier = Modifier.fillMaxWidth(),
-                icon = Icons.Filled.EmojiEvents,
+                icon = ProdyIcons.EmojiEvents,
                 label = "Bonus Discipline Points",
                 value = "+${uiState.totalBonusPoints}",
                 subtitle = "Earned from vocabulary usage",
@@ -274,7 +275,7 @@ private fun WordsUsedSection(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Icon(
-                imageVector = Icons.Filled.CheckCircle,
+                imageVector = ProdyIcons.CheckCircle,
                 contentDescription = null,
                 tint = Color(0xFF4CAF50),
                 modifier = Modifier.size(24.dp)
@@ -331,7 +332,7 @@ private fun WordsNotUsedSection(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Icon(
-                imageVector = Icons.Filled.Lightbulb,
+                imageVector = ProdyIcons.Lightbulb,
                 contentDescription = null,
                 tint = Color(0xFFFFC107),
                 modifier = Modifier.size(24.dp)
@@ -388,7 +389,7 @@ private fun WordsNeedingPracticeSection(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Icon(
-                imageVector = Icons.Filled.TipsAndUpdates,
+                imageVector = ProdyIcons.TipsAndUpdates,
                 contentDescription = null,
                 tint = Color(0xFF9C27B0),
                 modifier = Modifier.size(24.dp)
@@ -463,7 +464,7 @@ private fun WordChip(
                 )
                 if (isUsed) {
                     Icon(
-                        imageVector = Icons.Filled.Check,
+                        imageVector = ProdyIcons.Check,
                         contentDescription = "Used",
                         tint = Color(0xFF4CAF50),
                         modifier = Modifier.size(16.dp)
@@ -641,7 +642,7 @@ private fun EmptyState(modifier: Modifier = Modifier) {
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Icon(
-                imageVector = Icons.Filled.MenuBook,
+                imageVector = ProdyIcons.MenuBook,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                 modifier = Modifier.size(64.dp)

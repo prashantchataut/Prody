@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.components.quietmode
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
@@ -69,7 +70,7 @@ fun QuietModeSuggestionDialog(
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Default.SelfImprovement,
+                        imageVector = ProdyIcons.SelfImprovement,
                         contentDescription = null,
                         modifier = Modifier.size(36.dp),
                         tint = if (isDarkTheme()) {
@@ -299,7 +300,7 @@ fun QuietModeExitCheckInDialog(
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Default.SelfImprovement,
+                        imageVector = ProdyIcons.SelfImprovement,
                         contentDescription = null,
                         modifier = Modifier.size(36.dp),
                         tint = if (isDarkTheme()) {

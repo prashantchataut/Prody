@@ -1,9 +1,9 @@
 package com.prody.prashant.ui.navigation
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.prody.prashant.R
 
@@ -32,8 +32,8 @@ sealed class BottomNavItem(
     data object Home : BottomNavItem(
         route = "home",
         labelResId = R.string.nav_home,
-        selectedIcon = Icons.Filled.Home,
-        unselectedIcon = Icons.Outlined.Home,
+        selectedIcon = ProdyIcons.Home,
+        unselectedIcon = ProdyIcons.Outlined.Home,
         contentDescriptionResId = R.string.nav_home
     )
 
@@ -45,8 +45,8 @@ sealed class BottomNavItem(
     data object Journal : BottomNavItem(
         route = "journal",
         labelResId = R.string.nav_journal,
-        selectedIcon = Icons.Filled.Book,
-        unselectedIcon = Icons.Outlined.Book,
+        selectedIcon = ProdyIcons.Book,
+        unselectedIcon = ProdyIcons.Outlined.Book,
         contentDescriptionResId = R.string.nav_journal
     )
 
@@ -58,8 +58,8 @@ sealed class BottomNavItem(
     data object Stats : BottomNavItem(
         route = "stats",
         labelResId = R.string.nav_stats,
-        selectedIcon = Icons.Filled.BarChart,
-        unselectedIcon = Icons.Outlined.BarChart,
+        selectedIcon = ProdyIcons.BarChart,
+        unselectedIcon = ProdyIcons.Outlined.BarChart,
         contentDescriptionResId = R.string.nav_stats
     )
 
@@ -71,8 +71,8 @@ sealed class BottomNavItem(
     data object Profile : BottomNavItem(
         route = "profile",
         labelResId = R.string.nav_profile,
-        selectedIcon = Icons.Filled.Person,
-        unselectedIcon = Icons.Outlined.Person,
+        selectedIcon = ProdyIcons.Person,
+        unselectedIcon = ProdyIcons.Outlined.Person,
         contentDescriptionResId = R.string.nav_profile
     )
 

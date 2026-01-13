@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.screens.futuremessage
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -28,11 +29,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.CameraAlt
-import androidx.compose.material.icons.outlined.Mic
-import androidx.compose.material.icons.outlined.Stop
-import androidx.compose.material.icons.outlined.PlayArrow
-import androidx.compose.material.icons.outlined.Pause
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -431,7 +427,7 @@ private fun TimeCapsuleTopBar(
             modifier = Modifier.size(48.dp)
         ) {
             Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                imageVector = ProdyIcons.AutoMirrored.Filled.ArrowBack,
                 contentDescription = stringResource(R.string.back),
                 tint = titleTextColor,
                 modifier = Modifier.size(24.dp)
@@ -602,7 +598,7 @@ private fun MultimediaAttachmentRow(
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                imageVector = Icons.Outlined.CameraAlt,
+                imageVector = ProdyIcons.Outlined.CameraAlt,
                 contentDescription = "Attach photo",
                 tint = if (isRecording) iconColor.copy(alpha = 0.3f) else iconColor,
                 modifier = Modifier.size(24.dp)
@@ -619,7 +615,7 @@ private fun MultimediaAttachmentRow(
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                imageVector = if (isRecording) Icons.Outlined.Stop else Icons.Outlined.Mic,
+                imageVector = if (isRecording) ProdyIcons.Outlined.Stop else ProdyIcons.Outlined.Mic,
                 contentDescription = if (isRecording) "Stop recording" else "Record voice",
                 tint = if (isRecording) TimeCapsuleAccent else iconColor,
                 modifier = Modifier.size(24.dp)
@@ -737,7 +733,7 @@ private fun MediaThumbnail(
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Filled.PlayArrow,
+                    imageVector = ProdyIcons.PlayArrow,
                     contentDescription = null,
                     tint = Color.White,
                     modifier = Modifier.size(16.dp)
@@ -761,7 +757,7 @@ private fun MediaThumbnail(
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Filled.Close,
+                    imageVector = ProdyIcons.Close,
                     contentDescription = "Remove",
                     tint = Color.White,
                     modifier = Modifier.size(14.dp)
@@ -801,7 +797,7 @@ private fun VoiceRecordingPreview(
                 .background(TimeCapsuleAccent)
         ) {
             Icon(
-                imageVector = if (isPlaying) Icons.Outlined.Pause else Icons.Outlined.PlayArrow,
+                imageVector = if (isPlaying) ProdyIcons.Outlined.Pause else ProdyIcons.Outlined.PlayArrow,
                 contentDescription = if (isPlaying) "Pause" else "Play",
                 tint = Color.White,
                 modifier = Modifier.size(20.dp)
@@ -844,7 +840,7 @@ private fun VoiceRecordingPreview(
             modifier = Modifier.size(32.dp)
         ) {
             Icon(
-                imageVector = Icons.Filled.Delete,
+                imageVector = ProdyIcons.Delete,
                 contentDescription = "Remove recording",
                 tint = MaterialTheme.colorScheme.error,
                 modifier = Modifier.size(20.dp)
@@ -873,7 +869,7 @@ private fun TimeTravelSection(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Icon(
-                imageVector = Icons.Filled.RocketLaunch,
+                imageVector = ProdyIcons.RocketLaunch,
                 contentDescription = null,
                 tint = TimeCapsuleAccent,
                 modifier = Modifier.size(16.dp)
@@ -957,7 +953,7 @@ private fun EssenceSection(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Icon(
-                imageVector = Icons.Filled.LocalOffer,
+                imageVector = ProdyIcons.LocalOffer,
                 contentDescription = null,
                 tint = TimeCapsuleAccent,
                 modifier = Modifier.size(16.dp)
@@ -1131,7 +1127,7 @@ private fun SealAndScheduleButton(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Filled.Lock,
+                    imageVector = ProdyIcons.Lock,
                     contentDescription = null,
                     tint = buttonTextColor,
                     modifier = Modifier.size(20.dp)
@@ -1178,7 +1174,7 @@ private fun EssenceSectionMultiSelect(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Icon(
-                imageVector = Icons.Filled.LocalOffer,
+                imageVector = ProdyIcons.LocalOffer,
                 contentDescription = null,
                 tint = TimeCapsuleAccent,
                 modifier = Modifier.size(16.dp)
@@ -1285,7 +1281,7 @@ private fun MultiSelectCategoryTag(
                 exit = fadeOut() + scaleOut()
             ) {
                 Icon(
-                    imageVector = Icons.Filled.Check,
+                    imageVector = ProdyIcons.Check,
                     contentDescription = null,
                     tint = Color.White,
                     modifier = Modifier.size(14.dp)
@@ -1379,7 +1375,7 @@ private fun SealingAnimationOverlay(
 
                 // Lock icon
                 Icon(
-                    imageVector = Icons.Filled.Lock,
+                    imageVector = ProdyIcons.Lock,
                     contentDescription = "Sealing",
                     tint = TimeCapsuleAccent,
                     modifier = Modifier

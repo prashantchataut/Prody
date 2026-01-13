@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.screens.learning
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
@@ -68,7 +69,7 @@ fun LessonScreen(
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            imageVector = ProdyIcons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.back)
                         )
                     }
@@ -190,7 +191,7 @@ private fun ReadingContent(
                 Column(modifier = Modifier.padding(16.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
-                            imageVector = Icons.Default.Lightbulb,
+                            imageVector = ProdyIcons.Lightbulb,
                             contentDescription = null,
                             tint = ProdyAccentGreen
                         )
@@ -484,7 +485,7 @@ private fun ExerciseContent(
                             .padding(8.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Tips,
+                            imageVector = ProdyIcons.Tips,
                             contentDescription = null,
                             tint = ProdyAccentGreen,
                             modifier = Modifier.size(16.dp)
@@ -556,7 +557,7 @@ private fun JournalPromptContent(
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Icon(
-                    imageVector = Icons.Default.Create,
+                    imageVector = ProdyIcons.Create,
                     contentDescription = null,
                     tint = ProdyAccentGreen
                 )
@@ -763,7 +764,7 @@ private fun MeditationContent(
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = ProdyAccentGreen)
             ) {
-                Icon(Icons.Default.PlayArrow, contentDescription = null, tint = Color.Black)
+                Icon(ProdyIcons.PlayArrow, contentDescription = null, tint = Color.Black)
                 Spacer(modifier = Modifier.width(8.dp))
                 Text("Begin Meditation", color = Color.Black)
             }
@@ -777,7 +778,7 @@ private fun MeditationContent(
                     modifier = Modifier.weight(1f)
                 ) {
                     Icon(
-                        if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
+                        if (isPlaying) ProdyIcons.Pause else ProdyIcons.PlayArrow,
                         contentDescription = null
                     )
                     Spacer(modifier = Modifier.width(8.dp))

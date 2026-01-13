@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.components
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
@@ -135,9 +136,9 @@ private fun SessionHeader(
     headline: String
 ) {
     val icon = when (sessionType) {
-        SessionType.REFLECT -> Icons.Default.Edit
-        SessionType.SHARPEN -> Icons.Default.Psychology
-        SessionType.COMMIT -> Icons.Default.Schedule
+        SessionType.REFLECT -> ProdyIcons.Edit
+        SessionType.SHARPEN -> ProdyIcons.Psychology
+        SessionType.COMMIT -> ProdyIcons.Schedule
     }
 
     val color = when (sessionType) {
@@ -219,9 +220,9 @@ private fun SkillXpGain(
     xp: Int
 ) {
     val (icon, color) = when (skill) {
-        GameSkillSystem.SkillType.CLARITY -> Icons.Default.Visibility to MaterialTheme.colorScheme.primary
-        GameSkillSystem.SkillType.DISCIPLINE -> Icons.Default.FitnessCenter to MaterialTheme.colorScheme.secondary
-        GameSkillSystem.SkillType.COURAGE -> Icons.Default.EmojiEvents to MaterialTheme.colorScheme.tertiary
+        GameSkillSystem.SkillType.CLARITY -> ProdyIcons.Visibility to MaterialTheme.colorScheme.primary
+        GameSkillSystem.SkillType.DISCIPLINE -> ProdyIcons.FitnessCenter to MaterialTheme.colorScheme.secondary
+        GameSkillSystem.SkillType.COURAGE -> ProdyIcons.EmojiEvents to MaterialTheme.colorScheme.tertiary
     }
 
     Column(
@@ -254,7 +255,7 @@ private fun TokenGain(tokens: Int) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Icon(
-            imageVector = Icons.Default.Token,
+            imageVector = ProdyIcons.Token,
             contentDescription = null,
             tint = Color(0xFFFFD700),
             modifier = Modifier.size(24.dp)
@@ -278,9 +279,9 @@ private fun TokenGain(tokens: Int) {
 private fun LevelUpSection(levelUps: List<SkillLevelUp>) {
     levelUps.forEach { levelUp ->
         val (icon, color) = when (levelUp.skill) {
-            GameSkillSystem.SkillType.CLARITY -> Icons.Default.Visibility to MaterialTheme.colorScheme.primary
-            GameSkillSystem.SkillType.DISCIPLINE -> Icons.Default.FitnessCenter to MaterialTheme.colorScheme.secondary
-            GameSkillSystem.SkillType.COURAGE -> Icons.Default.EmojiEvents to MaterialTheme.colorScheme.tertiary
+            GameSkillSystem.SkillType.CLARITY -> ProdyIcons.Visibility to MaterialTheme.colorScheme.primary
+            GameSkillSystem.SkillType.DISCIPLINE -> ProdyIcons.FitnessCenter to MaterialTheme.colorScheme.secondary
+            GameSkillSystem.SkillType.COURAGE -> ProdyIcons.EmojiEvents to MaterialTheme.colorScheme.tertiary
         }
 
         Card(
@@ -297,7 +298,7 @@ private fun LevelUpSection(levelUps: List<SkillLevelUp>) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    imageVector = Icons.Default.TrendingUp,
+                    imageVector = ProdyIcons.TrendingUp,
                     contentDescription = null,
                     tint = color,
                     modifier = Modifier.size(20.dp)
@@ -345,7 +346,7 @@ private fun MissionProgressSection(progress: MissionProgress) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    imageVector = if (progress.justCompleted) Icons.Default.CheckCircle else Icons.Default.Flag,
+                    imageVector = if (progress.justCompleted) ProdyIcons.CheckCircle else ProdyIcons.Flag,
                     contentDescription = null,
                     tint = if (progress.justCompleted)
                         MaterialTheme.colorScheme.tertiary
@@ -403,7 +404,7 @@ private fun SeedBloomSection(bloom: SeedBloomInfo) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                imageVector = Icons.Default.LocalFlorist,
+                imageVector = ProdyIcons.LocalFlorist,
                 contentDescription = null,
                 tint = Color(0xFF4CAF50),
                 modifier = Modifier.size(20.dp)
@@ -443,11 +444,11 @@ private fun NextSuggestionSection(
         shape = RoundedCornerShape(8.dp)
     ) {
         val icon = when (suggestion.type) {
-            SuggestionType.COMPLETE_DAILY_MISSION -> Icons.Default.Flag
-            SuggestionType.TRY_DIFFERENT_MODE -> Icons.Default.SwapHoriz
-            SuggestionType.BLOOM_SEED -> Icons.Default.LocalFlorist
-            SuggestionType.CHECK_WEEKLY_TRIAL -> Icons.Default.EmojiEvents
-            SuggestionType.VIEW_PROGRESS -> Icons.Default.Analytics
+            SuggestionType.COMPLETE_DAILY_MISSION -> ProdyIcons.Flag
+            SuggestionType.TRY_DIFFERENT_MODE -> ProdyIcons.SwapHoriz
+            SuggestionType.BLOOM_SEED -> ProdyIcons.LocalFlorist
+            SuggestionType.CHECK_WEEKLY_TRIAL -> ProdyIcons.EmojiEvents
+            SuggestionType.VIEW_PROGRESS -> ProdyIcons.Analytics
         }
 
         Icon(
@@ -474,7 +475,7 @@ private fun NextSuggestionSection(
             }
         }
         Icon(
-            imageVector = Icons.Default.ChevronRight,
+            imageVector = ProdyIcons.ChevronRight,
             contentDescription = null,
             modifier = Modifier.size(18.dp)
         )

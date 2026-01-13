@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.common
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -88,7 +89,7 @@ fun ErrorDialog(
                     onRetry()
                 }) {
                     Icon(
-                        imageVector = Icons.Filled.Refresh,
+                        imageVector = ProdyIcons.Refresh,
                         contentDescription = null,
                         modifier = Modifier.size(18.dp)
                     )
@@ -158,7 +159,7 @@ fun ErrorCard(
                     )
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.Refresh,
+                        imageVector = ProdyIcons.Refresh,
                         contentDescription = null,
                         modifier = Modifier.size(18.dp)
                     )
@@ -198,7 +199,7 @@ fun ErrorBanner(
                 modifier = Modifier.weight(1f)
             ) {
                 Icon(
-                    imageVector = Icons.Filled.ErrorOutline,
+                    imageVector = ProdyIcons.ErrorOutline,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.error,
                     modifier = Modifier.size(24.dp)
@@ -289,7 +290,7 @@ fun ErrorScreen(
         if (onRetry != null && error.errorType.isRetryable) {
             Button(onClick = onRetry) {
                 Icon(
-                    imageVector = Icons.Filled.Refresh,
+                    imageVector = ProdyIcons.Refresh,
                     contentDescription = null,
                     modifier = Modifier.size(18.dp)
                 )
@@ -311,11 +312,11 @@ fun ErrorScreen(
  */
 private fun getErrorIcon(errorType: ErrorType): ImageVector {
     return when (errorType) {
-        ErrorType.NETWORK -> Icons.Filled.CloudOff
-        ErrorType.DATABASE -> Icons.Filled.Storage
-        ErrorType.AI_SERVICE -> Icons.Filled.Warning
-        ErrorType.TIMEOUT -> Icons.Filled.Timer
-        ErrorType.RATE_LIMIT -> Icons.Filled.Timer
-        else -> Icons.Filled.Error
+        ErrorType.NETWORK -> ProdyIcons.CloudOff
+        ErrorType.DATABASE -> ProdyIcons.Storage
+        ErrorType.AI_SERVICE -> ProdyIcons.Warning
+        ErrorType.TIMEOUT -> ProdyIcons.Timer
+        ErrorType.RATE_LIMIT -> ProdyIcons.Timer
+        else -> ProdyIcons.Error
     }
 }

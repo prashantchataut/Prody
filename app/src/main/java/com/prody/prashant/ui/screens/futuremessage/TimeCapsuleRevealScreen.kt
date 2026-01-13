@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.screens.futuremessage
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import android.view.HapticFeedbackConstants
 import androidx.compose.animation.*
@@ -68,7 +69,7 @@ fun TimeCapsuleRevealScreen(
                 title = { },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.Close, contentDescription = "Close")
+                        Icon(ProdyIcons.Close, contentDescription = "Close")
                     }
                 },
                 actions = {
@@ -80,7 +81,7 @@ fun TimeCapsuleRevealScreen(
                         }
                     ) {
                         Icon(
-                            imageVector = if (uiState.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                            imageVector = if (uiState.isFavorite) ProdyIcons.Favorite else ProdyIcons.FavoriteBorder,
                             contentDescription = if (uiState.isFavorite) "Remove from favorites" else "Add to favorites",
                             tint = if (uiState.isFavorite) MaterialTheme.colorScheme.primary else LocalContentColor.current
                         )
@@ -181,7 +182,7 @@ private fun ErrorState(
             modifier = Modifier.padding(32.dp)
         ) {
             Icon(
-                imageVector = Icons.Default.ErrorOutline,
+                imageVector = ProdyIcons.ErrorOutline,
                 contentDescription = null,
                 modifier = Modifier.size(64.dp),
                 tint = MaterialTheme.colorScheme.error
@@ -355,11 +356,11 @@ private fun EnvelopeReveal(
 @Composable
 private fun CategoryBadge(category: String) {
     val (icon, label, color) = when (category) {
-        "goal" -> Triple(Icons.Default.Flag, "Goal", Color(0xFF4CAF50))
-        "promise" -> Triple(Icons.Default.HandshakeOutlined, "Promise", Color(0xFF2196F3))
-        "motivation" -> Triple(Icons.Default.LocalFireDepartment, "Motivation", Color(0xFFFF9800))
-        "reminder" -> Triple(Icons.Default.NotificationsActive, "Reminder", Color(0xFF9C27B0))
-        else -> Triple(Icons.Default.MailOutline, "Message", Color(0xFF607D8B))
+        "goal" -> Triple(ProdyIcons.Flag, "Goal", Color(0xFF4CAF50))
+        "promise" -> Triple(ProdyIcons.HandshakeOutlined, "Promise", Color(0xFF2196F3))
+        "motivation" -> Triple(ProdyIcons.LocalFireDepartment, "Motivation", Color(0xFFFF9800))
+        "reminder" -> Triple(ProdyIcons.NotificationsActive, "Reminder", Color(0xFF9C27B0))
+        else -> Triple(ProdyIcons.MailOutline, "Message", Color(0xFF607D8B))
     }
 
     Surface(
@@ -409,7 +410,7 @@ private fun ReflectionPrompt(category: String) {
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Icon(
-                imageVector = Icons.Default.Psychology,
+                imageVector = ProdyIcons.Psychology,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(24.dp)
@@ -442,7 +443,7 @@ private fun ActionButtons(
             contentPadding = PaddingValues(16.dp)
         ) {
             Icon(
-                imageVector = if (hasReply) Icons.Default.CheckCircle else Icons.Default.Edit,
+                imageVector = if (hasReply) ProdyIcons.CheckCircle else ProdyIcons.Edit,
                 contentDescription = null,
                 modifier = Modifier.size(20.dp)
             )
@@ -462,7 +463,7 @@ private fun ActionButtons(
                 contentPadding = PaddingValues(16.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Default.BookmarkBorder,
+                    imageVector = ProdyIcons.BookmarkBorder,
                     contentDescription = null,
                     modifier = Modifier.size(20.dp)
                 )

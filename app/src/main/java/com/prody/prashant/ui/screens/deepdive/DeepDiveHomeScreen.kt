@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.screens.deepdive
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
@@ -64,7 +65,7 @@ fun DeepDiveHomeScreen(
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            imageVector = ProdyIcons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.back)
                         )
                     }
@@ -72,7 +73,7 @@ fun DeepDiveHomeScreen(
                 actions = {
                     IconButton(onClick = { showThemeSelectionDialog = true }) {
                         Icon(
-                            imageVector = Icons.Default.Add,
+                            imageVector = ProdyIcons.Add,
                             contentDescription = "Schedule Deep Dive"
                         )
                     }
@@ -336,7 +337,7 @@ private fun NextDeepDiveCard(
                     Text("Begin", color = Color.White)
                     Spacer(modifier = Modifier.width(8.dp))
                     Icon(
-                        imageVector = Icons.Default.PlayArrow,
+                        imageVector = ProdyIcons.PlayArrow,
                         contentDescription = null,
                         tint = Color.White
                     )
@@ -457,7 +458,7 @@ private fun ScheduledDeepDiveCard(
             }
             IconButton(onClick = onDelete) {
                 Icon(
-                    imageVector = Icons.Default.Close,
+                    imageVector = ProdyIcons.Close,
                     contentDescription = "Remove",
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -522,7 +523,7 @@ private fun CompletedDeepDiveCard(
                 }
             }
             Icon(
-                imageVector = Icons.Default.ChevronRight,
+                imageVector = ProdyIcons.ChevronRight,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -564,7 +565,7 @@ private fun EmptyStateCard(onSchedule: () -> Unit) {
                 onClick = onSchedule,
                 colors = ButtonDefaults.buttonColors(containerColor = ProdyAccentGreen)
             ) {
-                Icon(Icons.Default.Add, contentDescription = null, tint = Color.Black)
+                Icon(ProdyIcons.Add, contentDescription = null, tint = Color.Black)
                 Spacer(modifier = Modifier.width(8.dp))
                 Text("Schedule Deep Dive", color = Color.Black)
             }

@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.screens.collaborative
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
@@ -63,7 +64,7 @@ fun CollaborativeHomeScreen(
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            imageVector = ProdyIcons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.back)
                         )
                     }
@@ -79,7 +80,7 @@ fun CollaborativeHomeScreen(
                 containerColor = ProdyAccentGreen,
                 contentColor = Color.Black
             ) {
-                Icon(Icons.Default.Edit, contentDescription = "Compose")
+                Icon(ProdyIcons.Edit, contentDescription = "Compose")
             }
         },
         containerColor = MaterialTheme.colorScheme.background
@@ -175,17 +176,17 @@ private fun StatsRow(
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
         StatChip(
-            icon = Icons.AutoMirrored.Filled.Send,
+            icon = ProdyIcons.AutoMirrored.Filled.Send,
             value = sentCount.toString(),
             label = "Sent"
         )
         StatChip(
-            icon = Icons.Default.Inbox,
+            icon = ProdyIcons.Inbox,
             value = receivedCount.toString(),
             label = "Received"
         )
         StatChip(
-            icon = Icons.Default.Schedule,
+            icon = ProdyIcons.Schedule,
             value = scheduledCount.toString(),
             label = "Scheduled"
         )
@@ -364,7 +365,7 @@ private fun ReceivedMessageCard(
                 }
                 if (message.isFavorite) {
                     Icon(
-                        imageVector = Icons.Default.Favorite,
+                        imageVector = ProdyIcons.Favorite,
                         contentDescription = null,
                         modifier = Modifier.size(16.dp),
                         tint = ProdyError
@@ -483,9 +484,9 @@ private fun SentMessageCard(
                 ) {
                     Icon(
                         imageVector = if (message.status == MessageStatus.SCHEDULED) {
-                            Icons.Default.Schedule
+                            ProdyIcons.Schedule
                         } else {
-                            Icons.AutoMirrored.Filled.Send
+                            ProdyIcons.AutoMirrored.Filled.Send
                         },
                         contentDescription = null,
                         modifier = Modifier.size(12.dp),
@@ -728,10 +729,10 @@ private fun ContactCard(
                 ) {
                     Icon(
                         imageVector = when (contact.method) {
-                            ContactMethod.EMAIL -> Icons.Default.Email
-                            ContactMethod.SMS -> Icons.Default.Sms
-                            ContactMethod.WHATSAPP -> Icons.Default.Chat
-                            ContactMethod.IN_APP -> Icons.Default.Notifications
+                            ContactMethod.EMAIL -> ProdyIcons.Email
+                            ContactMethod.SMS -> ProdyIcons.Sms
+                            ContactMethod.WHATSAPP -> ProdyIcons.Chat
+                            ContactMethod.IN_APP -> ProdyIcons.Notifications
                         },
                         contentDescription = null,
                         modifier = Modifier.size(14.dp),
@@ -746,7 +747,7 @@ private fun ContactCard(
             }
 
             Icon(
-                imageVector = Icons.Default.ChevronRight,
+                imageVector = ProdyIcons.ChevronRight,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )

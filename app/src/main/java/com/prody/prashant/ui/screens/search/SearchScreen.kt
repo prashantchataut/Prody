@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.screens.search
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
@@ -195,7 +196,7 @@ private fun SearchHeader(
             // Back button
             IconButton(onClick = onBack) {
                 Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    imageVector = ProdyIcons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Back",
                     tint = textColor
                 )
@@ -216,7 +217,7 @@ private fun SearchHeader(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.Search,
+                        imageVector = ProdyIcons.Search,
                         contentDescription = null,
                         tint = hintColor,
                         modifier = Modifier.size(20.dp)
@@ -268,7 +269,7 @@ private fun SearchHeader(
                             modifier = Modifier.size(32.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Filled.Close,
+                                imageVector = ProdyIcons.Close,
                                 contentDescription = "Clear",
                                 tint = hintColor,
                                 modifier = Modifier.size(18.dp)
@@ -501,7 +502,7 @@ private fun SearchResultItem(
                         is SearchResult.VocabularyResult -> {
                             if (result.isLearned) {
                                 Icon(
-                                    imageVector = Icons.Filled.CheckCircle,
+                                    imageVector = ProdyIcons.CheckCircle,
                                     contentDescription = "Learned",
                                     tint = AccentGreen,
                                     modifier = Modifier.size(14.dp)
@@ -511,14 +512,14 @@ private fun SearchResultItem(
                         is SearchResult.FutureMessageResult -> {
                             if (result.isDelivered) {
                                 Icon(
-                                    imageVector = Icons.Filled.MarkEmailRead,
+                                    imageVector = ProdyIcons.MarkEmailRead,
                                     contentDescription = "Delivered",
                                     tint = AccentGreen,
                                     modifier = Modifier.size(14.dp)
                                 )
                             } else {
                                 Icon(
-                                    imageVector = Icons.Filled.Schedule,
+                                    imageVector = ProdyIcons.Schedule,
                                     contentDescription = "Pending",
                                     tint = secondaryText,
                                     modifier = Modifier.size(14.dp)
@@ -532,7 +533,7 @@ private fun SearchResultItem(
 
             // Arrow indicator
             Icon(
-                imageVector = Icons.Filled.ChevronRight,
+                imageVector = ProdyIcons.ChevronRight,
                 contentDescription = null,
                 tint = secondaryText,
                 modifier = Modifier
@@ -557,7 +558,7 @@ private fun EmptySearchResults(
         verticalArrangement = Arrangement.Center
     ) {
         Icon(
-            imageVector = Icons.Filled.SearchOff,
+            imageVector = ProdyIcons.SearchOff,
             contentDescription = null,
             tint = secondaryText,
             modifier = Modifier.size(64.dp)
@@ -604,7 +605,7 @@ private fun RecentContentSection(
             verticalArrangement = Arrangement.Center
         ) {
             Icon(
-                imageVector = Icons.Filled.Search,
+                imageVector = ProdyIcons.Search,
                 contentDescription = null,
                 tint = secondaryText.copy(alpha = 0.5f),
                 modifier = Modifier.size(64.dp)
@@ -665,11 +666,11 @@ private fun RecentContentSection(
 
 private fun getCategoryIcon(category: SearchCategory): ImageVector {
     return when (category) {
-        SearchCategory.ALL -> Icons.Filled.Search
-        SearchCategory.JOURNAL -> Icons.Filled.MenuBook
-        SearchCategory.QUOTES -> Icons.Filled.FormatQuote
-        SearchCategory.VOCABULARY -> Icons.Filled.Translate
-        SearchCategory.FUTURE_MESSAGES -> Icons.Filled.Schedule
+        SearchCategory.ALL -> ProdyIcons.Search
+        SearchCategory.JOURNAL -> ProdyIcons.MenuBook
+        SearchCategory.QUOTES -> ProdyIcons.FormatQuote
+        SearchCategory.VOCABULARY -> ProdyIcons.Translate
+        SearchCategory.FUTURE_MESSAGES -> ProdyIcons.Schedule
     }
 }
 

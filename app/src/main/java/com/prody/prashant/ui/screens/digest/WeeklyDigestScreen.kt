@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.screens.digest
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
@@ -87,7 +88,7 @@ fun WeeklyDigestScreen(
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            imageVector = ProdyIcons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back"
                         )
                     }
@@ -96,7 +97,7 @@ fun WeeklyDigestScreen(
                     if (uiState.canGenerateDigest && !uiState.isGenerating) {
                         TextButton(onClick = viewModel::generateWeeklyDigest) {
                             Icon(
-                                imageVector = Icons.Default.Refresh,
+                                imageVector = ProdyIcons.Refresh,
                                 contentDescription = null,
                                 modifier = Modifier.size(18.dp)
                             )
@@ -345,17 +346,17 @@ private fun StatsOverviewCard(
                 StatItem(
                     value = digest.entriesCount.toString(),
                     label = "Entries",
-                    icon = Icons.Default.Article
+                    icon = ProdyIcons.Article
                 )
                 StatItem(
                     value = digest.totalWordsWritten.toString(),
                     label = "Words",
-                    icon = Icons.Default.TextFields
+                    icon = ProdyIcons.TextFields
                 )
                 StatItem(
                     value = "${digest.activeDays}/7",
                     label = "Active Days",
-                    icon = Icons.Default.CalendarToday
+                    icon = ProdyIcons.CalendarToday
                 )
             }
 
@@ -368,7 +369,7 @@ private fun StatsOverviewCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Bolt,
+                        imageVector = ProdyIcons.Bolt,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.secondary,
                         modifier = Modifier.size(18.dp)
@@ -493,9 +494,9 @@ private fun MoodTrendCard(
             ) {
                 Icon(
                     imageVector = when (trend) {
-                        "improving" -> Icons.AutoMirrored.Filled.TrendingUp
-                        "declining" -> Icons.AutoMirrored.Filled.TrendingDown
-                        else -> Icons.Default.TrendingFlat
+                        "improving" -> ProdyIcons.AutoMirrored.Filled.TrendingUp
+                        "declining" -> ProdyIcons.AutoMirrored.Filled.TrendingDown
+                        else -> ProdyIcons.TrendingFlat
                     },
                     contentDescription = null,
                     tint = when (trend) {
@@ -550,7 +551,7 @@ private fun ThemesCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    imageVector = Icons.Default.Tag,
+                    imageVector = ProdyIcons.Tag,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(20.dp)
@@ -594,7 +595,7 @@ private fun PatternsCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    imageVector = Icons.Default.Psychology,
+                    imageVector = ProdyIcons.Psychology,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.secondary,
                     modifier = Modifier.size(20.dp)
@@ -615,7 +616,7 @@ private fun PatternsCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Circle,
+                        imageVector = ProdyIcons.Circle,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.secondary,
                         modifier = Modifier.size(8.dp)
@@ -643,7 +644,7 @@ private fun BuddhaReflectionCard(reflection: String) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    imageVector = Icons.Default.SelfImprovement,
+                    imageVector = ProdyIcons.SelfImprovement,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.tertiary,
                     modifier = Modifier.size(20.dp)
@@ -684,7 +685,7 @@ private fun HighlightCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    imageVector = Icons.Default.FormatQuote,
+                    imageVector = ProdyIcons.FormatQuote,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(20.dp)
@@ -717,7 +718,7 @@ private fun HighlightCard(
                     Text("View full entry")
                     Spacer(modifier = Modifier.width(4.dp))
                     Icon(
-                        imageVector = Icons.Default.OpenInNew,
+                        imageVector = ProdyIcons.OpenInNew,
                         contentDescription = null,
                         modifier = Modifier.size(16.dp)
                     )
@@ -799,7 +800,7 @@ private fun ComparisonItem(
             when {
                 changePercent > 0 -> {
                     Icon(
-                        imageVector = Icons.AutoMirrored.Filled.TrendingUp,
+                        imageVector = ProdyIcons.AutoMirrored.Filled.TrendingUp,
                         contentDescription = null,
                         tint = Color(0xFF4CAF50),
                         modifier = Modifier.size(18.dp)
@@ -807,7 +808,7 @@ private fun ComparisonItem(
                 }
                 changePercent < 0 -> {
                     Icon(
-                        imageVector = Icons.AutoMirrored.Filled.TrendingDown,
+                        imageVector = ProdyIcons.AutoMirrored.Filled.TrendingDown,
                         contentDescription = null,
                         tint = Color(0xFFFF5722),
                         modifier = Modifier.size(18.dp)
@@ -854,10 +855,10 @@ private fun CelebrationCard(
                 // Celebration icon
                 Icon(
                     imageVector = when {
-                        activeDays == 7 -> Icons.Default.EmojiEvents
-                        entriesCount >= 5 -> Icons.Default.AutoAwesome
-                        entriesCount >= 3 -> Icons.Default.LocalFireDepartment
-                        else -> Icons.Default.FavoriteBorder
+                        activeDays == 7 -> ProdyIcons.EmojiEvents
+                        entriesCount >= 5 -> ProdyIcons.AutoAwesome
+                        entriesCount >= 3 -> ProdyIcons.LocalFireDepartment
+                        else -> ProdyIcons.FavoriteBorder
                     },
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
@@ -904,7 +905,7 @@ private fun ShareSummaryButton(
             horizontalArrangement = Arrangement.Center
         ) {
             Icon(
-                imageVector = Icons.Default.Share,
+                imageVector = ProdyIcons.Share,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary
             )
@@ -932,7 +933,7 @@ private fun EmptyDigestState(
             modifier = Modifier.padding(32.dp)
         ) {
             Icon(
-                imageVector = Icons.Default.Summarize,
+                imageVector = ProdyIcons.Summarize,
                 contentDescription = null,
                 modifier = Modifier.size(64.dp),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
@@ -958,7 +959,7 @@ private fun EmptyDigestState(
             if (canGenerate) {
                 Spacer(modifier = Modifier.height(24.dp))
                 Button(onClick = onGenerate) {
-                    Icon(Icons.Default.AutoAwesome, contentDescription = null)
+                    Icon(ProdyIcons.AutoAwesome, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
                     Text("Generate Digest")
                 }

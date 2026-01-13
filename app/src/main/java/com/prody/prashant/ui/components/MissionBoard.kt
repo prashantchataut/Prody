@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.components
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
@@ -138,7 +139,7 @@ private fun MissionItem(
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                imageVector = if (mission.isCompleted) Icons.Filled.Check else missionConfig.icon,
+                imageVector = if (mission.isCompleted) ProdyIcons.Check else missionConfig.icon,
                 contentDescription = null,
                 modifier = Modifier.size(20.dp),
                 tint = if (mission.isCompleted) {
@@ -230,7 +231,7 @@ private fun WeeklyTrialItem(
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                imageVector = if (trial.isCompleted) Icons.Filled.Check else Icons.Filled.Star,
+                imageVector = if (trial.isCompleted) ProdyIcons.Check else ProdyIcons.Star,
                 contentDescription = null,
                 modifier = Modifier.size(20.dp),
                 tint = if (trial.isCompleted) {
@@ -328,7 +329,7 @@ fun CompactMissionBoard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    imageVector = Icons.Filled.Assignment,
+                    imageVector = ProdyIcons.Assignment,
                     contentDescription = null,
                     modifier = Modifier.size(20.dp),
                     tint = MaterialTheme.colorScheme.primary
@@ -369,7 +370,7 @@ fun CompactMissionBoard(
                 )
 
                 Icon(
-                    imageVector = Icons.Filled.ChevronRight,
+                    imageVector = ProdyIcons.ChevronRight,
                     contentDescription = "View missions",
                     modifier = Modifier.size(16.dp),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
@@ -388,19 +389,19 @@ private data class MissionConfig(
 private fun getMissionConfig(missionType: String): MissionConfig {
     return when (missionType.lowercase()) {
         "reflect" -> MissionConfig(
-            icon = Icons.Filled.Book,
+            icon = ProdyIcons.Book,
             color = Color(0xFF7C4DFF) // Purple for Clarity
         )
         "sharpen" -> MissionConfig(
-            icon = Icons.Filled.School,
+            icon = ProdyIcons.School,
             color = Color(0xFF00BCD4) // Cyan for Discipline
         )
         "commit" -> MissionConfig(
-            icon = Icons.Filled.Send,
+            icon = ProdyIcons.Send,
             color = Color(0xFFFF9800) // Orange for Courage
         )
         else -> MissionConfig(
-            icon = Icons.Filled.Assignment,
+            icon = ProdyIcons.Assignment,
             color = MaterialTheme.colorScheme.primary
         )
     }

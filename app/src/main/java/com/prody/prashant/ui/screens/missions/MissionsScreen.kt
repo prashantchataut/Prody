@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.screens.missions
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
@@ -66,7 +67,7 @@ fun MissionsScreen(
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            imageVector = ProdyIcons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.back)
                         )
                     }
@@ -247,7 +248,7 @@ private fun DailyProgressCard(
                     )
                     if (allComplete) {
                         Icon(
-                            imageVector = Icons.Default.Check,
+                            imageVector = ProdyIcons.Check,
                             contentDescription = null,
                             tint = ProdySuccess,
                             modifier = Modifier.size(28.dp)
@@ -328,7 +329,7 @@ private fun MissionDetailCard(
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = if (mission.isCompleted) Icons.Default.Check else missionConfig.icon,
+                        imageVector = if (mission.isCompleted) ProdyIcons.Check else missionConfig.icon,
                         contentDescription = null,
                         modifier = Modifier.size(24.dp),
                         tint = if (mission.isCompleted) ProdySuccess else missionConfig.color
@@ -418,7 +419,7 @@ private fun MissionDetailCard(
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Icon(
-                            imageVector = Icons.Default.ArrowForward,
+                            imageVector = ProdyIcons.ArrowForward,
                             contentDescription = null,
                             modifier = Modifier.size(16.dp),
                             tint = missionConfig.color
@@ -461,7 +462,7 @@ private fun WeeklyTrialCard(trial: WeeklyTrialEntity) {
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Star,
+                            imageVector = ProdyIcons.Star,
                             contentDescription = null,
                             tint = if (trial.isCompleted) ProdySuccess else MaterialTheme.colorScheme.tertiary,
                             modifier = Modifier.size(20.dp)
@@ -578,7 +579,7 @@ private fun MissionTipsCard() {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
-                    imageVector = Icons.Default.Lightbulb,
+                    imageVector = ProdyIcons.Lightbulb,
                     contentDescription = null,
                     tint = ProdyAccentGreen
                 )
@@ -627,22 +628,22 @@ private data class MissionConfig(
 private fun getMissionConfig(missionType: String): MissionConfig {
     return when (missionType.lowercase()) {
         "reflect" -> MissionConfig(
-            icon = Icons.Default.Book,
+            icon = ProdyIcons.Book,
             color = Color(0xFF7C4DFF), // Purple for Clarity
             label = "REFLECT"
         )
         "sharpen" -> MissionConfig(
-            icon = Icons.Default.School,
+            icon = ProdyIcons.School,
             color = Color(0xFF00BCD4), // Cyan for Discipline
             label = "SHARPEN"
         )
         "commit" -> MissionConfig(
-            icon = Icons.Default.Send,
+            icon = ProdyIcons.Send,
             color = Color(0xFFFF9800), // Orange for Courage
             label = "COMMIT"
         )
         else -> MissionConfig(
-            icon = Icons.Default.Assignment,
+            icon = ProdyIcons.Assignment,
             color = ProdyAccentGreen,
             label = "MISSION"
         )

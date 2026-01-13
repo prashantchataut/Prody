@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.screens.profile
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import android.content.Intent
 import android.net.Uri
@@ -151,7 +152,7 @@ fun SettingsScreen(
                 ) {
                     // App Theme Row
                     SettingsRowWithDropdown(
-                        icon = Icons.Filled.DarkMode,
+                        icon = ProdyIcons.DarkMode,
                         title = "App Theme",
                         currentValue = uiState.themeMode.replaceFirstChar { it.uppercase() },
                         isDark = isDark,
@@ -162,7 +163,7 @@ fun SettingsScreen(
 
                     // Dynamic Colors Row
                     SettingsRowWithToggle(
-                        icon = Icons.Filled.Palette,
+                        icon = ProdyIcons.Palette,
                         title = "Dynamic Colors",
                         checked = uiState.dynamicColors,
                         onCheckedChange = { viewModel.setDynamicColors(it) },
@@ -185,7 +186,7 @@ fun SettingsScreen(
                 ) {
                     // Push Notifications
                     SettingsRowWithToggle(
-                        icon = Icons.Filled.Notifications,
+                        icon = ProdyIcons.Notifications,
                         title = "Push Notifications",
                         checked = uiState.notificationsEnabled,
                         onCheckedChange = { viewModel.setNotificationsEnabled(it) },
@@ -196,7 +197,7 @@ fun SettingsScreen(
 
                     // Daily Wisdom
                     SettingsRowWithToggle(
-                        icon = Icons.Filled.Lightbulb,
+                        icon = ProdyIcons.Lightbulb,
                         title = "Daily Wisdom",
                         subtitle = "Morning quotes, inspiration",
                         checked = uiState.wisdomNotificationsEnabled,
@@ -209,7 +210,7 @@ fun SettingsScreen(
 
                     // Journal Reminders
                     SettingsRowWithToggle(
-                        icon = Icons.Filled.Edit,
+                        icon = ProdyIcons.Edit,
                         title = "Journal Reminders",
                         subtitle = "Evening reflection",
                         checked = uiState.journalRemindersEnabled,
@@ -220,7 +221,7 @@ fun SettingsScreen(
 
                     // Morning Notification Time
                     SettingsRowWithTimePicker(
-                        icon = Icons.Filled.WbSunny,
+                        icon = ProdyIcons.WbSunny,
                         title = "Morning Time",
                         subtitle = formatTime(uiState.morningHour, uiState.morningMinute),
                         isDark = isDark,
@@ -232,7 +233,7 @@ fun SettingsScreen(
 
                     // Evening Notification Time
                     SettingsRowWithTimePicker(
-                        icon = Icons.Filled.NightsStay,
+                        icon = ProdyIcons.NightsStay,
                         title = "Evening Time",
                         subtitle = formatTime(uiState.eveningHour, uiState.eveningMinute),
                         isDark = isDark,
@@ -256,7 +257,7 @@ fun SettingsScreen(
                 ) {
                     // Haptics
                     SettingsRowWithToggle(
-                        icon = Icons.Filled.Vibration,
+                        icon = ProdyIcons.Vibration,
                         title = "Haptics",
                         checked = uiState.hapticFeedbackEnabled,
                         onCheckedChange = { viewModel.setHapticFeedback(it) },
@@ -267,7 +268,7 @@ fun SettingsScreen(
 
                     // Compact View
                     SettingsRowWithToggle(
-                        icon = Icons.Filled.GridView,
+                        icon = ProdyIcons.GridView,
                         title = "Compact View",
                         checked = uiState.compactView,
                         onCheckedChange = { viewModel.setCompactView(it) },
@@ -291,7 +292,7 @@ fun SettingsScreen(
                 ) {
                     // Lock Journal
                     SettingsRowWithToggle(
-                        icon = Icons.Filled.Lock,
+                        icon = ProdyIcons.Lock,
                         title = "Lock Journal",
                         subtitle = "Require authentication to access",
                         checked = uiState.privacyLockJournal,
@@ -303,7 +304,7 @@ fun SettingsScreen(
 
                     // Lock Time Capsule (Future Messages)
                     SettingsRowWithToggle(
-                        icon = Icons.Filled.Lock,
+                        icon = ProdyIcons.Lock,
                         title = "Lock Time Capsule",
                         subtitle = "Require authentication to access",
                         checked = uiState.privacyLockFutureMessages,
@@ -315,7 +316,7 @@ fun SettingsScreen(
 
                     // Lock on Background
                     SettingsRowWithToggle(
-                        icon = Icons.Filled.ExitToApp,
+                        icon = ProdyIcons.ExitToApp,
                         title = "Re-lock on Background",
                         subtitle = "Lock when app goes to background",
                         checked = uiState.privacyLockOnBackground,
@@ -341,7 +342,7 @@ fun SettingsScreen(
                 ) {
                     // Enable AI (Master Toggle)
                     SettingsRowWithToggle(
-                        icon = Icons.Filled.Psychology,
+                        icon = ProdyIcons.Psychology,
                         title = "Enable AI",
                         checked = uiState.buddhaAiEnabled,
                         onCheckedChange = { viewModel.setBuddhaAiEnabled(it) },
@@ -353,7 +354,7 @@ fun SettingsScreen(
 
                     // Daily Wisdom
                     SettingsRowWithToggle(
-                        icon = Icons.Filled.WbSunny,
+                        icon = ProdyIcons.WbSunny,
                         title = "Daily Wisdom",
                         subtitle = "AI-generated wisdom on home screen",
                         checked = uiState.buddhaDailyWisdomEnabled,
@@ -367,7 +368,7 @@ fun SettingsScreen(
 
                     // Quote Insights
                     SettingsRowWithToggle(
-                        icon = Icons.Filled.FormatQuote,
+                        icon = ProdyIcons.FormatQuote,
                         title = "Quote Insights",
                         subtitle = "Meaning and daily action for quotes",
                         checked = uiState.buddhaQuoteExplanationEnabled,
@@ -381,7 +382,7 @@ fun SettingsScreen(
 
                     // Journal Insights
                     SettingsRowWithToggle(
-                        icon = Icons.Filled.AutoAwesome,
+                        icon = ProdyIcons.AutoAwesome,
                         title = "Journal Insights",
                         subtitle = "Emotion and theme analysis after journaling",
                         checked = uiState.buddhaJournalInsightsEnabled,
@@ -395,7 +396,7 @@ fun SettingsScreen(
 
                     // Weekly Patterns
                     SettingsRowWithToggle(
-                        icon = Icons.Filled.TrendingUp,
+                        icon = ProdyIcons.TrendingUp,
                         title = "Weekly Patterns",
                         subtitle = "Track mood trends and themes",
                         checked = uiState.buddhaPatternTrackingEnabled,
@@ -518,7 +519,7 @@ private fun SettingsTopBar(
                 modifier = Modifier.size(48.dp)
             ) {
                 Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    imageVector = ProdyIcons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = stringResource(R.string.back),
                     tint = textColor,
                     modifier = Modifier.size(24.dp)
@@ -560,7 +561,7 @@ private fun SettingsSection(
         ) {
             if (showLeafIcon) {
                 Icon(
-                    imageVector = Icons.Filled.Eco,
+                    imageVector = ProdyIcons.Eco,
                     contentDescription = null,
                     tint = LightOnlineGreen,
                     modifier = Modifier.size(14.dp)
@@ -798,7 +799,7 @@ private fun SettingsRowWithDropdown(
                         color = primaryText
                     )
                     Icon(
-                        imageVector = Icons.Filled.ArrowDropDown,
+                        imageVector = ProdyIcons.ArrowDropDown,
                         contentDescription = null,
                         tint = primaryText,
                         modifier = Modifier.size(18.dp)
@@ -819,9 +820,9 @@ private fun SettingsRowWithDropdown(
                             ) {
                                 Icon(
                                     imageVector = when (option) {
-                                        "System" -> Icons.Filled.BrightnessAuto
-                                        "Light" -> Icons.Filled.LightMode
-                                        else -> Icons.Filled.DarkMode
+                                        "System" -> ProdyIcons.BrightnessAuto
+                                        "Light" -> ProdyIcons.LightMode
+                                        else -> ProdyIcons.DarkMode
                                     },
                                     contentDescription = null,
                                     modifier = Modifier.size(18.dp)
@@ -840,7 +841,7 @@ private fun SettingsRowWithDropdown(
                         trailingIcon = if (option.lowercase() == currentValue.lowercase()) {
                             {
                                 Icon(
-                                    imageVector = Icons.Filled.Check,
+                                    imageVector = ProdyIcons.Check,
                                     contentDescription = null,
                                     tint = LightOnlineGreen,
                                     modifier = Modifier.size(18.dp)
@@ -982,7 +983,7 @@ private fun SettingsRowWithTimePicker(
 
         // Chevron
         Icon(
-            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+            imageVector = ProdyIcons.AutoMirrored.Filled.KeyboardArrowRight,
             contentDescription = "Select time",
             tint = if (enabled) primaryText else primaryText.copy(alpha = 0.5f),
             modifier = Modifier.size(24.dp)
@@ -1074,7 +1075,7 @@ private fun EnhancedSystemInfoCard(isDark: Boolean) {
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Filled.SelfImprovement,
+                    imageVector = ProdyIcons.SelfImprovement,
                     contentDescription = null,
                     tint = Color.White,
                     modifier = Modifier.size(28.dp)
@@ -1360,7 +1361,7 @@ private fun FeedbackCard(isDark: Boolean) {
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Filled.ChatBubble,
+                    imageVector = ProdyIcons.ChatBubble,
                     contentDescription = null,
                     tint = iconColor,
                     modifier = Modifier.size(20.dp)
@@ -1386,7 +1387,7 @@ private fun FeedbackCard(isDark: Boolean) {
 
             // Arrow Icon
             Icon(
-                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                imageVector = ProdyIcons.AutoMirrored.Filled.KeyboardArrowRight,
                 contentDescription = null,
                 tint = primaryText,
                 modifier = Modifier.size(24.dp)
@@ -1446,7 +1447,7 @@ private fun DebugSection(
             horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             Icon(
-                imageVector = Icons.Filled.BugReport,
+                imageVector = ProdyIcons.BugReport,
                 contentDescription = null,
                 tint = warningColor,
                 modifier = Modifier.size(14.dp)
@@ -1488,7 +1489,7 @@ private fun DebugSection(
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = Icons.Filled.Science,
+                            imageVector = ProdyIcons.Science,
                             contentDescription = null,
                             tint = LightOnlineGreen,
                             modifier = Modifier.size(20.dp)
@@ -1563,7 +1564,7 @@ private fun DebugSection(
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Filled.CheckCircle,
+                                imageVector = ProdyIcons.CheckCircle,
                                 contentDescription = null,
                                 tint = LightOnlineGreen,
                                 modifier = Modifier.size(18.dp)
@@ -1678,7 +1679,7 @@ private fun PrivacyDataPolicySection() {
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Icon(
-                imageVector = Icons.Filled.Security,
+                imageVector = ProdyIcons.Security,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(20.dp)
@@ -1715,7 +1716,7 @@ private fun PrivacyDataPolicySection() {
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = Icons.Filled.Policy,
+                            imageVector = ProdyIcons.Policy,
                             contentDescription = null,
                             tint = MoodCalm,
                             modifier = Modifier.size(20.dp)
@@ -1738,7 +1739,7 @@ private fun PrivacyDataPolicySection() {
                     }
 
                     Icon(
-                        imageVector = Icons.Filled.ChevronRight,
+                        imageVector = ProdyIcons.ChevronRight,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(24.dp)
@@ -1775,7 +1776,7 @@ private fun PrivacySummaryCard() {
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Filled.VerifiedUser,
+                    imageVector = ProdyIcons.VerifiedUser,
                     contentDescription = null,
                     tint = MoodCalm,
                     modifier = Modifier.size(20.dp)
@@ -1791,19 +1792,19 @@ private fun PrivacySummaryCard() {
 
             // Privacy bullets
             PrivacyBullet(
-                icon = Icons.Filled.Lock,
+                icon = ProdyIcons.Lock,
                 text = "Journal entries encrypted on device"
             )
             PrivacyBullet(
-                icon = Icons.Filled.PhoneAndroid,
+                icon = ProdyIcons.PhoneAndroid,
                 text = "All data stored locally on your device"
             )
             PrivacyBullet(
-                icon = Icons.Filled.VisibilityOff,
+                icon = ProdyIcons.VisibilityOff,
                 text = "No personal data shared with third parties"
             )
             PrivacyBullet(
-                icon = Icons.Filled.Cloud,
+                icon = ProdyIcons.Cloud,
                 text = "AI features use secure API connections"
             )
         }
@@ -1840,7 +1841,7 @@ private fun PrivacyPolicyDialog(onDismiss: () -> Unit) {
         onDismissRequest = onDismiss,
         icon = {
             Icon(
-                imageVector = Icons.Filled.Policy,
+                imageVector = ProdyIcons.Policy,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary
             )
@@ -1975,7 +1976,7 @@ private fun AiConfigAlert(
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Icon(
-                imageVector = Icons.Filled.Warning,
+                imageVector = ProdyIcons.Warning,
                 contentDescription = null,
                 tint = contentColor,
                 modifier = Modifier.size(24.dp)

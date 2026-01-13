@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.screens.collaborative
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
@@ -79,7 +80,7 @@ fun MessageDetailScreen(
                         onNavigateBack()
                     }) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            imageVector = ProdyIcons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.back)
                         )
                     }
@@ -91,9 +92,9 @@ fun MessageDetailScreen(
                         }) {
                             Icon(
                                 imageVector = if (receivedMessage.isFavorite) {
-                                    Icons.Default.Favorite
+                                    ProdyIcons.Favorite
                                 } else {
-                                    Icons.Default.FavoriteBorder
+                                    ProdyIcons.FavoriteBorder
                                 },
                                 contentDescription = "Favorite",
                                 tint = if (receivedMessage.isFavorite) ProdyError else MaterialTheme.colorScheme.onSurfaceVariant
@@ -102,7 +103,7 @@ fun MessageDetailScreen(
                     }
                     IconButton(onClick = { showDeleteDialog = true }) {
                         Icon(
-                            imageVector = Icons.Default.Delete,
+                            imageVector = ProdyIcons.Delete,
                             contentDescription = "Delete"
                         )
                     }
@@ -273,10 +274,10 @@ private fun SentMessageDetail(
                 ) {
                     Icon(
                         imageVector = when (message.status) {
-                            MessageStatus.SCHEDULED -> Icons.Default.Schedule
-                            MessageStatus.DELIVERED, MessageStatus.READ -> Icons.Default.CheckCircle
-                            MessageStatus.FAILED -> Icons.Default.Error
-                            else -> Icons.Default.HourglassEmpty
+                            MessageStatus.SCHEDULED -> ProdyIcons.Schedule
+                            MessageStatus.DELIVERED, MessageStatus.READ -> ProdyIcons.CheckCircle
+                            MessageStatus.FAILED -> ProdyIcons.Error
+                            else -> ProdyIcons.HourglassEmpty
                         },
                         contentDescription = null,
                         tint = when (message.status) {
@@ -342,10 +343,10 @@ private fun SentMessageDetail(
                 ) {
                     Icon(
                         imageVector = when (message.recipient.method) {
-                            ContactMethod.EMAIL -> Icons.Default.Email
-                            ContactMethod.SMS -> Icons.Default.Sms
-                            ContactMethod.WHATSAPP -> Icons.Default.Chat
-                            ContactMethod.IN_APP -> Icons.Default.Notifications
+                            ContactMethod.EMAIL -> ProdyIcons.Email
+                            ContactMethod.SMS -> ProdyIcons.Sms
+                            ContactMethod.WHATSAPP -> ProdyIcons.Chat
+                            ContactMethod.IN_APP -> ProdyIcons.Notifications
                         },
                         contentDescription = null,
                         modifier = Modifier.size(14.dp),
@@ -448,7 +449,7 @@ private fun ReceivedMessageDetail(
                     Column(modifier = Modifier.padding(16.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
-                                imageVector = Icons.Default.StickyNote2,
+                                imageVector = ProdyIcons.StickyNote2,
                                 contentDescription = null,
                                 modifier = Modifier.size(16.dp),
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant
@@ -556,7 +557,7 @@ private fun MessageCard(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Image,
+                                imageVector = ProdyIcons.Image,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -575,7 +576,7 @@ private fun MessageCard(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Mic,
+                                imageVector = ProdyIcons.Mic,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )

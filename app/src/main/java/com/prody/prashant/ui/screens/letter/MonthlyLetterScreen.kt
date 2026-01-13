@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.screens.letter
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
@@ -50,25 +51,25 @@ fun MonthlyLetterScreen(
                 title = { Text("Monthly Reflection") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, "Back")
+                        Icon(ProdyIcons.ArrowBack, "Back")
                     }
                 },
                 actions = {
                     IconButton(onClick = onNavigateToHistory) {
-                        Icon(Icons.Default.History, "History")
+                        Icon(ProdyIcons.History, "History")
                     }
                     if (uiState.currentLetter != null) {
                         IconButton(onClick = { viewModel.toggleFavorite() }) {
                             Icon(
                                 if (uiState.currentLetter?.isFavorite == true)
-                                    Icons.Default.Favorite
+                                    ProdyIcons.Favorite
                                 else
-                                    Icons.Default.FavoriteBorder,
+                                    ProdyIcons.FavoriteBorder,
                                 "Favorite"
                             )
                         }
                         IconButton(onClick = { viewModel.showShareDialog() }) {
-                            Icon(Icons.Default.Share, "Share")
+                            Icon(ProdyIcons.Share, "Share")
                         }
                     }
                 }
@@ -178,7 +179,7 @@ fun EnvelopeView(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Icon(
-                        Icons.Default.Mail,
+                        ProdyIcons.Mail,
                         contentDescription = null,
                         modifier = Modifier.size(64.dp),
                         tint = MaterialTheme.colorScheme.primary
@@ -439,7 +440,7 @@ fun MilestoneItem(
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Icon(
-            Icons.Default.CheckCircle,
+            ProdyIcons.CheckCircle,
             contentDescription = null,
             tint = MaterialTheme.colorScheme.primary,
             modifier = Modifier.size(20.dp)
@@ -471,7 +472,7 @@ fun EmptyLetterState(
         modifier = modifier.padding(32.dp)
     ) {
         Icon(
-            Icons.Default.Mail,
+            ProdyIcons.Mail,
             contentDescription = null,
             modifier = Modifier.size(64.dp),
             tint = MaterialTheme.colorScheme.onSurfaceVariant
