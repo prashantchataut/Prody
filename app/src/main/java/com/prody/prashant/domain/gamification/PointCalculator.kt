@@ -257,6 +257,9 @@ object PointCalculator {
         /** XP reward for Legendary achievement */
         const val LEGENDARY = 200
 
+        /** XP reward for Mythic achievement */
+        const val MYTHIC = 500
+
         /**
          * Get XP reward based on achievement rarity.
          */
@@ -266,6 +269,7 @@ object PointCalculator {
             AchievementRarity.RARE -> RARE
             AchievementRarity.EPIC -> EPIC
             AchievementRarity.LEGENDARY -> LEGENDARY
+            AchievementRarity.MYTHIC -> MYTHIC
         }
     }
 

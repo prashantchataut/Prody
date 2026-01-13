@@ -117,8 +117,12 @@ interface WeeklyDigestDao {
     /**
      * Check if a digest exists for a specific week
      */
-    @Query("SELECT EXISTS(SELECT 1 FROM weekly_digests WHERE userId = :userId AND weekStartDate = :weekStartDate AND isDeleted = 0)")
-    suspend fun hasDigestForWeek(userId: String, weekStartDate: Long): Boolean
+    @Query("SELECT COUNT(*) FROM weekly_digests WHERE userId = :userId AND weekStartDate = :weekStartDate AND isDeleted = 0")
+    suspend fun getDigestCountForWeek(userId: String, weekStartDate: Long): Int
+
+    suspend fun hasDigestForWeek(userId: String, weekStartDate: Long): Boolean {
+        return getDigestCountForWeek(userId, weekStartDate) > 0
+    }
 
     // ==================== CLEANUP ====================
 

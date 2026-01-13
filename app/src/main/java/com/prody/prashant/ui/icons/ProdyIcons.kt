@@ -2014,6 +2014,7 @@ object ProdyIcons {
     // Contact/People icons
     val Contacts: ImageVector by lazy { Person }
 
+
     // Health/Safety icons
     val HealthAndSafety: ImageVector by lazy { Shield }
 
@@ -2146,75 +2147,4 @@ object ProdyIcons {
         }
     }
 
-    // Visibility icon
-    val Visibility: ImageVector by lazy {
-        createIcon("Visibility") {
-            path(fill = SolidColor(Color.Black)) {
-                moveTo(12f, 4.5f)
-                curveTo(7f, 4.5f, 2.73f, 7.61f, 1f, 12f)
-                curveToRelative(1.73f, 4.39f, 6f, 7.5f, 11f, 7.5f)
-                reflectiveCurveToRelative(9.27f, -3.11f, 11f, -7.5f)
-                curveToRelative(-1.73f, -4.39f, -6f, -7.5f, -11f, -7.5f)
-                close()
-                moveTo(12f, 17f)
-                curveToRelative(-2.76f, 0f, -5f, -2.24f, -5f, -5f)
-                reflectiveCurveToRelative(2.24f, -5f, 5f, -5f)
-                reflectiveCurveToRelative(5f, 2.24f, 5f, 5f)
-                reflectiveCurveToRelative(-2.24f, 5f, -5f, 5f)
-                close()
-                moveTo(12f, 9f)
-                curveToRelative(-1.66f, 0f, -3f, 1.34f, -3f, 3f)
-                reflectiveCurveToRelative(1.34f, 3f, 3f, 3f)
-                reflectiveCurveToRelative(3f, -1.34f, 3f, -3f)
-                reflectiveCurveToRelative(-1.34f, -3f, -3f, -3f)
-                close()
-            }
-        }
-    }
-
-    // FitnessCenter icon
-    val FitnessCenter: ImageVector by lazy {
-        createIcon("FitnessCenter") {
-            path(fill = SolidColor(Color.Black)) {
-                moveTo(20.57f, 14.86f)
-                lineTo(22f, 13.43f)
-                lineTo(20.57f, 12f)
-                lineTo(22f, 10.57f)
-                lineTo(20.57f, 9.14f)
-                lineTo(19.14f, 10.57f)
-                lineTo(17.71f, 9.14f)
-                lineTo(16.29f, 10.57f)
-                lineTo(13.43f, 7.71f)
-                lineTo(14.86f, 6.29f)
-                lineTo(13.43f, 4.86f)
-                lineTo(12f, 6.29f)
-                lineTo(10.57f, 4.86f)
-                lineTo(9.14f, 6.29f)
-                lineTo(10.57f, 7.71f)
-                lineTo(7.71f, 10.57f)
-                lineTo(6.29f, 9.14f)
-                lineTo(4.86f, 10.57f)
-                lineTo(6.29f, 12f)
-                lineTo(4.86f, 13.43f)
-                lineTo(6.29f, 14.86f)
-                lineTo(7.71f, 13.43f)
-                lineTo(10.57f, 16.29f)
-                lineTo(9.14f, 17.71f)
-                lineTo(10.57f, 19.14f)
-                lineTo(12f, 17.71f)
-                lineTo(13.43f, 19.14f)
-                lineTo(14.86f, 17.71f)
-                lineTo(13.43f, 16.29f)
-                lineTo(16.29f, 13.43f)
-                lineTo(17.71f, 14.86f)
-                lineTo(19.14f, 13.43f)
-                close()
-                moveTo(12f, 10.57f)
-                lineTo(13.43f, 12f)
-                lineTo(12f, 13.43f)
-                lineTo(10.57f, 12f)
-                close()
-            }
-        }
-    }
 }

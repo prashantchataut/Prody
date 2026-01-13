@@ -120,7 +120,7 @@ class WisdomCollectionRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getCountByType(userId: String): Map<String, Int> {
-        val typeCounts = savedWisdomDao.getTypeCountsByUser(userId)
+        val typeCounts = savedWisdomDao.getTypeCountForUser(userId)
         return typeCounts.associate { it.type to it.count }
     }
 }

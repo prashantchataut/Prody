@@ -41,8 +41,12 @@ interface DailyRitualDao {
     /**
      * Check if ritual exists for today
      */
-    @Query("SELECT EXISTS(SELECT 1 FROM daily_rituals WHERE userId = :userId AND date = :date AND isDeleted = 0)")
-    suspend fun hasRitualForDate(userId: String, date: Long): Boolean
+    @Query("SELECT COUNT(*) FROM daily_rituals WHERE userId = :userId AND date = :date AND isDeleted = 0")
+    suspend fun getRitualCountForDate(userId: String, date: Long): Int
+
+    suspend fun hasRitualForDate(userId: String, date: Long): Boolean {
+        return getRitualCountForDate(userId, date) > 0
+    }
 
     // ==================== MORNING RITUAL ====================
 

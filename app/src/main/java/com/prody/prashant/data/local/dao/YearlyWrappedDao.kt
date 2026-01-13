@@ -107,10 +107,11 @@ interface YearlyWrappedDao {
     suspend fun getUnviewedCount(userId: String = "local"): Int
 
     @Query("SELECT COUNT(*) FROM yearly_wrapped WHERE userId = :userId AND year = :year")
-    suspend fun hasWrappedForYear(userId: String = "local", year: Int): Boolean
+    suspend fun getWrappedCountForYear(userId: String = "local", year: Int): Int
 
-    @Query("SELECT EXISTS(SELECT 1 FROM yearly_wrapped WHERE userId = :userId AND year = :year)")
-    suspend fun wrappedExistsForYear(userId: String = "local", year: Int): Boolean
+    suspend fun wrappedExistsForYear(userId: String = "local", year: Int): Boolean {
+        return getWrappedCountForYear(userId, year) > 0
+    }
 
     @Query("SELECT year FROM yearly_wrapped WHERE userId = :userId ORDER BY year DESC")
     suspend fun getAvailableYears(userId: String = "local"): List<Int>

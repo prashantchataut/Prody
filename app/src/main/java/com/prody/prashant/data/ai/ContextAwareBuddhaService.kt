@@ -521,9 +521,9 @@ class ContextAwareBuddhaService @Inject constructor(
             MoodTrend.DECLINING -> "Trending downward"
             MoodTrend.STABLE -> "Stable"
             MoodTrend.VOLATILE -> "Up and down (volatile)"
-            MoodTrend.VARIABLE -> "Variable mood patterns"
-            MoodTrend.FLUCTUATING -> "Fluctuating mood patterns"
-            MoodTrend.INSUFFICIENT_DATA -> "Not enough data yet"
+            MoodTrend.VARIABLE -> "Variable patterns"
+            MoodTrend.FLUCTUATING -> "Fluctuating frequently"
+            MoodTrend.INSUFFICIENT_DATA -> "Still gathering data"
         }
     }
 

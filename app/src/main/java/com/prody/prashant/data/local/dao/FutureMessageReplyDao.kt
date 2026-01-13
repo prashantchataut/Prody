@@ -58,8 +58,12 @@ interface FutureMessageReplyDao {
     /**
      * Check if a message has been replied to
      */
-    @Query("SELECT EXISTS(SELECT 1 FROM future_message_replies WHERE originalMessageId = :messageId AND isDeleted = 0)")
-    suspend fun hasReplyForMessage(messageId: Long): Boolean
+    @Query("SELECT COUNT(*) FROM future_message_replies WHERE originalMessageId = :messageId AND isDeleted = 0")
+    suspend fun getReplyCountForMessage(messageId: Long): Int
+
+    suspend fun hasReplyForMessage(messageId: Long): Boolean {
+        return getReplyCountForMessage(messageId) > 0
+    }
 
     // ==================== TIME CAPSULE CHAIN ====================
 

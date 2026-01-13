@@ -195,18 +195,26 @@ interface SavedWisdomDao {
     fun getSavedWisdomCount(userId: String): Flow<Int>
 
     @Query("SELECT type, COUNT(*) as count FROM saved_wisdom WHERE userId = :userId AND isDeleted = 0 GROUP BY type ORDER BY count DESC")
-    suspend fun getTypeCountsByUser(userId: String): List<WisdomTypeCount>
+    suspend fun getTypeCountForUser(userId: String): List<WisdomTypeCount>
 
     @Query("SELECT type, COUNT(*) as count FROM saved_wisdom WHERE isDeleted = 0 GROUP BY type ORDER BY count DESC")
     fun getTypeDistribution(): Flow<List<WisdomTypeCount>>
 
     // ==================== CHECK IF ALREADY SAVED ====================
 
-    @Query("SELECT EXISTS(SELECT 1 FROM saved_wisdom WHERE sourceId = :sourceId AND type = :type AND isDeleted = 0)")
-    suspend fun isWisdomSaved(sourceId: Long, type: String): Boolean
+    @Query("SELECT COUNT(*) FROM saved_wisdom WHERE sourceId = :sourceId AND type = :type AND isDeleted = 0")
+    suspend fun getWisdomSavedCount(sourceId: Long, type: String): Int
 
-    @Query("SELECT EXISTS(SELECT 1 FROM saved_wisdom WHERE content = :content AND type = :type AND isDeleted = 0)")
-    suspend fun isWisdomSavedByContent(content: String, type: String): Boolean
+    suspend fun isWisdomSaved(sourceId: Long, type: String): Boolean {
+        return getWisdomSavedCount(sourceId, type) > 0
+    }
+
+    @Query("SELECT COUNT(*) FROM saved_wisdom WHERE content = :content AND type = :type AND isDeleted = 0")
+    suspend fun getWisdomSavedByContentCount(content: String, type: String): Int
+
+    suspend fun isWisdomSavedByContent(content: String, type: String): Boolean {
+        return getWisdomSavedByContentCount(content, type) > 0
+    }
 
     // ==================== SYNC ====================
 
