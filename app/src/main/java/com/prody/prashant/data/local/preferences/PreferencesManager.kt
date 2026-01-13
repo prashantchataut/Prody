@@ -1,13 +1,22 @@
 package com.prody.prashant.data.local.preferences
 
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.*
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.emptyPreferences
+import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.runBlocking
 import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -16,7 +25,8 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
 
 @Singleton
 class PreferencesManager @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val sharedPreferences: SharedPreferences
 ) {
     private val dataStore = context.dataStore
 
@@ -142,7 +152,7 @@ class PreferencesManager @Inject constructor(
         val LAST_TEMPORAL_PROMPT_DATE = longPreferencesKey("last_temporal_prompt_date")
     }
 
-    // Onboarding
+    // Onboarding - Critical path, requires synchronous access
     val onboardingCompleted: Flow<Boolean> = dataStore.data
         .catch { exception ->
             if (exception is IOException) emit(emptyPreferences())
@@ -152,7 +162,36 @@ class PreferencesManager @Inject constructor(
             preferences[PreferencesKeys.ONBOARDING_COMPLETED] ?: false
         }
 
+    /**
+     * Synchronously checks if onboarding is completed.
+     * This is critical for making an immediate decision on the start destination of the app.
+     * It performs a one-time migration from DataStore to SharedPreferences if needed.
+     */
+    fun isOnboardingCompleted(): Boolean {
+        val key = PreferencesKeys.ONBOARDING_COMPLETED.name
+        // Check fast SharedPreferences first
+        if (sharedPreferences.contains(key)) {
+            return sharedPreferences.getBoolean(key, false)
+        }
+
+        // If not in SharedPreferences, migrate from DataStore
+        // This is a one-time operation per user.
+        // runBlocking is acceptable here as this is a critical, one-time data migration
+        // that must complete before the UI can proceed.
+        val valueFromDataStore = runBlocking {
+            onboardingCompleted.first()
+        }
+
+        // Write to SharedPreferences for future synchronous access
+        sharedPreferences.edit().putBoolean(key, valueFromDataStore).apply()
+        return valueFromDataStore
+    }
+
     suspend fun setOnboardingCompleted(completed: Boolean) {
+        // Write to both for consistency
+        // 1. Fast, synchronous SharedPreferences
+        sharedPreferences.edit().putBoolean(PreferencesKeys.ONBOARDING_COMPLETED.name, completed).apply()
+        // 2. Slower, asynchronous DataStore (for any existing collectors)
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.ONBOARDING_COMPLETED] = completed
         }
