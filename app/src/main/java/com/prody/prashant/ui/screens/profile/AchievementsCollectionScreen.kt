@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.screens.profile
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
@@ -201,7 +202,7 @@ private fun AchievementsHeader(
             modifier = Modifier.size(48.dp)
         ) {
             Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                imageVector = ProdyIcons.AutoMirrored.Filled.ArrowBack,
                 contentDescription = stringResource(R.string.back),
                 tint = if (isDarkMode) AchievementColors.TextPrimaryDark
                        else AchievementColors.TextPrimaryLight,
@@ -468,14 +469,14 @@ private fun AchievementCard(
                 } else if (showMystery) {
                     // Mystery icon for hidden achievements
                     Icon(
-                        imageVector = Icons.Filled.Help,
+                        imageVector = ProdyIcons.Help,
                         contentDescription = "Hidden achievement",
                         tint = AchievementColors.LockedOverlay,
                         modifier = Modifier.size(24.dp)
                     )
                 } else {
                     Icon(
-                        imageVector = Icons.Filled.Lock,
+                        imageVector = ProdyIcons.Lock,
                         contentDescription = "Locked",
                         tint = AchievementColors.LockedOverlay,
                         modifier = Modifier.size(24.dp)
@@ -571,7 +572,7 @@ private fun AchievementCard(
             ) {
                 if (isUnlocked) {
                     Icon(
-                        imageVector = Icons.Filled.CheckCircle,
+                        imageVector = ProdyIcons.CheckCircle,
                         contentDescription = "Unlocked",
                         tint = if (isDarkMode) AchievementColors.AccentGreen
                                else AchievementColors.AccentGreenLight,
@@ -627,7 +628,7 @@ private fun EmptyAchievementsState(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Icon(
-            imageVector = Icons.Filled.EmojiEvents,
+            imageVector = ProdyIcons.EmojiEvents,
             contentDescription = null,
             tint = if (isDarkMode) AchievementColors.TextTertiaryDark
                    else AchievementColors.TextTertiaryLight,
@@ -692,7 +693,7 @@ private fun AchievementDetailDialog(
                 ) {
                     Icon(
                         imageVector = if (isUnlocked) getAchievementIcon(achievement.iconId)
-                                      else Icons.Filled.Lock,
+                                      else ProdyIcons.Lock,
                         contentDescription = null,
                         tint = if (isUnlocked) rarity else AchievementColors.LockedOverlay,
                         modifier = Modifier.size(24.dp)
@@ -817,18 +818,18 @@ private fun getRarityColor(rarity: String): Color {
 
 private fun getAchievementIcon(iconId: String): ImageVector {
     return when (iconId.lowercase()) {
-        "journal" -> Icons.Filled.Book
-        "streak" -> Icons.Filled.LocalFireDepartment
-        "wisdom" -> Icons.Filled.Psychology
-        "meditation" -> Icons.Filled.SelfImprovement
-        "vocabulary" -> Icons.Filled.School
-        "future" -> Icons.Filled.Schedule
-        "star" -> Icons.Filled.Star
-        "trophy" -> Icons.Filled.EmojiEvents
-        "heart" -> Icons.Filled.Favorite
-        "sparkle" -> Icons.Filled.AutoAwesome
-        "sunrise" -> Icons.Filled.WbSunny
-        "moon" -> Icons.Filled.DarkMode
-        else -> Icons.Filled.EmojiEvents
+        "journal" -> ProdyIcons.Book
+        "streak" -> ProdyIcons.LocalFireDepartment
+        "wisdom" -> ProdyIcons.Psychology
+        "meditation" -> ProdyIcons.SelfImprovement
+        "vocabulary" -> ProdyIcons.School
+        "future" -> ProdyIcons.Schedule
+        "star" -> ProdyIcons.Star
+        "trophy" -> ProdyIcons.EmojiEvents
+        "heart" -> ProdyIcons.Favorite
+        "sparkle" -> ProdyIcons.AutoAwesome
+        "sunrise" -> ProdyIcons.WbSunny
+        "moon" -> ProdyIcons.DarkMode
+        else -> ProdyIcons.EmojiEvents
     }
 }

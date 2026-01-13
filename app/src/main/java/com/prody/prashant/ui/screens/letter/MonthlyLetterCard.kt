@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.screens.letter
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
@@ -81,7 +82,7 @@ fun MonthlyLetterCard(
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = if (letter.isRead) Icons.Default.MailOutline else Icons.Default.Mail,
+                            imageVector = if (letter.isRead) ProdyIcons.MailOutline else ProdyIcons.Mail,
                             contentDescription = null,
                             modifier = Modifier.size(32.dp),
                             tint = MaterialTheme.colorScheme.primary
@@ -196,7 +197,7 @@ fun MonthlyLetterCompactCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                imageVector = if (letter.isRead) Icons.Default.MailOutline else Icons.Default.Mail,
+                imageVector = if (letter.isRead) ProdyIcons.MailOutline else ProdyIcons.Mail,
                 contentDescription = null,
                 tint = if (letter.isRead) {
                     MaterialTheme.colorScheme.onSurfaceVariant
@@ -239,7 +240,7 @@ fun MonthlyLetterCompactCard(
 
             if (letter.isFavorite) {
                 Icon(
-                    Icons.Default.Mail,
+                    ProdyIcons.Mail,
                     contentDescription = "Favorite",
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(20.dp)
@@ -337,7 +338,7 @@ fun MonthlyLetterHistoryItem(
 
             if (letter.isFavorite) {
                 Icon(
-                    Icons.Default.Mail,
+                    ProdyIcons.Mail,
                     contentDescription = "Favorite",
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(20.dp)

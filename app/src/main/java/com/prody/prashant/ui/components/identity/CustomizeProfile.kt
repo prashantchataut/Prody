@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.components.identity
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
@@ -119,7 +120,7 @@ fun LoadoutSelector(
             if (loadouts.size < maxLoadouts) {
                 TextButton(onClick = onAddLoadout) {
                     Icon(
-                        imageVector = Icons.Filled.Add,
+                        imageVector = ProdyIcons.Add,
                         contentDescription = "Add Loadout",
                         modifier = Modifier.size(18.dp)
                     )
@@ -220,7 +221,7 @@ private fun LoadoutCard(
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = Icons.Filled.Check,
+                            imageVector = ProdyIcons.Check,
                             contentDescription = "Active",
                             tint = Color.Black,
                             modifier = Modifier.size(14.dp)
@@ -236,7 +237,7 @@ private fun LoadoutCard(
                         .size(28.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.Edit,
+                        imageVector = ProdyIcons.Edit,
                         contentDescription = "Edit",
                         tint = Color.White.copy(alpha = 0.8f),
                         modifier = Modifier.size(16.dp)
@@ -403,7 +404,7 @@ fun CustomizeSection(
 
             // Chevron
             Icon(
-                imageVector = Icons.Filled.ChevronRight,
+                imageVector = ProdyIcons.ChevronRight,
                 contentDescription = "Change",
                 tint = if (isDarkMode) CustomizeColors.TextSecondaryDark
                        else CustomizeColors.TextSecondaryLight,
@@ -473,7 +474,7 @@ fun BadgePinboardView(
 
             TextButton(onClick = onEditPinboard) {
                 Icon(
-                    imageVector = Icons.Filled.Edit,
+                    imageVector = ProdyIcons.Edit,
                     contentDescription = "Edit",
                     modifier = Modifier.size(16.dp)
                 )
@@ -508,7 +509,7 @@ fun BadgePinboardView(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.WorkspacePremium,
+                        imageVector = ProdyIcons.WorkspacePremium,
                         contentDescription = null,
                         tint = if (isDarkMode) CustomizeColors.TextSecondaryDark
                                else CustomizeColors.TextSecondaryLight,
@@ -608,8 +609,8 @@ private fun PinnedBadgeChip(
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = if (badge.isSpecial) Icons.Filled.Stars
-                                 else Icons.Filled.EmojiEvents,
+                    imageVector = if (badge.isSpecial) ProdyIcons.Stars
+                                 else ProdyIcons.EmojiEvents,
                     contentDescription = null,
                     tint = rarityColor,
                     modifier = Modifier.size(24.dp)
@@ -668,7 +669,7 @@ private fun AddBadgeSlot(
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Filled.Add,
+                    imageVector = ProdyIcons.Add,
                     contentDescription = "Add",
                     tint = if (isDarkMode) CustomizeColors.TextSecondaryDark
                            else CustomizeColors.TextSecondaryLight,
@@ -759,7 +760,7 @@ fun CustomizeProfileContent(
             CustomizeSection(
                 title = "Banner",
                 currentValue = currentBannerName,
-                icon = Icons.Filled.Wallpaper,
+                icon = ProdyIcons.Wallpaper,
                 onClick = onBannerClick,
                 isDarkMode = isDarkMode,
                 rarity = currentBannerRarity,
@@ -769,7 +770,7 @@ fun CustomizeProfileContent(
             CustomizeSection(
                 title = "Frame",
                 currentValue = currentFrameName,
-                icon = Icons.Filled.FilterFrames,
+                icon = ProdyIcons.FilterFrames,
                 onClick = onFrameClick,
                 isDarkMode = isDarkMode,
                 rarity = currentFrameRarity
@@ -778,7 +779,7 @@ fun CustomizeProfileContent(
             CustomizeSection(
                 title = "Title",
                 currentValue = currentTitleName,
-                icon = Icons.Filled.Badge,
+                icon = ProdyIcons.Badge,
                 onClick = onTitleClick,
                 isDarkMode = isDarkMode,
                 rarity = currentTitleRarity
@@ -787,7 +788,7 @@ fun CustomizeProfileContent(
             CustomizeSection(
                 title = "Accent Color",
                 currentValue = currentAccentName,
-                icon = Icons.Filled.Palette,
+                icon = ProdyIcons.Palette,
                 onClick = onAccentClick,
                 isDarkMode = isDarkMode,
                 previewColors = listOf(currentAccentColor, currentAccentColor.copy(alpha = 0.5f))
@@ -856,7 +857,7 @@ fun CustomizePreviewHeader(
                 modifier = Modifier.padding(8.dp)
             ) {
                 Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    imageVector = ProdyIcons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Back",
                     tint = Color.White
                 )
@@ -883,7 +884,7 @@ fun CustomizePreviewHeader(
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.Person,
+                        imageVector = ProdyIcons.Person,
                         contentDescription = null,
                         tint = Color.White,
                         modifier = Modifier.size(36.dp)

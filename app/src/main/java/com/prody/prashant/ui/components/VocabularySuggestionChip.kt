@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.components
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
@@ -56,7 +57,7 @@ fun VocabularySuggestionSection(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.Lightbulb,
+                        imageVector = ProdyIcons.Lightbulb,
                         contentDescription = null,
                         tint = Color(0xFFFFC107),
                         modifier = Modifier.size(16.dp)
@@ -75,7 +76,7 @@ fun VocabularySuggestionSection(
                     modifier = Modifier.size(20.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.Close,
+                        imageVector = ProdyIcons.Close,
                         contentDescription = "Dismiss",
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(14.dp)
@@ -226,7 +227,7 @@ fun VocabularyCelebrationBadge(
                     modifier = Modifier.size(24.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.Close,
+                        imageVector = ProdyIcons.Close,
                         contentDescription = "Dismiss",
                         tint = Color.White,
                         modifier = Modifier.size(16.dp)

@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.screens.futuremessage
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
@@ -83,7 +84,7 @@ fun FutureMessageReplyScreen(
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            imageVector = ProdyIcons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back"
                         )
                     }
@@ -240,7 +241,7 @@ private fun ReplyContent(
                         color = MaterialTheme.colorScheme.onPrimary
                     )
                 } else {
-                    Icon(Icons.AutoMirrored.Filled.Send, contentDescription = null)
+                    Icon(ProdyIcons.AutoMirrored.Filled.Send, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
                     Text("Send Reply to Past Self")
                 }
@@ -262,7 +263,7 @@ private fun AnniversaryBanner(anniversaryType: String) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                imageVector = Icons.Default.Celebration,
+                imageVector = ProdyIcons.Celebration,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(32.dp)
@@ -300,7 +301,7 @@ private fun OriginalMessageCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    imageVector = Icons.Default.Mail,
+                    imageVector = ProdyIcons.Mail,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(20.dp)
@@ -336,7 +337,7 @@ private fun ExistingReplyCard(reply: String) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    imageVector = Icons.Default.CheckCircle,
+                    imageVector = ProdyIcons.CheckCircle,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.secondary,
                     modifier = Modifier.size(18.dp)
@@ -383,7 +384,7 @@ private fun ReplySection(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    imageVector = Icons.Default.Lightbulb,
+                    imageVector = ProdyIcons.Lightbulb,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.tertiary,
                     modifier = Modifier.size(18.dp)
@@ -401,7 +402,7 @@ private fun ReplySection(
                     modifier = Modifier.size(24.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Refresh,
+                        imageVector = ProdyIcons.Refresh,
                         contentDescription = "New prompt",
                         modifier = Modifier.size(18.dp)
                     )
@@ -497,7 +498,7 @@ private fun ChainOption(
                     )
                 }
                 Icon(
-                    imageVector = Icons.Default.Loop,
+                    imageVector = ProdyIcons.Loop,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary
                 )
@@ -559,7 +560,7 @@ private fun SuccessState(
         ) {
             Box(contentAlignment = Alignment.Center) {
                 Icon(
-                    imageVector = Icons.Default.Check,
+                    imageVector = ProdyIcons.Check,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(48.dp)
@@ -595,7 +596,7 @@ private fun SuccessState(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Celebration,
+                        imageVector = ProdyIcons.Celebration,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.secondary
                     )
@@ -615,7 +616,7 @@ private fun SuccessState(
             onClick = onSaveToJournal,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Icon(Icons.Default.Book, contentDescription = null)
+            Icon(ProdyIcons.Book, contentDescription = null)
             Spacer(modifier = Modifier.width(8.dp))
             Text("Save as Journal Entry")
         }
@@ -645,7 +646,7 @@ private fun ErrorState(
             modifier = Modifier.padding(32.dp)
         ) {
             Icon(
-                imageVector = Icons.Default.Error,
+                imageVector = ProdyIcons.Error,
                 contentDescription = null,
                 modifier = Modifier.size(64.dp),
                 tint = MaterialTheme.colorScheme.error

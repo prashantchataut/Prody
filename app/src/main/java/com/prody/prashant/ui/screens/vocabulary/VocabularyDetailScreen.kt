@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.screens.vocabulary
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
@@ -52,7 +53,7 @@ fun VocabularyDetailScreen(
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            imageVector = ProdyIcons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.back)
                         )
                     }
@@ -70,8 +71,8 @@ fun VocabularyDetailScreen(
                             }
                         ) {
                             Icon(
-                                imageVector = if (isSpeaking) Icons.Filled.Stop
-                                else Icons.AutoMirrored.Filled.VolumeUp,
+                                imageVector = if (isSpeaking) ProdyIcons.Stop
+                                else ProdyIcons.AutoMirrored.Filled.VolumeUp,
                                 contentDescription = if (isSpeaking) "Stop speaking" else "Speak word",
                                 tint = if (isSpeaking) MaterialTheme.colorScheme.primary
                                 else MaterialTheme.colorScheme.onSurfaceVariant
@@ -80,8 +81,8 @@ fun VocabularyDetailScreen(
                     }
                     IconButton(onClick = { viewModel.toggleFavorite() }) {
                         Icon(
-                            imageVector = if (uiState.word?.isFavorite == true) Icons.Filled.Favorite
-                            else Icons.Filled.FavoriteBorder,
+                            imageVector = if (uiState.word?.isFavorite == true) ProdyIcons.Favorite
+                            else ProdyIcons.FavoriteBorder,
                             contentDescription = "Favorite",
                             tint = if (uiState.word?.isFavorite == true) MaterialTheme.colorScheme.error
                             else MaterialTheme.colorScheme.onSurfaceVariant
@@ -133,7 +134,7 @@ fun VocabularyDetailScreen(
                     modifier = Modifier.padding(32.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.ErrorOutline,
+                        imageVector = ProdyIcons.ErrorOutline,
                         contentDescription = null,
                         modifier = Modifier.size(64.dp),
                         tint = MaterialTheme.colorScheme.error.copy(alpha = 0.7f)
@@ -174,7 +175,7 @@ fun VocabularyDetailScreen(
                     modifier = Modifier.padding(32.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.SearchOff,
+                        imageVector = ProdyIcons.SearchOff,
                         contentDescription = null,
                         modifier = Modifier.size(64.dp),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
@@ -239,7 +240,7 @@ fun VocabularyDetailScreen(
                                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                                     ) {
                                         Icon(
-                                            imageVector = Icons.Filled.CheckCircle,
+                                            imageVector = ProdyIcons.CheckCircle,
                                             contentDescription = null,
                                             tint = AchievementUnlocked,
                                             modifier = Modifier.size(14.dp)
@@ -270,7 +271,7 @@ fun VocabularyDetailScreen(
                                         modifier = Modifier.size(32.dp)
                                     ) {
                                         Icon(
-                                            imageVector = Icons.AutoMirrored.Filled.VolumeUp,
+                                            imageVector = ProdyIcons.AutoMirrored.Filled.VolumeUp,
                                             contentDescription = "Pronounce word",
                                             tint = MaterialTheme.colorScheme.primary,
                                             modifier = Modifier.size(20.dp)
@@ -364,7 +365,7 @@ fun VocabularyDetailScreen(
                                     )
                                 ) {
                                     Icon(
-                                        imageVector = Icons.Filled.Psychology,
+                                        imageVector = ProdyIcons.Psychology,
                                         contentDescription = null,
                                         modifier = Modifier.size(20.dp)
                                     )
@@ -437,7 +438,7 @@ fun VocabularyDetailScreen(
                             horizontalArrangement = Arrangement.Center
                         ) {
                             Icon(
-                                imageVector = Icons.Filled.CheckCircle,
+                                imageVector = ProdyIcons.CheckCircle,
                                 contentDescription = null,
                                 tint = AchievementUnlocked,
                                 modifier = Modifier.size(24.dp)

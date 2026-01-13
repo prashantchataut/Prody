@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.components
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
@@ -435,19 +436,19 @@ fun ProdySpecialBadge(
 
     val badgeConfig = when (badgeType) {
         SpecialBadgeType.DEV -> BadgeConfig(
-            icon = Icons.Filled.Code,
+            icon = ProdyIcons.Code,
             label = "DEV",
             primaryColor = ProdyAccentGreen,
             secondaryColor = ProdyAccentGreenDark
         )
         SpecialBadgeType.BETA_TESTER -> BadgeConfig(
-            icon = Icons.Filled.VerifiedUser,
+            icon = ProdyIcons.VerifiedUser,
             label = "BETA",
             primaryColor = ProdyPremiumViolet,
             secondaryColor = ProdyPremiumVioletDark
         )
         SpecialBadgeType.FOUNDER -> BadgeConfig(
-            icon = Icons.Filled.Star,
+            icon = ProdyIcons.Star,
             label = "FOUNDER",
             primaryColor = LeaderboardGold,
             secondaryColor = LeaderboardGoldDark

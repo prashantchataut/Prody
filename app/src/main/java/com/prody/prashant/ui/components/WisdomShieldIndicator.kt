@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.components
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
@@ -8,7 +9,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Shield
-import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -171,7 +171,7 @@ private fun ActiveShieldVisual(
 
         // Shield icon
         Icon(
-            imageVector = Icons.Filled.Shield,
+            imageVector = ProdyIcons.Shield,
             contentDescription = "Wisdom Shield Active",
             modifier = Modifier.size(36.dp),
             tint = ProdyAccentGreen
@@ -221,7 +221,7 @@ private fun RegeneratingShieldVisual(
 
         // Shield icon
         Icon(
-            imageVector = Icons.Outlined.Shield,
+            imageVector = ProdyIcons.Outlined.Shield,
             contentDescription = if (isRegeneration) "Shield Regenerating" else "Shield Unlocking",
             modifier = Modifier
                 .size(32.dp)
@@ -251,7 +251,7 @@ private fun RegeneratingShieldVisual(
 @Composable
 private fun InactiveShieldVisual() {
     Icon(
-        imageVector = Icons.Outlined.Shield,
+        imageVector = ProdyIcons.Outlined.Shield,
         contentDescription = "Shield Inactive",
         modifier = Modifier
             .size(36.dp)
@@ -318,7 +318,7 @@ fun CompactShieldIndicator(
         contentAlignment = Alignment.Center
     ) {
         Icon(
-            imageVector = Icons.Filled.Shield,
+            imageVector = ProdyIcons.Shield,
             contentDescription = "Protected",
             modifier = Modifier.size(14.dp),
             tint = ProdyAccentGreen.copy(alpha = glow)
@@ -378,7 +378,7 @@ fun ShieldProtectedBanner(
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Filled.Shield,
+                    imageVector = ProdyIcons.Shield,
                     contentDescription = null,
                     modifier = Modifier.size(24.dp),
                     tint = ProdyAccentGreen

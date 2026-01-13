@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.screens.onboarding
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
@@ -15,7 +16,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -504,13 +504,13 @@ private fun JournalingScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 FeatureChip(
-                    icon = Icons.Outlined.Psychology,
+                    icon = ProdyIcons.Outlined.Psychology,
                     label = "Deep Reflection",
                     isDarkTheme = isDarkTheme
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 FeatureChip(
-                    icon = Icons.Outlined.TrendingUp,
+                    icon = ProdyIcons.Outlined.TrendingUp,
                     label = "Growth Tracking",
                     isDarkTheme = isDarkTheme
                 )
@@ -579,7 +579,7 @@ private fun JournalingTopHeader(
     ) {
         // Back arrow
         Icon(
-            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+            imageVector = ProdyIcons.AutoMirrored.Filled.ArrowBack,
             contentDescription = "Back",
             tint = textSecondary,
             modifier = Modifier
@@ -697,7 +697,7 @@ private fun JournalingInsightCard(
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = Icons.Default.AutoAwesome,
+                            imageVector = ProdyIcons.AutoAwesome,
                             contentDescription = null,
                             tint = AccentGreen,
                             modifier = Modifier.size(20.dp)
@@ -848,7 +848,7 @@ private fun GamificationLeaderboardScreen(
 
             // Feature List
             FeatureListItem(
-                icon = Icons.Default.Star,
+                icon = ProdyIcons.Star,
                 title = "Earn XP",
                 description = "Get rewarded for every journal entry you complete.",
                 isDarkTheme = isDarkTheme
@@ -857,7 +857,7 @@ private fun GamificationLeaderboardScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             FeatureListItem(
-                icon = Icons.Default.EmojiEvents,
+                icon = ProdyIcons.EmojiEvents,
                 title = "Badges",
                 description = "Unlock exclusive milestones as you grow.",
                 isDarkTheme = isDarkTheme
@@ -866,7 +866,7 @@ private fun GamificationLeaderboardScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             FeatureListItem(
-                icon = Icons.Default.BarChart,
+                icon = ProdyIcons.BarChart,
                 title = "Compete",
                 description = "See where you stand among peers.",
                 isDarkTheme = isDarkTheme
@@ -939,7 +939,7 @@ private fun LeaderboardGraphicCard(
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Default.EmojiEvents,
+                    imageVector = ProdyIcons.EmojiEvents,
                     contentDescription = "Trophy",
                     tint = ButtonTextDark,
                     modifier = Modifier.size(40.dp)
@@ -952,7 +952,7 @@ private fun LeaderboardGraphicCard(
                     .offset(x = 4.dp, y = (-4).dp)
             ) {
                 Icon(
-                    imageVector = Icons.Default.Star,
+                    imageVector = ProdyIcons.Star,
                     contentDescription = null,
                     tint = AccentGreen,
                     modifier = Modifier.size(20.dp)
@@ -1019,7 +1019,7 @@ private fun LeaderboardRow(
 
         // Person icon
         Icon(
-            imageVector = Icons.Default.Person,
+            imageVector = ProdyIcons.Person,
             contentDescription = null,
             tint = textColor,
             modifier = Modifier.size(18.dp)
@@ -1162,7 +1162,7 @@ private fun GamificationXpScreen(
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 StatCard(
-                    icon = Icons.Default.LocalFireDepartment,
+                    icon = ProdyIcons.LocalFireDepartment,
                     iconTint = AccentGreen,
                     value = "7",
                     label = "DAY STREAK",
@@ -1171,7 +1171,7 @@ private fun GamificationXpScreen(
                     modifier = Modifier.weight(1f)
                 )
                 StatCard(
-                    icon = Icons.Default.Verified,
+                    icon = ProdyIcons.Verified,
                     iconTint = AccentGreen,
                     value = "750",
                     label = "TOTAL XP",
@@ -1180,7 +1180,7 @@ private fun GamificationXpScreen(
                     modifier = Modifier.weight(1f)
                 )
                 StatCard(
-                    icon = Icons.Default.Lock,
+                    icon = ProdyIcons.Lock,
                     iconTint = if (isDarkTheme) DarkTextTertiary else LightTextTertiary,
                     value = "???",
                     label = "LOCKED",
@@ -1311,7 +1311,7 @@ private fun XpProgressRing(
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Default.EmojiEvents,
+                    imageVector = ProdyIcons.EmojiEvents,
                     contentDescription = null,
                     tint = textPrimary,
                     modifier = Modifier.size(24.dp)
@@ -1353,7 +1353,7 @@ private fun XpProgressRing(
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                imageVector = Icons.Default.Bolt,
+                imageVector = ProdyIcons.Bolt,
                 contentDescription = null,
                 tint = ButtonTextDark,
                 modifier = Modifier.size(16.dp)
@@ -1367,7 +1367,7 @@ private fun XpProgressRing(
                 .offset(x = (-32).dp, y = 24.dp)
         ) {
             Icon(
-                imageVector = Icons.Default.Star,
+                imageVector = ProdyIcons.Star,
                 contentDescription = null,
                 tint = AccentGreen,
                 modifier = Modifier.size(24.dp)
@@ -1507,7 +1507,7 @@ private fun DailyWisdomFeaturesScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.AutoMirrored.Outlined.MenuBook,
+                    imageVector = ProdyIcons.MenuBook,
                     contentDescription = null,
                     tint = AccentGreen,
                     modifier = Modifier.size(44.dp)
@@ -1546,7 +1546,7 @@ private fun DailyWisdomFeaturesScreen(
 
             // Feature Cards
             WisdomFeatureCard(
-                icon = Icons.Outlined.TextFormat,
+                icon = ProdyIcons.Outlined.TextFormat,
                 title = "Word of the Day",
                 description = "Expand your vocabulary",
                 isDarkTheme = isDarkTheme
@@ -1555,7 +1555,7 @@ private fun DailyWisdomFeaturesScreen(
             Spacer(modifier = Modifier.height(12.dp))
 
             WisdomFeatureCard(
-                icon = Icons.Outlined.FormatQuote,
+                icon = ProdyIcons.Outlined.FormatQuote,
                 title = "Quote Collection",
                 description = "Insights from great minds",
                 isDarkTheme = isDarkTheme
@@ -1564,7 +1564,7 @@ private fun DailyWisdomFeaturesScreen(
             Spacer(modifier = Modifier.height(12.dp))
 
             WisdomFeatureCard(
-                icon = Icons.Outlined.School,
+                icon = ProdyIcons.Outlined.School,
                 title = "Proverbs & Idioms",
                 description = "Timeless cultural wisdom",
                 isDarkTheme = isDarkTheme
@@ -1573,7 +1573,7 @@ private fun DailyWisdomFeaturesScreen(
             Spacer(modifier = Modifier.height(12.dp))
 
             WisdomFeatureCard(
-                icon = Icons.Outlined.ChatBubble,
+                icon = ProdyIcons.Outlined.ChatBubble,
                 title = "Essential Phrases",
                 description = "Communication masterclass",
                 isDarkTheme = isDarkTheme
@@ -1811,7 +1811,7 @@ private fun QuoteCard(
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Default.Lightbulb,
+                    imageVector = ProdyIcons.Lightbulb,
                     contentDescription = null,
                     tint = AccentGreen,
                     modifier = Modifier.size(20.dp)
@@ -1869,7 +1869,7 @@ private fun QuoteCard(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Icon(
-                imageVector = Icons.Default.Person,
+                imageVector = ProdyIcons.Person,
                 contentDescription = null,
                 tint = textSecondary,
                 modifier = Modifier.size(16.dp)
@@ -1916,7 +1916,7 @@ private fun QuoteCard(
 
             // Bookmark icon
             Icon(
-                imageVector = Icons.Default.BookmarkBorder,
+                imageVector = ProdyIcons.BookmarkBorder,
                 contentDescription = "Bookmark",
                 tint = textPrimary,
                 modifier = Modifier.size(22.dp)
@@ -2002,7 +2002,7 @@ private fun LoginSignupScreen(
                 value = email,
                 onValueChange = { email = it },
                 placeholder = "Email Address",
-                icon = Icons.Outlined.Email,
+                icon = ProdyIcons.Outlined.Email,
                 isFocused = emailFocused,
                 onFocusChange = { emailFocused = it },
                 backgroundColor = inputBackground,
@@ -2018,7 +2018,7 @@ private fun LoginSignupScreen(
                 value = password,
                 onValueChange = { password = it },
                 placeholder = "Password",
-                icon = Icons.Outlined.Lock,
+                icon = ProdyIcons.Outlined.Lock,
                 isPassword = true,
                 isFocused = passwordFocused,
                 onFocusChange = { passwordFocused = it },
@@ -2248,7 +2248,7 @@ private fun ForgotPasswordDialog(
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = if (isSent) Icons.Filled.MarkEmailRead else Icons.Outlined.Lock,
+                        imageVector = if (isSent) ProdyIcons.MarkEmailRead else ProdyIcons.Outlined.Lock,
                         contentDescription = null,
                         tint = AccentGreen,
                         modifier = Modifier.size(28.dp)
@@ -2292,7 +2292,7 @@ private fun ForgotPasswordDialog(
                         value = email,
                         onValueChange = onEmailChange,
                         placeholder = "Email Address",
-                        icon = Icons.Outlined.Email,
+                        icon = ProdyIcons.Outlined.Email,
                         isFocused = false,
                         onFocusChange = {},
                         backgroundColor = inputBg,
@@ -2593,7 +2593,7 @@ private fun LoginButton(
             )
 
             Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                imageVector = ProdyIcons.AutoMirrored.Filled.ArrowForward,
                 contentDescription = null,
                 tint = ButtonTextDark,
                 modifier = Modifier.size(22.dp)
@@ -2844,7 +2844,7 @@ private fun ProdyOnboardingButton(
 
             if (showArrow) {
                 Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                    imageVector = ProdyIcons.AutoMirrored.Filled.ArrowForward,
                     contentDescription = null,
                     tint = ButtonTextDark,
                     modifier = Modifier.size(22.dp)

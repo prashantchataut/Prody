@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.components
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
@@ -408,7 +409,7 @@ fun DevBadge(
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Icon(
-                imageVector = Icons.Filled.Code,
+                imageVector = ProdyIcons.Code,
                 contentDescription = "Developer",
                 tint = ProdyAccentGreen,
                 modifier = Modifier.size(12.dp)
@@ -485,7 +486,7 @@ fun BetaBadge(
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Icon(
-                imageVector = Icons.Filled.Science,
+                imageVector = ProdyIcons.Science,
                 contentDescription = "Beta Tester",
                 tint = Color.White,
                 modifier = Modifier.size(12.dp)

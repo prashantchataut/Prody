@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.screens.home
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.EaseOutCubic
@@ -17,8 +18,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material.icons.outlined.ArrowForward
-import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -401,7 +400,7 @@ private fun AiConfigurationWarningBanner(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Icon(
-                imageVector = Icons.Default.Warning,
+                imageVector = ProdyIcons.Warning,
                 contentDescription = null,
                 tint = ProdyWarning,
                 modifier = Modifier.size(24.dp)
@@ -504,7 +503,7 @@ private fun PremiumHeader(
                         modifier = Modifier.fillMaxSize()
                     ) {
                         Icon(
-                            imageVector = Icons.Outlined.Search,
+                            imageVector = ProdyIcons.Outlined.Search,
                             contentDescription = "Search",
                             tint = secondaryTextColor,
                             modifier = Modifier.size(22.dp)
@@ -563,7 +562,7 @@ private fun PremiumStatsBadge(
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Outlined.LocalFireDepartment,
+                    imageVector = ProdyIcons.Outlined.LocalFireDepartment,
                     contentDescription = null, // Parent has combined description
                     tint = StreakFire,
                     modifier = Modifier.size(16.dp)
@@ -591,7 +590,7 @@ private fun PremiumStatsBadge(
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Outlined.Star,
+                    imageVector = ProdyIcons.Outlined.Star,
                     contentDescription = null, // Parent has combined description
                     tint = LeaderboardGold,
                     modifier = Modifier.size(16.dp)
@@ -753,7 +752,7 @@ private fun TodayReflectionCard(
                 )
 
                 Icon(
-                    imageVector = Icons.Outlined.ArrowForward,
+                    imageVector = ProdyIcons.Outlined.ArrowForward,
                     contentDescription = null,
                     tint = moodColor,
                     modifier = Modifier.size(18.dp)
@@ -807,7 +806,7 @@ private fun StartHereCTA(
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Outlined.Edit,
+                        imageVector = ProdyIcons.Outlined.Edit,
                         contentDescription = null,
                         tint = accentColor,
                         modifier = Modifier.size(24.dp)
@@ -839,7 +838,7 @@ private fun StartHereCTA(
         // Challenges Card
         PremiumReflectionCard(
             modifier = Modifier.weight(1f),
-            icon = Icons.Filled.EmojiEvents,
+            icon = ProdyIcons.EmojiEvents,
             iconTint = LeaderboardGold,
             title = "Challenges",
             subtitle = "Compete now",
@@ -888,7 +887,7 @@ private fun QuickActionsSection(
         ) {
             // Journal
             QuickActionItem(
-                icon = Icons.Outlined.Book,
+                icon = ProdyIcons.Outlined.Book,
                 label = "Journal",
                 textColor = secondaryTextColor,
                 onClick = onJournalClick
@@ -904,7 +903,7 @@ private fun QuickActionsSection(
 
             // Future
             QuickActionItem(
-                icon = Icons.Outlined.Send,
+                icon = ProdyIcons.Outlined.Send,
                 label = "Future",
                 textColor = secondaryTextColor,
                 onClick = onFutureClick
@@ -920,7 +919,7 @@ private fun QuickActionsSection(
 
             // Quotes
             QuickActionItem(
-                icon = Icons.Outlined.FormatQuote,
+                icon = ProdyIcons.Outlined.FormatQuote,
                 label = "Quotes",
                 textColor = secondaryTextColor,
                 onClick = onQuotesClick
@@ -1122,7 +1121,7 @@ private fun QuoteCard(
                         letterSpacing = 0.5.sp
                     )
                     Icon(
-                        imageVector = Icons.Outlined.OpenInNew,
+                        imageVector = ProdyIcons.Outlined.OpenInNew,
                         contentDescription = "Share",
                         tint = accentColor,
                         modifier = Modifier.size(14.dp)
@@ -1239,7 +1238,7 @@ private fun WordCard(
                     )
                 }
                 Icon(
-                    imageVector = Icons.Outlined.ArrowForward,
+                    imageVector = ProdyIcons.Outlined.ArrowForward,
                     contentDescription = "View details",
                     tint = secondaryTextColor,
                     modifier = Modifier.size(18.dp)
@@ -1353,7 +1352,7 @@ private fun IdiomCard(
                     )
                 }
                 Icon(
-                    imageVector = Icons.Outlined.ArrowForward,
+                    imageVector = ProdyIcons.Outlined.ArrowForward,
                     contentDescription = "View details",
                     tint = secondaryTextColor,
                     modifier = Modifier.size(18.dp)
@@ -1458,7 +1457,7 @@ private fun ProverbSection(
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Outlined.Psychology,
+                    imageVector = ProdyIcons.Outlined.Psychology,
                     contentDescription = null,
                     tint = ProverbTeal,
                     modifier = Modifier.size(22.dp)
@@ -1558,7 +1557,7 @@ private fun BuddhaWisdomCard(
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = Icons.Outlined.SelfImprovement,
+                            imageVector = ProdyIcons.Outlined.SelfImprovement,
                             contentDescription = null,
                             tint = buddhaGold,
                             modifier = Modifier.size(20.dp)
@@ -1593,7 +1592,7 @@ private fun BuddhaWisdomCard(
                         modifier = Modifier.size(36.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Outlined.Refresh,
+                            imageVector = ProdyIcons.Outlined.Refresh,
                             contentDescription = "Refresh wisdom",
                             tint = secondaryTextColor,
                             modifier = Modifier.size(18.dp)
@@ -1709,7 +1708,7 @@ private fun TodayProgressCard(
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Outlined.LocalFireDepartment,
+                            imageVector = ProdyIcons.Outlined.LocalFireDepartment,
                             contentDescription = null,
                             tint = StreakFire,
                             modifier = Modifier.size(14.dp)
@@ -1823,7 +1822,7 @@ private fun TodayProgressCard(
                     }
 
                     Icon(
-                        imageVector = Icons.Outlined.ArrowForward,
+                        imageVector = ProdyIcons.Outlined.ArrowForward,
                         contentDescription = "Go",
                         tint = accentColor,
                         modifier = Modifier.size(20.dp)
@@ -1898,7 +1897,7 @@ private fun SeedOfTheDayCard(
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = if (seed.hasBloomedToday) Icons.Outlined.Park else Icons.Outlined.Spa,
+                    imageVector = if (seed.hasBloomedToday) ProdyIcons.Outlined.Park else ProdyIcons.Outlined.Spa,
                     contentDescription = null,
                     tint = seedColor,
                     modifier = Modifier.size(22.dp)

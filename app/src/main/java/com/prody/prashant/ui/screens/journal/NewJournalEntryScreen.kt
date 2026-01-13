@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.screens.journal
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -501,7 +502,7 @@ private fun JournalTopBar(
                 modifier = Modifier.size(48.dp)
             ) {
                 Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    imageVector = ProdyIcons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = stringResource(R.string.back),
                     tint = colors.primaryText,
                     modifier = Modifier.size(24.dp)
@@ -576,7 +577,7 @@ private fun UseTemplateSection(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Icon(
-                imageVector = Icons.Filled.GridView,
+                imageVector = ProdyIcons.GridView,
                 contentDescription = null,
                 tint = colors.accent,
                 modifier = Modifier.size(20.dp)
@@ -601,7 +602,7 @@ private fun UseTemplateSection(
                 TemplateCard(
                     title = "Gratitude",
                     description = "Cultivate positivity by reflecting on what...",
-                    icon = Icons.Filled.Favorite,
+                    icon = ProdyIcons.Favorite,
                     onClick = {
                         JournalTemplate.all.find { it.id == "gratitude" }?.let { onTemplateSelected(it) }
                     },
@@ -612,7 +613,7 @@ private fun UseTemplateSection(
                 TemplateCard(
                     title = "Reflection",
                     description = "Review your day with structured prompts.",
-                    icon = Icons.Filled.Psychology,
+                    icon = ProdyIcons.Psychology,
                     onClick = {
                         JournalTemplate.all.find { it.id == "reflection" }?.let { onTemplateSelected(it) }
                     },
@@ -1139,7 +1140,7 @@ private fun JournalInputField(
                             modifier = Modifier.size(48.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Filled.Image,
+                                imageVector = ProdyIcons.Image,
                                 contentDescription = "Add photo/video",
                                 tint = colors.primaryText,
                                 modifier = Modifier.size(24.dp)
@@ -1162,7 +1163,7 @@ private fun JournalInputField(
                             )
 
                             Icon(
-                                imageVector = if (isRecording) Icons.Filled.Stop else Icons.Filled.Mic,
+                                imageVector = if (isRecording) ProdyIcons.Stop else ProdyIcons.Mic,
                                 contentDescription = if (isRecording) "Stop recording" else "Voice input",
                                 tint = if (isRecording) colors.accent else colors.primaryText,
                                 modifier = Modifier
@@ -1175,7 +1176,7 @@ private fun JournalInputField(
                             modifier = Modifier.size(48.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.AutoMirrored.Filled.List,
+                                imageVector = ProdyIcons.AutoMirrored.Filled.List,
                                 contentDescription = "Add list",
                                 tint = colors.primaryText,
                                 modifier = Modifier.size(24.dp)
@@ -1208,7 +1209,7 @@ private fun JournalInputField(
                                 // Checkmark when complete
                                 if (contentValidation is ContentValidation.Valid) {
                                     Icon(
-                                        imageVector = Icons.Filled.Check,
+                                        imageVector = ProdyIcons.Check,
                                         contentDescription = "Content complete",
                                         tint = colors.accent,
                                         modifier = Modifier.size(10.dp)
@@ -1272,10 +1273,10 @@ private fun ContentValidationHint(
             ) {
                 // Icon based on validation type
                 val (icon, iconColor) = when (validation) {
-                    is ContentValidation.TooShort -> Icons.Filled.Edit to Color(0xFFFF9800)
-                    is ContentValidation.TooVague -> Icons.Filled.Lightbulb to Color(0xFF2196F3)
-                    is ContentValidation.MinimalContent -> Icons.Filled.TipsAndUpdates to colors.accent
-                    else -> Icons.Filled.Info to colors.secondaryText
+                    is ContentValidation.TooShort -> ProdyIcons.Edit to Color(0xFFFF9800)
+                    is ContentValidation.TooVague -> ProdyIcons.Lightbulb to Color(0xFF2196F3)
+                    is ContentValidation.MinimalContent -> ProdyIcons.TipsAndUpdates to colors.accent
+                    else -> ProdyIcons.Info to colors.secondaryText
                 }
 
                 Icon(
@@ -1401,7 +1402,7 @@ private fun MediaThumbnail(
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Filled.PlayArrow,
+                    imageVector = ProdyIcons.PlayArrow,
                     contentDescription = null,
                     tint = Color.White,
                     modifier = Modifier.size(16.dp)
@@ -1424,7 +1425,7 @@ private fun MediaThumbnail(
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Filled.Close,
+                    imageVector = ProdyIcons.Close,
                     contentDescription = "Remove",
                     tint = Color.White,
                     modifier = Modifier.size(14.dp)
@@ -1464,7 +1465,7 @@ private fun VoiceRecordingPreview(
                 .background(colors.accent)
         ) {
             Icon(
-                imageVector = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
+                imageVector = if (isPlaying) ProdyIcons.Pause else ProdyIcons.PlayArrow,
                 contentDescription = if (isPlaying) "Pause" else "Play",
                 tint = Color.White,
                 modifier = Modifier.size(20.dp)
@@ -1502,7 +1503,7 @@ private fun VoiceRecordingPreview(
             modifier = Modifier.size(32.dp)
         ) {
             Icon(
-                imageVector = Icons.Filled.Delete,
+                imageVector = ProdyIcons.Delete,
                 contentDescription = "Remove recording",
                 tint = Color(0xFFEF5350),
                 modifier = Modifier.size(20.dp)
@@ -1632,7 +1633,7 @@ private fun TranscriptionIndicator(
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Filled.Mic,
+                    imageVector = ProdyIcons.Mic,
                     contentDescription = "Listening",
                     tint = Color.White,
                     modifier = Modifier.size(20.dp)

@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.screens.haven
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
@@ -110,7 +111,7 @@ fun HavenChatScreen(
                         }
                     }) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            imageVector = ProdyIcons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.back)
                         )
                     }
@@ -119,7 +120,7 @@ fun HavenChatScreen(
                     if (!uiState.isCompleted) {
                         IconButton(onClick = { showCompletionDialog = true }) {
                             Icon(
-                                imageVector = Icons.Default.CheckCircle,
+                                imageVector = ProdyIcons.CheckCircle,
                                 contentDescription = "End Session"
                             )
                         }
@@ -329,7 +330,7 @@ private fun ChatInputBar(
                     )
                 } else {
                     Icon(
-                        imageVector = Icons.AutoMirrored.Filled.Send,
+                        imageVector = ProdyIcons.AutoMirrored.Filled.Send,
                         contentDescription = "Send",
                         tint = if (value.isNotBlank()) ProdyAccentGreen
                         else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
@@ -386,7 +387,7 @@ private fun MessageBubble(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Psychology,
+                            imageVector = ProdyIcons.Psychology,
                             contentDescription = null,
                             modifier = Modifier.size(14.dp),
                             tint = textColor.copy(alpha = 0.7f)
@@ -476,7 +477,7 @@ private fun CrisisResourcesBanner(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                imageVector = Icons.Default.HealthAndSafety,
+                imageVector = ProdyIcons.HealthAndSafety,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.error
             )
@@ -544,7 +545,7 @@ private fun SuggestedExerciseCard(
                 )
             }
             Icon(
-                imageVector = Icons.Default.PlayArrow,
+                imageVector = ProdyIcons.PlayArrow,
                 contentDescription = "Start",
                 tint = ProdyAccentGreen
             )
@@ -570,7 +571,7 @@ private fun SessionSummaryCard(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Icon(
-                imageVector = Icons.Default.CheckCircle,
+                imageVector = ProdyIcons.CheckCircle,
                 contentDescription = null,
                 modifier = Modifier.size(48.dp),
                 tint = ProdySuccess

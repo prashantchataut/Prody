@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.components
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
@@ -206,7 +207,7 @@ private fun ScrollToTopButton(
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                imageVector = Icons.Filled.KeyboardArrowUp,
+                imageVector = ProdyIcons.KeyboardArrowUp,
                 contentDescription = "Scroll to top",
                 tint = Color.White,
                 modifier = Modifier.size(20.dp)

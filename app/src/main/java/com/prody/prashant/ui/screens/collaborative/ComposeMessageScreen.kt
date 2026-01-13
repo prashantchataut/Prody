@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.screens.collaborative
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
@@ -94,7 +95,7 @@ fun ComposeMessageScreen(
                         onNavigateBack()
                     }) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            imageVector = ProdyIcons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.back)
                         )
                     }
@@ -112,9 +113,9 @@ fun ComposeMessageScreen(
                         } else {
                             Icon(
                                 imageVector = if (uiState.isScheduledForFuture) {
-                                    Icons.Default.Schedule
+                                    ProdyIcons.Schedule
                                 } else {
-                                    Icons.AutoMirrored.Filled.Send
+                                    ProdyIcons.AutoMirrored.Filled.Send
                                 },
                                 contentDescription = null
                             )
@@ -445,10 +446,10 @@ private fun RecipientSection(
                         ) {
                             Icon(
                                 imageVector = when (method) {
-                                    ContactMethod.EMAIL -> Icons.Default.Email
-                                    ContactMethod.SMS -> Icons.Default.Sms
-                                    ContactMethod.WHATSAPP -> Icons.Default.Chat
-                                    ContactMethod.IN_APP -> Icons.Default.Notifications
+                                    ContactMethod.EMAIL -> ProdyIcons.Email
+                                    ContactMethod.SMS -> ProdyIcons.Sms
+                                    ContactMethod.WHATSAPP -> ProdyIcons.Chat
+                                    ContactMethod.IN_APP -> ProdyIcons.Notifications
                                 },
                                 contentDescription = null,
                                 modifier = Modifier.size(16.dp)
@@ -473,7 +474,7 @@ private fun RecipientSection(
             modifier = Modifier.fillMaxWidth(),
             placeholder = { Text("Recipient name") },
             leadingIcon = {
-                Icon(Icons.Default.Person, contentDescription = null)
+                Icon(ProdyIcons.Person, contentDescription = null)
             },
             singleLine = true,
             colors = OutlinedTextFieldDefaults.colors(
@@ -502,10 +503,10 @@ private fun RecipientSection(
             leadingIcon = {
                 Icon(
                     imageVector = when (contactMethod) {
-                        ContactMethod.EMAIL -> Icons.Default.Email
-                        ContactMethod.SMS -> Icons.Default.Phone
-                        ContactMethod.WHATSAPP -> Icons.Default.Chat
-                        ContactMethod.IN_APP -> Icons.Default.AlternateEmail
+                        ContactMethod.EMAIL -> ProdyIcons.Email
+                        ContactMethod.SMS -> ProdyIcons.Phone
+                        ContactMethod.WHATSAPP -> ProdyIcons.Chat
+                        ContactMethod.IN_APP -> ProdyIcons.AlternateEmail
                     },
                     contentDescription = null
                 )
@@ -513,7 +514,7 @@ private fun RecipientSection(
             trailingIcon = {
                 IconButton(onClick = onSelectFromContacts) {
                     Icon(
-                        imageVector = Icons.Default.Contacts,
+                        imageVector = ProdyIcons.Contacts,
                         contentDescription = "Select from contacts"
                     )
                 }
@@ -567,7 +568,7 @@ private fun OccasionSelector(
                     }
                     IconButton(onClick = onClear) {
                         Icon(
-                            imageVector = Icons.Default.Close,
+                            imageVector = ProdyIcons.Close,
                             contentDescription = "Clear",
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -579,7 +580,7 @@ private fun OccasionSelector(
                 onClick = onShowPicker,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Icon(Icons.Default.Celebration, contentDescription = null)
+                Icon(ProdyIcons.Celebration, contentDescription = null)
                 Spacer(modifier = Modifier.width(8.dp))
                 Text("Select Occasion")
             }
@@ -618,7 +619,7 @@ private fun ThemeSelector(
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Default.MoreHoriz,
+                    imageVector = ProdyIcons.MoreHoriz,
                     contentDescription = "More themes",
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -717,7 +718,7 @@ private fun DeliveryScheduler(
                             label = { Text(deliveryDate.format(dateFormatter)) },
                             leadingIcon = {
                                 Icon(
-                                    Icons.Default.CalendarMonth,
+                                    ProdyIcons.CalendarMonth,
                                     contentDescription = null,
                                     modifier = Modifier.size(16.dp)
                                 )
@@ -728,7 +729,7 @@ private fun DeliveryScheduler(
                             label = { Text(deliveryDate.format(timeFormatter)) },
                             leadingIcon = {
                                 Icon(
-                                    Icons.Default.Schedule,
+                                    ProdyIcons.Schedule,
                                     contentDescription = null,
                                     modifier = Modifier.size(16.dp)
                                 )

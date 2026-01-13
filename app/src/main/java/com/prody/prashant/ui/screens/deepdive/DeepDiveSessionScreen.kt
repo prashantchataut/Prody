@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.screens.deepdive
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
@@ -79,7 +80,7 @@ fun DeepDiveSessionScreen(
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            imageVector = ProdyIcons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.back)
                         )
                     }
@@ -729,7 +730,7 @@ private fun CompletedStep(
                 Column(modifier = Modifier.padding(16.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
-                            imageVector = Icons.Default.Lightbulb,
+                            imageVector = ProdyIcons.Lightbulb,
                             contentDescription = null,
                             tint = themeColor
                         )
@@ -763,7 +764,7 @@ private fun CompletedStep(
                 Column(modifier = Modifier.padding(16.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
-                            imageVector = Icons.Default.CheckCircle,
+                            imageVector = ProdyIcons.CheckCircle,
                             contentDescription = null,
                             tint = ProdySuccess
                         )

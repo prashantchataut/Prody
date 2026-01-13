@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.screens.challenges
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
@@ -17,7 +18,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -125,7 +125,7 @@ fun ChallengesScreen(
                         SectionHeader(
                             title = "Your Active Challenges",
                             subtitle = "${uiState.joinedChallenges.size} in progress",
-                            icon = Icons.Filled.LocalFireDepartment
+                            icon = ProdyIcons.LocalFireDepartment
                         )
                     }
                 }
@@ -165,7 +165,7 @@ fun ChallengesScreen(
                     SectionHeader(
                         title = "Available Challenges",
                         subtitle = "Join and compete with the community",
-                        icon = Icons.Outlined.EmojiEvents
+                        icon = ProdyIcons.Outlined.EmojiEvents
                     )
                 }
             }
@@ -200,7 +200,7 @@ fun ChallengesScreen(
                         SectionHeader(
                             title = "Completed Challenges",
                             subtitle = "${uiState.completedChallenges.size} conquered",
-                            icon = Icons.Filled.CheckCircle
+                            icon = ProdyIcons.CheckCircle
                         )
                     }
                 }
@@ -302,7 +302,7 @@ private fun ChallengesHeader(
             ) {
                 IconButton(onClick = onBackClick) {
                     Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        imageVector = ProdyIcons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Back",
                         tint = Color.White
                     )
@@ -328,19 +328,19 @@ private fun ChallengesHeader(
                 HeaderStatItem(
                     value = totalJoined.toString(),
                     label = "Joined",
-                    icon = Icons.Outlined.Groups,
+                    icon = ProdyIcons.Outlined.Groups,
                     glowAlpha = glowAlpha
                 )
                 HeaderStatItem(
                     value = totalCompleted.toString(),
                     label = "Completed",
-                    icon = Icons.Filled.EmojiEvents,
+                    icon = ProdyIcons.EmojiEvents,
                     glowAlpha = glowAlpha
                 )
                 HeaderStatItem(
                     value = formatNumber(totalPoints),
                     label = "Points",
-                    icon = Icons.Filled.Stars,
+                    icon = ProdyIcons.Stars,
                     glowAlpha = glowAlpha
                 )
             }
@@ -497,7 +497,7 @@ private fun FeaturedChallengeCard(
                                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                                 ) {
                                     Icon(
-                                        imageVector = Icons.Filled.Star,
+                                        imageVector = ProdyIcons.Star,
                                         contentDescription = null,
                                         tint = GoldTier,
                                         modifier = Modifier.size(14.dp)
@@ -574,7 +574,7 @@ private fun FeaturedChallengeCard(
                             horizontalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Outlined.Schedule,
+                                imageVector = ProdyIcons.Outlined.Schedule,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.size(16.dp)
@@ -592,7 +592,7 @@ private fun FeaturedChallengeCard(
                             horizontalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Filled.Stars,
+                                imageVector = ProdyIcons.Stars,
                                 contentDescription = null,
                                 tint = GoldTier,
                                 modifier = Modifier.size(16.dp)
@@ -615,7 +615,7 @@ private fun FeaturedChallengeCard(
                                 shape = RoundedCornerShape(12.dp)
                             ) {
                                 Icon(
-                                    imageVector = Icons.Filled.Add,
+                                    imageVector = ProdyIcons.Add,
                                     contentDescription = null,
                                     modifier = Modifier.size(18.dp)
                                 )
@@ -661,7 +661,7 @@ private fun CommunityProgressSection(
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Outlined.Groups,
+                    imageVector = ProdyIcons.Outlined.Groups,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(16.dp)
@@ -813,7 +813,7 @@ private fun ActiveChallengeCard(
                     horizontalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.Stars,
+                        imageVector = ProdyIcons.Stars,
                         contentDescription = null,
                         tint = GoldTier,
                         modifier = Modifier.size(12.dp)
@@ -901,7 +901,7 @@ private fun ChallengeListItem(
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Outlined.Groups,
+                            imageVector = ProdyIcons.Outlined.Groups,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(14.dp)
@@ -918,7 +918,7 @@ private fun ChallengeListItem(
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Outlined.Schedule,
+                            imageVector = ProdyIcons.Outlined.Schedule,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(14.dp)
@@ -935,7 +935,7 @@ private fun ChallengeListItem(
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Filled.Stars,
+                            imageVector = ProdyIcons.Stars,
                             contentDescription = null,
                             tint = GoldTier,
                             modifier = Modifier.size(14.dp)
@@ -967,7 +967,7 @@ private fun ChallengeListItem(
                 }
             } else {
                 Icon(
-                    imageVector = Icons.Filled.CheckCircle,
+                    imageVector = ProdyIcons.CheckCircle,
                     contentDescription = "Joined",
                     tint = AchievementUnlocked,
                     modifier = Modifier.size(24.dp)
@@ -998,7 +998,7 @@ private fun CompletedChallengeCard(challenge: Challenge) {
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Filled.EmojiEvents,
+                    imageVector = ProdyIcons.EmojiEvents,
                     contentDescription = null,
                     tint = AchievementUnlocked,
                     modifier = Modifier.size(24.dp)
@@ -1034,7 +1034,7 @@ private fun CompletedChallengeCard(challenge: Challenge) {
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.Stars,
+                        imageVector = ProdyIcons.Stars,
                         contentDescription = null,
                         tint = GoldTier,
                         modifier = Modifier.size(14.dp)
@@ -1101,7 +1101,7 @@ private fun UserProgressBadge(
             horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             Icon(
-                imageVector = Icons.AutoMirrored.Filled.TrendingUp,
+                imageVector = ProdyIcons.AutoMirrored.Filled.TrendingUp,
                 contentDescription = null,
                 tint = color,
                 modifier = Modifier.size(16.dp)
@@ -1174,7 +1174,7 @@ private fun EmptyChallengesState() {
         )
 
         Icon(
-            imageVector = Icons.Outlined.EmojiEvents,
+            imageVector = ProdyIcons.Outlined.EmojiEvents,
             contentDescription = null,
             modifier = Modifier
                 .size(80.dp)
@@ -1292,21 +1292,21 @@ private fun ChallengeDetailBottomSheet(
                     DetailStatCard(
                         label = "Target",
                         value = challenge.targetCount.toString(),
-                        icon = Icons.Outlined.Flag,
+                        icon = ProdyIcons.Outlined.Flag,
                         color = challenge.type.color,
                         modifier = Modifier.weight(1f)
                     )
                     DetailStatCard(
                         label = "Days Left",
                         value = challenge.daysRemaining.toString(),
-                        icon = Icons.Outlined.Schedule,
+                        icon = ProdyIcons.Outlined.Schedule,
                         color = if (challenge.daysRemaining <= 3) MoodAnxious else MoodMotivated,
                         modifier = Modifier.weight(1f)
                     )
                     DetailStatCard(
                         label = "Reward",
                         value = "+${challenge.rewardPoints}",
-                        icon = Icons.Filled.Stars,
+                        icon = ProdyIcons.Stars,
                         color = GoldTier,
                         modifier = Modifier.weight(1f)
                     )
@@ -1381,7 +1381,7 @@ private fun ChallengeDetailBottomSheet(
                         contentPadding = PaddingValues(vertical = 16.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Filled.Add,
+                            imageVector = ProdyIcons.Add,
                             contentDescription = null,
                             modifier = Modifier.size(20.dp)
                         )
@@ -1443,7 +1443,7 @@ private fun ChallengeDetailBottomSheet(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
-                                imageVector = Icons.Filled.EmojiEvents,
+                                imageVector = ProdyIcons.EmojiEvents,
                                 contentDescription = null,
                                 tint = AchievementUnlocked,
                                 modifier = Modifier.size(24.dp)
@@ -1532,9 +1532,9 @@ private fun LeaderboardItemRow(
             if (rank <= 3) {
                 Icon(
                     imageVector = when (rank) {
-                        1 -> Icons.Filled.EmojiEvents
-                        2 -> Icons.Filled.WorkspacePremium
-                        else -> Icons.Filled.MilitaryTech
+                        1 -> ProdyIcons.EmojiEvents
+                        2 -> ProdyIcons.WorkspacePremium
+                        else -> ProdyIcons.MilitaryTech
                     },
                     contentDescription = null,
                     tint = rankColor,
@@ -1648,7 +1648,7 @@ private fun CelebrationOverlay(
                     )
 
                     Icon(
-                        imageVector = Icons.Filled.Celebration,
+                        imageVector = ProdyIcons.Celebration,
                         contentDescription = null,
                         tint = GoldTier,
                         modifier = Modifier

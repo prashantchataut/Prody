@@ -1,8 +1,10 @@
 package com.prody.prashant.data.repository
 
 import com.prody.prashant.data.local.dao.VocabularyDao
+import com.prody.prashant.data.local.dao.VocabularyLearningDao
 import com.prody.prashant.data.local.entity.VocabularyEntity
 import com.prody.prashant.domain.common.Result
+import com.prody.prashant.domain.learning.SpacedRepetitionEngine
 import com.prody.prashant.domain.repository.VocabularyRepository
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -25,10 +27,16 @@ class VocabularyRepositoryTest {
 
     private lateinit var repository: VocabularyRepository
     private val vocabularyDao: VocabularyDao = mockk(relaxed = true)
+    private val vocabularyLearningDao: VocabularyLearningDao = mockk(relaxed = true)
+    private val spacedRepetitionEngine: SpacedRepetitionEngine = mockk(relaxed = true)
 
     @Before
     fun setup() {
-        repository = VocabularyRepositoryImpl(vocabularyDao)
+        repository = VocabularyRepositoryImpl(
+            vocabularyDao,
+            vocabularyLearningDao,
+            spacedRepetitionEngine
+        )
     }
 
     @Test

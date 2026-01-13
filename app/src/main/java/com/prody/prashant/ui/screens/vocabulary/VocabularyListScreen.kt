@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.screens.vocabulary
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -48,7 +49,7 @@ fun VocabularyListScreen(
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            imageVector = ProdyIcons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.back)
                         )
                     }
@@ -56,8 +57,8 @@ fun VocabularyListScreen(
                 actions = {
                     IconButton(onClick = { viewModel.toggleFavoritesOnly() }) {
                         Icon(
-                            imageVector = if (uiState.showFavoritesOnly) Icons.Filled.Favorite
-                            else Icons.Filled.FavoriteBorder,
+                            imageVector = if (uiState.showFavoritesOnly) ProdyIcons.Favorite
+                            else ProdyIcons.FavoriteBorder,
                             contentDescription = "Filter favorites",
                             tint = if (uiState.showFavoritesOnly) MaterialTheme.colorScheme.error
                             else MaterialTheme.colorScheme.onSurfaceVariant
@@ -140,7 +141,7 @@ fun VocabularyListScreen(
                         modifier = Modifier.padding(32.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Filled.ErrorOutline,
+                            imageVector = ProdyIcons.ErrorOutline,
                             contentDescription = null,
                             modifier = Modifier.size(64.dp),
                             tint = MaterialTheme.colorScheme.error.copy(alpha = 0.7f)
@@ -171,7 +172,7 @@ fun VocabularyListScreen(
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.MenuBook,
+                            imageVector = ProdyIcons.AutoMirrored.Filled.MenuBook,
                             contentDescription = null,
                             modifier = Modifier.size(64.dp),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
@@ -232,7 +233,7 @@ private fun VocabularyCard(
                         )
                         if (word.isLearned) {
                             Icon(
-                                imageVector = Icons.Filled.CheckCircle,
+                                imageVector = ProdyIcons.CheckCircle,
                                 contentDescription = "Learned",
                                 tint = AchievementUnlocked,
                                 modifier = Modifier.size(16.dp)
@@ -253,8 +254,8 @@ private fun VocabularyCard(
                     modifier = Modifier.size(48.dp)
                 ) {
                     Icon(
-                        imageVector = if (word.isFavorite) Icons.Filled.Favorite
-                        else Icons.Filled.FavoriteBorder,
+                        imageVector = if (word.isFavorite) ProdyIcons.Favorite
+                        else ProdyIcons.FavoriteBorder,
                         contentDescription = if (word.isFavorite) "Remove from favorites" else "Add to favorites",
                         tint = if (word.isFavorite) MaterialTheme.colorScheme.error
                         else MaterialTheme.colorScheme.onSurfaceVariant,
@@ -298,7 +299,7 @@ private fun VocabularyCard(
                     ) {
                         repeat(word.difficulty.coerceIn(1, 5)) {
                             Icon(
-                                imageVector = Icons.Filled.Star,
+                                imageVector = ProdyIcons.Star,
                                 contentDescription = null,
                                 modifier = Modifier.size(10.dp),
                                 tint = GoldTier

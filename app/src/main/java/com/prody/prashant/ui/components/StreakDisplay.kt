@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.components
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.core.EaseInOutCubic
 import androidx.compose.animation.core.RepeatMode
@@ -195,7 +196,7 @@ fun StreakDisplay(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Filled.LocalFireDepartment,
+                    imageVector = ProdyIcons.LocalFireDepartment,
                     contentDescription = null,
                     tint = if (isActive) primaryColor else Color.Gray,
                     modifier = Modifier
@@ -279,7 +280,7 @@ fun CompactStreakIndicator(
         horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         Icon(
-            imageVector = Icons.Filled.LocalFireDepartment,
+            imageVector = ProdyIcons.LocalFireDepartment,
             contentDescription = null,
             tint = if (isActive) primaryColor else Color.Gray,
             modifier = Modifier
@@ -322,7 +323,7 @@ fun InlineStreakCount(
         horizontalArrangement = Arrangement.spacedBy(2.dp)
     ) {
         Icon(
-            imageVector = Icons.Filled.LocalFireDepartment,
+            imageVector = ProdyIcons.LocalFireDepartment,
             contentDescription = null,
             tint = if (isActive) primaryColor else Color.Gray.copy(alpha = 0.5f),
             modifier = Modifier.size(14.dp)
@@ -405,7 +406,7 @@ fun StreakMilestoneCelebration(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Icon(
-                imageVector = Icons.Filled.LocalFireDepartment,
+                imageVector = ProdyIcons.LocalFireDepartment,
                 contentDescription = null,
                 tint = primaryColor,
                 modifier = Modifier.size(48.dp)

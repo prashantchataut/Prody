@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.components
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
@@ -535,7 +536,7 @@ fun ProdyRefreshIndicator(
                 color = MaterialTheme.colorScheme.primary
             )
         } else {
-            androidx.compose.material.icons.Icons.Filled.let { icons ->
+            androidx.compose.material.icons.ProdyIcons.let { icons ->
                 androidx.compose.material3.Icon(
                     imageVector = icons.ArrowDownward,
                     contentDescription = "Pull to refresh",
@@ -565,7 +566,7 @@ fun <T> ContentLoadingState(
     emptyContent: @Composable () -> Unit = {},
     errorContent: @Composable (String) -> Unit = { errorMsg ->
         ProdyErrorEmptyState(
-            icon = androidx.compose.material.icons.Icons.Filled.ErrorOutline,
+            icon = androidx.compose.material.icons.ProdyIcons.ErrorOutline,
             title = "Something went wrong",
             message = errorMsg,
             retryLabel = "Try Again",

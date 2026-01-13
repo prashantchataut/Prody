@@ -1,4 +1,5 @@
 package com.prody.prashant.debug
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -20,7 +21,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.BugReport
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -298,7 +298,7 @@ private fun CrashScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Outlined.BugReport,
+                        imageVector = ProdyIcons.Outlined.BugReport,
                         contentDescription = null,
                         tint = Color(0xFFFF8080),
                         modifier = Modifier.size(40.dp)
@@ -349,7 +349,7 @@ private fun CrashScreen(
 
                 ExpandableSection(
                     title = "Root Cause: $rootCauseType",
-                    icon = Icons.Filled.Warning,
+                    icon = ProdyIcons.Warning,
                     isExpanded = showRootCause,
                     onToggle = { showRootCause = !showRootCause }
                 ) {
@@ -362,7 +362,7 @@ private fun CrashScreen(
             // Stack Trace Expandable Section
             ExpandableSection(
                 title = "Stack Trace",
-                icon = Icons.Filled.Code,
+                icon = ProdyIcons.Code,
                 isExpanded = showStackTrace,
                 onToggle = { showStackTrace = !showStackTrace }
             ) {
@@ -374,7 +374,7 @@ private fun CrashScreen(
             // Device Info Expandable Section
             ExpandableSection(
                 title = "Device Info",
-                icon = Icons.Filled.PhoneAndroid,
+                icon = ProdyIcons.PhoneAndroid,
                 isExpanded = showDeviceInfo,
                 onToggle = { showDeviceInfo = !showDeviceInfo }
             ) {
@@ -391,7 +391,7 @@ private fun CrashScreen(
                 // Copy Button
                 ActionButton(
                     text = "Copy",
-                    icon = Icons.Filled.ContentCopy,
+                    icon = ProdyIcons.ContentCopy,
                     onClick = onCopyClick,
                     isPrimary = false,
                     modifier = Modifier.weight(1f)
@@ -400,7 +400,7 @@ private fun CrashScreen(
                 // Restart Button
                 ActionButton(
                     text = "Restart",
-                    icon = Icons.Filled.Refresh,
+                    icon = ProdyIcons.Refresh,
                     onClick = onRestartClick,
                     isPrimary = true,
                     modifier = Modifier.weight(1f)
@@ -522,7 +522,7 @@ private fun ExpandableSection(
                     modifier = Modifier.weight(1f)
                 )
                 Icon(
-                    imageVector = Icons.Filled.KeyboardArrowDown,
+                    imageVector = ProdyIcons.KeyboardArrowDown,
                     contentDescription = if (isExpanded) "Collapse" else "Expand",
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier

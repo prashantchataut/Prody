@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.components
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
@@ -108,7 +109,7 @@ fun SeedCard(
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = if (isReady) Icons.Filled.LocalFlorist else Icons.Filled.Grass,
+                    imageVector = if (isReady) ProdyIcons.LocalFlorist else ProdyIcons.Grass,
                     contentDescription = null,
                     tint = if (isReady) BloomReady else SeedDormant,
                     modifier = Modifier.size(24.dp)
@@ -244,9 +245,9 @@ fun BloomProgressIndicator(
 
         Icon(
             imageVector = when {
-                progress >= 1f -> Icons.Filled.LocalFlorist
-                progress >= 0.5f -> Icons.Filled.Grass
-                else -> Icons.Filled.Grain
+                progress >= 1f -> ProdyIcons.LocalFlorist
+                progress >= 0.5f -> ProdyIcons.Grass
+                else -> ProdyIcons.Grain
             },
             contentDescription = null,
             tint = iconColor,
@@ -376,7 +377,7 @@ fun BloomCelebration(
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = Icons.Filled.LocalFlorist,
+                            imageVector = ProdyIcons.LocalFlorist,
                             contentDescription = null,
                             tint = Color.White,
                             modifier = Modifier.size(32.dp)
@@ -416,7 +417,7 @@ fun BloomCelebration(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Filled.Stars,
+                            imageVector = ProdyIcons.Stars,
                             contentDescription = null,
                             tint = GoldTier,
                             modifier = Modifier.size(20.dp)
@@ -473,7 +474,7 @@ fun GardenSummaryCard(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.Park,
+                        imageVector = ProdyIcons.Park,
                         contentDescription = null,
                         tint = BloomReady,
                         modifier = Modifier.size(24.dp)
@@ -509,19 +510,19 @@ fun GardenSummaryCard(
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 GardenStat(
-                    icon = Icons.Filled.Grass,
+                    icon = ProdyIcons.Grass,
                     value = totalSeeds,
                     label = "Seeds",
                     color = SeedDormant
                 )
                 GardenStat(
-                    icon = Icons.Filled.LocalFlorist,
+                    icon = ProdyIcons.LocalFlorist,
                     value = bloomedTotal,
                     label = "Bloomed",
                     color = BloomReady
                 )
                 GardenStat(
-                    icon = Icons.Filled.LocalFireDepartment,
+                    icon = ProdyIcons.LocalFireDepartment,
                     value = currentStreak,
                     label = "Streak",
                     color = StreakFire
@@ -628,7 +629,7 @@ fun BloomStreakCard(
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Filled.LocalFireDepartment,
+                    imageVector = ProdyIcons.LocalFireDepartment,
                     contentDescription = null,
                     tint = if (currentStreak > 0) {
                         StreakFire.copy(alpha = fireAlpha)
@@ -774,10 +775,10 @@ enum class BloomStage(
     val icon: ImageVector,
     val color: Color
 ) {
-    SEED("Seed", Icons.Filled.Grain, SeedDormant),
-    SPROUTING("Sprouting", Icons.Filled.Grass, BloomGrowing),
-    GROWING("Growing", Icons.Filled.Nature, BloomGrowing),
-    BLOOMING("Blooming", Icons.Filled.LocalFlorist, BloomReady),
-    FLOURISHING("Flourishing", Icons.Filled.Park, MoodGrateful)
+    SEED("Seed", ProdyIcons.Grain, SeedDormant),
+    SPROUTING("Sprouting", ProdyIcons.Grass, BloomGrowing),
+    GROWING("Growing", ProdyIcons.Nature, BloomGrowing),
+    BLOOMING("Blooming", ProdyIcons.LocalFlorist, BloomReady),
+    FLOURISHING("Flourishing", ProdyIcons.Park, MoodGrateful)
 }
 

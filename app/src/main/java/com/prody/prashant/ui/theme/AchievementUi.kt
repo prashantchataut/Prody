@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.theme
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Chat
@@ -166,42 +167,42 @@ enum class AchievementCategory(
         description = "Achievements from learning words, quotes, and proverbs",
         color = Color(0xFF6B5CE7),
         secondaryColor = Color(0xFF9B8AFF),
-        icon = Icons.Filled.AutoStories
+        icon = ProdyIcons.AutoStories
     ),
     REFLECTION(
         displayName = "Reflection",
         description = "Achievements from journaling and self-examination",
         color = Color(0xFF3AAFA9),
         secondaryColor = Color(0xFF6FD5CE),
-        icon = Icons.Filled.Psychology
+        icon = ProdyIcons.Psychology
     ),
     CONSISTENCY(
         displayName = "Consistency",
         description = "Achievements from maintaining streaks and habits",
         color = Color(0xFFFF6B6B),
         secondaryColor = Color(0xFFFFAB76),
-        icon = Icons.Filled.LocalFireDepartment
+        icon = ProdyIcons.LocalFireDepartment
     ),
     PRESENCE(
         displayName = "Presence",
         description = "Achievements from engaging with Buddha and mindfulness",
         color = Color(0xFF4ECDC4),
         secondaryColor = Color(0xFF44B09E),
-        icon = Icons.Filled.SelfImprovement
+        icon = ProdyIcons.SelfImprovement
     ),
     TEMPORAL(
         displayName = "Temporal",
         description = "Achievements from future-self letters and time awareness",
         color = Color(0xFF667EEA),
         secondaryColor = Color(0xFF764BA2),
-        icon = Icons.Filled.Schedule
+        icon = ProdyIcons.Schedule
     ),
     MASTERY(
         displayName = "Mastery",
         description = "Special achievements for exceptional dedication",
         color = Color(0xFFD4AF37),
         secondaryColor = Color(0xFFF4D03F),
-        icon = Icons.Filled.WorkspacePremium
+        icon = ProdyIcons.WorkspacePremium
     ),
 
     // Legacy categories for backwards compatibility
@@ -210,42 +211,42 @@ enum class AchievementCategory(
         description = "Consistency achievements",
         color = Color(0xFFFF6B6B),
         secondaryColor = Color(0xFFFFAB76),
-        icon = Icons.Filled.LocalFireDepartment
+        icon = ProdyIcons.LocalFireDepartment
     ),
     LEARNING(
         displayName = "Learning",
         description = "Vocabulary achievements",
         color = Color(0xFF6B5CE7),
         secondaryColor = Color(0xFF9B8AFF),
-        icon = Icons.AutoMirrored.Filled.MenuBook
+        icon = ProdyIcons.AutoMirrored.Filled.MenuBook
     ),
     JOURNAL(
         displayName = "Journal",
         description = "Journaling achievements",
         color = Color(0xFF3AAFA9),
         secondaryColor = Color(0xFF6FD5CE),
-        icon = Icons.Filled.EditNote
+        icon = ProdyIcons.EditNote
     ),
     SOCIAL(
         displayName = "Social",
         description = "Social engagement achievements",
         color = Color(0xFF4ECDC4),
         secondaryColor = Color(0xFF44B09E),
-        icon = Icons.Filled.ThumbUp
+        icon = ProdyIcons.ThumbUp
     ),
     SPECIAL(
         displayName = "Special",
         description = "Special achievements",
         color = Color(0xFF667EEA),
         secondaryColor = Color(0xFF764BA2),
-        icon = Icons.Filled.AutoAwesome
+        icon = ProdyIcons.AutoAwesome
     ),
     EXPLORER(
         displayName = "Explorer",
         description = "Exploration achievements",
         color = Color(0xFF00BCD4),
         secondaryColor = Color(0xFF4DD0E1),
-        icon = Icons.Filled.Explore
+        icon = ProdyIcons.Explore
     );
 
     /**
@@ -362,78 +363,78 @@ data class Achievement(
 object AchievementIcons {
     private val iconMap: Map<String, ImageVector> = mapOf(
         // General
-        "lightbulb" to Icons.Filled.Lightbulb,
-        "eco" to Icons.Filled.Eco,
-        "construction" to Icons.Filled.Construction,
-        "handyman" to Icons.Filled.Handyman,
-        "menu_book" to Icons.AutoMirrored.Filled.MenuBook,
-        "school" to Icons.Filled.School,
-        "favorite" to Icons.Filled.Favorite,
-        "stars" to Icons.Filled.Stars,
-        "format_quote" to Icons.Filled.AutoStories,
-        "auto_stories" to Icons.Filled.AutoStories,
-        "collections_bookmark" to Icons.Filled.CollectionsBookmark,
-        "explore" to Icons.Filled.Explore,
-        "history_edu" to Icons.Filled.HistoryEdu,
+        "lightbulb" to ProdyIcons.Lightbulb,
+        "eco" to ProdyIcons.Eco,
+        "construction" to ProdyIcons.Construction,
+        "handyman" to ProdyIcons.Handyman,
+        "menu_book" to ProdyIcons.AutoMirrored.Filled.MenuBook,
+        "school" to ProdyIcons.School,
+        "favorite" to ProdyIcons.Favorite,
+        "stars" to ProdyIcons.Stars,
+        "format_quote" to ProdyIcons.AutoStories,
+        "auto_stories" to ProdyIcons.AutoStories,
+        "collections_bookmark" to ProdyIcons.CollectionsBookmark,
+        "explore" to ProdyIcons.Explore,
+        "history_edu" to ProdyIcons.HistoryEdu,
 
         // Reflection
-        "edit_note" to Icons.Filled.EditNote,
-        "record_voice_over" to Icons.Filled.RecordVoiceOver,
-        "chat" to Icons.AutoMirrored.Filled.Chat,
-        "history" to Icons.Filled.History,
-        "psychology" to Icons.Filled.Psychology,
-        "book" to Icons.Filled.Book,
-        "auto_awesome" to Icons.Filled.AutoAwesome,
-        "mood" to Icons.Filled.Mood,
-        "map" to Icons.Filled.Map,
-        "palette" to Icons.Filled.Palette,
+        "edit_note" to ProdyIcons.EditNote,
+        "record_voice_over" to ProdyIcons.RecordVoiceOver,
+        "chat" to ProdyIcons.AutoMirrored.Filled.Chat,
+        "history" to ProdyIcons.History,
+        "psychology" to ProdyIcons.Psychology,
+        "book" to ProdyIcons.Book,
+        "auto_awesome" to ProdyIcons.AutoAwesome,
+        "mood" to ProdyIcons.Mood,
+        "map" to ProdyIcons.Map,
+        "palette" to ProdyIcons.Palette,
 
         // Consistency
-        "whatshot" to Icons.Filled.Whatshot,
-        "local_fire_department" to Icons.Filled.LocalFireDepartment,
-        "bolt" to Icons.Filled.Bolt,
-        "nightlight" to Icons.Filled.Nightlight,
-        "dark_mode" to Icons.Filled.DarkMode,
-        "park" to Icons.Filled.Park,
-        "landscape" to Icons.Filled.Landscape,
-        "psychology_alt" to Icons.Filled.PsychologyAlt,
+        "whatshot" to ProdyIcons.Whatshot,
+        "local_fire_department" to ProdyIcons.LocalFireDepartment,
+        "bolt" to ProdyIcons.Bolt,
+        "nightlight" to ProdyIcons.Nightlight,
+        "dark_mode" to ProdyIcons.DarkMode,
+        "park" to ProdyIcons.Park,
+        "landscape" to ProdyIcons.Landscape,
+        "psychology_alt" to ProdyIcons.PsychologyAlt,
 
         // Presence
-        "forum" to Icons.Filled.Forum,
-        "help_outline" to Icons.AutoMirrored.Filled.HelpOutline,
-        "diversity_3" to Icons.Filled.Diversity3,
-        "self_improvement" to Icons.Filled.SelfImprovement,
-        "handshake" to Icons.Filled.Handshake,
+        "forum" to ProdyIcons.Forum,
+        "help_outline" to ProdyIcons.AutoMirrored.Filled.HelpOutline,
+        "diversity_3" to ProdyIcons.Diversity3,
+        "self_improvement" to ProdyIcons.SelfImprovement,
+        "handshake" to ProdyIcons.Handshake,
 
         // Temporal
-        "mail" to Icons.Filled.Mail,
-        "send" to Icons.AutoMirrored.Filled.Send,
-        "hourglass_empty" to Icons.Filled.HourglassEmpty,
-        "architecture" to Icons.Filled.Architecture,
-        "mark_email_read" to Icons.Filled.MarkEmailRead,
-        "hearing" to Icons.Filled.Hearing,
-        "schedule" to Icons.Filled.Schedule,
+        "mail" to ProdyIcons.Mail,
+        "send" to ProdyIcons.AutoMirrored.Filled.Send,
+        "hourglass_empty" to ProdyIcons.HourglassEmpty,
+        "architecture" to ProdyIcons.Architecture,
+        "mark_email_read" to ProdyIcons.MarkEmailRead,
+        "hearing" to ProdyIcons.Hearing,
+        "schedule" to ProdyIcons.Schedule,
 
         // Mastery
-        "wb_twilight" to Icons.Filled.WbTwilight,
-        "nights_stay" to Icons.Filled.NightsStay,
-        "check_circle" to Icons.Filled.CheckCircle,
-        "verified" to Icons.Filled.Verified,
-        "moving" to Icons.Filled.Moving,
-        "trending_up" to Icons.AutoMirrored.Filled.TrendingUp,
-        "terrain" to Icons.Filled.Terrain,
-        "refresh" to Icons.Filled.Refresh,
-        "memory" to Icons.Filled.Memory,
-        "foundation" to Icons.Filled.Foundation,
-        "workspace_premium" to Icons.Filled.WorkspacePremium,
+        "wb_twilight" to ProdyIcons.WbTwilight,
+        "nights_stay" to ProdyIcons.NightsStay,
+        "check_circle" to ProdyIcons.CheckCircle,
+        "verified" to ProdyIcons.Verified,
+        "moving" to ProdyIcons.Moving,
+        "trending_up" to ProdyIcons.AutoMirrored.Filled.TrendingUp,
+        "terrain" to ProdyIcons.Terrain,
+        "refresh" to ProdyIcons.Refresh,
+        "memory" to ProdyIcons.Memory,
+        "foundation" to ProdyIcons.Foundation,
+        "workspace_premium" to ProdyIcons.WorkspacePremium,
 
         // Legacy
-        "emoji_events" to Icons.Filled.EmojiEvents,
-        "military_tech" to Icons.Filled.MilitaryTech,
-        "create" to Icons.Filled.Create,
-        "wb_sunny" to Icons.Filled.WbSunny,
-        "thumb_up" to Icons.Filled.ThumbUp,
-        "leaderboard" to Icons.Filled.Leaderboard
+        "emoji_events" to ProdyIcons.EmojiEvents,
+        "military_tech" to ProdyIcons.MilitaryTech,
+        "create" to ProdyIcons.Create,
+        "wb_sunny" to ProdyIcons.WbSunny,
+        "thumb_up" to ProdyIcons.ThumbUp,
+        "leaderboard" to ProdyIcons.Leaderboard
     )
 
     /**
@@ -441,7 +442,7 @@ object AchievementIcons {
      * Falls back to AutoAwesome for unknown icons.
      */
     fun getIcon(iconName: String): ImageVector {
-        return iconMap[iconName] ?: Icons.Filled.AutoAwesome
+        return iconMap[iconName] ?: ProdyIcons.AutoAwesome
     }
 }
 
@@ -469,7 +470,7 @@ object Achievements {
             id = "streak_3",
             name = "Kindling",
             description = "A spark becomes a flame with patient tending",
-            icon = Icons.Filled.Whatshot,
+            icon = ProdyIcons.Whatshot,
             category = AchievementCategory.CONSISTENCY,
             rarity = AchievementRarity.COMMON,
             requirement = 3,
@@ -481,7 +482,7 @@ object Achievements {
             id = "streak_7",
             name = "Steady Flame",
             description = "A week of presence - the habit takes root",
-            icon = Icons.Filled.LocalFireDepartment,
+            icon = ProdyIcons.LocalFireDepartment,
             category = AchievementCategory.CONSISTENCY,
             rarity = AchievementRarity.UNCOMMON,
             requirement = 7,
@@ -493,7 +494,7 @@ object Achievements {
             id = "streak_30",
             name = "Moon Cycle",
             description = "A complete lunar cycle of daily practice",
-            icon = Icons.Filled.Nightlight,
+            icon = ProdyIcons.Nightlight,
             category = AchievementCategory.CONSISTENCY,
             rarity = AchievementRarity.RARE,
             requirement = 30,
@@ -505,7 +506,7 @@ object Achievements {
             id = "streak_90",
             name = "Season of Growth",
             description = "Three months - a season of transformation",
-            icon = Icons.Filled.Park,
+            icon = ProdyIcons.Park,
             category = AchievementCategory.CONSISTENCY,
             rarity = AchievementRarity.EPIC,
             requirement = 90,
@@ -517,7 +518,7 @@ object Achievements {
             id = "streak_365",
             name = "Year of Presence",
             description = "365 days of showing up for yourself",
-            icon = Icons.Filled.Stars,
+            icon = ProdyIcons.Stars,
             category = AchievementCategory.CONSISTENCY,
             rarity = AchievementRarity.LEGENDARY,
             requirement = 365,
@@ -531,7 +532,7 @@ object Achievements {
             id = "words_10",
             name = "Gathering Words",
             description = "A vocabulary is a garden - you are planting seeds",
-            icon = Icons.Filled.Eco,
+            icon = ProdyIcons.Eco,
             category = AchievementCategory.WISDOM,
             rarity = AchievementRarity.COMMON,
             requirement = 10,
@@ -543,7 +544,7 @@ object Achievements {
             id = "words_50",
             name = "Wordsmith",
             description = "Words are tools, and you are learning your craft",
-            icon = Icons.Filled.Handyman,
+            icon = ProdyIcons.Handyman,
             category = AchievementCategory.WISDOM,
             rarity = AchievementRarity.UNCOMMON,
             requirement = 50,
@@ -555,7 +556,7 @@ object Achievements {
             id = "words_100",
             name = "Lexicon Keeper",
             description = "A hundred words is a language unto itself",
-            icon = Icons.AutoMirrored.Filled.MenuBook,
+            icon = ProdyIcons.AutoMirrored.Filled.MenuBook,
             category = AchievementCategory.WISDOM,
             rarity = AchievementRarity.RARE,
             requirement = 100,
@@ -567,7 +568,7 @@ object Achievements {
             id = "words_500",
             name = "Logophile",
             description = "A true lover of words, their histories, their music",
-            icon = Icons.Filled.Favorite,
+            icon = ProdyIcons.Favorite,
             category = AchievementCategory.WISDOM,
             rarity = AchievementRarity.LEGENDARY,
             requirement = 500,
@@ -581,7 +582,7 @@ object Achievements {
             id = "journal_1",
             name = "First Reflection",
             description = "The examined life begins with a single honest word",
-            icon = Icons.Filled.EditNote,
+            icon = ProdyIcons.EditNote,
             category = AchievementCategory.REFLECTION,
             rarity = AchievementRarity.COMMON,
             requirement = 1,
@@ -593,7 +594,7 @@ object Achievements {
             id = "journal_10",
             name = "Inner Dialogue",
             description = "A conversation with yourself, growing richer each day",
-            icon = Icons.AutoMirrored.Filled.Chat,
+            icon = ProdyIcons.AutoMirrored.Filled.Chat,
             category = AchievementCategory.REFLECTION,
             rarity = AchievementRarity.UNCOMMON,
             requirement = 10,
@@ -605,7 +606,7 @@ object Achievements {
             id = "journal_30",
             name = "Chronicle Keeper",
             description = "Your story is being written, one entry at a time",
-            icon = Icons.Filled.AutoStories,
+            icon = ProdyIcons.AutoStories,
             category = AchievementCategory.REFLECTION,
             rarity = AchievementRarity.RARE,
             requirement = 30,
@@ -617,7 +618,7 @@ object Achievements {
             id = "journal_100",
             name = "Memoir of the Soul",
             description = "A hundred glimpses into the depths of your being",
-            icon = Icons.Filled.Book,
+            icon = ProdyIcons.Book,
             category = AchievementCategory.REFLECTION,
             rarity = AchievementRarity.EPIC,
             requirement = 100,
@@ -631,7 +632,7 @@ object Achievements {
             id = "future_1",
             name = "Message in a Bottle",
             description = "A letter cast into the river of time",
-            icon = Icons.Filled.Mail,
+            icon = ProdyIcons.Mail,
             category = AchievementCategory.TEMPORAL,
             rarity = AchievementRarity.UNCOMMON,
             requirement = 1,
@@ -643,7 +644,7 @@ object Achievements {
             id = "future_5",
             name = "Time Weaver",
             description = "Connecting present intention to future realization",
-            icon = Icons.Filled.HourglassEmpty,
+            icon = ProdyIcons.HourglassEmpty,
             category = AchievementCategory.TEMPORAL,
             rarity = AchievementRarity.RARE,
             requirement = 5,
@@ -655,7 +656,7 @@ object Achievements {
             id = "future_received",
             name = "Echo from the Past",
             description = "Your past self has something to tell you",
-            icon = Icons.Filled.MarkEmailRead,
+            icon = ProdyIcons.MarkEmailRead,
             category = AchievementCategory.TEMPORAL,
             rarity = AchievementRarity.RARE,
             requirement = 1,
@@ -669,7 +670,7 @@ object Achievements {
             id = "buddha_first",
             name = "First Counsel",
             description = "You sought wisdom, and wisdom answered",
-            icon = Icons.Filled.Forum,
+            icon = ProdyIcons.Forum,
             category = AchievementCategory.PRESENCE,
             rarity = AchievementRarity.COMMON,
             requirement = 1,
@@ -681,7 +682,7 @@ object Achievements {
             id = "buddha_10",
             name = "Seeking Mind",
             description = "One who asks is one who grows",
-            icon = Icons.Filled.PsychologyAlt,
+            icon = ProdyIcons.PsychologyAlt,
             category = AchievementCategory.PRESENCE,
             rarity = AchievementRarity.UNCOMMON,
             requirement = 10,
@@ -695,7 +696,7 @@ object Achievements {
             id = "boost_10",
             name = "Encourager",
             description = "Supporting others on their journey",
-            icon = Icons.Filled.ThumbUp,
+            icon = ProdyIcons.ThumbUp,
             category = AchievementCategory.SOCIAL,
             rarity = AchievementRarity.UNCOMMON,
             requirement = 10,
@@ -707,7 +708,7 @@ object Achievements {
             id = "top_weekly",
             name = "Weekly Champion",
             description = "Rising to the summit of dedication",
-            icon = Icons.Filled.Leaderboard,
+            icon = ProdyIcons.Leaderboard,
             category = AchievementCategory.SOCIAL,
             rarity = AchievementRarity.EPIC,
             requirement = 1,
@@ -721,7 +722,7 @@ object Achievements {
             id = "night_owl",
             name = "Evening Contemplative",
             description = "The quiet hours of night invite reflection",
-            icon = Icons.Filled.NightsStay,
+            icon = ProdyIcons.NightsStay,
             category = AchievementCategory.MASTERY,
             rarity = AchievementRarity.UNCOMMON,
             requirement = 7,
@@ -733,7 +734,7 @@ object Achievements {
             id = "early_bird",
             name = "Dawn Seeker",
             description = "Those who rise with the sun often find themselves ahead",
-            icon = Icons.Filled.WbTwilight,
+            icon = ProdyIcons.WbTwilight,
             category = AchievementCategory.MASTERY,
             rarity = AchievementRarity.UNCOMMON,
             requirement = 7,
@@ -745,7 +746,7 @@ object Achievements {
             id = "all_moods",
             name = "Emotional Cartographer",
             description = "Mapping the terrain of your inner landscape",
-            icon = Icons.Filled.Map,
+            icon = ProdyIcons.Map,
             category = AchievementCategory.REFLECTION,
             rarity = AchievementRarity.RARE,
             requirement = 8,

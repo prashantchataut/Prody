@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.components.quietmode
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -85,7 +86,7 @@ fun QuietModeToggle(
         ) {
             // Icon
             Icon(
-                imageVector = Icons.Default.SelfImprovement,
+                imageVector = ProdyIcons.SelfImprovement,
                 contentDescription = null,
                 modifier = Modifier.size(32.dp),
                 tint = if (isQuietModeActive) {
@@ -155,7 +156,7 @@ private fun QuietModeEnableDialog(
         onDismissRequest = onDismiss,
         icon = {
             Icon(
-                imageVector = Icons.Default.SelfImprovement,
+                imageVector = ProdyIcons.SelfImprovement,
                 contentDescription = null,
                 modifier = Modifier.size(40.dp),
                 tint = if (isDarkTheme()) QuietModeTheme.QuietAccentDark else QuietModeTheme.QuietAccentLight
@@ -314,7 +315,7 @@ fun CompactQuietModeToggle(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Icon(
-                imageVector = Icons.Default.SelfImprovement,
+                imageVector = ProdyIcons.SelfImprovement,
                 contentDescription = null,
                 modifier = Modifier.size(24.dp),
                 tint = if (isQuietModeActive) {

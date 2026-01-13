@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.screens.idiom
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -69,7 +70,7 @@ fun IdiomDetailScreen(
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            imageVector = ProdyIcons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.back)
                         )
                     }
@@ -78,8 +79,8 @@ fun IdiomDetailScreen(
                     uiState.idiom?.let { idiom ->
                         IconButton(onClick = { viewModel.toggleFavorite() }) {
                             Icon(
-                                imageVector = if (idiom.isFavorite) Icons.Filled.Favorite
-                                else Icons.Filled.FavoriteBorder,
+                                imageVector = if (idiom.isFavorite) ProdyIcons.Favorite
+                                else ProdyIcons.FavoriteBorder,
                                 contentDescription = if (idiom.isFavorite) "Remove from favorites" else "Add to favorites",
                                 tint = if (idiom.isFavorite) MaterialTheme.colorScheme.error
                                 else MaterialTheme.colorScheme.onSurfaceVariant
@@ -132,7 +133,7 @@ fun IdiomDetailScreen(
                     modifier = Modifier.padding(32.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.ErrorOutline,
+                        imageVector = ProdyIcons.ErrorOutline,
                         contentDescription = null,
                         modifier = Modifier.size(64.dp),
                         tint = MaterialTheme.colorScheme.error.copy(alpha = 0.7f)
@@ -173,7 +174,7 @@ fun IdiomDetailScreen(
                     modifier = Modifier.padding(32.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.SearchOff,
+                        imageVector = ProdyIcons.SearchOff,
                         contentDescription = null,
                         modifier = Modifier.size(64.dp),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
@@ -255,7 +256,7 @@ fun IdiomDetailScreen(
                                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                                 ) {
                                     Icon(
-                                        imageVector = Icons.Filled.Favorite,
+                                        imageVector = ProdyIcons.Favorite,
                                         contentDescription = null,
                                         tint = MaterialTheme.colorScheme.error,
                                         modifier = Modifier.size(14.dp)
@@ -308,7 +309,7 @@ fun IdiomDetailScreen(
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Filled.Lightbulb,
+                                imageVector = ProdyIcons.Lightbulb,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(20.dp)

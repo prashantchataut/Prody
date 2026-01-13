@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.screens.profile
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
@@ -15,7 +16,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -389,7 +389,7 @@ private fun PremiumProfileHeader(
                 modifier = Modifier.size(48.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Outlined.Edit,
+                    imageVector = ProdyIcons.Outlined.Edit,
                     contentDescription = "Edit Profile",
                     tint = textSecondary,
                     modifier = Modifier.size(24.dp)
@@ -400,7 +400,7 @@ private fun PremiumProfileHeader(
                 modifier = Modifier.size(48.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Outlined.Settings,
+                    imageVector = ProdyIcons.Outlined.Settings,
                     contentDescription = stringResource(R.string.settings),
                     tint = accentColor,
                     modifier = Modifier.size(24.dp)
@@ -479,7 +479,7 @@ private fun PremiumHeroSection(
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.Person,
+                        imageVector = ProdyIcons.Person,
                         contentDescription = null,
                         modifier = Modifier.size(56.dp),
                         tint = if (isDarkMode) IdentityRoomColors.TextSecondaryDark
@@ -580,7 +580,7 @@ private fun BioSection(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Icon(
-                imageVector = Icons.Outlined.FormatQuote,
+                imageVector = ProdyIcons.Outlined.FormatQuote,
                 contentDescription = null,
                 tint = if (isDarkMode) IdentityRoomColors.AccentGreen
                        else IdentityRoomColors.AccentGreenLight,
@@ -595,7 +595,7 @@ private fun BioSection(
                 lineHeight = 22.sp
             )
             Icon(
-                imageVector = Icons.Outlined.Edit,
+                imageVector = ProdyIcons.Outlined.Edit,
                 contentDescription = "Edit bio",
                 tint = if (isDarkMode) IdentityRoomColors.TextTertiaryDark
                        else IdentityRoomColors.TextTertiaryLight,
@@ -676,7 +676,7 @@ private fun PremiumDevBadge(accentColor: Color) {
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Icon(
-                imageVector = Icons.Filled.Code,
+                imageVector = ProdyIcons.Code,
                 contentDescription = null,
                 tint = accentColor,
                 modifier = Modifier.size(14.dp)
@@ -708,7 +708,7 @@ private fun PremiumBetaPioneerBadge() {
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Icon(
-                imageVector = Icons.Filled.Rocket,
+                imageVector = ProdyIcons.Rocket,
                 contentDescription = null,
                 tint = badgeColor,
                 modifier = Modifier.size(14.dp)
@@ -748,7 +748,7 @@ private fun PremiumKeyMetricsRow(
         PremiumMetricCard(
             label = "Level",
             value = level.toString(),
-            icon = Icons.Filled.TrendingUp,
+            icon = ProdyIcons.TrendingUp,
             iconColor = accentColor,
             surfaceColor = surfaceColor,
             textPrimary = textPrimary,
@@ -758,7 +758,7 @@ private fun PremiumKeyMetricsRow(
         PremiumMetricCard(
             label = "Streak",
             value = streak.toString(),
-            icon = Icons.Filled.LocalFireDepartment,
+            icon = ProdyIcons.LocalFireDepartment,
             iconColor = Color(0xFFE65C2C), // Fire orange
             surfaceColor = surfaceColor,
             textPrimary = textPrimary,
@@ -768,7 +768,7 @@ private fun PremiumKeyMetricsRow(
         PremiumMetricCard(
             label = "Words",
             value = formatCompactNumber(wordsLearned),
-            icon = Icons.Filled.School,
+            icon = ProdyIcons.School,
             iconColor = Color(0xFFFFD166), // Energetic amber
             surfaceColor = surfaceColor,
             textPrimary = textPrimary,
@@ -867,37 +867,37 @@ private fun PremiumStoryOfGrowthSection(
             currentStreak >= longestStreak && currentStreak >= 7 -> GrowthHighlight(
                 title = "Consistency Master",
                 description = "You're on your longest streak ever!",
-                icon = Icons.Filled.LocalFireDepartment,
+                icon = ProdyIcons.LocalFireDepartment,
                 color = Color(0xFFE65C2C)
             )
             journalEntries >= 30 -> GrowthHighlight(
                 title = "Dedicated Writer",
                 description = "$journalEntries journal entries and counting",
-                icon = Icons.Filled.AutoStories,
+                icon = ProdyIcons.AutoStories,
                 color = MoodCalm // Serene blue from design system
             )
             wordsLearned >= 100 -> GrowthHighlight(
                 title = "Word Collector",
                 description = "Over $wordsLearned words mastered",
-                icon = Icons.Filled.School,
+                icon = ProdyIcons.School,
                 color = Color(0xFFFFD166)
             )
             totalPoints >= 500 -> GrowthHighlight(
                 title = "Rising Star",
                 description = "Earned ${formatCompactNumber(totalPoints)} XP",
-                icon = Icons.Filled.Stars,
+                icon = ProdyIcons.Stars,
                 color = Color(0xFFD4AF37)
             )
             currentStreak >= 3 -> GrowthHighlight(
                 title = "Building Momentum",
                 description = "$currentStreak day streak going strong",
-                icon = Icons.Filled.LocalFireDepartment,
+                icon = ProdyIcons.LocalFireDepartment,
                 color = Color(0xFFE65C2C)
             )
             else -> GrowthHighlight(
                 title = "New Journey",
                 description = "Every expert was once a beginner",
-                icon = Icons.Filled.EmojiNature,
+                icon = ProdyIcons.EmojiNature,
                 color = Color(0xFF7EC8A3)
             )
         }
@@ -928,7 +928,7 @@ private fun PremiumStoryOfGrowthSection(
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.AutoGraph,
+                        imageVector = ProdyIcons.AutoGraph,
                         contentDescription = null,
                         tint = accentColor,
                         modifier = Modifier.size(22.dp)
@@ -1098,7 +1098,7 @@ private fun PremiumWeeklyPatternSection(
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = Icons.Filled.Psychology,
+                            imageVector = ProdyIcons.Psychology,
                             contentDescription = null,
                             tint = violetColor,
                             modifier = Modifier.size(22.dp)
@@ -1203,7 +1203,7 @@ private fun PremiumWeeklyPatternSection(
                             horizontalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Filled.Lightbulb,
+                                imageVector = ProdyIcons.Lightbulb,
                                 contentDescription = null,
                                 tint = accentColor,
                                 modifier = Modifier.size(18.dp)
@@ -1251,7 +1251,7 @@ private fun PremiumTrophyRoomHeader(
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             Icon(
-                imageVector = Icons.Filled.EmojiEvents,
+                imageVector = ProdyIcons.EmojiEvents,
                 contentDescription = null,
                 tint = goldColor,
                 modifier = Modifier.size(26.dp)
@@ -1284,7 +1284,7 @@ private fun PremiumTrophyRoomHeader(
                 )
             }
             Icon(
-                imageVector = Icons.Filled.ChevronRight,
+                imageVector = ProdyIcons.ChevronRight,
                 contentDescription = "View all achievements",
                 tint = if (isDarkMode) IdentityRoomColors.TextTertiaryDark
                        else IdentityRoomColors.TextTertiaryLight,
@@ -1369,7 +1369,7 @@ private fun PremiumFeaturedAchievementCard(
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = achievementData?.icon ?: Icons.Filled.EmojiEvents,
+                    imageVector = achievementData?.icon ?: ProdyIcons.EmojiEvents,
                     contentDescription = null,
                     tint = rarity.color,
                     modifier = Modifier.size(26.dp)
@@ -1490,14 +1490,14 @@ private fun PremiumCompactBadge(
             ) {
                 if (isUnlocked) {
                     Icon(
-                        imageVector = achievementData?.icon ?: Icons.Filled.EmojiEvents,
+                        imageVector = achievementData?.icon ?: ProdyIcons.EmojiEvents,
                         contentDescription = null,
                         tint = rarity.color,
                         modifier = Modifier.size(20.dp)
                     )
                 } else {
                     Icon(
-                        imageVector = Icons.Filled.Lock,
+                        imageVector = ProdyIcons.Lock,
                         contentDescription = null,
                         tint = lockedGray,
                         modifier = Modifier.size(18.dp)
@@ -1554,7 +1554,7 @@ private fun PremiumGrowthQuoteCard(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Icon(
-                imageVector = Icons.Filled.FormatQuote,
+                imageVector = ProdyIcons.FormatQuote,
                 contentDescription = null,
                 tint = accentColor,
                 modifier = Modifier.size(24.dp)

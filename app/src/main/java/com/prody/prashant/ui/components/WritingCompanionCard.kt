@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.components
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.layout.*
@@ -60,9 +61,9 @@ fun WritingCompanionCard(
                     ) {
                         Icon(
                             imageVector = when (suggestionType) {
-                                SuggestionType.STARTING_PROMPT -> Icons.Default.Lightbulb
-                                SuggestionType.CONTINUATION -> Icons.Default.ArrowForward
-                                SuggestionType.STUCK_HELP -> Icons.Default.HelpOutline
+                                SuggestionType.STARTING_PROMPT -> ProdyIcons.Lightbulb
+                                SuggestionType.CONTINUATION -> ProdyIcons.ArrowForward
+                                SuggestionType.STUCK_HELP -> ProdyIcons.HelpOutline
                             },
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.tertiary,
@@ -85,7 +86,7 @@ fun WritingCompanionCard(
                         modifier = Modifier.size(24.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Close,
+                            imageVector = ProdyIcons.Close,
                             contentDescription = "Dismiss",
                             modifier = Modifier.size(16.dp),
                             tint = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.7f)
@@ -114,7 +115,7 @@ fun WritingCompanionCard(
                         )
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Refresh,
+                            imageVector = ProdyIcons.Refresh,
                             contentDescription = null,
                             modifier = Modifier.size(16.dp)
                         )
@@ -354,7 +355,7 @@ fun WritingCompanionButton(
             )
         ) {
             Icon(
-                imageVector = Icons.Default.Lightbulb,
+                imageVector = ProdyIcons.Lightbulb,
                 contentDescription = "Writing help",
                 modifier = Modifier.size(20.dp)
             )

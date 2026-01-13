@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.screens.meditation
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
@@ -57,7 +58,7 @@ fun MeditationTimerScreen(
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            imageVector = ProdyIcons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.back)
                         )
                     }
@@ -235,7 +236,7 @@ private fun WisdomCard(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Icon(
-                imageVector = if (isCompletion) Icons.Filled.CheckCircle else Icons.Filled.SelfImprovement,
+                imageVector = if (isCompletion) ProdyIcons.CheckCircle else ProdyIcons.SelfImprovement,
                 contentDescription = null,
                 tint = if (isCompletion) AchievementUnlocked else MoodCalm,
                 modifier = Modifier.size(32.dp)
@@ -283,7 +284,7 @@ private fun DurationSelector(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Filled.Timer,
+                    imageVector = ProdyIcons.Timer,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(20.dp)
@@ -294,7 +295,7 @@ private fun DurationSelector(
                     fontWeight = FontWeight.Medium
                 )
                 Icon(
-                    imageVector = if (showPicker) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
+                    imageVector = if (showPicker) ProdyIcons.ExpandLess else ProdyIcons.ExpandMore,
                     contentDescription = null,
                     modifier = Modifier.size(18.dp)
                 )
@@ -351,7 +352,7 @@ private fun ControlButtons(
                 modifier = Modifier.height(56.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Filled.Refresh,
+                    imageVector = ProdyIcons.Refresh,
                     contentDescription = null,
                     modifier = Modifier.size(24.dp)
                 )
@@ -367,7 +368,7 @@ private fun ControlButtons(
                 contentPadding = PaddingValues(0.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Filled.Stop,
+                    imageVector = ProdyIcons.Stop,
                     contentDescription = "Stop",
                     modifier = Modifier.size(24.dp)
                 )
@@ -383,7 +384,7 @@ private fun ControlButtons(
                 )
             ) {
                 Icon(
-                    imageVector = if (isPaused) Icons.Filled.PlayArrow else Icons.Filled.Pause,
+                    imageVector = if (isPaused) ProdyIcons.PlayArrow else ProdyIcons.Pause,
                     contentDescription = if (isPaused) "Resume" else "Pause",
                     modifier = Modifier.size(32.dp)
                 )
@@ -400,7 +401,7 @@ private fun ControlButtons(
                 )
             ) {
                 Icon(
-                    imageVector = Icons.Filled.PlayArrow,
+                    imageVector = ProdyIcons.PlayArrow,
                     contentDescription = null,
                     modifier = Modifier.size(24.dp)
                 )

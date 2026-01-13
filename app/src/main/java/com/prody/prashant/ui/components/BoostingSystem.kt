@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.components
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
@@ -40,9 +41,6 @@ import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.ThumbUp
-import androidx.compose.material.icons.outlined.Bolt
-import androidx.compose.material.icons.outlined.EmojiEvents
-import androidx.compose.material.icons.outlined.Handshake
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -133,21 +131,21 @@ data class SupportAction(
 private val supportActions = listOf(
     SupportAction(
         type = SupportType.BOOST,
-        icon = Icons.Outlined.Bolt,
+        icon = ProdyIcons.Outlined.Bolt,
         label = "Boost",
         description = "Give them an energy boost",
         color = SupportBoost
     ),
     SupportAction(
         type = SupportType.RESPECT,
-        icon = Icons.Outlined.EmojiEvents,
+        icon = ProdyIcons.Outlined.EmojiEvents,
         label = "Respect",
         description = "Show respect for their work",
         color = SupportRespect
     ),
     SupportAction(
         type = SupportType.ENCOURAGE,
-        icon = Icons.Outlined.Handshake,
+        icon = ProdyIcons.Outlined.Handshake,
         label = "Encourage",
         description = "Send encouragement their way",
         color = SupportEncourage
@@ -204,7 +202,7 @@ fun ProdySupportIconButton(
         interactionSource = interactionSource
     ) {
         Icon(
-            imageVector = if (hasSupported) Icons.Filled.Bolt else Icons.Outlined.Bolt,
+            imageVector = if (hasSupported) ProdyIcons.Bolt else ProdyIcons.Outlined.Bolt,
             contentDescription = if (hasSupported) "Already supported" else "Support",
             tint = iconColor,
             modifier = Modifier.size(20.dp)
@@ -507,7 +505,7 @@ fun ProdyBoostCounter(
         horizontalArrangement = Arrangement.Center
     ) {
         Icon(
-            imageVector = Icons.Filled.Bolt,
+            imageVector = ProdyIcons.Bolt,
             contentDescription = null,
             tint = SupportBoost,
             modifier = Modifier.size(14.dp)

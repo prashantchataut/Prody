@@ -20,9 +20,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Icon
+import com.prody.prashant.ui.icons.ProdyIcons
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -526,7 +525,7 @@ fun ProdyBackHeader(
         subtitle = subtitle,
         modifier = modifier,
         style = style,
-        navigationIcon = Icons.AutoMirrored.Filled.ArrowBack,
+        navigationIcon = ProdyIcons.AutoMirrored.Filled.ArrowBack,
         onNavigationClick = onNavigateBack,
         actions = actions
     )

@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.screens.learning
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
@@ -64,7 +65,7 @@ fun PathDetailScreen(
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            imageVector = ProdyIcons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.back)
                         )
                     }
@@ -196,17 +197,17 @@ private fun PathHeader(
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 InfoChip(
-                    icon = Icons.Default.Schedule,
+                    icon = ProdyIcons.Schedule,
                     text = "${path.type.estimatedMinutes} min",
                     color = pathColor
                 )
                 InfoChip(
-                    icon = Icons.Default.School,
+                    icon = ProdyIcons.School,
                     text = "${path.lessons.size} lessons",
                     color = pathColor
                 )
                 InfoChip(
-                    icon = Icons.Default.TrendingUp,
+                    icon = ProdyIcons.TrendingUp,
                     text = path.type.difficultyLevel.replaceFirstChar { it.uppercase() },
                     color = pathColor
                 )
@@ -382,13 +383,13 @@ private fun LessonItem(
             ) {
                 when {
                     lesson.isCompleted -> Icon(
-                        imageVector = Icons.Default.Check,
+                        imageVector = ProdyIcons.Check,
                         contentDescription = "Completed",
                         tint = ProdySuccess,
                         modifier = Modifier.size(20.dp)
                     )
                     lesson.isLocked -> Icon(
-                        imageVector = Icons.Default.Lock,
+                        imageVector = ProdyIcons.Lock,
                         contentDescription = "Locked",
                         tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                         modifier = Modifier.size(18.dp)
@@ -439,7 +440,7 @@ private fun LessonItem(
 
             if (!lesson.isLocked && !lesson.isCompleted) {
                 Icon(
-                    imageVector = Icons.Default.ChevronRight,
+                    imageVector = ProdyIcons.ChevronRight,
                     contentDescription = null,
                     tint = if (isCurrent) pathColor else MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -470,12 +471,12 @@ private fun LessonTypeIcon(
     modifier: Modifier = Modifier
 ) {
     val icon = when (type) {
-        LessonType.READING -> Icons.Default.MenuBook
-        LessonType.REFLECTION -> Icons.Default.Edit
-        LessonType.EXERCISE -> Icons.Default.FitnessCenter
-        LessonType.JOURNAL_PROMPT -> Icons.Default.Create
-        LessonType.MEDITATION -> Icons.Default.SelfImprovement
-        LessonType.QUIZ -> Icons.Default.Quiz
+        LessonType.READING -> ProdyIcons.MenuBook
+        LessonType.REFLECTION -> ProdyIcons.Edit
+        LessonType.EXERCISE -> ProdyIcons.FitnessCenter
+        LessonType.JOURNAL_PROMPT -> ProdyIcons.Create
+        LessonType.MEDITATION -> ProdyIcons.SelfImprovement
+        LessonType.QUIZ -> ProdyIcons.Quiz
     }
     Icon(
         imageVector = icon,

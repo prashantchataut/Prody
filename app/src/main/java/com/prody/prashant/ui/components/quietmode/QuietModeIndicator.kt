@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.components.quietmode
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
@@ -78,7 +79,7 @@ fun QuietModeIndicator(
             )
 
             Icon(
-                imageVector = Icons.Default.SelfImprovement,
+                imageVector = ProdyIcons.SelfImprovement,
                 contentDescription = null,
                 modifier = Modifier.size(28.dp),
                 tint = QuietModeTheme.getAccent().copy(alpha = alpha)
@@ -122,7 +123,7 @@ fun QuietModeIndicator(
                     modifier = Modifier.fillMaxSize()
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Close,
+                        imageVector = ProdyIcons.Close,
                         contentDescription = "Exit Quiet Mode",
                         modifier = Modifier.size(18.dp),
                         tint = QuietModeTheme.getTextSecondary()
@@ -159,7 +160,7 @@ fun CompactQuietModeIndicator(
             horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             Icon(
-                imageVector = Icons.Default.SelfImprovement,
+                imageVector = ProdyIcons.SelfImprovement,
                 contentDescription = null,
                 modifier = Modifier.size(16.dp),
                 tint = QuietModeTheme.getAccent()
@@ -195,7 +196,7 @@ fun QuietModeBadge(
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Icon(
-                imageVector = Icons.Default.SelfImprovement,
+                imageVector = ProdyIcons.SelfImprovement,
                 contentDescription = null,
                 modifier = Modifier.size(14.dp),
                 tint = Color.White
@@ -224,7 +225,7 @@ private fun QuietModeExitDialog(
         onDismissRequest = onDismiss,
         icon = {
             Icon(
-                imageVector = Icons.Default.SelfImprovement,
+                imageVector = ProdyIcons.SelfImprovement,
                 contentDescription = null,
                 modifier = Modifier.size(40.dp),
                 tint = QuietModeTheme.getAccent()

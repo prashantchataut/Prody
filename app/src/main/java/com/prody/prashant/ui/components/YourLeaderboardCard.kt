@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.components
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
@@ -253,7 +254,7 @@ fun YourLeaderboardCard(
                             color = ProdyAccentGreen
                         )
                         Icon(
-                            imageVector = Icons.Filled.Bolt,
+                            imageVector = ProdyIcons.Bolt,
                             contentDescription = null,
                             modifier = Modifier.size(20.dp),
                             tint = ProdyAccentGreen
@@ -268,7 +269,7 @@ fun YourLeaderboardCard(
                             horizontalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Filled.LocalFireDepartment,
+                                imageVector = ProdyIcons.LocalFireDepartment,
                                 contentDescription = null,
                                 modifier = Modifier.size(14.dp),
                                 tint = StreakFire
@@ -339,9 +340,9 @@ private fun RankIndicator(
             ) {
                 Icon(
                     imageVector = when (rankChange) {
-                        RankChange.UP -> Icons.Filled.ArrowUpward
-                        RankChange.DOWN -> Icons.Filled.ArrowDownward
-                        RankChange.STEADY -> Icons.Filled.Remove
+                        RankChange.UP -> ProdyIcons.ArrowUpward
+                        RankChange.DOWN -> ProdyIcons.ArrowDownward
+                        RankChange.STEADY -> ProdyIcons.Remove
                     },
                     contentDescription = null,
                     modifier = Modifier.size(12.dp),

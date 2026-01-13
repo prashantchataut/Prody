@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.theme
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bolt
@@ -28,10 +29,10 @@ import com.prody.prashant.domain.model.ChallengeType
  */
 val ChallengeDifficulty.icon: ImageVector
     get() = when (this) {
-        ChallengeDifficulty.EASY -> Icons.Filled.SentimentSatisfied
-        ChallengeDifficulty.MEDIUM -> Icons.Filled.Psychology
-        ChallengeDifficulty.HARD -> Icons.Filled.Whatshot
-        ChallengeDifficulty.EXTREME -> Icons.Filled.Bolt
+        ChallengeDifficulty.EASY -> ProdyIcons.SentimentSatisfied
+        ChallengeDifficulty.MEDIUM -> ProdyIcons.Psychology
+        ChallengeDifficulty.HARD -> ProdyIcons.Whatshot
+        ChallengeDifficulty.EXTREME -> ProdyIcons.Bolt
     }
 
 /**
@@ -58,12 +59,12 @@ val ChallengeDifficulty.color: Color
  */
 val ChallengeType.icon: ImageVector
     get() = when (this) {
-        ChallengeType.JOURNALING -> Icons.Filled.Book
-        ChallengeType.VOCABULARY -> Icons.Filled.School
-        ChallengeType.STREAK -> Icons.Filled.LocalFireDepartment
-        ChallengeType.MEDITATION -> Icons.Filled.SelfImprovement
-        ChallengeType.REFLECTION -> Icons.Filled.Psychology
-        ChallengeType.MIXED -> Icons.Filled.Dashboard
+        ChallengeType.JOURNALING -> ProdyIcons.Book
+        ChallengeType.VOCABULARY -> ProdyIcons.School
+        ChallengeType.STREAK -> ProdyIcons.LocalFireDepartment
+        ChallengeType.MEDITATION -> ProdyIcons.SelfImprovement
+        ChallengeType.REFLECTION -> ProdyIcons.Psychology
+        ChallengeType.MIXED -> ProdyIcons.Dashboard
     }
 
 /**

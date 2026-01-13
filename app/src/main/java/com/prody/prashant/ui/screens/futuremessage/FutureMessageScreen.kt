@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.screens.futuremessage
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
@@ -161,7 +162,7 @@ private fun TimeCapsuleHeader(
             modifier = Modifier.size(48.dp)
         ) {
             Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                imageVector = ProdyIcons.AutoMirrored.Filled.ArrowBack,
                 contentDescription = "Back",
                 tint = iconColor,
                 modifier = Modifier.size(24.dp)
@@ -182,7 +183,7 @@ private fun TimeCapsuleHeader(
             modifier = Modifier.size(48.dp)
         ) {
             Icon(
-                imageVector = Icons.Filled.FilterList,
+                imageVector = ProdyIcons.FilterList,
                 contentDescription = "Filter",
                 tint = iconColor,
                 modifier = Modifier.size(24.dp)
@@ -310,7 +311,7 @@ private fun TimeCapsuleCTAButton(
         contentPadding = PaddingValues(horizontal = 24.dp)
     ) {
         Icon(
-            imageVector = Icons.Filled.Edit,
+            imageVector = ProdyIcons.Edit,
             contentDescription = null,
             tint = Color.Black,
             modifier = Modifier.size(20.dp)
@@ -749,8 +750,8 @@ private fun DeliveredMessageCard(
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = if (message.isRead) Icons.Filled.MarkEmailRead
-                            else Icons.Filled.Mail,
+                            imageVector = if (message.isRead) ProdyIcons.MarkEmailRead
+                            else ProdyIcons.Mail,
                             contentDescription = null,
                             tint = TimeCapsuleAccent,
                             modifier = Modifier.size(20.dp)
@@ -873,7 +874,7 @@ private fun PendingMessageCard(
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
-                                imageVector = Icons.Filled.HourglassBottom,
+                                imageVector = ProdyIcons.HourglassBottom,
                                 contentDescription = null,
                                 tint = TimeCapsuleAccent,
                                 modifier = Modifier.size(20.dp)

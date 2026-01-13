@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.components.identity
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
@@ -331,7 +332,7 @@ fun GalleryItemCard(
 
                 if (item.isSpecial) {
                     Icon(
-                        imageVector = Icons.Filled.Stars,
+                        imageVector = ProdyIcons.Stars,
                         contentDescription = "Special",
                         tint = GalleryColors.RarityLegendary,
                         modifier = Modifier.size(18.dp)
@@ -377,7 +378,7 @@ fun GalleryItemCard(
                     verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.Lock,
+                        imageVector = ProdyIcons.Lock,
                         contentDescription = "Locked",
                         tint = Color.White,
                         modifier = Modifier.size(28.dp)
@@ -410,7 +411,7 @@ fun GalleryItemCard(
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Filled.Check,
+                    imageVector = ProdyIcons.Check,
                     contentDescription = "Selected",
                     tint = Color.Black,
                     modifier = Modifier.size(16.dp)
@@ -681,7 +682,7 @@ fun GalleryItemDetail(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.Lock,
+                        imageVector = ProdyIcons.Lock,
                         contentDescription = null,
                         tint = if (isDarkMode) GalleryColors.TextSecondaryDark
                                else GalleryColors.TextSecondaryLight,
@@ -755,7 +756,7 @@ fun GalleryEmptyState(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Icon(
-            imageVector = Icons.Filled.Inventory2,
+            imageVector = ProdyIcons.Inventory2,
             contentDescription = null,
             tint = if (isDarkMode) GalleryColors.TextSecondaryDark
                    else GalleryColors.TextSecondaryLight,

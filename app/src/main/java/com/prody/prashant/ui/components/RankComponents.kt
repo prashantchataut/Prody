@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.components
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
@@ -275,7 +276,7 @@ fun RankProgressCard(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Filled.Lightbulb,
+                            imageVector = ProdyIcons.Lightbulb,
                             contentDescription = null,
                             tint = rankState.lowestSkill.color,
                             modifier = Modifier.size(16.dp)
@@ -639,7 +640,7 @@ fun RankListItem(
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = if (isUnlocked) rank.icon else Icons.Filled.Lock,
+                    imageVector = if (isUnlocked) rank.icon else ProdyIcons.Lock,
                     contentDescription = null,
                     tint = if (isUnlocked) rank.color else Color.Gray,
                     modifier = Modifier.size(24.dp)
@@ -714,16 +715,16 @@ fun RankListItem(
  */
 val Rank.icon: androidx.compose.ui.graphics.vector.ImageVector
     get() = when (this) {
-        Rank.SEEKER -> Icons.Filled.Search
-        Rank.LEARNER -> Icons.Filled.MenuBook
-        Rank.INITIATE -> Icons.Filled.Flare
-        Rank.STUDENT -> Icons.Filled.School
-        Rank.PRACTITIONER -> Icons.Filled.SelfImprovement
-        Rank.CONTEMPLATIVE -> Icons.Filled.Spa
-        Rank.PHILOSOPHER -> Icons.Filled.Psychology
-        Rank.SAGE -> Icons.Filled.Elderly
-        Rank.LUMINARY -> Icons.Filled.WbSunny
-        Rank.AWAKENED -> Icons.Filled.AutoAwesome
+        Rank.SEEKER -> ProdyIcons.Search
+        Rank.LEARNER -> ProdyIcons.MenuBook
+        Rank.INITIATE -> ProdyIcons.Flare
+        Rank.STUDENT -> ProdyIcons.School
+        Rank.PRACTITIONER -> ProdyIcons.SelfImprovement
+        Rank.CONTEMPLATIVE -> ProdyIcons.Spa
+        Rank.PHILOSOPHER -> ProdyIcons.Psychology
+        Rank.SAGE -> ProdyIcons.Elderly
+        Rank.LUMINARY -> ProdyIcons.WbSunny
+        Rank.AWAKENED -> ProdyIcons.AutoAwesome
     }
 
 /**

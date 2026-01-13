@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.theme
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.HelpOutline
@@ -27,15 +28,15 @@ import com.prody.prashant.domain.model.Mood
  */
 val Mood.icon: ImageVector
     get() = when (this) {
-        Mood.HAPPY -> Icons.Filled.SentimentVerySatisfied
-        Mood.CALM -> Icons.Filled.SelfImprovement
-        Mood.ANXIOUS -> Icons.Filled.Psychology
-        Mood.SAD -> Icons.Filled.SentimentDissatisfied
-        Mood.MOTIVATED -> Icons.Filled.LocalFireDepartment
-        Mood.GRATEFUL -> Icons.Filled.Favorite
-        Mood.CONFUSED -> Icons.AutoMirrored.Filled.HelpOutline
-        Mood.EXCITED -> Icons.Filled.Celebration
-        Mood.NOSTALGIC -> Icons.Filled.HistoryEdu
+        Mood.HAPPY -> ProdyIcons.SentimentVerySatisfied
+        Mood.CALM -> ProdyIcons.SelfImprovement
+        Mood.ANXIOUS -> ProdyIcons.Psychology
+        Mood.SAD -> ProdyIcons.SentimentDissatisfied
+        Mood.MOTIVATED -> ProdyIcons.LocalFireDepartment
+        Mood.GRATEFUL -> ProdyIcons.Favorite
+        Mood.CONFUSED -> ProdyIcons.AutoMirrored.Filled.HelpOutline
+        Mood.EXCITED -> ProdyIcons.Celebration
+        Mood.NOSTALGIC -> ProdyIcons.HistoryEdu
     }
 
 /**

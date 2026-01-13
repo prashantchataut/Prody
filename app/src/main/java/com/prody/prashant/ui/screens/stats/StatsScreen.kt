@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.screens.stats
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
@@ -15,7 +16,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
@@ -219,7 +219,7 @@ fun StatsScreen(
                     modifier = Modifier.padding(32.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.ErrorOutline,
+                        imageVector = ProdyIcons.ErrorOutline,
                         contentDescription = null,
                         modifier = Modifier.size(64.dp),
                         tint = textPrimary.copy(alpha = 0.5f)
@@ -470,7 +470,7 @@ private fun PremiumStatsHeader(
                         letterSpacing = 0.5.sp
                     )
                     Icon(
-                        imageVector = Icons.Outlined.CalendarMonth,
+                        imageVector = ProdyIcons.Outlined.CalendarMonth,
                         contentDescription = "Calendar",
                         tint = accentColor,
                         modifier = Modifier.size(16.dp)
@@ -654,7 +654,7 @@ private fun PremiumActivityPulseSection(
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = Icons.Filled.ShowChart,
+                            imageVector = ProdyIcons.ShowChart,
                             contentDescription = null,
                             tint = accentColor,
                             modifier = Modifier.size(22.dp)
@@ -793,7 +793,7 @@ private fun PremiumSummaryCardsSection(
         PremiumSummaryCard(
             value = wordsWritten,
             label = "Words",
-            icon = Icons.Filled.EditNote,
+            icon = ProdyIcons.EditNote,
             iconColor = Color(0xFFFFD166), // Energetic amber
             surfaceColor = surfaceColor,
             textPrimary = textPrimary,
@@ -803,7 +803,7 @@ private fun PremiumSummaryCardsSection(
         PremiumSummaryCard(
             value = entries,
             label = "Entries",
-            icon = Icons.Filled.AutoStories,
+            icon = ProdyIcons.AutoStories,
             iconColor = MoodCalm, // Serene blue
             surfaceColor = surfaceColor,
             textPrimary = textPrimary,
@@ -813,7 +813,7 @@ private fun PremiumSummaryCardsSection(
         PremiumSummaryCard(
             value = messages,
             label = "Messages",
-            icon = Icons.Filled.Email,
+            icon = ProdyIcons.Email,
             iconColor = Color(0xFFB57EDC), // Premium violet
             surfaceColor = surfaceColor,
             textPrimary = textPrimary,
@@ -912,7 +912,7 @@ private fun PremiumTopPerformersHeader(
         horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         Icon(
-            imageVector = Icons.Filled.EmojiEvents,
+            imageVector = ProdyIcons.EmojiEvents,
             contentDescription = null,
             tint = Color(0xFFD4AF37), // Gold
             modifier = Modifier.size(24.dp)
@@ -1070,7 +1070,7 @@ private fun PremiumLeaderboardItemRow(
                     color = accentColor
                 )
                 Icon(
-                    imageVector = Icons.AutoMirrored.Filled.TrendingUp,
+                    imageVector = ProdyIcons.AutoMirrored.Filled.TrendingUp,
                     contentDescription = null,
                     tint = accentColor,
                     modifier = Modifier.size(16.dp)
@@ -1139,7 +1139,7 @@ private fun PremiumStickyUserSection(
                 )
 
                 Icon(
-                    imageVector = Icons.Filled.Bolt,
+                    imageVector = ProdyIcons.Bolt,
                     contentDescription = null,
                     tint = ProdyTextOnAccentLight,
                     modifier = Modifier.size(20.dp)
@@ -1239,7 +1239,7 @@ private fun PremiumSupportBottomSheet(
             ) {
                 PremiumSupportActionButton(
                     modifier = Modifier.weight(1f),
-                    icon = Icons.Filled.RocketLaunch,
+                    icon = ProdyIcons.RocketLaunch,
                     title = "Boost",
                     description = "Power up their journey",
                     count = entry.boostsReceived,
@@ -1253,7 +1253,7 @@ private fun PremiumSupportBottomSheet(
 
                 PremiumSupportActionButton(
                     modifier = Modifier.weight(1f),
-                    icon = Icons.Filled.ThumbUp,
+                    icon = ProdyIcons.ThumbUp,
                     title = "Respect",
                     description = "Acknowledge dedication",
                     count = entry.respectsReceived,
@@ -1274,7 +1274,7 @@ private fun PremiumSupportBottomSheet(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Outlined.Schedule,
+                        imageVector = ProdyIcons.Outlined.Schedule,
                         contentDescription = null,
                         tint = textSecondary.copy(alpha = 0.6f),
                         modifier = Modifier.size(16.dp)
@@ -1468,7 +1468,7 @@ private fun StatsFilterDialog(
                             )
                             if (isSelected) {
                                 Icon(
-                                    imageVector = Icons.Filled.Check,
+                                    imageVector = ProdyIcons.Check,
                                     contentDescription = "Selected",
                                     tint = accentColor,
                                     modifier = Modifier.size(20.dp)

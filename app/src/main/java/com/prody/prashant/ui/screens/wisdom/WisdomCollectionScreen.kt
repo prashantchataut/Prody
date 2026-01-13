@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.screens.wisdom
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.clickable
@@ -73,7 +74,7 @@ fun WisdomCollectionScreen(
                         }
                     }) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            imageVector = ProdyIcons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back"
                         )
                     }
@@ -81,7 +82,7 @@ fun WisdomCollectionScreen(
                 actions = {
                     IconButton(onClick = viewModel::toggleSearch) {
                         Icon(
-                            imageVector = if (uiState.isSearchActive) Icons.Default.Close else Icons.Default.Search,
+                            imageVector = if (uiState.isSearchActive) ProdyIcons.Close else ProdyIcons.Search,
                             contentDescription = if (uiState.isSearchActive) "Close search" else "Search"
                         )
                     }
@@ -243,7 +244,7 @@ private fun WisdomTypeFilters(
                     Text("${type.displayName} ($count)")
                 },
                 leadingIcon = if (isSelected) {
-                    { Icon(Icons.Default.Check, contentDescription = null, Modifier.size(18.dp)) }
+                    { Icon(ProdyIcons.Check, contentDescription = null, Modifier.size(18.dp)) }
                 } else null
             )
         }
@@ -264,7 +265,7 @@ private fun ResurfacedWisdomSection(
             modifier = Modifier.padding(bottom = 8.dp)
         ) {
             Icon(
-                imageVector = Icons.Default.AutoAwesome,
+                imageVector = ProdyIcons.AutoAwesome,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(20.dp)
@@ -386,7 +387,7 @@ private fun WisdomListItem(
                         modifier = Modifier.size(24.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Default.MoreVert,
+                            imageVector = ProdyIcons.MoreVert,
                             contentDescription = "More options",
                             modifier = Modifier.size(20.dp)
                         )
@@ -403,7 +404,7 @@ private fun WisdomListItem(
                                 onRemove()
                             },
                             leadingIcon = {
-                                Icon(Icons.Default.Delete, contentDescription = null)
+                                Icon(ProdyIcons.Delete, contentDescription = null)
                             }
                         )
                     }
@@ -440,7 +441,7 @@ private fun WisdomListItem(
                         verticalAlignment = Alignment.Top
                     ) {
                         Icon(
-                            imageVector = Icons.Default.NoteAlt,
+                            imageVector = ProdyIcons.NoteAlt,
                             contentDescription = null,
                             modifier = Modifier.size(16.dp),
                             tint = MaterialTheme.colorScheme.primary
@@ -555,7 +556,7 @@ private fun WisdomDetailSheet(
                     modifier = Modifier.weight(1f)
                 ) {
                     Icon(
-                        imageVector = if (wisdom.userNote != null) Icons.Default.Edit else Icons.Default.NoteAdd,
+                        imageVector = if (wisdom.userNote != null) ProdyIcons.Edit else ProdyIcons.NoteAdd,
                         contentDescription = null,
                         modifier = Modifier.size(18.dp)
                     )
@@ -571,7 +572,7 @@ private fun WisdomDetailSheet(
                     modifier = Modifier.weight(1f)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.BookmarkRemove,
+                        imageVector = ProdyIcons.BookmarkRemove,
                         contentDescription = null,
                         modifier = Modifier.size(18.dp)
                     )
@@ -596,7 +597,7 @@ private fun EmptyWisdomCollection(isFiltered: Boolean) {
             modifier = Modifier.padding(32.dp)
         ) {
             Icon(
-                imageVector = if (isFiltered) Icons.Default.SearchOff else Icons.Default.BookmarkBorder,
+                imageVector = if (isFiltered) ProdyIcons.SearchOff else ProdyIcons.BookmarkBorder,
                 contentDescription = null,
                 modifier = Modifier.size(64.dp),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)

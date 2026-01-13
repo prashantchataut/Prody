@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.components
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
@@ -177,7 +178,7 @@ fun WisdomQuestChallenge(
                     onClick = { showHint = !showHint }
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Lightbulb,
+                        imageVector = ProdyIcons.Lightbulb,
                         contentDescription = "Hint",
                         modifier = Modifier.size(18.dp)
                     )
@@ -198,7 +199,7 @@ fun WisdomQuestChallenge(
                 Text("Skip")
                 Spacer(modifier = Modifier.width(4.dp))
                 Icon(
-                    imageVector = Icons.Default.SkipNext,
+                    imageVector = ProdyIcons.SkipNext,
                     contentDescription = "Skip",
                     modifier = Modifier.size(18.dp)
                 )
@@ -229,9 +230,9 @@ private fun ChallengeHeader(
         ) {
             Icon(
                 imageVector = when (challengeType) {
-                    WisdomQuestEngine.ChallengeType.UNSCRAMBLE -> Icons.Default.Shuffle
-                    WisdomQuestEngine.ChallengeType.MULTIPLE_CHOICE -> Icons.Default.Quiz
-                    WisdomQuestEngine.ChallengeType.CONTEXT_FIT -> Icons.Default.TextFields
+                    WisdomQuestEngine.ChallengeType.UNSCRAMBLE -> ProdyIcons.Shuffle
+                    WisdomQuestEngine.ChallengeType.MULTIPLE_CHOICE -> ProdyIcons.Quiz
+                    WisdomQuestEngine.ChallengeType.CONTEXT_FIT -> ProdyIcons.TextFields
                 },
                 contentDescription = null,
                 modifier = Modifier.size(16.dp),
@@ -266,7 +267,7 @@ private fun ChallengeHeader(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
-                            imageVector = Icons.Default.AutoAwesome,
+                            imageVector = ProdyIcons.AutoAwesome,
                             contentDescription = "2x XP",
                             modifier = Modifier.size(14.dp),
                             tint = LeaderboardGold
@@ -293,7 +294,7 @@ private fun ChallengeHeader(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
-                            imageVector = Icons.Default.LocalFireDepartment,
+                            imageVector = ProdyIcons.LocalFireDepartment,
                             contentDescription = "Streak",
                             modifier = Modifier.size(14.dp),
                             tint = StreakFire
@@ -483,7 +484,7 @@ private fun UnscrambleChallenge(
             )
         ) {
             Icon(
-                imageVector = Icons.Default.Check,
+                imageVector = ProdyIcons.Check,
                 contentDescription = null,
                 modifier = Modifier.size(18.dp)
             )
@@ -695,7 +696,7 @@ private fun ContextFitChallenge(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Lightbulb,
+                        imageVector = ProdyIcons.Lightbulb,
                         contentDescription = null,
                         modifier = Modifier.size(16.dp),
                         tint = ProdyInfo
@@ -772,7 +773,7 @@ private fun ContextFitChallenge(
             )
         ) {
             Icon(
-                imageVector = Icons.Default.Check,
+                imageVector = ProdyIcons.Check,
                 contentDescription = null,
                 modifier = Modifier.size(18.dp)
             )
@@ -837,8 +838,8 @@ fun WisdomQuestResult(
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                imageVector = if (result.isCorrect) Icons.Default.CheckCircle
-                             else Icons.Default.Close,
+                imageVector = if (result.isCorrect) ProdyIcons.CheckCircle
+                             else ProdyIcons.Close,
                 contentDescription = null,
                 modifier = Modifier.size(40.dp),
                 tint = if (result.isCorrect) ProdyAccentGreen else ProdyError
@@ -890,7 +891,7 @@ fun WisdomQuestResult(
                             label = "Streak Bonus (${result.newStreak}x)",
                             value = "+${result.streakBonus}",
                             color = StreakFire,
-                            icon = Icons.Default.LocalFireDepartment
+                            icon = ProdyIcons.LocalFireDepartment
                         )
                     }
 
@@ -900,7 +901,7 @@ fun WisdomQuestResult(
                             label = "Daily Focus 2x",
                             value = "×2",
                             color = LeaderboardGold,
-                            icon = Icons.Default.AutoAwesome
+                            icon = ProdyIcons.AutoAwesome
                         )
                     }
 
@@ -1014,7 +1015,7 @@ fun DailyFocusSelector(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Icon(
-            imageVector = Icons.Default.AutoAwesome,
+            imageVector = ProdyIcons.AutoAwesome,
             contentDescription = null,
             modifier = Modifier.size(32.dp),
             tint = LeaderboardGold

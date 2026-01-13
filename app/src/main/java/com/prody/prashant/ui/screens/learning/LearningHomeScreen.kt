@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.screens.learning
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
@@ -62,7 +63,7 @@ fun LearningHomeScreen(
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            imageVector = ProdyIcons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.back)
                         )
                     }
@@ -79,7 +80,7 @@ fun LearningHomeScreen(
                     containerColor = ProdyAccentGreen,
                     contentColor = Color.Black
                 ) {
-                    Icon(Icons.Default.Add, contentDescription = null)
+                    Icon(ProdyIcons.Add, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
                     Text("Start Path")
                 }
@@ -423,7 +424,7 @@ private fun RecommendationCard(
                 Text(text = recommendation.pathType.icon, fontSize = 28.sp)
                 Spacer(modifier = Modifier.width(8.dp))
                 Icon(
-                    imageVector = Icons.Default.AutoAwesome,
+                    imageVector = ProdyIcons.AutoAwesome,
                     contentDescription = null,
                     tint = pathColor,
                     modifier = Modifier.size(16.dp)
@@ -536,7 +537,7 @@ private fun CompletedPathCard(
                 )
             }
             Icon(
-                imageVector = Icons.Default.CheckCircle,
+                imageVector = ProdyIcons.CheckCircle,
                 contentDescription = "Completed",
                 tint = ProdySuccess
             )

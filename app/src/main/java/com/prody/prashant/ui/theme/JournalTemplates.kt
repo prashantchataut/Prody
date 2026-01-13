@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.theme
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
@@ -57,7 +58,7 @@ data class JournalTemplate(
             id = "gratitude",
             name = "Gratitude Journal",
             description = "Cultivate positivity by reflecting on what you're thankful for",
-            icon = Icons.Filled.Favorite,
+            icon = ProdyIcons.Favorite,
             color = MoodHappy,
             prompts = listOf(
                 "Three things I'm grateful for today:",
@@ -81,7 +82,7 @@ data class JournalTemplate(
             id = "reflection",
             name = "Daily Reflection",
             description = "Review your day with structured prompts",
-            icon = Icons.Filled.Psychology,
+            icon = ProdyIcons.Psychology,
             color = ProdyPrimary,
             prompts = listOf(
                 "What went well today?",
@@ -104,7 +105,7 @@ data class JournalTemplate(
             id = "goals",
             name = "Goal Setting",
             description = "Define and track your personal goals",
-            icon = Icons.Filled.Flag,
+            icon = ProdyIcons.Flag,
             color = AchievementUnlocked,
             prompts = listOf(
                 "My main goal for this period:",
@@ -130,7 +131,7 @@ data class JournalTemplate(
             id = "morning",
             name = "Morning Pages",
             description = "Start your day with free-flowing thoughts",
-            icon = Icons.Filled.WbSunny,
+            icon = ProdyIcons.WbSunny,
             color = MoodEnergetic,
             prompts = listOf(
                 "Good morning! Today I'm feeling...",
@@ -156,7 +157,7 @@ data class JournalTemplate(
             id = "evening",
             name = "Evening Wind-Down",
             description = "Process your day before rest",
-            icon = Icons.Filled.NightsStay,
+            icon = ProdyIcons.NightsStay,
             color = MoodCalm,
             prompts = listOf(
                 "How am I feeling at the end of this day?",
@@ -183,7 +184,7 @@ data class JournalTemplate(
             id = "problem",
             name = "Problem Solving",
             description = "Work through challenges systematically",
-            icon = Icons.Filled.Lightbulb,
+            icon = ProdyIcons.Lightbulb,
             color = MoodAnxious,
             prompts = listOf(
                 "The challenge I'm facing:",
@@ -213,7 +214,7 @@ data class JournalTemplate(
             id = "creative",
             name = "Creative Brainstorm",
             description = "Explore ideas freely without judgment",
-            icon = Icons.Filled.AutoAwesome,
+            icon = ProdyIcons.AutoAwesome,
             color = MoodInspired,
             prompts = listOf(
                 "Topic/Project I'm exploring:",
@@ -240,7 +241,7 @@ data class JournalTemplate(
             id = "compassion",
             name = "Self-Compassion",
             description = "Practice kindness toward yourself",
-            icon = Icons.Filled.SelfImprovement,
+            icon = ProdyIcons.SelfImprovement,
             color = MoodSad,
             prompts = listOf(
                 "Something difficult I'm experiencing:",
@@ -265,7 +266,7 @@ data class JournalTemplate(
             id = "habits",
             name = "Habit Check-In",
             description = "Track and reflect on your daily habits",
-            icon = Icons.Filled.CheckCircle,
+            icon = ProdyIcons.CheckCircle,
             color = StreakColor,
             prompts = listOf(
                 "Habits I completed today:",
@@ -291,7 +292,7 @@ data class JournalTemplate(
             id = "weekly",
             name = "Weekly Review",
             description = "Comprehensive review of your week",
-            icon = Icons.Filled.CalendarMonth,
+            icon = ProdyIcons.CalendarMonth,
             color = ProdySecondary,
             prompts = listOf(
                 "Highlight of this week:",

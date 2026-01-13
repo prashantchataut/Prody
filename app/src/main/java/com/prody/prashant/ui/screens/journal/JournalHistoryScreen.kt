@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.screens.journal
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.animateFloatAsState
@@ -18,7 +19,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -304,7 +304,7 @@ private fun PremiumJournalHistoryTopBar(
                     .padding(4.dp)
             ) {
                 Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    imageVector = ProdyIcons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Navigate back",
                     tint = textColor,
                     modifier = Modifier.size(24.dp)
@@ -318,7 +318,7 @@ private fun PremiumJournalHistoryTopBar(
                     modifier = Modifier.size(48.dp)
                 ) {
                     Icon(
-                        imageVector = if (hasActiveFilters) Icons.Filled.FilterAlt else Icons.Filled.Tune,
+                        imageVector = if (hasActiveFilters) ProdyIcons.FilterAlt else ProdyIcons.Tune,
                         contentDescription = "Filter and sort",
                         tint = if (hasActiveFilters) JournalHistoryAccent else textColor,
                         modifier = Modifier.size(24.dp)
@@ -706,7 +706,7 @@ private fun PremiumLoadMoreButton(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    imageVector = Icons.Filled.ExpandMore,
+                    imageVector = ProdyIcons.ExpandMore,
                     contentDescription = null,
                     tint = accentColor,
                     modifier = Modifier.size(20.dp)
@@ -742,7 +742,7 @@ private fun PremiumEmptyHistoryState(
         verticalArrangement = Arrangement.Center
     ) {
         Icon(
-            imageVector = if (hasActiveFilters) Icons.Outlined.SearchOff else Icons.Outlined.AutoStories,
+            imageVector = if (hasActiveFilters) ProdyIcons.Outlined.SearchOff else ProdyIcons.Outlined.AutoStories,
             contentDescription = null,
             modifier = Modifier.size(64.dp),
             tint = textSecondary.copy(alpha = 0.5f)
@@ -778,7 +778,7 @@ private fun PremiumEmptyHistoryState(
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.Clear,
+                        imageVector = ProdyIcons.Clear,
                         contentDescription = null,
                         tint = JournalHistoryAccent,
                         modifier = Modifier.size(16.dp)
@@ -869,7 +869,7 @@ private fun PremiumFilterSortBottomSheet(
                             horizontalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Filled.Clear,
+                                imageVector = ProdyIcons.Clear,
                                 contentDescription = null,
                                 tint = JournalHistoryAccent,
                                 modifier = Modifier.size(14.dp)
@@ -902,7 +902,7 @@ private fun PremiumFilterSortBottomSheet(
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Icon(
-                        imageVector = if (currentBookmarkedOnly) Icons.Filled.Bookmark else Icons.Outlined.BookmarkBorder,
+                        imageVector = if (currentBookmarkedOnly) ProdyIcons.Bookmark else ProdyIcons.Outlined.BookmarkBorder,
                         contentDescription = null,
                         tint = if (currentBookmarkedOnly) JournalHistoryAccent else textSecondary,
                         modifier = Modifier.size(20.dp)
@@ -1116,7 +1116,7 @@ private fun FilterSectionHeader(
             )
         }
         Icon(
-            imageVector = if (isExpanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
+            imageVector = if (isExpanded) ProdyIcons.ExpandLess else ProdyIcons.ExpandMore,
             contentDescription = if (isExpanded) "Collapse" else "Expand",
             tint = textSecondary,
             modifier = Modifier.size(24.dp)
@@ -1163,7 +1163,7 @@ private fun FilterSortOption(
         }
         if (isSelected) {
             Icon(
-                imageVector = Icons.Filled.Check,
+                imageVector = ProdyIcons.Check,
                 contentDescription = "Selected",
                 tint = accentColor,
                 modifier = Modifier.size(20.dp)
@@ -1204,14 +1204,14 @@ private fun getMoodColorPremium(mood: Mood): Color {
  */
 private fun getMoodIconPremium(mood: Mood): ImageVector {
     return when (mood) {
-        Mood.HAPPY -> Icons.Filled.SentimentVerySatisfied
-        Mood.CALM -> Icons.Filled.SelfImprovement
-        Mood.ANXIOUS -> Icons.Outlined.Psychology
-        Mood.SAD -> Icons.Filled.SentimentDissatisfied
-        Mood.MOTIVATED -> Icons.Filled.LocalFireDepartment
-        Mood.GRATEFUL -> Icons.Filled.Favorite
-        Mood.CONFUSED -> Icons.Outlined.HelpOutline
-        Mood.EXCITED -> Icons.Filled.Celebration
-        Mood.NOSTALGIC -> Icons.Filled.HistoryEdu
+        Mood.HAPPY -> ProdyIcons.SentimentVerySatisfied
+        Mood.CALM -> ProdyIcons.SelfImprovement
+        Mood.ANXIOUS -> ProdyIcons.Outlined.Psychology
+        Mood.SAD -> ProdyIcons.SentimentDissatisfied
+        Mood.MOTIVATED -> ProdyIcons.LocalFireDepartment
+        Mood.GRATEFUL -> ProdyIcons.Favorite
+        Mood.CONFUSED -> ProdyIcons.Outlined.HelpOutline
+        Mood.EXCITED -> ProdyIcons.Celebration
+        Mood.NOSTALGIC -> ProdyIcons.HistoryEdu
     }
 }

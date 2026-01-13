@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.screens.quotes
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -63,7 +64,7 @@ fun QuotesScreen(
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            imageVector = ProdyIcons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.back)
                         )
                     }
@@ -96,10 +97,10 @@ fun QuotesScreen(
                         icon = {
                             Icon(
                                 imageVector = when (tab) {
-                                    WisdomTab.QUOTES -> Icons.Filled.FormatQuote
-                                    WisdomTab.PROVERBS -> Icons.Filled.AutoStories
-                                    WisdomTab.IDIOMS -> Icons.Filled.Lightbulb
-                                    WisdomTab.PHRASES -> Icons.Filled.Forum
+                                    WisdomTab.QUOTES -> ProdyIcons.FormatQuote
+                                    WisdomTab.PROVERBS -> ProdyIcons.AutoStories
+                                    WisdomTab.IDIOMS -> ProdyIcons.Lightbulb
+                                    WisdomTab.PHRASES -> ProdyIcons.Forum
                                 },
                                 contentDescription = null
                             )
@@ -211,7 +212,7 @@ private fun QuoteCard(
                 verticalAlignment = Alignment.Top
             ) {
                 Icon(
-                    imageVector = Icons.Filled.FormatQuote,
+                    imageVector = ProdyIcons.FormatQuote,
                     contentDescription = null, // Decorative
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(24.dp)
@@ -221,8 +222,8 @@ private fun QuoteCard(
                     modifier = Modifier.size(48.dp) // Minimum touch target for accessibility
                 ) {
                     Icon(
-                        imageVector = if (quote.isFavorite) Icons.Filled.Favorite
-                        else Icons.Filled.FavoriteBorder,
+                        imageVector = if (quote.isFavorite) ProdyIcons.Favorite
+                        else ProdyIcons.FavoriteBorder,
                         contentDescription = if (quote.isFavorite) "Remove from favorites" else "Add to favorites",
                         tint = if (quote.isFavorite) MaterialTheme.colorScheme.error
                         else MaterialTheme.colorScheme.onSurfaceVariant,
@@ -300,7 +301,7 @@ private fun QuoteCard(
                             horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Filled.Lightbulb,
+                                imageVector = ProdyIcons.Lightbulb,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.tertiary,
                                 modifier = Modifier.size(16.dp)
@@ -332,7 +333,7 @@ private fun QuoteCard(
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 Icon(
-                                    imageVector = Icons.Filled.Today,
+                                    imageVector = ProdyIcons.Today,
                                     contentDescription = null,
                                     tint = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.size(18.dp)
@@ -428,7 +429,7 @@ private fun ProverbCard(
                 verticalAlignment = Alignment.Top
             ) {
                 Icon(
-                    imageVector = Icons.Filled.AutoStories,
+                    imageVector = ProdyIcons.AutoStories,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(24.dp)
@@ -438,8 +439,8 @@ private fun ProverbCard(
                     modifier = Modifier.size(48.dp) // Minimum 48dp touch target for accessibility
                 ) {
                     Icon(
-                        imageVector = if (proverb.isFavorite) Icons.Filled.Favorite
-                        else Icons.Filled.FavoriteBorder,
+                        imageVector = if (proverb.isFavorite) ProdyIcons.Favorite
+                        else ProdyIcons.FavoriteBorder,
                         contentDescription = if (proverb.isFavorite) "Remove from favorites" else "Add to favorites",
                         tint = if (proverb.isFavorite) MaterialTheme.colorScheme.error
                         else MaterialTheme.colorScheme.onSurfaceVariant,
@@ -541,7 +542,7 @@ private fun IdiomCard(
                 verticalAlignment = Alignment.Top
             ) {
                 Icon(
-                    imageVector = Icons.Filled.Lightbulb,
+                    imageVector = ProdyIcons.Lightbulb,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.tertiary,
                     modifier = Modifier.size(24.dp)
@@ -551,8 +552,8 @@ private fun IdiomCard(
                     modifier = Modifier.size(48.dp) // Minimum 48dp touch target for accessibility
                 ) {
                     Icon(
-                        imageVector = if (idiom.isFavorite) Icons.Filled.Favorite
-                        else Icons.Filled.FavoriteBorder,
+                        imageVector = if (idiom.isFavorite) ProdyIcons.Favorite
+                        else ProdyIcons.FavoriteBorder,
                         contentDescription = if (idiom.isFavorite) "Remove from favorites" else "Add to favorites",
                         tint = if (idiom.isFavorite) MaterialTheme.colorScheme.error
                         else MaterialTheme.colorScheme.onSurfaceVariant,
@@ -669,7 +670,7 @@ private fun PhraseCard(
                 verticalAlignment = Alignment.Top
             ) {
                 Icon(
-                    imageVector = Icons.Filled.Forum,
+                    imageVector = ProdyIcons.Forum,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.secondary,
                     modifier = Modifier.size(24.dp)
@@ -679,8 +680,8 @@ private fun PhraseCard(
                     modifier = Modifier.size(48.dp) // Minimum 48dp touch target for accessibility
                 ) {
                     Icon(
-                        imageVector = if (phrase.isFavorite) Icons.Filled.Favorite
-                        else Icons.Filled.FavoriteBorder,
+                        imageVector = if (phrase.isFavorite) ProdyIcons.Favorite
+                        else ProdyIcons.FavoriteBorder,
                         contentDescription = if (phrase.isFavorite) "Remove from favorites" else "Add to favorites",
                         tint = if (phrase.isFavorite) MaterialTheme.colorScheme.error
                         else MaterialTheme.colorScheme.onSurfaceVariant,

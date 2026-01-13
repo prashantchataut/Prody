@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.components
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
@@ -93,7 +94,7 @@ fun PrivacyLockScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.Lock,
+                        imageVector = ProdyIcons.Lock,
                         contentDescription = "Locked",
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(40.dp)
@@ -165,7 +166,7 @@ fun PrivacyLockScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
-                            imageVector = Icons.Filled.Fingerprint,
+                            imageVector = ProdyIcons.Fingerprint,
                             contentDescription = null,
                             modifier = Modifier.size(24.dp)
                         )

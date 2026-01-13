@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.screens.journal
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import android.media.MediaPlayer
 import android.net.Uri
@@ -66,7 +67,7 @@ fun JournalDetailScreen(
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            imageVector = ProdyIcons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.back)
                         )
                     }
@@ -77,8 +78,8 @@ fun JournalDetailScreen(
                         modifier = Modifier.size(48.dp) // Minimum touch target for accessibility
                     ) {
                         Icon(
-                            imageVector = if (uiState.entry?.isBookmarked == true) Icons.Filled.Bookmark
-                            else Icons.Filled.BookmarkBorder,
+                            imageVector = if (uiState.entry?.isBookmarked == true) ProdyIcons.Bookmark
+                            else ProdyIcons.BookmarkBorder,
                             contentDescription = AccessibilityUtils.bookmarkDescription(uiState.entry?.isBookmarked == true),
                             tint = if (uiState.entry?.isBookmarked == true) MaterialTheme.colorScheme.primary
                             else MaterialTheme.colorScheme.onSurfaceVariant
@@ -89,7 +90,7 @@ fun JournalDetailScreen(
                         modifier = Modifier.size(48.dp) // Minimum touch target for accessibility
                     ) {
                         Icon(
-                            imageVector = Icons.Filled.Delete,
+                            imageVector = ProdyIcons.Delete,
                             contentDescription = AccessibilityUtils.deleteDescription("journal entry"),
                             tint = MaterialTheme.colorScheme.error
                         )
@@ -142,7 +143,7 @@ fun JournalDetailScreen(
                     modifier = Modifier.padding(32.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.ErrorOutline,
+                        imageVector = ProdyIcons.ErrorOutline,
                         contentDescription = null,
                         modifier = Modifier.size(64.dp),
                         tint = MaterialTheme.colorScheme.error.copy(alpha = 0.7f)
@@ -183,7 +184,7 @@ fun JournalDetailScreen(
                     modifier = Modifier.padding(32.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.SearchOff,
+                        imageVector = ProdyIcons.SearchOff,
                         contentDescription = null,
                         modifier = Modifier.size(64.dp),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
@@ -387,7 +388,7 @@ fun JournalDetailScreen(
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 Icon(
-                                    imageVector = Icons.Filled.SelfImprovement,
+                                    imageVector = ProdyIcons.SelfImprovement,
                                     contentDescription = null, // Decorative, parent has description
                                     tint = ProdyPrimary,
                                     modifier = Modifier.size(24.dp)
@@ -468,7 +469,7 @@ private fun AiInsightsCard(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Filled.AutoAwesome,
+                    imageVector = ProdyIcons.AutoAwesome,
                     contentDescription = null,
                     tint = insightColor,
                     modifier = Modifier.size(24.dp)
@@ -631,7 +632,7 @@ private fun AiInsightsCard(
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Filled.Verified,
+                    imageVector = ProdyIcons.Verified,
                     contentDescription = null,
                     tint = insightColor.copy(alpha = 0.6f),
                     modifier = Modifier.size(12.dp)
@@ -773,7 +774,7 @@ private fun VoiceRecordingPlayer(
                     modifier = Modifier.size(48.dp)
                 ) {
                     Icon(
-                        imageVector = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
+                        imageVector = if (isPlaying) ProdyIcons.Pause else ProdyIcons.PlayArrow,
                         contentDescription = if (isPlaying) "Pause" else "Play",
                         modifier = Modifier.size(24.dp)
                     )
@@ -785,7 +786,7 @@ private fun VoiceRecordingPlayer(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Filled.Mic,
+                            imageVector = ProdyIcons.Mic,
                             contentDescription = null,
                             tint = accentColor,
                             modifier = Modifier.size(16.dp)
@@ -850,7 +851,7 @@ private fun MediaGallerySection(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Icon(
-                imageVector = Icons.Filled.PhotoLibrary,
+                imageVector = ProdyIcons.PhotoLibrary,
                 contentDescription = null,
                 tint = MoodExcited,
                 modifier = Modifier.size(18.dp)
@@ -952,7 +953,7 @@ private fun MediaThumbnail(
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Filled.PlayCircle,
+                    imageVector = ProdyIcons.PlayCircle,
                     contentDescription = "Play video",
                     tint = Color.White,
                     modifier = Modifier.size(40.dp)
@@ -1019,7 +1020,7 @@ private fun FullScreenImageViewer(
                     .statusBarsPadding()
             ) {
                 Icon(
-                    imageVector = Icons.Filled.Close,
+                    imageVector = ProdyIcons.Close,
                     contentDescription = "Close",
                     tint = Color.White,
                     modifier = Modifier.size(28.dp)

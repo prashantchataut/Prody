@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.components
+import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
@@ -141,7 +142,7 @@ fun DailyChallengeCard(
 
                         if (isCompleted) {
                             Icon(
-                                imageVector = Icons.Filled.CheckCircle,
+                                imageVector = ProdyIcons.CheckCircle,
                                 contentDescription = "Completed",
                                 tint = SuccessGreen,
                                 modifier = Modifier.size(18.dp)
@@ -172,7 +173,7 @@ fun DailyChallengeCard(
                             horizontalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Filled.Stars,
+                                imageVector = ProdyIcons.Stars,
                                 contentDescription = null,
                                 tint = GoldTier,
                                 modifier = Modifier.size(14.dp)
@@ -193,7 +194,7 @@ fun DailyChallengeCard(
                             horizontalArrangement = Arrangement.spacedBy(2.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Filled.LocalFireDepartment,
+                                imageVector = ProdyIcons.LocalFireDepartment,
                                 contentDescription = null,
                                 tint = StreakFire.copy(alpha = pulseAlpha),
                                 modifier = Modifier.size(12.dp)
@@ -335,7 +336,7 @@ fun WeeklyChallengeCard(
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.Stars,
+                        imageVector = ProdyIcons.Stars,
                         contentDescription = null,
                         tint = GoldTier,
                         modifier = Modifier.size(16.dp)
@@ -390,7 +391,7 @@ fun WeeklyChallengeCard(
 
                 if (isCompleted) {
                     Icon(
-                        imageVector = Icons.Filled.EmojiEvents,
+                        imageVector = ProdyIcons.EmojiEvents,
                         contentDescription = "Completed",
                         tint = GoldTier,
                         modifier = Modifier.size(32.dp)
@@ -449,7 +450,7 @@ fun WeeklyChallengeCard(
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Filled.Groups,
+                            imageVector = ProdyIcons.Groups,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(14.dp)
@@ -495,7 +496,7 @@ private fun MilestoneIndicator(
         ) {
             if (isReached) {
                 Icon(
-                    imageVector = Icons.Filled.Check,
+                    imageVector = ProdyIcons.Check,
                     contentDescription = null,
                     tint = Color.White,
                     modifier = Modifier.size(14.dp)
@@ -553,7 +554,7 @@ fun CompactChallengeCard(
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = if (isCompleted) Icons.Filled.Check else category.icon,
+                    imageVector = if (isCompleted) ProdyIcons.Check else category.icon,
                     contentDescription = null,
                     tint = if (isCompleted) Color.White else categoryColor,
                     modifier = Modifier.size(18.dp)
@@ -639,7 +640,7 @@ fun ChallengeSummaryCard(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.Assignment,
+                        imageVector = ProdyIcons.Assignment,
                         contentDescription = null,
                         tint = ChallengeActive,
                         modifier = Modifier.size(24.dp)
@@ -677,7 +678,7 @@ fun ChallengeSummaryCard(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.Stars,
+                        imageVector = ProdyIcons.Stars,
                         contentDescription = null,
                         tint = GoldTier,
                         modifier = Modifier.size(16.dp)
@@ -779,7 +780,7 @@ fun ChallengeCompletionCelebration(
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.Check,
+                        imageVector = ProdyIcons.Check,
                         contentDescription = null,
                         tint = Color.White,
                         modifier = Modifier.size(32.dp)
@@ -809,7 +810,7 @@ fun ChallengeCompletionCelebration(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Filled.Stars,
+                            imageVector = ProdyIcons.Stars,
                             contentDescription = null,
                             tint = GoldTier,
                             modifier = Modifier.size(20.dp)
@@ -836,14 +837,14 @@ fun ChallengeCompletionCelebration(
  */
 val ChallengeCategory.icon: ImageVector
     get() = when (this) {
-        ChallengeCategory.JOURNALING -> Icons.Filled.Book
-        ChallengeCategory.VOCABULARY -> Icons.Filled.School
-        ChallengeCategory.FUTURE_SELF -> Icons.Filled.Schedule
-        ChallengeCategory.WISDOM -> Icons.Filled.Psychology
-        ChallengeCategory.BLOOM -> Icons.Filled.LocalFlorist
-        ChallengeCategory.STREAK -> Icons.Filled.LocalFireDepartment
-        ChallengeCategory.MIXED -> Icons.Filled.Dashboard
-        ChallengeCategory.COMMUNITY -> Icons.Filled.Groups
+        ChallengeCategory.JOURNALING -> ProdyIcons.Book
+        ChallengeCategory.VOCABULARY -> ProdyIcons.School
+        ChallengeCategory.FUTURE_SELF -> ProdyIcons.Schedule
+        ChallengeCategory.WISDOM -> ProdyIcons.Psychology
+        ChallengeCategory.BLOOM -> ProdyIcons.LocalFlorist
+        ChallengeCategory.STREAK -> ProdyIcons.LocalFireDepartment
+        ChallengeCategory.MIXED -> ProdyIcons.Dashboard
+        ChallengeCategory.COMMUNITY -> ProdyIcons.Groups
     }
 
 /**
