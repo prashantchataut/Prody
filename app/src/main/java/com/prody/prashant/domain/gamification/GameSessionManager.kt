@@ -62,7 +62,7 @@ class GameSessionManager @Inject constructor(
         mood: String
     ): SessionResult {
         val idempotencyKey = "journal_${entryId}"
-        val builder = SessionResultBuilder(SessionType.REFLECT)
+        val builder = SessionResultBuilder(GameSessionType.REFLECT)
 
         // Calculate XP based on word count
         val wordBonus = (wordCount / 50) * JOURNAL_WORD_BONUS_PER_50
@@ -133,7 +133,7 @@ class GameSessionManager @Inject constructor(
         }
 
         // Suggest next action
-        builder.nextSuggestion(getNextSuggestion(SessionType.REFLECT))
+        builder.nextSuggestion(getNextSuggestion(GameSessionType.REFLECT))
 
         // Update streak
         updateStreak()
@@ -158,7 +158,7 @@ class GameSessionManager @Inject constructor(
         accuracy: Float
     ): SessionResult {
         val idempotencyKey = "flashcard_session_${sessionId}"
-        val builder = SessionResultBuilder(SessionType.SHARPEN)
+        val builder = SessionResultBuilder(GameSessionType.SHARPEN)
 
         // Calculate XP based on performance
         val baseXp = FLASHCARD_SESSION_BASE_XP + (cardsReviewed * FLASHCARD_CARD_XP)
@@ -222,7 +222,7 @@ class GameSessionManager @Inject constructor(
         }
 
         // Suggest next action
-        builder.nextSuggestion(getNextSuggestion(SessionType.SHARPEN))
+        builder.nextSuggestion(getNextSuggestion(GameSessionType.SHARPEN))
 
         // Update streak
         updateStreak()
@@ -257,7 +257,7 @@ class GameSessionManager @Inject constructor(
         deliveryDate: Long
     ): SessionResult {
         val idempotencyKey = "future_message_${messageId}"
-        val builder = SessionResultBuilder(SessionType.COMMIT)
+        val builder = SessionResultBuilder(GameSessionType.COMMIT)
 
         // Award Courage XP
         val xpResult = gameSkillSystem.awardSkillXp(
@@ -325,7 +325,7 @@ class GameSessionManager @Inject constructor(
         }
 
         // Suggest next action
-        builder.nextSuggestion(getNextSuggestion(SessionType.COMMIT))
+        builder.nextSuggestion(getNextSuggestion(GameSessionType.COMMIT))
 
         // Update streak
         updateStreak()
@@ -404,22 +404,22 @@ class GameSessionManager @Inject constructor(
         }
     }
 
-    private suspend fun getNextSuggestion(justCompleted: SessionType): NextSuggestion? {
+    private suspend fun getNextSuggestion(justCompleted: GameSessionType): NextSuggestion? {
         val missions = missionSystem.getTodayMissions()
         val incompleteMissions = missions.filter { !it.isCompleted }
 
         // Suggest completing a different mode's mission
         val otherModeMission = incompleteMissions.find { mission ->
             when (justCompleted) {
-                SessionType.REFLECT -> mission.missionType != "reflect"
-                SessionType.SHARPEN -> mission.missionType != "sharpen"
-                SessionType.COMMIT -> mission.missionType != "commit"
+                GameSessionType.REFLECT -> mission.missionType != "reflect"
+                GameSessionType.SHARPEN -> mission.missionType != "sharpen"
+                GameSessionType.COMMIT -> mission.missionType != "commit"
             }
         }
 
         if (otherModeMission != null) {
             return NextSuggestion(
-                type = SuggestionType.TRY_DIFFERENT_MODE,
+                type = GameSuggestionType.TRY_DIFFERENT_MODE,
                 title = otherModeMission.title,
                 reason = "Complete your daily missions"
             )
@@ -429,7 +429,7 @@ class GameSessionManager @Inject constructor(
         val todaySeed = seedBloomService.getTodaySeed()
         if (!todaySeed.hasBloomedToday) {
             return NextSuggestion(
-                type = SuggestionType.BLOOM_SEED,
+                type = GameSuggestionType.BLOOM_SEED,
                 title = "Bloom today's seed: ${todaySeed.seedContent}",
                 reason = "Use it in your writing to earn bonus tokens"
             )
@@ -439,14 +439,14 @@ class GameSessionManager @Inject constructor(
         val trial = missionSystem.getWeeklyTrial()
         if (!trial.isCompleted && trial.currentProgress < trial.targetValue) {
             return NextSuggestion(
-                type = SuggestionType.CHECK_WEEKLY_TRIAL,
+                type = GameSuggestionType.CHECK_WEEKLY_TRIAL,
                 title = trial.title,
                 reason = "${trial.currentProgress}/${trial.targetValue} complete"
             )
         }
 
         return NextSuggestion(
-            type = SuggestionType.VIEW_PROGRESS,
+            type = GameSuggestionType.VIEW_PROGRESS,
             title = "View your progress",
             reason = "See how you're growing"
         )

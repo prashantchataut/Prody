@@ -60,7 +60,7 @@ data class WeeklySummary(
     val patterns: List<WritingPattern>,
 
     // Gamification
-    val streakStatus: StreakStatus,
+    val streakStatus: WeeklyStreakInfo,
 
     // Personalized insights (NOT generic)
     val buddhaInsight: String,
@@ -89,12 +89,17 @@ data class WeeklySummary(
  * Writing patterns detected in the week.
  */
 data class WritingPattern(
-    val type: PatternType,
+    val type: WeeklyPatternType,
     val confidence: Float, // 0.0 to 1.0
     val description: String
 )
 
-enum class PatternType {
+/**
+ * Pattern types for weekly summary analysis.
+ *
+ * Renamed from PatternType to avoid collision with other PatternType definitions.
+ */
+enum class WeeklyPatternType {
     MORNING_WRITER,
     EVENING_REFLECTOR,
     DEEP_THINKER,
@@ -108,7 +113,7 @@ enum class PatternType {
 /**
  * Streak status for the week.
  */
-data class StreakStatus(
+data class WeeklyStreakInfo(
     val currentStreak: Int,
     val isNewRecord: Boolean,
     val previousBest: Int,

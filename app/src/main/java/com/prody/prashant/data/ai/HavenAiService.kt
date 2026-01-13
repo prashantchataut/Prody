@@ -133,7 +133,7 @@ Remember: You're not replacing therapy. You're a supportive space to help people
         /**
          * Get session-specific prompt based on session type
          */
-        fun getSessionPrompt(sessionType: SessionType, context: HavenContext): String {
+        fun getSessionPrompt(sessionType: SessionType, context: HavenConversationContext): String {
             val baseContext = """
 $SYSTEM_PROMPT
 
@@ -316,7 +316,7 @@ Are you safe right now? Can you reach out to one of these resources?
     suspend fun startSession(
         sessionType: SessionType,
         userName: String?,
-        context: HavenContext
+        context: HavenConversationContext
     ): Result<HavenAiResponse> = withContext(Dispatchers.IO) {
         if (!isConfigured()) {
             return@withContext Result.failure(Exception("Haven AI not configured. Please set THERAPIST_API_KEY."))
@@ -352,7 +352,7 @@ Be brief (2-3 sentences) and inviting. Set a safe, non-judgmental tone.
      */
     suspend fun continueConversation(
         sessionType: SessionType,
-        context: HavenContext,
+        context: HavenConversationContext,
         userMessage: String
     ): Result<HavenAiResponse> = withContext(Dispatchers.IO) {
         if (!isConfigured()) {
@@ -429,7 +429,7 @@ Your response:
      */
     fun continueConversationStream(
         sessionType: SessionType,
-        context: HavenContext,
+        context: HavenConversationContext,
         userMessage: String
     ): Flow<Result<HavenAiResponse>> = flow {
         if (!isConfigured()) {
@@ -510,7 +510,7 @@ Your response:
      */
     suspend fun suggestExercise(
         sessionType: SessionType,
-        context: HavenContext
+        context: HavenConversationContext
     ): Result<ExerciseType> = withContext(Dispatchers.IO) {
         try {
             // Rule-based suggestions based on session type
@@ -634,7 +634,7 @@ Provide insights as a simple list, one per line. No numbers or bullets.
     /**
      * Infer which therapeutic technique was used based on conversation patterns
      */
-    private fun inferTechniqueUsed(text: String, context: HavenContext): TherapeuticTechnique? {
+    private fun inferTechniqueUsed(text: String, context: HavenConversationContext): TherapeuticTechnique? {
         val lowerText = text.lowercase()
 
         return when {

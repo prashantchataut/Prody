@@ -1,6 +1,7 @@
 package com.prody.prashant.domain.wrapped
 
 import com.prody.prashant.domain.model.MoodTrend
+import com.prody.prashant.domain.model.TimeOfDay
 import java.time.DayOfWeek
 import java.time.Month
 
@@ -19,7 +20,7 @@ data class YearlyWrapped(
     val year: Int,
     val generatedAt: Long,
     val stats: YearStats,
-    val moodJourney: MoodJourney,
+    val moodJourney: YearlyMoodJourney,
     val themes: List<ThemeHighlight>,
     val growthAreas: List<GrowthArea>,
     val challenges: List<ChallengeOvercome>,
@@ -70,9 +71,12 @@ data class YearStats(
 )
 
 /**
- * Mood journey throughout the year
+ * Mood journey throughout the year.
+ *
+ * Renamed from MoodJourney to avoid collision with
+ * com.prody.prashant.domain.model.MoodJourney.
  */
-data class MoodJourney(
+data class YearlyMoodJourney(
     val averageMood: Float, // 1-10
     val trend: MoodTrend,
     val mostCommonMood: String?,
@@ -81,16 +85,6 @@ data class MoodJourney(
     val mostReflectiveMonth: Month?,
     val monthlyAverages: List<Float> // 12 values, one per month
 )
-
-/**
- * Time of day categorization
- */
-enum class TimeOfDay {
-    MORNING,    // 5am-12pm
-    AFTERNOON,  // 12pm-5pm
-    EVENING,    // 5pm-9pm
-    NIGHT       // 9pm-5am
-}
 
 /**
  * Theme discovered in journal entries
@@ -175,15 +169,17 @@ enum class MomentType {
  * Pattern identified in journaling behavior
  */
 data class Pattern(
-    val type: PatternType,
+    val type: WrappedPatternType,
     val description: String,
     val occurrences: Int
 )
 
 /**
- * Type of pattern
+ * Type of pattern for yearly wrapped analysis.
+ *
+ * Renamed from PatternType to avoid collision with other PatternType definitions.
  */
-enum class PatternType {
+enum class WrappedPatternType {
     MORNING_WRITER,
     EVENING_REFLECTOR,
     WEEKEND_WARRIOR,

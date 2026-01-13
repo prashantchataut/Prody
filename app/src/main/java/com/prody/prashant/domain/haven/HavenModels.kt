@@ -396,9 +396,12 @@ enum class CrisisLevel {
 }
 
 /**
- * Haven conversation context for AI
+ * Haven conversation context for AI.
+ *
+ * Renamed from HavenContext to avoid collision with
+ * com.prody.prashant.domain.intelligence.HavenContext.
  */
-data class HavenContext(
+data class HavenConversationContext(
     val sessionType: SessionType,
     val previousMessages: List<HavenMessage>,
     val moodBefore: Int?,

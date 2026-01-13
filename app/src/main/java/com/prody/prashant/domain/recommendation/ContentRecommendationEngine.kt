@@ -9,6 +9,7 @@ import com.prody.prashant.data.local.entity.VocabularyEntity
 import com.prody.prashant.data.local.preferences.PreferencesManager
 import com.prody.prashant.domain.analytics.MoodAnalyticsEngine
 import com.prody.prashant.domain.model.Mood
+import com.prody.prashant.domain.model.TimeOfDay
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -394,16 +395,6 @@ enum class RecommendationSignal {
     ENGAGEMENT_BASED,
     DIFFICULTY_ADJUSTED,
     FRESHNESS
-}
-
-/**
- * Time of day classification.
- */
-enum class TimeOfDay {
-    MORNING,
-    AFTERNOON,
-    EVENING,
-    NIGHT
 }
 
 /**

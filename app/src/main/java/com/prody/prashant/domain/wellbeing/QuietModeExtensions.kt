@@ -128,17 +128,17 @@ object QuietModeUI {
     /**
      * Determines if a notification should be shown based on type and Quiet Mode.
      */
-    fun shouldShowNotification(notificationType: NotificationType, isQuietMode: Boolean): Boolean {
+    fun shouldShowNotification(notificationType: QuietModeNotificationType, isQuietMode: Boolean): Boolean {
         return if (isQuietMode) {
             // Only essential notifications in Quiet Mode
             when (notificationType) {
-                NotificationType.JOURNAL_REMINDER -> true
-                NotificationType.WISDOM_DAILY -> true
-                NotificationType.FUTURE_MESSAGE_ARRIVED -> true
-                NotificationType.ACHIEVEMENT -> false
-                NotificationType.LEVEL_UP -> false
-                NotificationType.STREAK_MILESTONE -> false
-                NotificationType.LEADERBOARD_UPDATE -> false
+                QuietModeNotificationType.JOURNAL_REMINDER -> true
+                QuietModeNotificationType.WISDOM_DAILY -> true
+                QuietModeNotificationType.FUTURE_MESSAGE_ARRIVED -> true
+                QuietModeNotificationType.ACHIEVEMENT -> false
+                QuietModeNotificationType.LEVEL_UP -> false
+                QuietModeNotificationType.STREAK_MILESTONE -> false
+                QuietModeNotificationType.LEADERBOARD_UPDATE -> false
             }
         } else {
             true // Show all notifications when not in Quiet Mode
@@ -148,8 +148,11 @@ object QuietModeUI {
 
 /**
  * Notification types for filtering in Quiet Mode.
+ *
+ * Renamed from NotificationType to avoid collision with
+ * com.prody.prashant.domain.intelligence.NotificationType.
  */
-enum class NotificationType {
+enum class QuietModeNotificationType {
     JOURNAL_REMINDER,
     WISDOM_DAILY,
     FUTURE_MESSAGE_ARRIVED,

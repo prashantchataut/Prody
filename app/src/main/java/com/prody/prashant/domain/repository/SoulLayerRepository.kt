@@ -182,7 +182,7 @@ interface SoulLayerRepository {
     /**
      * Generate notification content.
      */
-    suspend fun generateNotificationContent(type: NotificationType): NotificationContent
+    suspend fun generateNotificationContent(type: NotificationType): IntelligentNotificationContent
 
     /**
      * Check if now is a good time to notify.

@@ -8,6 +8,7 @@ import com.prody.prashant.data.security.EncryptionManager
 import com.prody.prashant.domain.haven.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
@@ -46,7 +47,7 @@ class HavenRepository @Inject constructor(
         try {
             // Get user context
             val sessionCount = havenDao.getCompletedSessionCount(userId)
-            val context = HavenContext(
+            val context = HavenConversationContext(
                 sessionType = sessionType,
                 previousMessages = emptyList(),
                 moodBefore = moodBefore,
@@ -108,7 +109,7 @@ class HavenRepository @Inject constructor(
             val existingMessages = decryptMessages(session.messagesJson)
 
             // Build context
-            val context = HavenContext(
+            val context = HavenConversationContext(
                 sessionType = SessionType.fromString(session.sessionType),
                 previousMessages = existingMessages,
                 moodBefore = session.moodBefore,
@@ -314,9 +315,9 @@ class HavenRepository @Inject constructor(
      */
     suspend fun getStats(userId: String = "local"): Result<HavenStats> = withContext(Dispatchers.IO) {
         try {
-            val totalSessions = havenDao.getTotalSessionCount(userId).map { it }.first()
+            val totalSessions = havenDao.getTotalSessionCount(userId).first()
             val completedSessions = havenDao.getCompletedSessionCount(userId)
-            val totalExercises = havenDao.getTotalExerciseCount(userId).map { it }.first()
+            val totalExercises = havenDao.getTotalExerciseCount(userId).first()
             val completedExercises = havenDao.getCompletedExerciseCount(userId)
             val totalTimeSeconds = havenDao.getTotalExerciseTime(userId) ?: 0
             val avgMoodImprovement = havenDao.getAverageMoodImprovement(userId)

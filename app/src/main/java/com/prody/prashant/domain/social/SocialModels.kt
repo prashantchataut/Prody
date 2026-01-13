@@ -59,8 +59,8 @@ data class CircleMember(
     val isOnFire: Boolean
         get() = currentStreak >= 7
 
-    val streakMilestone: StreakMilestone?
-        get() = StreakMilestone.fromStreak(currentStreak)
+    val streakMilestone: SocialStreakMilestone?
+        get() = SocialStreakMilestone.fromStreak(currentStreak)
 }
 
 enum class MemberRole {
@@ -277,7 +277,7 @@ data class PrivacySettings(
 data class CircleNotification(
     val id: Long,
     val circleId: String,
-    val type: NotificationType,
+    val type: SocialNotificationType,
     val title: String,
     val message: String,
     val actionType: NotificationAction?,
@@ -286,7 +286,13 @@ data class CircleNotification(
     val createdAt: Long
 )
 
-enum class NotificationType(val emoji: String) {
+/**
+ * Notification types for social circle notifications.
+ *
+ * Renamed from NotificationType to avoid collision with
+ * com.prody.prashant.domain.intelligence.NotificationType.
+ */
+enum class SocialNotificationType(val emoji: String) {
     NUDGE("💪"),
     MILESTONE("🎉"),
     CHALLENGE_UPDATE("🎯"),
@@ -297,7 +303,7 @@ enum class NotificationType(val emoji: String) {
     BACK_FROM_BREAK("🎊");
 
     companion object {
-        fun fromString(value: String): NotificationType {
+        fun fromString(value: String): SocialNotificationType {
             return entries.find { it.name.equals(value, ignoreCase = true) }
                 ?: ENCOURAGEMENT
         }
@@ -319,14 +325,14 @@ enum class NotificationAction {
     }
 }
 
-sealed class StreakMilestone(
+sealed class SocialStreakMilestone(
     val days: Int,
     val emoji: String,
     val title: String,
     val message: String,
     val color: Color
 ) {
-    object Week : StreakMilestone(
+    object Week : SocialStreakMilestone(
         7,
         "🔥",
         "7 Day Streak!",
@@ -334,7 +340,7 @@ sealed class StreakMilestone(
         StreakWeekMilestone
     )
 
-    object TwoWeeks : StreakMilestone(
+    object TwoWeeks : SocialStreakMilestone(
         14,
         "🔥🔥",
         "14 Day Streak!",
@@ -342,7 +348,7 @@ sealed class StreakMilestone(
         StreakWeekMilestone
     )
 
-    object Month : StreakMilestone(
+    object Month : SocialStreakMilestone(
         30,
         "🌟",
         "30 Day Streak!",
@@ -350,7 +356,7 @@ sealed class StreakMilestone(
         StreakMonthMilestone
     )
 
-    object TwoMonths : StreakMilestone(
+    object TwoMonths : SocialStreakMilestone(
         60,
         "⭐",
         "60 Day Streak!",
@@ -358,7 +364,7 @@ sealed class StreakMilestone(
         StreakMonthMilestone
     )
 
-    object HundredDays : StreakMilestone(
+    object HundredDays : SocialStreakMilestone(
         100,
         "💯",
         "100 Day Streak!",
@@ -366,7 +372,7 @@ sealed class StreakMilestone(
         StreakMilestone100
     )
 
-    object Year : StreakMilestone(
+    object Year : SocialStreakMilestone(
         365,
         "🏆",
         "365 Day Streak!",
@@ -377,7 +383,7 @@ sealed class StreakMilestone(
     companion object {
         val milestones = listOf(Week, TwoWeeks, Month, TwoMonths, HundredDays, Year)
 
-        fun fromStreak(streak: Int): StreakMilestone? {
+        fun fromStreak(streak: Int): SocialStreakMilestone? {
             return milestones.lastOrNull { streak >= it.days }
         }
 
@@ -385,7 +391,7 @@ sealed class StreakMilestone(
             return milestones.any { it.days == streak }
         }
 
-        fun getNextMilestone(currentStreak: Int): StreakMilestone? {
+        fun getNextMilestone(currentStreak: Int): SocialStreakMilestone? {
             return milestones.firstOrNull { it.days > currentStreak }
         }
     }

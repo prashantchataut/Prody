@@ -173,7 +173,7 @@ class SoulLayerRepositoryImpl @Inject constructor(
         return notificationIntelligence.getOptimalNotificationTime(type)
     }
 
-    override suspend fun generateNotificationContent(type: NotificationType): NotificationContent {
+    override suspend fun generateNotificationContent(type: NotificationType): IntelligentNotificationContent {
         return notificationIntelligence.generateNotificationContent(type)
     }
 

@@ -290,9 +290,9 @@ class ProdyVoice @Inject constructor() {
     /**
      * Get error copy.
      */
-    fun getErrorCopy(error: ErrorType, context: UserContext): ErrorCopy {
+    fun getErrorCopy(error: VoiceErrorType, context: UserContext): ErrorCopy {
         return when (error) {
-            ErrorType.NETWORK -> ErrorCopy(
+            VoiceErrorType.NETWORK -> ErrorCopy(
                 title = "Connection lost",
                 message = when {
                     context.preferredTone == CommunicationTone.PLAYFUL -> "The internet seems to have wandered off. Don't worry, your data is safe locally!"
@@ -302,28 +302,28 @@ class ProdyVoice @Inject constructor() {
                 isRetryable = true
             )
 
-            ErrorType.AI_UNAVAILABLE -> ErrorCopy(
+            VoiceErrorType.AI_UNAVAILABLE -> ErrorCopy(
                 title = "Buddha is resting",
                 message = "Our AI wisdom engine is temporarily unavailable. Your entry is saved - you can get Buddha's response later.",
                 actionLabel = "Save anyway",
                 isRetryable = false
             )
 
-            ErrorType.SAVE_FAILED -> ErrorCopy(
+            VoiceErrorType.SAVE_FAILED -> ErrorCopy(
                 title = "Couldn't save",
                 message = "Something went wrong. Your entry is in your drafts - we won't lose it.",
                 actionLabel = "Try again",
                 isRetryable = true
             )
 
-            ErrorType.LOAD_FAILED -> ErrorCopy(
+            VoiceErrorType.LOAD_FAILED -> ErrorCopy(
                 title = "Couldn't load",
                 message = "We're having trouble loading this. Let's try again.",
                 actionLabel = "Retry",
                 isRetryable = true
             )
 
-            ErrorType.GENERIC -> ErrorCopy(
+            VoiceErrorType.GENERIC -> ErrorCopy(
                 title = "Something went wrong",
                 message = when {
                     context.preferredTone == CommunicationTone.PLAYFUL -> "Oops! Technology had a hiccup. Let's try that again."
@@ -727,9 +727,12 @@ data class EmptyStateCopy(
 )
 
 /**
- * Error types.
+ * Error types for Prody voice responses.
+ *
+ * Renamed from ErrorType to avoid collision with
+ * com.prody.prashant.domain.common.ErrorType.
  */
-enum class ErrorType {
+enum class VoiceErrorType {
     NETWORK,
     AI_UNAVAILABLE,
     SAVE_FAILED,

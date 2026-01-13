@@ -58,7 +58,7 @@ import kotlin.random.Random
 @Composable
 fun AmbientBackground(
     modifier: Modifier = Modifier,
-    timeOfDay: TimeOfDay = TimeOfDay.Day,
+    timeOfDay: EffectTimeOfDay = EffectTimeOfDay.Day,
     mood: AmbientMood? = null,
     intensity: Float = 0.3f
 ) {
@@ -142,7 +142,13 @@ fun AmbientBackground(
     }
 }
 
-enum class TimeOfDay {
+/**
+ * Time of day for visual effects.
+ *
+ * Renamed from TimeOfDay to avoid collision with
+ * com.prody.prashant.domain.model.TimeOfDay.
+ */
+enum class EffectTimeOfDay {
     Morning,  // 5am - 12pm: Soft rising light
     Day,      // 12pm - 5pm: Bright, energetic
     Evening,  // 5pm - 9pm: Warm, deep shimmer
@@ -162,22 +168,22 @@ private data class AmbientColors(
     val secondary: Color
 )
 
-private fun getAmbientColors(timeOfDay: TimeOfDay, mood: AmbientMood?): AmbientColors {
+private fun getAmbientColors(timeOfDay: EffectTimeOfDay, mood: AmbientMood?): AmbientColors {
     // Base colors from time of day
     val baseColors = when (timeOfDay) {
-        TimeOfDay.Morning -> AmbientColors(
+        EffectTimeOfDay.Morning -> AmbientColors(
             primary = Color(0xFFFFE4B5),  // Soft sunrise gold
             secondary = Color(0xFFFFB6C1) // Gentle pink
         )
-        TimeOfDay.Day -> AmbientColors(
+        EffectTimeOfDay.Day -> AmbientColors(
             primary = ProdyPrimary,
             secondary = ProdyTertiary
         )
-        TimeOfDay.Evening -> AmbientColors(
+        EffectTimeOfDay.Evening -> AmbientColors(
             primary = Color(0xFFE57373),  // Warm sunset
             secondary = Color(0xFFFFB74D) // Amber glow
         )
-        TimeOfDay.Night -> AmbientColors(
+        EffectTimeOfDay.Night -> AmbientColors(
             primary = Color(0xFF5C6BC0),  // Deep indigo
             secondary = Color(0xFF7986CB) // Soft blue
         )
@@ -592,10 +598,10 @@ class AchievementRevealState {
     var achievementName by mutableStateOf("")
         private set
 
-    var achievementRarity by mutableStateOf(AchievementRarity.Common)
+    var achievementRarity by mutableStateOf(EffectAchievementRarity.Common)
         private set
 
-    fun trigger(name: String, rarity: AchievementRarity = AchievementRarity.Common) {
+    fun trigger(name: String, rarity: EffectAchievementRarity = EffectAchievementRarity.Common) {
         achievementName = name
         achievementRarity = rarity
         isPlaying = true
@@ -606,7 +612,14 @@ class AchievementRevealState {
     }
 }
 
-enum class AchievementRarity {
+/**
+ * Rarity levels for visual effects in achievement celebrations.
+ *
+ * Renamed from AchievementRarity to avoid collision with
+ * com.prody.prashant.domain.gamification.AchievementRarity and
+ * com.prody.prashant.ui.theme.UiAchievementRarity.
+ */
+enum class EffectAchievementRarity {
     Common, Uncommon, Rare, Epic, Legendary, Mythic
 }
 
@@ -630,12 +643,12 @@ fun AchievementRevealCelebration(
     if (!state.isPlaying) return
 
     val rarityColors = when (state.achievementRarity) {
-        AchievementRarity.Common -> listOf(RarityCommon, Color(0xFF90A4AE))
-        AchievementRarity.Uncommon -> listOf(RarityUncommon, Color(0xFF81C784))
-        AchievementRarity.Rare -> listOf(RarityRare, Color(0xFF64B5F6))
-        AchievementRarity.Epic -> listOf(RarityEpic, Color(0xFFCE93D8))
-        AchievementRarity.Legendary -> listOf(RarityLegendary, Color(0xFFF4D03F))
-        AchievementRarity.Mythic -> listOf(RarityMythic, Color(0xFFFFF59D), Color(0xFFFFD700))
+        EffectAchievementRarity.Common -> listOf(RarityCommon, Color(0xFF90A4AE))
+        EffectAchievementRarity.Uncommon -> listOf(RarityUncommon, Color(0xFF81C784))
+        EffectAchievementRarity.Rare -> listOf(RarityRare, Color(0xFF64B5F6))
+        EffectAchievementRarity.Epic -> listOf(RarityEpic, Color(0xFFCE93D8))
+        EffectAchievementRarity.Legendary -> listOf(RarityLegendary, Color(0xFFF4D03F))
+        EffectAchievementRarity.Mythic -> listOf(RarityMythic, Color(0xFFFFF59D), Color(0xFFFFD700))
     }
 
     var phase by remember { mutableStateOf(0) }
@@ -1143,13 +1156,13 @@ private val EaseInOutSine = CubicBezierEasing(0.37f, 0f, 0.63f, 1f)
 /**
  * Calculate current time of day for ambient effects
  */
-fun getCurrentTimeOfDay(): TimeOfDay {
+fun getCurrentTimeOfDay(): EffectTimeOfDay {
     val hour = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY)
     return when {
-        hour in 5..11 -> TimeOfDay.Morning
-        hour in 12..16 -> TimeOfDay.Day
-        hour in 17..20 -> TimeOfDay.Evening
-        else -> TimeOfDay.Night
+        hour in 5..11 -> EffectTimeOfDay.Morning
+        hour in 12..16 -> EffectTimeOfDay.Day
+        hour in 17..20 -> EffectTimeOfDay.Evening
+        else -> EffectTimeOfDay.Night
     }
 }
 

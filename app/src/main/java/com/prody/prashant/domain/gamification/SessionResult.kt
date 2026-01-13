@@ -12,8 +12,8 @@ package com.prody.prashant.domain.gamification
  * This is how games feel satisfying.
  */
 data class SessionResult(
-    val sessionType: SessionType,
-    val summary: SessionSummary,
+    val sessionType: GameSessionType,
+    val summary: GameSessionSummary,
     val rewards: SessionRewards,
     val unlocks: List<SessionUnlock> = emptyList(),
     val nextSuggestion: NextSuggestion? = null,
@@ -33,8 +33,11 @@ data class SessionResult(
 
 /**
  * The type of game session completed.
+ *
+ * Renamed from SessionType to avoid collision with
+ * com.prody.prashant.domain.haven.SessionType.
  */
-enum class SessionType(val displayName: String, val verb: String) {
+enum class GameSessionType(val displayName: String, val verb: String) {
     REFLECT("Reflect", "reflected"),
     SHARPEN("Sharpen", "sharpened"),
     COMMIT("Commit", "committed")
@@ -42,8 +45,11 @@ enum class SessionType(val displayName: String, val verb: String) {
 
 /**
  * Summary of what the user did in the session.
+ *
+ * Renamed from SessionSummary to avoid collision with
+ * com.prody.prashant.domain.haven.SessionSummary.
  */
-data class SessionSummary(
+data class GameSessionSummary(
     val headline: String, // e.g., "Journal entry saved"
     val details: List<String> = emptyList() // e.g., ["127 words", "Mood: Calm"]
 )
@@ -92,12 +98,18 @@ enum class UnlockType {
  * Suggested next action.
  */
 data class NextSuggestion(
-    val type: SuggestionType,
+    val type: GameSuggestionType,
     val title: String,
     val reason: String? = null
 )
 
-enum class SuggestionType {
+/**
+ * Types of suggestions for next actions.
+ *
+ * Renamed from SuggestionType to avoid collision with
+ * com.prody.prashant.ui.components.SuggestionType.
+ */
+enum class GameSuggestionType {
     COMPLETE_DAILY_MISSION,
     TRY_DIFFERENT_MODE,
     BLOOM_SEED,
@@ -127,7 +139,7 @@ data class SeedBloomInfo(
 /**
  * Builder for creating session results.
  */
-class SessionResultBuilder(private val sessionType: SessionType) {
+class SessionResultBuilder(private val sessionType: GameSessionType) {
     private var headline: String = ""
     private var details: MutableList<String> = mutableListOf()
     private var skillXpGains: MutableMap<GameSkillSystem.SkillType, Int> = mutableMapOf()
@@ -154,7 +166,7 @@ class SessionResultBuilder(private val sessionType: SessionType) {
 
     fun build(): SessionResult = SessionResult(
         sessionType = sessionType,
-        summary = SessionSummary(headline, details),
+        summary = GameSessionSummary(headline, details),
         rewards = SessionRewards(skillXpGains, tokens, streakBonus, levelUps),
         unlocks = unlocks,
         nextSuggestion = nextSuggestion,

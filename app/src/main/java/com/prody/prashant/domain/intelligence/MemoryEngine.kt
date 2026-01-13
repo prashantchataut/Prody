@@ -301,10 +301,10 @@ class MemoryEngine @Inject constructor(
 
         if (entryMilestone != null) {
             return MilestoneMemory(
-                type = MilestoneType.ENTRY_COUNT,
+                type = MemoryMilestoneType.ENTRY_COUNT,
                 number = entryMilestone,
-                title = getMilestoneTitle(MilestoneType.ENTRY_COUNT, entryMilestone),
-                message = getMilestoneMessage(MilestoneType.ENTRY_COUNT, entryMilestone),
+                title = getMilestoneTitle(MemoryMilestoneType.ENTRY_COUNT, entryMilestone),
+                message = getMilestoneMessage(MemoryMilestoneType.ENTRY_COUNT, entryMilestone),
                 celebrationType = getCelebrationType(entryMilestone)
             )
         }
@@ -315,10 +315,10 @@ class MemoryEngine @Inject constructor(
 
         if (dayMilestone != null) {
             return MilestoneMemory(
-                type = MilestoneType.DAYS_WITH_PRODY,
+                type = MemoryMilestoneType.DAYS_WITH_PRODY,
                 number = dayMilestone,
-                title = getMilestoneTitle(MilestoneType.DAYS_WITH_PRODY, dayMilestone),
-                message = getMilestoneMessage(MilestoneType.DAYS_WITH_PRODY, dayMilestone),
+                title = getMilestoneTitle(MemoryMilestoneType.DAYS_WITH_PRODY, dayMilestone),
+                message = getMilestoneMessage(MemoryMilestoneType.DAYS_WITH_PRODY, dayMilestone),
                 celebrationType = getCelebrationType(dayMilestone)
             )
         }
@@ -330,10 +330,10 @@ class MemoryEngine @Inject constructor(
         val wisdomMilestone = streakMilestones.find { it == streak.wisdomStreak.current }
         if (wisdomMilestone != null) {
             return MilestoneMemory(
-                type = MilestoneType.WISDOM_STREAK,
+                type = MemoryMilestoneType.WISDOM_STREAK,
                 number = wisdomMilestone,
-                title = getMilestoneTitle(MilestoneType.WISDOM_STREAK, wisdomMilestone),
-                message = getMilestoneMessage(MilestoneType.WISDOM_STREAK, wisdomMilestone),
+                title = getMilestoneTitle(MemoryMilestoneType.WISDOM_STREAK, wisdomMilestone),
+                message = getMilestoneMessage(MemoryMilestoneType.WISDOM_STREAK, wisdomMilestone),
                 celebrationType = getCelebrationType(wisdomMilestone)
             )
         }
@@ -341,10 +341,10 @@ class MemoryEngine @Inject constructor(
         val reflectionMilestone = streakMilestones.find { it == streak.reflectionStreak.current }
         if (reflectionMilestone != null) {
             return MilestoneMemory(
-                type = MilestoneType.REFLECTION_STREAK,
+                type = MemoryMilestoneType.REFLECTION_STREAK,
                 number = reflectionMilestone,
-                title = getMilestoneTitle(MilestoneType.REFLECTION_STREAK, reflectionMilestone),
-                message = getMilestoneMessage(MilestoneType.REFLECTION_STREAK, reflectionMilestone),
+                title = getMilestoneTitle(MemoryMilestoneType.REFLECTION_STREAK, reflectionMilestone),
+                message = getMilestoneMessage(MemoryMilestoneType.REFLECTION_STREAK, reflectionMilestone),
                 celebrationType = getCelebrationType(reflectionMilestone)
             )
         }
@@ -611,9 +611,9 @@ class MemoryEngine @Inject constructor(
         return "Look how far you've come since $timePhrase"
     }
 
-    private fun getMilestoneTitle(type: MilestoneType, number: Int): String {
+    private fun getMilestoneTitle(type: MemoryMilestoneType, number: Int): String {
         return when (type) {
-            MilestoneType.ENTRY_COUNT -> when (number) {
+            MemoryMilestoneType.ENTRY_COUNT -> when (number) {
                 1 -> "First Entry!"
                 5 -> "Getting Started"
                 10 -> "Finding Your Rhythm"
@@ -626,7 +626,7 @@ class MemoryEngine @Inject constructor(
                 1000 -> "Legendary Writer"
                 else -> "$number Entries"
             }
-            MilestoneType.DAYS_WITH_PRODY -> when (number) {
+            MemoryMilestoneType.DAYS_WITH_PRODY -> when (number) {
                 7 -> "One Week Together"
                 30 -> "Month-Long Journey"
                 60 -> "Two Months Strong"
@@ -638,7 +638,7 @@ class MemoryEngine @Inject constructor(
                 1000 -> "1000 Days Together"
                 else -> "$number Days"
             }
-            MilestoneType.WISDOM_STREAK -> when (number) {
+            MemoryMilestoneType.WISDOM_STREAK -> when (number) {
                 7 -> "Week of Wisdom"
                 14 -> "Wisdom Seeker"
                 30 -> "Monthly Wisdom"
@@ -647,7 +647,7 @@ class MemoryEngine @Inject constructor(
                 365 -> "Year of Daily Wisdom"
                 else -> "$number Day Wisdom Streak"
             }
-            MilestoneType.REFLECTION_STREAK -> when (number) {
+            MemoryMilestoneType.REFLECTION_STREAK -> when (number) {
                 7 -> "Week of Reflection"
                 14 -> "Deep Thinker"
                 30 -> "Monthly Reflector"
@@ -659,9 +659,9 @@ class MemoryEngine @Inject constructor(
         }
     }
 
-    private fun getMilestoneMessage(type: MilestoneType, number: Int): String {
+    private fun getMilestoneMessage(type: MemoryMilestoneType, number: Int): String {
         return when (type) {
-            MilestoneType.ENTRY_COUNT -> when (number) {
+            MemoryMilestoneType.ENTRY_COUNT -> when (number) {
                 1 -> "You've taken the first step on your journey of self-discovery."
                 5 -> "Five entries down! You're building a beautiful habit."
                 10 -> "Ten entries! Your journal is becoming a treasure trove of insights."
@@ -674,7 +674,7 @@ class MemoryEngine @Inject constructor(
                 1000 -> "One thousand entries! You've built something truly remarkable."
                 else -> "You've written $number entries. Keep going!"
             }
-            MilestoneType.DAYS_WITH_PRODY -> when (number) {
+            MemoryMilestoneType.DAYS_WITH_PRODY -> when (number) {
                 7 -> "A full week together! Here's to many more."
                 30 -> "A whole month of journaling. You're building something special."
                 60 -> "Two months of growth. Your consistency is remarkable."
@@ -686,7 +686,7 @@ class MemoryEngine @Inject constructor(
                 1000 -> "1000 days. You've built something truly meaningful."
                 else -> "$number days with Prody. Thank you for the journey."
             }
-            MilestoneType.WISDOM_STREAK, MilestoneType.REFLECTION_STREAK -> when (number) {
+            MemoryMilestoneType.WISDOM_STREAK, MemoryMilestoneType.REFLECTION_STREAK -> when (number) {
                 7 -> "A week of daily practice! Consistency is key to growth."
                 14 -> "Two weeks strong! Your dedication is building real habits."
                 30 -> "A whole month! This is becoming part of who you are."
@@ -800,14 +800,20 @@ data class GrowthContrastMemory(
  * A milestone memory for celebrations.
  */
 data class MilestoneMemory(
-    val type: MilestoneType,
+    val type: MemoryMilestoneType,
     val number: Int,
     val title: String,
     val message: String,
     val celebrationType: CelebrationType
 )
 
-enum class MilestoneType {
+/**
+ * Types of milestones tracked in the memory engine.
+ *
+ * Renamed from MilestoneType to avoid collision with
+ * com.prody.prashant.domain.gamification.MemoryMilestoneType.
+ */
+enum class MemoryMilestoneType {
     ENTRY_COUNT,
     DAYS_WITH_PRODY,
     WISDOM_STREAK,
