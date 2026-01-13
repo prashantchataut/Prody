@@ -6,6 +6,7 @@ import com.prody.prashant.data.local.entity.JournalEntryEntity
 import com.prody.prashant.data.local.entity.MicroEntryEntity
 import com.prody.prashant.data.local.preferences.PreferencesManager
 import com.prody.prashant.domain.model.Mood
+import com.prody.prashant.domain.model.MoodTrend
 import kotlinx.coroutines.flow.first
 import java.time.DayOfWeek
 import java.time.Instant
