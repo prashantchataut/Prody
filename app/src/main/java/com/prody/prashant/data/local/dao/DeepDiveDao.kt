@@ -196,15 +196,17 @@ interface DeepDiveDao {
      * Check if a theme has been completed at least once
      */
     @Query("""
-        SELECT EXISTS(
-            SELECT 1 FROM deep_dives
-            WHERE userId = :userId
-            AND theme = :theme
-            AND isCompleted = 1
-            AND isDeleted = 0
-        )
+        SELECT COUNT(*) FROM deep_dives
+        WHERE userId = :userId
+        AND theme = :theme
+        AND isCompleted = 1
+        AND isDeleted = 0
     """)
-    suspend fun hasCompletedTheme(userId: String, theme: String): Boolean
+    suspend fun getCompletedThemeCount(userId: String, theme: String): Int
+
+    suspend fun hasCompletedTheme(userId: String, theme: String): Boolean {
+        return getCompletedThemeCount(userId, theme) > 0
+    }
 
     /**
      * Get themes that have never been completed

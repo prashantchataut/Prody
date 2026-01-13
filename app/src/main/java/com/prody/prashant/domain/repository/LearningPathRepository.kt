@@ -8,6 +8,7 @@ import com.prody.prashant.domain.common.ErrorType
 import com.prody.prashant.domain.learning.*
 import com.google.gson.Gson
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -300,7 +301,7 @@ class LearningPathRepository @Inject constructor(
     suspend fun generateRecommendations(): Result<List<PathRecommendation>> {
         return try {
             // Get recent journal entries
-            val entries = journalDao.getRecentEntries(20).map { it.first() }.first()
+            val entries = journalDao.getRecentEntries(20).first()
 
             // Generate recommendations
             val recommendationEntities = pathRecommender.analyzeAndRecommend(entries, userId)

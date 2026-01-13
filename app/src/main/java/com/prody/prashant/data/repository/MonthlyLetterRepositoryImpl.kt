@@ -7,6 +7,7 @@ import com.prody.prashant.domain.letter.MonthlyLetterGenerator
 import com.prody.prashant.domain.model.MonthlyLetter
 import com.prody.prashant.domain.repository.MonthlyLetterRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import java.time.YearMonth
 import javax.inject.Inject
@@ -239,9 +240,7 @@ class MonthlyLetterRepositoryImpl @Inject constructor(
 
     override suspend fun getUnreadCount(userId: String): Int {
         return try {
-            val flow = monthlyLetterDao.getUnreadLetterCount(userId)
-            // This is a simplification - in production, you'd collect the flow
-            0
+            monthlyLetterDao.getUnreadLetterCount(userId).first()
         } catch (e: Exception) {
             0
         }
