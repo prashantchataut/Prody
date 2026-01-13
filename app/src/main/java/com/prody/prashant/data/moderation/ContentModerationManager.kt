@@ -282,19 +282,19 @@ class ContentModerationManager @Inject constructor(
     /**
      * Crisis resources for self-harm detection
      */
-    fun getCrisisResources(): List<CrisisResource> {
+    fun getCrisisResources(): List<ModerationCrisisResource> {
         return listOf(
-            CrisisResource(
+            ModerationCrisisResource(
                 name = "National Suicide Prevention Lifeline",
                 phone = "988",
                 description = "24/7 support for people in distress"
             ),
-            CrisisResource(
+            ModerationCrisisResource(
                 name = "Crisis Text Line",
                 phone = "Text HOME to 741741",
                 description = "Free 24/7 text support"
             ),
-            CrisisResource(
+            ModerationCrisisResource(
                 name = "International Association for Suicide Prevention",
                 website = "https://www.iasp.info/resources/Crisis_Centres/",
                 description = "Find a crisis center in your country"
@@ -304,9 +304,12 @@ class ContentModerationManager @Inject constructor(
 }
 
 /**
- * Crisis resource information
+ * Crisis resource information for content moderation.
+ *
+ * Renamed from CrisisResource to avoid collision with
+ * com.prody.prashant.domain.haven.CrisisResource.
  */
-data class CrisisResource(
+data class ModerationCrisisResource(
     val name: String,
     val phone: String? = null,
     val website: String? = null,

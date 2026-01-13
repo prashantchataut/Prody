@@ -107,7 +107,7 @@ class NotificationIntelligence @Inject constructor(
     suspend fun generateNotificationContent(
         type: NotificationType,
         context: NotificationContext? = null
-    ): NotificationContent {
+    ): IntelligentNotificationContent {
         val notificationContext = context ?: userContextEngine.getContextForNotification()
         val userContext = notificationContext.userContext
 
@@ -303,9 +303,9 @@ class NotificationIntelligence @Inject constructor(
     }
 
     private fun adaptContentToContext(
-        content: NotificationContent,
+        content: IntelligentNotificationContent,
         userContext: UserContext
-    ): NotificationContent {
+    ): IntelligentNotificationContent {
         // Adjust tone based on user state
         return when {
             userContext.isStruggling -> content.copy(
@@ -339,7 +339,7 @@ class NotificationIntelligence @Inject constructor(
     // PRIVATE HELPERS - CONTENT GENERATION
     // =============================================================================================
 
-    private fun generateMorningReminderContent(userContext: UserContext): NotificationContent {
+    private fun generateMorningReminderContent(userContext: UserContext): IntelligentNotificationContent {
         val greeting = when (userContext.dayOfWeek) {
             DayOfWeek.MONDAY -> "New week, new possibilities"
             DayOfWeek.FRIDAY -> "Almost the weekend!"
@@ -365,14 +365,14 @@ class NotificationIntelligence @Inject constructor(
             )
         }
 
-        return NotificationContent(
+        return IntelligentNotificationContent(
             title = greeting,
             body = bodies.random(),
             deepLink = "prody://journal/new"
         )
     }
 
-    private fun generateEveningReflectionContent(userContext: UserContext): NotificationContent {
+    private fun generateEveningReflectionContent(userContext: UserContext): IntelligentNotificationContent {
         val titles = when (userContext.dayOfWeek) {
             DayOfWeek.FRIDAY -> listOf("End of week reflection", "Week wrap-up")
             DayOfWeek.SUNDAY -> listOf("Sunday evening check-in", "Ready for the week ahead?")
@@ -395,14 +395,14 @@ class NotificationIntelligence @Inject constructor(
             )
         }
 
-        return NotificationContent(
+        return IntelligentNotificationContent(
             title = titles.random(),
             body = bodies.random(),
             deepLink = "prody://journal/new"
         )
     }
 
-    private fun generateStreakReminderContent(userContext: UserContext): NotificationContent {
+    private fun generateStreakReminderContent(userContext: UserContext): IntelligentNotificationContent {
         val streak = userContext.currentStreak.reflectionStreak.current
 
         val titles = when {
@@ -426,14 +426,14 @@ class NotificationIntelligence @Inject constructor(
             )
         }
 
-        return NotificationContent(
+        return IntelligentNotificationContent(
             title = titles.random(),
             body = bodies.random(),
             deepLink = "prody://journal/new"
         )
     }
 
-    private fun generateComebackContent(userContext: UserContext): NotificationContent {
+    private fun generateComebackContent(userContext: UserContext): IntelligentNotificationContent {
         val daysAway = userContext.daysSinceLastEntry
 
         val titles = listOf(
@@ -460,25 +460,25 @@ class NotificationIntelligence @Inject constructor(
             )
         }
 
-        return NotificationContent(
+        return IntelligentNotificationContent(
             title = titles.random(),
             body = bodies.random(),
             deepLink = "prody://home"
         )
     }
 
-    private suspend fun generateMemoryContent(userContext: UserContext): NotificationContent {
+    private suspend fun generateMemoryContent(userContext: UserContext): IntelligentNotificationContent {
         val anniversaryMemories = memoryEngine.getAnniversaryMemories()
         val memory = anniversaryMemories.firstOrNull()
 
         return if (memory != null) {
-            NotificationContent(
+            IntelligentNotificationContent(
                 title = "A memory from ${memory.memory.surfaceReason}",
                 body = memory.memory.preview.take(100) + "...",
                 deepLink = "prody://memory/${memory.memory.id}"
             )
         } else {
-            NotificationContent(
+            IntelligentNotificationContent(
                 title = "Remember this?",
                 body = "You have memories worth revisiting.",
                 deepLink = "prody://memories"
@@ -486,19 +486,19 @@ class NotificationIntelligence @Inject constructor(
         }
     }
 
-    private fun generateFutureMessageContent(): NotificationContent {
-        return NotificationContent(
+    private fun generateFutureMessageContent(): IntelligentNotificationContent {
+        return IntelligentNotificationContent(
             title = "A message from past you!",
             body = "You sent yourself something special. Ready to open it?",
             deepLink = "prody://future-messages"
         )
     }
 
-    private fun generateWeeklySummaryContent(userContext: UserContext): NotificationContent {
+    private fun generateWeeklySummaryContent(userContext: UserContext): IntelligentNotificationContent {
         val entriesThisWeek = userContext.totalEntries // Simplified - would need actual weekly count
         val streakInfo = userContext.currentStreak
 
-        return NotificationContent(
+        return IntelligentNotificationContent(
             title = "Your week in review",
             body = when {
                 entriesThisWeek >= 7 -> "Amazing week! You journaled every day."
@@ -510,17 +510,17 @@ class NotificationIntelligence @Inject constructor(
         )
     }
 
-    private fun generateAchievementContent(userContext: UserContext): NotificationContent {
+    private fun generateAchievementContent(userContext: UserContext): IntelligentNotificationContent {
         val milestone = userContext.recentWins.firstOrNull()
 
         return if (milestone != null) {
-            NotificationContent(
+            IntelligentNotificationContent(
                 title = milestone.title,
                 body = milestone.description,
                 deepLink = "prody://achievements"
             )
         } else {
-            NotificationContent(
+            IntelligentNotificationContent(
                 title = "Achievement unlocked!",
                 body = "You've hit a new milestone!",
                 deepLink = "prody://achievements"
@@ -528,8 +528,8 @@ class NotificationIntelligence @Inject constructor(
         }
     }
 
-    private fun generateHavenCheckInContent(userContext: UserContext): NotificationContent {
-        return NotificationContent(
+    private fun generateHavenCheckInContent(userContext: UserContext): IntelligentNotificationContent {
+        return IntelligentNotificationContent(
             title = "Haven is here for you",
             body = when {
                 userContext.isStruggling -> "Sometimes it helps to talk. Haven is ready when you are."
@@ -539,34 +539,34 @@ class NotificationIntelligence @Inject constructor(
         )
     }
 
-    private fun generateGentleNudgeContent(userContext: UserContext): NotificationContent {
+    private fun generateGentleNudgeContent(userContext: UserContext): IntelligentNotificationContent {
         val nudges = when {
             userContext.isStruggling -> listOf(
-                NotificationContent(
+                IntelligentNotificationContent(
                     title = "Just checking in",
                     body = "How are you doing today?",
                     deepLink = "prody://journal/new"
                 ),
-                NotificationContent(
+                IntelligentNotificationContent(
                     title = "No pressure",
                     body = "Your space is here when you need it.",
                     deepLink = "prody://home"
                 )
             )
             userContext.preferredJournalTime == TimeOfDay.MORNING && userContext.timeOfDay == TimeOfDay.MORNING -> listOf(
-                NotificationContent(
+                IntelligentNotificationContent(
                     title = "Your favorite time to write",
                     body = "Morning is when you usually reflect best.",
                     deepLink = "prody://journal/new"
                 )
             )
             else -> listOf(
-                NotificationContent(
+                IntelligentNotificationContent(
                     title = "A thought for you",
                     body = "Have a moment? Your journal awaits.",
                     deepLink = "prody://journal/new"
                 ),
-                NotificationContent(
+                IntelligentNotificationContent(
                     title = "Quick check-in",
                     body = "How's your day going?",
                     deepLink = "prody://journal/new"
@@ -705,7 +705,7 @@ class NotificationIntelligence @Inject constructor(
 data class ScheduledNotification(
     val type: NotificationType,
     val scheduledTime: LocalDateTime,
-    val content: NotificationContent,
+    val content: IntelligentNotificationContent,
     val priority: NotificationPriority
 )
 

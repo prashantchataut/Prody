@@ -302,8 +302,11 @@ enum class LeaderboardTier(
 
 /**
  * Weekly summary shown at week's end.
+ *
+ * Renamed from WeeklySummary to avoid collision with
+ * com.prody.prashant.domain.summary.WeeklySummary.
  */
-data class WeeklySummary(
+data class LeaderboardWeeklySummary(
     val weekStartDate: LocalDate,
     val weekEndDate: LocalDate,
     val finalRank: Int,

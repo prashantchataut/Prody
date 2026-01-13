@@ -211,9 +211,12 @@ data class GameResult(
 }
 
 /**
- * Daily challenge configuration.
+ * Daily challenge configuration for vocabulary games.
+ *
+ * Renamed from DailyChallenge to avoid collision with
+ * com.prody.prashant.domain.gamification.DailyChallenge.
  */
-data class DailyChallenge(
+data class GameDailyChallenge(
     val date: Long,
     val gameType: GameType,
     val difficulty: GameDifficulty,

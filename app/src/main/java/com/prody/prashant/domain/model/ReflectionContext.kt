@@ -104,7 +104,7 @@ data class EntrySummary(
  * Detected pattern in user's journal entries
  */
 data class JournalPattern(
-    val type: PatternType,
+    val type: ReflectionPatternType,
     val description: String,
     val occurrences: Int,
     val relatedEntryIds: List<Long>,
@@ -119,9 +119,11 @@ data class JournalPattern(
 }
 
 /**
- * Types of patterns that can be detected
+ * Types of patterns that can be detected in reflection context.
+ *
+ * Renamed from PatternType to avoid collision with other PatternType definitions.
  */
-enum class PatternType {
+enum class ReflectionPatternType {
     RECURRING_THEME,      // Same topic appearing multiple times
     MOOD_PATTERN,         // Consistent mood at certain times
     TIME_PATTERN,         // Writing at consistent times

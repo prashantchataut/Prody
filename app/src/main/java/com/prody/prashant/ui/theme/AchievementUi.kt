@@ -81,12 +81,15 @@ import com.prody.prashant.domain.identity.ProdyAchievements
  * UI model for achievement rarity with visual properties.
  * Maps to ProdyAchievements.Rarity with added Compose Color support.
  *
+ * Renamed from AchievementRarity to avoid collision with
+ * com.prody.prashant.domain.gamification.AchievementRarity.
+ *
  * @property color Primary display color for this rarity
  * @property secondaryColor Secondary/gradient color for this rarity
  * @property displayName User-facing rarity name
  * @property glowIntensity Visual glow effect intensity (0.0 to 1.0)
  */
-enum class AchievementRarity(
+enum class UiAchievementRarity(
     val color: Color,
     val secondaryColor: Color,
     val displayName: String,
@@ -133,7 +136,7 @@ enum class AchievementRarity(
         /**
          * Converts domain rarity to UI rarity.
          */
-        fun fromDomain(domainRarity: ProdyAchievements.Rarity): AchievementRarity {
+        fun fromDomain(domainRarity: ProdyAchievements.Rarity): UiAchievementRarity {
             return when (domainRarity) {
                 ProdyAchievements.Rarity.COMMON -> COMMON
                 ProdyAchievements.Rarity.UNCOMMON -> UNCOMMON
@@ -149,13 +152,16 @@ enum class AchievementRarity(
  * Categories of achievements with visual properties.
  * Maps to ProdyAchievements.Category with added Compose Color and Icon support.
  *
+ * Renamed from AchievementCategory to avoid collision with
+ * com.prody.prashant.domain.gamification.AchievementCategory.
+ *
  * @property displayName User-facing category name
  * @property description Category description
  * @property color Primary color for this category
  * @property secondaryColor Secondary/gradient color
  * @property icon Default icon for this category
  */
-enum class AchievementCategory(
+enum class UiAchievementCategory(
     val displayName: String,
     val description: String,
     val color: Color,
@@ -259,7 +265,7 @@ enum class AchievementCategory(
         /**
          * Converts domain category to UI category.
          */
-        fun fromDomain(domainCategory: ProdyAchievements.Category): AchievementCategory {
+        fun fromDomain(domainCategory: ProdyAchievements.Category): UiAchievementCategory {
             return when (domainCategory) {
                 ProdyAchievements.Category.WISDOM -> WISDOM
                 ProdyAchievements.Category.REFLECTION -> REFLECTION
@@ -280,6 +286,9 @@ enum class AchievementCategory(
  * This is placed in the ui.theme package because it contains Compose types
  * (Color, ImageVector), keeping Compose dependencies out of the domain layer.
  *
+ * Renamed from Achievement to avoid collision with
+ * com.prody.prashant.domain.gamification.Achievement.
+ *
  * @property id Unique identifier for persistence and lookup
  * @property name Achievement name displayed to users
  * @property description Philosophical or poetic description
@@ -294,13 +303,13 @@ enum class AchievementCategory(
  * @property unlockedAt Timestamp when achievement was unlocked
  * @property rewardPoints Points awarded for unlocking this achievement
  */
-data class Achievement(
+data class UiAchievement(
     val id: String,
     val name: String,
     val description: String,
     val icon: ImageVector,
-    val category: AchievementCategory,
-    val rarity: AchievementRarity,
+    val category: UiAchievementCategory,
+    val rarity: UiAchievementRarity,
     val requirement: Int,
     val requirementDescription: String = "",
     val celebrationMessage: String = "",
@@ -336,14 +345,14 @@ data class Achievement(
             currentProgress: Int = 0,
             isUnlocked: Boolean = false,
             unlockedAt: Long? = null
-        ): Achievement {
-            return Achievement(
+        ): UiAchievement {
+            return UiAchievement(
                 id = domainAchievement.id,
                 name = domainAchievement.name,
                 description = domainAchievement.description,
                 icon = AchievementIcons.getIcon(domainAchievement.iconName),
-                category = AchievementCategory.fromDomain(domainAchievement.category),
-                rarity = AchievementRarity.fromDomain(domainAchievement.rarity),
+                category = UiAchievementCategory.fromDomain(domainAchievement.category),
+                rarity = UiAchievementRarity.fromDomain(domainAchievement.rarity),
                 requirement = domainAchievement.requirement,
                 requirementDescription = domainAchievement.requirementDescription,
                 celebrationMessage = domainAchievement.celebrationMessage,
@@ -449,14 +458,17 @@ object AchievementIcons {
 /**
  * All available achievements with full visual properties.
  * Provides access to both legacy UI achievements and new domain-based achievements.
+ *
+ * Renamed from Achievements to avoid collision with
+ * com.prody.prashant.domain.gamification.Achievements.
  */
-object Achievements {
+object UiAchievements {
     /**
      * All achievements converted from domain layer with proper icons.
      */
-    val allAchievements: List<Achievement> by lazy {
+    val allAchievements: List<UiAchievement> by lazy {
         ProdyAchievements.allAchievements.map { domainAchievement ->
-            Achievement.fromDomain(domainAchievement)
+            UiAchievement.fromDomain(domainAchievement)
         }
     }
 
@@ -466,61 +478,61 @@ object Achievements {
      */
     val legacyAchievements = listOf(
         // Streak Achievements
-        Achievement(
+        UiAchievement(
             id = "streak_3",
             name = "Kindling",
             description = "A spark becomes a flame with patient tending",
             icon = ProdyIcons.Whatshot,
-            category = AchievementCategory.CONSISTENCY,
-            rarity = AchievementRarity.COMMON,
+            category = UiAchievementCategory.CONSISTENCY,
+            rarity = UiAchievementRarity.COMMON,
             requirement = 3,
             requirementDescription = "Maintain a 3-day streak",
             celebrationMessage = "Three days - the kindling has caught. Keep tending the flame.",
             rewardPoints = 50
         ),
-        Achievement(
+        UiAchievement(
             id = "streak_7",
             name = "Steady Flame",
             description = "A week of presence - the habit takes root",
             icon = ProdyIcons.LocalFireDepartment,
-            category = AchievementCategory.CONSISTENCY,
-            rarity = AchievementRarity.UNCOMMON,
+            category = UiAchievementCategory.CONSISTENCY,
+            rarity = UiAchievementRarity.UNCOMMON,
             requirement = 7,
             requirementDescription = "Maintain a 7-day streak",
             celebrationMessage = "Seven days without breaking - you are building something real.",
             rewardPoints = 150
         ),
-        Achievement(
+        UiAchievement(
             id = "streak_30",
             name = "Moon Cycle",
             description = "A complete lunar cycle of daily practice",
             icon = ProdyIcons.Nightlight,
-            category = AchievementCategory.CONSISTENCY,
-            rarity = AchievementRarity.RARE,
+            category = UiAchievementCategory.CONSISTENCY,
+            rarity = UiAchievementRarity.RARE,
             requirement = 30,
             requirementDescription = "Maintain a 30-day streak",
             celebrationMessage = "One moon's passage of unbroken dedication. The habit is forged.",
             rewardPoints = 500
         ),
-        Achievement(
+        UiAchievement(
             id = "streak_90",
             name = "Season of Growth",
             description = "Three months - a season of transformation",
             icon = ProdyIcons.Park,
-            category = AchievementCategory.CONSISTENCY,
-            rarity = AchievementRarity.EPIC,
+            category = UiAchievementCategory.CONSISTENCY,
+            rarity = UiAchievementRarity.EPIC,
             requirement = 90,
             requirementDescription = "Maintain a 90-day streak",
             celebrationMessage = "A full season of growth. You have transformed.",
             rewardPoints = 1500
         ),
-        Achievement(
+        UiAchievement(
             id = "streak_365",
             name = "Year of Presence",
             description = "365 days of showing up for yourself",
             icon = ProdyIcons.Stars,
-            category = AchievementCategory.CONSISTENCY,
-            rarity = AchievementRarity.LEGENDARY,
+            category = UiAchievementCategory.CONSISTENCY,
+            rarity = UiAchievementRarity.LEGENDARY,
             requirement = 365,
             requirementDescription = "Maintain a 365-day streak",
             celebrationMessage = "One complete orbit around the sun, present each day. This is mastery.",
@@ -528,49 +540,49 @@ object Achievements {
         ),
 
         // Learning Achievements
-        Achievement(
+        UiAchievement(
             id = "words_10",
             name = "Gathering Words",
             description = "A vocabulary is a garden - you are planting seeds",
             icon = ProdyIcons.Eco,
-            category = AchievementCategory.WISDOM,
-            rarity = AchievementRarity.COMMON,
+            category = UiAchievementCategory.WISDOM,
+            rarity = UiAchievementRarity.COMMON,
             requirement = 10,
             requirementDescription = "Learn 10 words",
             celebrationMessage = "Ten words now live within you, ready to bloom in thought and speech.",
             rewardPoints = 50
         ),
-        Achievement(
+        UiAchievement(
             id = "words_50",
             name = "Wordsmith",
             description = "Words are tools, and you are learning your craft",
             icon = ProdyIcons.Handyman,
-            category = AchievementCategory.WISDOM,
-            rarity = AchievementRarity.UNCOMMON,
+            category = UiAchievementCategory.WISDOM,
+            rarity = UiAchievementRarity.UNCOMMON,
             requirement = 50,
             requirementDescription = "Learn 50 words",
             celebrationMessage = "Fifty words - a craftsman's toolkit begins to take shape.",
             rewardPoints = 200
         ),
-        Achievement(
+        UiAchievement(
             id = "words_100",
             name = "Lexicon Keeper",
             description = "A hundred words is a language unto itself",
             icon = ProdyIcons.AutoMirrored.Filled.MenuBook,
-            category = AchievementCategory.WISDOM,
-            rarity = AchievementRarity.RARE,
+            category = UiAchievementCategory.WISDOM,
+            rarity = UiAchievementRarity.RARE,
             requirement = 100,
             requirementDescription = "Learn 100 words",
             celebrationMessage = "One hundred words now color your world with new meaning.",
             rewardPoints = 500
         ),
-        Achievement(
+        UiAchievement(
             id = "words_500",
             name = "Logophile",
             description = "A true lover of words, their histories, their music",
             icon = ProdyIcons.Favorite,
-            category = AchievementCategory.WISDOM,
-            rarity = AchievementRarity.LEGENDARY,
+            category = UiAchievementCategory.WISDOM,
+            rarity = UiAchievementRarity.LEGENDARY,
             requirement = 500,
             requirementDescription = "Learn 500 words",
             celebrationMessage = "Five hundred words - you have become a keeper of language.",
@@ -578,49 +590,49 @@ object Achievements {
         ),
 
         // Journal Achievements
-        Achievement(
+        UiAchievement(
             id = "journal_1",
             name = "First Reflection",
             description = "The examined life begins with a single honest word",
             icon = ProdyIcons.EditNote,
-            category = AchievementCategory.REFLECTION,
-            rarity = AchievementRarity.COMMON,
+            category = UiAchievementCategory.REFLECTION,
+            rarity = UiAchievementRarity.COMMON,
             requirement = 1,
             requirementDescription = "Write your first journal entry",
             celebrationMessage = "You have begun the sacred practice of self-examination.",
             rewardPoints = 25
         ),
-        Achievement(
+        UiAchievement(
             id = "journal_10",
             name = "Inner Dialogue",
             description = "A conversation with yourself, growing richer each day",
             icon = ProdyIcons.AutoMirrored.Filled.Chat,
-            category = AchievementCategory.REFLECTION,
-            rarity = AchievementRarity.UNCOMMON,
+            category = UiAchievementCategory.REFLECTION,
+            rarity = UiAchievementRarity.UNCOMMON,
             requirement = 10,
             requirementDescription = "Write 10 journal entries",
             celebrationMessage = "Ten conversations with your deeper self - the dialogue deepens.",
             rewardPoints = 150
         ),
-        Achievement(
+        UiAchievement(
             id = "journal_30",
             name = "Chronicle Keeper",
             description = "Your story is being written, one entry at a time",
             icon = ProdyIcons.AutoStories,
-            category = AchievementCategory.REFLECTION,
-            rarity = AchievementRarity.RARE,
+            category = UiAchievementCategory.REFLECTION,
+            rarity = UiAchievementRarity.RARE,
             requirement = 30,
             requirementDescription = "Write 30 journal entries",
             celebrationMessage = "Thirty chapters of your inner life now preserved in words.",
             rewardPoints = 500
         ),
-        Achievement(
+        UiAchievement(
             id = "journal_100",
             name = "Memoir of the Soul",
             description = "A hundred glimpses into the depths of your being",
             icon = ProdyIcons.Book,
-            category = AchievementCategory.REFLECTION,
-            rarity = AchievementRarity.EPIC,
+            category = UiAchievementCategory.REFLECTION,
+            rarity = UiAchievementRarity.EPIC,
             requirement = 100,
             requirementDescription = "Write 100 journal entries",
             celebrationMessage = "One hundred reflections - a true memoir of the soul.",
@@ -628,37 +640,37 @@ object Achievements {
         ),
 
         // Future Message Achievements
-        Achievement(
+        UiAchievement(
             id = "future_1",
             name = "Message in a Bottle",
             description = "A letter cast into the river of time",
             icon = ProdyIcons.Mail,
-            category = AchievementCategory.TEMPORAL,
-            rarity = AchievementRarity.UNCOMMON,
+            category = UiAchievementCategory.TEMPORAL,
+            rarity = UiAchievementRarity.UNCOMMON,
             requirement = 1,
             requirementDescription = "Write your first future-self letter",
             celebrationMessage = "Your words now travel toward a future you. May they arrive with meaning.",
             rewardPoints = 50
         ),
-        Achievement(
+        UiAchievement(
             id = "future_5",
             name = "Time Weaver",
             description = "Connecting present intention to future realization",
             icon = ProdyIcons.HourglassEmpty,
-            category = AchievementCategory.TEMPORAL,
-            rarity = AchievementRarity.RARE,
+            category = UiAchievementCategory.TEMPORAL,
+            rarity = UiAchievementRarity.RARE,
             requirement = 5,
             requirementDescription = "Write 5 future-self letters",
             celebrationMessage = "Five letters to your future self - you are weaving threads across time.",
             rewardPoints = 200
         ),
-        Achievement(
+        UiAchievement(
             id = "future_received",
             name = "Echo from the Past",
             description = "Your past self has something to tell you",
             icon = ProdyIcons.MarkEmailRead,
-            category = AchievementCategory.TEMPORAL,
-            rarity = AchievementRarity.RARE,
+            category = UiAchievementCategory.TEMPORAL,
+            rarity = UiAchievementRarity.RARE,
             requirement = 1,
             requirementDescription = "Receive your first future-self letter",
             celebrationMessage = "A message from who you were. Listen carefully.",
@@ -666,25 +678,25 @@ object Achievements {
         ),
 
         // Buddha/Presence Achievements
-        Achievement(
+        UiAchievement(
             id = "buddha_first",
             name = "First Counsel",
             description = "You sought wisdom, and wisdom answered",
             icon = ProdyIcons.Forum,
-            category = AchievementCategory.PRESENCE,
-            rarity = AchievementRarity.COMMON,
+            category = UiAchievementCategory.PRESENCE,
+            rarity = UiAchievementRarity.COMMON,
             requirement = 1,
             requirementDescription = "Have your first conversation with Buddha",
             celebrationMessage = "The dialogue has begun. Buddha awaits your questions.",
             rewardPoints = 25
         ),
-        Achievement(
+        UiAchievement(
             id = "buddha_10",
             name = "Seeking Mind",
             description = "One who asks is one who grows",
             icon = ProdyIcons.PsychologyAlt,
-            category = AchievementCategory.PRESENCE,
-            rarity = AchievementRarity.UNCOMMON,
+            category = UiAchievementCategory.PRESENCE,
+            rarity = UiAchievementRarity.UNCOMMON,
             requirement = 10,
             requirementDescription = "Have 10 conversations with Buddha",
             celebrationMessage = "Ten conversations - you are learning to ask the right questions.",
@@ -692,25 +704,25 @@ object Achievements {
         ),
 
         // Social Achievements
-        Achievement(
+        UiAchievement(
             id = "boost_10",
             name = "Encourager",
             description = "Supporting others on their journey",
             icon = ProdyIcons.ThumbUp,
-            category = AchievementCategory.SOCIAL,
-            rarity = AchievementRarity.UNCOMMON,
+            category = UiAchievementCategory.SOCIAL,
+            rarity = UiAchievementRarity.UNCOMMON,
             requirement = 10,
             requirementDescription = "Boost 10 peers",
             celebrationMessage = "Ten souls encouraged. Your support ripples outward.",
             rewardPoints = 150
         ),
-        Achievement(
+        UiAchievement(
             id = "top_weekly",
             name = "Weekly Champion",
             description = "Rising to the summit of dedication",
             icon = ProdyIcons.Leaderboard,
-            category = AchievementCategory.SOCIAL,
-            rarity = AchievementRarity.EPIC,
+            category = UiAchievementCategory.SOCIAL,
+            rarity = UiAchievementRarity.EPIC,
             requirement = 1,
             requirementDescription = "Reach first place on weekly leaderboard",
             celebrationMessage = "You stand at the pinnacle this week. Well earned.",
@@ -718,37 +730,37 @@ object Achievements {
         ),
 
         // Special Achievements
-        Achievement(
+        UiAchievement(
             id = "night_owl",
             name = "Evening Contemplative",
             description = "The quiet hours of night invite reflection",
             icon = ProdyIcons.NightsStay,
-            category = AchievementCategory.MASTERY,
-            rarity = AchievementRarity.UNCOMMON,
+            category = UiAchievementCategory.MASTERY,
+            rarity = UiAchievementRarity.UNCOMMON,
             requirement = 7,
             requirementDescription = "Use Prody after 10 PM for 7 days",
             celebrationMessage = "Seven nights of quiet contemplation. The darkness holds its own wisdom.",
             rewardPoints = 200
         ),
-        Achievement(
+        UiAchievement(
             id = "early_bird",
             name = "Dawn Seeker",
             description = "Those who rise with the sun often find themselves ahead",
             icon = ProdyIcons.WbTwilight,
-            category = AchievementCategory.MASTERY,
-            rarity = AchievementRarity.UNCOMMON,
+            category = UiAchievementCategory.MASTERY,
+            rarity = UiAchievementRarity.UNCOMMON,
             requirement = 7,
             requirementDescription = "Use Prody before 7 AM for 7 days",
             celebrationMessage = "Seven dawns greeted with intention. The early hours hold power.",
             rewardPoints = 200
         ),
-        Achievement(
+        UiAchievement(
             id = "all_moods",
             name = "Emotional Cartographer",
             description = "Mapping the terrain of your inner landscape",
             icon = ProdyIcons.Map,
-            category = AchievementCategory.REFLECTION,
-            rarity = AchievementRarity.RARE,
+            category = UiAchievementCategory.REFLECTION,
+            rarity = UiAchievementRarity.RARE,
             requirement = 8,
             requirementDescription = "Experience all mood types",
             celebrationMessage = "The full spectrum of emotion is yours to understand.",
@@ -759,7 +771,7 @@ object Achievements {
     /**
      * Gets an achievement by ID, checking both new and legacy achievements.
      */
-    fun getAchievementById(id: String): Achievement? {
+    fun getAchievementById(id: String): UiAchievement? {
         return allAchievements.find { it.id == id }
             ?: legacyAchievements.find { it.id == id }
     }
@@ -767,21 +779,21 @@ object Achievements {
     /**
      * Gets achievements by category.
      */
-    fun getAchievementsByCategory(category: AchievementCategory): List<Achievement> {
+    fun getAchievementsByCategory(category: UiAchievementCategory): List<UiAchievement> {
         return allAchievements.filter { it.category == category }
     }
 
     /**
      * Gets achievements by rarity.
      */
-    fun getAchievementsByRarity(rarity: AchievementRarity): List<Achievement> {
+    fun getAchievementsByRarity(rarity: UiAchievementRarity): List<UiAchievement> {
         return allAchievements.filter { it.rarity == rarity }
     }
 
     /**
      * Gets achievements that are nearly complete for a user.
      */
-    fun getNearCompletionAchievements(achievements: List<Achievement>): List<Achievement> {
+    fun getNearCompletionAchievements(achievements: List<UiAchievement>): List<UiAchievement> {
         return achievements.filter { it.isNearCompletion }
     }
 

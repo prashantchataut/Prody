@@ -1,9 +1,8 @@
 package com.prody.prashant.domain.gamification
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.prody.prashant.ui.icons.ProdyIcons
 
 /**
  * Rank System - Based on Combined Skill Levels
@@ -52,7 +51,7 @@ enum class Rank(
         minCombinedLevel = 0,
         color = Color(0xFF9E9E9E),
         philosophicalOrigin = "The first step in any journey of wisdom",
-        icon = Icons.Default.Search
+        icon = ProdyIcons.Search
     ),
     LEARNER(
         id = "learner",
@@ -61,7 +60,7 @@ enum class Rank(
         minCombinedLevel = 6,
         color = Color(0xFF78909C),
         philosophicalOrigin = "The foundation of all wisdom traditions",
-        icon = Icons.Default.MenuBook
+        icon = ProdyIcons.MenuBook
     ),
     INITIATE(
         id = "initiate",
@@ -70,7 +69,7 @@ enum class Rank(
         minCombinedLevel = 12,
         color = Color(0xFF607D8B),
         philosophicalOrigin = "Ancient mystery school traditions",
-        icon = Icons.Default.Visibility
+        icon = ProdyIcons.Visibility
     ),
     STUDENT(
         id = "student",
@@ -79,7 +78,7 @@ enum class Rank(
         minCombinedLevel = 18,
         color = Color(0xFF5C6BC0),
         philosophicalOrigin = "Socratic tradition of perpetual learning",
-        icon = Icons.Default.School
+        icon = ProdyIcons.School
     ),
     PRACTITIONER(
         id = "practitioner",
@@ -88,7 +87,7 @@ enum class Rank(
         minCombinedLevel = 24,
         color = Color(0xFF26A69A),
         philosophicalOrigin = "Stoic philosophy of praxis",
-        icon = Icons.Default.FitnessCenter
+        icon = ProdyIcons.FitnessCenter
     ),
     CONTEMPLATIVE(
         id = "contemplative",
@@ -97,7 +96,7 @@ enum class Rank(
         minCombinedLevel = 30,
         color = Color(0xFF4ECDC4),
         philosophicalOrigin = "Meditative traditions East and West",
-        icon = Icons.Default.SelfImprovement
+        icon = ProdyIcons.SelfImprovement
     ),
     PHILOSOPHER(
         id = "philosopher",
@@ -106,7 +105,7 @@ enum class Rank(
         minCombinedLevel = 36,
         color = Color(0xFF6B5CE7),
         philosophicalOrigin = "Greek: philos (lover) + sophia (wisdom)",
-        icon = Icons.Default.Psychology
+        icon = ProdyIcons.Psychology
     ),
     SAGE(
         id = "sage",
@@ -115,7 +114,7 @@ enum class Rank(
         minCombinedLevel = 45,
         color = Color(0xFFAC32E4),
         philosophicalOrigin = "Universal archetype of the wise elder",
-        icon = Icons.Default.Elderly
+        icon = ProdyIcons.Elderly
     ),
     LUMINARY(
         id = "luminary",
@@ -124,7 +123,7 @@ enum class Rank(
         minCombinedLevel = 54,
         color = Color(0xFFD4AF37),
         philosophicalOrigin = "Latin: lumen - light",
-        icon = Icons.Default.WbSunny
+        icon = ProdyIcons.WbSunny
     ),
     AWAKENED(
         id = "awakened",
@@ -133,7 +132,7 @@ enum class Rank(
         minCombinedLevel = 60,
         color = Color(0xFFFFD700),
         philosophicalOrigin = "Buddhist concept of Bodhi - full enlightenment",
-        icon = Icons.Default.Stars
+        icon = ProdyIcons.Stars
     );
 
     companion object {

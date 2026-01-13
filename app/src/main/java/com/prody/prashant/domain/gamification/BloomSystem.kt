@@ -29,8 +29,11 @@ import java.time.temporal.ChronoUnit
 
 /**
  * Enhanced seed types with detection configurations.
+ *
+ * Renamed from WisdomType to avoid collision with
+ * com.prody.prashant.ui.screens.wisdom.WisdomCollectionViewModel.WisdomType.
  */
-enum class WisdomType(
+enum class BloomWisdomType(
     val displayName: String,
     val description: String,
     val baseXp: Int,
@@ -88,7 +91,7 @@ enum class DetectionDifficulty {
  */
 data class WisdomSeed(
     val id: String,
-    val type: WisdomType,
+    val type: BloomWisdomType,
     val content: String,              // The word, phrase, or quote
     val meaning: String,              // Definition or explanation
     val example: String?,             // Example usage
@@ -277,8 +280,11 @@ sealed class BloomMatchResult {
 
 /**
  * Result of attempting to bloom.
+ *
+ * Renamed from BloomResult to avoid collision with
+ * com.prody.prashant.domain.progress.BloomResult.
  */
-sealed class BloomResult {
+sealed class GamificationBloomResult {
     /**
      * Successfully bloomed.
      */
@@ -290,7 +296,7 @@ sealed class BloomResult {
         val isStreakMilestone: Boolean,
         val milestoneReached: BloomMilestone?,
         val celebrationMessage: String
-    ) : BloomResult()
+    ) : GamificationBloomResult()
 
     /**
      * Already bloomed today.
@@ -298,7 +304,7 @@ sealed class BloomResult {
     data class AlreadyBloomed(
         val seed: WisdomSeed,
         val bloomedAt: LocalDateTime
-    ) : BloomResult()
+    ) : GamificationBloomResult()
 
     /**
      * Content didn't match seed.
@@ -306,17 +312,17 @@ sealed class BloomResult {
     data class NoMatch(
         val seed: WisdomSeed,
         val suggestion: String
-    ) : BloomResult()
+    ) : GamificationBloomResult()
 
     /**
      * No active seed for today.
      */
-    object NoActiveSeed : BloomResult()
+    object NoActiveSeed : GamificationBloomResult()
 
     /**
      * Error during bloom attempt.
      */
-    data class Error(val message: String) : BloomResult()
+    data class Error(val message: String) : GamificationBloomResult()
 }
 
 /**
@@ -353,7 +359,7 @@ data class BloomStats(
     val lastBloomDate: LocalDate?,
     val thisWeekBlooms: Int,
     val thisMonthBlooms: Int,
-    val favoriteWisdomType: WisdomType?,
+    val favoriteWisdomType: BloomWisdomType?,
     val totalXpFromBlooms: Int,
 
     // Type breakdown
@@ -558,16 +564,16 @@ object BloomCalculator {
      * Get celebration message for successful bloom.
      */
     fun getCelebrationMessage(
-        wisdomType: WisdomType,
+        wisdomType: BloomWisdomType,
         newStreak: Int,
         milestone: BloomMilestone?
     ): String {
         val baseMessage = when (wisdomType) {
-            WisdomType.WORD_OF_DAY -> "Word bloomed! Your vocabulary grows."
-            WisdomType.IDIOM -> "Idiom mastered! Expression enriched."
-            WisdomType.PROVERB -> "Proverb applied! Ancient wisdom lives on."
-            WisdomType.QUOTE -> "Quote embodied! Wisdom in action."
-            WisdomType.SEED -> "Seed bloomed! Knowledge takes root."
+            BloomWisdomType.WORD_OF_DAY -> "Word bloomed! Your vocabulary grows."
+            BloomWisdomType.IDIOM -> "Idiom mastered! Expression enriched."
+            BloomWisdomType.PROVERB -> "Proverb applied! Ancient wisdom lives on."
+            BloomWisdomType.QUOTE -> "Quote embodied! Wisdom in action."
+            BloomWisdomType.SEED -> "Seed bloomed! Knowledge takes root."
         }
 
         val streakMessage = when {
@@ -584,11 +590,11 @@ object BloomCalculator {
      */
     fun getSuggestion(seed: WisdomSeed): String {
         return when (seed.type) {
-            WisdomType.WORD_OF_DAY -> "Try using \"${seed.content}\" or a variation like \"${seed.variations.firstOrNull() ?: seed.content + "ing"}\" in your writing."
-            WisdomType.IDIOM -> "Express the meaning of \"${seed.content}\" in your own words."
-            WisdomType.PROVERB -> "Reflect on themes like ${seed.relatedConcepts.take(3).joinToString(", ")} from this proverb."
-            WisdomType.QUOTE -> "Consider what \"${seed.primaryTerms.firstOrNull() ?: "this wisdom"}\" means to you."
-            WisdomType.SEED -> "Let \"${seed.content}\" inspire your reflection."
+            BloomWisdomType.WORD_OF_DAY -> "Try using \"${seed.content}\" or a variation like \"${seed.variations.firstOrNull() ?: seed.content + "ing"}\" in your writing."
+            BloomWisdomType.IDIOM -> "Express the meaning of \"${seed.content}\" in your own words."
+            BloomWisdomType.PROVERB -> "Reflect on themes like ${seed.relatedConcepts.take(3).joinToString(", ")} from this proverb."
+            BloomWisdomType.QUOTE -> "Consider what \"${seed.primaryTerms.firstOrNull() ?: "this wisdom"}\" means to you."
+            BloomWisdomType.SEED -> "Let \"${seed.content}\" inspire your reflection."
         }
     }
 }
@@ -604,7 +610,7 @@ object SampleWisdomSeeds {
 
         return WisdomSeed(
             id = "word_${word}_${date}",
-            type = WisdomType.WORD_OF_DAY,
+            type = BloomWisdomType.WORD_OF_DAY,
             content = word,
             meaning = meaning,
             example = null,
@@ -622,7 +628,7 @@ object SampleWisdomSeeds {
 
         return WisdomSeed(
             id = "proverb_${content.hashCode()}_${date}",
-            type = WisdomType.PROVERB,
+            type = BloomWisdomType.PROVERB,
             content = content,
             meaning = meaning,
             example = null,
@@ -640,7 +646,7 @@ object SampleWisdomSeeds {
 
         return WisdomSeed(
             id = "quote_${content.hashCode()}_${date}",
-            type = WisdomType.QUOTE,
+            type = BloomWisdomType.QUOTE,
             content = content,
             meaning = "A thought from $author",
             example = null,

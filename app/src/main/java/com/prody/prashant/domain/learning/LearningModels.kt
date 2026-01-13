@@ -186,7 +186,7 @@ sealed class LessonContent {
     data class Exercise(
         val title: String,
         val description: String,
-        val steps: List<ExerciseStep>,
+        val steps: List<LearningExerciseStep>,
         val duration: Int,
         val materials: List<String> = emptyList()
     ) : LessonContent()
@@ -210,7 +210,7 @@ sealed class LessonContent {
     data class Quiz(
         val title: String,
         val description: String,
-        val questions: List<QuizQuestion>,
+        val questions: List<LearningQuizQuestion>,
         val passingScore: Int
     ) : LessonContent()
 }
@@ -227,9 +227,12 @@ data class ContentSection(
 )
 
 /**
- * Exercise Step
+ * Exercise Step for learning paths.
+ *
+ * Renamed from ExerciseStep to avoid collision with
+ * com.prody.prashant.domain.haven.ExerciseStep.
  */
-data class ExerciseStep(
+data class LearningExerciseStep(
     val stepNumber: Int,
     val instruction: String,
     val duration: Int? = null,
@@ -246,9 +249,12 @@ data class MeditationStep(
 )
 
 /**
- * Quiz Question
+ * Quiz Question for learning paths.
+ *
+ * Renamed from QuizQuestion to avoid collision with
+ * com.prody.prashant.domain.games.QuizQuestion.
  */
-data class QuizQuestion(
+data class LearningQuizQuestion(
     val id: String,
     val question: String,
     val options: List<String>,

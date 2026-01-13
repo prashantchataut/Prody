@@ -3,7 +3,6 @@ package com.prody.prashant.data.ai
 import android.util.Log
 import com.prody.prashant.domain.haven.ExerciseType
 import com.prody.prashant.domain.haven.HavenAiResponse
-import com.prody.prashant.domain.haven.HavenAiService
 import com.prody.prashant.domain.haven.HavenMessage
 import com.prody.prashant.domain.haven.SessionType
 import com.prody.prashant.domain.intelligence.StressSignal
@@ -19,8 +18,8 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
-// Type alias to disambiguate between the two HavenContext classes
-private typealias HavenSessionContext = com.prody.prashant.domain.haven.HavenContext
+// Type alias to disambiguate between the HavenConversationContext and Soul Layer HavenContext
+private typealias HavenSessionContext = com.prody.prashant.domain.haven.HavenConversationContext
 private typealias SoulLayerHavenContext = com.prody.prashant.domain.intelligence.HavenContext
 
 /**

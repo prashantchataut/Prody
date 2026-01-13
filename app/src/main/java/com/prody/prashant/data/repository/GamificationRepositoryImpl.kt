@@ -181,9 +181,16 @@ class GamificationRepositoryImpl @Inject constructor(
                 currentStreak = profile?.currentStreak ?: 0,
                 longestStreak = profile?.longestStreak ?: 0,
                 lastActiveDate = LocalDate.now(), // Would come from streak_data table
+                gracePeriodAvailable = true,
+                lastGracePeriodUsed = null,
+                freezeTokensEarned = 0,
+                freezeTokensUsed = 0,
                 freezesAvailable = StreakData.MAX_FREEZES_PER_MONTH,
                 freezesUsedThisMonth = 0,
-                lastFreezeResetMonth = LocalDate.now().monthValue
+                lastFreezeResetMonth = LocalDate.now().monthValue,
+                totalDaysActive = profile?.currentStreak ?: 0,
+                totalStreaksStarted = if ((profile?.currentStreak ?: 0) > 0) 1 else 0,
+                longestStreakDate = if ((profile?.longestStreak ?: 0) > 0) LocalDate.now() else null
             )
         }
     }
@@ -194,9 +201,16 @@ class GamificationRepositoryImpl @Inject constructor(
             currentStreak = profile?.currentStreak ?: 0,
             longestStreak = profile?.longestStreak ?: 0,
             lastActiveDate = LocalDate.now(),
+            gracePeriodAvailable = true,
+            lastGracePeriodUsed = null,
+            freezeTokensEarned = 0,
+            freezeTokensUsed = 0,
             freezesAvailable = StreakData.MAX_FREEZES_PER_MONTH,
             freezesUsedThisMonth = 0,
-            lastFreezeResetMonth = LocalDate.now().monthValue
+            lastFreezeResetMonth = LocalDate.now().monthValue,
+            totalDaysActive = profile?.currentStreak ?: 0,
+            totalStreaksStarted = if ((profile?.currentStreak ?: 0) > 0) 1 else 0,
+            longestStreakDate = if ((profile?.longestStreak ?: 0) > 0) LocalDate.now() else null
         )
     }
 
