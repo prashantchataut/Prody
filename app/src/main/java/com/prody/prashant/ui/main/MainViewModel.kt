@@ -16,34 +16,42 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    preferencesManager: PreferencesManager
+    private val preferencesManager: PreferencesManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MainActivityUiState())
     val uiState: StateFlow<MainActivityUiState> = _uiState.asStateFlow()
 
     init {
+        // [PERFORMANCE] Load critical startup information synchronously.
+        // This determines the start destination immediately, unblocking the splash screen.
+        val onboardingCompleted = preferencesManager.getOnboardingCompleted()
+        val startDestination = if (onboardingCompleted) Screen.Home.route else Screen.Onboarding.route
+
+        _uiState.value = MainActivityUiState(
+            isLoading = false,
+            startDestination = startDestination
+        )
+
+        // [PERFORMANCE] Load non-critical UI settings asynchronously.
+        // Theme and haptics can be updated moments after the initial UI is shown.
         viewModelScope.launch {
             combine(
-                preferencesManager.onboardingCompleted.catch { emit(false) },
                 preferencesManager.themeMode.catch { emit("system") },
                 preferencesManager.hapticFeedbackEnabled.catch { emit(true) }
-            ) { onboardingCompleted, themeModeString, hapticEnabled ->
+            ) { themeModeString, hapticEnabled ->
                 val themeMode = when (themeModeString.lowercase()) {
                     "light" -> ThemeMode.LIGHT
                     "dark" -> ThemeMode.DARK
                     else -> ThemeMode.SYSTEM
                 }
-                val startDestination = if (onboardingCompleted) Screen.Home.route else Screen.Onboarding.route
-
-                MainActivityUiState(
-                    isLoading = false,
-                    startDestination = startDestination,
+                // Return a pair or a small data class for clarity
+                themeMode to hapticEnabled
+            }.collect { (themeMode, hapticEnabled) ->
+                _uiState.value = _uiState.value.copy(
                     themeMode = themeMode,
                     hapticFeedbackEnabled = hapticEnabled
                 )
-            }.collect { newState ->
-                _uiState.value = newState
             }
         }
     }
