@@ -8,6 +8,7 @@ import com.prody.prashant.domain.repository.SocialRepository
 import com.prody.prashant.domain.social.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.UUID
@@ -37,7 +38,7 @@ class SocialRepositoryImpl @Inject constructor(
     // =========================================================================
 
     override fun observeUserCircles(userId: String): Flow<List<Circle>> {
-        return socialDao.observeUserCircles(userId).map { entities ->
+        return socialDao.observeUserCircles(userId).mapLatest { entities ->
             entities.mapNotNull { entity ->
                 try {
                     entity.toDomain(userId, socialDao)
@@ -62,7 +63,7 @@ class SocialRepositoryImpl @Inject constructor(
     }
 
     override fun observeCircle(circleId: String): Flow<Circle?> {
-        return socialDao.observeCircle(circleId).map { entity ->
+        return socialDao.observeCircle(circleId).mapLatest { entity ->
             entity?.toDomain("", socialDao)
         }
     }
@@ -298,7 +299,7 @@ class SocialRepositoryImpl @Inject constructor(
     // =========================================================================
 
     override fun observeCircleUpdates(circleId: String, limit: Int): Flow<List<CircleUpdate>> {
-        return socialDao.observeCircleUpdates(circleId, limit).map { entities ->
+        return socialDao.observeCircleUpdates(circleId, limit).mapLatest { entities ->
             entities.mapNotNull { entity ->
                 try {
                     entity.toDomain(socialDao)
@@ -436,7 +437,7 @@ class SocialRepositoryImpl @Inject constructor(
     // =========================================================================
 
     override fun observeUnreadNudges(userId: String): Flow<List<Nudge>> {
-        return socialDao.observeUnreadNudges(userId).map { entities ->
+        return socialDao.observeUnreadNudges(userId).mapLatest { entities ->
             entities.mapNotNull { entity ->
                 try {
                     entity.toDomain(socialDao)

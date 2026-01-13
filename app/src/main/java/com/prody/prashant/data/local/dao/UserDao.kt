@@ -319,8 +319,12 @@ interface UserDao {
     // Processed Rewards (Idempotency for anti-exploit)
     // =========================================================================
 
-    @Query("SELECT COUNT(*) > 0 FROM processed_rewards WHERE rewardKey = :key")
-    suspend fun hasProcessedRewardKey(key: String): Boolean
+    @Query("SELECT COUNT(*) FROM processed_rewards WHERE rewardKey = :key")
+    suspend fun getProcessedRewardKeyCount(key: String): Int
+
+    suspend fun hasProcessedRewardKey(key: String): Boolean {
+        return getProcessedRewardKeyCount(key) > 0
+    }
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertProcessedReward(reward: ProcessedRewardEntity)

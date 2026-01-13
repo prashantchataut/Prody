@@ -163,12 +163,14 @@ interface WordUsageDao {
      * Check if a specific word was used in a specific journal entry
      */
     @Query("""
-        SELECT EXISTS(
-            SELECT 1 FROM word_usages
-            WHERE wordId = :wordId AND journalEntryId = :journalEntryId
-        )
+        SELECT COUNT(*) FROM word_usages
+        WHERE wordId = :wordId AND journalEntryId = :journalEntryId
     """)
-    suspend fun isWordUsedInEntry(wordId: Long, journalEntryId: Long): Boolean
+    suspend fun getWordUsageInEntryCount(wordId: Long, journalEntryId: Long): Int
+
+    suspend fun isWordUsedInEntry(wordId: Long, journalEntryId: Long): Boolean {
+        return getWordUsageInEntryCount(wordId, journalEntryId) > 0
+    }
 
     /**
      * Delete all usages for a specific journal entry (when entry is deleted)

@@ -9,6 +9,7 @@ import com.prody.prashant.domain.common.runSuspendCatching
 import com.prody.prashant.domain.gamification.*
 import com.prody.prashant.domain.repository.*
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -327,14 +328,7 @@ class GamificationRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getUnlockedAchievementIds(): Set<String> {
-        return userDao.getUnlockedAchievements().map { list ->
-            list.map { it.id }.toSet()
-        }.let { flow ->
-            // Get first emission
-            var result = emptySet<String>()
-            flow.collect { result = it }
-            result
-        }
+        return userDao.getUnlockedAchievements().first().map { it.id }.toSet()
     }
 
     override suspend fun updateAchievementProgress(achievementId: String, progress: Int): Result<Boolean> =
@@ -520,11 +514,7 @@ class GamificationRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getCurrentUserLeaderboardEntry(): LeaderboardEntry? {
-        return userDao.getCurrentUserRank().let { flow ->
-            var result: LeaderboardEntryEntity? = null
-            flow.collect { result = it }
-            result?.toLeaderboardEntry()
-        }
+        return userDao.getCurrentUserRank().first()?.toLeaderboardEntry()
     }
 
     override suspend fun updateLeaderboardScore(): Result<Unit> =

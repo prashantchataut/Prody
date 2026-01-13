@@ -72,8 +72,8 @@ interface SoulLayerDao {
     @Query("SELECT * FROM user_context_cache WHERE userId = :userId LIMIT 1")
     fun observeContextCache(userId: String = "local"): Flow<UserContextCacheEntity?>
 
-    @Query("SELECT validUntil > :now FROM user_context_cache WHERE userId = :userId")
-    suspend fun isContextCacheValid(userId: String = "local", now: Long = System.currentTimeMillis()): Boolean?
+    @Query("SELECT CASE WHEN validUntil > :now THEN 1 ELSE 0 END FROM user_context_cache WHERE userId = :userId")
+    suspend fun isContextCacheValidInt(userId: String = "local", now: Long = System.currentTimeMillis()): Int?
 
     @Query("DELETE FROM user_context_cache WHERE userId = :userId")
     suspend fun clearContextCache(userId: String = "local")

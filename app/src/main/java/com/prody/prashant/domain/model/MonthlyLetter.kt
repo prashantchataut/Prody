@@ -318,7 +318,7 @@ data class Milestone(
                 title = json.getString("title"),
                 description = json.getString("description"),
                 progress = json.optInt("progress", 100),
-                icon = json.optString("icon", null)
+                icon = if (json.has("icon") && !json.isNull("icon")) json.getString("icon") else null
             )
         }
     }

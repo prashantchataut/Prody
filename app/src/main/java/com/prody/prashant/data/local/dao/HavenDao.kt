@@ -326,8 +326,12 @@ interface HavenDao {
     /**
      * Check if user has had any crisis sessions
      */
-    @Query("SELECT COUNT(*) > 0 FROM haven_sessions WHERE userId = :userId AND containedCrisisDetection = 1 AND isDeleted = 0")
-    suspend fun hasHadCrisisSessions(userId: String): Boolean
+    @Query("SELECT COUNT(*) FROM haven_sessions WHERE userId = :userId AND containedCrisisDetection = 1 AND isDeleted = 0")
+    suspend fun getCrisisSessionCount(userId: String): Int
+
+    suspend fun hasHadCrisisSessions(userId: String): Boolean {
+        return getCrisisSessionCount(userId) > 0
+    }
 
     /**
      * Get most recent session type
