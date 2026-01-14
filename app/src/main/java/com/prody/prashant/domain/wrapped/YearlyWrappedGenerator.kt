@@ -65,9 +65,7 @@ class YearlyWrappedGenerator @Inject constructor(
         }
 
         if (allJournalEntries.size < config.minEntriesRequired) {
-            return@try Result.failure(
-                Exception("Not enough entries to generate wrapped (minimum ${config.minEntriesRequired} required)")
-            )
+            throw Exception("Not enough entries to generate wrapped (minimum ${config.minEntriesRequired} required)")
         }
 
         // Calculate statistics
