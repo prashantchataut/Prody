@@ -2026,7 +2026,7 @@ object ProdyIcons {
         val Schedule: ImageVector get() = ProdyIcons.Schedule
     }
 
-    // AutoMirrored icons - using Icons.AutoMirrored.Filled.*
+    // AutoMirrored icons - using fully qualified references to Icons.AutoMirrored.Filled
     object AutoMirrored {
         object Filled {
             val ArrowBack: ImageVector get() = Icons.AutoMirrored.Filled.ArrowBack
