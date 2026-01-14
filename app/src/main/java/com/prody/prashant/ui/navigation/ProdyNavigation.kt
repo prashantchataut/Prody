@@ -846,6 +846,9 @@ fun ProdyNavHost(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToPath = { pathId ->
                     navController.navigate(Screen.PathDetail.createRoute(pathId))
+                },
+                onNavigateToLesson = { pathId, lessonId ->
+                    navController.navigate(Screen.Lesson.createRoute(pathId, lessonId))
                 }
             )
         }

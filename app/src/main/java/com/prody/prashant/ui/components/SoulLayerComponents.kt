@@ -1034,11 +1034,9 @@ private fun getMoodEmoji(mood: Mood): String {
 private fun getCelebrationIcon(animation: CelebrationAnimation): ImageVector {
     return when (animation) {
         CelebrationAnimation.CONFETTI -> ProdyIcons.Rounded.Celebration
-        CelebrationAnimation.SPARKLE, CelebrationAnimation.SPARKLES -> ProdyIcons.Rounded.AutoAwesome
-        CelebrationAnimation.GLOW, CelebrationAnimation.GENTLE_GLOW -> ProdyIcons.Rounded.Favorite
-        CelebrationAnimation.WARM_FADE -> ProdyIcons.Rounded.WbSunny
+        CelebrationAnimation.SPARKLE -> ProdyIcons.Rounded.AutoAwesome
+        CelebrationAnimation.GLOW -> ProdyIcons.Rounded.Favorite
         CelebrationAnimation.FIREWORKS -> ProdyIcons.Rounded.Stars
-        else -> ProdyIcons.Rounded.AutoAwesome
     }
 }
 

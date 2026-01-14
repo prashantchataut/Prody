@@ -203,7 +203,7 @@ class UserContextEngine @Inject constructor(
         // Gather all signals in parallel for efficiency
         val userProfileDeferred = async { userDao.getUserProfileSync() }
         val journalsDeferred = async { journalDao.getRecentEntries(30).first() }
-        val streakDeferred = async { dualStreakManager.getCurrentStatus() }
+        val streakDeferred = async { dualStreakManager.getDualStreakStatus() }
         val preferencesDeferred = async { loadPreferences() }
         val firstLaunchDeferred = async { preferencesManager.firstLaunchTime.first() }
 
@@ -217,7 +217,7 @@ class UserContextEngine @Inject constructor(
 
         // Get user-specific data after we have userId
         val sessionsDeferred = async { havenDao.getRecentSessions(userId = userId, limit = 10).first() }
-        val microEntriesDeferred = async { microEntryDao.getRecentEntries(limit = 20).first() }
+        val microEntriesDeferred = async { microEntryDao.getRecentMicroEntries(20).first() }
 
         val sessions = sessionsDeferred.await()
         val microEntries = microEntriesDeferred.await()

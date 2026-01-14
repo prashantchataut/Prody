@@ -42,6 +42,7 @@ class MessageDeliveryService @Inject constructor(
                     ContactMethod.IN_APP -> deliverInApp(message)
                     ContactMethod.EMAIL -> deliverViaEmail(message)
                     ContactMethod.PHONE -> deliverViaSMS(message)
+                    ContactMethod.SMS -> deliverViaSMS(message)
                     ContactMethod.WHATSAPP -> deliverViaWhatsApp(message)
                 }
 
@@ -310,7 +311,7 @@ class MessageDeliveryService @Inject constructor(
                         DeliveryResult.Failure("Invalid email address")
                     }
                 }
-                ContactMethod.PHONE -> {
+                ContactMethod.PHONE, ContactMethod.SMS -> {
                     if (android.util.Patterns.PHONE.matcher(recipient.contactValue).matches()) {
                         DeliveryResult.Success("Phone number is valid")
                     } else {
