@@ -1,7 +1,6 @@
 package com.prody.prashant.ui.screens.deepdive
 import com.prody.prashant.ui.icons.ProdyIcons
 
-import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn

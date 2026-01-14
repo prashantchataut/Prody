@@ -1,7 +1,7 @@
 package com.prody.prashant.ui.screens.journal
 import com.prody.prashant.ui.icons.ProdyIcons
 
-import androidx.compose.animation.*
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
