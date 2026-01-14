@@ -343,7 +343,7 @@ fun HomeScreen(
                     idiomExample = uiState.idiomExample,
                     idiomId = uiState.idiomId,
                     onWordClick = onNavigateToVocabulary,
-                    onIdiomClick = onNavigateToIdioms,
+                    onIdiomClick = onNavigateToIdiomDetail,
                     surfaceColor = surfaceColor,
                     primaryTextColor = primaryTextColor,
                     secondaryTextColor = secondaryTextColor,
@@ -836,20 +836,54 @@ private fun StartHereCTA(
         }
 
         // Challenges Card
-        PremiumReflectionCard(
-            modifier = Modifier.weight(1f),
-            icon = ProdyIcons.EmojiEvents,
-            iconTint = LeaderboardGold,
-            title = "Challenges",
-            subtitle = "Compete now",
-            showBadge = true,
-            badgeText = "NEW",
-            surfaceColor = surfaceColor,
-            primaryTextColor = primaryTextColor,
-            secondaryTextColor = secondaryTextColor,
-            isDarkTheme = isDarkTheme,
-            onClick = onChallengesClick
-        )
+        Surface(
+            modifier = Modifier
+                .weight(1f)
+                .clip(RoundedCornerShape(20.dp))
+                .clickable(onClick = onChallengesClick),
+            shape = RoundedCornerShape(20.dp),
+            color = surfaceColor,
+            tonalElevation = 0.dp
+        ) {
+            Column(
+                modifier = Modifier.padding(20.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(LeaderboardGold.copy(alpha = 0.2f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.EmojiEvents,
+                        contentDescription = null,
+                        tint = LeaderboardGold,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text(
+                    text = "Challenges",
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 16.sp,
+                    color = primaryTextColor
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = "Compete now",
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Normal,
+                    fontSize = 13.sp,
+                    color = secondaryTextColor
+                )
+            }
+        }
     }
 }
 

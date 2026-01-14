@@ -37,7 +37,7 @@ import com.prody.prashant.domain.gamification.*
 fun SessionResultCard(
     sessionResult: SessionResult,
     onDismiss: () -> Unit,
-    onNextAction: ((SuggestionType) -> Unit)? = null,
+    onNextAction: ((GameSuggestionType) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     var isVisible by remember { mutableStateOf(true) }
@@ -444,11 +444,11 @@ private fun NextSuggestionSection(
         shape = RoundedCornerShape(8.dp)
     ) {
         val icon = when (suggestion.type) {
-            SuggestionType.COMPLETE_DAILY_MISSION -> ProdyIcons.Flag
-            SuggestionType.TRY_DIFFERENT_MODE -> ProdyIcons.SwapHoriz
-            SuggestionType.BLOOM_SEED -> ProdyIcons.LocalFlorist
-            SuggestionType.CHECK_WEEKLY_TRIAL -> ProdyIcons.EmojiEvents
-            SuggestionType.VIEW_PROGRESS -> ProdyIcons.Analytics
+            GameSuggestionType.COMPLETE_DAILY_MISSION -> ProdyIcons.Flag
+            GameSuggestionType.TRY_DIFFERENT_MODE -> ProdyIcons.SwapHoriz
+            GameSuggestionType.BLOOM_SEED -> ProdyIcons.LocalFlorist
+            GameSuggestionType.CHECK_WEEKLY_TRIAL -> ProdyIcons.EmojiEvents
+            GameSuggestionType.VIEW_PROGRESS -> ProdyIcons.Analytics
         }
 
         Icon(

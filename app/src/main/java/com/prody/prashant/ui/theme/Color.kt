@@ -97,6 +97,12 @@ val ProdyInfoContainer = Color(0xFFE3F2FD)            // Light mode info contain
 val ProdyInfoContainerDark = Color(0xFF1A3040)        // Dark mode info container
 val ProdyOnInfo = Color(0xFFFFFFFF)
 
+// Accent Blue
+val ProdyAccentBlue = Color(0xFF42A5F5)               // Blue accent for scheduled items
+
+// Text Secondary (alias for compatibility)
+val ProdyTextSecondary = ProdyTextSecondaryLight      // Secondary text color
+
 // =============================================================================
 // MOOD COLORS - Flat, Psychologically Resonant
 // =============================================================================

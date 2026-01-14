@@ -359,10 +359,10 @@ class MemoryEngine @Inject constructor(
         val sessions = havenDao.getRecentSessions(userId = "local", limit = 20).first()
 
         // Find a session where mood improved significantly
-        val breakthroughSession = sessions.find { session ->
-            val moodBeforeVal = session.moodBefore ?: return@find false
-            val moodAfterVal = session.moodAfter ?: return@find false
-            moodAfterVal - moodBeforeVal >= 3 // At least 3-point improvement
+        val breakthroughSession = sessions.find { session: HavenSessionEntity ->
+            val moodBefore: Int = session.moodBefore ?: return@find false
+            val moodAfter: Int = session.moodAfter ?: return@find false
+            (moodAfter - moodBefore) >= 3 // At least 3-point improvement
         } ?: return null
 
         return createMemoryFromHavenSession(

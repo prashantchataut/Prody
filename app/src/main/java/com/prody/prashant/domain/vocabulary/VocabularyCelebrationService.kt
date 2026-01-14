@@ -94,14 +94,14 @@ class VocabularyCelebrationService @Inject constructor(
             val usageId = wordUsageDao.insertWordUsage(wordUsageEntity)
 
             // Update vocabulary learning entity
-            val currentLearning = vocabularyLearningDao.getLearningProgress(usage.word.id, userId)
+            val currentLearning = vocabularyLearningDao.getLearningForWord(usage.word.id)
             if (currentLearning != null) {
                 val updated = currentLearning.copy(
                     usedInContext = true,
                     lastUsedAt = usage.detectedAt.toEpochMilli(),
                     timesUsed = currentLearning.timesUsed + 1
                 )
-                vocabularyLearningDao.updateLearningProgress(updated)
+                vocabularyLearningDao.updateLearning(updated)
             }
 
             // Create celebration message

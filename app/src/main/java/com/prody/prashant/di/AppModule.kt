@@ -284,15 +284,15 @@ object AppModule {
     @Singleton
     fun provideSharedPreferences(
         @ApplicationContext context: Context
-    ): SharedPreferences {
-        return context.getSharedPreferences("prody_shared_prefs", Context.MODE_PRIVATE)
+    ): android.content.SharedPreferences {
+        return context.getSharedPreferences("prody_preferences", Context.MODE_PRIVATE)
     }
 
     @Provides
     @Singleton
     fun providePreferencesManager(
         @ApplicationContext context: Context,
-        sharedPreferences: SharedPreferences
+        sharedPreferences: android.content.SharedPreferences
     ): PreferencesManager {
         return PreferencesManager(context, sharedPreferences)
     }

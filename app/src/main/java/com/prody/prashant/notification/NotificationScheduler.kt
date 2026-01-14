@@ -87,7 +87,7 @@ class NotificationScheduler @Inject constructor(
         }
     }
 
-    fun scheduleMorningWisdom() {
+    suspend fun scheduleMorningWisdom() {
         try {
             val hour = preferencesManager.dailyReminderHour.first()
             val minute = preferencesManager.dailyReminderMinute.first()
@@ -112,7 +112,7 @@ class NotificationScheduler @Inject constructor(
         }
     }
 
-    fun scheduleEveningReflection() {
+    suspend fun scheduleEveningReflection() {
         try {
             val hour = preferencesManager.eveningReminderHour.first()
             val minute = preferencesManager.eveningReminderMinute.first()

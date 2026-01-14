@@ -110,6 +110,9 @@ class MonthlyLetterViewModel @Inject constructor(
                         errorMessage = result.userMessage
                     )}
                 }
+                is Result.Loading -> {
+                    _uiState.update { it.copy(isLoading = true) }
+                }
             }
         }
     }
@@ -134,6 +137,9 @@ class MonthlyLetterViewModel @Inject constructor(
                         isLoading = false,
                         errorMessage = result.userMessage
                     )}
+                }
+                is Result.Loading -> {
+                    _uiState.update { it.copy(isLoading = true) }
                 }
             }
         }
@@ -172,6 +178,9 @@ class MonthlyLetterViewModel @Inject constructor(
                 is Result.Error -> {
                     _uiState.update { it.copy(errorMessage = "Failed to update favorite") }
                 }
+                is Result.Loading -> {
+                    // No-op for loading state
+                }
             }
         }
     }
@@ -203,6 +212,9 @@ class MonthlyLetterViewModel @Inject constructor(
                         isGenerating = false,
                         errorMessage = result.userMessage
                     )}
+                }
+                is Result.Loading -> {
+                    _uiState.update { it.copy(isGenerating = true) }
                 }
             }
         }

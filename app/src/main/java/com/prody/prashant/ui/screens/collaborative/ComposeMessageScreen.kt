@@ -448,7 +448,9 @@ private fun RecipientSection(
                                 imageVector = when (method) {
                                     ContactMethod.EMAIL -> ProdyIcons.Email
                                     ContactMethod.SMS -> ProdyIcons.Sms
+                                    ContactMethod.PHONE -> ProdyIcons.Phone
                                     ContactMethod.WHATSAPP -> ProdyIcons.Chat
+                                    ContactMethod.APP_USER -> ProdyIcons.Person
                                     ContactMethod.IN_APP -> ProdyIcons.Notifications
                                 },
                                 contentDescription = null,
@@ -495,7 +497,9 @@ private fun RecipientSection(
                     when (contactMethod) {
                         ContactMethod.EMAIL -> "Email address"
                         ContactMethod.SMS -> "Phone number"
+                        ContactMethod.PHONE -> "Phone number"
                         ContactMethod.WHATSAPP -> "WhatsApp number"
+                        ContactMethod.APP_USER -> "Username"
                         ContactMethod.IN_APP -> "Username"
                     }
                 )
@@ -505,7 +509,9 @@ private fun RecipientSection(
                     imageVector = when (contactMethod) {
                         ContactMethod.EMAIL -> ProdyIcons.Email
                         ContactMethod.SMS -> ProdyIcons.Phone
+                        ContactMethod.PHONE -> ProdyIcons.Phone
                         ContactMethod.WHATSAPP -> ProdyIcons.Chat
+                        ContactMethod.APP_USER -> ProdyIcons.Person
                         ContactMethod.IN_APP -> ProdyIcons.AlternateEmail
                     },
                     contentDescription = null

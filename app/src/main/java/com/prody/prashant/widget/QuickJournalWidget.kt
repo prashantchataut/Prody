@@ -72,7 +72,7 @@ class QuickJournalWidget : GlanceAppWidget() {
 
             // Get days since last entry
             val daysSinceLastEntry = try {
-                val lastEntry = database.journalDao().getLatestEntry()
+                val lastEntry = database.journalDao().getRecentEntriesSync(1).firstOrNull()
                 if (lastEntry != null) {
                     val lastDate = java.time.Instant.ofEpochMilli(lastEntry.createdAt)
                         .atZone(java.time.ZoneId.systemDefault())

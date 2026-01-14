@@ -131,6 +131,9 @@ class CreateCircleViewModel @Inject constructor(
                         )
                     }
                 }
+                is Result.Loading -> {
+                    // Loading state
+                }
             }
         }
     }

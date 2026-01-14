@@ -3,7 +3,9 @@ package com.prody.prashant.domain.letter
 import com.prody.prashant.data.local.dao.JournalDao
 import com.prody.prashant.data.local.dao.MicroEntryDao
 import com.prody.prashant.data.local.entity.JournalEntryEntity
+import com.prody.prashant.data.local.entity.MicroEntryEntity
 import com.prody.prashant.domain.model.*
+import kotlinx.coroutines.flow.first
 import java.time.Instant
 import java.time.LocalDate
 import java.time.YearMonth
@@ -38,14 +40,14 @@ class MonthlyLetterGenerator @Inject constructor(
         val endOfMonth = monthYear.atEndOfMonth().atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
 
         // Get all journal data for the month
-        val entries = journalDao.getEntriesByDateRange(startOfMonth, endOfMonth)
-        val microEntries = microEntryDao.getEntriesByDateRange(startOfMonth, endOfMonth)
+        val entries = journalDao.getEntriesByDateRange(startOfMonth, endOfMonth).first()
+        val microEntries = microEntryDao.getMicroEntriesByDateRange(startOfMonth, endOfMonth).first()
 
         // Get previous month data for comparison
         val previousMonth = monthYear.minusMonths(1)
         val prevStartOfMonth = previousMonth.atDay(1).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
         val prevEndOfMonth = previousMonth.atEndOfMonth().atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
-        val previousEntries = journalDao.getEntriesByDateRange(prevStartOfMonth, prevEndOfMonth)
+        val previousEntries = journalDao.getEntriesByDateRange(prevStartOfMonth, prevEndOfMonth).first()
 
         // Generate all sections
         val greeting = generateGreeting(monthYear, entries.size + microEntries.size)
@@ -94,7 +96,7 @@ class MonthlyLetterGenerator @Inject constructor(
      */
     private suspend fun generateActivitySummary(
         entries: List<JournalEntryEntity>,
-        microEntries: List<Any>,
+        microEntries: List<MicroEntryEntity>,
         startOfMonth: Long,
         endOfMonth: Long
     ): ActivitySummary {
@@ -342,7 +344,7 @@ class MonthlyLetterGenerator @Inject constructor(
     /**
      * Generate milestones achieved and upcoming
      */
-    private fun generateMilestones(entries: List<JournalEntryEntity>, microEntries: List<Any>): Milestones {
+    private fun generateMilestones(entries: List<JournalEntryEntity>, microEntries: List<MicroEntryEntity>): Milestones {
         val achieved = mutableListOf<Milestone>()
         val upcoming = mutableListOf<Milestone>()
 

@@ -98,51 +98,67 @@ fun HavenExerciseScreen(
                 uiState.isCompleted -> {
                     ExerciseCompletionScreen(
                         exerciseType = exerciseType,
-                        totalDuration = uiState.totalDuration,
+                        totalDuration = (uiState.elapsedSeconds * 1000L),
                         onDone = onExerciseComplete
                     )
                 }
                 else -> {
+                    val exercise = uiState.exercise
+                    val currentStep = uiState.currentStepIndex
+                    val totalSteps = exercise?.steps?.size ?: 0
+                    val currentInstruction = exercise?.steps?.getOrNull(currentStep)?.instruction ?: ""
+
                     when (exerciseType) {
                         ExerciseType.BOX_BREATHING,
-                        ExerciseType.FOUR_SEVEN_EIGHT,
-                        ExerciseType.CALMING_BREATH -> {
+                        ExerciseType.FOUR_SEVEN_EIGHT_BREATHING -> {
                             BreathingExerciseContent(
                                 exerciseType = exerciseType,
-                                currentStep = uiState.currentStep,
-                                totalSteps = uiState.totalSteps,
-                                instruction = uiState.currentInstruction,
+                                currentStep = currentStep,
+                                totalSteps = totalSteps,
+                                instruction = currentInstruction,
                                 onComplete = { viewModel.completeExercise() }
                             )
                         }
-                        ExerciseType.FIVE_FOUR_THREE_TWO_ONE,
+                        ExerciseType.GROUNDING_54321,
                         ExerciseType.BODY_SCAN -> {
                             GroundingExerciseContent(
                                 exerciseType = exerciseType,
-                                currentStep = uiState.currentStep,
-                                totalSteps = uiState.totalSteps,
-                                instruction = uiState.currentInstruction,
-                                onNextStep = { viewModel.advanceExerciseStep() },
+                                currentStep = currentStep,
+                                totalSteps = totalSteps,
+                                instruction = currentInstruction,
+                                onNextStep = { viewModel.nextStep() },
                                 onComplete = { viewModel.completeExercise() }
                             )
                         }
-                        ExerciseType.THOUGHT_RECORD,
-                        ExerciseType.COGNITIVE_REFRAME -> {
+                        ExerciseType.THOUGHT_RECORD -> {
                             ThoughtExerciseContent(
                                 exerciseType = exerciseType,
-                                currentStep = uiState.currentStep,
-                                totalSteps = uiState.totalSteps,
-                                instruction = uiState.currentInstruction,
-                                onNextStep = { viewModel.advanceExerciseStep() },
+                                currentStep = currentStep,
+                                totalSteps = totalSteps,
+                                instruction = currentInstruction,
+                                onNextStep = { viewModel.nextStep() },
                                 onComplete = { viewModel.completeExercise() }
                             )
                         }
                         ExerciseType.PROGRESSIVE_RELAXATION -> {
                             RelaxationExerciseContent(
-                                currentStep = uiState.currentStep,
-                                totalSteps = uiState.totalSteps,
-                                instruction = uiState.currentInstruction,
-                                onNextStep = { viewModel.advanceExerciseStep() },
+                                currentStep = currentStep,
+                                totalSteps = totalSteps,
+                                instruction = currentInstruction,
+                                onNextStep = { viewModel.nextStep() },
+                                onComplete = { viewModel.completeExercise() }
+                            )
+                        }
+                        ExerciseType.EMOTION_WHEEL,
+                        ExerciseType.GRATITUDE_MOMENT,
+                        ExerciseType.LOVING_KINDNESS -> {
+                            // Default fallback for exercises not yet implemented
+                            GroundingExerciseContent(
+                                exerciseType = exerciseType,
+                                currentStep = currentStep,
+                                totalSteps = totalSteps,
+                                instruction = currentInstruction,
+                                onNextStep = { viewModel.nextStep() },
                                 onComplete = { viewModel.completeExercise() }
                             )
                         }
@@ -164,8 +180,7 @@ private fun BreathingExerciseContent(
     // Breathing pattern based on exercise type
     val (inhale, hold1, exhale, hold2) = when (exerciseType) {
         ExerciseType.BOX_BREATHING -> listOf(4000, 4000, 4000, 4000)
-        ExerciseType.FOUR_SEVEN_EIGHT -> listOf(4000, 7000, 8000, 0)
-        ExerciseType.CALMING_BREATH -> listOf(4000, 2000, 6000, 0)
+        ExerciseType.FOUR_SEVEN_EIGHT_BREATHING -> listOf(4000, 7000, 8000, 0)
         else -> listOf(4000, 4000, 4000, 4000)
     }
 
@@ -300,8 +315,7 @@ private fun BreathingExerciseContent(
                 Text(
                     text = when (exerciseType) {
                         ExerciseType.BOX_BREATHING -> "Box Breathing"
-                        ExerciseType.FOUR_SEVEN_EIGHT -> "4-7-8 Technique"
-                        ExerciseType.CALMING_BREATH -> "Calming Breath"
+                        ExerciseType.FOUR_SEVEN_EIGHT_BREATHING -> "4-7-8 Technique"
                         else -> "Breathing Exercise"
                     },
                     style = MaterialTheme.typography.titleMedium,
@@ -331,7 +345,7 @@ private fun GroundingExerciseContent(
     onComplete: () -> Unit
 ) {
     val steps = when (exerciseType) {
-        ExerciseType.FIVE_FOUR_THREE_TWO_ONE -> listOf(
+        ExerciseType.GROUNDING_54321 -> listOf(
             "5 things you can SEE" to "Look around and notice 5 things you can see right now. Observe their colors, shapes, and details.",
             "4 things you can TOUCH" to "Notice 4 things you can physically touch. Feel their texture, temperature, and weight.",
             "3 things you can HEAR" to "Listen carefully for 3 distinct sounds around you. They can be near or far.",
@@ -392,7 +406,7 @@ private fun GroundingExerciseContent(
                     .background(ProdyAccentGreen.copy(alpha = 0.2f)),
                 contentAlignment = Alignment.Center
             ) {
-                if (exerciseType == ExerciseType.FIVE_FOUR_THREE_TWO_ONE) {
+                if (exerciseType == ExerciseType.GROUNDING_54321) {
                     Text(
                         text = (5 - actualStep).toString(),
                         style = MaterialTheme.typography.displayLarge,
@@ -485,13 +499,12 @@ private fun ThoughtExerciseContent(
             "Evidence Against" to "What evidence contradicts this thought? Consider alternative explanations.",
             "Balanced Thought" to "What's a more balanced way to think about this situation?"
         )
-        ExerciseType.COGNITIVE_REFRAME -> listOf(
+        else -> listOf(
             "Identify the Thought" to "What negative thought are you having right now? Write it down.",
             "Examine the Evidence" to "Is this thought based on facts or feelings? What's the actual evidence?",
             "Alternative Perspective" to "How might someone else view this situation? What would you tell a friend?",
             "Reframe" to "Create a more balanced, realistic thought to replace the negative one."
         )
-        else -> emptyList()
     }
 
     val actualStep = currentStep.coerceIn(0, steps.lastIndex)
@@ -808,7 +821,7 @@ private fun ExerciseCompletionScreen(
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = exerciseType.category,
+                        text = "Exercise",
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

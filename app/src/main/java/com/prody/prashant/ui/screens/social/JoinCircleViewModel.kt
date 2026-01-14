@@ -76,6 +76,9 @@ class JoinCircleViewModel @Inject constructor(
                         )
                     }
                 }
+                is Result.Loading -> {
+                    // Loading state
+                }
             }
         }
     }
@@ -107,6 +110,9 @@ class JoinCircleViewModel @Inject constructor(
                             errorMessage = result.userMessage
                         )
                     }
+                }
+                is Result.Loading -> {
+                    // Loading state
                 }
             }
         }

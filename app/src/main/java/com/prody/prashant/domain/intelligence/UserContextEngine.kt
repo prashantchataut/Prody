@@ -144,7 +144,9 @@ class UserContextEngine @Inject constructor(
     suspend fun getContextForHaven(): HavenContext {
         val context = getCurrentContext()
         val recentEntries = journalDao.getRecentEntries(5).first()
-        val sessions = havenDao.getRecentSessions(userId = "local", limit = 10).first()
+        val userProfile = userDao.getUserProfileSync()
+        val userId = userProfile?.odUserId ?: "local"
+        val sessions = havenDao.getRecentSessions(userId = userId, limit = 10).first()
         val lastSession = sessions.firstOrNull()
 
         return HavenContext(
@@ -199,22 +201,26 @@ class UserContextEngine @Inject constructor(
 
     private suspend fun synthesizeContext(): UserContext = coroutineScope {
         // Gather all signals in parallel for efficiency
-        val userProfileDeferred = async { userDao.getUserProfile() }
+        val userProfileDeferred = async { userDao.getUserProfileSync() }
         val journalsDeferred = async { journalDao.getRecentEntries(30).first() }
-        val streakDeferred = async { dualStreakManager.getDualStreakStatus() }
-        val sessionsDeferred = async { havenDao.getRecentSessions(userId = "local", limit = 10).first() }
-        val microEntriesDeferred = async { microEntryDao.getRecentMicroEntries(limit = 20).first() }
+        val streakDeferred = async { dualStreakManager.getCurrentStatus() }
         val preferencesDeferred = async { loadPreferences() }
         val firstLaunchDeferred = async { preferencesManager.firstLaunchTime.first() }
 
         // Await all data
         val userProfile = userProfileDeferred.await()
+        val userId = userProfile?.odUserId ?: "local"
         val journals = journalsDeferred.await()
         val streak = streakDeferred.await()
-        val sessions = sessionsDeferred.await()
-        val microEntries = microEntriesDeferred.await()
         val preferences = preferencesDeferred.await()
         val firstLaunch = firstLaunchDeferred.await()
+
+        // Get user-specific data after we have userId
+        val sessionsDeferred = async { havenDao.getRecentSessions(userId = userId, limit = 10).first() }
+        val microEntriesDeferred = async { microEntryDao.getRecentEntries(limit = 20).first() }
+
+        val sessions = sessionsDeferred.await()
+        val microEntries = microEntriesDeferred.await()
 
         // Calculate days with Prody
         val daysWithPrody = calculateDaysWithPrody(firstLaunch)
@@ -269,7 +275,7 @@ class UserContextEngine @Inject constructor(
             daysSinceLastEntry = calculateDaysSinceLastEntry(journals),
             preferredJournalTime = inferPreferredJournalTime(journals),
             averageSessionDuration = calculateAverageSessionDuration(journals),
-            preferredFeatures = inferPreferredFeatures(journals, sessions, microEntries),
+            preferredFeatures = inferPreferredUnlockableFeatures(journals, sessions, microEntries),
             currentStreak = streak,
             recentThemes = themes,
             recurringChallenges = challenges,
@@ -532,16 +538,16 @@ class UserContextEngine @Inject constructor(
         return estimatedMinutes.minutes
     }
 
-    private fun inferPreferredFeatures(
+    private fun inferPreferredUnlockableFeatures(
         journals: List<JournalEntryEntity>,
         sessions: List<com.prody.prashant.data.local.entity.HavenSessionEntity>,
         microEntries: List<com.prody.prashant.data.local.entity.MicroEntryEntity>
-    ): List<Feature> {
-        val features = mutableListOf<Feature>()
+    ): List<UnlockableFeature> {
+        val features = mutableListOf<UnlockableFeature>()
 
-        if (journals.isNotEmpty()) features.add(Feature.JOURNAL_ENTRY)
-        if (sessions.isNotEmpty()) features.add(Feature.HAVEN_AI)
-        if (microEntries.isNotEmpty()) features.add(Feature.DAILY_WISDOM)
+        if (journals.isNotEmpty()) features.add(UnlockableFeature.JOURNAL)
+        if (sessions.isNotEmpty()) features.add(UnlockableFeature.HAVEN)
+        if (microEntries.isNotEmpty()) features.add(UnlockableFeature.DAILY_WISDOM)
 
         return features
     }
@@ -604,7 +610,7 @@ class UserContextEngine @Inject constructor(
         return patterns.take(3)
     }
 
-    private fun detectGrowthAreas(journals: List<JournalEntryEntity>): List<GrowthArea> {
+    private fun detectGrowthAreas(journals: List<JournalEntryEntity>): List<SoulGrowthArea> {
         // Simplified growth detection - look for themes that appear with improving moods
         if (journals.size < 10) return emptyList()
 
@@ -615,7 +621,7 @@ class UserContextEngine @Inject constructor(
         if (!positiveRecently) return emptyList()
 
         return themes.take(2).map { theme ->
-            GrowthArea(
+            SoulGrowthArea(
                 theme = theme,
                 progress = 0.5f, // Placeholder - would need more sophisticated tracking
                 evidence = listOf("Recent positive entries mention this theme"),
@@ -803,17 +809,17 @@ class UserContextEngine @Inject constructor(
 
         // Feature discovery based on usage patterns
         return when {
-            Feature.FUTURE_MESSAGES !in context.preferredFeatures &&
+            UnlockableFeature.FUTURE_MESSAGE !in context.preferredFeatures &&
             context.daysWithPrody >= 3 -> FeatureDiscovery(
-                feature = Feature.FUTURE_MESSAGES,
+                feature = UnlockableFeature.FUTURE_MESSAGE,
                 hook = "You've been reflecting. Want to send a message to future you?",
                 benefit = "It's like leaving a note for someone you'll become.",
                 ctaText = "Write to Future You",
                 route = "future-messages/new"
             )
-            Feature.HAVEN_AI !in context.preferredFeatures &&
+            UnlockableFeature.HAVEN !in context.preferredFeatures &&
             context.isStruggling -> FeatureDiscovery(
-                feature = Feature.HAVEN_AI,
+                feature = UnlockableFeature.HAVEN,
                 hook = "Rough patch? There's someone here who can help.",
                 benefit = "Haven is your private space to work through things.",
                 ctaText = "Meet Haven",
@@ -909,18 +915,18 @@ class UserContextEngine @Inject constructor(
     private fun inferTherapeuticApproach(
         context: UserContext,
         sessions: List<com.prody.prashant.data.local.entity.HavenSessionEntity>
-    ): HavenContext.TherapeuticApproach {
+    ): TherapeuticApproach {
         // Check what techniques worked in past sessions
         val techniques = sessions.flatMap { session ->
             session.techniquesUsedJson.split(",").map { it.trim().lowercase() }
         }
 
         return when {
-            "mindfulness" in techniques || "breathing" in techniques -> HavenContext.TherapeuticApproach.MINDFULNESS
-            "cbt" in techniques || "cognitive" in techniques -> HavenContext.TherapeuticApproach.CBT
-            "dbt" in techniques || "dialectical" in techniques -> HavenContext.TherapeuticApproach.DBT
-            "acceptance" in techniques -> HavenContext.TherapeuticApproach.ACT
-            else -> HavenContext.TherapeuticApproach.GENERAL
+            "mindfulness" in techniques || "breathing" in techniques -> TherapeuticApproach.MINDFULNESS
+            "cbt" in techniques || "cognitive" in techniques -> TherapeuticApproach.CBT
+            "dbt" in techniques || "dialectical" in techniques -> TherapeuticApproach.DBT
+            "acceptance" in techniques -> TherapeuticApproach.ACT
+            else -> TherapeuticApproach.GENERAL
         }
     }
 
