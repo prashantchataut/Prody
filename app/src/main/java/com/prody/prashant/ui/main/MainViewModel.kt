@@ -16,34 +16,45 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    preferencesManager: PreferencesManager
+    private val preferencesManager: PreferencesManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MainActivityUiState())
     val uiState: StateFlow<MainActivityUiState> = _uiState.asStateFlow()
 
     init {
+        // Step 1: Synchronously determine the start destination.
+        // This is the most critical piece of information needed to show the first screen.
+        val onboardingCompleted = preferencesManager.isOnboardingCompleted()
+        val startDestination = if (onboardingCompleted) Screen.Home.route else Screen.Onboarding.route
+
+        // Step 2: Immediately update the UI state to unblock the splash screen.
+        // We now have the essential information. `isLoading` is set to false.
+        _uiState.value = MainActivityUiState(
+            isLoading = false,
+            startDestination = startDestination
+        )
+
+        // Step 3: Asynchronously load the remaining non-critical settings.
+        // These settings (theme, haptics) do not block the initial UI render.
         viewModelScope.launch {
             combine(
-                preferencesManager.onboardingCompleted.catch { emit(false) },
                 preferencesManager.themeMode.catch { emit("system") },
                 preferencesManager.hapticFeedbackEnabled.catch { emit(true) }
-            ) { onboardingCompleted, themeModeString, hapticEnabled ->
+            ) { themeModeString, hapticEnabled ->
                 val themeMode = when (themeModeString.lowercase()) {
                     "light" -> ThemeMode.LIGHT
                     "dark" -> ThemeMode.DARK
                     else -> ThemeMode.SYSTEM
                 }
-                val startDestination = if (onboardingCompleted) Screen.Home.route else Screen.Onboarding.route
-
-                MainActivityUiState(
-                    isLoading = false,
-                    startDestination = startDestination,
+                // Return a pair of the loaded settings
+                themeMode to hapticEnabled
+            }.collect { (themeMode, hapticEnabled) ->
+                // Update the state with the async-loaded settings without altering the start destination.
+                _uiState.value = _uiState.value.copy(
                     themeMode = themeMode,
                     hapticFeedbackEnabled = hapticEnabled
                 )
-            }.collect { newState ->
-                _uiState.value = newState
             }
         }
     }
