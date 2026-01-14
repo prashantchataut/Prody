@@ -7,6 +7,7 @@ import com.prody.prashant.domain.haven.HavenMessage
 import com.prody.prashant.domain.haven.SessionType
 import com.prody.prashant.domain.intelligence.StressSignal
 import com.prody.prashant.domain.intelligence.StressSignalType
+import com.prody.prashant.domain.intelligence.TherapeuticApproach
 import com.prody.prashant.domain.intelligence.TrustLevel
 import com.prody.prashant.domain.intelligence.UserContext
 import com.prody.prashant.domain.intelligence.UserContextEngine
@@ -411,7 +412,7 @@ class ContextAwareHavenService @Inject constructor(
     }
 
     private fun getApproachReason(
-        approach: SoulLayerHavenContext.TherapeuticApproach,
+        approach: TherapeuticApproach,
         havenContext: SoulLayerHavenContext
     ): String {
         val basedOnHistory = if (havenContext.sessionCount > 0) {
@@ -421,23 +422,23 @@ class ContextAwareHavenService @Inject constructor(
         }
 
         return when (approach) {
-            SoulLayerHavenContext.TherapeuticApproach.CBT ->
+            TherapeuticApproach.CBT ->
                 "${basedOnHistory}cognitive-behavioral techniques seem to resonate with you."
-            SoulLayerHavenContext.TherapeuticApproach.DBT ->
+            TherapeuticApproach.DBT ->
                 "${basedOnHistory}dialectical techniques help you process emotions effectively."
-            SoulLayerHavenContext.TherapeuticApproach.MINDFULNESS ->
+            TherapeuticApproach.MINDFULNESS ->
                 "${basedOnHistory}mindfulness practices work well for you."
-            SoulLayerHavenContext.TherapeuticApproach.ACT ->
+            TherapeuticApproach.ACT ->
                 "${basedOnHistory}acceptance-based approaches help you find peace."
-            SoulLayerHavenContext.TherapeuticApproach.GENERAL ->
+            TherapeuticApproach.GENERAL ->
                 "${basedOnHistory}we'll find what works best for you."
         }
     }
 
     private fun getAlternativeApproaches(
-        primary: SoulLayerHavenContext.TherapeuticApproach
-    ): List<SoulLayerHavenContext.TherapeuticApproach> {
-        return SoulLayerHavenContext.TherapeuticApproach.entries
+        primary: TherapeuticApproach
+    ): List<TherapeuticApproach> {
+        return TherapeuticApproach.entries
             .filter { it != primary }
             .take(2)
     }
@@ -551,9 +552,9 @@ enum class HavenTone {
  * Recommendation for therapeutic approach.
  */
 data class TherapeuticApproachRecommendation(
-    val primaryApproach: SoulLayerHavenContext.TherapeuticApproach,
+    val primaryApproach: TherapeuticApproach,
     val reason: String,
-    val alternativeApproaches: List<SoulLayerHavenContext.TherapeuticApproach>,
+    val alternativeApproaches: List<TherapeuticApproach>,
     val basedOnHistory: Boolean
 )
 

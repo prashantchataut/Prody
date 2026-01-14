@@ -326,7 +326,7 @@ class YearlyWrappedRepositoryImpl @Inject constructor(
                 firstEntryDate = entity.firstEntryDate,
                 lastEntryDate = entity.lastEntryDate
             ),
-            moodJourney = MoodJourney(
+            moodJourney = YearlyMoodJourney(
                 averageMood = entity.averageMood,
                 trend = MoodTrend.valueOf(entity.moodTrend.uppercase()),
                 mostCommonMood = entity.mostCommonMood,

@@ -536,14 +536,12 @@ fun ProdyRefreshIndicator(
                 color = MaterialTheme.colorScheme.primary
             )
         } else {
-            androidx.compose.material.icons.ProdyIcons.let { icons ->
-                androidx.compose.material3.Icon(
-                    imageVector = icons.ArrowDownward,
-                    contentDescription = "Pull to refresh",
-                    tint = MaterialTheme.colorScheme.primary.copy(alpha = pullProgress),
-                    modifier = Modifier.size(20.dp)
-                )
-            }
+            Icon(
+                imageVector = ProdyIcons.ArrowDownward,
+                contentDescription = "Pull to refresh",
+                tint = MaterialTheme.colorScheme.primary.copy(alpha = pullProgress),
+                modifier = Modifier.size(20.dp)
+            )
         }
     }
 }
@@ -566,7 +564,7 @@ fun <T> ContentLoadingState(
     emptyContent: @Composable () -> Unit = {},
     errorContent: @Composable (String) -> Unit = { errorMsg ->
         ProdyErrorEmptyState(
-            icon = androidx.compose.material.icons.ProdyIcons.ErrorOutline,
+            icon = ProdyIcons.ErrorOutline,
             title = "Something went wrong",
             message = errorMsg,
             retryLabel = "Try Again",

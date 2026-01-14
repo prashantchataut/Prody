@@ -39,8 +39,10 @@ class MessageDeliveryService @Inject constructor(
 
                 val result = when (message.recipient.method) {
                     ContactMethod.APP_USER -> deliverInApp(message)
+                    ContactMethod.IN_APP -> deliverInApp(message)
                     ContactMethod.EMAIL -> deliverViaEmail(message)
                     ContactMethod.PHONE -> deliverViaSMS(message)
+                    ContactMethod.WHATSAPP -> deliverViaWhatsApp(message)
                 }
 
                 when (result) {
@@ -188,6 +190,33 @@ class MessageDeliveryService @Inject constructor(
     }
 
     /**
+     * Deliver message via WhatsApp
+     * Opens WhatsApp with pre-filled message
+     */
+    private fun deliverViaWhatsApp(message: CollaborativeMessage): DeliveryResult {
+        return try {
+            val whatsappBody = buildSMSBody(message) // Reuse SMS body format
+            val phoneNumber = message.recipient.contactValue.replace(Regex("[^0-9]"), "")
+
+            val whatsappIntent = Intent(Intent.ACTION_VIEW).apply {
+                data = Uri.parse("https://api.whatsapp.com/send?phone=$phoneNumber&text=${Uri.encode(whatsappBody)}")
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+
+            // Check if WhatsApp is available
+            if (whatsappIntent.resolveActivity(context.packageManager) != null) {
+                context.startActivity(whatsappIntent)
+                DeliveryResult.Success("WhatsApp opened")
+            } else {
+                DeliveryResult.Failure("WhatsApp not available")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to deliver via WhatsApp", e)
+            DeliveryResult.Failure(e.message ?: "WhatsApp delivery failed")
+        }
+    }
+
+    /**
      * Build formatted email body
      */
     private fun buildEmailBody(message: CollaborativeMessage): String {
@@ -273,7 +302,7 @@ class MessageDeliveryService @Inject constructor(
             )
 
             when (recipient.method) {
-                ContactMethod.APP_USER -> DeliveryResult.Success("In-app delivery available")
+                ContactMethod.APP_USER, ContactMethod.IN_APP -> DeliveryResult.Success("In-app delivery available")
                 ContactMethod.EMAIL -> {
                     if (android.util.Patterns.EMAIL_ADDRESS.matcher(recipient.contactValue).matches()) {
                         DeliveryResult.Success("Email address is valid")
@@ -286,6 +315,13 @@ class MessageDeliveryService @Inject constructor(
                         DeliveryResult.Success("Phone number is valid")
                     } else {
                         DeliveryResult.Failure("Invalid phone number")
+                    }
+                }
+                ContactMethod.WHATSAPP -> {
+                    if (android.util.Patterns.PHONE.matcher(recipient.contactValue).matches()) {
+                        DeliveryResult.Success("WhatsApp number is valid")
+                    } else {
+                        DeliveryResult.Failure("Invalid WhatsApp number")
                     }
                 }
             }

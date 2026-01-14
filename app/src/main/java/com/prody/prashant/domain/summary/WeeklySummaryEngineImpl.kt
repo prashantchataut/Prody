@@ -313,7 +313,7 @@ class WeeklySummaryEngineImpl @Inject constructor(
         if (morningEntries.size.toFloat() / entries.size > 0.6) {
             patterns.add(
                 WritingPattern(
-                    type = PatternType.MORNING_WRITER,
+                    type = WeeklyPatternType.MORNING_WRITER,
                     confidence = morningEntries.size.toFloat() / entries.size,
                     description = "You write most often in the morning"
                 )
@@ -321,7 +321,7 @@ class WeeklySummaryEngineImpl @Inject constructor(
         } else if (eveningEntries.size.toFloat() / entries.size > 0.6) {
             patterns.add(
                 WritingPattern(
-                    type = PatternType.EVENING_REFLECTOR,
+                    type = WeeklyPatternType.EVENING_REFLECTOR,
                     confidence = eveningEntries.size.toFloat() / entries.size,
                     description = "You prefer evening reflection"
                 )
@@ -333,7 +333,7 @@ class WeeklySummaryEngineImpl @Inject constructor(
         if (avgWordCount > 300) {
             patterns.add(
                 WritingPattern(
-                    type = PatternType.DEEP_THINKER,
+                    type = WeeklyPatternType.DEEP_THINKER,
                     confidence = 0.8f,
                     description = "Your entries are thoughtful and detailed"
                 )
@@ -341,7 +341,7 @@ class WeeklySummaryEngineImpl @Inject constructor(
         } else if (avgWordCount < 100) {
             patterns.add(
                 WritingPattern(
-                    type = PatternType.CONCISE_REFLECTOR,
+                    type = WeeklyPatternType.CONCISE_REFLECTOR,
                     confidence = 0.8f,
                     description = "You keep your reflections concise"
                 )
@@ -352,7 +352,7 @@ class WeeklySummaryEngineImpl @Inject constructor(
         if (entries.size >= 5) {
             patterns.add(
                 WritingPattern(
-                    type = PatternType.CONSISTENT_JOURNALER,
+                    type = WeeklyPatternType.CONSISTENT_JOURNALER,
                     confidence = entries.size / 7.0f,
                     description = "You're building a consistent practice"
                 )
@@ -367,7 +367,7 @@ class WeeklySummaryEngineImpl @Inject constructor(
         if (emotionalEntries.toFloat() / entries.size > 0.5) {
             patterns.add(
                 WritingPattern(
-                    type = PatternType.EMOTIONAL_PROCESSOR,
+                    type = WeeklyPatternType.EMOTIONAL_PROCESSOR,
                     confidence = emotionalEntries.toFloat() / entries.size,
                     description = "You use writing to process emotions"
                 )
@@ -382,7 +382,7 @@ class WeeklySummaryEngineImpl @Inject constructor(
         if (gratitudeEntries.toFloat() / entries.size > 0.3) {
             patterns.add(
                 WritingPattern(
-                    type = PatternType.GRATITUDE_PRACTICER,
+                    type = WeeklyPatternType.GRATITUDE_PRACTICER,
                     confidence = gratitudeEntries.toFloat() / entries.size,
                     description = "You regularly practice gratitude"
                 )
@@ -397,7 +397,7 @@ class WeeklySummaryEngineImpl @Inject constructor(
         if (goalEntries.toFloat() / entries.size > 0.3) {
             patterns.add(
                 WritingPattern(
-                    type = PatternType.GOAL_ORIENTED,
+                    type = WeeklyPatternType.GOAL_ORIENTED,
                     confidence = goalEntries.toFloat() / entries.size,
                     description = "You focus on goals and progress"
                 )

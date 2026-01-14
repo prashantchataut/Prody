@@ -8,7 +8,7 @@ import android.content.Intent
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.work.*
-import com.prody.prashant.domain.common.Result
+import com.prody.prashant.domain.common.Result as DomainResult
 import com.prody.prashant.domain.repository.MonthlyLetterRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -165,7 +165,7 @@ class MonthlyLetterGenerationWorker(
 
             // Generate the letter
             when (val result = monthlyLetterRepository.generateLetter("local", previousMonth)) {
-                is com.prody.prashant.domain.common.Result.Success -> {
+                is DomainResult.Success -> {
                     // Show notification
                     scheduler.showLetterReadyNotification(previousMonth.month.name)
 
@@ -174,7 +174,7 @@ class MonthlyLetterGenerationWorker(
 
                     Result.success()
                 }
-                is com.prody.prashant.domain.common.Result.Error -> {
+                is DomainResult.Error -> {
                     // Retry later
                     Result.retry()
                 }
