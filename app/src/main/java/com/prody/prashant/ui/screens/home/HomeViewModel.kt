@@ -388,7 +388,7 @@ class HomeViewModel @Inject constructor(
             _uiState.update { state ->
                 state.copy(
                     intelligentGreeting = greeting.greeting,
-                    greetingSubtext = greeting.subtext
+                    greetingSubtext = greeting.subtitle
                 )
             }
         } catch (e: Exception) {
@@ -415,7 +415,7 @@ class HomeViewModel @Inject constructor(
 
             _uiState.update { uiState ->
                 uiState.copy(
-                    firstWeekDayNumber = state?.currentDayNumber ?: 1,
+                    firstWeekDayNumber = state?.dayNumber ?: 1,
                     firstWeekProgress = progress,
                     firstWeekDayContent = dayContent
                 )
@@ -440,7 +440,7 @@ class HomeViewModel @Inject constructor(
             }
 
             if (memory != null) {
-                android.util.Log.d(TAG, "Surfaced memory: ${memory.surfaceReason} - ${memory.preview.take(50)}...")
+                android.util.Log.d(TAG, "Surfaced memory: ${memory.surfaceReason} - ${memory.memory.preview.take(50)}...")
             }
         } catch (e: Exception) {
             android.util.Log.e(TAG, "Error loading surfaced memory", e)
@@ -476,7 +476,7 @@ class HomeViewModel @Inject constructor(
 
                 // Track the interaction in Soul Layer
                 // This helps the system learn what memories resonate
-                android.util.Log.d(TAG, "Memory interaction: $interactionType for entry ${memory.entryId}")
+                android.util.Log.d(TAG, "Memory interaction: $interactionType for entry ${memory.memory.id}")
 
                 // Mark memory as interacted
                 // The repository will handle persistence

@@ -164,7 +164,7 @@ class MonthlyLetterGenerationWorker(
             }
 
             // Generate the letter
-            when (val result = monthlyLetterRepository.generateLetter("local", previousMonth)) {
+            return@withContext when (val result = monthlyLetterRepository.generateLetter("local", previousMonth)) {
                 is DomainResult.Success -> {
                     // Show notification
                     scheduler.showLetterReadyNotification(previousMonth.month.name)
@@ -176,6 +176,10 @@ class MonthlyLetterGenerationWorker(
                 }
                 is DomainResult.Error -> {
                     // Retry later
+                    Result.retry()
+                }
+                is DomainResult.Loading -> {
+                    // Should not happen in suspend functions, but handle it
                     Result.retry()
                 }
             }

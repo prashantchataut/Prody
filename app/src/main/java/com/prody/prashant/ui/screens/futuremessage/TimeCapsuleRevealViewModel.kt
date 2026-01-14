@@ -165,7 +165,7 @@ class TimeCapsuleRevealViewModel @Inject constructor(
                 createdAt = System.currentTimeMillis()
             )
 
-            val journalId = journalDao.insert(journalEntry)
+            val journalId = journalDao.insertEntry(journalEntry)
 
             // Link the journal entry to the message
             futureMessageDao.setReplyJournalEntry(message.id, journalId)

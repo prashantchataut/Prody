@@ -317,7 +317,7 @@ class FirstWeekJourneyManager @Inject constructor(
 
         val entries = journalDao.getRecentEntries(50).first()
         val entriesWritten = entries.size
-        val streak = dualStreakManager.getCurrentStatus()
+        val streak = dualStreakManager.getDualStreakStatus()
 
         val todayStart = LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
         val hasWrittenToday = entries.any { it.createdAt >= todayStart }
@@ -626,8 +626,8 @@ class FirstWeekJourneyManager @Inject constructor(
         }
     }
 
-    private fun getUnlockedFeatures(dayNumber: Int): List<Feature> {
-        return Feature.entries.filter { it.unlockDay <= dayNumber }
+    private fun getUnlockedFeatures(dayNumber: Int): List<UnlockableFeature> {
+        return UnlockableFeature.entries.filter { it.unlockDay <= dayNumber }
     }
 
     private fun calculateDaysWithPrody(firstLaunchTime: Long): Int {
@@ -651,7 +651,7 @@ data class FirstWeekJourneyState(
     val currentStreak: Int,
     val hasWrittenToday: Boolean,
     val hasViewedWisdomToday: Boolean,
-    val unlockedFeatures: List<Feature>,
+    val unlockedFeatures: List<UnlockableFeature>,
     val todaysFocus: String
 )
 

@@ -74,29 +74,53 @@ class SettingsViewModel @Inject constructor(
     private fun loadSettings() {
         viewModelScope.launch {
             try {
-                // Combine first 5 appearance/notification settings
-                val appearanceAndNotifications = combine(
+                // Combine appearance settings
+                val appearanceSettings = combine(
                     preferencesManager.themeMode,
                     preferencesManager.dynamicColors,
                     preferencesManager.notificationsEnabled,
                     preferencesManager.wisdomNotificationEnabled,
-                    preferencesManager.journalReminderEnabled,
-                    preferencesManager.dailyReminderHour,
-                    preferencesManager.dailyReminderMinute,
-                    preferencesManager.eveningReminderHour,
-                    preferencesManager.eveningReminderMinute
-                ) { themeMode, dynamicColors, notificationsEnabled, wisdomEnabled, journalEnabled,
-                    morningHour, morningMinute, eveningHour, eveningMinute ->
-                    AppearanceAndNotificationSettings(
+                    preferencesManager.journalReminderEnabled
+                ) { themeMode, dynamicColors, notificationsEnabled, wisdomEnabled, journalEnabled ->
+                    AppearanceSettings(
                         themeMode = themeMode,
                         dynamicColors = dynamicColors,
                         notificationsEnabled = notificationsEnabled,
                         wisdomNotificationsEnabled = wisdomEnabled,
-                        journalRemindersEnabled = journalEnabled,
+                        journalRemindersEnabled = journalEnabled
+                    )
+                }
+
+                // Combine time settings
+                val timeSettings = combine(
+                    preferencesManager.dailyReminderHour,
+                    preferencesManager.dailyReminderMinute,
+                    preferencesManager.eveningReminderHour,
+                    preferencesManager.eveningReminderMinute
+                ) { morningHour, morningMinute, eveningHour, eveningMinute ->
+                    TimeSettings(
                         morningHour = morningHour,
                         morningMinute = morningMinute,
                         eveningHour = eveningHour,
                         eveningMinute = eveningMinute
+                    )
+                }
+
+                // Combine appearance and time settings
+                val appearanceAndNotifications = combine(
+                    appearanceSettings,
+                    timeSettings
+                ) { appearance, time ->
+                    AppearanceAndNotificationSettings(
+                        themeMode = appearance.themeMode,
+                        dynamicColors = appearance.dynamicColors,
+                        notificationsEnabled = appearance.notificationsEnabled,
+                        wisdomNotificationsEnabled = appearance.wisdomNotificationsEnabled,
+                        journalRemindersEnabled = appearance.journalRemindersEnabled,
+                        morningHour = time.morningHour,
+                        morningMinute = time.morningMinute,
+                        eveningHour = time.eveningHour,
+                        eveningMinute = time.eveningMinute
                     )
                 }
 
@@ -183,6 +207,21 @@ class SettingsViewModel @Inject constructor(
             }
         }
     }
+
+    private data class AppearanceSettings(
+        val themeMode: String,
+        val dynamicColors: Boolean,
+        val notificationsEnabled: Boolean,
+        val wisdomNotificationsEnabled: Boolean,
+        val journalRemindersEnabled: Boolean
+    )
+
+    private data class TimeSettings(
+        val morningHour: Int,
+        val morningMinute: Int,
+        val eveningHour: Int,
+        val eveningMinute: Int
+    )
 
     private data class AppearanceAndNotificationSettings(
         val themeMode: String,

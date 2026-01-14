@@ -95,7 +95,7 @@ class NewGameSessionManager @Inject constructor(
                 }
             },
             onError = { error ->
-                Log.e(TAG, "Error awarding journal XP: ${error.message}")
+                Log.e(TAG, "Error awarding journal XP: ${error.userMessage}")
             }
         )
 
@@ -257,7 +257,7 @@ class NewGameSessionManager @Inject constructor(
                 }
             },
             onError = { error ->
-                Log.e(TAG, "Error awarding flashcard XP: ${error.message}")
+                Log.e(TAG, "Error awarding flashcard XP: ${error.userMessage}")
             }
         )
 
@@ -380,7 +380,7 @@ class NewGameSessionManager @Inject constructor(
                 }
             },
             onError = { error ->
-                Log.e(TAG, "Error awarding future message XP: ${error.message}")
+                Log.e(TAG, "Error awarding future message XP: ${error.userMessage}")
             }
         )
 
@@ -613,7 +613,7 @@ class NewGameSessionManager @Inject constructor(
                     }
                     is StreakUpdateResult.Broken -> {
                         builder.addDetail(
-                            if (result.canUseFreeze) "Streak broken - Use a Mindful Break to preserve it!"
+                            if (result.canUseFreezeToken) "Streak broken - Use a Mindful Break to preserve it!"
                             else "Streak reset - A fresh start awaits"
                         )
                     }

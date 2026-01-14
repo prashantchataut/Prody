@@ -3,8 +3,11 @@ import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
@@ -660,13 +663,6 @@ private fun SessionSummaryCard(
     }
 }
 
-@Composable
-private fun rememberScrollState() = androidx.compose.foundation.rememberScrollState()
-
-@Composable
-private fun Row.horizontalScroll(state: androidx.compose.foundation.ScrollState): Modifier {
-    return Modifier.horizontalScroll(state)
-}
 
 @Composable
 private fun SummaryStatItem(
@@ -731,7 +727,7 @@ private fun MoodSelectionDialog(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             modifier = Modifier
                                 .clip(RoundedCornerShape(8.dp))
-                                .clickable { onMoodSelected(mood) }
+                                .clickable(onClick = { onMoodSelected(mood) })
                                 .padding(8.dp)
                         ) {
                             Text(text = emoji, fontSize = 28.sp)
@@ -752,7 +748,3 @@ private fun MoodSelectionDialog(
     )
 }
 
-@Composable
-private fun Column.clickable(onClick: () -> Unit): Modifier {
-    return Modifier.clickable(onClick = onClick)
-}

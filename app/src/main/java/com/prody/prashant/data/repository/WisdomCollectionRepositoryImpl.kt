@@ -87,7 +87,7 @@ class WisdomCollectionRepositoryImpl @Inject constructor(
 
     override suspend fun getWisdomToResurface(userId: String, limit: Int): Result<List<SavedWisdomEntity>> {
         return runSuspendCatching(ErrorType.DATABASE, "Failed to get wisdom to resurface") {
-            savedWisdomDao.getWisdomToResurface(userId, limit)
+            savedWisdomDao.getWisdomToResurface(userId, System.currentTimeMillis() - 7 * 24 * 60 * 60 * 1000, limit)
         }
     }
 
@@ -110,7 +110,7 @@ class WisdomCollectionRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getSavedWisdomBySource(sourceId: Long, type: String): SavedWisdomEntity? {
-        return savedWisdomDao.getSavedWisdomBySource(sourceId, type)
+        return savedWisdomDao.getWisdomBySource(sourceId, type)
     }
 
     // ==================== STATISTICS ====================

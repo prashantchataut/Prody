@@ -2,6 +2,8 @@ package com.prody.prashant.ui.screens.profile
 import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.*
+import com.prody.prashant.domain.gamification.AchievementRarity
+import com.prody.prashant.ui.theme.UiAchievements
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -1332,7 +1334,7 @@ private fun PremiumFeaturedAchievementCard(
         AchievementRarity.COMMON
     }
 
-    val achievementData = Achievements.getAchievementById(achievement.id)
+    val achievementData = UiAchievements.getAchievementById(achievement.id)
 
     var isVisible by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
@@ -1360,18 +1362,19 @@ private fun PremiumFeaturedAchievementCard(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Icon Circle
+            val rarityColor = getRarityColor(rarity)
             Box(
                 modifier = Modifier
                     .size(52.dp)
                     .clip(CircleShape)
-                    .background(rarity.color.copy(alpha = 0.15f))
-                    .border(2.dp, rarity.color.copy(alpha = 0.4f), CircleShape),
+                    .background(rarityColor.copy(alpha = 0.15f))
+                    .border(2.dp, rarityColor.copy(alpha = 0.4f), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = achievementData?.icon ?: ProdyIcons.EmojiEvents,
                     contentDescription = null,
-                    tint = rarity.color,
+                    tint = rarityColor,
                     modifier = Modifier.size(26.dp)
                 )
             }
@@ -1465,8 +1468,9 @@ private fun PremiumCompactBadge(
         AchievementRarity.COMMON
     }
 
-    val achievementData = Achievements.getAchievementById(achievement.id)
+    val achievementData = UiAchievements.getAchievementById(achievement.id)
     val lockedGray = Color(0xFF888888)
+    val rarityColor = getRarityColor(rarity)
 
     Surface(
         modifier = modifier.clip(RoundedCornerShape(16.dp)),
@@ -1483,7 +1487,7 @@ private fun PremiumCompactBadge(
                     .size(40.dp)
                     .clip(CircleShape)
                     .background(
-                        if (isUnlocked) rarity.color.copy(alpha = 0.15f)
+                        if (isUnlocked) rarityColor.copy(alpha = 0.15f)
                         else lockedGray.copy(alpha = 0.1f)
                     ),
                 contentAlignment = Alignment.Center
@@ -1492,7 +1496,7 @@ private fun PremiumCompactBadge(
                     Icon(
                         imageVector = achievementData?.icon ?: ProdyIcons.EmojiEvents,
                         contentDescription = null,
-                        tint = rarity.color,
+                        tint = rarityColor,
                         modifier = Modifier.size(20.dp)
                     )
                 } else {
@@ -1575,6 +1579,20 @@ private fun PremiumGrowthQuoteCard(
 // ============================================================================
 // HELPER FUNCTIONS
 // ============================================================================
+
+/**
+ * Maps achievement rarity enum to its corresponding color.
+ */
+private fun getRarityColor(rarity: AchievementRarity): Color {
+    return when (rarity) {
+        AchievementRarity.COMMON -> RarityCommon
+        AchievementRarity.UNCOMMON -> RarityUncommon
+        AchievementRarity.RARE -> RarityRare
+        AchievementRarity.EPIC -> RarityEpic
+        AchievementRarity.LEGENDARY -> RarityLegendary
+        AchievementRarity.MYTHIC -> RarityMythic
+    }
+}
 
 private fun formatCompactNumber(number: Int): String {
     return when {

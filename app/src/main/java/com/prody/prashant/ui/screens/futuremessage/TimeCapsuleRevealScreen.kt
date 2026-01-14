@@ -53,6 +53,7 @@ fun TimeCapsuleRevealScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val view = LocalView.current
     val scrollState = rememberScrollState()
+    val coroutineScope = androidx.compose.runtime.rememberCoroutineScope()
 
     // Load message on first composition
     LaunchedEffect(messageId) {
@@ -126,7 +127,7 @@ fun TimeCapsuleRevealScreen(
                         timeAgoText = uiState.timeAgoText,
                         onReply = { reflectionText ->
                             // Create journal entry as reply
-                            kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
+                            coroutineScope.launch {
                                 val journalId = viewModel.replyToPastSelf(reflectionText)
                                 if (journalId != null) {
                                     // Optionally navigate to the journal entry

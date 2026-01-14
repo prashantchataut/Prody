@@ -8,7 +8,7 @@ import com.prody.prashant.data.local.entity.AchievementEntity
 import com.prody.prashant.data.local.entity.UserProfileEntity
 import com.prody.prashant.data.local.entity.UserStatsEntity
 import com.prody.prashant.data.local.preferences.PreferencesManager
-import com.prody.prashant.ui.theme.Achievements
+import com.prody.prashant.domain.gamification.Achievements
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -66,11 +66,11 @@ class OnboardingViewModel @Inject constructor(
                         description = achievement.description,
                         iconId = achievement.id,
                         category = achievement.category.name.lowercase(),
-                        requirement = achievement.requirement,
+                        requirement = achievement.getRequirementTarget(),
                         currentProgress = 0,
                         isUnlocked = false,
                         rewardType = "points",
-                        rewardValue = achievement.rewardPoints.toString(),
+                        rewardValue = achievement.xpReward.toString(),
                         rarity = achievement.rarity.name.lowercase()
                     )
                 }
