@@ -12,13 +12,19 @@ import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.io.IOException
 import javax.inject.Inject
+import javax.inject.Named
 import javax.inject.Singleton
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "prody_preferences")
@@ -26,9 +32,69 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
 @Singleton
 class PreferencesManager @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val sharedPreferences: SharedPreferences
+    @Named("UnencryptedSharedPreferences") private val sharedPreferences: SharedPreferences,
+    @Named("EncryptedSharedPreferences") private val encryptedSharedPreferences: SharedPreferences
 ) {
     private val dataStore = context.dataStore
+    private val coroutineScope = CoroutineScope(Dispatchers.IO)
+
+    private val _geminiApiKey = MutableStateFlow("")
+    val geminiApiKey: Flow<String> = _geminiApiKey.asStateFlow()
+
+    private val _therapistApiKey = MutableStateFlow("")
+    val therapistApiKey: Flow<String> = _therapistApiKey.asStateFlow()
+
+    init {
+        coroutineScope.launch {
+            migrateSensitiveString(PreferencesKeys.GEMINI_API_KEY, PreferencesKeys.GEMINI_API_KEY.name) {
+                _geminiApiKey.value = it
+            }
+        }
+        coroutineScope.launch {
+            migrateSensitiveString(PreferencesKeys.THERAPIST_API_KEY, PreferencesKeys.THERAPIST_API_KEY.name) {
+                _therapistApiKey.value = it
+            }
+        }
+    }
+
+    /**
+     * Security: Performs a one-time migration for a sensitive string preference
+     * from the unencrypted DataStore to EncryptedSharedPreferences.
+     * This is crucial for securing data like API keys for existing users.
+     */
+    private suspend fun migrateSensitiveString(
+        dataStoreKey: Preferences.Key<String>,
+        encryptedPrefsKey: String,
+        onValueMigrated: (String) -> Unit
+    ) {
+        val initialValue = encryptedSharedPreferences.getString(encryptedPrefsKey, null)
+        if (initialValue != null) {
+            onValueMigrated(initialValue)
+            return
+        }
+
+        val valueFromDataStore = dataStore.data.map { it[dataStoreKey] }.first()
+
+        if (!valueFromDataStore.isNullOrBlank()) {
+            synchronized(this) {
+                // Double-check if the value was set while we were reading from DataStore
+                if (!encryptedSharedPreferences.contains(encryptedPrefsKey)) {
+                    encryptedSharedPreferences.edit().putString(encryptedPrefsKey, valueFromDataStore).apply()
+                    onValueMigrated(valueFromDataStore)
+                    coroutineScope.launch {
+                        dataStore.edit { preferences ->
+                            preferences.remove(dataStoreKey)
+                        }
+                    }
+                } else {
+                    // A value was set concurrently, so we use it instead
+                    onValueMigrated(encryptedSharedPreferences.getString(encryptedPrefsKey, "") ?: "")
+                }
+            }
+        } else {
+            onValueMigrated("")
+        }
+    }
 
     // Keys
     private object PreferencesKeys {
@@ -501,19 +567,15 @@ class PreferencesManager @Inject constructor(
         }
     }
 
-    // Gemini AI Settings
-    val geminiApiKey: Flow<String> = dataStore.data
-        .catch { exception ->
-            if (exception is IOException) emit(emptyPreferences())
-            else throw exception
-        }
-        .map { preferences ->
-            preferences[PreferencesKeys.GEMINI_API_KEY] ?: ""
-        }
-
     suspend fun setGeminiApiKey(apiKey: String) {
+        val key = PreferencesKeys.GEMINI_API_KEY.name
+        encryptedSharedPreferences.edit().putString(key, apiKey).apply()
+        _geminiApiKey.value = apiKey
+        // Ensure the key is removed from the old location in case it was set there before migration.
         dataStore.edit { preferences ->
-            preferences[PreferencesKeys.GEMINI_API_KEY] = apiKey
+            if (preferences.contains(PreferencesKeys.GEMINI_API_KEY)) {
+                preferences.remove(PreferencesKeys.GEMINI_API_KEY)
+            }
         }
     }
 
@@ -1055,18 +1117,15 @@ class PreferencesManager @Inject constructor(
         }
     }
 
-    val therapistApiKey: Flow<String> = dataStore.data
-        .catch { exception ->
-            if (exception is IOException) emit(emptyPreferences())
-            else throw exception
-        }
-        .map { preferences ->
-            preferences[PreferencesKeys.THERAPIST_API_KEY] ?: ""
-        }
-
     suspend fun setTherapistApiKey(apiKey: String) {
+        val key = PreferencesKeys.THERAPIST_API_KEY.name
+        encryptedSharedPreferences.edit().putString(key, apiKey).apply()
+        _therapistApiKey.value = apiKey
+        // Ensure the key is removed from the old location.
         dataStore.edit { preferences ->
-            preferences[PreferencesKeys.THERAPIST_API_KEY] = apiKey
+            if (preferences.contains(PreferencesKeys.THERAPIST_API_KEY)) {
+                preferences.remove(PreferencesKeys.THERAPIST_API_KEY)
+            }
         }
     }
 
