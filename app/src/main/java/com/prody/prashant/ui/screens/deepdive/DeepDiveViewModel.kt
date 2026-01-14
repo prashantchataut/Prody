@@ -100,7 +100,7 @@ class DeepDiveViewModel @Inject constructor(
                 onError = { error ->
                     _homeState.update { it.copy(
                         isScheduling = false,
-                        errorMessage = error.message
+                        errorMessage = error.userMessage
                     ) }
                 }
             )
@@ -112,7 +112,7 @@ class DeepDiveViewModel @Inject constructor(
             deepDiveRepository.rescheduleDeepDive(deepDiveId, newDate).fold(
                 onSuccess = { loadHomeData() },
                 onError = { error ->
-                    _homeState.update { it.copy(errorMessage = error.message) }
+                    _homeState.update { it.copy(errorMessage = error.userMessage) }
                 }
             )
         }
@@ -123,7 +123,7 @@ class DeepDiveViewModel @Inject constructor(
             deepDiveRepository.softDeleteDeepDive(deepDiveId).fold(
                 onSuccess = { loadHomeData() },
                 onError = { error ->
-                    _homeState.update { it.copy(errorMessage = error.message) }
+                    _homeState.update { it.copy(errorMessage = error.userMessage) }
                 }
             )
         }
@@ -156,7 +156,7 @@ class DeepDiveViewModel @Inject constructor(
                 onError = { error ->
                     _sessionState.update { it.copy(
                         isLoading = false,
-                        errorMessage = error.message
+                        errorMessage = error.userMessage
                     ) }
                 }
             )
@@ -191,7 +191,7 @@ class DeepDiveViewModel @Inject constructor(
                 onError = { error ->
                     _sessionState.update { it.copy(
                         isLoading = false,
-                        errorMessage = error.message
+                        errorMessage = error.userMessage
                     ) }
                 }
             )
@@ -228,7 +228,7 @@ class DeepDiveViewModel @Inject constructor(
                 onError = { error ->
                     _sessionState.update { it.copy(
                         isSaving = false,
-                        errorMessage = error.message
+                        errorMessage = error.userMessage
                     ) }
                 }
             )
@@ -257,7 +257,7 @@ class DeepDiveViewModel @Inject constructor(
                 onError = { error ->
                     _sessionState.update { it.copy(
                         isSaving = false,
-                        errorMessage = error.message
+                        errorMessage = error.userMessage
                     ) }
                 }
             )
@@ -286,7 +286,7 @@ class DeepDiveViewModel @Inject constructor(
                 onError = { error ->
                     _sessionState.update { it.copy(
                         isSaving = false,
-                        errorMessage = error.message
+                        errorMessage = error.userMessage
                     ) }
                 }
             )
@@ -319,7 +319,7 @@ class DeepDiveViewModel @Inject constructor(
                         onError = { error ->
                             _sessionState.update { it.copy(
                                 isSaving = false,
-                                errorMessage = error.message
+                                errorMessage = error.userMessage
                             ) }
                         }
                     )
@@ -327,7 +327,7 @@ class DeepDiveViewModel @Inject constructor(
                 onError = { error ->
                     _sessionState.update { it.copy(
                         isSaving = false,
-                        errorMessage = error.message
+                        errorMessage = error.userMessage
                     ) }
                 }
             )

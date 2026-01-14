@@ -17,6 +17,7 @@ import com.prody.prashant.domain.model.isPositive
 import com.prody.prashant.domain.streak.DualStreakManager
 import com.prody.prashant.domain.streak.DualStreakStatus
 import com.prody.prashant.domain.streak.StreakType
+import com.prody.prashant.domain.wellbeing.Feature
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -143,7 +144,7 @@ class UserContextEngine @Inject constructor(
     suspend fun getContextForHaven(): HavenContext {
         val context = getCurrentContext()
         val recentEntries = journalDao.getRecentEntries(5).first()
-        val sessions = havenDao.getRecentSessions(limit = 10)
+        val sessions = havenDao.getRecentSessions(userId = "local", limit = 10).first()
         val lastSession = sessions.firstOrNull()
 
         return HavenContext(
@@ -200,9 +201,9 @@ class UserContextEngine @Inject constructor(
         // Gather all signals in parallel for efficiency
         val userProfileDeferred = async { userDao.getUserProfile() }
         val journalsDeferred = async { journalDao.getRecentEntries(30).first() }
-        val streakDeferred = async { dualStreakManager.getCurrentStatus() }
-        val sessionsDeferred = async { havenDao.getRecentSessions(limit = 10) }
-        val microEntriesDeferred = async { microEntryDao.getRecentEntries(limit = 20) }
+        val streakDeferred = async { dualStreakManager.getDualStreakStatus() }
+        val sessionsDeferred = async { havenDao.getRecentSessions(userId = "local", limit = 10).first() }
+        val microEntriesDeferred = async { microEntryDao.getRecentMicroEntries(limit = 20).first() }
         val preferencesDeferred = async { loadPreferences() }
         val firstLaunchDeferred = async { preferencesManager.firstLaunchTime.first() }
 
@@ -538,8 +539,8 @@ class UserContextEngine @Inject constructor(
     ): List<Feature> {
         val features = mutableListOf<Feature>()
 
-        if (journals.isNotEmpty()) features.add(Feature.JOURNAL)
-        if (sessions.isNotEmpty()) features.add(Feature.HAVEN)
+        if (journals.isNotEmpty()) features.add(Feature.JOURNAL_ENTRY)
+        if (sessions.isNotEmpty()) features.add(Feature.HAVEN_AI)
         if (microEntries.isNotEmpty()) features.add(Feature.DAILY_WISDOM)
 
         return features
@@ -802,17 +803,17 @@ class UserContextEngine @Inject constructor(
 
         // Feature discovery based on usage patterns
         return when {
-            Feature.FUTURE_MESSAGE !in context.preferredFeatures &&
+            Feature.FUTURE_MESSAGES !in context.preferredFeatures &&
             context.daysWithPrody >= 3 -> FeatureDiscovery(
-                feature = Feature.FUTURE_MESSAGE,
+                feature = Feature.FUTURE_MESSAGES,
                 hook = "You've been reflecting. Want to send a message to future you?",
                 benefit = "It's like leaving a note for someone you'll become.",
                 ctaText = "Write to Future You",
                 route = "future-messages/new"
             )
-            Feature.HAVEN !in context.preferredFeatures &&
+            Feature.HAVEN_AI !in context.preferredFeatures &&
             context.isStruggling -> FeatureDiscovery(
-                feature = Feature.HAVEN,
+                feature = Feature.HAVEN_AI,
                 hook = "Rough patch? There's someone here who can help.",
                 benefit = "Haven is your private space to work through things.",
                 ctaText = "Meet Haven",

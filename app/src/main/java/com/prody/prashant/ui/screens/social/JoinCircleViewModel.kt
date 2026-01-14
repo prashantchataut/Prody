@@ -72,7 +72,7 @@ class JoinCircleViewModel @Inject constructor(
                         it.copy(
                             isValidating = false,
                             previewCircle = null,
-                            errorMessage = result.message
+                            errorMessage = result.userMessage
                         )
                     }
                 }
@@ -104,7 +104,7 @@ class JoinCircleViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             isJoining = false,
-                            errorMessage = result.message
+                            errorMessage = result.userMessage
                         )
                     }
                 }

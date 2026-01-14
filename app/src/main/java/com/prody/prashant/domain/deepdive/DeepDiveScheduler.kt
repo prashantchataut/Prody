@@ -147,7 +147,7 @@ class DeepDiveScheduler @Inject constructor(
     suspend fun suggestThemeBasedOnMood(userId: String): DeepDiveTheme = withContext(Dispatchers.IO) {
         try {
             // Get recent journal entries
-            val recentEntries = journalDao.getRecentEntriesSync(userId, 10)
+            val recentEntries = journalDao.getRecentEntriesSync(10)
 
             if (recentEntries.isEmpty()) {
                 // Default to gratitude for new users

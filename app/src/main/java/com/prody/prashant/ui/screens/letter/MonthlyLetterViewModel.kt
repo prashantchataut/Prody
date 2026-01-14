@@ -107,7 +107,7 @@ class MonthlyLetterViewModel @Inject constructor(
                 is Result.Error -> {
                     _uiState.update { it.copy(
                         isLoading = false,
-                        errorMessage = result.message
+                        errorMessage = result.userMessage
                     )}
                 }
             }
@@ -132,7 +132,7 @@ class MonthlyLetterViewModel @Inject constructor(
                 is Result.Error -> {
                     _uiState.update { it.copy(
                         isLoading = false,
-                        errorMessage = result.message
+                        errorMessage = result.userMessage
                     )}
                 }
             }
@@ -201,7 +201,7 @@ class MonthlyLetterViewModel @Inject constructor(
                 is Result.Error -> {
                     _uiState.update { it.copy(
                         isGenerating = false,
-                        errorMessage = result.message
+                        errorMessage = result.userMessage
                     )}
                 }
             }

@@ -324,7 +324,7 @@ class MemoryEngine @Inject constructor(
         }
 
         // Streak milestones (already handled in streak manager, but we can enhance here)
-        val streak = dualStreakManager.getCurrentStatus()
+        val streak = dualStreakManager.getDualStreakStatus()
         val streakMilestones = listOf(7, 14, 30, 60, 100, 365)
 
         val wisdomMilestone = streakMilestones.find { it == streak.wisdomStreak.current }
@@ -356,13 +356,13 @@ class MemoryEngine @Inject constructor(
      * Surface a haven breakthrough moment - when a haven session had a significant impact.
      */
     suspend fun getHavenBreakthroughMemory(): Memory? {
-        val sessions = havenDao.getRecentSessions(limit = 20)
+        val sessions = havenDao.getRecentSessions(userId = "local", limit = 20).first()
 
         // Find a session where mood improved significantly
         val breakthroughSession = sessions.find { session ->
-            val moodBefore = session.moodBefore ?: return@find false
-            val moodAfter = session.moodAfter ?: return@find false
-            moodAfter - moodBefore >= 3 // At least 3-point improvement
+            val moodBeforeVal = session.moodBefore ?: return@find false
+            val moodAfterVal = session.moodAfter ?: return@find false
+            moodAfterVal - moodBeforeVal >= 3 // At least 3-point improvement
         } ?: return null
 
         return createMemoryFromHavenSession(

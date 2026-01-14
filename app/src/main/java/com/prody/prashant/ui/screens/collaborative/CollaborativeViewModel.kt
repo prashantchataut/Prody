@@ -224,7 +224,7 @@ class CollaborativeViewModel @Inject constructor(
                 onError = { error ->
                     _composeState.update { it.copy(
                         isSending = false,
-                        errorMessage = error.message
+                        errorMessage = error.userMessage
                     ) }
                 }
             )
@@ -257,7 +257,7 @@ class CollaborativeViewModel @Inject constructor(
                 onError = { error ->
                     _detailState.update { it.copy(
                         isLoading = false,
-                        errorMessage = error.message
+                        errorMessage = error.userMessage
                     ) }
                 }
             )
@@ -283,7 +283,7 @@ class CollaborativeViewModel @Inject constructor(
                 onError = { error ->
                     _detailState.update { it.copy(
                         isLoading = false,
-                        errorMessage = error.message
+                        errorMessage = error.userMessage
                     ) }
                 }
             )

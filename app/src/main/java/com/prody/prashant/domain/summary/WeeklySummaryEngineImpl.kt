@@ -409,13 +409,13 @@ class WeeklySummaryEngineImpl @Inject constructor(
 
     // ==================== GAMIFICATION ====================
 
-    private suspend fun calculateStreakStatus(userId: String, weekContribution: Int): StreakStatus {
+    private suspend fun calculateStreakStatus(userId: String, weekContribution: Int): WeeklyStreakInfo {
         val currentStreak = preferencesManager.currentStreak.first()
         // Note: We'd need to implement proper streak tracking to get previousBest
         // For now, we'll use a simple approach
         val previousBest = currentStreak // Simplified - would need historical data
 
-        return StreakStatus(
+        return WeeklyStreakInfo(
             currentStreak = currentStreak,
             isNewRecord = currentStreak > previousBest,
             previousBest = previousBest,

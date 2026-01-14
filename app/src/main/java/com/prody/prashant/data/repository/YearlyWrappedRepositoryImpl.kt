@@ -9,6 +9,7 @@ import com.prody.prashant.domain.common.ErrorType
 import com.prody.prashant.domain.common.Result
 import com.prody.prashant.domain.common.runSuspendCatching
 import com.prody.prashant.domain.model.MoodTrend
+import com.prody.prashant.domain.model.TimeOfDay
 import com.prody.prashant.domain.repository.YearlyWrappedRepository
 import com.prody.prashant.domain.wrapped.*
 import kotlinx.coroutines.flow.Flow
