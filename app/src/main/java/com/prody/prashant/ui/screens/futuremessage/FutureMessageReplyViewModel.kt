@@ -229,6 +229,7 @@ class FutureMessageReplyViewModel @Inject constructor(
 
         val chainMessage = FutureMessageEntity(
             userId = userId,
+            title = "Time Capsule Chain",
             content = buildString {
                 appendLine("This is a continuation of your time capsule chain.")
                 appendLine()

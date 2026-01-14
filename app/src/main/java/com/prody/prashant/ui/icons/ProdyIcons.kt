@@ -620,6 +620,25 @@ object ProdyIcons {
         }
     }
 
+    val TrendingDown: ImageVector by lazy {
+        createIcon("TrendingDown") {
+            path(fill = SolidColor(Color.Black)) {
+                moveTo(16f, 18f)
+                lineToRelative(2.29f, -2.29f)
+                lineToRelative(-4.88f, -4.88f)
+                lineToRelative(-4f, 4f)
+                lineTo(2f, 7.41f)
+                lineTo(3.41f, 6f)
+                lineToRelative(6f, 6f)
+                lineToRelative(4f, -4f)
+                lineToRelative(6.3f, 6.29f)
+                lineTo(22f, 12f)
+                verticalLineTo(18f)
+                close()
+            }
+        }
+    }
+
     val ExpandLess: ImageVector by lazy {
         createIcon("ExpandLess") {
             path(fill = SolidColor(Color.Black)) {
@@ -2015,22 +2034,22 @@ object ProdyIcons {
     // AutoMirrored icons - some are from core, others need to be aliased
     object AutoMirrored {
         object Filled {
-            val ArrowBack: ImageVector get() = AutoMirroredArrowBack
-            val ArrowForward: ImageVector get() = AutoMirroredArrowForward
-            val KeyboardArrowRight: ImageVector get() = AutoMirroredKeyboardArrowRight
-            val List: ImageVector get() = AutoMirroredList
-            val Send: ImageVector get() = AutoMirroredSend
+            val ArrowBack: ImageVector get() = com.prody.prashant.ui.icons.AutoMirroredArrowBack
+            val ArrowForward: ImageVector get() = com.prody.prashant.ui.icons.AutoMirroredArrowForward
+            val KeyboardArrowRight: ImageVector get() = com.prody.prashant.ui.icons.AutoMirroredKeyboardArrowRight
+            val List: ImageVector get() = com.prody.prashant.ui.icons.AutoMirroredList
+            val Send: ImageVector get() = com.prody.prashant.ui.icons.AutoMirroredSend
             // Extended library icons - aliased to non-mirrored versions
             val Chat: ImageVector get() = ProdyIcons.Chat
-            val HelpOutline: ImageVector get() = ProdyIcons.Info
+            val HelpOutline: ImageVector get() = ProdyIcons.HelpOutline
             val MenuBook: ImageVector get() = ProdyIcons.MenuBook
             val TrendingUp: ImageVector get() = ProdyIcons.TrendingUp
-            val TrendingDown: ImageVector get() = ProdyIcons.TrendingUp  // No separate TrendingDown, reuse TrendingUp
+            val TrendingDown: ImageVector get() = ProdyIcons.TrendingDown
             val Undo: ImageVector get() = ProdyIcons.Refresh  // Using Refresh as Undo alternative
             val VolumeUp: ImageVector get() = ProdyIcons.Mic  // Using Mic as VolumeUp alternative
         }
         object Rounded {
-            val ArrowForward: ImageVector get() = AutoMirroredArrowForward
+            val ArrowForward: ImageVector get() = com.prody.prashant.ui.icons.AutoMirroredArrowForward
         }
     }
 
@@ -2201,6 +2220,96 @@ object ProdyIcons {
                 verticalLineToRelative(2f)
                 horizontalLineToRelative(15f)
                 verticalLineToRelative(3f)
+                close()
+            }
+        }
+    }
+
+    // Additional icons for UI components
+    val Token: ImageVector by lazy { Star }  // Token icon aliased to Star
+    val TextFields: ImageVector by lazy {
+        createIcon("TextFields") {
+            path(fill = SolidColor(Color.Black)) {
+                moveTo(2.5f, 4f)
+                verticalLineToRelative(3f)
+                horizontalLineToRelative(5f)
+                verticalLineToRelative(12f)
+                horizontalLineToRelative(3f)
+                verticalLineTo(7f)
+                horizontalLineToRelative(5f)
+                verticalLineTo(4f)
+                close()
+                moveTo(21.5f, 9f)
+                horizontalLineToRelative(-9f)
+                verticalLineToRelative(3f)
+                horizontalLineToRelative(3f)
+                verticalLineToRelative(7f)
+                horizontalLineToRelative(3f)
+                verticalLineToRelative(-7f)
+                horizontalLineToRelative(3f)
+                close()
+            }
+        }
+    }
+    val HelpOutline: ImageVector by lazy {
+        createIcon("HelpOutline") {
+            path(fill = SolidColor(Color.Black)) {
+                moveTo(11f, 18f)
+                horizontalLineToRelative(2f)
+                verticalLineToRelative(-2f)
+                horizontalLineToRelative(-2f)
+                close()
+                moveTo(12f, 2f)
+                curveTo(6.48f, 2f, 2f, 6.48f, 2f, 12f)
+                reflectiveCurveToRelative(4.48f, 10f, 10f, 10f)
+                reflectiveCurveToRelative(10f, -4.48f, 10f, -10f)
+                reflectiveCurveTo(17.52f, 2f, 12f, 2f)
+                close()
+                moveTo(12f, 20f)
+                curveToRelative(-4.41f, 0f, -8f, -3.59f, -8f, -8f)
+                reflectiveCurveToRelative(3.59f, -8f, 8f, -8f)
+                reflectiveCurveToRelative(8f, 3.59f, 8f, 8f)
+                reflectiveCurveToRelative(-3.59f, 8f, -8f, 8f)
+                close()
+                moveTo(12f, 6f)
+                curveToRelative(-2.21f, 0f, -4f, 1.79f, -4f, 4f)
+                horizontalLineToRelative(2f)
+                curveToRelative(0f, -1.1f, 0.9f, -2f, 2f, -2f)
+                reflectiveCurveToRelative(2f, 0.9f, 2f, 2f)
+                curveToRelative(0f, 2f, -3f, 1.75f, -3f, 5f)
+                horizontalLineToRelative(2f)
+                curveToRelative(0f, -2.25f, 3f, -2.5f, 3f, -5f)
+                curveToRelative(0f, -2.21f, -1.79f, -4f, -4f, -4f)
+                close()
+            }
+        }
+    }
+    val OpenInNew: ImageVector by lazy {
+        createIcon("OpenInNew") {
+            path(fill = SolidColor(Color.Black)) {
+                moveTo(19f, 19f)
+                horizontalLineTo(5f)
+                verticalLineTo(5f)
+                horizontalLineToRelative(7f)
+                verticalLineTo(3f)
+                horizontalLineTo(5f)
+                curveToRelative(-1.11f, 0f, -2f, 0.9f, -2f, 2f)
+                verticalLineToRelative(14f)
+                curveToRelative(0f, 1.1f, 0.89f, 2f, 2f, 2f)
+                horizontalLineToRelative(14f)
+                curveToRelative(1.1f, 0f, 2f, -0.9f, 2f, -2f)
+                verticalLineToRelative(-7f)
+                horizontalLineToRelative(-2f)
+                close()
+                moveTo(14f, 3f)
+                verticalLineToRelative(2f)
+                horizontalLineToRelative(3.59f)
+                lineToRelative(-9.83f, 9.83f)
+                lineToRelative(1.41f, 1.41f)
+                lineTo(19f, 6.41f)
+                verticalLineTo(10f)
+                horizontalLineToRelative(2f)
+                verticalLineTo(3f)
                 close()
             }
         }

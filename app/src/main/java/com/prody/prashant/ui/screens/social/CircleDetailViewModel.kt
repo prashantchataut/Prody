@@ -142,6 +142,9 @@ class CircleDetailViewModel @Inject constructor(
                         it.copy(errorMessage = "Failed to send nudge")
                     }
                 }
+                is Result.Loading -> {
+                    // Loading state
+                }
             }
         }
     }
@@ -177,6 +180,9 @@ class CircleDetailViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(errorMessage = "Failed to post encouragement")
                     }
+                }
+                is Result.Loading -> {
+                    // Loading state
                 }
             }
         }

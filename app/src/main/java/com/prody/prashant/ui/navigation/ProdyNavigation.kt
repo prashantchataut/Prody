@@ -750,10 +750,10 @@ fun ProdyNavHost(
                 onStartSession = { sessionType ->
                     navController.navigate(Screen.HavenChat.createRoute(sessionType))
                 },
-                onResumeSession = { sessionId, sessionType ->
-                    navController.navigate(Screen.HavenChat.createRoute(sessionType, sessionId))
+                onResumeSession = { sessionId ->
+                    navController.navigate(Screen.HavenChat.createRoute(SessionType.GENERAL, sessionId))
                 },
-                onStartExercise = { exerciseType ->
+                onNavigateToExercise = { exerciseType ->
                     navController.navigate(Screen.HavenExercise.createRoute(exerciseType))
                 }
             )
@@ -859,10 +859,9 @@ fun ProdyNavHost(
             PathDetailScreen(
                 pathId = pathId,
                 onNavigateBack = { navController.popBackStack() },
-                onNavigateToLesson = { lessonId ->
-                    navController.navigate(Screen.Lesson.createRoute(pathId, lessonId))
-                },
-                onPathComplete = { navController.popBackStack() }
+                onNavigateToLesson = { pId, lessonId ->
+                    navController.navigate(Screen.Lesson.createRoute(pId, lessonId))
+                }
             )
         }
 
@@ -1000,7 +999,7 @@ fun ProdyNavHost(
                     navController.navigate(
                         Screen.ComposeMessage.createRoute(
                             contactId = contact?.id,
-                            occasion = occasion?.id
+                            occasion = occasion?.name
                         )
                     )
                 },

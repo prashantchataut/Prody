@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -28,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.prody.prashant.domain.intelligence.*
+import com.prody.prashant.domain.model.Mood
 import com.prody.prashant.ui.icons.ProdyIcons
 import com.prody.prashant.ui.theme.ProdyTokens
 import java.time.format.DateTimeFormatter
@@ -443,14 +445,14 @@ fun FirstWeekProgressCard(
             // Day content
             dayContent?.let { content ->
                 Text(
-                    text = content.theme,
+                    text = content.title,
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.SemiBold,
                     color = Color.White
                 )
                 Spacer(modifier = Modifier.height(ProdyTokens.Spacing.xs))
                 Text(
-                    text = content.description,
+                    text = content.subtitle,
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color.White.copy(alpha = 0.9f),
                     maxLines = 2,
@@ -469,7 +471,7 @@ fun FirstWeekProgressCard(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    text = dayContent?.callToAction ?: "Continue your journey",
+                    text = dayContent?.primaryAction?.title ?: "Continue your journey",
                     fontWeight = FontWeight.SemiBold
                 )
             }
@@ -1026,42 +1028,26 @@ private fun getMemoryTypeIcon(type: MemoryType): ImageVector {
 }
 
 private fun getMoodEmoji(mood: Mood): String {
-    return when (mood) {
-        Mood.JOYFUL -> "\uD83D\uDE0A"
-        Mood.PEACEFUL -> "\uD83D\uDE0C"
-        Mood.HOPEFUL -> "\uD83C\uDF1F"
-        Mood.GRATEFUL -> "\uD83D\uDE4F"
-        Mood.CONTENT -> "\uD83D\uDE42"
-        Mood.REFLECTIVE -> "\uD83E\uDD14"
-        Mood.NEUTRAL -> "\uD83D\uDE10"
-        Mood.ANXIOUS -> "\uD83D\uDE1F"
-        Mood.FRUSTRATED -> "\uD83D\uDE24"
-        Mood.SAD -> "\uD83D\uDE1E"
-        Mood.OVERWHELMED -> "\uD83D\uDE35"
-        Mood.ANGRY -> "\uD83D\uDE20"
-    }
+    return mood.emoji
 }
 
 private fun getCelebrationIcon(animation: CelebrationAnimation): ImageVector {
     return when (animation) {
         CelebrationAnimation.CONFETTI -> ProdyIcons.Rounded.Celebration
-        CelebrationAnimation.SPARKLE -> ProdyIcons.Rounded.AutoAwesome
-        CelebrationAnimation.GENTLE_PULSE -> ProdyIcons.Rounded.Favorite
-        CelebrationAnimation.WARM_GLOW -> ProdyIcons.Rounded.WbSunny
+        CelebrationAnimation.SPARKLE, CelebrationAnimation.SPARKLES -> ProdyIcons.Rounded.AutoAwesome
+        CelebrationAnimation.GLOW, CelebrationAnimation.GENTLE_GLOW -> ProdyIcons.Rounded.Favorite
+        CelebrationAnimation.WARM_FADE -> ProdyIcons.Rounded.WbSunny
         CelebrationAnimation.FIREWORKS -> ProdyIcons.Rounded.Stars
+        else -> ProdyIcons.Rounded.AutoAwesome
     }
 }
 
-private fun getMilestoneIcon(type: MilestoneType): ImageVector {
+private fun getMilestoneIcon(type: MemoryMilestoneType): ImageVector {
     return when (type) {
-        MilestoneType.ENTRY_COUNT -> ProdyIcons.Rounded.EditNote
-        MilestoneType.STREAK_LENGTH -> ProdyIcons.Rounded.LocalFireDepartment
-        MilestoneType.WORDS_WRITTEN -> ProdyIcons.Rounded.TextFields
-        MilestoneType.DAYS_WITH_PRODY -> ProdyIcons.Rounded.CalendarMonth
-        MilestoneType.BLOOM_COUNT -> ProdyIcons.Rounded.Eco
-        MilestoneType.VOCABULARY_MASTERED -> ProdyIcons.Rounded.School
-        MilestoneType.HAVEN_SESSIONS -> ProdyIcons.Rounded.Psychology
-        MilestoneType.FUTURE_MESSAGES -> ProdyIcons.Rounded.Schedule
+        MemoryMilestoneType.ENTRY_COUNT -> ProdyIcons.Rounded.EditNote
+        MemoryMilestoneType.DAYS_WITH_PRODY -> ProdyIcons.Rounded.CalendarMonth
+        MemoryMilestoneType.WISDOM_STREAK -> ProdyIcons.Rounded.AutoAwesome
+        MemoryMilestoneType.REFLECTION_STREAK -> ProdyIcons.Rounded.LocalFireDepartment
     }
 }
 

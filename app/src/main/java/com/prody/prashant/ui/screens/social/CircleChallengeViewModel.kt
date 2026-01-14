@@ -107,6 +107,9 @@ class CircleChallengeViewModel @Inject constructor(
                 is Result.Error -> {
                     // Leaderboard load failed, but don't block UI
                 }
+                is Result.Loading -> {
+                    // Loading state
+                }
             }
         }
     }
@@ -128,6 +131,9 @@ class CircleChallengeViewModel @Inject constructor(
                         it.copy(errorMessage = "Failed to join challenge")
                     }
                 }
+                is Result.Loading -> {
+                    // Loading state
+                }
             }
         }
     }
@@ -148,6 +154,9 @@ class CircleChallengeViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(errorMessage = "Failed to leave challenge")
                     }
+                }
+                is Result.Loading -> {
+                    // Loading state
                 }
             }
         }
@@ -183,6 +192,9 @@ class CircleChallengeViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(errorMessage = "Failed to update progress")
                     }
+                }
+                is Result.Loading -> {
+                    // Loading state
                 }
             }
         }

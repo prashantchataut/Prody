@@ -505,14 +505,37 @@ private fun SentMessageCard(
 
 @Composable
 private fun MessageStatusChip(status: MessageStatus) {
-    val (color, text) = when (status) {
-        MessageStatus.DRAFT -> ProdyTextSecondary to "Draft"
-        MessageStatus.PENDING -> ProdyWarning to "Pending"
-        MessageStatus.SCHEDULED -> ProdyAccentBlue to "Scheduled"
-        MessageStatus.SENT -> ProdySuccess to "Sent"
-        MessageStatus.DELIVERED -> ProdySuccess to "Delivered"
-        MessageStatus.READ -> ProdyAccentGreen to "Read"
-        MessageStatus.FAILED -> ProdyError to "Failed"
+    val color: Color
+    val text: String
+    when (status) {
+        MessageStatus.DRAFT -> {
+            color = ProdyTextSecondary
+            text = "Draft"
+        }
+        MessageStatus.PENDING -> {
+            color = ProdyWarning
+            text = "Pending"
+        }
+        MessageStatus.SCHEDULED -> {
+            color = ProdyAccentBlue
+            text = "Scheduled"
+        }
+        MessageStatus.SENT -> {
+            color = ProdySuccess
+            text = "Sent"
+        }
+        MessageStatus.DELIVERED -> {
+            color = ProdySuccess
+            text = "Delivered"
+        }
+        MessageStatus.READ -> {
+            color = ProdyAccentGreen
+            text = "Read"
+        }
+        MessageStatus.FAILED -> {
+            color = ProdyError
+            text = "Failed"
+        }
     }
 
     Surface(
@@ -731,7 +754,9 @@ private fun ContactCard(
                         imageVector = when (contact.method) {
                             ContactMethod.EMAIL -> ProdyIcons.Email
                             ContactMethod.SMS -> ProdyIcons.Sms
+                            ContactMethod.PHONE -> ProdyIcons.Phone
                             ContactMethod.WHATSAPP -> ProdyIcons.Chat
+                            ContactMethod.APP_USER -> ProdyIcons.Person
                             ContactMethod.IN_APP -> ProdyIcons.Notifications
                         },
                         contentDescription = null,

@@ -611,7 +611,7 @@ class DeepDivePromptGenerator @Inject constructor(
 
     private suspend fun getRecentMoodTrend(userId: String): List<String> {
         return try {
-            val recentEntries = journalDao.getRecentEntriesSync(userId, 5)
+            val recentEntries = journalDao.getRecentEntriesSync(5)
             recentEntries.map { it.mood }
         } catch (e: Exception) {
             emptyList()

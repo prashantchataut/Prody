@@ -202,7 +202,7 @@ class IntelligentWidgetProvider @Inject constructor(
         // 1. They haven't journaled today AND
         // 2. It's a good time (morning or evening) AND
         // 3. They're not a brand new user (have at least 1 entry)
-        val hasAnyEntries = journalDao.getEntryCount() > 0
+        val hasAnyEntries = journalDao.getEntryCountSince(0L) > 0
         val isGoodTime = hour in 7..10 || hour in 18..21
 
         hasAnyEntries && daysSinceLastEntry >= 1 && isGoodTime
@@ -264,7 +264,7 @@ class IntelligentWidgetProvider @Inject constructor(
 
     private suspend fun getDaysSinceLastEntry(): Int {
         return try {
-            val lastEntry = journalDao.getLatestEntry()
+            val lastEntry = journalDao.getRecentEntriesSync(1).firstOrNull()
             if (lastEntry != null) {
                 val lastDate = java.time.Instant.ofEpochMilli(lastEntry.createdAt)
                     .atZone(ZoneId.systemDefault())

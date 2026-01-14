@@ -247,18 +247,20 @@ private fun SentMessageDetail(
             .verticalScroll(rememberScrollState())
     ) {
         // Status card
+        val statusColor = when (message.status) {
+            MessageStatus.SCHEDULED -> ProdyAccentBlue.copy(alpha = 0.1f)
+            MessageStatus.DELIVERED, MessageStatus.READ -> ProdySuccess.copy(alpha = 0.1f)
+            MessageStatus.FAILED -> ProdyError.copy(alpha = 0.1f)
+            else -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        }
+
         Card(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
             shape = RoundedCornerShape(12.dp),
             colors = CardDefaults.cardColors(
-                containerColor = when (message.status) {
-                    MessageStatus.SCHEDULED -> ProdyAccentBlue.copy(alpha = 0.1f)
-                    MessageStatus.DELIVERED, MessageStatus.READ -> ProdySuccess.copy(alpha = 0.1f)
-                    MessageStatus.FAILED -> ProdyError.copy(alpha = 0.1f)
-                    else -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                }
+                containerColor = statusColor
             )
         ) {
             Row(
@@ -272,20 +274,22 @@ private fun SentMessageDetail(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
+                    val statusIcon = when (message.status) {
+                        MessageStatus.SCHEDULED -> ProdyIcons.Schedule
+                        MessageStatus.DELIVERED, MessageStatus.READ -> ProdyIcons.CheckCircle
+                        MessageStatus.FAILED -> ProdyIcons.Error
+                        else -> ProdyIcons.HourglassEmpty
+                    }
+                    val statusTint = when (message.status) {
+                        MessageStatus.SCHEDULED -> ProdyAccentBlue
+                        MessageStatus.DELIVERED, MessageStatus.READ -> ProdySuccess
+                        MessageStatus.FAILED -> ProdyError
+                        else -> MaterialTheme.colorScheme.onSurfaceVariant
+                    }
                     Icon(
-                        imageVector = when (message.status) {
-                            MessageStatus.SCHEDULED -> ProdyIcons.Schedule
-                            MessageStatus.DELIVERED, MessageStatus.READ -> ProdyIcons.CheckCircle
-                            MessageStatus.FAILED -> ProdyIcons.Error
-                            else -> ProdyIcons.HourglassEmpty
-                        },
+                        imageVector = statusIcon,
                         contentDescription = null,
-                        tint = when (message.status) {
-                            MessageStatus.SCHEDULED -> ProdyAccentBlue
-                            MessageStatus.DELIVERED, MessageStatus.READ -> ProdySuccess
-                            MessageStatus.FAILED -> ProdyError
-                            else -> MaterialTheme.colorScheme.onSurfaceVariant
-                        }
+                        tint = statusTint
                     )
                     Column {
                         Text(
@@ -345,7 +349,9 @@ private fun SentMessageDetail(
                         imageVector = when (message.recipient.method) {
                             ContactMethod.EMAIL -> ProdyIcons.Email
                             ContactMethod.SMS -> ProdyIcons.Sms
+                            ContactMethod.PHONE -> ProdyIcons.Phone
                             ContactMethod.WHATSAPP -> ProdyIcons.Chat
+                            ContactMethod.APP_USER -> ProdyIcons.Person
                             ContactMethod.IN_APP -> ProdyIcons.Notifications
                         },
                         contentDescription = null,

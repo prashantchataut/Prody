@@ -144,6 +144,9 @@ class CirclesViewModel @Inject constructor(
                         )
                     }
                 }
+                is Result.Loading -> {
+                    // Loading state
+                }
             }
         }
     }

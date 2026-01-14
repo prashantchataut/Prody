@@ -5,6 +5,7 @@ import com.google.gson.Gson
 import com.prody.prashant.data.local.dao.*
 import com.prody.prashant.data.local.entity.YearlyWrappedEntity
 import com.prody.prashant.domain.model.MoodTrend
+import com.prody.prashant.domain.model.TimeOfDay
 import java.time.*
 import java.time.format.TextStyle
 import java.util.*
@@ -54,7 +55,7 @@ class YearlyWrappedGenerator @Inject constructor(
             .toEpochMilli()
 
         // Collect all data
-        val journalEntries = journalDao.getEntriesByDateRange(yearStart, yearEnd).also {
+        val journalEntries: List<com.prody.prashant.data.local.entity.JournalEntryEntity> = journalDao.getEntriesByDateRange(yearStart, yearEnd).also {
             // Convert Flow to list for single read
         }.let { emptyList() } // TODO: Proper flow collection
 
@@ -64,7 +65,7 @@ class YearlyWrappedGenerator @Inject constructor(
         }
 
         if (allJournalEntries.size < config.minEntriesRequired) {
-            return Result.failure(
+            return@try Result.failure(
                 Exception("Not enough entries to generate wrapped (minimum ${config.minEntriesRequired} required)")
             )
         }
@@ -201,9 +202,9 @@ class YearlyWrappedGenerator @Inject constructor(
         val mostActiveDay = dayOfWeekCounts.maxByOrNull { it.value }?.key
 
         // Most active time of day
-        val timeOfDayCounts = entries
+        val timeOfDayCounts: Map<TimeOfDay, Int> = entries
             .groupBy { entry ->
-                val hour = Instant.ofEpochMilli(entry.createdAt)
+                val hour: Int = Instant.ofEpochMilli(entry.createdAt)
                     .atZone(ZoneId.systemDefault())
                     .hour
                 when (hour) {
@@ -214,7 +215,7 @@ class YearlyWrappedGenerator @Inject constructor(
                 }
             }
             .mapValues { it.value.size }
-        val mostActiveTime = timeOfDayCounts.maxByOrNull { it.value }?.key
+        val mostActiveTime: TimeOfDay? = timeOfDayCounts.maxByOrNull { it.value }?.key
 
         return YearStats(
             totalEntries = entries.size,

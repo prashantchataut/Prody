@@ -127,9 +127,12 @@ class CreateCircleViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             isCreating = false,
-                            errorMessage = result.message
+                            errorMessage = result.userMessage
                         )
                     }
+                }
+                is Result.Loading -> {
+                    // Loading state
                 }
             }
         }

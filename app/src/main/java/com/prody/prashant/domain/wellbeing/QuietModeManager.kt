@@ -103,10 +103,11 @@ class QuietModeManager @Inject constructor(
 
         // Get recent journal entries (last 7 days)
         val sevenDaysAgo = System.currentTimeMillis() - TimeUnit.DAYS.toMillis(7)
-        val recentEntries = try {
-            journalRepository.getEntriesAfterTimestamp(sevenDaysAgo).first()
+        val now = System.currentTimeMillis()
+        val recentEntries: List<JournalEntryEntity> = try {
+            journalRepository.getEntriesByDateRange(sevenDaysAgo, now).first()
         } catch (e: Exception) {
-            emptyList()
+            emptyList<JournalEntryEntity>()
         }
 
         // Analyze stress patterns
