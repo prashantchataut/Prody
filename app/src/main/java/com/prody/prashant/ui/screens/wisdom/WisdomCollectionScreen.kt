@@ -1,7 +1,7 @@
 package com.prody.prashant.ui.screens.wisdom
 import com.prody.prashant.ui.icons.ProdyIcons
 
-import androidx.compose.animation.*
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
