@@ -162,31 +162,6 @@ class PreferencesManager @Inject constructor(
             preferences[PreferencesKeys.ONBOARDING_COMPLETED] ?: false
         }
 
-    /**
-     * Synchronously checks if onboarding is completed.
-     * This is critical for making an immediate decision on the start destination of the app.
-     * It performs a one-time migration from DataStore to SharedPreferences if needed.
-     */
-    fun isOnboardingCompleted(): Boolean {
-        val key = PreferencesKeys.ONBOARDING_COMPLETED.name
-        // Check fast SharedPreferences first
-        if (sharedPreferences.contains(key)) {
-            return sharedPreferences.getBoolean(key, false)
-        }
-
-        // If not in SharedPreferences, migrate from DataStore
-        // This is a one-time operation per user.
-        // runBlocking is acceptable here as this is a critical, one-time data migration
-        // that must complete before the UI can proceed.
-        val valueFromDataStore = runBlocking {
-            onboardingCompleted.first()
-        }
-
-        // Write to SharedPreferences for future synchronous access
-        sharedPreferences.edit().putBoolean(key, valueFromDataStore).apply()
-        return valueFromDataStore
-    }
-
     suspend fun setOnboardingCompleted(completed: Boolean) {
         // Write to both for consistency
         // 1. Fast, synchronous SharedPreferences

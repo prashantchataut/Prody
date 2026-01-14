@@ -23,39 +23,47 @@ class MainViewModel @Inject constructor(
     val uiState: StateFlow<MainActivityUiState> = _uiState.asStateFlow()
 
     init {
-        // Step 1: Synchronously determine the start destination.
-        // This is the most critical piece of information needed to show the first screen.
-        val onboardingCompleted = preferencesManager.isOnboardingCompleted()
-        val startDestination = if (onboardingCompleted) Screen.Home.route else Screen.Onboarding.route
-
-        // Step 2: Immediately update the UI state to unblock the splash screen.
-        // We now have the essential information. `isLoading` is set to false.
-        _uiState.value = MainActivityUiState(
-            isLoading = false,
-            startDestination = startDestination
-        )
-
-        // Step 3: Asynchronously load the remaining non-critical settings.
-        // These settings (theme, haptics) do not block the initial UI render.
         viewModelScope.launch {
+            // Combine all essential preferences flows into one.
+            // This ensures we have all the necessary data before updating the UI state.
             combine(
+                preferencesManager.onboardingCompleted.catch { emit(false) },
                 preferencesManager.themeMode.catch { emit("system") },
                 preferencesManager.hapticFeedbackEnabled.catch { emit(true) }
-            ) { themeModeString, hapticEnabled ->
+            ) { onboardingCompleted, themeModeString, hapticEnabled ->
+                // Determine the starting destination of the app
+                val startDestination = if (onboardingCompleted) Screen.Home.route else Screen.Onboarding.route
+
+                // Map the theme mode string to the ThemeMode enum
                 val themeMode = when (themeModeString.lowercase()) {
                     "light" -> ThemeMode.LIGHT
                     "dark" -> ThemeMode.DARK
                     else -> ThemeMode.SYSTEM
                 }
-                // Return a pair of the loaded settings
-                themeMode to hapticEnabled
-            }.collect { (themeMode, hapticEnabled) ->
-                // Update the state with the async-loaded settings without altering the start destination.
-                _uiState.value = _uiState.value.copy(
-                    themeMode = themeMode,
-                    hapticFeedbackEnabled = hapticEnabled
+
+                // Create a temporary data holder for the loaded preferences
+                InitialPreferences(startDestination, themeMode, hapticEnabled)
+            }.collect { initialPrefs ->
+                // Update the UI state in one atomic operation.
+                // This unblocks the splash screen and makes all data available simultaneously.
+                _uiState.value = MainActivityUiState(
+                    isLoading = false,
+                    startDestination = initialPrefs.startDestination,
+                    themeMode = initialPrefs.themeMode,
+                    hapticFeedbackEnabled = initialPrefs.hapticFeedbackEnabled
                 )
             }
         }
     }
+}
+
+/**
+ * A helper data class to hold the initial preferences loaded asynchronously.
+ * This makes the combine operator's logic cleaner and more readable.
+ */
+private data class InitialPreferences(
+    val startDestination: String,
+    val themeMode: ThemeMode,
+    val hapticFeedbackEnabled: Boolean
+)
 }
