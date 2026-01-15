@@ -11,8 +11,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.VolumeUp
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -53,7 +53,7 @@ fun VocabularyDetailScreen(
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
-                            imageVector = ProdyIcons.AutoMirrored.Filled.ArrowBack,
+                            imageVector = ProdyIcons.ArrowBack,
                             contentDescription = stringResource(R.string.back)
                         )
                     }
@@ -72,7 +72,7 @@ fun VocabularyDetailScreen(
                         ) {
                             Icon(
                                 imageVector = if (isSpeaking) ProdyIcons.Stop
-                                else ProdyIcons.AutoMirrored.Filled.VolumeUp,
+                                else ProdyIcons.VolumeUp,
                                 contentDescription = if (isSpeaking) "Stop speaking" else "Speak word",
                                 tint = if (isSpeaking) MaterialTheme.colorScheme.primary
                                 else MaterialTheme.colorScheme.onSurfaceVariant
@@ -271,7 +271,7 @@ fun VocabularyDetailScreen(
                                         modifier = Modifier.size(32.dp)
                                     ) {
                                         Icon(
-                                            imageVector = ProdyIcons.AutoMirrored.Filled.VolumeUp,
+                                            imageVector = ProdyIcons.VolumeUp,
                                             contentDescription = "Pronounce word",
                                             tint = MaterialTheme.colorScheme.primary,
                                             modifier = Modifier.size(20.dp)

@@ -14,7 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import com.prody.prashant.util.AccessibilityUtils
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -64,7 +64,7 @@ fun QuotesScreen(
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
-                            imageVector = ProdyIcons.AutoMirrored.Filled.ArrowBack,
+                            imageVector = ProdyIcons.ArrowBack,
                             contentDescription = stringResource(R.string.back)
                         )
                     }

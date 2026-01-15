@@ -10,9 +10,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.TrendingDown
-import androidx.compose.material.icons.automirrored.filled.TrendingUp
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.TrendingDown
+import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -87,7 +87,7 @@ fun WeeklyDigestScreen(
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
-                            imageVector = ProdyIcons.AutoMirrored.Filled.ArrowBack,
+                            imageVector = ProdyIcons.ArrowBack,
                             contentDescription = "Back"
                         )
                     }
@@ -493,8 +493,8 @@ private fun MoodTrendCard(
             ) {
                 Icon(
                     imageVector = when (trend) {
-                        "improving" -> ProdyIcons.AutoMirrored.Filled.TrendingUp
-                        "declining" -> ProdyIcons.AutoMirrored.Filled.TrendingDown
+                        "improving" -> ProdyIcons.TrendingUp
+                        "declining" -> ProdyIcons.TrendingDown
                         else -> ProdyIcons.TrendingFlat
                     },
                     contentDescription = null,
@@ -799,7 +799,7 @@ private fun ComparisonItem(
             when {
                 changePercent > 0 -> {
                     Icon(
-                        imageVector = ProdyIcons.AutoMirrored.Filled.TrendingUp,
+                        imageVector = ProdyIcons.TrendingUp,
                         contentDescription = null,
                         tint = Color(0xFF4CAF50),
                         modifier = Modifier.size(18.dp)
@@ -807,7 +807,7 @@ private fun ComparisonItem(
                 }
                 changePercent < 0 -> {
                     Icon(
-                        imageVector = ProdyIcons.AutoMirrored.Filled.TrendingDown,
+                        imageVector = ProdyIcons.TrendingDown,
                         contentDescription = null,
                         tint = Color(0xFFFF5722),
                         modifier = Modifier.size(18.dp)

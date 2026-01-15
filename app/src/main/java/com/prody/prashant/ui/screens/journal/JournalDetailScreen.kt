@@ -3,6 +3,8 @@ import com.prody.prashant.ui.icons.ProdyIcons
 
 import android.media.MediaPlayer
 import android.net.Uri
+import androidx.compose.animation.core.animateColorAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -14,7 +16,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -66,7 +68,7 @@ fun JournalDetailScreen(
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
-                            imageVector = ProdyIcons.AutoMirrored.Filled.ArrowBack,
+                            imageVector = ProdyIcons.ArrowBack,
                             contentDescription = stringResource(R.string.back)
                         )
                     }
@@ -724,11 +726,12 @@ private fun VoiceRecordingPlayer(
         }
     }
 
-    val accentColor by animateColorAsState(
+    val accentColorState = animateColorAsState(
         targetValue = if (isPlaying) MoodMotivated else MoodCalm,
         animationSpec = tween(300),
         label = "voice_accent"
     )
+    val accentColor = accentColorState.value
 
     ProdyCard(
         modifier = modifier.fillMaxWidth(),

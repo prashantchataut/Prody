@@ -12,9 +12,9 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.automirrored.outlined.MenuBook
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.outlined.MenuBook
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -579,7 +579,7 @@ private fun JournalingTopHeader(
     ) {
         // Back arrow
         Icon(
-            imageVector = ProdyIcons.AutoMirrored.Filled.ArrowBack,
+            imageVector = ProdyIcons.ArrowBack,
             contentDescription = "Back",
             tint = textSecondary,
             modifier = Modifier
@@ -2593,7 +2593,7 @@ private fun LoginButton(
             )
 
             Icon(
-                imageVector = ProdyIcons.AutoMirrored.Filled.ArrowForward,
+                imageVector = ProdyIcons.ArrowForward,
                 contentDescription = null,
                 tint = ButtonTextDark,
                 modifier = Modifier.size(22.dp)
@@ -2844,7 +2844,7 @@ private fun ProdyOnboardingButton(
 
             if (showArrow) {
                 Icon(
-                    imageVector = ProdyIcons.AutoMirrored.Filled.ArrowForward,
+                    imageVector = ProdyIcons.ArrowForward,
                     contentDescription = null,
                     tint = ButtonTextDark,
                     modifier = Modifier.size(22.dp)

@@ -1,11 +1,11 @@
 package com.prody.prashant.ui.icons
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
@@ -2029,14 +2029,14 @@ object ProdyIcons {
         val Schedule: ImageVector get() = ProdyIcons.Schedule
     }
 
-    // AutoMirrored icons - using direct references to imported AutoMirrored icons
+    // AutoMirrored icons - using direct references to non-mirrored versions
     object AutoMirrored {
         object Filled {
-            val ArrowBack: ImageVector get() = Icons.AutoMirrored.Filled.ArrowBack
-            val ArrowForward: ImageVector get() = Icons.AutoMirrored.Filled.ArrowForward
-            val KeyboardArrowRight: ImageVector get() = Icons.AutoMirrored.Filled.KeyboardArrowRight
-            val List: ImageVector get() = Icons.AutoMirrored.Filled.List
-            val Send: ImageVector get() = Icons.AutoMirrored.Filled.Send
+            val ArrowBack: ImageVector get() = ProdyIcons.ArrowBack
+            val ArrowForward: ImageVector get() = ProdyIcons.ArrowForward
+            val KeyboardArrowRight: ImageVector get() = Icons.Filled.KeyboardArrowRight
+            val List: ImageVector get() = Icons.Filled.List
+            val Send: ImageVector get() = Icons.Filled.Send
             // Extended library icons - aliased to non-mirrored versions
             val Chat: ImageVector get() = ProdyIcons.Chat
             val HelpOutline: ImageVector get() = ProdyIcons.HelpOutline
@@ -2047,7 +2047,7 @@ object ProdyIcons {
             val VolumeUp: ImageVector get() = ProdyIcons.Mic  // Using Mic as VolumeUp alternative
         }
         object Rounded {
-            val ArrowForward: ImageVector get() = Icons.AutoMirrored.Filled.ArrowForward
+            val ArrowForward: ImageVector get() = ProdyIcons.ArrowForward
         }
     }
 

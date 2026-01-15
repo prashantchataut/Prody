@@ -41,7 +41,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -441,7 +441,7 @@ private fun TimeCapsuleTopBar(
             modifier = Modifier.size(48.dp)
         ) {
             Icon(
-                imageVector = ProdyIcons.AutoMirrored.Filled.ArrowBack,
+                imageVector = ProdyIcons.ArrowBack,
                 contentDescription = stringResource(R.string.back),
                 tint = titleTextColor,
                 modifier = Modifier.size(24.dp)

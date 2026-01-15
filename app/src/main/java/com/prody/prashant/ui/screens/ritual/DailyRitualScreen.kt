@@ -19,8 +19,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -99,7 +99,7 @@ fun DailyRitualScreen(
                     navigationIcon = {
                         IconButton(onClick = viewModel::previousStep) {
                             Icon(
-                                imageVector = ProdyIcons.AutoMirrored.Filled.ArrowBack,
+                                imageVector = ProdyIcons.ArrowBack,
                                 contentDescription = "Back"
                             )
                         }
@@ -338,7 +338,7 @@ private fun WelcomeStep(
             if (canStart) {
                 Text("Begin Ritual")
                 Spacer(modifier = Modifier.width(8.dp))
-                Icon(ProdyIcons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
+                Icon(ProdyIcons.ArrowForward, contentDescription = null)
             } else {
                 Icon(ProdyIcons.CheckCircle, contentDescription = null)
                 Spacer(modifier = Modifier.width(8.dp))
@@ -478,7 +478,7 @@ private fun WisdomStep(
         ) {
             Text("Continue")
             Spacer(modifier = Modifier.width(8.dp))
-            Icon(ProdyIcons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
+            Icon(ProdyIcons.ArrowForward, contentDescription = null)
         }
     }
 }
@@ -551,7 +551,7 @@ private fun MoodStep(
         ) {
             Text("Continue")
             Spacer(modifier = Modifier.width(8.dp))
-            Icon(ProdyIcons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
+            Icon(ProdyIcons.ArrowForward, contentDescription = null)
         }
     }
 }
@@ -679,7 +679,7 @@ private fun IntentionStep(
         ) {
             Text("Continue")
             Spacer(modifier = Modifier.width(8.dp))
-            Icon(ProdyIcons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
+            Icon(ProdyIcons.ArrowForward, contentDescription = null)
         }
     }
 }

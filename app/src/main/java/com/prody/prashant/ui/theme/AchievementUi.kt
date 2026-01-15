@@ -2,12 +2,12 @@ package com.prody.prashant.ui.theme
 import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Chat
-import androidx.compose.material.icons.automirrored.filled.HelpOutline
-import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material.icons.automirrored.filled.MenuBook
-import androidx.compose.material.icons.automirrored.filled.Send
-import androidx.compose.material.icons.automirrored.filled.TrendingUp
+import androidx.compose.material.icons.filled.Chat
+import androidx.compose.material.icons.filled.HelpOutline
+import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.MenuBook
+import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material.icons.filled.Architecture
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.AutoStories
@@ -224,7 +224,7 @@ enum class UiAchievementCategory(
         description = "Vocabulary achievements",
         color = Color(0xFF6B5CE7),
         secondaryColor = Color(0xFF9B8AFF),
-        icon = ProdyIcons.AutoMirrored.Filled.MenuBook
+        icon = ProdyIcons.MenuBook
     ),
     JOURNAL(
         displayName = "Journal",
@@ -376,7 +376,7 @@ object AchievementIcons {
         "eco" to ProdyIcons.Eco,
         "construction" to ProdyIcons.Construction,
         "handyman" to ProdyIcons.Handyman,
-        "menu_book" to ProdyIcons.AutoMirrored.Filled.MenuBook,
+        "menu_book" to ProdyIcons.MenuBook,
         "school" to ProdyIcons.School,
         "favorite" to ProdyIcons.Favorite,
         "stars" to ProdyIcons.Stars,
@@ -389,7 +389,7 @@ object AchievementIcons {
         // Reflection
         "edit_note" to ProdyIcons.EditNote,
         "record_voice_over" to ProdyIcons.RecordVoiceOver,
-        "chat" to ProdyIcons.AutoMirrored.Filled.Chat,
+        "chat" to ProdyIcons.Chat,
         "history" to ProdyIcons.History,
         "psychology" to ProdyIcons.Psychology,
         "book" to ProdyIcons.Book,
@@ -410,14 +410,14 @@ object AchievementIcons {
 
         // Presence
         "forum" to ProdyIcons.Forum,
-        "help_outline" to ProdyIcons.AutoMirrored.Filled.HelpOutline,
+        "help_outline" to ProdyIcons.HelpOutline,
         "diversity_3" to ProdyIcons.Diversity3,
         "self_improvement" to ProdyIcons.SelfImprovement,
         "handshake" to ProdyIcons.Handshake,
 
         // Temporal
         "mail" to ProdyIcons.Mail,
-        "send" to ProdyIcons.AutoMirrored.Filled.Send,
+        "send" to ProdyIcons.Send,
         "hourglass_empty" to ProdyIcons.HourglassEmpty,
         "architecture" to ProdyIcons.Architecture,
         "mark_email_read" to ProdyIcons.MarkEmailRead,
@@ -430,7 +430,7 @@ object AchievementIcons {
         "check_circle" to ProdyIcons.CheckCircle,
         "verified" to ProdyIcons.Verified,
         "moving" to ProdyIcons.Moving,
-        "trending_up" to ProdyIcons.AutoMirrored.Filled.TrendingUp,
+        "trending_up" to ProdyIcons.TrendingUp,
         "terrain" to ProdyIcons.Terrain,
         "refresh" to ProdyIcons.Refresh,
         "memory" to ProdyIcons.Memory,
@@ -568,7 +568,7 @@ object UiAchievements {
             id = "words_100",
             name = "Lexicon Keeper",
             description = "A hundred words is a language unto itself",
-            icon = ProdyIcons.AutoMirrored.Filled.MenuBook,
+            icon = ProdyIcons.MenuBook,
             category = UiAchievementCategory.WISDOM,
             rarity = UiAchievementRarity.RARE,
             requirement = 100,
@@ -606,7 +606,7 @@ object UiAchievements {
             id = "journal_10",
             name = "Inner Dialogue",
             description = "A conversation with yourself, growing richer each day",
-            icon = ProdyIcons.AutoMirrored.Filled.Chat,
+            icon = ProdyIcons.Chat,
             category = UiAchievementCategory.REFLECTION,
             rarity = UiAchievementRarity.UNCOMMON,
             requirement = 10,

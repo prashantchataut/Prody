@@ -15,8 +15,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -114,7 +114,7 @@ fun HavenChatScreen(
                         }
                     }) {
                         Icon(
-                            imageVector = ProdyIcons.AutoMirrored.Filled.ArrowBack,
+                            imageVector = ProdyIcons.ArrowBack,
                             contentDescription = stringResource(R.string.back)
                         )
                     }
@@ -333,7 +333,7 @@ private fun ChatInputBar(
                     )
                 } else {
                     Icon(
-                        imageVector = ProdyIcons.AutoMirrored.Filled.Send,
+                        imageVector = ProdyIcons.Send,
                         contentDescription = "Send",
                         tint = if (value.isNotBlank()) ProdyAccentGreen
                         else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
