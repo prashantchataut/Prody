@@ -43,7 +43,6 @@ import kotlinx.coroutines.launch
  * Buddha Guide Introduction - Shows 3 cards explaining AI features.
  * Appears once for first-time users.
  */
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun BuddhaGuideIntro(
     cards: List<BuddhaGuideCard>,
