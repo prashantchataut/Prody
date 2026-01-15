@@ -268,6 +268,8 @@ A: All data is stored locally on your device. AI requests use encrypted connecti
 A: Yes, Settings > Export Data creates a JSON backup of all your entries and progress.
 
 ---
+CODERABIT: ![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/prashantchataut/Prody?utm_source=oss&utm_medium=github&utm_campaign=prashantchataut%2FPrody&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
+
 
 ## License
 
