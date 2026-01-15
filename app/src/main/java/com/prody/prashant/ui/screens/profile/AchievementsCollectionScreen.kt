@@ -1,6 +1,7 @@
 package com.prody.prashant.ui.screens.profile
 import com.prody.prashant.ui.icons.ProdyIcons
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
