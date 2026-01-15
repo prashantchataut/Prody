@@ -2026,14 +2026,14 @@ object ProdyIcons {
         val Schedule: ImageVector get() = ProdyIcons.Schedule
     }
 
-    // AutoMirrored icons - using fully qualified references to Icons.AutoMirrored.Filled
+    // AutoMirrored icons - using file-level import aliases with correct receiver
     object AutoMirrored {
         object Filled {
-            val ArrowBack: ImageVector get() = Icons.AutoMirrored.Filled.ArrowBack
-            val ArrowForward: ImageVector get() = Icons.AutoMirrored.Filled.ArrowForward
-            val KeyboardArrowRight: ImageVector get() = Icons.AutoMirrored.Filled.KeyboardArrowRight
-            val List: ImageVector get() = Icons.AutoMirrored.Filled.List
-            val Send: ImageVector get() = Icons.AutoMirrored.Filled.Send
+            val ArrowBack: ImageVector get() = Icons.AutoMirrored.Filled.run { AutoMirroredArrowBack }
+            val ArrowForward: ImageVector get() = Icons.AutoMirrored.Filled.run { AutoMirroredArrowForward }
+            val KeyboardArrowRight: ImageVector get() = Icons.AutoMirrored.Filled.run { AutoMirroredKeyboardArrowRight }
+            val List: ImageVector get() = Icons.AutoMirrored.Filled.run { AutoMirroredList }
+            val Send: ImageVector get() = Icons.AutoMirrored.Filled.run { AutoMirroredSend }
             // Extended library icons - aliased to non-mirrored versions
             val Chat: ImageVector get() = ProdyIcons.Chat
             val HelpOutline: ImageVector get() = ProdyIcons.HelpOutline
@@ -2044,7 +2044,7 @@ object ProdyIcons {
             val VolumeUp: ImageVector get() = ProdyIcons.Mic  // Using Mic as VolumeUp alternative
         }
         object Rounded {
-            val ArrowForward: ImageVector get() = Icons.AutoMirrored.Filled.ArrowForward
+            val ArrowForward: ImageVector get() = Icons.AutoMirrored.Filled.run { AutoMirroredArrowForward }
         }
     }
 
