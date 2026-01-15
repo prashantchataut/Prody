@@ -3,7 +3,6 @@ import com.prody.prashant.ui.icons.ProdyIcons
 
 import android.media.MediaPlayer
 import android.net.Uri
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable

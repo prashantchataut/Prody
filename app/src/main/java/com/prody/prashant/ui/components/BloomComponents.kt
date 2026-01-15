@@ -1,7 +1,6 @@
 package com.prody.prashant.ui.components
 import com.prody.prashant.ui.icons.ProdyIcons
 
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
