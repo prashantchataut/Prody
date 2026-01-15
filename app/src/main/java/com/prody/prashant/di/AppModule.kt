@@ -282,19 +282,12 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideSharedPreferences(
-        @ApplicationContext context: Context
-    ): android.content.SharedPreferences {
-        return context.getSharedPreferences("prody_preferences", Context.MODE_PRIVATE)
-    }
-
-    @Provides
-    @Singleton
     fun providePreferencesManager(
         @ApplicationContext context: Context,
-        sharedPreferences: android.content.SharedPreferences
+        @javax.inject.Named("UnencryptedSharedPreferences") sharedPreferences: SharedPreferences,
+        @javax.inject.Named("EncryptedSharedPreferences") encryptedSharedPreferences: SharedPreferences
     ): PreferencesManager {
-        return PreferencesManager(context, sharedPreferences)
+        return PreferencesManager(context, sharedPreferences, encryptedSharedPreferences)
     }
 
     @Provides
