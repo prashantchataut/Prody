@@ -2,7 +2,7 @@ package com.prody.prashant.ui.components
 import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.animateColorAsState
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.EaseInOutCubic
 import androidx.compose.animation.core.EaseOutQuart
 import androidx.compose.animation.core.LinearEasing
