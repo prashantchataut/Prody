@@ -1,8 +1,7 @@
 package com.prody.prashant.ui.components.identity
 import com.prody.prashant.ui.icons.ProdyIcons
 
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.animateDpAsState
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
