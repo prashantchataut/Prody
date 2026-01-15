@@ -1,6 +1,5 @@
 package com.prody.prashant.ui.screens.journal
 import com.prody.prashant.ui.icons.ProdyIcons
-import androidx.compose.material.icons.automirrored.filled.List
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -38,7 +37,6 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -1186,7 +1184,7 @@ private fun JournalInputField(
                             modifier = Modifier.size(48.dp)
                         ) {
                             Icon(
-                                imageVector = androidx.compose.material.icons.automirrored.filled.List,
+                                imageVector = Icons.Filled.Menu,
                                 contentDescription = "Add list",
                                 tint = colors.primaryText,
                                 modifier = Modifier.size(24.dp)
