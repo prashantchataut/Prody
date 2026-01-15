@@ -17,8 +17,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Undo
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
@@ -87,7 +87,7 @@ fun FlashcardScreen(
                     if (!uiState.sessionComplete && uiState.currentIndex > 0) {
                         IconButton(onClick = { viewModel.undoLastAction() }) {
                             Icon(
-                                imageVector = ProdyIcons.Undo,
+                                imageVector = Icons.AutoMirrored.Filled.Undo,
                                 contentDescription = "Undo"
                             )
                         }

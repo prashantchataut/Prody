@@ -726,12 +726,11 @@ private fun VoiceRecordingPlayer(
         }
     }
 
-    val accentColorState = animateColorAsState(
+    val accentColor by animateColorAsState(
         targetValue = if (isPlaying) MoodMotivated else MoodCalm,
         animationSpec = tween(300),
         label = "voice_accent"
     )
-    val accentColor = accentColorState.value
 
     ProdyCard(
         modifier = modifier.fillMaxWidth(),
