@@ -2,11 +2,11 @@ package com.prody.prashant.ui.screens.profile
 import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.EaseInOutCubic
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateColorAsState
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
@@ -703,7 +703,7 @@ private fun TitleOptionChip(
     isDarkMode: Boolean
 ) {
     val backgroundColor by animateColorAsState(
-        targetValue = when {
+        when {
             title.isLocked -> if (isDarkMode) EditProfileColors.CardBackgroundDark.copy(alpha = 0.5f)
                               else EditProfileColors.CardBackgroundLight.copy(alpha = 0.5f)
             isSelected -> if (isDarkMode) EditProfileColors.AccentGreen
@@ -716,10 +716,10 @@ private fun TitleOptionChip(
     )
 
     val textColor by animateColorAsState(
-        targetValue = when {
+        when {
             title.isLocked -> EditProfileColors.LockedIcon
             isSelected -> Color.Black
-            else -> if (isDarkMode) EditProfileColors.TextSecondaryDark
+            else -> if (isDarkMode) EditProfileColors.TextSecondaryLight
                     else EditProfileColors.TextSecondaryLight
         },
         animationSpec = tween(200),

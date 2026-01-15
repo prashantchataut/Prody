@@ -2,11 +2,11 @@ package com.prody.prashant.ui.screens.profile
 import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.EaseInOutCubic
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
@@ -327,7 +327,7 @@ private fun CategoryTab(
     isDarkMode: Boolean
 ) {
     val backgroundColor by animateColorAsState(
-        targetValue = if (isSelected) {
+        if (isSelected) {
             if (isDarkMode) BannerColors.AccentGreen
             else BannerColors.AccentGreenLight
         } else {
@@ -339,7 +339,7 @@ private fun CategoryTab(
     )
 
     val textColor by animateColorAsState(
-        targetValue = if (isSelected) {
+        if (isSelected) {
             Color.Black
         } else {
             if (isDarkMode) BannerColors.TextSecondaryDark

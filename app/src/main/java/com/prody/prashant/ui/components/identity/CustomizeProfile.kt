@@ -1,7 +1,7 @@
 package com.prody.prashant.ui.components.identity
 import com.prody.prashant.ui.icons.ProdyIcons
 
-import androidx.compose.animation.core.animateColorAsState
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
@@ -168,7 +168,7 @@ private fun LoadoutCard(
     isDarkMode: Boolean
 ) {
     val borderColor by animateColorAsState(
-        targetValue = if (loadout.isActive) {
+        if (loadout.isActive) {
             if (isDarkMode) CustomizeColors.AccentGreen else CustomizeColors.AccentGreenLight
         } else {
             Color.Transparent

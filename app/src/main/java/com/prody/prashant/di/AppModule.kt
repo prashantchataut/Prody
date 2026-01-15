@@ -30,6 +30,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import javax.inject.Named
 import javax.inject.Singleton
 
 @Module
@@ -284,10 +285,10 @@ object AppModule {
     @Singleton
     fun providePreferencesManager(
         @ApplicationContext context: Context,
-        @javax.inject.Named("UnencryptedSharedPreferences") sharedPreferences: SharedPreferences,
-        @javax.inject.Named("EncryptedSharedPreferences") encryptedSharedPreferences: SharedPreferences
+        @Named("UnencryptedSharedPreferences") unencryptedPrefs: SharedPreferences,
+        @Named("EncryptedSharedPreferences") encryptedPrefs: SharedPreferences
     ): PreferencesManager {
-        return PreferencesManager(context, sharedPreferences, encryptedSharedPreferences)
+        return PreferencesManager(context, unencryptedPrefs, encryptedPrefs)
     }
 
     @Provides

@@ -47,8 +47,8 @@ import androidx.compose.ui.unit.dp
 object ProdyIcons {
     // Icons available in material-icons-core (re-exported from Icons.Filled)
     val Add: ImageVector get() = Icons.Filled.Add
-    val ArrowBack: ImageVector get() = Icons.Filled.ArrowBack
-    val ArrowForward: ImageVector get() = Icons.Filled.ArrowForward
+    val ArrowBack: ImageVector get() = Icons.AutoMirrored.Filled.ArrowBack
+    val ArrowForward: ImageVector get() = Icons.AutoMirrored.Filled.ArrowForward
     val Check: ImageVector get() = Icons.Filled.Check
     val Close: ImageVector get() = Icons.Filled.Close
     val Delete: ImageVector get() = Icons.Filled.Delete

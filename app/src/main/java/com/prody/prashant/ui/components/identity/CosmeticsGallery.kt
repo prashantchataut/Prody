@@ -1,10 +1,10 @@
 package com.prody.prashant.ui.components.identity
 import com.prody.prashant.ui.icons.ProdyIcons
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
@@ -219,7 +219,7 @@ private fun FilterTab(
     isDarkMode: Boolean
 ) {
     val backgroundColor by animateColorAsState(
-        targetValue = if (isSelected) {
+        if (isSelected) {
             if (isDarkMode) GalleryColors.AccentGreen else GalleryColors.AccentGreenLight
         } else {
             if (isDarkMode) GalleryColors.CardDark else GalleryColors.CardLight
@@ -229,10 +229,10 @@ private fun FilterTab(
     )
 
     val textColor by animateColorAsState(
-        targetValue = if (isSelected) {
+        if (isSelected) {
             Color.Black
         } else {
-            if (isDarkMode) GalleryColors.TextSecondaryDark else GalleryColors.TextSecondaryLight
+            if (isDarkMode) GalleryColors.TextSecondaryLight else GalleryColors.TextSecondaryLight
         },
         animationSpec = tween(200),
         label = "tab_text"
