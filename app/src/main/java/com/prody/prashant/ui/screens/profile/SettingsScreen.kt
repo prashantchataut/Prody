@@ -31,8 +31,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -998,7 +998,7 @@ private fun SettingsRowWithTimePicker(
 
         // Chevron
         Icon(
-            imageVector = ProdyIcons.KeyboardArrowRight,
+            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
             contentDescription = "Select time",
             tint = if (enabled) primaryText else primaryText.copy(alpha = 0.5f),
             modifier = Modifier.size(24.dp)
@@ -1402,7 +1402,7 @@ private fun FeedbackCard(isDark: Boolean) {
 
             // Arrow Icon
             Icon(
-                imageVector = ProdyIcons.KeyboardArrowRight,
+                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                 contentDescription = null,
                 tint = primaryText,
                 modifier = Modifier.size(24.dp)

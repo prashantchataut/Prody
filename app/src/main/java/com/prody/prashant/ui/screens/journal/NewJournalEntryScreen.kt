@@ -1,5 +1,6 @@
 package com.prody.prashant.ui.screens.journal
 import com.prody.prashant.ui.icons.ProdyIcons
+import androidx.compose.material.icons.automirrored.filled.List
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -1185,7 +1186,7 @@ private fun JournalInputField(
                             modifier = Modifier.size(48.dp)
                         ) {
                             Icon(
-                                imageVector = ProdyIcons.List,
+                                imageVector = androidx.compose.material.icons.automirrored.filled.List,
                                 contentDescription = "Add list",
                                 tint = colors.primaryText,
                                 modifier = Modifier.size(24.dp)
