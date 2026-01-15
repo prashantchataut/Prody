@@ -9,8 +9,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -63,7 +63,7 @@ fun CollaborativeHomeScreen(
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
-                            imageVector = ProdyIcons.AutoMirrored.Filled.ArrowBack,
+                            imageVector = ProdyIcons.ArrowBack,
                             contentDescription = stringResource(R.string.back)
                         )
                     }
@@ -175,7 +175,7 @@ private fun StatsRow(
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
         StatChip(
-            icon = ProdyIcons.AutoMirrored.Filled.Send,
+            icon = ProdyIcons.Send,
             value = sentCount.toString(),
             label = "Sent"
         )
@@ -485,7 +485,7 @@ private fun SentMessageCard(
                         imageVector = if (message.status == MessageStatus.SCHEDULED) {
                             ProdyIcons.Schedule
                         } else {
-                            ProdyIcons.AutoMirrored.Filled.Send
+                            ProdyIcons.Send
                         },
                         contentDescription = null,
                         modifier = Modifier.size(12.dp),

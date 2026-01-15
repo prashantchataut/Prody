@@ -21,7 +21,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -208,7 +208,7 @@ private fun AchievementsHeader(
             modifier = Modifier.size(48.dp)
         ) {
             Icon(
-                imageVector = ProdyIcons.AutoMirrored.Filled.ArrowBack,
+                imageVector = ProdyIcons.ArrowBack,
                 contentDescription = stringResource(R.string.back),
                 tint = if (isDarkMode) AchievementColors.TextPrimaryDark
                        else AchievementColors.TextPrimaryLight,

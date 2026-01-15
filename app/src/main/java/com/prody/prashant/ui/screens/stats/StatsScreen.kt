@@ -28,7 +28,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.TrendingUp
+import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -1084,7 +1084,7 @@ private fun PremiumLeaderboardItemRow(
                     color = accentColor
                 )
                 Icon(
-                    imageVector = ProdyIcons.AutoMirrored.Filled.TrendingUp,
+                    imageVector = ProdyIcons.TrendingUp,
                     contentDescription = null,
                     tint = accentColor,
                     modifier = Modifier.size(16.dp)

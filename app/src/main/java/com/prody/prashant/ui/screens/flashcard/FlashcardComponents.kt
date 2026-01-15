@@ -22,7 +22,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.VolumeUp
+import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Refresh
@@ -453,7 +453,7 @@ private fun FlashcardFront(
                 )
                 IconButton(onClick = onSpeak) {
                     Icon(
-                        imageVector = ProdyIcons.AutoMirrored.Filled.VolumeUp,
+                        imageVector = ProdyIcons.VolumeUp,
                         contentDescription = "Pronounce",
                         tint = MaterialTheme.colorScheme.primary
                     )

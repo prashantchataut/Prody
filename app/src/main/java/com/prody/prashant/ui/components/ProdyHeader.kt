@@ -525,7 +525,7 @@ fun ProdyBackHeader(
         subtitle = subtitle,
         modifier = modifier,
         style = style,
-        navigationIcon = ProdyIcons.AutoMirrored.Filled.ArrowBack,
+        navigationIcon = ProdyIcons.ArrowBack,
         onNavigationClick = onNavigateBack,
         actions = actions
     )

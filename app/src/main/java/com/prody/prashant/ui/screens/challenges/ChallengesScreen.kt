@@ -32,8 +32,8 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.TrendingUp
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -319,7 +319,7 @@ private fun ChallengesHeader(
             ) {
                 IconButton(onClick = onBackClick) {
                     Icon(
-                        imageVector = ProdyIcons.AutoMirrored.Filled.ArrowBack,
+                        imageVector = ProdyIcons.ArrowBack,
                         contentDescription = "Back",
                         tint = Color.White
                     )
@@ -1118,7 +1118,7 @@ private fun UserProgressBadge(
             horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             Icon(
-                imageVector = ProdyIcons.AutoMirrored.Filled.TrendingUp,
+                imageVector = ProdyIcons.TrendingUp,
                 contentDescription = null,
                 tint = color,
                 modifier = Modifier.size(16.dp)

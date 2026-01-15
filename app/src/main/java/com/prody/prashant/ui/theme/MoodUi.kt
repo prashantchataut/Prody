@@ -2,7 +2,7 @@ package com.prody.prashant.ui.theme
 import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.HelpOutline
+import androidx.compose.material.icons.filled.HelpOutline
 import androidx.compose.material.icons.filled.Celebration
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.HistoryEdu
@@ -34,7 +34,7 @@ val Mood.icon: ImageVector
         Mood.SAD -> ProdyIcons.SentimentDissatisfied
         Mood.MOTIVATED -> ProdyIcons.LocalFireDepartment
         Mood.GRATEFUL -> ProdyIcons.Favorite
-        Mood.CONFUSED -> ProdyIcons.AutoMirrored.Filled.HelpOutline
+        Mood.CONFUSED -> ProdyIcons.HelpOutline
         Mood.EXCITED -> ProdyIcons.Celebration
         Mood.NOSTALGIC -> ProdyIcons.HistoryEdu
     }
