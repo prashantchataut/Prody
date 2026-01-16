@@ -742,7 +742,8 @@ class NewGamificationSystemTest {
             discipline = SkillProgress.fromTotalXp(Skill.DISCIPLINE, 120), // Level 3
             courage = SkillProgress.fromTotalXp(Skill.COURAGE, 220), // Level 4
             combinedLevel = 9, // 2+3+4
-            tokens = 100
+            tokens = 100,
+            freezeTokensFromPerks = 1
         )
         assertEquals(2 + 3 + 4, state.combinedLevel)
     }
@@ -754,7 +755,8 @@ class NewGamificationSystemTest {
             discipline = SkillProgress.fromTotalXp(Skill.DISCIPLINE, 100),
             courage = SkillProgress.fromTotalXp(Skill.COURAGE, 50),
             combinedLevel = 13,
-            tokens = 0
+            tokens = 0,
+            freezeTokensFromPerks = 1
         )
         assertTrue(state.hasMastery)
         assertEquals(1, state.masteryCount)
@@ -767,7 +769,8 @@ class NewGamificationSystemTest {
             discipline = SkillProgress.fromTotalXp(Skill.DISCIPLINE, 2200),
             courage = SkillProgress.fromTotalXp(Skill.COURAGE, 2200),
             combinedLevel = 30,
-            tokens = 0
+            tokens = 0,
+            freezeTokensFromPerks = 2
         )
         assertTrue(state.isFullyMastered)
         assertEquals(3, state.masteryCount)
