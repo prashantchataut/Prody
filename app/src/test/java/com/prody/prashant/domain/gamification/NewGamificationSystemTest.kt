@@ -7,7 +7,7 @@ import org.junit.Test
  * Comprehensive unit tests for the new gamification system.
  *
  * Tests all core mechanics:
- * - Skill progression (10-level system)
+ * - Skill progression (20-level system)
  * - Point calculations for all actions
  * - Daily caps and anti-exploit measures
  * - Streak system with Mindful Breaks
@@ -67,14 +67,14 @@ class NewGamificationSystemTest {
         assertEquals(8, Skill.calculateLevel(1150))
         // Level 9: 1600 XP
         assertEquals(9, Skill.calculateLevel(1600))
-        // Level 10: 2200 XP (Mastery)
-        assertEquals(10, Skill.calculateLevel(2200))
+        // Level 20: 15300 XP (True Mastery)
+        assertEquals(20, Skill.calculateLevel(15300))
     }
 
     @Test
-    fun `Skill calculateLevel - max level is 10`() {
-        assertEquals(10, Skill.calculateLevel(5000))
-        assertEquals(10, Skill.calculateLevel(10000))
+    fun `Skill calculateLevel - max level is 20`() {
+        assertEquals(20, Skill.calculateLevel(15300))
+        assertEquals(20, Skill.calculateLevel(20000))
     }
 
     @Test
@@ -434,83 +434,83 @@ class NewGamificationSystemTest {
     // =========================================================================
 
     @Test
-    fun `Rank - Seeker at combined level 0-4`() {
+    fun `Rank - Seeker at combined level 0-5`() {
         assertEquals(Rank.SEEKER, Rank.fromCombinedLevel(0))
-        assertEquals(Rank.SEEKER, Rank.fromCombinedLevel(4))
+        assertEquals(Rank.SEEKER, Rank.fromCombinedLevel(5))
     }
 
     @Test
-    fun `Rank - Learner at combined level 5-7`() {
-        assertEquals(Rank.LEARNER, Rank.fromCombinedLevel(5))
-        assertEquals(Rank.LEARNER, Rank.fromCombinedLevel(7))
+    fun `Rank - Learner at combined level 6-11`() {
+        assertEquals(Rank.LEARNER, Rank.fromCombinedLevel(6))
+        assertEquals(Rank.LEARNER, Rank.fromCombinedLevel(11))
     }
 
     @Test
-    fun `Rank - Initiate at combined level 8-10`() {
-        assertEquals(Rank.INITIATE, Rank.fromCombinedLevel(8))
-        assertEquals(Rank.INITIATE, Rank.fromCombinedLevel(10))
+    fun `Rank - Initiate at combined level 12-17`() {
+        assertEquals(Rank.INITIATE, Rank.fromCombinedLevel(12))
+        assertEquals(Rank.INITIATE, Rank.fromCombinedLevel(17))
     }
 
     @Test
-    fun `Rank - Student at combined level 11-13`() {
-        assertEquals(Rank.STUDENT, Rank.fromCombinedLevel(11))
-        assertEquals(Rank.STUDENT, Rank.fromCombinedLevel(13))
+    fun `Rank - Student at combined level 18-23`() {
+        assertEquals(Rank.STUDENT, Rank.fromCombinedLevel(18))
+        assertEquals(Rank.STUDENT, Rank.fromCombinedLevel(23))
     }
 
     @Test
-    fun `Rank - Practitioner at combined level 14-16`() {
-        assertEquals(Rank.PRACTITIONER, Rank.fromCombinedLevel(14))
-        assertEquals(Rank.PRACTITIONER, Rank.fromCombinedLevel(16))
+    fun `Rank - Practitioner at combined level 24-29`() {
+        assertEquals(Rank.PRACTITIONER, Rank.fromCombinedLevel(24))
+        assertEquals(Rank.PRACTITIONER, Rank.fromCombinedLevel(29))
     }
 
     @Test
-    fun `Rank - Contemplative at combined level 17-19`() {
-        assertEquals(Rank.CONTEMPLATIVE, Rank.fromCombinedLevel(17))
-        assertEquals(Rank.CONTEMPLATIVE, Rank.fromCombinedLevel(19))
+    fun `Rank - Contemplative at combined level 30-35`() {
+        assertEquals(Rank.CONTEMPLATIVE, Rank.fromCombinedLevel(30))
+        assertEquals(Rank.CONTEMPLATIVE, Rank.fromCombinedLevel(35))
     }
 
     @Test
-    fun `Rank - Philosopher at combined level 20-23`() {
-        assertEquals(Rank.PHILOSOPHER, Rank.fromCombinedLevel(20))
-        assertEquals(Rank.PHILOSOPHER, Rank.fromCombinedLevel(23))
+    fun `Rank - Philosopher at combined level 36-44`() {
+        assertEquals(Rank.PHILOSOPHER, Rank.fromCombinedLevel(36))
+        assertEquals(Rank.PHILOSOPHER, Rank.fromCombinedLevel(44))
     }
 
     @Test
-    fun `Rank - Sage at combined level 24-26`() {
-        assertEquals(Rank.SAGE, Rank.fromCombinedLevel(24))
-        assertEquals(Rank.SAGE, Rank.fromCombinedLevel(26))
+    fun `Rank - Sage at combined level 45-53`() {
+        assertEquals(Rank.SAGE, Rank.fromCombinedLevel(45))
+        assertEquals(Rank.SAGE, Rank.fromCombinedLevel(53))
     }
 
     @Test
-    fun `Rank - Luminary at combined level 27-29`() {
-        assertEquals(Rank.LUMINARY, Rank.fromCombinedLevel(27))
-        assertEquals(Rank.LUMINARY, Rank.fromCombinedLevel(29))
+    fun `Rank - Luminary at combined level 54-59`() {
+        assertEquals(Rank.LUMINARY, Rank.fromCombinedLevel(54))
+        assertEquals(Rank.LUMINARY, Rank.fromCombinedLevel(59))
     }
 
     @Test
-    fun `Rank - Awakened at combined level 30`() {
-        assertEquals(Rank.AWAKENED, Rank.fromCombinedLevel(30))
+    fun `Rank - Awakened at combined level 60`() {
+        assertEquals(Rank.AWAKENED, Rank.fromCombinedLevel(60))
     }
 
     @Test
     fun `RankState - calculates from skill levels correctly`() {
         val state = RankState.fromSkillLevels(
-            clarityLevel = 5,
-            disciplineLevel = 4,
-            courageLevel = 5
-        )
-        assertEquals(14, state.combinedLevel) // 5+4+5
-        assertEquals(Rank.PRACTITIONER, state.currentRank) // Level 14-16
-    }
-
-    @Test
-    fun `RankState - max combined level is 30`() {
-        val state = RankState.fromSkillLevels(
             clarityLevel = 10,
             disciplineLevel = 10,
             courageLevel = 10
         )
-        assertEquals(30, state.combinedLevel)
+        assertEquals(30, state.combinedLevel) // 10+10+10
+        assertEquals(Rank.CONTEMPLATIVE, state.currentRank) // Level 30-35
+    }
+
+    @Test
+    fun `RankState - max combined level is 60`() {
+        val state = RankState.fromSkillLevels(
+            clarityLevel = 20,
+            disciplineLevel = 20,
+            courageLevel = 20
+        )
+        assertEquals(60, state.combinedLevel)
         assertEquals(Rank.AWAKENED, state.currentRank)
     }
 
@@ -728,9 +728,9 @@ class NewGamificationSystemTest {
     }
 
     @Test
-    fun `SkillProgress fromTotalXp - mastery at level 10`() {
-        val progress = SkillProgress.fromTotalXp(Skill.DISCIPLINE, 2200)
-        assertEquals(10, progress.level)
+    fun `SkillProgress fromTotalXp - mastery at level 20`() {
+        val progress = SkillProgress.fromTotalXp(Skill.DISCIPLINE, 15300)
+        assertEquals(20, progress.level)
         assertTrue(progress.isMastered)
         assertEquals(1f, progress.progressPercent, 0.01f)
     }
@@ -743,15 +743,15 @@ class NewGamificationSystemTest {
             courage = SkillProgress.fromTotalXp(Skill.COURAGE, 220), // Level 4
             combinedLevel = 9, // 2+3+4
             tokens = 100,
-            freezeTokensFromPerks = 1
+            freezeTokensFromPerks = 0
         )
         assertEquals(2 + 3 + 4, state.combinedLevel)
     }
 
     @Test
-    fun `PlayerSkillsState - hasMastery when any skill is level 10`() {
+    fun `PlayerSkillsState - hasMastery when any skill is level 20`() {
         val state = PlayerSkillsState(
-            clarity = SkillProgress.fromTotalXp(Skill.CLARITY, 2200), // Mastered
+            clarity = SkillProgress.fromTotalXp(Skill.CLARITY, 15300), // Mastered
             discipline = SkillProgress.fromTotalXp(Skill.DISCIPLINE, 100),
             courage = SkillProgress.fromTotalXp(Skill.COURAGE, 50),
             combinedLevel = 13,
@@ -763,7 +763,7 @@ class NewGamificationSystemTest {
     }
 
     @Test
-    fun `PlayerSkillsState - isFullyMastered when all skills at 10`() {
+    fun `PlayerSkillsState - isFullyMastered when all skills at 20`() {
         val state = PlayerSkillsState(
             clarity = SkillProgress.fromTotalXp(Skill.CLARITY, 2200),
             discipline = SkillProgress.fromTotalXp(Skill.DISCIPLINE, 2200),
@@ -797,8 +797,8 @@ class NewGamificationSystemTest {
         // Level 5: 10 + (5 * 5) = 35 tokens
         assertEquals(35, PointCalculator.LevelUpRewards.calculateTokenReward(5))
 
-        // Level 10 (mastery): 10 + (10 * 5) + 50 = 110 tokens
-        assertEquals(110, PointCalculator.LevelUpRewards.calculateTokenReward(10))
+        // Level 20 (mastery): 10 + (20 * 5) + 50 = 160 tokens
+        assertEquals(160, PointCalculator.LevelUpRewards.calculateTokenReward(20))
     }
 
     // =========================================================================
