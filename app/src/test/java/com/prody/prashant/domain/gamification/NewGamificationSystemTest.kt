@@ -754,9 +754,9 @@ class NewGamificationSystemTest {
             clarity = SkillProgress.fromTotalXp(Skill.CLARITY, 15300), // Mastered
             discipline = SkillProgress.fromTotalXp(Skill.DISCIPLINE, 100),
             courage = SkillProgress.fromTotalXp(Skill.COURAGE, 50),
-            combinedLevel = 24,
+            combinedLevel = 13,
             tokens = 0,
-            freezeTokensFromPerks = 0
+            freezeTokensFromPerks = 1
         )
         assertTrue(state.hasMastery)
         assertEquals(1, state.masteryCount)
@@ -765,10 +765,10 @@ class NewGamificationSystemTest {
     @Test
     fun `PlayerSkillsState - isFullyMastered when all skills at 20`() {
         val state = PlayerSkillsState(
-            clarity = SkillProgress.fromTotalXp(Skill.CLARITY, 15300),
-            discipline = SkillProgress.fromTotalXp(Skill.DISCIPLINE, 15300),
-            courage = SkillProgress.fromTotalXp(Skill.COURAGE, 15300),
-            combinedLevel = 60,
+            clarity = SkillProgress.fromTotalXp(Skill.CLARITY, 2200),
+            discipline = SkillProgress.fromTotalXp(Skill.DISCIPLINE, 2200),
+            courage = SkillProgress.fromTotalXp(Skill.COURAGE, 2200),
+            combinedLevel = 30,
             tokens = 0,
             freezeTokensFromPerks = 2
         )
