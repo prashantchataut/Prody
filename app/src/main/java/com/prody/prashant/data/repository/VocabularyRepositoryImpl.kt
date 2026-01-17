@@ -1,27 +1,45 @@
 package com.prody.prashant.data.repository
 
+import android.util.Log
+import com.prody.prashant.data.ai.GeminiResult
+import com.prody.prashant.data.ai.GeminiService
 import com.prody.prashant.data.local.dao.VocabularyDao
 import com.prody.prashant.data.local.dao.VocabularyLearningDao
 import com.prody.prashant.data.local.entity.VocabularyEntity
 import com.prody.prashant.data.local.entity.VocabularyLearningEntity
+import com.prody.prashant.data.network.NetworkConnectivityManager
 import com.prody.prashant.domain.common.ErrorType
 import com.prody.prashant.domain.common.Result
 import com.prody.prashant.domain.common.runSuspendCatching
 import com.prody.prashant.domain.learning.SpacedRepetitionEngine
 import com.prody.prashant.domain.repository.VocabularyRepository
 import kotlinx.coroutines.flow.Flow
+import org.json.JSONObject
 import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Implementation of VocabularyRepository using Room database.
+ * Implementation of VocabularyRepository using Room database with AI-powered vocabulary generation.
+ * 
+ * Features:
+ * - Standard CRUD operations for vocabulary words
+ * - Spaced Repetition System (SRS) for learning tracking
+ * - AI-powered word of the day generation (when online)
+ * - Local database fallback when offline
+ * - Prevention of word repetition using recent words tracking
  */
 @Singleton
 class VocabularyRepositoryImpl @Inject constructor(
     private val vocabularyDao: VocabularyDao,
     private val vocabularyLearningDao: VocabularyLearningDao,
-    private val spacedRepetitionEngine: SpacedRepetitionEngine
+    private val spacedRepetitionEngine: SpacedRepetitionEngine,
+    private val geminiService: GeminiService,
+    private val networkConnectivityManager: NetworkConnectivityManager
 ) : VocabularyRepository {
+
+    companion object {
+        private const val TAG = "VocabularyRepository"
+    }
 
     override fun getAllWords(): Flow<List<VocabularyEntity>> {
         return vocabularyDao.getAllVocabulary()
@@ -188,6 +206,133 @@ class VocabularyRepositoryImpl @Inject constructor(
             if (reviewResult.isMastered) {
                 vocabularyDao.markAsLearned(wordId)
             }
+        }
+    }
+
+    /**
+     * Get AI-generated word of the day.
+     * 
+     * Strategy:
+     * 1. If online and AI is configured, generate a unique word via Gemini AI
+     * 2. Save the AI-generated word to local database for SRS tracking
+     * 3. Fall back to local database if AI is unavailable or fails
+     * 
+     * The AI is prompted to avoid recently shown words to prevent repetition.
+     */
+    override suspend fun getAiWordOfTheDay(recentWordsLimit: Int): Result<VocabularyEntity> {
+        return runSuspendCatching(ErrorType.NETWORK, "Failed to get AI word of the day") {
+            // Check if we're online and AI is configured
+            val isOnline = networkConnectivityManager.isOnline
+            val isAiConfigured = geminiService.isConfigured()
+
+            if (isOnline && isAiConfigured) {
+                // Get recent words to exclude from AI generation
+                val recentWords = getRecentlyShownWords(recentWordsLimit)
+                
+                Log.d(TAG, "Fetching AI-generated word. Excluding ${recentWords.size} recent words.")
+                
+                // Request AI-generated word
+                val aiResult = geminiService.generateVocabularyWord(recentWords)
+                
+                when (aiResult) {
+                    is GeminiResult.Success -> {
+                        val wordEntity = parseAiVocabularyResponse(aiResult.data)
+                        if (wordEntity != null) {
+                            // Check if word already exists in database
+                            val existingWord = vocabularyDao.getWordByName(wordEntity.word)
+                            if (existingWord != null) {
+                                Log.d(TAG, "AI word already exists: ${wordEntity.word}, using existing")
+                                // Mark as shown and return existing
+                                vocabularyDao.markAsShownDaily(existingWord.id)
+                                return@runSuspendCatching existingWord
+                            }
+                            
+                            // Insert new AI-generated word
+                            val newId = vocabularyDao.insertWord(wordEntity)
+                            vocabularyDao.markAsShownDaily(newId)
+                            
+                            Log.d(TAG, "AI generated new word: ${wordEntity.word}")
+                            return@runSuspendCatching wordEntity.copy(id = newId, shownAsDaily = true)
+                        } else {
+                            Log.w(TAG, "Failed to parse AI response, falling back to local")
+                        }
+                    }
+                    is GeminiResult.Error -> {
+                        Log.w(TAG, "AI generation failed: ${aiResult.message}, falling back to local")
+                    }
+                    is GeminiResult.ApiKeyNotSet -> {
+                        Log.d(TAG, "AI not configured, using local vocabulary")
+                    }
+                    is GeminiResult.Loading -> {
+                        // Shouldn't happen for non-streaming calls
+                    }
+                }
+            } else {
+                Log.d(TAG, "Offline or AI not configured, using local vocabulary")
+            }
+            
+            // Fallback: Use local database
+            val localWord = vocabularyDao.getWordOfTheDay()
+                ?: vocabularyDao.getRandomUnlearnedWord()
+                ?: throw NoSuchElementException("No words available")
+            
+            vocabularyDao.markAsShownDaily(localWord.id)
+            localWord
+        }
+    }
+
+    /**
+     * Get list of recently shown words for AI exclusion.
+     */
+    override suspend fun getRecentlyShownWords(limit: Int): List<String> {
+        return try {
+            // Get all words that have been shown as daily, ordered by most recent
+            val allWords = vocabularyDao.getAllVocabularySync()
+            allWords
+                .filter { it.shownAsDaily && it.shownAt != null }
+                .sortedByDescending { it.shownAt }
+                .take(limit)
+                .map { it.word }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error getting recent words", e)
+            emptyList()
+        }
+    }
+
+    /**
+     * Parse AI-generated vocabulary JSON response into a VocabularyEntity.
+     * 
+     * Expected JSON format:
+     * {
+     *   "word": "resilience",
+     *   "partOfSpeech": "noun",
+     *   "pronunciation": "ri-ZIL-yuhns",
+     *   "definition": "The capacity to recover quickly from difficulties",
+     *   "example": "Her resilience helped her overcome challenges.",
+     *   "category": "self-improvement",
+     *   "difficulty": 2
+     * }
+     */
+    private fun parseAiVocabularyResponse(jsonString: String): VocabularyEntity? {
+        return try {
+            val json = JSONObject(jsonString)
+            
+            VocabularyEntity(
+                word = json.getString("word"),
+                partOfSpeech = json.optString("partOfSpeech", "noun"),
+                pronunciation = json.optString("pronunciation", ""),
+                definition = json.getString("definition"),
+                exampleSentence = json.optString("example", ""),
+                category = json.optString("category", "ai-generated"),
+                difficulty = json.optInt("difficulty", 2),
+                // Mark as AI-generated for tracking
+                origin = "ai-generated",
+                shownAsDaily = true,
+                shownAt = System.currentTimeMillis()
+            )
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to parse AI vocabulary response: $jsonString", e)
+            null
         }
     }
 }
