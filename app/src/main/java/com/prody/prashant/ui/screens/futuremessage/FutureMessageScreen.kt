@@ -117,6 +117,7 @@ fun FutureMessageListScreen(
                     0 -> DeliveredMessagesTab(
                         messages = uiState.deliveredMessages,
                         onMessageClick = { viewModel.markAsRead(it.id) },
+                        onShareClick = { viewModel.shareMessage(it) },
                         isDarkTheme = isDark
                     )
                     1 -> PendingMessagesTab(
@@ -342,6 +343,7 @@ private fun TimeCapsuleCTAButton(
 private fun DeliveredMessagesTab(
     messages: List<FutureMessageEntity>,
     onMessageClick: (FutureMessageEntity) -> Unit,
+    onShareClick: (FutureMessageEntity) -> Unit,
     isDarkTheme: Boolean
 ) {
     if (messages.isEmpty()) {
@@ -362,6 +364,7 @@ private fun DeliveredMessagesTab(
                 DeliveredMessageCard(
                     message = message,
                     onClick = { onMessageClick(message) },
+                    onShareClick = { onShareClick(message) },
                     isDarkTheme = isDarkTheme
                 )
             }
@@ -710,12 +713,13 @@ private fun TimeCapsuleFilterDialog(
 }
 
 /**
- * Card for delivered messages
+ * Card for delivered messages with share functionality
  */
 @Composable
 private fun DeliveredMessageCard(
     message: FutureMessageEntity,
     onClick: () -> Unit,
+    onShareClick: () -> Unit,
     isDarkTheme: Boolean
 ) {
     val dateFormat = remember { SimpleDateFormat("MMM d, yyyy", Locale.getDefault()) }
@@ -810,13 +814,47 @@ private fun DeliveredMessageCard(
                         color = primaryTextColor
                     )
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                    Text(
-                        text = "Delivered ${dateFormat.format(Date(message.deliveredAt ?: message.deliveryDate))}",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = TimeCapsuleAccent
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Delivered ${dateFormat.format(Date(message.deliveredAt ?: message.deliveryDate))}",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = TimeCapsuleAccent
+                        )
+
+                        // Share button
+                        Surface(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(8.dp))
+                                .clickable(onClick = onShareClick),
+                            shape = RoundedCornerShape(8.dp),
+                            color = TimeCapsuleAccent.copy(alpha = 0.15f)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Icon(
+                                    imageVector = ProdyIcons.Share,
+                                    contentDescription = "Share",
+                                    tint = TimeCapsuleAccent,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Text(
+                                    text = "Share",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = TimeCapsuleAccent
+                                )
+                            }
+                        }
+                    }
                 }
             }
 

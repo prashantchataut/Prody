@@ -923,6 +923,73 @@ Provide an encouraging, personalized weekly reflection based on this activity.
         }
     }.flowOn(Dispatchers.IO)
 
+    /**
+     * Generates a unique, sophisticated vocabulary word for self-improvement.
+     * Uses SRS (Spaced Repetition System) friendly format.
+     * 
+     * @param recentWords List of recently shown words to exclude
+     * @return GeminiResult containing word data in JSON format
+     */
+    suspend fun generateVocabularyWord(
+        recentWords: List<String>
+    ): GeminiResult<String> = withContext(Dispatchers.IO) {
+        val model = generativeModel ?: return@withContext GeminiResult.ApiKeyNotSet
+
+        try {
+            val recentWordsList = recentWords.take(30).joinToString(", ")
+            val prompt = """
+Generate a unique, sophisticated English vocabulary word for a user interested in self-improvement, personal growth, stoic philosophy, or mindfulness.
+
+REQUIREMENTS:
+1. The word must be unique - DO NOT use any of these recently shown words: [$recentWordsList]
+2. Choose a word that is:
+   - Intellectually enriching but not overly obscure
+   - Related to self-improvement, wisdom, character, or personal growth
+   - Something a thoughtful person would appreciate learning
+   
+RESPOND ONLY with valid JSON in this exact format (no markdown, no code blocks):
+{
+  "word": "the word",
+  "partOfSpeech": "noun/verb/adjective/adverb",
+  "pronunciation": "phonetic pronunciation (e.g., ih-FYOO-zhun)",
+  "definition": "clear, concise definition",
+  "example": "A meaningful example sentence showing the word in context",
+  "category": "self-improvement/stoicism/mindfulness/wisdom/character/resilience",
+  "difficulty": 2
+}
+
+difficulty should be 1-5 where:
+1 = common vocabulary
+2 = educated vocabulary  
+3 = sophisticated vocabulary
+4 = advanced vocabulary
+5 = rare vocabulary
+
+Respond ONLY with the JSON object, nothing else.
+"""
+
+            val response = model.generateContent(prompt)
+            val text = response.text
+
+            if (text.isNullOrBlank()) {
+                GeminiResult.Error(
+                    IllegalStateException("Empty response from AI"),
+                    "Could not generate vocabulary word"
+                )
+            } else {
+                // Clean up the response - remove any markdown formatting
+                val cleanedText = text.trim()
+                    .removePrefix("```json")
+                    .removePrefix("```")
+                    .removeSuffix("```")
+                    .trim()
+                GeminiResult.Success(cleanedText)
+            }
+        } catch (e: Exception) {
+            GeminiResult.Error(e, getErrorMessage(e))
+        }
+    }
+
     private fun getErrorMessage(e: Exception): String {
         return when {
             e.message?.contains("API key", ignoreCase = true) == true ->
