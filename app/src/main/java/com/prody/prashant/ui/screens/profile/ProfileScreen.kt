@@ -58,6 +58,7 @@ import com.prody.prashant.data.ai.WeeklyPatternResult
 import com.prody.prashant.data.local.entity.AchievementEntity
 import com.prody.prashant.ui.components.AmbientBackground
 import com.prody.prashant.ui.components.FloatingParticles
+import com.prody.prashant.ui.components.GrowthGarden
 import com.prody.prashant.ui.components.MoodBreathingHalo
 import com.prody.prashant.ui.components.PlayerSkillsCard
 import com.prody.prashant.ui.components.getCurrentTimeOfDay
@@ -232,7 +233,7 @@ fun ProfileScreen(
                 }
             }
 
-            // Story of Growth Section
+            // Growth Garden Section (replaces boring bar charts with organic tree visualization)
             item {
                 AnimatedVisibility(
                     visible = isVisible,
@@ -241,18 +242,12 @@ fun ProfileScreen(
                         animationSpec = tween(400, delayMillis = 200, easing = EaseOutCubic)
                     )
                 ) {
-                    PremiumStoryOfGrowthSection(
+                    GrowthGarden(
+                        journalEntries = uiState.journalEntries,
                         currentStreak = uiState.currentStreak,
                         longestStreak = uiState.longestStreak,
-                        totalPoints = uiState.totalPoints,
-                        journalEntries = uiState.journalEntries,
-                        wordsLearned = uiState.wordsLearned,
-                        daysOnPrody = uiState.daysOnPrody,
-                        surfaceColor = surfaceColor,
-                        textPrimary = textPrimary,
-                        textSecondary = textSecondary,
-                        textTertiary = textTertiary,
-                        accentColor = accentColor
+                        missedDays = 0, // Could be calculated from streak history
+                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
                     )
                 }
             }

@@ -42,7 +42,18 @@ object ProdyBanners {
         /** Circular meditative patterns inspired by mandalas */
         MANDALA,
         /** Flowing aurora-like patterns with smooth color transitions */
-        AURORA
+        AURORA,
+        // === NEW ALGORITHMIC PATTERNS (Premium) ===
+        /** Dark gradient with random star points and cosmic dust */
+        NEBULA,
+        /** Sand color with concentric circles (zen garden style) */
+        ZEN,
+        /** Geometric triangles in high contrast for productivity */
+        FOCUS,
+        /** Sine wave gradients creating movement and energy */
+        FLOW,
+        /** Deep blue/black with glowing edge effects */
+        NIGHT
     }
 
     /**
@@ -479,6 +490,66 @@ object ProdyBanners {
             rarity = CosmeticRarity.EPIC,
             isAnimated = false,
             isSpecial = true
+        ),
+
+        // ===== NEW ALGORITHMIC PATTERN BANNERS (Premium Visual Experience) =====
+        // These banners use the new BannerCanvas system for rich, algorithmically
+        // generated visuals that replace boring solid colors.
+
+        Banner(
+            id = "pattern_nebula",
+            name = "Nebula Dreams",
+            description = "A canvas of cosmic wonder, stars scattered across infinite darkness",
+            unlockRequirement = "Available to all",
+            gradientColors = listOf(0xFF0D0D1A, 0xFF1A1A2E, 0xFF0F3460),
+            patternType = PatternType.NEBULA,
+            rarity = CosmeticRarity.COMMON,
+            isDefault = true,
+            isAnimated = true
+        ),
+        Banner(
+            id = "pattern_zen",
+            name = "Zen Garden",
+            description = "Peaceful ripples in sand, where silence speaks loudest",
+            unlockRequirement = "Available to all",
+            gradientColors = listOf(0xFFF5E6D3, 0xFFE8D4B8, 0xFFDBC4A0),
+            patternType = PatternType.ZEN,
+            rarity = CosmeticRarity.COMMON,
+            isDefault = true,
+            isAnimated = true
+        ),
+        Banner(
+            id = "pattern_focus",
+            name = "Laser Focus",
+            description = "Sharp geometry that channels clarity and purpose",
+            unlockRequirement = "Reach Level 3",
+            gradientColors = listOf(0xFF1A1A2E, 0xFF16213E, 0xFF0F3460),
+            patternType = PatternType.FOCUS,
+            rarity = CosmeticRarity.RARE,
+            requiredLevel = 3,
+            isAnimated = true
+        ),
+        Banner(
+            id = "pattern_flow",
+            name = "Flow State",
+            description = "Waves of energy in constant motion, like thoughts in meditation",
+            unlockRequirement = "Write 10 journal entries",
+            gradientColors = listOf(0xFF667EEA, 0xFF764BA2, 0xFFAB47BC),
+            patternType = PatternType.FLOW,
+            rarity = CosmeticRarity.RARE,
+            requiredAchievementId = "journal_10",
+            isAnimated = true
+        ),
+        Banner(
+            id = "pattern_night",
+            name = "Night Sanctuary",
+            description = "Glowing edges in the dark, a sanctuary for deep thoughts",
+            unlockRequirement = "Achieve 7-day streak",
+            gradientColors = listOf(0xFF0A0A0F, 0xFF0D1117, 0xFF1A1F2C),
+            patternType = PatternType.NIGHT,
+            rarity = CosmeticRarity.EPIC,
+            requiredAchievementId = "streak_7",
+            isAnimated = true
         )
     )
 

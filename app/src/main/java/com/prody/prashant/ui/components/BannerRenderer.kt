@@ -44,6 +44,7 @@ import com.prody.prashant.ui.theme.ProdyPremiumVioletLight
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
+import kotlin.math.sqrt
 
 /**
  * BannerRenderer - Premium Profile Banner Display Component
@@ -160,6 +161,22 @@ fun BannerRenderer(
                 }
                 PatternType.AURORA -> {
                     drawAuroraPattern(animatedAurora)
+                }
+                // New algorithmic patterns - rendered via BannerCanvas
+                PatternType.NEBULA -> {
+                    drawNebulaOverlay(animatedPulse, animatedWavePhase)
+                }
+                PatternType.ZEN -> {
+                    drawZenOverlay(animatedWavePhase, animatedPulse)
+                }
+                PatternType.FOCUS -> {
+                    drawFocusOverlay(animatedWavePhase)
+                }
+                PatternType.FLOW -> {
+                    drawFlowOverlay(animatedWavePhase)
+                }
+                PatternType.NIGHT -> {
+                    drawNightOverlay(animatedPulse)
                 }
             }
         }
@@ -696,5 +713,214 @@ private fun DrawScope.drawAuroraPattern(offset: Float) {
             )
         )
     }
+}
+
+// =============================================================================
+// NEW ALGORITHMIC PATTERN OVERLAYS (Premium Visual Experience)
+// These patterns replace boring solid colors with rich, dynamic visuals.
+// =============================================================================
+
+/**
+ * NEBULA OVERLAY - Stars scattered across the gradient background
+ */
+private fun DrawScope.drawNebulaOverlay(pulse: Float, phase: Float) {
+    val width = size.width
+    val height = size.height
+
+    // Cosmic dust clouds
+    repeat(2) { i ->
+        val cloudCenterX = width * (0.3f + i * 0.4f)
+        val cloudCenterY = height * (0.4f + i * 0.2f)
+        val cloudRadius = width * 0.25f * pulse
+
+        drawCircle(
+            brush = Brush.radialGradient(
+                colors = listOf(
+                    Color.White.copy(alpha = 0.12f),
+                    Color.Transparent
+                ),
+                center = Offset(cloudCenterX, cloudCenterY),
+                radius = cloudRadius
+            ),
+            center = Offset(cloudCenterX, cloudCenterY),
+            radius = cloudRadius
+        )
+    }
+
+    // Stars with twinkling
+    repeat(25) { i ->
+        val x = ((i * 37) % 100) / 100f * width
+        val y = ((i * 53) % 100) / 100f * height
+        val twinkle = 0.5f + 0.5f * sin(phase * 2 + i * 0.4f)
+        val starSize = 1f + twinkle * 1.5f
+        val starAlpha = 0.3f + twinkle * 0.5f
+
+        drawCircle(
+            color = Color.White.copy(alpha = starAlpha),
+            radius = starSize,
+            center = Offset(x, y)
+        )
+    }
+}
+
+/**
+ * ZEN OVERLAY - Concentric ripple circles on the gradient
+ */
+private fun DrawScope.drawZenOverlay(phase: Float, pulse: Float) {
+    val centerX = size.width / 2
+    val centerY = size.height / 2
+    val maxRadius = maxOf(size.width, size.height) * 0.5f
+
+    // Concentric ripples
+    repeat(6) { i ->
+        val baseRadius = maxRadius * (i + 1) / 6
+        val animatedRadius = baseRadius + sin(phase + i * 0.5f) * 4f
+        val strokeAlpha = 0.12f + (1f - i.toFloat() / 6) * 0.15f
+
+        drawCircle(
+            color = Color(0xFF8B7355).copy(alpha = strokeAlpha),
+            radius = animatedRadius * pulse,
+            center = Offset(centerX, centerY),
+            style = Stroke(width = 1.5f)
+        )
+    }
+
+    // Small stone accents
+    val stonePositions = listOf(
+        Offset(size.width * 0.25f, size.height * 0.4f),
+        Offset(size.width * 0.75f, size.height * 0.6f)
+    )
+    stonePositions.forEach { pos ->
+        drawCircle(
+            color = Color(0xFF6B5B4A).copy(alpha = 0.5f),
+            radius = 3f,
+            center = pos
+        )
+    }
+}
+
+/**
+ * FOCUS OVERLAY - Geometric triangles with wave effect
+ */
+private fun DrawScope.drawFocusOverlay(phase: Float) {
+    val triangleSize = 30f
+    val rows = (size.height / triangleSize).toInt() + 1
+    val cols = (size.width / triangleSize).toInt() + 1
+    val accentColor = Color(0xFF36F97F)
+
+    for (row in 0..rows) {
+        for (col in 0..cols) {
+            val x = col * triangleSize + (if (row % 2 == 1) triangleSize / 2 else 0f)
+            val y = row * triangleSize
+
+            val distance = kotlin.math.sqrt((x - size.width / 2).let { it * it } + (y - size.height / 2).let { it * it })
+            val maxDist = kotlin.math.sqrt((size.width / 2).let { it * it } + (size.height / 2).let { it * it })
+            val normalizedDist = distance / maxDist
+
+            val waveEffect = sin(normalizedDist * 4 * PI.toFloat() - phase) * 0.5f + 0.5f
+            val alpha = 0.08f + waveEffect * 0.2f
+
+            if ((row + col) % 4 == 0) {
+                val path = Path().apply {
+                    moveTo(x, y + triangleSize)
+                    lineTo(x + triangleSize / 2, y)
+                    lineTo(x + triangleSize, y + triangleSize)
+                    close()
+                }
+                drawPath(
+                    path = path,
+                    color = accentColor.copy(alpha = alpha),
+                    style = Stroke(width = 1f)
+                )
+            }
+        }
+    }
+}
+
+/**
+ * FLOW OVERLAY - Sine wave lines across the gradient
+ */
+private fun DrawScope.drawFlowOverlay(phase: Float) {
+    repeat(5) { i ->
+        val path = Path()
+        val baseY = size.height * (0.15f + i * 0.18f)
+        val amplitude = 12f + i * 4f
+        val frequency = 2f + i * 0.3f
+
+        path.moveTo(0f, baseY)
+
+        var x = 0f
+        while (x <= size.width) {
+            val y = baseY + sin((x / size.width * frequency * PI.toFloat()) + phase + i * (PI.toFloat() / 4)) * amplitude
+            if (x == 0f) {
+                path.moveTo(x, y)
+            } else {
+                path.lineTo(x, y)
+            }
+            x += 3f
+        }
+
+        drawPath(
+            path = path,
+            color = Color.White.copy(alpha = 0.2f - i * 0.03f),
+            style = Stroke(width = 1.5f, cap = StrokeCap.Round)
+        )
+    }
+}
+
+/**
+ * NIGHT OVERLAY - Glowing edge effects and subtle stars
+ */
+private fun DrawScope.drawNightOverlay(glowPulse: Float) {
+    val width = size.width
+    val height = size.height
+
+    // Top glow
+    drawRect(
+        brush = Brush.verticalGradient(
+            colors = listOf(
+                Color(0xFF36F97F).copy(alpha = 0.12f * glowPulse),
+                Color.Transparent
+            ),
+            startY = 0f,
+            endY = height * 0.3f
+        )
+    )
+
+    // Bottom glow
+    drawRect(
+        brush = Brush.verticalGradient(
+            colors = listOf(
+                Color.Transparent,
+                Color(0xFF6B5CE7).copy(alpha = 0.1f * glowPulse)
+            ),
+            startY = height * 0.7f,
+            endY = height
+        )
+    )
+
+    // Subtle stars
+    repeat(15) { i ->
+        val x = ((i * 41) % 100) / 100f * width
+        val y = ((i * 67) % 100) / 100f * height
+        val starAlpha = 0.2f + (i % 3) * 0.1f
+
+        drawCircle(
+            color = Color.White.copy(alpha = starAlpha * glowPulse),
+            radius = 1f,
+            center = Offset(x, y)
+        )
+    }
+
+    // Glow border
+    drawRect(
+        brush = Brush.linearGradient(
+            colors = listOf(
+                Color(0xFF36F97F).copy(alpha = 0.15f * glowPulse),
+                Color(0xFF6B5CE7).copy(alpha = 0.1f * glowPulse)
+            )
+        ),
+        style = Stroke(width = 1.5f)
+    )
 }
 
