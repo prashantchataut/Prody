@@ -64,6 +64,19 @@ sealed class BottomNavItem(
     )
 
     /**
+     * Haven - Therapeutic AI companion
+     * Note: Using string literal instead of Screen.HavenHome.route to avoid static initialization
+     * order dependency that can cause ExceptionInInitializerError on some devices.
+     */
+    data object Haven : BottomNavItem(
+        route = "haven_home",
+        labelResId = R.string.nav_haven,
+        selectedIcon = ProdyIcons.Psychology,
+        unselectedIcon = ProdyIcons.Outlined.Psychology,
+        contentDescriptionResId = R.string.nav_haven
+    )
+
+    /**
      * Profile - User profile and settings
      * Note: Using string literal instead of Screen.Profile.route to avoid static initialization
      * order dependency that can cause ExceptionInInitializerError on some devices.
@@ -85,7 +98,7 @@ sealed class BottomNavItem(
          * when data objects are accessed before they are fully initialized.
          */
         val items: List<BottomNavItem> by lazy {
-            listOf(Home, Journal, Stats, Profile)
+            listOf(Home, Journal, Haven, Stats, Profile)
         }
 
         /**
