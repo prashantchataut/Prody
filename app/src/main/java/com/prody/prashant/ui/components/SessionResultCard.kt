@@ -103,6 +103,14 @@ fun SessionResultCard(
                     Spacer(modifier = Modifier.height(12.dp))
                 }
 
+                // Context Bloom - vocabulary words used naturally in writing
+                if (sessionResult.hasContextBloom()) {
+                    sessionResult.contextBloom?.let { contextBloom ->
+                        ContextBloomSection(contextBloom)
+                        Spacer(modifier = Modifier.height(12.dp))
+                    }
+                }
+
                 // Divider before next action
                 HorizontalDivider(
                     modifier = Modifier.padding(vertical = 8.dp),
@@ -436,6 +444,137 @@ private fun SeedBloomSection(bloom: SeedBloomInfo) {
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFFFFD700)
             )
+        }
+    }
+}
+
+/**
+ * Context Bloom Section - Celebrates vocabulary words used naturally in writing.
+ *
+ * This is the heart of "real gamification" - proving knowledge through application,
+ * not boring fill-in-the-blank tests. When users naturally use learned vocabulary
+ * in their journal entries, we celebrate it here.
+ */
+@Composable
+private fun ContextBloomSection(contextBloom: ContextBloomInfo) {
+    val bloomColor = Color(0xFF9C27B0) // Purple for vocabulary mastery
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = bloomColor.copy(alpha = 0.12f)
+        ),
+        shape = RoundedCornerShape(8.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp)
+        ) {
+            // Header row
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = ProdyIcons.AutoAwesome,
+                    contentDescription = null,
+                    tint = bloomColor,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Knowledge Applied!",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = bloomColor
+                    )
+                    Text(
+                        text = contextBloom.getNotificationMessage(),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                // XP reward
+                Column(
+                    horizontalAlignment = Alignment.End
+                ) {
+                    Text(
+                        text = "+${contextBloom.totalXp}",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = bloomColor
+                    )
+                    Text(
+                        text = "XP",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            // Show bloomed words (max 3 to keep it clean)
+            if (contextBloom.bloomedWords.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    contextBloom.bloomedWords.take(3).forEach { word ->
+                        Surface(
+                            shape = RoundedCornerShape(4.dp),
+                            color = bloomColor.copy(alpha = 0.2f)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                if (word.isFirstBloom) {
+                                    Icon(
+                                        imageVector = ProdyIcons.Stars,
+                                        contentDescription = "First bloom",
+                                        tint = Color(0xFFFFD700),
+                                        modifier = Modifier.size(12.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                }
+                                Text(
+                                    text = word.word,
+                                    style = MaterialTheme.typography.labelMedium,
+                                    fontWeight = FontWeight.Medium,
+                                    color = bloomColor
+                                )
+                            }
+                        }
+                    }
+                    // Show "+N more" if there are additional words
+                    if (contextBloom.bloomedWords.size > 3) {
+                        Text(
+                            text = "+${contextBloom.bloomedWords.size - 3} more",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.align(Alignment.CenterVertically)
+                        )
+                    }
+                }
+            }
+
+            // Highlight first blooms with special message
+            val firstBlooms = contextBloom.getFirstBlooms()
+            if (firstBlooms.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = if (firstBlooms.size == 1) {
+                        "First time using '${firstBlooms.first().word}' naturally!"
+                    } else {
+                        "${firstBlooms.size} words used for the first time!"
+                    },
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.Medium,
+                    color = Color(0xFFFFD700)
+                )
+            }
         }
     }
 }

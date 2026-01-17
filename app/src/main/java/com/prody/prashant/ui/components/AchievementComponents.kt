@@ -231,6 +231,17 @@ private data class AchievementDimensions(
 /**
  * Detailed achievement card showing full information.
  */
+/**
+ * Get rarity-based border color for achievement cards.
+ * - Common: Grey (0xFF78909C)
+ * - Uncommon: Green (0xFF66BB6A)
+ * - Rare: Blue (0xFF42A5F5)
+ * - Epic: Purple (0xFFAB47BC)
+ * - Legendary: Gold (0xFFD4AF37)
+ * - Mythic: Golden Yellow (0xFFFFD700)
+ */
+private fun getRarityBorderColor(rarity: AchievementRarity): Color = rarity.color
+
 @Composable
 fun AchievementCard(
     name: String,
@@ -246,10 +257,16 @@ fun AchievementCard(
     onClick: (() -> Unit)? = null
 ) {
     val rarityColor = rarity.color
+    val borderColor = getRarityBorderColor(rarity)
 
     Card(
         modifier = modifier
             .fillMaxWidth()
+            .border(
+                width = if (isUnlocked) 2.dp else 1.dp,
+                color = if (isUnlocked) borderColor else borderColor.copy(alpha = 0.3f),
+                shape = RoundedCornerShape(12.dp)
+            )
             .then(if (onClick != null) Modifier.clickable { onClick() } else Modifier),
         colors = CardDefaults.cardColors(
             containerColor = if (isUnlocked) {
@@ -276,7 +293,7 @@ fun AchievementCard(
                         else Color.Gray.copy(alpha = 0.1f)
                     )
                     .then(
-                        if (isUnlocked) Modifier.border(2.dp, rarityColor, CircleShape)
+                        if (isUnlocked) Modifier.border(2.dp, borderColor, CircleShape)
                         else Modifier
                     ),
                 contentAlignment = Alignment.Center
@@ -291,12 +308,16 @@ fun AchievementCard(
 
             Spacer(modifier = Modifier.width(12.dp))
 
-            // Details
-            Column(modifier = Modifier.weight(1f)) {
+            // Details column - takes remaining space
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                // Title row - horizontal layout with proper wrapping
                 Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
+                    // Achievement name - single line, ellipsis if too long
                     Text(
                         text = name,
                         style = MaterialTheme.typography.titleSmall,
@@ -305,10 +326,15 @@ fun AchievementCard(
                             MaterialTheme.colorScheme.onSurface
                         } else {
                             MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                        }
+                        },
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false)
                     )
 
-                    // Rarity chip
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    // Rarity badge - FIXED: ensure horizontal text with proper constraints
                     Surface(
                         shape = RoundedCornerShape(4.dp),
                         color = rarityColor.copy(alpha = 0.15f)
@@ -318,13 +344,16 @@ fun AchievementCard(
                             modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                             style = MaterialTheme.typography.labelSmall,
                             color = rarityColor,
-                            fontWeight = FontWeight.Medium
+                            fontWeight = FontWeight.Medium,
+                            maxLines = 1,
+                            softWrap = false // Prevent wrapping - keeps text horizontal
                         )
                     }
                 }
 
                 Spacer(modifier = Modifier.height(4.dp))
 
+                // Description - can wrap to 2 lines
                 Text(
                     text = description,
                     style = MaterialTheme.typography.bodySmall,
@@ -350,14 +379,16 @@ fun AchievementCard(
                         Text(
                             text = "$currentValue / $targetValue",
                             style = MaterialTheme.typography.labelSmall,
-                            color = rarityColor
+                            color = rarityColor,
+                            maxLines = 1
                         )
                     }
                 }
             }
 
-            // XP reward badge
+            // XP reward badge - fixed width for consistency
             if (xpReward > 0) {
+                Spacer(modifier = Modifier.width(8.dp))
                 Column(
                     horizontalAlignment = Alignment.End
                 ) {
@@ -380,7 +411,8 @@ fun AchievementCard(
                                 text = "+$xpReward",
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.Bold,
-                                color = GoldTier
+                                color = GoldTier,
+                                maxLines = 1
                             )
                         }
                     }

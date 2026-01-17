@@ -2,8 +2,10 @@ package com.prody.prashant.domain.gamification
 
 import android.util.Log
 import com.prody.prashant.data.local.dao.UserDao
+import com.prody.prashant.data.local.dao.VocabularyDao
 import com.prody.prashant.domain.progress.BloomResult
 import com.prody.prashant.domain.progress.SeedBloomService
+import com.prody.prashant.domain.vocabulary.VocabularyDetector
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
 import java.util.UUID
@@ -26,12 +28,21 @@ import javax.inject.Singleton
  *
  * This is the single entry point for all gamification rewards.
  * No spam toasts - just clean session summaries.
+ *
+ * **Context Bloom Integration:**
+ * When a journal entry is saved, the system now detects:
+ * 1. Daily Seed usage (Word of the Day, Quote, Proverb)
+ * 2. Previously learned vocabulary used naturally in writing
+ *
+ * This proves actual vocabulary mastery through real-world application.
  */
 @Singleton
 class GameSessionManager @Inject constructor(
     private val gameSkillSystem: GameSkillSystem,
     private val missionSystem: MissionSystem,
     private val seedBloomService: SeedBloomService,
+    private val vocabularyDao: VocabularyDao,
+    private val vocabularyDetector: VocabularyDetector,
     private val userDao: UserDao
 ) {
     companion object {
@@ -45,6 +56,12 @@ class GameSessionManager @Inject constructor(
         const val WORD_LEARNED_XP = 15
         const val FUTURE_MESSAGE_BASE_XP = 35
         const val SEED_BLOOM_BONUS_TOKENS = 10
+
+        // Context Bloom rewards (proving vocabulary usage in real writing)
+        const val CONTEXT_BLOOM_XP_PER_WORD = 10
+        const val CONTEXT_BLOOM_FIRST_USE_BONUS = 20  // First time using word naturally
+        const val CONTEXT_BLOOM_MAX_XP_PER_ENTRY = 50 // Cap to prevent gaming
+        const val CONTEXT_BLOOM_MULTI_WORD_TOKENS = 10 // Using 3+ learned words
     }
 
     // =========================================================================
@@ -120,7 +137,7 @@ class GameSessionManager @Inject constructor(
             }
         }
 
-        // Check for seed bloom
+        // Check for seed bloom (Word of the Day, Quote, Proverb)
         val bloomResult = seedBloomService.checkAndBloom(content, "journal", entryId)
         if (bloomResult is BloomResult.Bloomed) {
             builder.seedBloom(
@@ -130,6 +147,45 @@ class GameSessionManager @Inject constructor(
                 )
             )
             builder.tokens((builder.build().rewards.tokens) + SEED_BLOOM_BONUS_TOKENS)
+        }
+
+        // =====================================================================
+        // CONTEXT BLOOM: Detect learned vocabulary used naturally in writing
+        // This is "real gamification" - proving actual vocabulary mastery
+        // =====================================================================
+        val contextBloomResult = detectContextBlooms(content, entryId)
+        if (contextBloomResult.bloomedWords.isNotEmpty()) {
+            builder.contextBloom(contextBloomResult)
+
+            // Award Discipline XP for using learned vocabulary
+            val contextBloomXp = gameSkillSystem.awardSkillXp(
+                skillType = GameSkillSystem.SkillType.DISCIPLINE,
+                baseXp = contextBloomResult.totalXp,
+                idempotencyKey = "context_bloom_${entryId}"
+            )
+
+            when (contextBloomXp) {
+                is SkillXpResult.Success -> {
+                    builder.addSkillXp(GameSkillSystem.SkillType.DISCIPLINE, contextBloomXp.xpAwarded)
+                    if (contextBloomXp.leveledUp) {
+                        builder.addLevelUp(
+                            SkillLevelUp(
+                                GameSkillSystem.SkillType.DISCIPLINE,
+                                contextBloomXp.previousLevel,
+                                contextBloomXp.newLevel
+                            )
+                        )
+                    }
+                }
+                else -> { /* Already logged or capped */ }
+            }
+
+            // Bonus tokens for using 3+ learned words
+            if (contextBloomResult.bloomedWords.size >= 3) {
+                builder.tokens((builder.build().rewards.tokens) + CONTEXT_BLOOM_MULTI_WORD_TOKENS)
+            }
+
+            Log.d(TAG, "Context Bloom: ${contextBloomResult.bloomedWords.size} words used naturally!")
         }
 
         // Suggest next action
@@ -402,6 +458,62 @@ class GameSessionManager @Inject constructor(
         } catch (e: Exception) {
             Log.e(TAG, "Error updating streak", e)
         }
+    }
+
+    /**
+     * Detect learned vocabulary words used naturally in content (Context Bloom).
+     *
+     * This is the core of "real gamification" - proving actual vocabulary mastery
+     * through natural usage rather than boring fill-in-the-blank exercises.
+     */
+    private suspend fun detectContextBlooms(content: String, entryId: Long): ContextBloomInfo {
+        if (content.isBlank()) {
+            return ContextBloomInfo(emptyList(), 0)
+        }
+
+        val bloomedWords = mutableListOf<ContextBloomedWord>()
+
+        try {
+            val learnedWords = vocabularyDao.getLearnedWordsSync()
+            if (learnedWords.isEmpty()) {
+                return ContextBloomInfo(emptyList(), 0)
+            }
+
+            val detectedUsages = vocabularyDetector.detectLearnedWords(content, learnedWords)
+
+            for (usage in detectedUsages) {
+                // Check if this is the first time using this word in context
+                val isFirstBloom = !vocabularyDao.hasBloomedInContext(usage.word.id)
+
+                val xpEarned = if (isFirstBloom) {
+                    CONTEXT_BLOOM_XP_PER_WORD + CONTEXT_BLOOM_FIRST_USE_BONUS
+                } else {
+                    CONTEXT_BLOOM_XP_PER_WORD
+                }
+
+                bloomedWords.add(
+                    ContextBloomedWord(
+                        word = usage.word.word,
+                        matchedForm = usage.matchedForm,
+                        sentence = usage.usedIn,
+                        position = usage.position,
+                        xpEarned = xpEarned,
+                        isFirstBloom = isFirstBloom
+                    )
+                )
+
+                // Mark word as bloomed in context
+                vocabularyDao.markBloomedInContext(usage.word.id, entryId)
+            }
+
+        } catch (e: Exception) {
+            Log.e(TAG, "Error detecting context blooms", e)
+        }
+
+        // Calculate total XP (capped)
+        val totalXp = bloomedWords.sumOf { it.xpEarned }.coerceAtMost(CONTEXT_BLOOM_MAX_XP_PER_ENTRY)
+
+        return ContextBloomInfo(bloomedWords, totalXp)
     }
 
     private suspend fun getNextSuggestion(justCompleted: GameSessionType): NextSuggestion? {

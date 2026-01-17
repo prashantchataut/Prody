@@ -18,7 +18,8 @@ data class SessionResult(
     val unlocks: List<SessionUnlock> = emptyList(),
     val nextSuggestion: NextSuggestion? = null,
     val missionProgress: MissionProgress? = null,
-    val seedBloom: SeedBloomInfo? = null
+    val seedBloom: SeedBloomInfo? = null,
+    val contextBloom: ContextBloomInfo? = null
 ) {
     /**
      * Check if this session resulted in any meaningful gains.
@@ -29,6 +30,11 @@ data class SessionResult(
      * Check if user leveled up any skill.
      */
     fun hasLevelUp(): Boolean = rewards.skillLevelUps.isNotEmpty()
+
+    /**
+     * Check if any words bloomed in context (learned vocabulary used naturally).
+     */
+    fun hasContextBloom(): Boolean = contextBloom != null && contextBloom.bloomedWords.isNotEmpty()
 }
 
 /**
@@ -137,6 +143,58 @@ data class SeedBloomInfo(
 )
 
 /**
+ * Context Bloom information - proves actual vocabulary usage in real writing.
+ *
+ * This is "real gamification" - instead of boring fill-in-the-blank exercises,
+ * we detect when users naturally use learned words in their journal entries.
+ *
+ * The feedback loop:
+ * 1. User learns a word (Word of the Day, flashcards, etc.)
+ * 2. User writes in their journal
+ * 3. System detects when learned words are used naturally
+ * 4. User gets rewarded with "Bloom" event
+ * 5. User is motivated to use more vocabulary naturally
+ *
+ * Philosophy: Knowledge isn't proven by tests - it's proven by application.
+ */
+data class ContextBloomInfo(
+    val bloomedWords: List<ContextBloomedWord>,
+    val totalXp: Int
+) {
+    /**
+     * Get a notification message describing the bloom.
+     */
+    fun getNotificationMessage(): String {
+        return when {
+            bloomedWords.size == 1 -> {
+                "You used '${bloomedWords.first().word}' perfectly. Knowledge applied!"
+            }
+            bloomedWords.isNotEmpty() -> {
+                "You used ${bloomedWords.size} learned words naturally. Knowledge applied!"
+            }
+            else -> ""
+        }
+    }
+
+    /**
+     * Get the first-bloom words (extra special!).
+     */
+    fun getFirstBlooms(): List<ContextBloomedWord> = bloomedWords.filter { it.isFirstBloom }
+}
+
+/**
+ * A word that "bloomed" - was used naturally in context.
+ */
+data class ContextBloomedWord(
+    val word: String,            // The vocabulary word
+    val matchedForm: String,     // The form found in text (e.g., "running" for "run")
+    val sentence: String,        // The sentence where it was used
+    val position: IntRange,      // Position in the text for highlighting
+    val xpEarned: Int,           // XP earned for this word
+    val isFirstBloom: Boolean    // True if this is the first time using this word in context
+)
+
+/**
  * Builder for creating session results.
  */
 class SessionResultBuilder(private val sessionType: GameSessionType) {
@@ -150,6 +208,7 @@ class SessionResultBuilder(private val sessionType: GameSessionType) {
     private var nextSuggestion: NextSuggestion? = null
     private var missionProgress: MissionProgress? = null
     private var seedBloom: SeedBloomInfo? = null
+    private var contextBloom: ContextBloomInfo? = null
 
     fun headline(headline: String) = apply { this.headline = headline }
     fun addDetail(detail: String) = apply { this.details.add(detail) }
@@ -163,6 +222,7 @@ class SessionResultBuilder(private val sessionType: GameSessionType) {
     fun nextSuggestion(suggestion: NextSuggestion?) = apply { this.nextSuggestion = suggestion }
     fun missionProgress(progress: MissionProgress?) = apply { this.missionProgress = progress }
     fun seedBloom(bloom: SeedBloomInfo?) = apply { this.seedBloom = bloom }
+    fun contextBloom(bloom: ContextBloomInfo?) = apply { this.contextBloom = bloom }
 
     fun build(): SessionResult = SessionResult(
         sessionType = sessionType,
@@ -171,6 +231,7 @@ class SessionResultBuilder(private val sessionType: GameSessionType) {
         unlocks = unlocks,
         nextSuggestion = nextSuggestion,
         missionProgress = missionProgress,
-        seedBloom = seedBloom
+        seedBloom = seedBloom,
+        contextBloom = contextBloom
     )
 }

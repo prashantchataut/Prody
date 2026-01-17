@@ -35,18 +35,6 @@ sealed class VocabularyGame {
     ) : VocabularyGame()
 
     /**
-     * Fill in the blank with the correct word.
-     */
-    data class FillInTheBlank(
-        override val id: String,
-        override val points: Int = 15,
-        override val timeLimit: Int = 20,
-        val sentence: String,
-        val word: VocabularyEntity,
-        val options: List<String>
-    ) : VocabularyGame()
-
-    /**
      * Match word with its definition.
      */
     data class DefinitionMatch(
@@ -171,7 +159,6 @@ data class GameSession(
 enum class GameType(val displayName: String, val description: String) {
     SYNONYM_MATCH("Synonym Match", "Match words with their synonyms"),
     ANTONYM_MATCH("Antonym Match", "Match words with their antonyms"),
-    FILL_BLANK("Fill in the Blank", "Complete sentences with the right word"),
     DEFINITION_MATCH("Definition Match", "Match words with their meanings"),
     TIMED_QUIZ("Timed Quiz", "Answer as many as you can before time runs out"),
     SPELLING("Spelling Challenge", "Type the correct spelling"),
