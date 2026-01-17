@@ -89,6 +89,7 @@ fun HomeScreen(
     onNavigateToProverbs: () -> Unit = onNavigateToQuotes,
     onNavigateToJournal: () -> Unit,
     onNavigateToFutureMessage: () -> Unit,
+    onNavigateToHaven: () -> Unit = {},
     onNavigateToMeditation: () -> Unit = {},
     onNavigateToChallenges: () -> Unit = {},
     onNavigateToSearch: () -> Unit = {},
@@ -237,6 +238,21 @@ fun HomeScreen(
                     todayEntryPreview = uiState.todayEntryPreview,
                     onJournalClick = onNavigateToJournal,
                     onChallengesClick = onNavigateToChallenges,
+                    surfaceColor = surfaceColor,
+                    primaryTextColor = primaryTextColor,
+                    secondaryTextColor = secondaryTextColor,
+                    accentColor = accentColor,
+                    isDarkTheme = isDark
+                )
+            }
+
+            // Spacer
+            item { Spacer(modifier = Modifier.height(16.dp)) }
+
+            // Haven - Talk to your AI therapist friend
+            item {
+                HavenCard(
+                    onHavenClick = onNavigateToHaven,
                     surfaceColor = surfaceColor,
                     primaryTextColor = primaryTextColor,
                     secondaryTextColor = secondaryTextColor,
@@ -994,6 +1010,106 @@ private fun QuickActionItem(
             fontSize = 12.sp,
             color = textColor
         )
+    }
+}
+
+// =============================================================================
+// HAVEN CARD - Talk to Haven
+// =============================================================================
+
+@Composable
+private fun HavenCard(
+    onHavenClick: () -> Unit,
+    surfaceColor: Color,
+    primaryTextColor: Color,
+    secondaryTextColor: Color,
+    accentColor: Color,
+    isDarkTheme: Boolean
+) {
+    // Soft purple accent for Haven (therapeutic/calm feel)
+    val havenAccentColor = if (isDarkTheme) {
+        Color(0xFFB388FF) // Light purple for dark theme
+    } else {
+        Color(0xFF7C4DFF) // Deep purple for light theme
+    }
+    
+    val havenBackgroundColor = if (isDarkTheme) {
+        havenAccentColor.copy(alpha = 0.12f)
+    } else {
+        havenAccentColor.copy(alpha = 0.08f)
+    }
+
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp)
+            .clip(RoundedCornerShape(20.dp))
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onHavenClick
+            ),
+        shape = RoundedCornerShape(20.dp),
+        color = havenBackgroundColor,
+        tonalElevation = 0.dp
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            // Icon container
+            Surface(
+                shape = CircleShape,
+                color = havenAccentColor.copy(alpha = 0.2f),
+                modifier = Modifier.size(48.dp)
+            ) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = ProdyIcons.Psychology,
+                        contentDescription = "Haven",
+                        tint = havenAccentColor,
+                        modifier = Modifier.size(26.dp)
+                    )
+                }
+            }
+
+            // Text content
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = "Talk to Haven",
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 16.sp,
+                    color = primaryTextColor
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = "Your supportive AI friend is here to listen",
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Normal,
+                    fontSize = 13.sp,
+                    color = secondaryTextColor,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+
+            // Arrow indicator
+            Icon(
+                imageVector = ProdyIcons.ChevronRight,
+                contentDescription = "Go to Haven",
+                tint = havenAccentColor,
+                modifier = Modifier.size(24.dp)
+            )
+        }
     }
 }
 
