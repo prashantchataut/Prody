@@ -135,4 +135,20 @@ interface VocabularyRepository {
      * @return Result containing updated review stats
      */
     suspend fun processWordReview(wordId: Long, quality: Int): Result<Unit>
+
+    /**
+     * Get AI-generated word of the day.
+     * Fetches a unique, sophisticated word from AI if online, avoiding recent words.
+     * Falls back to local database if AI is unavailable.
+     * 
+     * @param recentWordsLimit Number of recent words to exclude from AI generation
+     * @return Result containing a vocabulary entity (AI-generated or local fallback)
+     */
+    suspend fun getAiWordOfTheDay(recentWordsLimit: Int = 30): Result<VocabularyEntity>
+
+    /**
+     * Get list of recently shown words (for AI exclusion).
+     * Used to prevent repetition in AI-generated vocabulary.
+     */
+    suspend fun getRecentlyShownWords(limit: Int = 30): List<String>
 }

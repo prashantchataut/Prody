@@ -119,4 +119,42 @@ interface VocabularyDao {
      */
     @Query("SELECT COUNT(*) FROM vocabulary WHERE isLearned = 1 AND nextReviewAt <= :now")
     suspend fun getPendingReviewCount(now: Long = System.currentTimeMillis()): Int
+
+    // ==================== CONTEXT BLOOM QUERIES ====================
+
+    /**
+     * Get all learned words (suspend version for Context Bloom detection)
+     */
+    @Query("SELECT * FROM vocabulary WHERE isLearned = 1")
+    suspend fun getLearnedWordsSync(): List<VocabularyEntity>
+
+    /**
+     * Check if a word has ever been used in context (bloomed)
+     */
+    @Query("SELECT hasBloomedInContext FROM vocabulary WHERE id = :wordId")
+    suspend fun hasBloomedInContext(wordId: Long): Boolean
+
+    /**
+     * Mark a word as bloomed in context (used naturally in writing)
+     */
+    @Query("UPDATE vocabulary SET hasBloomedInContext = 1, bloomedAt = :bloomedAt, bloomedInEntryId = :entryId, bloomCount = bloomCount + 1 WHERE id = :wordId")
+    suspend fun markBloomedInContext(wordId: Long, entryId: Long, bloomedAt: Long = System.currentTimeMillis())
+
+    /**
+     * Get total count of context blooms across all words
+     */
+    @Query("SELECT SUM(bloomCount) FROM vocabulary WHERE hasBloomedInContext = 1")
+    suspend fun getTotalBloomCount(): Int
+
+    /**
+     * Get count of unique words that have bloomed
+     */
+    @Query("SELECT COUNT(*) FROM vocabulary WHERE hasBloomedInContext = 1")
+    suspend fun getUniqueWordsBloomed(): Int
+
+    /**
+     * Get words that have bloomed (for displaying in stats/achievements)
+     */
+    @Query("SELECT * FROM vocabulary WHERE hasBloomedInContext = 1 ORDER BY bloomedAt DESC")
+    fun getBloomedWords(): Flow<List<VocabularyEntity>>
 }

@@ -32,10 +32,11 @@ import kotlin.math.sin
 import kotlin.random.Random
 
 /**
- * Floating particles animation effect for backgrounds
+ * Floating particles animation effect for backgrounds with customizable size range.
+ * Use [FloatingParticles] from EnhancedAnimations.kt for a simpler version.
  */
 @Composable
-fun FloatingParticles(
+fun FloatingParticlesWithSize(
     modifier: Modifier = Modifier,
     particleCount: Int = 20,
     particleColor: Color = Color.White.copy(alpha = 0.3f),
@@ -503,10 +504,11 @@ fun StaggeredAnimationState(
 }
 
 /**
- * Number counter animation
+ * Number counter animation that returns a State<Int>.
+ * Use [AnimatedCounter] from GamificationComponents.kt for a Text-based counter with more options.
  */
 @Composable
-fun AnimatedCounter(
+fun animatedCounterState(
     count: Int,
     modifier: Modifier = Modifier
 ): State<Int> {

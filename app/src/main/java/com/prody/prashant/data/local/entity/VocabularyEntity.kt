@@ -11,7 +11,8 @@ import androidx.room.PrimaryKey
         androidx.room.Index(value = ["isLearned"]),
         androidx.room.Index(value = ["shownAsDaily"]),
         androidx.room.Index(value = ["isFavorite"]),
-        androidx.room.Index(value = ["nextReviewAt"])
+        androidx.room.Index(value = ["nextReviewAt"]),
+        androidx.room.Index(value = ["hasBloomedInContext"])
     ]
 )
 data class VocabularyEntity(
@@ -35,5 +36,10 @@ data class VocabularyEntity(
     val masteryLevel: Int = 0, // 0-100
     val isFavorite: Boolean = false,
     val shownAsDaily: Boolean = false,
-    val shownAt: Long? = null
+    val shownAt: Long? = null,
+    // Context Bloom tracking - proves actual usage in writing
+    val hasBloomedInContext: Boolean = false,
+    val bloomedAt: Long? = null,
+    val bloomedInEntryId: Long? = null, // Journal entry where word was first used naturally
+    val bloomCount: Int = 0 // How many times word has been used in context
 )

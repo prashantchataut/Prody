@@ -204,10 +204,11 @@ fun StreakBadgeWithLabel(
 // =============================================================================
 
 /**
- * Minimal streak indicator for tight spaces.
+ * Minimal streak indicator for tight spaces without animation.
+ * Use [CompactStreakIndicator] from StreakDisplay.kt for animated version.
  */
 @Composable
-fun CompactStreakIndicator(
+fun MinimalStreakIndicator(
     streakDays: Int,
     modifier: Modifier = Modifier
 ) {
