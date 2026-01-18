@@ -117,7 +117,7 @@ fun ProdyFilterChip(
     )
 
     val backgroundColor by animateColorAsState(
-        targetValue = when {
+        when {
             !enabled -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
             selected -> MaterialTheme.colorScheme.secondaryContainer
             else -> MaterialTheme.colorScheme.surface
@@ -127,7 +127,7 @@ fun ProdyFilterChip(
     )
 
     val contentColor by animateColorAsState(
-        targetValue = when {
+        when {
             !enabled -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
             selected -> MaterialTheme.colorScheme.onSecondaryContainer
             else -> MaterialTheme.colorScheme.onSurfaceVariant
@@ -137,7 +137,7 @@ fun ProdyFilterChip(
     )
 
     val borderColor by animateColorAsState(
-        targetValue = when {
+        when {
             !enabled -> MaterialTheme.colorScheme.outline.copy(alpha = 0.12f)
             selected -> Color.Transparent
             else -> MaterialTheme.colorScheme.outline
@@ -229,7 +229,7 @@ fun ProdySelectionChip(
     )
 
     val backgroundColor by animateColorAsState(
-        targetValue = when {
+        when {
             !enabled -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
             selected -> selectedBackgroundColor
             else -> MaterialTheme.colorScheme.surfaceVariant
@@ -239,7 +239,7 @@ fun ProdySelectionChip(
     )
 
     val contentColor by animateColorAsState(
-        targetValue = when {
+        when {
             !enabled -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
             selected -> selectedContentColor
             else -> MaterialTheme.colorScheme.onSurfaceVariant

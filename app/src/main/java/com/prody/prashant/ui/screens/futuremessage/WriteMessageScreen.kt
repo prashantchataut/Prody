@@ -1037,12 +1037,12 @@ private fun TimeTag(
     inactiveTagTextColor: Color
 ) {
     val backgroundColor by animateColorAsState(
-        targetValue = if (isSelected) TimeCapsuleAccent else inactiveTagBgColor,
+        if (isSelected) TimeCapsuleAccent else inactiveTagBgColor,
         animationSpec = tween(200),
         label = "time_tag_bg"
     )
     val textColor by animateColorAsState(
-        targetValue = if (isSelected) Color.White else inactiveTagTextColor,
+        if (isSelected) Color.White else inactiveTagTextColor,
         animationSpec = tween(200),
         label = "time_tag_text"
     )
@@ -1078,12 +1078,12 @@ private fun CategoryTag(
     inactiveTagTextColor: Color
 ) {
     val backgroundColor by animateColorAsState(
-        targetValue = if (isSelected) TimeCapsuleAccent else inactiveTagBgColor,
+        if (isSelected) TimeCapsuleAccent else inactiveTagBgColor,
         animationSpec = tween(200),
         label = "category_tag_bg"
     )
     val textColor by animateColorAsState(
-        targetValue = if (isSelected) Color.White else inactiveTagTextColor,
+        if (isSelected) Color.White else inactiveTagTextColor,
         animationSpec = tween(200),
         label = "category_tag_text"
     )

@@ -507,10 +507,16 @@ private data class BadgeConfig(
 @Composable
 fun ProdyDevBanner(
     modifier: Modifier = Modifier,
-    height: Dp = 80.dp
+    height: Dp = 80.dp,
+    isPlaying: Boolean = false // Added to make the new code snippet syntactically correct
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "dev_banner")
 
+    val backgroundColor by animateColorAsState(
+        targetValue = if (isPlaying) MoodMotivated else MoodCalm,
+        animationSpec = tween(1000),
+        label = "banner_color"
+    )
     val codeScroll by infiniteTransition.animateFloat(
         initialValue = 0f,
         targetValue = 1f,
