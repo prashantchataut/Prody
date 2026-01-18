@@ -655,7 +655,7 @@ fun BannerCanvasShowcase(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        BannerPatternType.values().forEach { patternType ->
+        BannerPatternType.entries.forEach { patternType ->
             BannerCanvas(
                 patternType = patternType,
                 modifier = Modifier
