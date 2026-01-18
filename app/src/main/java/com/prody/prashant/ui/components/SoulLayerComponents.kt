@@ -1065,10 +1065,11 @@ private fun getMilestoneIcon(type: MemoryMilestoneType): ImageVector {
 // ================================================================================================
 
 /**
- * Outlined button following Prody's flat design.
+ * Outlined button following Prody's flat design with custom content.
+ * Use [ProdyOutlinedButton] from ProdyButton.kt for more options.
  */
 @Composable
-fun ProdyOutlinedButton(
+fun SoulOutlinedButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
@@ -1086,9 +1087,10 @@ fun ProdyOutlinedButton(
 
 /**
  * Gradient card used for special content like First Week progress.
+ * Use [ProdyGradientCard] from ProdyCard.kt for more options.
  */
 @Composable
-fun ProdyGradientCard(
+fun SoulGradientCard(
     gradientColors: List<Color>,
     modifier: Modifier = Modifier,
     content: @Composable BoxScope.() -> Unit

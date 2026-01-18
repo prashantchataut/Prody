@@ -209,10 +209,11 @@ fun SkeletonText(
 }
 
 /**
- * Skeleton loading placeholder for cards
+ * Skeleton loading placeholder for cards with premium shimmer effect.
+ * Use [SkeletonCard] from LoadingStateComponents.kt for a more structured skeleton with avatar/text.
  */
 @Composable
-fun SkeletonCard(
+fun PremiumSkeletonCard(
     modifier: Modifier = Modifier,
     height: Dp = 120.dp,
     cornerRadius: Dp = 16.dp
