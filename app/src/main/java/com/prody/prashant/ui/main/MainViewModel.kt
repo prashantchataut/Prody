@@ -23,38 +23,41 @@ class MainViewModel @Inject constructor(
     val uiState: StateFlow<MainActivityUiState> = _uiState.asStateFlow()
 
     init {
-        // Step 1: Synchronously determine the start destination.
-        // This is the most critical piece of information needed to show the first screen.
-        val onboardingCompleted = preferencesManager.isOnboardingCompleted()
-        val startDestination = if (onboardingCompleted) Screen.Home.route else Screen.Onboarding.route
-
-        // Step 2: Immediately update the UI state to unblock the splash screen.
-        // We now have the essential information. `isLoading` is set to false.
-        _uiState.value = MainActivityUiState(
-            isLoading = false,
-            startDestination = startDestination
-        )
-
-        // Step 3: Asynchronously load the remaining non-critical settings.
-        // These settings (theme, haptics) do not block the initial UI render.
+        // Performance Optimization: All startup data is loaded asynchronously.
+        // The splash screen (`installSplashScreen`) waits for `uiState.isLoading` to be false.
+        // By combining all necessary flows, we ensure the main thread is never blocked
+        // and the UI is only updated once all critical data is loaded.
         viewModelScope.launch {
             combine(
+                // Critical: Catch potential IOExceptions from DataStore to prevent startup crashes.
+                preferencesManager.onboardingCompleted.catch { emit(false) },
                 preferencesManager.themeMode.catch { emit("system") },
                 preferencesManager.hapticFeedbackEnabled.catch { emit(true) }
-            ) { themeModeString, hapticEnabled ->
+            ) { onboardingCompleted, themeModeString, hapticEnabled ->
+                // Determine the starting screen based on onboarding status.
+                val startDestination = if (onboardingCompleted) {
+                    Screen.Home.route
+                } else {
+                    Screen.Onboarding.route
+                }
+
+                // Parse the theme mode from the string preference.
                 val themeMode = when (themeModeString.lowercase()) {
                     "light" -> ThemeMode.LIGHT
                     "dark" -> ThemeMode.DARK
                     else -> ThemeMode.SYSTEM
                 }
-                // Return a pair of the loaded settings
-                themeMode to hapticEnabled
-            }.collect { (themeMode, hapticEnabled) ->
-                // Update the state with the async-loaded settings without altering the start destination.
-                _uiState.value = _uiState.value.copy(
+
+                // Create the fully-loaded UI state.
+                MainActivityUiState(
+                    isLoading = false, // Data is now loaded.
+                    startDestination = startDestination,
                     themeMode = themeMode,
                     hapticFeedbackEnabled = hapticEnabled
                 )
+            }.collect { loadedState ->
+                // Update the UI state in a single, atomic operation.
+                _uiState.value = loadedState
             }
         }
     }
