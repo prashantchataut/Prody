@@ -1,6 +1,8 @@
 package com.prody.prashant.ui.main
 
 import androidx.lifecycle.ViewModel
+import android.content.Intent
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.prody.prashant.data.local.preferences.PreferencesManager
 import com.prody.prashant.ui.navigation.Screen
@@ -22,7 +24,33 @@ class MainViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(MainActivityUiState())
     val uiState: StateFlow<MainActivityUiState> = _uiState.asStateFlow()
 
+    // Security: A hardcoded allow-list of routes that can be navigated to from an external Intent.
+    // This prevents malicious apps from forcing navigation to arbitrary or sensitive screens.
+    private val safeExternalRoutes = setOf(
+        Screen.NewJournalEntry.route,
+        "journal/new", // Alias for deep linking
+        Screen.CollaborativeHome.route,
+        Screen.Missions.route
+    )
+
     init {
+        loadInitialState()
+    }
+
+    /**
+     * Processes an incoming Intent to check for a valid "navigate_to" extra.
+     * If a valid, safe route is found, it overrides the default start destination.
+     */
+    fun processIntent(intent: Intent?) {
+        val navigateTo = intent?.getStringExtra("navigate_to")
+        if (navigateTo != null && navigateTo in safeExternalRoutes) {
+            // If a valid deep link is found, update the start destination
+            // and keep other state properties as they are.
+            _uiState.value = _uiState.value.copy(startDestination = navigateTo)
+        }
+    }
+
+    private fun loadInitialState() {
         // Performance Optimization: All startup data is loaded asynchronously.
         // The splash screen (`installSplashScreen`) waits for `uiState.isLoading` to be false.
         // By combining all necessary flows, we ensure the main thread is never blocked
@@ -34,8 +62,8 @@ class MainViewModel @Inject constructor(
                 preferencesManager.themeMode.catch { emit("system") },
                 preferencesManager.hapticFeedbackEnabled.catch { emit(true) }
             ) { onboardingCompleted, themeModeString, hapticEnabled ->
-                // Determine the starting screen based on onboarding status.
-                val startDestination = if (onboardingCompleted) {
+                // Determine the default starting screen based on onboarding status.
+                val defaultStartDestination = if (onboardingCompleted) {
                     Screen.Home.route
                 } else {
                     Screen.Onboarding.route
@@ -51,7 +79,7 @@ class MainViewModel @Inject constructor(
                 // Create the fully-loaded UI state.
                 MainActivityUiState(
                     isLoading = false, // Data is now loaded.
-                    startDestination = startDestination,
+                    startDestination = defaultStartDestination,
                     themeMode = themeMode,
                     hapticFeedbackEnabled = hapticEnabled
                 )
