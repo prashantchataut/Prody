@@ -1,5 +1,6 @@
 package com.prody.prashant.domain.repository
 
+import com.prody.prashant.data.local.dao.JournalEntrySummary
 import com.prody.prashant.data.local.dao.MoodCount
 import com.prody.prashant.data.local.entity.JournalEntryEntity
 import com.prody.prashant.domain.common.Result
@@ -115,4 +116,42 @@ interface JournalRepository {
      * Get dominant mood for a list of entries.
      */
     fun getDominantMood(entries: List<JournalEntryEntity>): Mood?
+
+    // ==================== MIRROR/RECEIPT COMPARISON ====================
+
+    /**
+     * Find similar entries based on content keywords.
+     * Used for "The Receipt" feature to compare past vs present entries.
+     * @param content The current entry content to find similar entries for
+     * @param excludeId The ID of the current entry to exclude from results
+     * @param limit Maximum number of similar entries to return
+     * @return List of similar journal entries
+     */
+    suspend fun findSimilarEntries(
+        content: String,
+        excludeId: Long = 0,
+        limit: Int = 5
+    ): List<JournalEntryEntity>
+
+    /**
+     * Find entries with the same mood.
+     * @param mood The mood to match
+     * @param excludeId The ID of the current entry to exclude
+     * @param limit Maximum number of entries to return
+     */
+    suspend fun findEntriesWithSameMood(
+        mood: String,
+        excludeId: Long = 0,
+        limit: Int = 5
+    ): List<JournalEntryEntity>
+
+    /**
+     * Get entries for similarity matching (for advanced similarity algorithms).
+     * @param excludeId The ID to exclude
+     * @param limit Maximum number of entries
+     */
+    suspend fun getEntriesForSimilarityMatching(
+        excludeId: Long = 0,
+        limit: Int = 100
+    ): List<JournalEntrySummary>
 }

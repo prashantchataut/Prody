@@ -38,5 +38,9 @@ data class FutureMessageEntity(
     // Time Capsule Reveal enhancements
     val isFavorite: Boolean = false, // Mark special messages as favorites
     val replyJournalEntryId: Long? = null, // Link to journal entry created as reply to past self
-    val readAt: Long? = null // Timestamp when message was actually read/opened
+    val readAt: Long? = null, // Timestamp when message was actually read/opened
+    // Mirror Evolution: Prophecy feature - predictions about the future
+    val prediction: String? = null, // User's prediction (e.g., "I will have finished my degree")
+    val predictionVerified: Boolean? = null, // Was the prediction accurate? (set when delivered)
+    val predictionVerifiedAt: Long? = null // When the prediction was verified
 )

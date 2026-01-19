@@ -95,7 +95,10 @@ object AppModule {
                     ProdyDatabase.MIGRATION_13_14,
                     ProdyDatabase.MIGRATION_14_15,
                     ProdyDatabase.MIGRATION_15_16,
-                    ProdyDatabase.MIGRATION_16_17
+                    ProdyDatabase.MIGRATION_16_17,
+                    ProdyDatabase.MIGRATION_17_18,
+                    ProdyDatabase.MIGRATION_18_19,
+                    ProdyDatabase.MIGRATION_19_20
                 )
                 .fallbackToDestructiveMigration()
                 .addCallback(databaseCallback)
@@ -279,6 +282,22 @@ object AppModule {
     @Singleton
     fun provideSoulLayerDao(database: ProdyDatabase): SoulLayerDao {
         return database.soulLayerDao()
+    }
+
+    // ============================================================================
+    // MIRROR EVOLUTION DAOs (Haven Memory + Evidence Locker)
+    // ============================================================================
+
+    @Provides
+    @Singleton
+    fun provideHavenMemoryDao(database: ProdyDatabase): HavenMemoryDao {
+        return database.havenMemoryDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideEvidenceDao(database: ProdyDatabase): EvidenceDao {
+        return database.evidenceDao()
     }
 
     @Provides

@@ -113,6 +113,22 @@ import com.prody.prashant.data.local.entity.*
  *              Added HavenInsightEntity for Haven therapeutic insights
  *              Added TemporalContentHistoryEntity for temporal content tracking
  *              Added FirstWeekProgressEntity for first week journey tracking
+ * - Version 18: Mirror Evolution - Haven Memory (THE VAULT) for Witness Mode
+ *              Added HavenMemoryEntity for storing facts/truths from conversations
+ *              Enables "Witness Mode" callback: Haven remembers and follows up
+ *              Categories: exam, deadline, commitment, event, goal, health
+ *              Status tracking: pending, followed_up, resolved, expired, dismissed
+ * - Version 19: Mirror Evolution - Evidence Locker
+ *              Added EvidenceEntity for THE LOCKER feature
+ *              Replaces XP/Plants with concrete evidence of growth:
+ *              - Receipts (Mirror contradictions)
+ *              - Witness (Haven follow-ups completed)
+ *              - Prophecy (Future Message predictions verified)
+ *              - Breakthrough (Journal insights)
+ *              - Streak (Milestone achievements)
+ * - Version 20: Mirror Evolution - Sealed Pods (Future Message Prophecy)
+ *              Added prediction, predictionVerified, predictionVerifiedAt to FutureMessageEntity
+ *              Enables "Prophecy" evidence drops when predictions are verified
  */
 @Database(
     entities = [
@@ -198,9 +214,13 @@ import com.prody.prashant.data.local.entity.*
         BuddhaInteractionEntity::class,
         HavenInsightEntity::class,
         TemporalContentHistoryEntity::class,
-        FirstWeekProgressEntity::class
+        FirstWeekProgressEntity::class,
+        // Mirror Evolution: Haven Memory (THE VAULT) for Witness Mode
+        HavenMemoryEntity::class,
+        // Mirror Evolution: Evidence Locker
+        EvidenceEntity::class
     ],
-    version = 17,
+    version = 20,
     exportSchema = true // Enable for migration verification
 )
 abstract class ProdyDatabase : RoomDatabase() {
@@ -256,6 +276,12 @@ abstract class ProdyDatabase : RoomDatabase() {
 
     // Soul Layer Intelligence DAO
     abstract fun soulLayerDao(): SoulLayerDao
+
+    // Haven Memory DAO (THE VAULT) for Witness Mode
+    abstract fun havenMemoryDao(): HavenMemoryDao
+
+    // Evidence DAO (THE LOCKER) for Evidence Drops
+    abstract fun evidenceDao(): EvidenceDao
 
     companion object {
         private const val TAG = "ProdyDatabase"
@@ -1536,6 +1562,133 @@ abstract class ProdyDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * Migration 17 -> 18: Mirror Evolution - Haven Memory (THE VAULT) for Witness Mode
+         *
+         * Changes:
+         * - Create haven_memories table for storing facts/truths from conversations
+         * - This enables Haven's "Witness Mode" callback feature where Haven
+         *   remembers things the user mentioned and follows up on them
+         *
+         * Example use cases:
+         * - User mentions "I have an exam on Friday"
+         * - Haven stores this as a memory
+         * - After the date passes, Haven asks "How did the exam go?"
+         */
+        val MIGRATION_17_18: Migration = object : Migration(17, 18) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Create haven_memories table for THE VAULT (Witness Mode)
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS haven_memories (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        userId TEXT NOT NULL DEFAULT 'local',
+                        fact TEXT NOT NULL,
+                        factDate INTEGER,
+                        category TEXT NOT NULL DEFAULT 'general',
+                        status TEXT NOT NULL DEFAULT 'pending',
+                        followUpDate INTEGER,
+                        sourceSessionId INTEGER,
+                        sourceMessage TEXT,
+                        followedUpAt INTEGER,
+                        followUpResponse TEXT,
+                        outcome TEXT,
+                        importance INTEGER NOT NULL DEFAULT 1,
+                        notificationSent INTEGER NOT NULL DEFAULT 0,
+                        notificationSentAt INTEGER,
+                        createdAt INTEGER NOT NULL,
+                        updatedAt INTEGER NOT NULL,
+                        syncStatus TEXT NOT NULL DEFAULT 'pending',
+                        isDeleted INTEGER NOT NULL DEFAULT 0
+                    )
+                """.trimIndent())
+
+                // Create indices for haven_memories
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_haven_memories_user ON haven_memories(userId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_haven_memories_status ON haven_memories(status)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_haven_memories_fact_date ON haven_memories(factDate)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_haven_memories_created ON haven_memories(createdAt)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_haven_memories_user_status ON haven_memories(userId, status)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_haven_memories_category ON haven_memories(category)")
+            }
+        }
+
+        /**
+         * Migration 18 -> 19: Mirror Evolution - Evidence Locker
+         *
+         * Changes:
+         * - Create evidence table for THE LOCKER feature
+         * - Evidence replaces XP/Plants with concrete proof of growth:
+         *   - Receipt: Mirror found a contradiction with past entry
+         *   - Witness: Haven followed up on something user mentioned
+         *   - Prophecy: Future Message prediction was verified
+         *   - Breakthrough: Journal insight was captured
+         *   - Streak: Milestone achievement was reached
+         */
+        val MIGRATION_18_19: Migration = object : Migration(18, 19) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Create evidence table for THE LOCKER
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS evidence (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        userId TEXT NOT NULL DEFAULT 'local',
+                        evidenceType TEXT NOT NULL,
+                        content TEXT NOT NULL,
+                        secondaryContent TEXT,
+                        sourceType TEXT,
+                        sourceId INTEGER,
+                        thenDate INTEGER,
+                        nowDate INTEGER,
+                        daysApart INTEGER,
+                        witnessOutcome TEXT,
+                        predictionAccurate INTEGER,
+                        rarity TEXT NOT NULL DEFAULT 'common',
+                        isViewed INTEGER NOT NULL DEFAULT 0,
+                        viewedAt INTEGER,
+                        isPinned INTEGER NOT NULL DEFAULT 0,
+                        collectedAt INTEGER NOT NULL,
+                        createdAt INTEGER NOT NULL,
+                        updatedAt INTEGER NOT NULL,
+                        syncStatus TEXT NOT NULL DEFAULT 'pending',
+                        lastSyncedAt INTEGER,
+                        isDeleted INTEGER NOT NULL DEFAULT 0
+                    )
+                """.trimIndent())
+
+                // Create indices for evidence table
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_evidence_user ON evidence(userId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_evidence_type ON evidence(evidenceType)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_evidence_user_type ON evidence(userId, evidenceType)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_evidence_collected ON evidence(collectedAt)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_evidence_source ON evidence(sourceType, sourceId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_evidence_rarity ON evidence(rarity)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_evidence_viewed ON evidence(isViewed)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_evidence_pinned ON evidence(isPinned)")
+            }
+        }
+
+        /**
+         * Migration 19 -> 20: Mirror Evolution - Sealed Pods (Future Message Prophecy)
+         *
+         * Changes:
+         * - Add prediction field to future_messages for user predictions
+         * - Add predictionVerified field to track prediction accuracy
+         * - Add predictionVerifiedAt field for verification timestamp
+         * - Enables "Prophecy" evidence drops when predictions are verified
+         *
+         * Example use cases:
+         * - User writes "I predict I will have finished my degree" in a future message
+         * - When delivered, user can verify if the prediction was accurate
+         * - If verified, a "Prophecy" evidence drop is created for the Locker
+         */
+        val MIGRATION_19_20: Migration = object : Migration(19, 20) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Add prediction fields to future_messages for Prophecy feature
+                db.execSQL("ALTER TABLE future_messages ADD COLUMN prediction TEXT")
+                db.execSQL("ALTER TABLE future_messages ADD COLUMN predictionVerified INTEGER")
+                db.execSQL("ALTER TABLE future_messages ADD COLUMN predictionVerifiedAt INTEGER")
+            }
+        }
+
         fun getInstance(context: Context): ProdyDatabase {
             return INSTANCE ?: synchronized(this) {
                 INSTANCE ?: buildDatabase(context).also { INSTANCE = it }
@@ -1552,7 +1705,7 @@ abstract class ProdyDatabase : RoomDatabase() {
                     MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8,
                     MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12,
                     MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16,
-                    MIGRATION_16_17
+                    MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20
                 )
                 .fallbackToDestructiveMigration()
                 .addCallback(DatabaseCallback())

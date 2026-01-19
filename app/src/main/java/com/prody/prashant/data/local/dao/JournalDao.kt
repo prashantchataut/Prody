@@ -146,6 +146,86 @@ interface JournalDao {
         WHERE createdAt >= :since AND isDeleted = 0
     """)
     suspend fun getActiveDaysCountSince(since: Long): Int
+
+    // ==================== MIRROR/RECEIPT COMPARISON QUERIES ====================
+
+    /**
+     * Find similar entries based on keyword matching in content
+     * Used for "The Receipt" feature to compare past vs present entries
+     * Returns entries that contain any of the provided keywords
+     */
+    @Query("""
+        SELECT * FROM journal_entries
+        WHERE id != :excludeId
+        AND isDeleted = 0
+        AND (
+            content LIKE '%' || :keyword1 || '%'
+            OR content LIKE '%' || :keyword2 || '%'
+            OR content LIKE '%' || :keyword3 || '%'
+        )
+        ORDER BY createdAt DESC
+        LIMIT :limit
+    """)
+    suspend fun findEntriesWithKeywords(
+        excludeId: Long,
+        keyword1: String,
+        keyword2: String,
+        keyword3: String,
+        limit: Int = 5
+    ): List<JournalEntryEntity>
+
+    /**
+     * Find entries with the same mood
+     * Used to find patterns and contradictions
+     */
+    @Query("""
+        SELECT * FROM journal_entries
+        WHERE id != :excludeId
+        AND isDeleted = 0
+        AND mood = :mood
+        ORDER BY createdAt DESC
+        LIMIT :limit
+    """)
+    suspend fun findEntriesWithSameMood(
+        excludeId: Long,
+        mood: String,
+        limit: Int = 5
+    ): List<JournalEntryEntity>
+
+    /**
+     * Find entries with similar themes (using aiThemes field)
+     */
+    @Query("""
+        SELECT * FROM journal_entries
+        WHERE id != :excludeId
+        AND isDeleted = 0
+        AND aiThemes IS NOT NULL
+        AND aiThemes LIKE '%' || :theme || '%'
+        ORDER BY createdAt DESC
+        LIMIT :limit
+    """)
+    suspend fun findEntriesWithSimilarThemes(
+        excludeId: Long,
+        theme: String,
+        limit: Int = 5
+    ): List<JournalEntryEntity>
+
+    /**
+     * Get all entries for content-based similarity matching (for cosine similarity)
+     * Returns entries with their content for in-memory similarity computation
+     */
+    @Query("""
+        SELECT id, content, mood, createdAt, aiThemes
+        FROM journal_entries
+        WHERE id != :excludeId
+        AND isDeleted = 0
+        ORDER BY createdAt DESC
+        LIMIT :limit
+    """)
+    suspend fun getEntriesForSimilarityMatching(
+        excludeId: Long,
+        limit: Int = 100
+    ): List<JournalEntrySummary>
 }
 
 data class MoodCount(
@@ -156,4 +236,16 @@ data class MoodCount(
 data class TimeOfDayCount(
     val timeOfDay: String,
     val count: Int
+)
+
+/**
+ * Summary of a journal entry for similarity matching
+ * Used in "The Receipt" feature for comparing entries
+ */
+data class JournalEntrySummary(
+    val id: Long,
+    val content: String,
+    val mood: String,
+    val createdAt: Long,
+    val aiThemes: String?
 )

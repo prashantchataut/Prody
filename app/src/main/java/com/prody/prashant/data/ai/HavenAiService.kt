@@ -587,6 +587,237 @@ Provide insights as a simple list, one per line. No numbers or bullets.
         }
     }
 
+    // ==================== WITNESS MODE: FACT EXTRACTION ====================
+
+    /**
+     * Data class representing an extracted fact/truth from a conversation
+     */
+    data class ExtractedFact(
+        val fact: String,
+        val category: String,
+        val factDate: Long? = null,
+        val importance: Int = 1
+    )
+
+    /**
+     * Extract facts/truths from a Haven conversation message.
+     * This is the core of "Witness Mode" - Haven remembers what users tell it
+     * and can follow up later.
+     *
+     * @param message The user's message to analyze
+     * @param conversationContext Optional context from the conversation
+     * @return List of extracted facts
+     */
+    suspend fun extractFacts(
+        message: String,
+        conversationContext: String = ""
+    ): Result<List<ExtractedFact>> = withContext(Dispatchers.IO) {
+        if (!isConfigured()) {
+            return@withContext Result.failure(Exception("Haven AI not configured"))
+        }
+
+        try {
+            val prompt = """
+You are analyzing a message from a therapeutic conversation to extract any facts, commitments, events, or important statements that should be remembered and followed up on later.
+
+MESSAGE:
+"$message"
+
+${if (conversationContext.isNotBlank()) "CONVERSATION CONTEXT:\n$conversationContext" else ""}
+
+TASK:
+Extract any facts, commitments, or events mentioned that Haven should remember and potentially follow up on later. These include:
+- Upcoming events (exams, deadlines, appointments, meetings)
+- Commitments/promises the user made ("I'll call mom", "I'm going to quit smoking")
+- Important dates (anniversaries, birthdays)
+- Goals they're working toward
+- Health-related commitments
+- Work/school deadlines
+- Relationship events
+
+For each fact found, determine:
+1. The fact itself (concise, specific statement)
+2. Category: exam, deadline, commitment, event, goal, relationship, health, work, personal, general
+3. Date mentioned (if any, in format YYYY-MM-DD or relative like "this Friday", "next week")
+4. Importance: 1 (normal), 2 (important), 3 (critical)
+
+If NO extractable facts are found, respond with just: NO_FACTS
+
+If facts ARE found, respond in this exact JSON format:
+[
+  {"fact": "...", "category": "...", "date": "...", "importance": 1},
+  ...
+]
+
+Important:
+- Only extract specific, actionable facts that warrant follow-up
+- Don't extract vague feelings or general statements
+- Extract the essence, not the whole sentence
+- Be concise - max 100 characters per fact
+
+Your response:
+"""
+
+            val response = requireModel().generateContent(prompt)
+            val text = response.text?.trim() ?: throw Exception("Empty response")
+
+            // Check for no facts case
+            if (text.contains("NO_FACTS") || text.isBlank()) {
+                return@withContext Result.success(emptyList())
+            }
+
+            // Parse JSON response
+            val facts = parseExtractedFacts(text)
+            Result.success(facts)
+
+        } catch (e: Exception) {
+            Log.e(TAG, "Error extracting facts", e)
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Parse the JSON response from fact extraction
+     */
+    private fun parseExtractedFacts(jsonText: String): List<ExtractedFact> {
+        try {
+            // Find JSON array in the response
+            val jsonStart = jsonText.indexOf('[')
+            val jsonEnd = jsonText.lastIndexOf(']')
+
+            if (jsonStart == -1 || jsonEnd == -1 || jsonEnd <= jsonStart) {
+                return emptyList()
+            }
+
+            val jsonArray = jsonText.substring(jsonStart, jsonEnd + 1)
+
+            // Simple JSON parsing (avoiding full library dependency)
+            val facts = mutableListOf<ExtractedFact>()
+            val objectPattern = Regex("""\{[^}]+\}""")
+
+            objectPattern.findAll(jsonArray).forEach { match ->
+                val obj = match.value
+                val fact = extractJsonString(obj, "fact")
+                val category = extractJsonString(obj, "category") ?: "general"
+                val dateStr = extractJsonString(obj, "date")
+                val importance = extractJsonInt(obj, "importance") ?: 1
+
+                if (fact != null && fact.length > 5) {
+                    facts.add(
+                        ExtractedFact(
+                            fact = fact.take(100),
+                            category = category.lowercase(),
+                            factDate = parseDateString(dateStr),
+                            importance = importance.coerceIn(1, 3)
+                        )
+                    )
+                }
+            }
+
+            return facts.take(5) // Limit to 5 facts per message
+
+        } catch (e: Exception) {
+            Log.e(TAG, "Error parsing extracted facts", e)
+            return emptyList()
+        }
+    }
+
+    /**
+     * Extract a string value from a JSON object string
+     */
+    private fun extractJsonString(json: String, key: String): String? {
+        val pattern = Regex(""""$key"\s*:\s*"([^"]*?)"""")
+        return pattern.find(json)?.groupValues?.get(1)
+    }
+
+    /**
+     * Extract an integer value from a JSON object string
+     */
+    private fun extractJsonInt(json: String, key: String): Int? {
+        val pattern = Regex(""""$key"\s*:\s*(\d+)""")
+        return pattern.find(json)?.groupValues?.get(1)?.toIntOrNull()
+    }
+
+    /**
+     * Parse a date string into a timestamp
+     * Handles: YYYY-MM-DD, relative dates like "this Friday", "next week"
+     */
+    private fun parseDateString(dateStr: String?): Long? {
+        if (dateStr.isNullOrBlank() || dateStr == "null") return null
+
+        try {
+            // Try ISO format first (YYYY-MM-DD)
+            if (dateStr.matches(Regex("""\d{4}-\d{2}-\d{2}"""))) {
+                val parts = dateStr.split("-")
+                val calendar = java.util.Calendar.getInstance()
+                calendar.set(
+                    parts[0].toInt(),
+                    parts[1].toInt() - 1, // Month is 0-indexed
+                    parts[2].toInt(),
+                    12, 0, 0
+                )
+                return calendar.timeInMillis
+            }
+
+            // Handle relative dates
+            val lowerDate = dateStr.lowercase()
+            val now = java.util.Calendar.getInstance()
+
+            when {
+                lowerDate.contains("today") -> return System.currentTimeMillis()
+                lowerDate.contains("tomorrow") -> {
+                    now.add(java.util.Calendar.DAY_OF_YEAR, 1)
+                    return now.timeInMillis
+                }
+                lowerDate.contains("next week") -> {
+                    now.add(java.util.Calendar.WEEK_OF_YEAR, 1)
+                    return now.timeInMillis
+                }
+                lowerDate.contains("this week") -> {
+                    now.add(java.util.Calendar.DAY_OF_YEAR, 3) // Assume mid-week
+                    return now.timeInMillis
+                }
+                // Day of week handling
+                lowerDate.contains("monday") -> return getNextDayOfWeek(java.util.Calendar.MONDAY, lowerDate.contains("next"))
+                lowerDate.contains("tuesday") -> return getNextDayOfWeek(java.util.Calendar.TUESDAY, lowerDate.contains("next"))
+                lowerDate.contains("wednesday") -> return getNextDayOfWeek(java.util.Calendar.WEDNESDAY, lowerDate.contains("next"))
+                lowerDate.contains("thursday") -> return getNextDayOfWeek(java.util.Calendar.THURSDAY, lowerDate.contains("next"))
+                lowerDate.contains("friday") -> return getNextDayOfWeek(java.util.Calendar.FRIDAY, lowerDate.contains("next"))
+                lowerDate.contains("saturday") -> return getNextDayOfWeek(java.util.Calendar.SATURDAY, lowerDate.contains("next"))
+                lowerDate.contains("sunday") -> return getNextDayOfWeek(java.util.Calendar.SUNDAY, lowerDate.contains("next"))
+            }
+
+        } catch (e: Exception) {
+            Log.e(TAG, "Error parsing date: $dateStr", e)
+        }
+
+        return null
+    }
+
+    /**
+     * Get the timestamp for the next occurrence of a day of week
+     */
+    private fun getNextDayOfWeek(dayOfWeek: Int, isNextWeek: Boolean): Long {
+        val now = java.util.Calendar.getInstance()
+        val currentDay = now.get(java.util.Calendar.DAY_OF_WEEK)
+        var daysUntil = dayOfWeek - currentDay
+
+        if (daysUntil <= 0) {
+            daysUntil += 7
+        }
+
+        if (isNextWeek && daysUntil < 7) {
+            daysUntil += 7
+        }
+
+        now.add(java.util.Calendar.DAY_OF_YEAR, daysUntil)
+        now.set(java.util.Calendar.HOUR_OF_DAY, 12)
+        now.set(java.util.Calendar.MINUTE, 0)
+        now.set(java.util.Calendar.SECOND, 0)
+
+        return now.timeInMillis
+    }
+
     // ==================== PRIVATE HELPER METHODS ====================
 
     /**

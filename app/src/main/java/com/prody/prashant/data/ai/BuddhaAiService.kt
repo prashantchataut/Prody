@@ -317,6 +317,50 @@ class BuddhaAiService @Inject constructor(
     }
 
     // =========================================================================
+    // THE MIRROR - Receipt Responses (Not cached - personalized)
+    // =========================================================================
+
+    /**
+     * Generates a Mirror response that compares current entry to past entries.
+     * This is the core of "The Receipt" feature - brutal honesty about patterns.
+     *
+     * @param currentContent Current journal entry content
+     * @param currentMood Current mood
+     * @param currentDate Formatted current date
+     * @param pastEntry Past entry for comparison (or null if no similar entry found)
+     */
+    suspend fun getMirrorResponse(
+        currentContent: String,
+        currentMood: String,
+        currentDate: String,
+        pastEntry: PastEntryContext?
+    ): GeminiResult<String> {
+        return geminiService.generateMirrorResponse(
+            currentContent = currentContent,
+            currentMood = currentMood,
+            currentDate = currentDate,
+            pastEntry = pastEntry
+        )
+    }
+
+    /**
+     * Streaming version of Mirror response.
+     */
+    fun getMirrorResponseStream(
+        currentContent: String,
+        currentMood: String,
+        currentDate: String,
+        pastEntry: PastEntryContext?
+    ): Flow<GeminiResult<String>> {
+        return geminiService.generateMirrorResponseStream(
+            currentContent = currentContent,
+            currentMood = currentMood,
+            currentDate = currentDate,
+            pastEntry = pastEntry
+        )
+    }
+
+    // =========================================================================
     // Custom Responses (Not cached)
     // =========================================================================
 

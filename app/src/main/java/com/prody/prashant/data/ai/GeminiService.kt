@@ -337,7 +337,83 @@ The reflection should:
 
 Just provide the reflection, no preamble.
 """
+
+    /**
+     * THE MIRROR - Comparison/Receipt Prompt
+     * Instead of summarizing, Buddha compares the current entry to past entries
+     * and points out contradictions or patterns.
+     */
+    fun getMirrorComparisonPrompt(
+        currentContent: String,
+        currentMood: String,
+        currentDate: String,
+        pastEntry: PastEntryContext?
+    ): String = """
+$CORE_IDENTITY
+
+## SPECIAL MODE: THE MIRROR
+
+You are now in MIRROR MODE. Your role is NOT to summarize, advise, or comfort.
+Your role is to be a BRUTAL MIRROR - showing the user their patterns without judgment but with stark clarity.
+
+CURRENT ENTRY (${currentDate}):
+"${currentContent}"
+Current Mood: $currentMood
+
+${if (pastEntry != null) """
+PAST ENTRY (${pastEntry.dateFormatted}, ${pastEntry.daysAgo} days ago):
+"${pastEntry.content}"
+Past Mood: ${pastEntry.mood}
+""" else "No similar past entry found."}
+
+## YOUR TASK:
+
+${if (pastEntry != null) """
+1. COMPARE the two entries directly
+2. Point out CONTRADICTIONS: Are they saying the same thing? Different things about the same topic?
+3. Identify PATTERNS: Is this a recurring theme? Same problem appearing again?
+4. Calculate the GAP: How much time has passed? What changed (or didn't)?
+5. Ask ONE piercing question that makes them reflect
+
+FORMAT YOUR RESPONSE AS:
+- Start with "I see you..." or "You wrote before that..."
+- Be direct, not gentle
+- End with a single challenging question
+- Keep it under 80 words
+""" else """
+1. Since no similar past entry exists, acknowledge this is a new topic
+2. Note what patterns or themes you notice in THIS entry alone
+3. End with a question about what they want to be different next time they write about this
+
+FORMAT YOUR RESPONSE AS:
+- Start with "First time writing about this..."
+- Point out any internal contradictions in the current entry itself
+- Ask what they hope to feel about this topic in the future
+- Keep it under 60 words
+"""}
+
+## WHAT YOU MUST NOT DO:
+- DO NOT summarize the entry
+- DO NOT give advice or suggestions
+- DO NOT use comforting platitudes
+- DO NOT say "I understand" or "That's valid"
+- DO NOT be a therapist - be a mirror
+
+The goal is to make them SEE themselves clearly, not to make them feel better.
+"""
 }
+
+/**
+ * Data class for past entry context used in Mirror mode
+ */
+data class PastEntryContext(
+    val id: Long,
+    val content: String,
+    val mood: String,
+    val dateFormatted: String,
+    val daysAgo: Int,
+    val createdAt: Long
+)
 
 /**
  * Production-grade Gemini AI service for Buddha (Stoic AI Mentor) functionality.
@@ -924,9 +1000,94 @@ Provide an encouraging, personalized weekly reflection based on this activity.
     }.flowOn(Dispatchers.IO)
 
     /**
+     * THE MIRROR - Generates a comparison-based response for journal entries.
+     * Instead of summarizing, it compares the current entry to past entries
+     * and points out contradictions or patterns.
+     *
+     * @param currentContent The content of the current journal entry
+     * @param currentMood The mood of the current entry
+     * @param currentDate Formatted date of the current entry
+     * @param pastEntry Optional past entry for comparison
+     * @return GeminiResult containing the mirror response
+     */
+    suspend fun generateMirrorResponse(
+        currentContent: String,
+        currentMood: String,
+        currentDate: String,
+        pastEntry: PastEntryContext?
+    ): GeminiResult<String> = withContext(Dispatchers.IO) {
+        val model = generativeModel ?: return@withContext GeminiResult.ApiKeyNotSet
+
+        try {
+            val prompt = BuddhaSystemPrompt.getMirrorComparisonPrompt(
+                currentContent = currentContent,
+                currentMood = currentMood,
+                currentDate = currentDate,
+                pastEntry = pastEntry
+            )
+            val response = model.generateContent(prompt)
+            val text = response.text
+
+            if (text.isNullOrBlank()) {
+                GeminiResult.Error(
+                    IllegalStateException("Empty response from AI"),
+                    "The mirror is clearing... Please try again."
+                )
+            } else {
+                GeminiResult.Success(text.trim())
+            }
+        } catch (e: Exception) {
+            GeminiResult.Error(e, getErrorMessage(e))
+        }
+    }
+
+    /**
+     * Streaming version of THE MIRROR response.
+     */
+    fun generateMirrorResponseStream(
+        currentContent: String,
+        currentMood: String,
+        currentDate: String,
+        pastEntry: PastEntryContext?
+    ): Flow<GeminiResult<String>> = flow {
+        val model = generativeModel
+        if (model == null) {
+            emit(GeminiResult.ApiKeyNotSet)
+            return@flow
+        }
+
+        try {
+            emit(GeminiResult.Loading)
+            val prompt = BuddhaSystemPrompt.getMirrorComparisonPrompt(
+                currentContent = currentContent,
+                currentMood = currentMood,
+                currentDate = currentDate,
+                pastEntry = pastEntry
+            )
+            var fullResponse = ""
+
+            model.generateContentStream(prompt).collect { chunk ->
+                chunk.text?.let { text ->
+                    fullResponse += text
+                    emit(GeminiResult.Success(fullResponse))
+                }
+            }
+
+            if (fullResponse.isBlank()) {
+                emit(GeminiResult.Error(
+                    IllegalStateException("Empty response"),
+                    "The mirror is clearing... Please try again."
+                ))
+            }
+        } catch (e: Exception) {
+            emit(GeminiResult.Error(e, getErrorMessage(e)))
+        }
+    }.flowOn(Dispatchers.IO)
+
+    /**
      * Generates a unique, sophisticated vocabulary word for self-improvement.
      * Uses SRS (Spaced Repetition System) friendly format.
-     * 
+     *
      * @param recentWords List of recently shown words to exclude
      * @return GeminiResult containing word data in JSON format
      */

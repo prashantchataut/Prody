@@ -1,6 +1,7 @@
 package com.prody.prashant.data.repository
 
 import com.prody.prashant.data.local.dao.JournalDao
+import com.prody.prashant.data.local.dao.JournalEntrySummary
 import com.prody.prashant.data.local.dao.MoodCount
 import com.prody.prashant.data.local.entity.JournalEntryEntity
 import com.prody.prashant.domain.common.ErrorType
@@ -131,5 +132,80 @@ class JournalRepositoryImpl @Inject constructor(
         val dominantMoodName = moodCounts.maxByOrNull { it.value }?.key
 
         return dominantMoodName?.let { Mood.fromString(it) }
+    }
+
+    // ==================== MIRROR/RECEIPT COMPARISON ====================
+
+    /**
+     * Extracts meaningful keywords from content for similarity matching.
+     * Filters out common stop words and short words.
+     */
+    private fun extractKeywords(content: String): List<String> {
+        val stopWords = setOf(
+            "the", "a", "an", "is", "are", "was", "were", "be", "been", "being",
+            "have", "has", "had", "do", "does", "did", "will", "would", "could", "should",
+            "may", "might", "must", "shall", "can", "need", "dare", "ought", "used",
+            "to", "of", "in", "for", "on", "with", "at", "by", "from", "as", "into",
+            "through", "during", "before", "after", "above", "below", "between", "under",
+            "again", "further", "then", "once", "here", "there", "when", "where", "why",
+            "how", "all", "each", "few", "more", "most", "other", "some", "such", "no",
+            "nor", "not", "only", "own", "same", "so", "than", "too", "very", "just",
+            "and", "but", "if", "or", "because", "until", "while", "although", "though",
+            "this", "that", "these", "those", "i", "me", "my", "myself", "we", "our",
+            "ours", "ourselves", "you", "your", "yours", "yourself", "yourselves",
+            "he", "him", "his", "himself", "she", "her", "hers", "herself", "it", "its",
+            "itself", "they", "them", "their", "theirs", "themselves", "what", "which",
+            "who", "whom", "whose", "am", "about", "also", "even", "like", "really",
+            "feel", "feeling", "felt", "today", "day", "time", "think", "know", "going",
+            "get", "got", "make", "made", "want", "wanted", "much", "many", "lot", "lots"
+        )
+
+        return content.lowercase()
+            .replace(Regex("[^a-z\\s]"), " ")
+            .split(Regex("\\s+"))
+            .filter { it.length > 3 && it !in stopWords }
+            .groupingBy { it }
+            .eachCount()
+            .entries
+            .sortedByDescending { it.value }
+            .take(10)
+            .map { it.key }
+    }
+
+    override suspend fun findSimilarEntries(
+        content: String,
+        excludeId: Long,
+        limit: Int
+    ): List<JournalEntryEntity> {
+        val keywords = extractKeywords(content)
+
+        // If we have fewer than 3 keywords, pad with empty strings
+        val keyword1 = keywords.getOrElse(0) { "" }
+        val keyword2 = keywords.getOrElse(1) { "" }
+        val keyword3 = keywords.getOrElse(2) { "" }
+
+        // First try keyword matching
+        val keywordResults = if (keyword1.isNotEmpty()) {
+            journalDao.findEntriesWithKeywords(excludeId, keyword1, keyword2, keyword3, limit)
+        } else {
+            emptyList()
+        }
+
+        return keywordResults
+    }
+
+    override suspend fun findEntriesWithSameMood(
+        mood: String,
+        excludeId: Long,
+        limit: Int
+    ): List<JournalEntryEntity> {
+        return journalDao.findEntriesWithSameMood(excludeId, mood, limit)
+    }
+
+    override suspend fun getEntriesForSimilarityMatching(
+        excludeId: Long,
+        limit: Int
+    ): List<JournalEntrySummary> {
+        return journalDao.getEntriesForSimilarityMatching(excludeId, limit)
     }
 }
