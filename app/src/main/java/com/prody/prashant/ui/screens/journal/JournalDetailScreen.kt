@@ -68,7 +68,7 @@ fun JournalDetailScreen(
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
-                            imageVector = ProdyIcons.AutoMirrored.Filled.ArrowBack,
+                            imageVector = ProdyIcons.ArrowBack,
                             contentDescription = stringResource(R.string.back)
                         )
                     }

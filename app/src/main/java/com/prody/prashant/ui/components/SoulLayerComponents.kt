@@ -194,7 +194,7 @@ fun SurfacedMemoryCard(
                 Text(text = memory.actionText)
                 Spacer(modifier = Modifier.width(ProdyTokens.Spacing.xs))
                 Icon(
-                    imageVector = ProdyIcons.AutoMirrored.Rounded.ArrowForward,
+                    imageVector = ProdyIcons.ArrowForward,
                     contentDescription = null,
                     modifier = Modifier.size(16.dp)
                 )
