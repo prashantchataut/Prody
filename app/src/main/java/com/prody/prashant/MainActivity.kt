@@ -100,6 +100,9 @@ class MainActivity : ComponentActivity() {
             android.util.Log.e("MainActivity", "Failed to request notification permission", e)
         }
 
+        // Security: Process the incoming intent through the ViewModel to handle navigation securely.
+        viewModel.processIntent(intent)
+
         enableEdgeToEdge()
 
         setContent {
