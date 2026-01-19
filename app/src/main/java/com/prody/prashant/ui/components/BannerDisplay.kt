@@ -76,6 +76,8 @@ import com.prody.prashant.ui.theme.RarityRare
 import com.prody.prashant.ui.theme.RarityUncommon
 import com.prody.prashant.ui.theme.RarityCommon
 import com.prody.prashant.ui.theme.ProdyBackgroundDark
+import com.prody.prashant.ui.theme.MoodMotivated
+import com.prody.prashant.ui.theme.MoodCalm
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
@@ -151,7 +153,9 @@ fun ProdyBannerDisplay(
                     style = MaterialTheme.typography.labelMedium,
                     color = Color.White,
                     fontWeight = FontWeight.Medium,
-                    modifier = Modifier.padding(ProdyTokens.Spacing.sm)
+                    modifier = Modifier.padding(ProdyTokens.Spacing.sm),
+                    maxLines = 1,
+                    softWrap = false
                 )
             }
         }

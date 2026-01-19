@@ -155,7 +155,9 @@ fun StreakBadge(
                     StreakBadgeSize.Large -> MaterialTheme.typography.titleLarge
                 },
                 fontWeight = FontWeight.Bold,
-                color = if (streakDays > 0) Color.White else Color.Gray.copy(alpha = 0.8f)
+                color = if (streakDays > 0) Color.White else Color.Gray.copy(alpha = 0.8f),
+                maxLines = 1,
+                softWrap = false
             )
         }
     }
