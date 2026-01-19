@@ -10,6 +10,7 @@ import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import com.prody.prashant.debug.CrashHandler
 import com.prody.prashant.domain.gamification.GamificationService
+import com.prody.prashant.domain.haven.WitnessModeManager
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -25,6 +26,9 @@ class ProdyApplication : Application(), Configuration.Provider {
 
     @Inject
     lateinit var gamificationService: GamificationService
+
+    @Inject
+    lateinit var witnessModeManager: WitnessModeManager
 
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
@@ -163,6 +167,18 @@ class ProdyApplication : Application(), Configuration.Provider {
                 Log.e(TAG, "Failed to initialize gamification data", e)
             }
         }
+
+        // Check for Haven Witness Mode follow-ups (THE VAULT callback)
+        applicationScope.launch {
+            try {
+                if (::witnessModeManager.isInitialized) {
+                    witnessModeManager.checkForPendingFollowUps()
+                    Log.d(TAG, "Witness Mode check completed")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to check Witness Mode follow-ups", e)
+            }
+        }
     }
 
     private fun createNotificationChannels() {
@@ -225,9 +241,20 @@ class ProdyApplication : Application(), Configuration.Provider {
                 enableVibration(true)
             }
 
+            // Haven Witness Mode channel
+            val havenChannel = NotificationChannel(
+                CHANNEL_HAVEN,
+                "Haven Check-ins",
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "Haven remembers things you mentioned and checks in"
+                enableVibration(true)
+                setShowBadge(true)
+            }
+
             try {
                 notificationManager.createNotificationChannels(
-                    listOf(mainChannel, wisdomChannel, journalChannel, futureChannel, achievementsChannel)
+                    listOf(mainChannel, wisdomChannel, journalChannel, futureChannel, achievementsChannel, havenChannel)
                 )
                 Log.d(TAG, "Notification channels created successfully")
             } catch (e: Exception) {
@@ -243,5 +270,6 @@ class ProdyApplication : Application(), Configuration.Provider {
         const val CHANNEL_JOURNAL = "prody_journal"
         const val CHANNEL_FUTURE = "prody_future"
         const val CHANNEL_ACHIEVEMENTS = "prody_achievements"
+        const val CHANNEL_HAVEN = "prody_haven"
     }
 }

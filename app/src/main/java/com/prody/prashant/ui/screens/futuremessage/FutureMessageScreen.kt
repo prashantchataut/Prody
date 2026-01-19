@@ -47,6 +47,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.R
 import com.prody.prashant.data.local.entity.FutureMessageEntity
 import com.prody.prashant.ui.components.DeliveryCountdownAura
+import com.prody.prashant.ui.components.PodGrid
 import com.prody.prashant.ui.theme.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -122,6 +123,10 @@ fun FutureMessageListScreen(
                     )
                     1 -> PendingMessagesTab(
                         messages = uiState.pendingMessages,
+                        onPodClick = { message ->
+                            // Navigate to pod detail or show pod info
+                            // For now, this is a placeholder for future pod interaction
+                        },
                         isDarkTheme = isDark
                     )
                 }
@@ -373,39 +378,26 @@ private fun DeliveredMessagesTab(
 }
 
 /**
- * Pending messages tab content
+ * Pending messages tab content - THE SEALED PODS
+ *
+ * Mirror Evolution: Replaced list view with mysterious sealed pods grid.
+ * Each pod is a sealed container holding a message to future self.
  */
 @Composable
 private fun PendingMessagesTab(
     messages: List<FutureMessageEntity>,
+    onPodClick: (FutureMessageEntity) -> Unit,
     isDarkTheme: Boolean
 ) {
-    if (messages.isEmpty()) {
-        TimeCapsuleEmptyState(
-            isDarkTheme = isDarkTheme,
-            isPending = true
-        )
-    } else {
-        LazyColumn(
-            contentPadding = PaddingValues(
-                start = 24.dp,
-                end = 24.dp,
-                top = 24.dp,
-                bottom = 140.dp
-            ),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            items(
-                items = messages.sortedBy { it.deliveryDate },
-                key = { it.id }
-            ) { message ->
-                PendingMessageCard(
-                    message = message,
-                    isDarkTheme = isDarkTheme
-                )
-            }
-        }
-    }
+    // Use the new PodGrid component for sealed pods visualization
+    PodGrid(
+        pods = messages,
+        onPodClick = onPodClick,
+        isDarkTheme = isDarkTheme,
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(bottom = 100.dp) // Account for CTA button
+    )
 }
 
 /**

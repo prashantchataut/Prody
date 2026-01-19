@@ -3,6 +3,7 @@ package com.prody.prashant.di
 import com.prody.prashant.data.repository.CollaborativeMessageRepositoryImpl
 import com.prody.prashant.data.repository.DailyRitualRepositoryImpl
 import com.prody.prashant.data.repository.DeepDiveRepositoryImpl
+import com.prody.prashant.data.repository.EvidenceRepositoryImpl
 import com.prody.prashant.data.repository.FutureMessageReplyRepositoryImpl
 import com.prody.prashant.data.repository.GamificationRepositoryImpl
 import com.prody.prashant.data.repository.JournalRepositoryImpl
@@ -17,6 +18,7 @@ import com.prody.prashant.data.repository.YearlyWrappedRepositoryImpl
 import com.prody.prashant.domain.repository.CollaborativeMessageRepository
 import com.prody.prashant.domain.repository.DailyRitualRepository
 import com.prody.prashant.domain.repository.DeepDiveRepository
+import com.prody.prashant.domain.repository.EvidenceRepository
 import com.prody.prashant.domain.repository.FutureMessageReplyRepository
 import com.prody.prashant.domain.repository.GamificationRepository
 import com.prody.prashant.domain.repository.JournalRepository
@@ -133,4 +135,10 @@ abstract class RepositoryModule {
     abstract fun bindFutureMessageReplyRepository(
         impl: FutureMessageReplyRepositoryImpl
     ): FutureMessageReplyRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindEvidenceRepository(
+        impl: EvidenceRepositoryImpl
+    ): EvidenceRepository
 }
