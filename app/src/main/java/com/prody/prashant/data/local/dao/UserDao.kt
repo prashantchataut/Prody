@@ -43,6 +43,25 @@ interface UserDao {
     @Query("UPDATE user_profile SET bio = :bio WHERE id = 1")
     suspend fun updateBio(bio: String)
 
+    /**
+     * Atomically update multiple profile fields at once.
+     * Use this when saving profile edits to ensure consistency.
+     */
+    @Transaction
+    suspend fun updateProfileFields(
+        displayName: String? = null,
+        bio: String? = null,
+        avatarId: String? = null,
+        titleId: String? = null,
+        bannerId: String? = null
+    ) {
+        displayName?.let { updateDisplayName(it) }
+        bio?.let { updateBio(it) }
+        avatarId?.let { updateAvatar(it) }
+        titleId?.let { updateTitle(it) }
+        bannerId?.let { updateBanner(it) }
+    }
+
     @Query("UPDATE user_profile SET preferences = :preferences WHERE id = 1")
     suspend fun updatePreferences(preferences: String)
 

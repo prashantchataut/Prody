@@ -209,25 +209,13 @@ class EditProfileViewModel @Inject constructor(
             _uiState.update { it.copy(isSaving = true, error = null) }
 
             try {
-                // Update display name
-                if (state.displayName != state.originalDisplayName) {
-                    userDao.updateDisplayName(state.displayName)
-                }
-
-                // Update bio
-                if (state.bio != state.originalBio) {
-                    userDao.updateBio(state.bio)
-                }
-
-                // Update avatar
-                if (state.currentAvatarId != state.originalAvatarId) {
-                    userDao.updateAvatar(state.currentAvatarId)
-                }
-
-                // Update title
-                if (state.currentTitleId != state.originalTitleId) {
-                    userDao.updateTitle(state.currentTitleId)
-                }
+                // Use transactional update for consistency
+                userDao.updateProfileFields(
+                    displayName = if (state.displayName != state.originalDisplayName) state.displayName else null,
+                    bio = if (state.bio != state.originalBio) state.bio else null,
+                    avatarId = if (state.currentAvatarId != state.originalAvatarId) state.currentAvatarId else null,
+                    titleId = if (state.currentTitleId != state.originalTitleId) state.currentTitleId else null
+                )
 
                 _uiState.update {
                     it.copy(

@@ -209,7 +209,9 @@ fun StreakDisplay(
                     text = currentStreak.toString(),
                     fontSize = dimensions.countSize,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    color = Color.White,
+                    maxLines = 1,
+                    softWrap = false
                 )
             }
 
@@ -218,7 +220,9 @@ fun StreakDisplay(
             Text(
                 text = if (currentStreak == 1) "Day" else "Days",
                 fontSize = dimensions.labelSize,
-                color = Color.White.copy(alpha = 0.8f)
+                color = Color.White.copy(alpha = 0.8f),
+                maxLines = 1,
+                softWrap = false
             )
 
             if (showLongestStreak && longestStreak > currentStreak) {

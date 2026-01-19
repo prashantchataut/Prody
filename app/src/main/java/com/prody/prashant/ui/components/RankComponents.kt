@@ -132,7 +132,9 @@ fun RankBadgeDisplay(
                 style = MaterialTheme.typography.labelMedium,
                 fontWeight = FontWeight.Bold,
                 color = rank.color,
-                fontSize = dimensions.nameSize
+                fontSize = dimensions.nameSize,
+                maxLines = 1,
+                softWrap = false
             )
         }
     }
