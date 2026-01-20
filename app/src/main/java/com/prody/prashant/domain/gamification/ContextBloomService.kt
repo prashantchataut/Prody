@@ -196,7 +196,19 @@ class ContextBloomService @Inject constructor(
         return BloomStats(
             totalBlooms = totalBlooms,
             uniqueWordsBloomed = uniqueWordsBloomed,
-            currentBloomStreak = bloomStreak
+            currentStreak = bloomStreak,
+            longestStreak = 0,
+            bloomRate = 0f,
+            lastBloomDate = null,
+            thisWeekBlooms = 0,
+            thisMonthBlooms = 0,
+            favoriteWisdomType = null,
+            totalXpFromBlooms = 0,
+            wordBlooms = 0,
+            idiomBlooms = 0,
+            proverbBlooms = 0,
+            quoteBlooms = 0,
+            seedBlooms = 0
         )
     }
 }
@@ -271,12 +283,3 @@ data class ContextBloomEvent(
         }
     }
 }
-
-/**
- * Statistics about user's bloom history.
- */
-data class BloomStats(
-    val totalBlooms: Int,
-    val uniqueWordsBloomed: Int,
-    val currentBloomStreak: Int
-)

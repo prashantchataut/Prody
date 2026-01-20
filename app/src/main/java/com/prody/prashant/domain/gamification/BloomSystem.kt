@@ -353,6 +353,7 @@ enum class BloomMilestone(
  */
 data class BloomStats(
     val totalBlooms: Int,
+    val uniqueWordsBloomed: Int,
     val currentStreak: Int,
     val longestStreak: Int,
     val bloomRate: Float,           // % of seeds bloomed vs assigned
@@ -378,6 +379,7 @@ data class BloomStats(
     companion object {
         fun empty(): BloomStats = BloomStats(
             totalBlooms = 0,
+            uniqueWordsBloomed = 0,
             currentStreak = 0,
             longestStreak = 0,
             bloomRate = 0f,

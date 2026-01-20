@@ -210,6 +210,11 @@ fun ProdyBannerBadge(
             ProdyBanners.PatternType.CONSTELLATION -> '\u2605' // Star
             ProdyBanners.PatternType.MANDALA -> '\u2740' // Flower
             ProdyBanners.PatternType.AURORA -> '\u2727' // Four-pointed star
+            ProdyBanners.PatternType.NEBULA -> '\u2606' // Hollow star
+            ProdyBanners.PatternType.ZEN -> '\u30CF' // Japanese symbol for harmony
+            ProdyBanners.PatternType.FOCUS -> '\u25A0' // Square
+            ProdyBanners.PatternType.FLOW -> '\u2193' // Down arrow (flow)
+            ProdyBanners.PatternType.NIGHT -> '\u2022' // Bullet/dot
         }
 
         Text(
@@ -249,6 +254,11 @@ private fun BannerPattern(
         ProdyBanners.PatternType.CONSTELLATION -> ConstellationPattern(modifier, animationProgress)
         ProdyBanners.PatternType.MANDALA -> MandalaPattern(modifier, animationProgress)
         ProdyBanners.PatternType.AURORA -> AuroraPattern(modifier, animationProgress)
+        ProdyBanners.PatternType.NEBULA -> AuroraPattern(modifier, animationProgress) // Similar to aurora
+        ProdyBanners.PatternType.ZEN -> GeometricPattern(modifier, animationProgress) // Simple geometric
+        ProdyBanners.PatternType.FOCUS -> GeometricPattern(modifier, animationProgress) // Simple geometric
+        ProdyBanners.PatternType.FLOW -> WavesPattern(modifier, animationProgress) // Wave-like flow
+        ProdyBanners.PatternType.NIGHT -> { /* Simple/minimal pattern */ }
     }
 }
 
