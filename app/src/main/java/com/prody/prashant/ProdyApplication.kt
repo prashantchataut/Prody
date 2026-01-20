@@ -148,11 +148,14 @@ class ProdyApplication : Application(), Configuration.Provider {
     }
 
     private fun initializeApp() {
-        try {
-            createNotificationChannels()
-        } catch (e: Exception) {
-            // Log error but don't crash the app - notifications are not critical for launch
-            Log.e(TAG, "Failed to create notification channels", e)
+        // Launch on a background thread to avoid blocking startup
+        applicationScope.launch {
+            try {
+                createNotificationChannels()
+            } catch (e: Exception) {
+                // Log error but don't crash the app - notifications are not critical for launch
+                Log.e(TAG, "Failed to create notification channels", e)
+            }
         }
 
         // Initialize gamification data (user profile, achievements) asynchronously
