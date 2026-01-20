@@ -2038,6 +2038,9 @@ object ProdyIcons {
         val Mic: ImageVector get() = ProdyIcons.Mic
         val Pause: ImageVector get() = ProdyIcons.Pause
         val PlayArrow: ImageVector get() = ProdyIcons.PlayArrow
+        val Visibility: ImageVector get() = ProdyIcons.Visibility
+        val Close: ImageVector get() = ProdyIcons.Close
+        val ChevronRight: ImageVector get() = ProdyIcons.AutoMirrored.Filled.KeyboardArrowRight
     }
 
     // Rounded versions - aliased to filled versions
@@ -2070,9 +2073,9 @@ object ProdyIcons {
         object Filled {
             val ArrowBack: ImageVector get() = ProdyIcons.ArrowBack
             val ArrowForward: ImageVector get() = ProdyIcons.ArrowForward
-            val KeyboardArrowRight: ImageVector get() = Icons.Filled.KeyboardArrowRight
-            val List: ImageVector get() = Icons.Filled.List
-            val Send: ImageVector get() = Icons.Filled.Send
+            val KeyboardArrowRight: ImageVector get() = Icons.AutoMirrored.Filled.KeyboardArrowRight
+            val List: ImageVector get() = Icons.AutoMirrored.Filled.List
+            val Send: ImageVector get() = Icons.AutoMirrored.Filled.Send
             // Extended library icons - aliased to non-mirrored versions
             val Chat: ImageVector get() = ProdyIcons.Chat
             val HelpOutline: ImageVector get() = ProdyIcons.HelpOutline
