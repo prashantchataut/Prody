@@ -10,6 +10,9 @@ import com.prody.prashant.data.local.entity.ProverbEntity
 import com.prody.prashant.data.local.entity.QuoteEntity
 import com.prody.prashant.data.local.entity.SeedEntity
 import com.prody.prashant.data.local.entity.VocabularyEntity
+import com.prody.prashant.data.local.entity.UserProfileEntity
+import com.prody.prashant.data.local.entity.JournalEntryEntity
+import com.prody.prashant.data.local.entity.StreakHistoryEntity
 import com.prody.prashant.data.local.preferences.PreferencesManager
 import com.prody.prashant.data.onboarding.AiHint
 import com.prody.prashant.data.onboarding.AiHintType
@@ -217,7 +220,14 @@ class HomeViewModel @Inject constructor(
                 journalDao.getEntriesByDateRange(todayStart, System.currentTimeMillis()),
                 dualStreakManager.getDualStreakStatusFlow(),
                 preferencesManager.debugAiProofMode.distinctUntilChanged()
-            ) { profile, weeklyJournalEntries, weeklyLearnedWords, streakHistory, todayJournalEntries, dualStreak, aiProofMode ->
+            ) { args ->
+                val profile = args[0] as UserProfileEntity?
+                val weeklyJournalEntries = args[1] as List<JournalEntryEntity>
+                val weeklyLearnedWords = args[2] as Int
+                val streakHistory = args[3] as List<StreakHistoryEntity>
+                val todayJournalEntries = args[4] as List<JournalEntryEntity>
+                val dualStreak = args[5] as DualStreakStatus
+                val aiProofMode = args[6] as Boolean
 
                 // Calculate weekly active days.
                 val daysActiveThisWeek = streakHistory.count { it.date >= weekStart }

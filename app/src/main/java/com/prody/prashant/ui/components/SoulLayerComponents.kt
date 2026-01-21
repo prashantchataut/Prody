@@ -166,7 +166,8 @@ fun SurfacedMemoryCard(
             )
 
             // Mood indicator if present
-            memory.memory.mood?.let { mood ->
+            val mood = memory.memory.mood
+            if (mood != null) {
                 Spacer(modifier = Modifier.height(ProdyTokens.Spacing.xs))
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -188,17 +189,11 @@ fun SurfacedMemoryCard(
 
             // Action button
             ProdyOutlinedButton(
+                text = memory.actionText,
                 onClick = onExpand,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(text = memory.actionText)
-                Spacer(modifier = Modifier.width(ProdyTokens.Spacing.xs))
-                Icon(
-                    imageVector = ProdyIcons.ArrowForward,
-                    contentDescription = null,
-                    modifier = Modifier.size(16.dp)
-                )
-            }
+                modifier = Modifier.fillMaxWidth(),
+                trailingIcon = ProdyIcons.ArrowForward
+            )
         }
     }
 }
@@ -341,11 +336,10 @@ fun AnniversaryMemoryCard(
                     horizontalArrangement = Arrangement.spacedBy(ProdyTokens.Spacing.sm)
                 ) {
                     ProdyOutlinedButton(
+                        text = "Revisit this moment",
                         onClick = onView,
                         modifier = Modifier.weight(1f)
-                    ) {
-                        Text("Revisit this moment")
-                    }
+                    )
                 }
             }
         }
@@ -454,7 +448,8 @@ fun FirstWeekProgressCard(
             Spacer(modifier = Modifier.height(ProdyTokens.Spacing.md))
 
             // Day content
-            dayContent?.let { content ->
+            if (dayContent != null) {
+                val content = dayContent
                 Text(
                     text = content.title,
                     style = MaterialTheme.typography.titleSmall,
@@ -813,7 +808,8 @@ fun GrowthContrastCard(
                         fontWeight = FontWeight.SemiBold,
                         color = Color(0xFF10B981)
                     )
-                    contrast.sharedTheme?.let { theme ->
+                    val theme = contrast.sharedTheme
+                    if (theme != null) {
                         Text(
                             text = "About: $theme",
                             style = MaterialTheme.typography.labelSmall,
@@ -900,11 +896,10 @@ fun GrowthContrastCard(
             Spacer(modifier = Modifier.height(ProdyTokens.Spacing.md))
 
             ProdyOutlinedButton(
+                text = "Explore your journey",
                 onClick = onExplore,
                 modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Explore your journey")
-            }
+            )
         }
     }
 }
