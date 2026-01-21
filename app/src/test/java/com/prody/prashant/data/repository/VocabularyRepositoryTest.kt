@@ -1,8 +1,10 @@
 package com.prody.prashant.data.repository
 
+import com.prody.prashant.data.ai.GeminiService
 import com.prody.prashant.data.local.dao.VocabularyDao
 import com.prody.prashant.data.local.dao.VocabularyLearningDao
 import com.prody.prashant.data.local.entity.VocabularyEntity
+import com.prody.prashant.data.network.NetworkConnectivityManager
 import com.prody.prashant.domain.common.Result
 import com.prody.prashant.domain.learning.SpacedRepetitionEngine
 import com.prody.prashant.domain.repository.VocabularyRepository
@@ -29,13 +31,17 @@ class VocabularyRepositoryTest {
     private val vocabularyDao: VocabularyDao = mockk(relaxed = true)
     private val vocabularyLearningDao: VocabularyLearningDao = mockk(relaxed = true)
     private val spacedRepetitionEngine: SpacedRepetitionEngine = mockk(relaxed = true)
+    private val geminiService: GeminiService = mockk(relaxed = true)
+    private val networkConnectivityManager: NetworkConnectivityManager = mockk(relaxed = true)
 
     @Before
     fun setup() {
         repository = VocabularyRepositoryImpl(
             vocabularyDao,
             vocabularyLearningDao,
-            spacedRepetitionEngine
+            spacedRepetitionEngine,
+            geminiService,
+            networkConnectivityManager
         )
     }
 
