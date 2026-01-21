@@ -10,6 +10,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import java.time.LocalDate
+import java.time.Instant
+import java.time.ZoneId
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -189,14 +192,26 @@ class ContextBloomService @Inject constructor(
      * Get bloom statistics for the user.
      */
     suspend fun getBloomStats(): BloomStats {
-        val totalBlooms = vocabularyDao.getTotalBloomCount()
-        val uniqueWordsBloomed = vocabularyDao.getUniqueWordsBloomed()
-        val bloomStreak = seedBloomService.getBloomSummary().currentStreak
-
+        val summary = seedBloomService.getBloomSummary()
+        val totalWordBlooms = vocabularyDao.getTotalBloomCount()
+        
         return BloomStats(
-            totalBlooms = totalBlooms,
-            uniqueWordsBloomed = uniqueWordsBloomed,
-            currentBloomStreak = bloomStreak
+            totalBlooms = totalWordBlooms + summary.totalBloomed,
+            currentStreak = summary.currentStreak,
+            longestStreak = summary.longestStreak,
+            bloomRate = summary.bloomRate,
+            lastBloomDate = summary.lastBloomDate?.let { 
+                Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate() 
+            },
+            thisWeekBlooms = 0,
+            thisMonthBlooms = 0,
+            favoriteWisdomType = null,
+            totalXpFromBlooms = (totalWordBlooms + summary.totalBloomed) * 25,
+            wordBlooms = totalWordBlooms,
+            idiomBlooms = 0,
+            proverbBlooms = 0,
+            quoteBlooms = 0,
+            seedBlooms = summary.totalBloomed
         )
     }
 }
@@ -271,12 +286,3 @@ data class ContextBloomEvent(
         }
     }
 }
-
-/**
- * Statistics about user's bloom history.
- */
-data class BloomStats(
-    val totalBlooms: Int,
-    val uniqueWordsBloomed: Int,
-    val currentBloomStreak: Int
-)

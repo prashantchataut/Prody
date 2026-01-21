@@ -210,6 +210,11 @@ fun ProdyBannerBadge(
             ProdyBanners.PatternType.CONSTELLATION -> '\u2605' // Star
             ProdyBanners.PatternType.MANDALA -> '\u2740' // Flower
             ProdyBanners.PatternType.AURORA -> '\u2727' // Four-pointed star
+            ProdyBanners.PatternType.NEBULA -> '\u2234' // Cluster
+            ProdyBanners.PatternType.ZEN -> '\u25ce' // Concentric
+            ProdyBanners.PatternType.FOCUS -> '\u2295' // Target
+            ProdyBanners.PatternType.FLOW -> '\u224b' // Flow
+            ProdyBanners.PatternType.NIGHT -> '\u263d' // Moon
         }
 
         Text(
@@ -249,6 +254,11 @@ private fun BannerPattern(
         ProdyBanners.PatternType.CONSTELLATION -> ConstellationPattern(modifier, animationProgress)
         ProdyBanners.PatternType.MANDALA -> MandalaPattern(modifier, animationProgress)
         ProdyBanners.PatternType.AURORA -> AuroraPattern(modifier, animationProgress)
+        ProdyBanners.PatternType.NEBULA -> BannerCanvas(BannerPatternType.NEBULA, modifier)
+        ProdyBanners.PatternType.ZEN -> BannerCanvas(BannerPatternType.ZEN, modifier)
+        ProdyBanners.PatternType.FOCUS -> BannerCanvas(BannerPatternType.FOCUS, modifier)
+        ProdyBanners.PatternType.FLOW -> BannerCanvas(BannerPatternType.FLOW, modifier)
+        ProdyBanners.PatternType.NIGHT -> BannerCanvas(BannerPatternType.NIGHT, modifier)
     }
 }
 
