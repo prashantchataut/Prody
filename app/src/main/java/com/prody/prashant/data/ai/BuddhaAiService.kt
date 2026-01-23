@@ -25,10 +25,29 @@ import javax.inject.Singleton
 @Singleton
 class BuddhaAiService @Inject constructor(
     private val geminiService: GeminiService,
+    private val openRouterService: OpenRouterService,
     private val cacheManager: AiCacheManager
 ) {
     companion object {
         private const val TAG = "BuddhaAiService"
+    }
+
+    /**
+     * Checks if ANY AI provider is available (Gemini or OpenRouter).
+     */
+    fun isAnyAiAvailable(): Boolean {
+        return geminiService.isConfigured() || openRouterService.isConfigured()
+    }
+
+    /**
+     * Gets the name of the currently active AI provider.
+     */
+    fun getActiveProviderName(): String {
+        return when {
+            geminiService.isConfigured() -> "Gemini ${geminiService.getCurrentModel().displayName}"
+            openRouterService.isConfigured() -> "OpenRouter"
+            else -> "No AI Provider"
+        }
     }
 
     // =========================================================================
@@ -95,6 +114,8 @@ class BuddhaAiService @Inject constructor(
     /**
      * Generates a Buddha response for a journal entry.
      * Not cached as each response is highly personalized.
+     * 
+     * Uses Gemini as primary, falls back to OpenRouter if Gemini fails.
      */
     suspend fun getJournalResponse(
         content: String,
@@ -102,7 +123,43 @@ class BuddhaAiService @Inject constructor(
         moodIntensity: Int,
         wordCount: Int
     ): GeminiResult<String> {
-        return geminiService.generateJournalResponse(content, mood, moodIntensity, wordCount)
+        // Try Gemini first if configured
+        if (geminiService.isConfigured()) {
+            val result = geminiService.generateJournalResponse(content, mood, moodIntensity, wordCount)
+            if (result is GeminiResult.Success) {
+                return result
+            }
+            // If Gemini fails but OpenRouter is available, try fallback
+            if (openRouterService.isConfigured()) {
+                Log.d(TAG, "Gemini failed, falling back to OpenRouter")
+                return tryOpenRouterFallback(content, mood, moodIntensity, wordCount)
+            }
+            return result
+        }
+        
+        // If Gemini not configured, try OpenRouter directly
+        if (openRouterService.isConfigured()) {
+            Log.d(TAG, "Gemini not configured, using OpenRouter")
+            return tryOpenRouterFallback(content, mood, moodIntensity, wordCount)
+        }
+        
+        return GeminiResult.ApiKeyNotSet
+    }
+
+    /**
+     * Falls back to OpenRouter for journal responses.
+     */
+    private suspend fun tryOpenRouterFallback(
+        content: String,
+        mood: Mood,
+        moodIntensity: Int,
+        wordCount: Int
+    ): GeminiResult<String> = withContext(Dispatchers.IO) {
+        val result = openRouterService.generateJournalResponse(content, mood, moodIntensity, wordCount)
+        result.fold(
+            onSuccess = { GeminiResult.Success(it) },
+            onFailure = { GeminiResult.Error(it as Exception, openRouterService.getErrorMessage(it as Exception)) }
+        )
     }
 
     /**
