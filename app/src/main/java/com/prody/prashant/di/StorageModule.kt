@@ -12,12 +12,19 @@ import dagger.hilt.components.SingletonComponent
 import android.util.Log
 import java.security.GeneralSecurityException
 import java.io.IOException
+import com.prody.prashant.data.security.EncryptionManager
 import javax.inject.Named
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
 object StorageModule {
+
+    @Provides
+    @Singleton
+    fun provideEncryptionManager(@ApplicationContext context: Context): EncryptionManager {
+        return EncryptionManager(context)
+    }
 
     private const val PRODY_SHARED_PREFS = "prody_shared_prefs"
     private const val PRODY_ENCRYPTED_SHARED_PREFS = "prody_encrypted_shared_prefs"
