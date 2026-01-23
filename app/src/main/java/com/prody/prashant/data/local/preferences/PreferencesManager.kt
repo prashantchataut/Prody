@@ -20,6 +20,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.io.IOException
@@ -38,21 +40,29 @@ class PreferencesManager @Inject constructor(
     private val dataStore = context.dataStore
     private val coroutineScope = CoroutineScope(Dispatchers.IO)
 
+    private val _isMigrationComplete = MutableStateFlow(false)
+
     private val _geminiApiKey = MutableStateFlow("")
-    val geminiApiKey: Flow<String> = _geminiApiKey.asStateFlow()
+    val geminiApiKey: Flow<String> = _isMigrationComplete
+        .filter { it }
+        .flatMapLatest { _geminiApiKey.asStateFlow() }
 
     private val _therapistApiKey = MutableStateFlow("")
-    val therapistApiKey: Flow<String> = _therapistApiKey.asStateFlow()
+    val therapistApiKey: Flow<String> = _isMigrationComplete
+        .filter { it }
+        .flatMapLatest { _therapistApiKey.asStateFlow() }
 
     init {
         coroutineScope.launch {
-            migrateSensitiveString(PreferencesKeys.GEMINI_API_KEY, PreferencesKeys.GEMINI_API_KEY.name) {
-                _geminiApiKey.value = it
-            }
-        }
-        coroutineScope.launch {
-            migrateSensitiveString(PreferencesKeys.THERAPIST_API_KEY, PreferencesKeys.THERAPIST_API_KEY.name) {
-                _therapistApiKey.value = it
+            try {
+                migrateSensitiveString(PreferencesKeys.GEMINI_API_KEY, PreferencesKeys.GEMINI_API_KEY.name) {
+                    _geminiApiKey.value = it
+                }
+                migrateSensitiveString(PreferencesKeys.THERAPIST_API_KEY, PreferencesKeys.THERAPIST_API_KEY.name) {
+                    _therapistApiKey.value = it
+                }
+            } finally {
+                _isMigrationComplete.value = true
             }
         }
     }
