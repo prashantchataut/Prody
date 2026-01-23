@@ -215,6 +215,7 @@ fun ProdyBannerBadge(
             ProdyBanners.PatternType.FOCUS -> '\u2295' // Target
             ProdyBanners.PatternType.FLOW -> '\u224b' // Flow
             ProdyBanners.PatternType.NIGHT -> '\u263d' // Moon
+            else -> '\u25CF' // Default: Filled circle
         }
 
         Text(
@@ -259,6 +260,7 @@ private fun BannerPattern(
         ProdyBanners.PatternType.FOCUS -> BannerCanvas(BannerPatternType.FOCUS, modifier)
         ProdyBanners.PatternType.FLOW -> BannerCanvas(BannerPatternType.FLOW, modifier)
         ProdyBanners.PatternType.NIGHT -> BannerCanvas(BannerPatternType.NIGHT, modifier)
+        else -> { /* Unknown pattern type - no pattern */ }
     }
 }
 

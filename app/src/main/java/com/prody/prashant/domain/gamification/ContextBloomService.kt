@@ -191,11 +191,11 @@ class ContextBloomService @Inject constructor(
     /**
      * Get bloom statistics for the user.
      */
-    suspend fun getBloomStats(): BloomStats {
+    suspend fun getBloomStats(): ContextBloomStats {
         val summary = seedBloomService.getBloomSummary()
         val totalWordBlooms = vocabularyDao.getTotalBloomCount()
         
-        return BloomStats(
+        return ContextBloomStats(
             totalBlooms = totalWordBlooms + summary.totalBloomed,
             currentStreak = summary.currentStreak,
             longestStreak = summary.longestStreak,
@@ -214,6 +214,30 @@ class ContextBloomService @Inject constructor(
             seedBlooms = summary.totalBloomed
         )
     }
+}
+
+/**
+ * Bloom statistics specific to ContextBloomService.
+ * This is separate from the BloomStats in BloomSystem.kt to avoid collision.
+ */
+data class ContextBloomStats(
+    val totalBlooms: Int,
+    val currentStreak: Int,
+    val longestStreak: Int,
+    val bloomRate: Float,
+    val lastBloomDate: java.time.LocalDate?,
+    val thisWeekBlooms: Int,
+    val thisMonthBlooms: Int,
+    val favoriteWisdomType: BloomWisdomType?,
+    val totalXpFromBlooms: Int,
+    val wordBlooms: Int,
+    val idiomBlooms: Int,
+    val proverbBlooms: Int,
+    val quoteBlooms: Int,
+    val seedBlooms: Int
+) {
+    val isOnStreak: Boolean get() = currentStreak > 0
+    val bloomPercentage: Int get() = (bloomRate * 100).toInt()
 }
 
 /**
