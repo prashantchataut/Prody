@@ -2073,9 +2073,9 @@ object ProdyIcons {
         object Filled {
             val ArrowBack: ImageVector get() = ProdyIcons.ArrowBack
             val ArrowForward: ImageVector get() = ProdyIcons.ArrowForward
-            val KeyboardArrowRight: ImageVector get() = Icons.AutoMirrored.Filled.KeyboardArrowRight
-            val List: ImageVector get() = Icons.AutoMirrored.Filled.List
-            val Send: ImageVector get() = Icons.AutoMirrored.Filled.Send
+            val KeyboardArrowRight: ImageVector get() = ProdyIcons.ChevronRight
+            val List: ImageVector get() = ProdyIcons.FilterList
+            val Send: ImageVector get() = ProdyIcons.Send
             // Extended library icons - aliased to non-mirrored versions
             val Chat: ImageVector get() = ProdyIcons.Chat
             val HelpOutline: ImageVector get() = ProdyIcons.HelpOutline

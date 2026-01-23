@@ -103,7 +103,7 @@ fun ReceiptCard(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Icon(
-                            imageVector = ProdyIcons.Outlined.Visibility,
+                            imageVector = ProdyIcons.Visibility,
                             contentDescription = null,
                             tint = accentColor,
                             modifier = Modifier.size(20.dp)
@@ -123,7 +123,7 @@ fun ReceiptCard(
                         modifier = Modifier.size(32.dp)
                     ) {
                         Icon(
-                            imageVector = ProdyIcons.Outlined.Close,
+                            imageVector = ProdyIcons.Close,
                             contentDescription = "Close",
                             tint = secondaryTextColor,
                             modifier = Modifier.size(18.dp)
@@ -330,7 +330,7 @@ private fun TimelineDivider(
 
         // Arrow indicator
         Icon(
-            imageVector = ProdyIcons.Outlined.ArrowForward,
+            imageVector = ProdyIcons.ArrowForward,
             contentDescription = null,
             tint = accentColor,
             modifier = Modifier
@@ -409,7 +409,7 @@ private fun MirrorResponseSection(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Icon(
-                imageVector = ProdyIcons.Outlined.Psychology,
+                imageVector = ProdyIcons.Psychology,
                 contentDescription = null,
                 tint = accentColor,
                 modifier = Modifier.size(18.dp)
@@ -484,7 +484,7 @@ fun CompactReceiptCard(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Icon(
-                imageVector = ProdyIcons.Outlined.Visibility,
+                imageVector = ProdyIcons.Visibility,
                 contentDescription = null,
                 tint = accentColor,
                 modifier = Modifier.size(20.dp)
@@ -518,7 +518,7 @@ fun CompactReceiptCard(
             )
 
             Icon(
-                imageVector = ProdyIcons.Outlined.ChevronRight,
+                imageVector = ProdyIcons.ChevronRight,
                 contentDescription = "View receipt",
                 tint = secondaryTextColor,
                 modifier = Modifier.size(20.dp)
