@@ -270,15 +270,22 @@ Are you safe right now? Can you reach out to one of these resources?
     }
 
     /**
-     * Initialize the Gemini model with therapist API key
+     * Initialize the Gemini model with therapist API key.
+     * Falls back to AI_API_KEY if THERAPIST_API_KEY is not set.
      */
     private fun initializeModel() {
         try {
-            val apiKey = BuildConfig.THERAPIST_API_KEY
-            if (apiKey.isBlank()) {
-                Log.w(TAG, "THERAPIST_API_KEY not configured")
+            // Try THERAPIST_API_KEY first, then fall back to AI_API_KEY (Gemini)
+            val apiKey = BuildConfig.THERAPIST_API_KEY.takeIf { it.isNotBlank() }
+                ?: BuildConfig.AI_API_KEY.takeIf { it.isNotBlank() }
+                
+            if (apiKey.isNullOrBlank()) {
+                Log.w(TAG, "No API key configured for Haven (tried THERAPIST_API_KEY and AI_API_KEY)")
                 return
             }
+            
+            val keySource = if (BuildConfig.THERAPIST_API_KEY.isNotBlank()) "THERAPIST_API_KEY" else "AI_API_KEY"
+            Log.d(TAG, "Initializing Haven with $keySource")
 
             // Safety settings - less restrictive for mental health content
             val safetySettings = listOf(
@@ -303,9 +310,21 @@ Are you safe right now? Can you reach out to one of these resources?
             )
 
             isInitialized = true
-            Log.d(TAG, "Haven AI Service initialized successfully")
+            Log.d(TAG, "Haven AI Service initialized successfully with $keySource")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to initialize Haven AI Service", e)
+        }
+    }
+    
+    /**
+     * Returns detailed configuration status for error messages.
+     */
+    fun getConfigurationStatus(): String {
+        return when {
+            isInitialized && generativeModel != null -> "Haven AI is ready"
+            BuildConfig.THERAPIST_API_KEY.isBlank() && BuildConfig.AI_API_KEY.isBlank() -> 
+                "Haven requires either THERAPIST_API_KEY or AI_API_KEY in local.properties"
+            else -> "Haven initialization failed - check API key configuration"
         }
     }
 

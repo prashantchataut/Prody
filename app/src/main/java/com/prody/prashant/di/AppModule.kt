@@ -362,9 +362,10 @@ object AppModule {
     @Singleton
     fun provideBuddhaAiService(
         geminiService: GeminiService,
+        openRouterService: OpenRouterService,
         aiCacheManager: AiCacheManager
     ): BuddhaAiService {
-        return BuddhaAiService(geminiService, aiCacheManager)
+        return BuddhaAiService(geminiService, openRouterService, aiCacheManager)
     }
 
     // ============================================================================
