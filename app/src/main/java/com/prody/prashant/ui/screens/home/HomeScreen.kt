@@ -46,11 +46,14 @@ import com.prody.prashant.ui.components.BuddhaContemplatingAnimation
 import com.prody.prashant.ui.components.BuddhaGuideIntro
 import com.prody.prashant.ui.components.ContextualAiHint
 import com.prody.prashant.ui.components.DualStreakCard
+import com.prody.prashant.ui.components.ProdyIconButton
 import com.prody.prashant.ui.components.getCurrentTimeOfDay
 import com.prody.prashant.ui.theme.*
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import com.prody.prashant.util.AccessibilityUtils
+import com.prody.prashant.util.ClipboardUtils
+import com.prody.prashant.util.rememberProdyHaptic
 import android.content.Intent
 import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.delay
@@ -511,7 +514,8 @@ private fun PremiumHeader(
                         .clickable(
                             interactionSource = remember { MutableInteractionSource() },
                             indication = null,
-                            onClick = onSearchClick
+                            onClick = onSearchClick,
+                            role = Role.Button
                         )
                 ) {
                     Box(
@@ -697,7 +701,10 @@ private fun TodayReflectionCard(
             .fillMaxWidth()
             .padding(horizontal = 24.dp)
             .clip(RoundedCornerShape(20.dp))
-            .clickable(onClick = onViewClick),
+            .clickable(
+                onClick = onViewClick,
+                role = Role.Button
+            ),
         shape = RoundedCornerShape(20.dp),
         color = moodColor.copy(alpha = 0.1f),
         tonalElevation = 0.dp
@@ -806,7 +813,10 @@ private fun StartHereCTA(
             modifier = Modifier
                 .weight(1f)
                 .clip(RoundedCornerShape(20.dp))
-                .clickable(onClick = onJournalClick),
+                .clickable(
+                    onClick = onJournalClick,
+                    role = Role.Button
+                ),
             shape = RoundedCornerShape(20.dp),
             color = accentColor.copy(alpha = 0.1f),
             tonalElevation = 0.dp
@@ -856,7 +866,10 @@ private fun StartHereCTA(
             modifier = Modifier
                 .weight(1f)
                 .clip(RoundedCornerShape(20.dp))
-                .clickable(onClick = onChallengesClick),
+                .clickable(
+                    onClick = onChallengesClick,
+                    role = Role.Button
+                ),
             shape = RoundedCornerShape(20.dp),
             color = surfaceColor,
             tonalElevation = 0.dp
@@ -991,7 +1004,8 @@ private fun QuickActionItem(
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
-                onClick = onClick
+                onClick = onClick,
+                role = Role.Button
             )
             .padding(horizontal = 20.dp, vertical = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -1047,7 +1061,8 @@ private fun HavenCard(
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
-                onClick = onHavenClick
+                onClick = onHavenClick,
+                role = Role.Button
             ),
         shape = RoundedCornerShape(20.dp),
         color = havenBackgroundColor,
@@ -1172,6 +1187,9 @@ private fun QuoteCard(
     accentColor: Color,
     isDarkTheme: Boolean
 ) {
+    val context = LocalContext.current
+    val haptic = rememberProdyHaptic()
+
     // Divider color using MaterialTheme
     val dividerColor = MaterialTheme.colorScheme.outlineVariant
 
@@ -1240,7 +1258,7 @@ private fun QuoteCard(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Author and Share button
+            // Author and Actions button
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -1251,31 +1269,72 @@ private fun QuoteCard(
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Medium,
                     fontSize = 13.sp,
-                    color = secondaryTextColor
+                    color = secondaryTextColor,
+                    modifier = Modifier.weight(1f)
                 )
 
                 Row(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .clickable(onClick = onShareClick)
-                        .padding(8.dp),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text(
-                        text = "SHARE",
-                        fontFamily = PoppinsFamily,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 11.sp,
-                        color = accentColor,
-                        letterSpacing = 0.5.sp
-                    )
-                    Icon(
-                        imageVector = ProdyIcons.Outlined.OpenInNew,
-                        contentDescription = "Share",
-                        tint = accentColor,
-                        modifier = Modifier.size(14.dp)
-                    )
+                    // Copy button
+                    Row(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .clickable(
+                                role = Role.Button,
+                                onClick = {
+                                    haptic.click()
+                                    ClipboardUtils.copyToClipboard(context, "\"$quote\" — $author")
+                                }
+                            )
+                            .padding(8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            text = "COPY",
+                            fontFamily = PoppinsFamily,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 11.sp,
+                            color = accentColor,
+                            letterSpacing = 0.5.sp
+                        )
+                        Icon(
+                            imageVector = ProdyIcons.ContentCopy,
+                            contentDescription = "Copy to clipboard",
+                            tint = accentColor,
+                            modifier = Modifier.size(14.dp)
+                        )
+                    }
+
+                    // Share button
+                    Row(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .clickable(
+                                role = Role.Button,
+                                onClick = onShareClick
+                            )
+                            .padding(8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            text = "SHARE",
+                            fontFamily = PoppinsFamily,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 11.sp,
+                            color = accentColor,
+                            letterSpacing = 0.5.sp
+                        )
+                        Icon(
+                            imageVector = ProdyIcons.Outlined.OpenInNew,
+                            contentDescription = "Share",
+                            tint = accentColor,
+                            modifier = Modifier.size(14.dp)
+                        )
+                    }
                 }
             }
         }
@@ -1351,10 +1410,16 @@ private fun WordCard(
     secondaryTextColor: Color,
     accentColor: Color
 ) {
+    val context = LocalContext.current
+    val haptic = rememberProdyHaptic()
+
     Surface(
         modifier = modifier
             .clip(RoundedCornerShape(20.dp))
-            .clickable(onClick = onClick),
+            .clickable(
+                onClick = onClick,
+                role = Role.Button
+            ),
         shape = RoundedCornerShape(20.dp),
         color = surfaceColor,
         tonalElevation = 0.dp
@@ -1387,6 +1452,20 @@ private fun WordCard(
                         letterSpacing = 1.sp
                     )
                 }
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                ProdyIconButton(
+                    icon = ProdyIcons.ContentCopy,
+                    onClick = {
+                        haptic.click()
+                        ClipboardUtils.copyToClipboard(context, "$word: $definition")
+                    },
+                    contentDescription = "Copy word and definition",
+                    tint = secondaryTextColor,
+                    size = 36.dp
+                )
                 Icon(
                     imageVector = ProdyIcons.Outlined.ArrowForward,
                     contentDescription = "View details",
@@ -1394,6 +1473,7 @@ private fun WordCard(
                     modifier = Modifier.size(18.dp)
                 )
             }
+        }
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -1468,7 +1548,10 @@ private fun IdiomCard(
     Surface(
         modifier = modifier
             .clip(RoundedCornerShape(20.dp))
-            .clickable(onClick = { onClick(idiomId) }),
+            .clickable(
+                onClick = { onClick(idiomId) },
+                role = Role.Button
+            ),
         shape = RoundedCornerShape(20.dp),
         color = surfaceColor,
         tonalElevation = 0.dp
@@ -1589,7 +1672,10 @@ private fun ProverbSection(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 24.dp)
-            .clickable(onClick = onClick),
+            .clickable(
+                onClick = onClick,
+                role = Role.Button
+            ),
         shape = RoundedCornerShape(20.dp),
         color = surfaceColor,
         tonalElevation = 0.dp
