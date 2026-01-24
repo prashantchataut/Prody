@@ -23,15 +23,15 @@ class ProdyApplication : Application(), Configuration.Provider {
 
     @Inject
     lateinit var workerFactory: HiltWorkerFactory
-        private set
+        internal set
 
     @Inject
     lateinit var gamificationService: GamificationService
-        private set
+        internal set
 
     @Inject
     lateinit var witnessModeManager: WitnessModeManager
-        private set
+        internal set
 
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
