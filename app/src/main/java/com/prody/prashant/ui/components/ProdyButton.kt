@@ -32,6 +32,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -42,6 +45,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.prody.prashant.R
 import com.prody.prashant.ui.theme.ProdyTokens
 
 /**
@@ -122,8 +126,10 @@ fun ProdyPrimaryButton(
     trailingIcon: ImageVector? = null,
     contentDescription: String? = null
 ) {
+    val haptic = LocalHapticFeedback.current
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
+    val loadingText = stringResource(R.string.loading)
 
     val scale by animateFloatAsState(
         targetValue = if (isPressed && enabled && !loading) 0.98f else 1f,
@@ -147,13 +153,21 @@ fun ProdyPrimaryButton(
     }
 
     Button(
-        onClick = { if (!loading) onClick() },
+        onClick = {
+            if (!loading) {
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                onClick()
+            }
+        },
         modifier = modifier
             .scale(scale)
             .defaultMinSize(minHeight = height)
             .semantics {
                 role = Role.Button
-                if (contentDescription != null) {
+                if (loading) {
+                    val base = contentDescription ?: text
+                    this.contentDescription = "$base, $loadingText"
+                } else if (contentDescription != null) {
                     this.contentDescription = contentDescription
                 }
             },
@@ -198,8 +212,10 @@ fun ProdySecondaryButton(
     trailingIcon: ImageVector? = null,
     contentDescription: String? = null
 ) {
+    val haptic = LocalHapticFeedback.current
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
+    val loadingText = stringResource(R.string.loading)
 
     val scale by animateFloatAsState(
         targetValue = if (isPressed && enabled && !loading) 0.98f else 1f,
@@ -223,13 +239,21 @@ fun ProdySecondaryButton(
     }
 
     Button(
-        onClick = { if (!loading) onClick() },
+        onClick = {
+            if (!loading) {
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                onClick()
+            }
+        },
         modifier = modifier
             .scale(scale)
             .defaultMinSize(minHeight = height)
             .semantics {
                 role = Role.Button
-                if (contentDescription != null) {
+                if (loading) {
+                    val base = contentDescription ?: text
+                    this.contentDescription = "$base, $loadingText"
+                } else if (contentDescription != null) {
                     this.contentDescription = contentDescription
                 }
             },
@@ -275,8 +299,10 @@ fun ProdyOutlinedButton(
     contentDescription: String? = null,
     borderColor: Color = MaterialTheme.colorScheme.outline
 ) {
+    val haptic = LocalHapticFeedback.current
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
+    val loadingText = stringResource(R.string.loading)
 
     val scale by animateFloatAsState(
         targetValue = if (isPressed && enabled && !loading) 0.98f else 1f,
@@ -300,13 +326,21 @@ fun ProdyOutlinedButton(
     }
 
     OutlinedButton(
-        onClick = { if (!loading) onClick() },
+        onClick = {
+            if (!loading) {
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                onClick()
+            }
+        },
         modifier = modifier
             .scale(scale)
             .defaultMinSize(minHeight = height)
             .semantics {
                 role = Role.Button
-                if (contentDescription != null) {
+                if (loading) {
+                    val base = contentDescription ?: text
+                    this.contentDescription = "$base, $loadingText"
+                } else if (contentDescription != null) {
                     this.contentDescription = contentDescription
                 }
             },
@@ -354,8 +388,10 @@ fun ProdyGhostButton(
     contentDescription: String? = null,
     contentColor: Color = MaterialTheme.colorScheme.primary
 ) {
+    val haptic = LocalHapticFeedback.current
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
+    val loadingText = stringResource(R.string.loading)
 
     val scale by animateFloatAsState(
         targetValue = if (isPressed && enabled && !loading) 0.98f else 1f,
@@ -379,13 +415,21 @@ fun ProdyGhostButton(
     }
 
     TextButton(
-        onClick = { if (!loading) onClick() },
+        onClick = {
+            if (!loading) {
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                onClick()
+            }
+        },
         modifier = modifier
             .scale(scale)
             .defaultMinSize(minHeight = height)
             .semantics {
                 role = Role.Button
-                if (contentDescription != null) {
+                if (loading) {
+                    val base = contentDescription ?: text
+                    this.contentDescription = "$base, $loadingText"
+                } else if (contentDescription != null) {
                     this.contentDescription = contentDescription
                 }
             },
@@ -485,6 +529,7 @@ fun ProdyIconButton(
     tint: Color = MaterialTheme.colorScheme.onSurface,
     size: Dp = ProdyTokens.Touch.minimum
 ) {
+    val haptic = LocalHapticFeedback.current
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
 
@@ -498,7 +543,10 @@ fun ProdyIconButton(
     )
 
     Surface(
-        onClick = onClick,
+        onClick = {
+            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+            onClick()
+        },
         modifier = modifier
             .scale(scale)
             .size(size)
@@ -516,7 +564,7 @@ fun ProdyIconButton(
     ) {
         Icon(
             imageVector = icon,
-            contentDescription = contentDescription,
+            contentDescription = null, // Redundant since parent Surface has semantics
             modifier = Modifier
                 .padding(12.dp)
                 .size(24.dp),
