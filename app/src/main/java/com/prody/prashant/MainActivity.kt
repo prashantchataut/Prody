@@ -71,7 +71,7 @@ class MainActivity : ComponentActivity() {
 
 @Inject
     lateinit var notificationScheduler: NotificationScheduler
-        internal set
+        private set
 
     private val viewModel: MainViewModel by viewModels()
 

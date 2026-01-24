@@ -826,6 +826,7 @@ val HavenInputStyle = TextStyle(
     lineHeight = 24.sp,
     letterSpacing = 0.1.sp
 )
+)
 
 /**
  * Letter title - month and year display
