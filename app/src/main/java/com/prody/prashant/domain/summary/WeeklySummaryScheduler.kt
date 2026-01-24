@@ -2,21 +2,10 @@ package com.prody.prashant.domain.summary
 
 import android.content.Context
 import android.util.Log
-import androidx.work.Constraints
-import androidx.work.CoroutineWorker
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.ListenableWorker
-import androidx.work.NetworkType
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.PeriodicWorkRequestBuilder
-import androidx.work.WorkManager
-import androidx.work.WorkerFactory
-import androidx.work.WorkerParameters
+import androidx.work.*
 import com.prody.prashant.data.local.dao.WeeklyDigestDao
 import com.prody.prashant.data.local.entity.WeeklyDigestEntity
-import com.prody.prashant.data.local.preferences.PreferencesManager
 import com.prody.prashant.domain.repository.WeeklyDigestRepository
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import java.time.DayOfWeek
@@ -164,10 +153,6 @@ class WeeklySummaryWorker @Inject constructor(
     private val preferencesManager: PreferencesManager
 ) : CoroutineWorker(context, params) {
 
-    companion object {
-        private const val TAG = "WeeklySummaryWorker"
-    }
-
     override suspend fun doWork(): Result {
         return try {
             // Check if enabled
@@ -188,7 +173,7 @@ class WeeklySummaryWorker @Inject constructor(
 
             Result.success()
         } catch (e: Exception) {
-            android.util.Log.e(TAG, "Failed to generate weekly summary", e)
+            android.util.Log.e("WeeklySummaryWorker", "Failed to generate weekly summary", e)
             Result.retry()
         }
     }
@@ -204,9 +189,9 @@ class WeeklySummaryWorker @Inject constructor(
                 .build()
 
             WorkManager.getInstance(context).enqueue(workRequest)
-            Log.d(TAG, "Weekly summary notification scheduled")
+            Log.d("WeeklySummaryWorker", "Weekly summary notification scheduled")
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to schedule weekly summary notification", e)
+            Log.e("WeeklySummaryWorker", "Failed to schedule weekly summary notification", e)
         }
     }
 
