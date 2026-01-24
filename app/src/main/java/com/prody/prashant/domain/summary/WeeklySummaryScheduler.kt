@@ -1,17 +1,21 @@
 package com.prody.prashant.domain.summary
 
 import android.content.Context
-import androidx.work.*
-import com.prody.prashant.data.local.preferences.PreferencesManager
-import com.prody.prashant.domain.repository.WeeklyDigestRepository
-import dagger.hilt.android.qualifiers.ApplicationContext
+import android.util.Log
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import com.prody.prashant.data.local.dao.WeeklyDigestDao
+import com.prody.prashant.data.local.entity.WeeklyDigestEntity
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import java.time.DayOfWeek
 import java.time.Duration
+import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.LocalTime
-import java.util.concurrent.TimeUnit
+import java.time.ZoneId
+import java.time.temporal.ChronoUnit
+import java.time.temporal.TemporalAdjusters
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -172,8 +176,20 @@ class WeeklySummaryWorker @Inject constructor(
         }
     }
 
-    private fun scheduleNotification() {
-        // TODO: Implement notification scheduling
-        // This would create a notification to remind user to check their weekly summary
+private fun scheduleNotification() {
+        // Implement notification scheduling for weekly summary
+        // This creates a notification to remind user to check their weekly summary
+        
+        try {
+            val workRequest = OneTimeWorkRequestBuilder<WeeklySummaryNotificationWorker>()
+                .setInitialDelay(Duration.ofHours(1)) // Schedule for 1 hour from now
+                .addTag("weekly_summary_notification")
+                .build()
+                
+            WorkManager.getInstance(context).enqueue(workRequest)
+            Log.d(TAG, "Weekly summary notification scheduled")
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to schedule weekly summary notification", e)
+        }
     }
 }

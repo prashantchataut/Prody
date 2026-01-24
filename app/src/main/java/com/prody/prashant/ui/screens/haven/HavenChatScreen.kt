@@ -2,6 +2,7 @@ package com.prody.prashant.ui.screens.haven
 import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -22,10 +23,21 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext as ComposeLocalContext
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -65,10 +77,16 @@ fun HavenChatScreen(
     val uiState by viewModel.chatState.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
     val focusManager = LocalFocusManager.current
+    val isDark = isSystemInDarkTheme()
 
     var messageInput by remember { mutableStateOf("") }
     var showMoodDialog by remember { mutableStateOf(false) }
     var showCompletionDialog by remember { mutableStateOf(false) }
+    var showSoftMenu by remember { mutableStateOf(false) }
+
+    // Haven Theme Colors
+    val havenBackground = if (isDark) HavenBackgroundDark else HavenBackgroundLight
+    val havenText = if (isDark) HavenTextDark else HavenTextLight
 
     // Start or resume session
     LaunchedEffect(sessionId, sessionType) {
@@ -94,15 +112,9 @@ fun HavenChatScreen(
                     Column {
                         Text(
                             text = sessionType.displayName,
-                            fontWeight = FontWeight.SemiBold
+                            style = HavenMessageStyle.copy(fontWeight = FontWeight.Bold),
+                            color = havenText
                         )
-                        if (uiState.isTyping) {
-                            Text(
-                                text = "Haven is thinking...",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
                     }
                 },
                 navigationIcon = {
@@ -115,22 +127,60 @@ fun HavenChatScreen(
                     }) {
                         Icon(
                             imageVector = ProdyIcons.ArrowBack,
-                            contentDescription = stringResource(R.string.back)
+                            contentDescription = stringResource(R.string.back),
+                            tint = havenText
                         )
                     }
                 },
                 actions = {
-                    if (!uiState.isCompleted) {
-                        IconButton(onClick = { showCompletionDialog = true }) {
+                    // Soft Menu Button (The "Dot" or subtle icon)
+                    Box {
+                        IconButton(onClick = { showSoftMenu = true }) {
                             Icon(
-                                imageVector = ProdyIcons.CheckCircle,
-                                contentDescription = "End Session"
+                                imageVector = ProdyIcons.MoreVert, // Or a custom "Soft Dot" icon
+                                contentDescription = "Haven Menu",
+                                tint = havenText
+                            )
+                        }
+                        
+                        DropdownMenu(
+                            expanded = showSoftMenu,
+                            onDismissRequest = { showSoftMenu = false },
+                            modifier = Modifier.background(if(isDark) HavenUserBubbleDark else HavenUserBubbleLight)
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("Breathe", fontFamily = PoppinsFamily) },
+                                onClick = { 
+                                    showSoftMenu = false
+                                    onNavigateToExercise(ExerciseType.BOX_BREATHING) 
+                                },
+                                leadingIcon = { Icon(ProdyIcons.Spa, null) }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("People who can help", fontFamily = PoppinsFamily) },
+                                onClick = { 
+                                    showSoftMenu = false
+                                    // In a real app, navigate to resources. For now, trigger crisis banner.
+                                    viewModel.showCrisisResources() 
+                                },
+                                leadingIcon = { Icon(ProdyIcons.HealthAndSafety, null) }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Reflect & End", fontFamily = PoppinsFamily) },
+                                onClick = { 
+                                    showSoftMenu = false
+                                    showCompletionDialog = true
+                                },
+                                leadingIcon = { Icon(ProdyIcons.CheckCircle, null) }
                             )
                         }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent
+                    containerColor = Color.Transparent,
+                    titleContentColor = havenText,
+                    actionIconContentColor = havenText,
+                    navigationIconContentColor = havenText
                 )
             )
         },
@@ -149,11 +199,12 @@ fun HavenChatScreen(
                     isLoading = uiState.isTyping,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(8.dp)
+                        .padding(16.dp), // Increased padding
+                    isDark = isDark
                 )
             }
         },
-        containerColor = MaterialTheme.colorScheme.background
+        containerColor = havenBackground
     ) { padding ->
         Box(
             modifier = Modifier
@@ -165,7 +216,8 @@ fun HavenChatScreen(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator(color = ProdyAccentGreen)
+                    // Subtle pulse instead of spinner could be here
+                    CircularProgressIndicator(color = HavenBubbleLight) 
                 }
             } else {
                 Column(modifier = Modifier.fillMaxSize()) {
@@ -183,7 +235,7 @@ fun HavenChatScreen(
                             .weight(1f)
                             .fillMaxWidth(),
                         contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                        verticalArrangement = Arrangement.spacedBy(16.dp) // More breathing room
                     ) {
                         items(
                             items = uiState.messages,
@@ -193,14 +245,15 @@ fun HavenChatScreen(
                                 message = message,
                                 onExerciseClick = { exerciseType ->
                                     onNavigateToExercise(exerciseType)
-                                }
+                                },
+                                isDark = isDark
                             )
                         }
 
-                        // Typing indicator
+                        // Typing indicator (Subtle Glow)
                         if (uiState.isTyping) {
                             item(key = "typing") {
-                                TypingIndicator()
+                                TypingIndicator(isDark = isDark)
                             }
                         }
 
@@ -282,13 +335,37 @@ private fun ChatInputBar(
     onValueChange: (String) -> Unit,
     onSend: () -> Unit,
     isLoading: Boolean,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isDark: Boolean = false
 ) {
+    val containerColor = if (isDark) HavenUserBubbleDark else HavenUserBubbleLight
+    val contentColor = if (isDark) HavenTextDark else HavenTextLight
+    val context = LocalContext.current
+    
+    // Speech Recognizer State
+    var isListening by remember { mutableStateOf(false) }
+    val speechRecognizer = remember { android.speech.SpeechRecognizer.createSpeechRecognizer(context) }
+    val intent = remember {
+        android.content.Intent(android.speech.RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+            putExtra(android.speech.RecognizerIntent.EXTRA_LANGUAGE_MODEL, android.speech.RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+        }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            try {
+                speechRecognizer.destroy()
+            } catch (e: Exception) {
+                // Ignore destruction errors
+            }
+        }
+    }
+
     Surface(
         modifier = modifier,
         shape = RoundedCornerShape(24.dp),
-        color = MaterialTheme.colorScheme.surface,
-        tonalElevation = 2.dp
+        color = containerColor,
+        tonalElevation = 0.dp
     ) {
         Row(
             modifier = Modifier
@@ -296,16 +373,84 @@ private fun ChatInputBar(
                 .padding(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // Microphone Button (Real-time Dictation)
+            IconButton(
+                onClick = { 
+                    if (isListening) {
+                        try {
+                            speechRecognizer.stopListening()
+                        } catch(e: Exception) {
+                            // Ignore stop errors
+                        }
+                        isListening = false
+                    } else {
+                        if (androidx.core.content.ContextCompat.checkSelfPermission(
+                                context,
+                                android.Manifest.permission.RECORD_AUDIO
+                            ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+                        ) {
+                            try {
+                                isListening = true
+                                speechRecognizer.setRecognitionListener(object : android.speech.RecognitionListener {
+                                    override fun onReadyForSpeech(params: android.os.Bundle?) {}
+                                    override fun onBeginningOfSpeech() {}
+                                    override fun onRmsChanged(rmsdB: Float) {}
+                                    override fun onBufferReceived(buffer: ByteArray?) {}
+                                    override fun onEndOfSpeech() { isListening = false }
+                                    override fun onError(error: Int) { 
+                                        isListening = false 
+                                        // Silent fail or subtle toast
+                                    }
+                                    override fun onResults(results: android.os.Bundle?) {
+                                        val matches = results?.getStringArrayList(android.speech.SpeechRecognizer.RESULTS_RECOGNITION)
+                                        if (!matches.isNullOrEmpty()) {
+                                            onValueChange(value + (if (value.isNotEmpty()) " " else "") + matches[0])
+                                        }
+                                        isListening = false
+                                    }
+                                    override fun onPartialResults(partialResults: android.os.Bundle?) {}
+                                    override fun onEvent(eventType: Int, params: android.os.Bundle?) {}
+                                })
+                                speechRecognizer.startListening(intent)
+                            } catch (e: Exception) {
+                                isListening = false
+                                Toast.makeText(context, "Voice error: ${e.message}", Toast.LENGTH_SHORT).show()
+                            }
+                        } else {
+                            Toast.makeText(context, "Microphone permission required", Toast.LENGTH_SHORT).show()
+                            // In a real app, trigger permission request here
+                        }
+                    }
+                }
+            ) {
+                // Pulse effect if listening
+                val micColor = if(isListening) HavenAccentRose else contentColor.copy(alpha = 0.6f)
+                val infiniteTransition = rememberInfiniteTransition(label = "RecPulse")
+                val scale by if(isListening) infiniteTransition.animateFloat(
+                    initialValue = 1f, targetValue = 1.2f,
+                    animationSpec = infiniteRepeatable(tween(500), RepeatMode.Reverse), label = "RecScale"
+                ) else remember { mutableStateOf(1f) }
+
+                Icon(
+                    imageVector = if(isListening) ProdyIcons.Mic else ProdyIcons.MicNone,
+                    contentDescription = "Dictate",
+                    tint = micColor,
+                    modifier = Modifier.scale(scale)
+                )
+            }
+
             OutlinedTextField(
                 value = value,
                 onValueChange = onValueChange,
                 placeholder = {
                     Text(
-                        "Share what's on your mind...",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                        if(isListening) "Listening..." else "Share your thoughts...",
+                        color = contentColor.copy(alpha = 0.5f),
+                        style = HavenInputStyle
                     )
                 },
                 modifier = Modifier.weight(1f),
+                textStyle = HavenInputStyle.copy(color = contentColor),
                 keyboardOptions = KeyboardOptions(
                     capitalization = KeyboardCapitalization.Sentences,
                     imeAction = ImeAction.Send
@@ -315,11 +460,12 @@ private fun ChatInputBar(
                 maxLines = 4,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color.Transparent,
-                    unfocusedBorderColor = Color.Transparent
+                    unfocusedBorderColor = Color.Transparent,
+                    cursorColor = HavenBubbleLight
                 )
             )
 
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(4.dp))
 
             IconButton(
                 onClick = onSend,
@@ -329,14 +475,14 @@ private fun ChatInputBar(
                     CircularProgressIndicator(
                         modifier = Modifier.size(24.dp),
                         strokeWidth = 2.dp,
-                        color = ProdyAccentGreen
+                        color = HavenBubbleLight
                     )
                 } else {
                     Icon(
                         imageVector = ProdyIcons.Send,
                         contentDescription = "Send",
-                        tint = if (value.isNotBlank()) ProdyAccentGreen
-                        else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                        tint = if (value.isNotBlank()) HavenBubbleLight
+                        else contentColor.copy(alpha = 0.3f)
                     )
                 }
             }
@@ -348,19 +494,27 @@ private fun ChatInputBar(
 private fun MessageBubble(
     message: HavenMessage,
     onExerciseClick: (ExerciseType) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isDark: Boolean = false
 ) {
     val alignment = if (message.isUser) Alignment.End else Alignment.Start
+    
+    // Haven Aesthetic logic
     val backgroundColor = if (message.isUser) {
-        ProdyAccentGreen
+        if (isDark) HavenUserBubbleDark else HavenUserBubbleLight
     } else {
-        MaterialTheme.colorScheme.surfaceVariant
+        if (isDark) HavenBubbleDark else HavenBubbleLight
     }
+    
     val textColor = if (message.isUser) {
-        Color.Black
+        if (isDark) HavenTextDark else HavenTextLight
     } else {
-        MaterialTheme.colorScheme.onSurfaceVariant
+        // Haven's text needs to be readable on the blush/rose background
+        if (isDark) Color(0xFFF0EAE2) else Color(0xFF2D2424)
     }
+
+    val textStyle = if (message.isUser) HavenInputStyle else HavenMessageStyle
+    var showRecallPopup by remember { mutableStateOf(false) }
 
     Column(
         modifier = modifier.fillMaxWidth(),
@@ -369,23 +523,70 @@ private fun MessageBubble(
         Card(
             modifier = Modifier.widthIn(max = 300.dp),
             shape = RoundedCornerShape(
-                topStart = 16.dp,
-                topEnd = 16.dp,
-                bottomStart = if (message.isUser) 16.dp else 4.dp,
-                bottomEnd = if (message.isUser) 4.dp else 16.dp
+                topStart = 20.dp,
+                topEnd = 20.dp,
+                bottomStart = if (message.isUser) 20.dp else 4.dp,
+                bottomEnd = if (message.isUser) 4.dp else 20.dp
             ),
-            colors = CardDefaults.cardColors(containerColor = backgroundColor)
+            colors = CardDefaults.cardColors(containerColor = backgroundColor),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp) // Flat design
         ) {
-            Column(modifier = Modifier.padding(12.dp)) {
-                Text(
-                    text = message.content,
-                    color = textColor,
-                    style = MaterialTheme.typography.bodyMedium
-                )
+            Column(modifier = Modifier.padding(16.dp)) { // More padding for "letter" feel
+                Row(verticalAlignment = Alignment.Top) {
+                    Text(
+                        text = message.content,
+                        color = textColor,
+                        style = textStyle,
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    // Recall Icon
+                    if (message.recalledMessage != null) {
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Icon(
+                            imageVector = ProdyIcons.History,
+                            contentDescription = "Recall past memory",
+                            tint = HavenAccentGold,
+                            modifier = Modifier
+                                .size(18.dp)
+                                .clickable { showRecallPopup = !showRecallPopup }
+                        )
+                    }
+                }
+
+                // Recall Content Popup
+                AnimatedVisibility(visible = showRecallPopup) {
+                    Card(
+                        modifier = Modifier
+                            .padding(top = 12.dp)
+                            .fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = textColor.copy(alpha = 0.05f)
+                        ),
+                        shape = RoundedCornerShape(8.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, textColor.copy(alpha = 0.1f))
+                    ) {
+                        Column(modifier = Modifier.padding(12.dp)) {
+                            Text(
+                                text = "What you said before:",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = textColor.copy(alpha = 0.6f),
+                                fontWeight = FontWeight.Bold
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = message.recalledMessage ?: "",
+                                style = HavenMessageStyle.copy(fontSize = 14.sp),
+                                color = textColor.copy(alpha = 0.8f),
+                                fontStyle = FontStyle.Italic
+                            )
+                        }
+                    }
+                }
 
                 // Technique badge
                 message.techniqueUsed?.let { technique ->
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
                     Row(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -393,13 +594,13 @@ private fun MessageBubble(
                             imageVector = ProdyIcons.Psychology,
                             contentDescription = null,
                             modifier = Modifier.size(14.dp),
-                            tint = textColor.copy(alpha = 0.7f)
+                            tint = textColor.copy(alpha = 0.6f)
                         )
-                        Spacer(modifier = Modifier.width(4.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             text = technique.displayName,
                             style = MaterialTheme.typography.labelSmall,
-                            color = textColor.copy(alpha = 0.7f),
+                            color = textColor.copy(alpha = 0.6f),
                             fontStyle = FontStyle.Italic
                         )
                     }
@@ -407,15 +608,16 @@ private fun MessageBubble(
 
                 // Exercise suggestion button
                 message.exerciseSuggested?.let { exercise ->
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
                     OutlinedButton(
                         onClick = { onExerciseClick(exercise) },
                         modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.outlinedButtonColors(
-                            contentColor = if (message.isUser) Color.Black else ProdyAccentGreen
-                        )
+                            contentColor = textColor
+                        ),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, textColor.copy(alpha = 0.3f))
                     ) {
-                        Text("${exercise.icon} Try ${exercise.displayName}")
+                        Text("${exercise.icon} Try ${exercise.displayName}", fontFamily = PoppinsFamily)
                     }
                 }
             }
@@ -425,40 +627,63 @@ private fun MessageBubble(
         Text(
             text = SimpleDateFormat("h:mm a", Locale.getDefault()).format(Date(message.timestamp)),
             style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-            modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+            color = (if(isDark) HavenTextDark else HavenTextLight).copy(alpha = 0.4f),
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
         )
     }
 }
 
 @Composable
 private fun TypingIndicator(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isDark: Boolean = false
 ) {
-    Row(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    val glowColor = if (isDark) HavenBubbleDark else HavenBubbleLight
+    
+    Box(
+        modifier = modifier
+            .padding(8.dp)
+            .height(40.dp)
+            .fillMaxWidth(),
+        contentAlignment = Alignment.CenterStart
     ) {
-        repeat(3) { index ->
-            val delay = index * 100
-            var visible by remember { mutableStateOf(true) }
+        // Slow, calming color swell (Anti-AI loading)
+        val infiniteTransition = rememberInfiniteTransition(label = "Swell")
+        val alpha by infiniteTransition.animateFloat(
+            initialValue = 0.1f,
+            targetValue = 0.4f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(3000, easing = LinearOutSlowInEasing),
+                repeatMode = RepeatMode.Reverse
+            ),
+            label = "SwellAlpha"
+        )
+        
+        val scale by infiniteTransition.animateFloat(
+            initialValue = 0.8f,
+            targetValue = 1.5f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(3000, easing = LinearOutSlowInEasing),
+                repeatMode = RepeatMode.Reverse
+            ),
+            label = "SwellScale"
+        )
 
-            LaunchedEffect(Unit) {
-                while (true) {
-                    delay(delay.toLong())
-                    visible = !visible
-                    delay(300)
-                }
-            }
-
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Box(
                 modifier = Modifier
-                    .size(8.dp)
-                    .clip(CircleShape)
-                    .background(
-                        if (visible) ProdyAccentGreen.copy(alpha = 0.8f)
-                        else ProdyAccentGreen.copy(alpha = 0.3f)
-                    )
+                    .size(24.dp)
+                    .scale(scale)
+                    .background(glowColor.copy(alpha = alpha), CircleShape)
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Text(
+                text = "Haven is listening...",
+                style = HavenMessageStyle.copy(
+                    fontSize = 14.sp,
+                    fontStyle = FontStyle.Italic,
+                    color = (if(isDark) HavenTextDark else HavenTextLight).copy(alpha = 0.6f)
+                )
             )
         }
     }
@@ -468,32 +693,47 @@ private fun TypingIndicator(
 private fun CrisisResourcesBanner(
     modifier: Modifier = Modifier
 ) {
+    // Use a warm, supportive color (Rose/Gold) instead of alarming red
+    val containerColor = Color(0xFFFCE4EC) // Very light pink
+    val iconColor = Color(0xFFC2185B) // Rose red
+    
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.errorContainer
-        )
+            containerColor = containerColor
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Row(
-            modifier = Modifier.padding(12.dp),
+            modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = ProdyIcons.HealthAndSafety,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.error
-            )
-            Spacer(modifier = Modifier.width(12.dp))
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(Color.White.copy(alpha = 0.5f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = ProdyIcons.Favorite, // Heart instead of warning sign
+                    contentDescription = null,
+                    tint = iconColor,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+            Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Support is available",
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.SemiBold
+                    text = "You are not alone", // Warmer message
+                    style = HavenMessageStyle.copy(fontWeight = FontWeight.Bold, fontSize = 16.sp),
+                    color = Color(0xFF4A0F22)
                 )
                 Text(
-                    text = "Call 988 for immediate crisis support",
-                    style = MaterialTheme.typography.bodySmall
+                    text = "We can connect you with people who care.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color(0xFF4A0F22).copy(alpha = 0.8f)
                 )
             }
         }

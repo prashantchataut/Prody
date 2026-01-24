@@ -9,6 +9,9 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.prody.prashant.data.local.dao.*
 import com.prody.prashant.data.local.entity.*
+import com.prody.prashant.data.security.SecureDatabaseManager
+import kotlinx.coroutines.runBlocking
+import net.sqlcipher.database.SupportFactory
 
 /**
  * Prody Room Database
@@ -1695,24 +1698,52 @@ abstract class ProdyDatabase : RoomDatabase() {
             }
         }
 
-        private fun buildDatabase(context: Context): ProdyDatabase {
-            return Room.databaseBuilder(
-                context.applicationContext,
-                ProdyDatabase::class.java,
-                DATABASE_NAME
-            )
-                .addMigrations(
-                    MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8,
-                    MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12,
-                    MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16,
-                    MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20
+private fun buildDatabase(context: Context): ProdyDatabase {
+            return try {
+                // Initialize secure database manager
+                val secureDbManager = SecureDatabaseManager(context)
+                
+                // Create SQLCipher support factory with secure passphrase
+                val supportFactory = runBlocking {
+                    secureDbManager.createSQLCipherSupportFactory()
+                }
+                
+                Room.databaseBuilder(
+                    context.applicationContext,
+                    ProdyDatabase::class.java,
+                    DATABASE_NAME
                 )
-                .fallbackToDestructiveMigration()
-                .addCallback(DatabaseCallback())
-                .build()
+                    .openHelperFactory(supportFactory)
+                    .addMigrations(
+                        MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8,
+                        MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12,
+                        MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16,
+                        MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20
+                    )
+                    .fallbackToDestructiveMigration()
+                    .addCallback(SecureDatabaseCallback(secureDbManager))
+                    .build()
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to create secure database, falling back to unencrypted", e)
+                // Fallback to unencrypted database for development
+                Room.databaseBuilder(
+                    context.applicationContext,
+                    ProdyDatabase::class.java,
+                    DATABASE_NAME
+                )
+                    .addMigrations(
+                        MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8,
+                        MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12,
+                        MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16,
+                        MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20
+                    )
+                    .fallbackToDestructiveMigration()
+                    .addCallback(DatabaseCallback())
+                    .build()
+            }
         }
 
-        /**
+/**
          * Database callback for initialization tasks
          */
         private class DatabaseCallback : Callback() {
@@ -1729,6 +1760,44 @@ abstract class ProdyDatabase : RoomDatabase() {
             override fun onDestructiveMigration(db: SupportSQLiteDatabase) {
                 super.onDestructiveMigration(db)
                 Log.w(TAG, "Destructive migration performed - data was cleared")
+            }
+        }
+
+        /**
+         * Secure Database callback with encryption verification
+         */
+        private class SecureDatabaseCallback(
+            private val secureDbManager: SecureDatabaseManager
+        ) : Callback() {
+            override fun onCreate(db: SupportSQLiteDatabase) {
+                super.onCreate(db)
+                Log.d(TAG, "Secure database created successfully")
+            }
+
+            override fun onOpen(db: SupportSQLiteDatabase) {
+                super.onOpen(db)
+                Log.d(TAG, "Secure database opened")
+                
+                // Verify database integrity
+                runBlocking {
+                    val databaseFile = context.getDatabasePath(DATABASE_NAME)
+                    val isIntegrityValid = secureDbManager.verifyDatabaseIntegrity(databaseFile)
+                    
+                    if (!isIntegrityValid) {
+                        Log.e(TAG, "Database integrity check failed!")
+                        // Handle integrity failure appropriately
+                    }
+                }
+            }
+
+            override fun onDestructiveMigration(db: SupportSQLiteDatabase) {
+                super.onDestructiveMigration(db)
+                Log.w(TAG, "Secure database destructive migration performed - data was cleared")
+                
+                // Clear encryption data after destructive migration
+                runBlocking {
+                    secureDbManager.clearDatabaseEncryption()
+                }
             }
         }
     }

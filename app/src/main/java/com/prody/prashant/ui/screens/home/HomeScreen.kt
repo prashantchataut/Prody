@@ -415,9 +415,9 @@ private fun AiConfigurationWarningBanner(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Icon(
+Icon(
                 imageVector = ProdyIcons.Warning,
-                contentDescription = null,
+                contentDescription = "Warning: AI features disabled",
                 tint = ProdyWarning,
                 modifier = Modifier.size(24.dp)
             )

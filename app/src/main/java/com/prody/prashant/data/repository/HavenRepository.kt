@@ -77,7 +77,8 @@ class HavenRepository @Inject constructor(
                             HavenMessage(
                                 content = aiResponse.message,
                                 isUser = false,
-                                isCrisisResponse = aiResponse.isCrisisDetected
+                                isCrisisResponse = aiResponse.isCrisisDetected,
+                                recalledMessage = aiResponse.recalledContent
                             )
                         )
                     )
@@ -139,7 +140,8 @@ class HavenRepository @Inject constructor(
                 isUser = false,
                 techniqueUsed = aiResponse.techniqueApplied,
                 exerciseSuggested = aiResponse.suggestedExercise,
-                isCrisisResponse = aiResponse.isCrisisDetected
+                isCrisisResponse = aiResponse.isCrisisDetected,
+                recalledMessage = aiResponse.recalledContent
             )
 
             val updatedMessages = existingMessages + listOf(userMsg, aiMsg)

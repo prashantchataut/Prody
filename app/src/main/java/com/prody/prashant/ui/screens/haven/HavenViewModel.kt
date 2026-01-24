@@ -142,7 +142,8 @@ class HavenViewModel @Inject constructor(
                         isUser = false,
                         techniqueUsed = aiResponse.techniqueApplied,
                         exerciseSuggested = aiResponse.suggestedExercise,
-                        isCrisisResponse = aiResponse.isCrisisDetected
+                        isCrisisResponse = aiResponse.isCrisisDetected,
+                        recalledMessage = aiResponse.recalledContent
                     )
                     _chatState.update {
                         it.copy(
@@ -224,7 +225,8 @@ class HavenViewModel @Inject constructor(
                         isUser = false,
                         techniqueUsed = aiResponse.techniqueApplied,
                         exerciseSuggested = aiResponse.suggestedExercise,
-                        isCrisisResponse = aiResponse.isCrisisDetected
+                        isCrisisResponse = aiResponse.isCrisisDetected,
+                        recalledMessage = aiResponse.recalledContent
                     )
                     _chatState.update {
                         it.copy(
@@ -399,5 +401,12 @@ class HavenViewModel @Inject constructor(
 
     fun clearHomeError() {
         _homeState.update { it.copy(error = null) }
+    }
+
+    /**
+     * Manually trigger the crisis resources banner
+     */
+    fun showCrisisResources() {
+        _chatState.update { it.copy(showCrisisResources = true) }
     }
 }

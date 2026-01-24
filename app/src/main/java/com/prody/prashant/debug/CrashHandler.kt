@@ -223,13 +223,13 @@ class CrashHandler private constructor(
         )
     }
 
-    private fun getRootCause(throwable: Throwable): Throwable {
+private fun getRootCause(throwable: Throwable): Throwable {
         var cause: Throwable = throwable
         var depth = 0
         val maxDepth = 20 // Prevent infinite loops
 
         while (cause.cause != null && cause.cause != cause && depth < maxDepth) {
-            cause = cause.cause!!
+            cause = cause.cause ?: break // Safe null check with fallback
             depth++
         }
         return cause

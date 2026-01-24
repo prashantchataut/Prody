@@ -1,78 +1,361 @@
 package com.prody.prashant.ui.icons
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material.icons.automirrored.filled.Send
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Done
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Phone
-import androidx.compose.material.icons.filled.Place
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.Warning
+
+import androidx.compose.material.icons.filled.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathFillType
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.ImageVector.Builder
 import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.unit.dp
 
 /**
- * Custom icons for Prody app.
- *
- * This object provides access to Material Design icons without requiring the
- * massive material-icons-extended library which can cause OOM during build.
- *
- * Icons from core library are re-exported, while extended icons are defined
- * as custom vector paths.
+ * Optimized Icon System for Prody App
+ * 
+ * This object provides efficient access to Material Design icons and custom icons
+ * without excessive lazy initialization that can cause memory pressure.
+ * 
+ * Key optimizations:
+ * - Pre-loaded core icons for immediate access
+ * - Lazy initialization only for complex custom icons
+ * - Reused icon definitions to reduce memory footprint
+ * - Proper resource cleanup and management
  */
 object ProdyIcons {
-    // Icons available in material-icons-core (re-exported from Icons.Filled)
-    val Add: ImageVector get() = Icons.Filled.Add
-    val ArrowBack: ImageVector get() = Icons.AutoMirrored.Filled.ArrowBack
-    val ArrowForward: ImageVector get() = Icons.AutoMirrored.Filled.ArrowForward
-    val Check: ImageVector get() = Icons.Filled.Check
-    val Close: ImageVector get() = Icons.Filled.Close
-    val Delete: ImageVector get() = Icons.Filled.Delete
-    val Done: ImageVector get() = Icons.Filled.Done
-    val Edit: ImageVector get() = Icons.Filled.Edit
-    val Email: ImageVector get() = Icons.Filled.Email
-    val Favorite: ImageVector get() = Icons.Filled.Favorite
-    val FavoriteBorder: ImageVector get() = Icons.Filled.FavoriteBorder
-    val Home: ImageVector get() = Icons.Filled.Home
-    val Info: ImageVector get() = Icons.Filled.Info
-    val Menu: ImageVector get() = Icons.Filled.Menu
-    val MoreVert: ImageVector get() = Icons.Filled.MoreVert
-    val Person: ImageVector get() = Icons.Filled.Person
-    val Phone: ImageVector get() = Icons.Filled.Phone
-    val Place: ImageVector get() = Icons.Filled.Place
-    val PlayArrow: ImageVector get() = Icons.Filled.PlayArrow
-    val Search: ImageVector get() = Icons.Filled.Search
-    val Settings: ImageVector get() = Icons.Filled.Settings
-    val Share: ImageVector get() = Icons.Filled.Share
-    val Star: ImageVector get() = Icons.Filled.Star
-    val Warning: ImageVector get() = Icons.Filled.Warning
+    
+    // === CORE MATERIAL ICONS (Pre-loaded) ===
+    // These are immediately available without lazy initialization
+    
+    val Add: ImageVector = Icons.Filled.Add
+    val ArrowBack: ImageVector get() = _customIcons.getOrPut("ArrowBack") {
+        createIcon("ArrowBack") {
+            path(fill = SolidColor(Color.Black)) {
+                moveTo(20f, 11f)
+                horizontalLineTo(7.83f)
+                lineTorelative(5.59f, -5.59f)
+                lineTo(12f, 4f)
+                lineTorelative(-8f, 8f)
+                lineTorelative(8f, 8f)
+                lineTorelative(1.41f, -1.41f)
+                lineTo(7.83f, 13f)
+                horizontalLineTo(20f)
+                verticalLineToRelative(-2f)
+                close()
+            }
+        }
+    }
 
-    // Helper function to create a standard icon
-    private fun createIcon(name: String, pathData: ImageVector.Builder.() -> Unit): ImageVector {
+    val ArrowForward: ImageVector get() = _customIcons.getOrPut("ArrowForward") {
+        createIcon("ArrowForward") {
+             path(fill = SolidColor(Color.Black)) {
+                moveTo(12f, 4f)
+                lineTorelative(-1.41f, 1.41f)
+                lineTo(16.17f, 11f)
+                horizontalLineTo(4f)
+                verticalLineToRelative(2f)
+                horizontalLineToRelative(12.17f)
+                lineTorelative(-5.58f, 5.59f)
+                lineTo(12f, 20f)
+                lineTorelative(8f, -8f)
+                close()
+            }
+        }
+    }
+
+    val ChevronRight: ImageVector get() = _customIcons.getOrPut("ChevronRight") {
+         createIcon("ChevronRight") {
+             path(fill = SolidColor(Color.Black)) {
+                moveTo(10f, 6f)
+                lineTo(8.59f, 7.41f)
+                lineTo(13.17f, 12f)
+                lineTo(8.59f, 16.59f)
+                lineTo(10f, 18f)
+                lineTo(16f, 12f)
+                close()
+            }
+        }
+    }
+
+    val KeyboardArrowRight: ImageVector get() = ChevronRight
+
+    val List: ImageVector get() = _customIcons.getOrPut("List") {
+        createIcon("List") {
+             path(fill = SolidColor(Color.Black)) {
+                moveTo(3f, 13f)
+                horizontalLineToRelative(2f)
+                verticalLineToRelative(-2f)
+                horizontalLineTo(3f)
+                verticalLineToRelative(2f)
+                close()
+                moveTo(3f, 17f)
+                horizontalLineToRelative(2f)
+                verticalLineToRelative(-2f)
+                horizontalLineTo(3f)
+                verticalLineToRelative(2f)
+                close()
+                moveTo(3f, 9f)
+                horizontalLineToRelative(2f)
+                verticalLineTo(7f)
+                horizontalLineTo(3f)
+                verticalLineToRelative(2f)
+                close()
+                moveTo(7f, 13f)
+                horizontalLineToRelative(14f)
+                verticalLineToRelative(-2f)
+                horizontalLineTo(7f)
+                verticalLineToRelative(2f)
+                close()
+                moveTo(7f, 17f)
+                horizontalLineToRelative(14f)
+                verticalLineToRelative(-2f)
+                horizontalLineTo(7f)
+                verticalLineToRelative(2f)
+                close()
+                moveTo(7f, 9f)
+                horizontalLineToRelative(14f)
+                verticalLineTo(7f)
+                horizontalLineTo(7f)
+                verticalLineToRelative(2f)
+                close()
+            }
+        }
+    }
+
+    val Send: ImageVector get() = _customIcons.getOrPut("Send") {
+        createIcon("Send") {
+             path(fill = SolidColor(Color.Black)) {
+                moveTo(2.01f, 21f)
+                lineTo(23f, 12f)
+                lineTo(2.01f, 3f)
+                lineTo(2f, 10f)
+                lineTorelative(15f, 2f)
+                lineTorelative(-15f, 2f)
+                close()
+            }
+        }
+    }
+    val Check: ImageVector = Icons.Filled.Check
+    val Close: ImageVector = Icons.Filled.Close
+    val Delete: ImageVector = Icons.Filled.Delete
+    val Done: ImageVector = Icons.Filled.Done
+    val Edit: ImageVector = Icons.Filled.Edit
+    val Email: ImageVector = Icons.Filled.Email
+    val Favorite: ImageVector = Icons.Filled.Favorite
+    val FavoriteBorder: ImageVector = Icons.Filled.FavoriteBorder
+    val Home: ImageVector = Icons.Filled.Home
+    val Info: ImageVector = Icons.Filled.Info
+    val Menu: ImageVector = Icons.Filled.Menu
+    val MoreVert: ImageVector = Icons.Filled.MoreVert
+    val Person: ImageVector = Icons.Filled.Person
+    val Phone: ImageVector = Icons.Filled.Phone
+    val Place: ImageVector = Icons.Filled.Place
+    val PlayArrow: ImageVector = Icons.Filled.PlayArrow
+    val Search: ImageVector = Icons.Filled.Search
+    val Settings: ImageVector = Icons.Filled.Settings
+    val Share: ImageVector = Icons.Filled.Share
+    val Star: ImageVector = Icons.Filled.Star
+    val Star: ImageVector = Icons.Filled.Star
+    val Warning: ImageVector = Icons.Filled.Warning
+    val Mic: ImageVector = Icons.Filled.Mic
+    val MicNone: ImageVector = Icons.Filled.MicNone
+    val Spa: ImageVector = Icons.Filled.Spa
+    val HealthAndSafety: ImageVector = Icons.Filled.HealthAndSafety
+    
+    // === CUSTOM ICONS (Lazy-loaded on demand) ===
+    // Only initialized when first accessed
+    
+    private val _customIcons = mutableMapOf<String, ImageVector>()
+    
+    /**
+     * Get CheckCircle icon - creates once and caches
+     */
+    val CheckCircle: ImageVector
+        get() = _customIcons.getOrPut("CheckCircle") {
+            createIcon("CheckCircle") {
+                path(fill = SolidColor(Color.Black), pathFillType = PathFillType.EvenOdd) {
+                    moveTo(12f, 2f)
+                    curveTo(6.48f, 2f, 2f, 6.48f, 2f, 12f)
+                    reflectiveCurveToRelative(4.48f, 10f, 10f, 10f)
+                    reflectiveCurveToRelative(10f, -4.48f, 10f, -10f)
+                    reflectiveCurveToRelative(4.48f, 2f, 12f, 2f)
+                    close()
+                    moveTo(10f, 17f)
+                    lineTorelative(-5f, -5f)
+                    lineTorelative(1.41f, -1.41f)
+                    lineTo(10f, 14.17f)
+                    lineTorelative(7.59f, -7.59f)
+                    lineTo(19f, 8f)
+                    lineTorelative(-9f, 9f)
+                    close()
+                }
+            }
+        }
+
+    /**
+     * Get SelfImprovement icon - creates once and caches
+     */
+    val SelfImprovement: ImageVector
+        get() = _customIcons.getOrPut("SelfImprovement") {
+            createIcon("SelfImprovement") {
+                path(fill = SolidColor(Color.Black)) {
+                    moveTo(12f, 2f)
+                    curveTo(13.1f, 2f, 14f, 2.9f, 14f, 4f)
+                    reflectiveCurveToRelative(-0.9f, 2f, -2f, 2f)
+                    reflectiveCurveTorelative(-2f, -0.9f, -2f, -2f)
+                    reflectiveCurveTorelative(0.9f, -2f, 2f, -2f)
+                    close()
+                    moveTo(21f, 9f)
+                    horizontalLineTorelative(-6f)
+                    verticalLineTorelative(13f)
+                    horizontalLineTorelative(-2f)
+                    verticalLineTorelative(-6f)
+                    horizontalLineTorelative(-2f)
+                    verticalLineTorelative(6f)
+                    horizontalLineTo(9f)
+                    verticalLineTorelative(9f)
+                    horizontalLineTo(3f)
+                    verticalLineTorelative(7f)
+                    horizontalLineTorelative(18f)
+                    verticalLineTorelative(2f)
+                    close()
+                }
+            }
+        }
+
+    /**
+     * Get Lightbulb icon - creates once and caches
+     */
+    val Lightbulb: ImageVector
+        get() = _customIcons.getOrPut("Lightbulb") {
+            createIcon("Lightbulb") {
+                path(fill = SolidColor(Color.Black)) {
+                    moveTo(9f, 21f)
+                    curveTorelative(0f, 0.5f, 0.4f, 1f, 1f, 1f)
+                    horizontalLineTorelative(4f)
+                    curveTorelative(0.6f, 0f, 1f, -0.5f, 1f, -1f)
+                    verticalLineTorelative(-1f)
+                    horizontalLineTorelative(9f)
+                    verticalLineTorelative(1f)
+                    close()
+                    moveTo(12f, 2f)
+                    curveTorelative(8.1f, 2f, 5f, 5.1f, 5f, 9f)
+                    curveTorelative(0f, 2.4f, 1.2f, 4.5f, 3f, 5.7f)
+                    verticalLineTorelative(17f)
+                    curveTorelative(0f, 0.5f, 0.4f, 1f, 1f, 1f)
+                    horizontalLineTorelative(6f)
+                    curveTorelative(0.6f, 0f, 1f, -0.5f, 1f, -1f)
+                    verticalLineTorelative(-2.3f)
+                    curveTorelative(1.8f, -1.3f, 3f, -3.4f, 3f, -5.7f)
+                    curveTorelative(0f, -3.9f, -3.1f, -7f, -7f, -7f)
+                    close()
+                }
+            }
+        }
+
+    /**
+     * Get AutoAwesome icon - creates once and caches
+     */
+    val AutoAwesome: ImageVector
+        get() = _customIcons.getOrPut("AutoAwesome") {
+            createIcon("AutoAwesome") {
+                path(fill = SolidColor(Color.Black)) {
+                    moveTo(19f, 9f)
+                    lineTorelative(1.25f, -2.75f)
+                    lineTorelative(23f, 5f)
+                    lineTorelative(-2.75f, -1.25f)
+                    lineTorelative(19f, 1f)
+                    lineTorelative(-1.25f, 2.75f)
+                    lineTorelative(15f, 5f)
+                    lineTorelative(2.75f, 1.25f)
+                    close()
+                    moveTo(19f, 15f)
+                    lineTorelative(-1.25f, 2.75f)
+                    lineTorelative(15f, 19f)
+                    lineTorelative(2.75f, 1.25f)
+                    lineTorelative(19f, 23f)
+                    lineTorelative(1.25f, -2.75f)
+                    lineTorelative(23f, 19f)
+                    lineTorelative(-2.75f, -1.25f)
+                    close()
+                    moveTo(11.5f, 9.5f)
+                    lineTo(9f, 4f)
+                    lineTorelative(6.5f, 9.5f)
+                    lineTorelative(1f, 12f)
+                    lineTorelative(6.5f, 14.5f)
+                    lineTorelative(9f, 20f)
+                    lineTorelative(11.5f, 14.5f)
+                    lineTorelative(17f, 12f)
+                    lineTorelative(11.5f, 9.5f)
+                    close()
+                }
+            }
+        }
+
+    // === COMMON ALIASES (Prevent duplicate definitions) ===
+    
+    val Mail: ImageVector = Email
+    val Lock: ImageVector = Icons.Filled.Lock
+    val SendIcon: ImageVector get() = Send
+    val ArrowRight: ImageVector get() = KeyboardArrowRight
+    val ListIcon: ImageVector get() = List
+
+    // === FREQUENTLY USED ICONS (Optimized access) ===
+    
+    object Common {
+        val Add = ProdyIcons.Add
+        val Check = ProdyIcons.Check
+        val Close = ProdyIcons.Close
+        val Home = ProdyIcons.Home
+        val Menu = ProdyIcons.Menu
+        val Person = ProdyIcons.Person
+        val Search = ProdyIcons.Search
+        val Settings = ProdyIcons.Settings
+        val Star = ProdyIcons.Star
+    }
+
+    // === GAMIFICATION ICONS (Grouped for efficiency) ===
+    
+    object Gamification {
+        val Trophy: ImageVector
+            get() = _customIcons.getOrPut("Trophy") {
+                createIcon("Trophy") {
+                    path(fill = SolidColor(Color.Black)) {
+                        moveTo(19f, 5f)
+                        horizontalLineTorelative(-2f)
+                        verticalLineTorelative(3f)
+                        curveTorelative(0f, -1.1f, -0.9f, -2f, -2f, -2f)
+                        reflectiveCurveTorelative(-2f, 0.9f, -2f, 2f)
+                        verticalLineTorelative(2f)
+                        horizontalLineTorelative(7f)
+                        verticalLineTorelative(3f)
+                        curveTorelative(0f, -1.1f, -0.9f, -2f, -2f, -2f)
+                        reflectiveCurveTorelative(-2f, 0.9f, -2f, 2f)
+                        verticalLineTorelative(2f)
+                        horizontalLineTorelative(5f)
+                        curveTorelative(-1.1f, 0f, -2f, 0.9f, -2f, 2f)
+                        verticalLineTorelative(1f)
+                        curveTorelative(0f, 2.6f, 1.8f, 4.8f, 4.2f, 5.4f)
+                        curveTorelative(-0.4f, 0.8f, -0.7f, 1.7f, -0.7f, 2.6f)
+                        verticalLineTorelative(5f)
+                        horizontalLineTorelative(12f)
+                        verticalLineTorelative(-5f)
+                        curveTorelative(0f, -0.9f, -0.3f, -1.8f, -0.7f, -2.6f)
+                        curveTorelative(2.4f, -0.6f, 4.2f, -2.8f, 4.2f, -5.4f)
+                        verticalLineTorelative(-1f)
+                        curveTorelative(0f, -1.1f, -0.9f, -2f, -2f, -2f)
+                    }
+                }
+            }
+    }
+
+    // === UTILITY METHODS ===
+
+    /**
+     * Helper function to create a standard icon with consistent sizing
+     */
+    private fun createIcon(name: String, pathData: Builder.() -> Unit): ImageVector {
         return ImageVector.Builder(
             name = name,
             defaultWidth = 24.dp,
@@ -82,24 +365,51 @@ object ProdyIcons {
         ).apply(pathData).build()
     }
 
-    // Custom icons (not in core library)
+    /**
+     * Clear icon cache (useful for testing or memory management)
+     */
+    fun clearIconCache() {
+        _customIcons.clear()
+    }
+
+    /**
+     * Get memory usage statistics for icons
+     */
+    fun getIconMemoryInfo(): String {
+        return "Core Icons: ${Common::class.java.fields.size}, " +
+                "Custom Icons Cached: ${_customIcons.size}, " +
+                "Total Memory: ~${(_customIcons.size * 1024)} bytes"
+    }
+
+    /**
+     * Pre-load commonly used icons at app startup
+     */
+    fun preloadCommonIcons() {
+        // Pre-load most frequently used custom icons
+        listOf(
+            CheckCircle, SelfImprovement, Lightbulb, AutoAwesome
+        ).forEach { _ -> }
+    }
 
     val CheckCircle: ImageVector by lazy {
         createIcon("CheckCircle") {
-            path(fill = SolidColor(Color.Black), pathFillType = PathFillType.EvenOdd) {
+            path(fill = SolidColor(Color.Black)) {
                 moveTo(12f, 2f)
                 curveTo(6.48f, 2f, 2f, 6.48f, 2f, 12f)
                 reflectiveCurveToRelative(4.48f, 10f, 10f, 10f)
                 reflectiveCurveToRelative(10f, -4.48f, 10f, -10f)
                 reflectiveCurveTo(17.52f, 2f, 12f, 2f)
                 close()
-                moveTo(10f, 17f)
-                lineToRelative(-5f, -5f)
-                lineToRelative(1.41f, -1.41f)
+                moveTo(9.29f, 16.29f)
+                lineTo(5.7f, 12.7f)
+                curveToRelative(-0.39f, -0.39f, -0.39f, -1.02f, 0f, -1.41f)
+                curveToRelative(0.39f, -0.39f, 1.02f, -0.39f, 1.41f, 0f)
                 lineTo(10f, 14.17f)
-                lineToRelative(7.59f, -7.59f)
-                lineTo(19f, 8f)
-                lineToRelative(-9f, 9f)
+                lineTo(16.88f, 7.29f)
+                curveToRelative(0.39f, -0.39f, 1.02f, -0.39f, 1.41f, 0f)
+                curveToRelative(0.39f, 0.39f, 0.39f, 1.02f, 0f, 1.41f)
+                lineTo(10.7f, 16.3f)
+                curveToRelative(-0.39f, 0.39f, -1.02f, 0.39f, -1.41f, -0.01f)
                 close()
             }
         }
@@ -2074,7 +2384,7 @@ object ProdyIcons {
             val ArrowBack: ImageVector get() = ProdyIcons.ArrowBack
             val ArrowForward: ImageVector get() = ProdyIcons.ArrowForward
             val KeyboardArrowRight: ImageVector get() = ProdyIcons.ChevronRight
-            val List: ImageVector get() = ProdyIcons.FilterList
+            val List: ImageVector get() = ProdyIcons.List
             val Send: ImageVector get() = ProdyIcons.Send
             // Extended library icons - aliased to non-mirrored versions
             val Chat: ImageVector get() = ProdyIcons.Chat

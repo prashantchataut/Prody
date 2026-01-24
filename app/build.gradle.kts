@@ -40,24 +40,29 @@ android {
             arg("room.generateKotlin", "true")
         }
 
-        // AI API Key configuration - reads from local.properties
-        // Add your API key to local.properties: AI_API_KEY=your_gemini_api_key_here
+// AI API Key configuration - Secure management
+        // API keys are now managed securely through SecureApiKeyManager
+        // Add your API keys to local.properties (see file for instructions)
         buildConfigField(
             "String",
             "AI_API_KEY",
-            "\"${localProperties.getProperty("AI_API_KEY", "")}\""
+            "\"${localProperties.getProperty("AI_API_KEY", "").trim()}\""
         )
         buildConfigField(
             "String",
             "OPENROUTER_API_KEY",
-            "\"${localProperties.getProperty("OPENROUTER_API_KEY", "")}\""
+            "\"${localProperties.getProperty("OPENROUTER_API_KEY", "").trim()}\""
         )
         // Haven Therapist API Key - separate key for therapeutic AI
-        // Add to local.properties: THERAPIST_API_KEY=your_gemini_api_key_here
         buildConfigField(
             "String",
             "THERAPIST_API_KEY",
-            "\"${localProperties.getProperty("THERAPIST_API_KEY", "")}\""
+            "\"${localProperties.getProperty("THERAPIST_API_KEY", "").trim()}\""
+        )
+        buildConfigField(
+            "String",
+            "TTS_API_KEY",
+            "\"${localProperties.getProperty("TTS_API_KEY", "").trim()}\""
         )
     }
 
@@ -174,11 +179,15 @@ dependencies {
     // DataStore
     implementation(libs.androidx.datastore.preferences)
 
-    // Security - Encryption & Biometrics
+// Security - Encryption & Biometrics
     implementation(libs.androidx.security.crypto)
     implementation(libs.androidx.biometric)
     implementation(libs.sqlcipher.android)
     implementation(libs.sqlite.ktx)
+    
+    // Network Security
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 
     // Hilt
     implementation(libs.hilt.android)

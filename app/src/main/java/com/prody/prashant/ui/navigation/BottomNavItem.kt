@@ -69,7 +69,7 @@ sealed class BottomNavItem(
      * order dependency that can cause ExceptionInInitializerError on some devices.
      */
     data object Haven : BottomNavItem(
-        route = "haven_home",
+        route = "haven",
         labelResId = R.string.nav_haven,
         selectedIcon = ProdyIcons.Psychology,
         unselectedIcon = ProdyIcons.Outlined.Psychology,

@@ -23,19 +23,26 @@ class ProdyApplication : Application(), Configuration.Provider {
 
     @Inject
     lateinit var workerFactory: HiltWorkerFactory
+        private set
 
     @Inject
     lateinit var gamificationService: GamificationService
+        private set
 
     @Inject
     lateinit var witnessModeManager: WitnessModeManager
+        private set
 
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     override val workManagerConfiguration: Configuration
         get() = try {
+            // Safe access to workerFactory with null check
+            val factory = ::workerFactory.isInitialized.let { 
+                if (it) workerFactory else HiltWorkerFactory()
+            }
             Configuration.Builder()
-                .setWorkerFactory(workerFactory)
+                .setWorkerFactory(factory)
                 .setMinimumLoggingLevel(if (BuildConfig.DEBUG) Log.DEBUG else Log.ERROR)
                 .build()
         } catch (e: Exception) {

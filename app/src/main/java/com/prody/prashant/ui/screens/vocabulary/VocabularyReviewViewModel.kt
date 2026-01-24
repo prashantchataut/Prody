@@ -37,7 +37,9 @@ class VocabularyReviewViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(VocabularyReviewUiState())
     val uiState: StateFlow<VocabularyReviewUiState> = _uiState.asStateFlow()
 
-    private val userId = "local" // TODO: Get from auth/user service
+    // Temporary userId - will be replaced with user authentication system
+    // TODO: Implement user authentication service and get current userId
+    private val userId = "local"
 
     init {
         loadVocabularyReview()

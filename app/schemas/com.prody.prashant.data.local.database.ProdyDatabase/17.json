@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 17,
-    "identityHash": "49287de3526ba8fffea843194b6509ca",
+    "identityHash": "e7ad6a2eee33f40acff1120023fa34a3",
     "entities": [
       {
         "tableName": "journal_entries",
@@ -404,7 +404,7 @@
       },
       {
         "tableName": "vocabulary",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `word` TEXT NOT NULL, `definition` TEXT NOT NULL, `pronunciation` TEXT NOT NULL, `partOfSpeech` TEXT NOT NULL, `exampleSentence` TEXT NOT NULL, `synonyms` TEXT NOT NULL, `antonyms` TEXT NOT NULL, `origin` TEXT NOT NULL, `difficulty` INTEGER NOT NULL, `category` TEXT NOT NULL, `isLearned` INTEGER NOT NULL, `learnedAt` INTEGER, `reviewCount` INTEGER NOT NULL, `lastReviewedAt` INTEGER, `nextReviewAt` INTEGER, `masteryLevel` INTEGER NOT NULL, `isFavorite` INTEGER NOT NULL, `shownAsDaily` INTEGER NOT NULL, `shownAt` INTEGER)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `word` TEXT NOT NULL, `definition` TEXT NOT NULL, `pronunciation` TEXT NOT NULL, `partOfSpeech` TEXT NOT NULL, `exampleSentence` TEXT NOT NULL, `synonyms` TEXT NOT NULL, `antonyms` TEXT NOT NULL, `origin` TEXT NOT NULL, `difficulty` INTEGER NOT NULL, `category` TEXT NOT NULL, `isLearned` INTEGER NOT NULL, `learnedAt` INTEGER, `reviewCount` INTEGER NOT NULL, `lastReviewedAt` INTEGER, `nextReviewAt` INTEGER, `masteryLevel` INTEGER NOT NULL, `isFavorite` INTEGER NOT NULL, `shownAsDaily` INTEGER NOT NULL, `shownAt` INTEGER, `hasBloomedInContext` INTEGER NOT NULL, `bloomedAt` INTEGER, `bloomedInEntryId` INTEGER, `bloomCount` INTEGER NOT NULL)",
         "fields": [
           {
             "fieldPath": "id",
@@ -525,6 +525,30 @@
             "columnName": "shownAt",
             "affinity": "INTEGER",
             "notNull": false
+          },
+          {
+            "fieldPath": "hasBloomedInContext",
+            "columnName": "hasBloomedInContext",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "bloomedAt",
+            "columnName": "bloomedAt",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "bloomedInEntryId",
+            "columnName": "bloomedInEntryId",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "bloomCount",
+            "columnName": "bloomCount",
+            "affinity": "INTEGER",
+            "notNull": true
           }
         ],
         "primaryKey": {
@@ -587,6 +611,15 @@
             ],
             "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_vocabulary_nextReviewAt` ON `${TABLE_NAME}` (`nextReviewAt`)"
+          },
+          {
+            "name": "index_vocabulary_hasBloomedInContext",
+            "unique": false,
+            "columnNames": [
+              "hasBloomedInContext"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_vocabulary_hasBloomedInContext` ON `${TABLE_NAME}` (`hasBloomedInContext`)"
           }
         ],
         "foreignKeys": []
@@ -9746,7 +9779,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '49287de3526ba8fffea843194b6509ca')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'e7ad6a2eee33f40acff1120023fa34a3')"
     ]
   }
 }

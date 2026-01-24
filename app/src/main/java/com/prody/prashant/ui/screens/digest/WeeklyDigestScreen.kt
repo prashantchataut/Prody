@@ -27,6 +27,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
+import android.content.Intent
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.data.local.entity.WeeklyDigestEntity
@@ -43,8 +46,50 @@ fun WeeklyDigestScreen(
     onNavigateToEntry: (Long) -> Unit,
     viewModel: WeeklyDigestViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+
+    /**
+     * Share weekly digest content
+     */
+    fun shareWeeklyDigest(digest: WeeklyDigestEntity) {
+        val shareText = buildString {
+            appendLine("📊 My Prody Weekly Digest")
+            appendLine("🗓️ ${formatDate(digest.endDate)}")
+            appendLine()
+            appendLine("📈 Summary:")
+            appendLine("• Journal entries: ${digest.journalCount}")
+            appendLine("• Active streak: ${digest.currentStreak} days")
+            appendLine("• Mood: ${getMoodEmoji(digest.avgMood)} ${getMoodName(digest.avgMood)}")
+            appendLine("• XP earned: ${digest.weeklyXp}")
+            
+            if (digest.topAchievements.isNotEmpty()) {
+                appendLine()
+                appendLine("🏆 Achievements:")
+                digest.topAchievements.take(3).forEach { achievement ->
+                    appendLine("• $achievement")
+                }
+            }
+            
+            if (digest.wordOfTheDay.isNotBlank()) {
+                appendLine()
+                appendLine("📚 Word of the Day: ${digest.wordOfTheDay}")
+            }
+            
+            appendLine()
+            appendLine("Powered by Prody - Your Growth Companion 🌱")
+        }
+
+        val shareIntent = Intent().apply {
+            action = Intent.ACTION_SEND
+            type = "text/plain"
+            putExtra(Intent.EXTRA_TEXT, shareText)
+            putExtra(Intent.EXTRA_SUBJECT, "My Prody Weekly Digest")
+        }
+        
+        ContextCompat.startActivity(context, Intent.createChooser(shareIntent, "Share Weekly Digest"), null)
+    }
 
     // Handle messages
     LaunchedEffect(uiState.successMessage) {
@@ -255,10 +300,10 @@ private fun DigestContent(
                 )
             }
 
-            // Share button
+// Share button
             item {
                 ShareSummaryButton(
-                    onClick = { /* TODO: Implement share */ },
+                    onClick = { shareWeeklyDigest(digest) },
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
             }

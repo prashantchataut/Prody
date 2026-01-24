@@ -272,14 +272,17 @@ class SyncManager @Inject constructor(
             )
 
             for (operation in sortedOperations) {
-                // TODO: Implement actual server sync when backend is ready
-                // For now, just log and mark as synced
-                Log.d(TAG, "Processing sync operation: ${operation.type}, id: ${operation.entityId}")
-
-                // Simulate successful sync
-                operationQueue.remove(operation)
+                try {
+                    // TODO: Implement actual sync logic here
+                    // For now, we'll just simulate success and remove from queue
+                    operationQueue.remove(operation)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to sync operation: ${operation.type}", e)
+                    _syncStatus.value = SyncStatus.Error("Sync failed: ${e.message}")
+                    break
+                }
             }
-
+            
             savePendingOperations()
             updateSyncStatus(SyncStatus.SYNCED)
             _syncState.value = _syncState.value.copy(
@@ -366,12 +369,26 @@ class SyncManager @Inject constructor(
         Log.d(TAG, "Pending operations count: ${operationQueue.size}")
     }
 
+/**
+     * Save pending operations to persistent storage
+     * Future implementation: Use Room database or file storage for persistence
+     */
+    private fun savePendingOperations() {
+        // Persistent storage for sync queue - to be implemented with backend
+        // Currently operations are kept in memory only
+        Log.d(TAG, "Pending operations count: ${operationQueue.size}")
+        // Future: Save to SharedPreferences or database for app restart persistence
+    }
+
     /**
      * Load pending operations from persistent storage
+     * Future implementation: Load from Room database or file storage
      */
     private fun loadPendingOperations() {
-        // TODO: Load from persistent storage
-        updatePendingCount()
+        // Load from persistent storage - to be implemented with backend
+        // Currently starts with empty queue
+        Log.d(TAG, "Loading pending operations from memory")
+        // Future: Load operations from SharedPreferences or database on app start
     }
 
     /**

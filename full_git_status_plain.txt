@@ -1,0 +1,28 @@
+On branch main
+Your branch is behind 'origin/main' by 9 commits, and can be fast-forwarded.
+  (use "git pull" to update your local branch)
+
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+	modified:   app/src/main/java/com/prody/prashant/ui/components/ProdyChip.kt
+	modified:   app/src/main/java/com/prody/prashant/ui/screens/futuremessage/WriteMessageScreen.kt
+	modified:   app/src/main/java/com/prody/prashant/ui/theme/AchievementUi.kt
+
+Unmerged paths:
+  (use "git restore --staged <file>..." to unstage)
+  (use "git add <file>..." to mark resolution)
+	both modified:   app/src/main/java/com/prody/prashant/ui/components/BannerDisplay.kt
+	both modified:   app/src/main/java/com/prody/prashant/ui/icons/ProdyIcons.kt
+	both modified:   app/src/main/java/com/prody/prashant/ui/screens/flashcard/FlashcardScreen.kt
+	both modified:   app/src/main/java/com/prody/prashant/ui/screens/journal/JournalDetailScreen.kt
+	both modified:   app/src/main/java/com/prody/prashant/ui/screens/journal/NewJournalEntryScreen.kt
+	both modified:   app/src/main/java/com/prody/prashant/ui/screens/onboarding/OnboardingScreen.kt
+	both modified:   app/src/main/java/com/prody/prashant/ui/screens/profile/SettingsScreen.kt
+	both modified:   app/src/main/java/com/prody/prashant/ui/screens/vocabulary/VocabularyDetailScreen.kt
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	conflicted_files.txt
+	conflicted_files_plain.txt
+	full_git_status.txt
+

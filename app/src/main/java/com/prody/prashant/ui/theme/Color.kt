@@ -14,7 +14,30 @@ import androidx.compose.ui.graphics.Color
  * - Clean bright off-white for light mode
  * - Vibrant neon green accent for interactive elements
  * - Clear visual hierarchy with purposeful color usage
+ *
+ * HAVEN SPECIFIC PALETTE ("Blush & Bone"):
+ * - Light: Bone background (#FAF9F6), Blush bubbles (#E2A9A9), Dark text (#2D2424)
+ * - Dark: Deep Plum background (#1A1616), Deep Rose bubbles (#5E3E3E), Soft Cream text (#E8E4E4)
  */
+
+// =============================================================================
+// HAVEN PALETTE - "Blush & Bone" / "Night Sanctuary"
+// =============================================================================
+
+// Light Mode ("Blush & Bone")
+val HavenBackgroundLight = Color(0xFFFAF9F6)          // Soft Bone White
+val HavenBubbleLight = Color(0xFFE2A9A9)              // Blush Pink (Haven's Voice)
+val HavenUserBubbleLight = Color(0xFFFFFFFF)          // White (User's Voice)
+val HavenTextLight = Color(0xFF2D2424)                // Dark Brown/Black (Soft)
+val HavenAccentGold = Color(0xFFD4AF37)               // Soft Gold (Accent)
+val HavenAccentRose = Color(0xFFB76E79)               // Rose Gold (Accent)
+
+// Dark Mode ("Night Sanctuary")
+val HavenBackgroundDark = Color(0xFF1A1616)           // Deep Plum/Black
+val HavenBubbleDark = Color(0xFF5E3E3E)               // Deepened Rose (Haven's Voice)
+val HavenUserBubbleDark = Color(0xFF2A2424)           // Darker Plum (User's Voice)
+val HavenTextDark = Color(0xFFE8E4E4)                 // Soft Cream
+
 
 // =============================================================================
 // PRIMARY BRAND COLORS - Core Identity
@@ -903,6 +926,30 @@ val DisciplineSkillLight = Color(0xFFB38AE0)
 val DisciplineSkillDark = Color(0xFF7B50C0)
 val CourageSkillLight = Color(0xFFFF9A7D)
 val CourageSkillDark = Color(0xFFE65C37)
+
+// =============================================================================
+// HAVEN COLORS - Blush & Bone Aesthetic
+// =============================================================================
+
+// Primary Mode (Light) - Blush & Bone
+val HavenBackgroundLight = Color(0xFFFAF9F6)          // Off-white/Bone
+val HavenBubbleLight = Color(0xFFE2A9A9)              // Muted Blush
+val HavenTextLight = Color(0xFF2D2424)                // Deep Espresso
+val HavenUserBubbleLight = Color(0xFFE8EDEC)          // Soft Grey/White for user
+
+// Dark Mode - The "Night Sanctuary"
+val HavenBackgroundDark = Color(0xFF1A1616)           // Deep Plum/Charcoal base (not pure black)
+val HavenBubbleDark = Color(0xFF5E3E3E)               // Deepened Rose
+val HavenTextDark = Color(0xFFE8E4E4)                 // Soft Cream
+val HavenUserBubbleDark = Color(0xFF2A2424)           // Darker charcoal for user
+
+// Accents
+val HavenAccentGold = Color(0xFFD4AF37)               // Soft Gold
+val HavenAccentRoseGold = Color(0xFFB76E79)           // Rose Gold
+
+// Breathing/Pulsing Colors
+val HavenPulseStart = Color(0xFFE2A9A9)
+val HavenPulseEnd = Color(0xFFF4C2C2)
 
 // =============================================================================
 // BLOOM SYSTEM COLORS - Vocabulary Growth

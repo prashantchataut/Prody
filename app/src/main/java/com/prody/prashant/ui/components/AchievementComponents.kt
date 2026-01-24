@@ -9,6 +9,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -88,10 +91,16 @@ fun AchievementBadge(
         label = "glow_pulse"
     )
 
-    Column(
+Column(
         modifier = modifier
             .width(dimensions.cardWidth)
-            .then(if (onClick != null) Modifier.clickable { onClick() } else Modifier),
+            .then(if (onClick != null) {
+                Modifier.clickable(
+                    onClickLabel = if (isUnlocked) "View ${title}" else "View locked ${title}",
+                    role = Role.Button,
+                    onClick = onClick
+                )
+            } else Modifier),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Badge icon container

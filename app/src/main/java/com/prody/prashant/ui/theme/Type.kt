@@ -800,6 +800,34 @@ val LetterMetadataStyle = TextStyle(
     letterSpacing = 0.4.sp
 )
 
+// =============================================================================
+// HAVEN TYPOGRAPHY - "Anti-AI" Handwritten Feel
+// =============================================================================
+
+/**
+ * Haven Message Style - Serif font for organic, human feel
+ * Uses default Serif as a fallback for a handwritten aesthetic
+ */
+val HavenMessageStyle = TextStyle(
+    fontFamily = FontFamily.Serif, // Explicitly Serif for "Anti-AI" feel
+    fontWeight = FontWeight.Normal,
+    fontSize = 16.sp,
+    lineHeight = 24.sp,
+    letterSpacing = 0.2.sp
+)
+
+/**
+ * Haven User Input Style - Clean Sans-Serif for clarity
+ */
+val HavenInputStyle = TextStyle(
+    fontFamily = PoppinsFamily,    // Keep user input clean and modern
+    fontWeight = FontWeight.Normal,
+    fontSize = 16.sp,
+    lineHeight = 24.sp,
+    letterSpacing = 0.1.sp
+)
+)
+
 /**
  * Letter title - month and year display
  */
@@ -831,4 +859,31 @@ val LetterStatLabelStyle = TextStyle(
     fontSize = 14.sp,
     lineHeight = 20.sp,
     letterSpacing = 0.3.sp
+)
+
+// =============================================================================
+// HAVEN TYPOGRAPHY - Serif for "Human" feel
+// =============================================================================
+
+/**
+ * Haven Message Style - Serif font for the "handwritten letter" feel.
+ * Ideally Lora or Playfair. Using Serif family as fallback.
+ */
+val HavenMessageStyle = TextStyle(
+    fontFamily = FontFamily.Serif,
+    fontWeight = FontWeight.Normal,
+    fontSize = 17.sp,
+    lineHeight = 26.sp,
+    letterSpacing = 0.2.sp
+)
+
+/**
+ * Haven User Input Style - Clean Sans-Serif for the user.
+ */
+val HavenInputStyle = TextStyle(
+    fontFamily = PoppinsFamily,
+    fontWeight = FontWeight.Normal,
+    fontSize = 16.sp,
+    lineHeight = 24.sp,
+    letterSpacing = 0.1.sp
 )

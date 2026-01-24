@@ -352,46 +352,29 @@ enum class BloomMilestone(
  * User's bloom statistics.
  */
 data class BloomStats(
-    val totalBlooms: Int,
-    val currentStreak: Int,
-    val longestStreak: Int,
-    val bloomRate: Float,           // % of seeds bloomed vs assigned
-    val lastBloomDate: LocalDate?,
-    val thisWeekBlooms: Int,
-    val thisMonthBlooms: Int,
-    val favoriteWisdomType: BloomWisdomType?,
-    val totalXpFromBlooms: Int,
-
-    // Type breakdown
-    val wordBlooms: Int,
-    val idiomBlooms: Int,
-    val proverbBlooms: Int,
-    val quoteBlooms: Int,
-    val seedBlooms: Int
+    val uniqueWordsBloomed: Int = 0,
+    val currentBloomStreak: Int = 0,
+    val longestStreak: Int = 0,
+    val bloomRate: Float = 0f,
+    val lastBloomDate: Long? = null,
+    val thisWeekBlooms: Int = 0,
+    val thisMonthBlooms: Int = 0,
+    val favoriteWisdomType: String? = null,
+    val totalXpFromBlooms: Int = 0,
+    val wordBlooms: Int = 0,
+    val idiomBlooms: Int = 0,
+    val proverbBlooms: Int = 0,
+    val quoteBlooms: Int = 0,
+    val seedBlooms: Int = 0
 ) {
-    val isOnStreak: Boolean get() = currentStreak > 0
+    val isOnStreak: Boolean get() = currentBloomStreak > 0
     val bloomPercentage: Int get() = (bloomRate * 100).toInt()
 
-    val nextMilestone: BloomMilestone? get() = BloomMilestone.getNextMilestone(currentStreak)
-    val daysToNextMilestone: Int get() = nextMilestone?.let { it.days - currentStreak } ?: 0
+    val nextMilestone: BloomMilestone? get() = BloomMilestone.getNextMilestone(currentBloomStreak)
+    val daysToNextMilestone: Int get() = nextMilestone?.let { it.days - currentBloomStreak } ?: 0
 
     companion object {
-        fun empty(): BloomStats = BloomStats(
-            totalBlooms = 0,
-            currentStreak = 0,
-            longestStreak = 0,
-            bloomRate = 0f,
-            lastBloomDate = null,
-            thisWeekBlooms = 0,
-            thisMonthBlooms = 0,
-            favoriteWisdomType = null,
-            totalXpFromBlooms = 0,
-            wordBlooms = 0,
-            idiomBlooms = 0,
-            proverbBlooms = 0,
-            quoteBlooms = 0,
-            seedBlooms = 0
-        )
+        fun empty(): BloomStats = BloomStats()
     }
 }
 

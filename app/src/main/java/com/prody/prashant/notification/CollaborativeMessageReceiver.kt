@@ -22,15 +22,19 @@ class CollaborativeMessageReceiver : BroadcastReceiver() {
 
     @Inject
     lateinit var repository: CollaborativeMessageRepository
+        private set
 
     @Inject
     lateinit var deliveryService: MessageDeliveryService
+        private set
 
     @Inject
     lateinit var notifications: CollaborativeMessageNotifications
+        private set
 
     @Inject
     lateinit var scheduler: CollaborativeMessageScheduler
+        private set
 
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 

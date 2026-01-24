@@ -220,7 +220,9 @@ data class HavenMessage(
     val timestamp: Long = System.currentTimeMillis(),
     val techniqueUsed: TherapeuticTechnique? = null,
     val exerciseSuggested: ExerciseType? = null,
-    val isCrisisResponse: Boolean = false
+    val isCrisisResponse: Boolean = false,
+    val recalledMessage: String? = null,
+    val recalledMessageId: String? = null
 )
 
 /**
@@ -381,7 +383,8 @@ data class HavenAiResponse(
     val suggestedExercise: ExerciseType? = null,
     val isCrisisDetected: Boolean = false,
     val crisisLevel: CrisisLevel = CrisisLevel.NONE,
-    val shouldEndSession: Boolean = false
+    val shouldEndSession: Boolean = false,
+    val recalledContent: String? = null
 )
 
 /**

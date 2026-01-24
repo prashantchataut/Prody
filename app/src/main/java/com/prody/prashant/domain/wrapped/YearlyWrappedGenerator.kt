@@ -54,10 +54,13 @@ class YearlyWrappedGenerator @Inject constructor(
             .toInstant()
             .toEpochMilli()
 
-        // Collect all data
-        val journalEntries: List<com.prody.prashant.data.local.entity.JournalEntryEntity> = journalDao.getEntriesByDateRange(yearStart, yearEnd).also {
-            // Convert Flow to list for single read
-        }.let { emptyList() } // TODO: Proper flow collection
+// Collect all data using proper Flow collection
+        val journalEntries: List<com.prody.prashant.data.local.entity.JournalEntryEntity> = try {
+            journalDao.getEntriesByDateRange(yearStart, yearEnd).first()
+        } catch (e: Exception) {
+            Log.e("YearlyWrappedGenerator", "Error collecting journal entries", e)
+            emptyList()
+        }
 
         // For now, use sync methods
         val allJournalEntries = journalDao.getAllEntriesSync().filter {
