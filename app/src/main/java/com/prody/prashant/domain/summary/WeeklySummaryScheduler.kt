@@ -2,21 +2,10 @@ package com.prody.prashant.domain.summary
 
 import android.content.Context
 import android.util.Log
-import androidx.work.Constraints
-import androidx.work.CoroutineWorker
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.ListenableWorker
-import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
-import androidx.work.WorkerFactory
-import androidx.work.WorkerParameters
 import com.prody.prashant.data.local.dao.WeeklyDigestDao
 import com.prody.prashant.data.local.entity.WeeklyDigestEntity
-import com.prody.prashant.data.local.preferences.PreferencesManager
-import com.prody.prashant.domain.repository.WeeklyDigestRepository
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import java.time.DayOfWeek
@@ -27,7 +16,6 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 import java.time.temporal.TemporalAdjusters
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -48,7 +36,6 @@ class WeeklySummaryScheduler @Inject constructor(
     companion object {
         private const val WORK_NAME = "weekly_summary_generation"
         private const val WORK_TAG = "weekly_summary"
-        private const val TAG = "WeeklySummaryScheduler"
     }
 
     /**
@@ -164,10 +151,6 @@ class WeeklySummaryWorker @Inject constructor(
     private val preferencesManager: PreferencesManager
 ) : CoroutineWorker(context, params) {
 
-    companion object {
-        private const val TAG = "WeeklySummaryWorker"
-    }
-
     override suspend fun doWork(): Result {
         return try {
             // Check if enabled
@@ -188,78 +171,25 @@ class WeeklySummaryWorker @Inject constructor(
 
             Result.success()
         } catch (e: Exception) {
-            android.util.Log.e(TAG, "Failed to generate weekly summary", e)
+            android.util.Log.e("WeeklySummaryWorker", "Failed to generate weekly summary", e)
             Result.retry()
         }
     }
 
-    private fun scheduleNotification() {
+private fun scheduleNotification() {
         // Implement notification scheduling for weekly summary
         // This creates a notification to remind user to check their weekly summary
-
+        
         try {
             val workRequest = OneTimeWorkRequestBuilder<WeeklySummaryNotificationWorker>()
                 .setInitialDelay(Duration.ofHours(1)) // Schedule for 1 hour from now
                 .addTag("weekly_summary_notification")
                 .build()
-
+                
             WorkManager.getInstance(context).enqueue(workRequest)
             Log.d(TAG, "Weekly summary notification scheduled")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to schedule weekly summary notification", e)
-        }
-    }
-
-    class Factory @Inject constructor(
-        private val weeklyDigestRepository: WeeklyDigestRepository,
-        private val preferencesManager: PreferencesManager
-    ) : WorkerFactory() {
-        override fun createWorker(
-            appContext: Context,
-            workerClassName: String,
-            workerParameters: WorkerParameters
-        ): ListenableWorker? {
-            return when (workerClassName) {
-                WeeklySummaryWorker::class.java.name -> {
-                    WeeklySummaryWorker(
-                        appContext,
-                        workerParameters,
-                        weeklyDigestRepository,
-                        preferencesManager
-                    )
-                }
-                WeeklySummaryNotificationWorker::class.java.name -> {
-                    WeeklySummaryNotificationWorker(
-                        appContext,
-                        workerParameters
-                    )
-                }
-                else -> null
-            }
-        }
-    }
-}
-
-/**
- * Worker to show weekly summary notification.
- */
-class WeeklySummaryNotificationWorker(
-    context: Context,
-    params: WorkerParameters
-) : CoroutineWorker(context, params) {
-
-    companion object {
-        private const val TAG = "WeeklySummaryNotifWorker"
-    }
-
-    override suspend fun doWork(): Result {
-        return try {
-            // TODO: Implement notification display for weekly summary
-            Log.d(TAG, "Weekly summary notification would be displayed here")
-            Result.success()
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to show weekly summary notification", e)
-            Result.failure()
         }
     }
 }
