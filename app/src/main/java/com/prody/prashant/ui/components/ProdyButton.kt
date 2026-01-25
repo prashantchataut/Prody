@@ -43,6 +43,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.prody.prashant.ui.theme.ProdyTokens
+import com.prody.prashant.ui.animation.premiumShimmer
 
 /**
  * Prody Premium Button System
@@ -92,8 +93,6 @@ private object ProdyButtonDefaults {
 
     val CornerRadius = ProdyTokens.Radius.sm
 }
-
-import com.prody.prashant.ui.animation.premiumShimmer
 
 // =============================================================================
 // PRIMARY BUTTON
