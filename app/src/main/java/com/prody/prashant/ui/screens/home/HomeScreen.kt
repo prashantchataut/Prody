@@ -48,6 +48,7 @@ import com.prody.prashant.ui.components.ContextualAiHint
 import com.prody.prashant.ui.components.DualStreakCard
 import com.prody.prashant.ui.components.getCurrentTimeOfDay
 import com.prody.prashant.ui.theme.*
+import com.prody.prashant.ui.animation.premiumShimmer
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import com.prody.prashant.util.AccessibilityUtils
@@ -444,8 +445,6 @@ Icon(
         }
     }
 }
-
-import com.prody.prashant.ui.animation.premiumShimmer
 
 // =============================================================================
 // PREMIUM HEADER SECTION
