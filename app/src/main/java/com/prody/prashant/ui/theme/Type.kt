@@ -99,16 +99,16 @@ val ProdyTypography = Typography(
     displayLarge = TextStyle(
         fontFamily = PoppinsFamily,
         fontWeight = FontWeight.Bold,
-        fontSize = 52.sp,
-        lineHeight = 60.sp,
-        letterSpacing = (-0.5).sp
+        fontSize = 56.sp,
+        lineHeight = 64.sp,
+        letterSpacing = (-1.5).sp
     ),
     displayMedium = TextStyle(
         fontFamily = PoppinsFamily,
         fontWeight = FontWeight.SemiBold,
         fontSize = 42.sp,
         lineHeight = 50.sp,
-        letterSpacing = (-0.25).sp
+        letterSpacing = (-1.0).sp
     ),
     displaySmall = TextStyle(
         fontFamily = PoppinsFamily,
@@ -826,7 +826,6 @@ val HavenInputStyle = TextStyle(
     lineHeight = 24.sp,
     letterSpacing = 0.1.sp
 )
-)
 
 /**
  * Letter title - month and year display
@@ -861,29 +860,3 @@ val LetterStatLabelStyle = TextStyle(
     letterSpacing = 0.3.sp
 )
 
-// =============================================================================
-// HAVEN TYPOGRAPHY - Serif for "Human" feel
-// =============================================================================
-
-/**
- * Haven Message Style - Serif font for the "handwritten letter" feel.
- * Ideally Lora or Playfair. Using Serif family as fallback.
- */
-val HavenMessageStyle = TextStyle(
-    fontFamily = FontFamily.Serif,
-    fontWeight = FontWeight.Normal,
-    fontSize = 17.sp,
-    lineHeight = 26.sp,
-    letterSpacing = 0.2.sp
-)
-
-/**
- * Haven User Input Style - Clean Sans-Serif for the user.
- */
-val HavenInputStyle = TextStyle(
-    fontFamily = PoppinsFamily,
-    fontWeight = FontWeight.Normal,
-    fontSize = 16.sp,
-    lineHeight = 24.sp,
-    letterSpacing = 0.1.sp
-)

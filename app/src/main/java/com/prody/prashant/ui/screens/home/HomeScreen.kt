@@ -445,6 +445,8 @@ Icon(
     }
 }
 
+import com.prody.prashant.ui.animation.premiumShimmer
+
 // =============================================================================
 // PREMIUM HEADER SECTION
 // =============================================================================
@@ -466,83 +468,119 @@ private fun PremiumHeader(
         modifier = Modifier
             .fillMaxWidth()
             .statusBarsPadding()
-            .padding(horizontal = 24.dp) // Generous horizontal padding
-            .padding(top = 24.dp) // Generous top padding
+            .padding(horizontal = 24.dp)
+            .padding(top = 32.dp) // Increased top padding for drama
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.Top
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            // Greeting Column
+            // Greeting & Name - Stacked for impact
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = greeting.uppercase(),
+                    text = greeting, // Removed uppercase for more personal feel
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Medium,
-                    fontSize = 12.sp,
+                    fontSize = 16.sp,
                     color = secondaryTextColor,
-                    letterSpacing = 2.sp
+                    letterSpacing = 0.5.sp
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = userName,
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 28.sp,
+                    style = MaterialTheme.typography.displaySmall, // High impact, safer size
                     color = primaryTextColor,
-                    letterSpacing = (-0.5).sp
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
 
-            // Search and Stats Row
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            // Search Icon - Minimalist
+            IconButton(
+                onClick = onSearchClick,
+                modifier = Modifier
+                    .size(48.dp)
+                    .background(surfaceColor, CircleShape)
+                    .clip(CircleShape)
             ) {
-                // Search Icon Button
-                Surface(
-                    shape = CircleShape,
-                    color = surfaceColor,
-                    tonalElevation = 0.dp,
-                    modifier = Modifier
-                        .size(44.dp)
-                        .clip(CircleShape)
-                        .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null,
-                            onClick = onSearchClick
-                        )
-                ) {
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        Icon(
-                            imageVector = ProdyIcons.Outlined.Search,
-                            contentDescription = "Search",
-                            tint = secondaryTextColor,
-                            modifier = Modifier.size(22.dp)
-                        )
-                    }
-                }
-
-                // Stats Badge
-                PremiumStatsBadge(
-                    streak = currentStreak,
-                    points = totalPoints,
-                    surfaceColor = surfaceColor,
-                    primaryTextColor = primaryTextColor,
-                    accentColor = accentColor,
-                    isDarkTheme = isDarkTheme
+                Icon(
+                    imageVector = ProdyIcons.Outlined.Search,
+                    contentDescription = "Search",
+                    tint = primaryTextColor,
+                    modifier = Modifier.size(24.dp)
                 )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Stats Row - Integrated into flow
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            // Streak Pill - Glowing
+            Surface(
+                shape = CircleShape,
+                color = if (isDarkTheme) Color(0xFF1A1A1A) else Color(0xFFF5F5F5),
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .premiumShimmer(isVisible = currentStreak > 0, shimmerColor = StreakFire)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Icon(
+                        imageVector = ProdyIcons.Outlined.LocalFireDepartment,
+                        contentDescription = null,
+                        tint = StreakFire,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Text(
+                        text = "$currentStreak day streak",
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 13.sp,
+                        color = primaryTextColor
+                    )
+                }
+            }
+
+            // Points Pill
+            Surface(
+                shape = CircleShape,
+                color = if (isDarkTheme) Color(0xFF1A1A1A) else Color(0xFFF5F5F5),
+                modifier = Modifier.clip(CircleShape)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Icon(
+                        imageVector = ProdyIcons.Outlined.Star,
+                        contentDescription = null,
+                        tint = LeaderboardGold,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Text(
+                        text = "$totalPoints pts",
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 13.sp,
+                        color = primaryTextColor
+                    )
+                }
             }
         }
     }
 }
 
 /**
- * Compact stats badge showing streak and points with animated flame
+ * Compact stats badge - Deprecated/Removed in favor of inline pills
  */
 @Composable
 private fun PremiumStatsBadge(
@@ -553,74 +591,8 @@ private fun PremiumStatsBadge(
     accentColor: Color,
     isDarkTheme: Boolean
 ) {
-    val borderColor = MaterialTheme.colorScheme.outlineVariant
-
-    Surface(
-        shape = RoundedCornerShape(16.dp),
-        color = surfaceColor,
-        tonalElevation = 0.dp,
-        modifier = Modifier
-            .clip(RoundedCornerShape(16.dp))
-            .semantics {
-                contentDescription = "${AccessibilityUtils.streakDescription(streak)}, ${AccessibilityUtils.pointsDescription(points)}"
-            }
-    ) {
-        Row(
-            modifier = Modifier
-                .background(surfaceColor)
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            // Streak with animated flame
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                Icon(
-                    imageVector = ProdyIcons.Outlined.LocalFireDepartment,
-                    contentDescription = null, // Parent has combined description
-                    tint = StreakFire,
-                    modifier = Modifier.size(16.dp)
-                )
-                Text(
-                    text = streak.toString(),
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 14.sp,
-                    color = primaryTextColor
-                )
-            }
-
-            // Divider
-            Box(
-                modifier = Modifier
-                    .width(1.dp)
-                    .height(20.dp)
-                    .background(borderColor)
-            )
-
-            // Points
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                Icon(
-                    imageVector = ProdyIcons.Outlined.Star,
-                    contentDescription = null, // Parent has combined description
-                    tint = LeaderboardGold,
-                    modifier = Modifier.size(16.dp)
-                )
-                Text(
-                    text = points.toString(),
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 14.sp,
-                    color = primaryTextColor
-                )
-            }
-        }
-    }
+    // Kept empty to satisfy any lingering references if necessary, 
+    // but the main usage in PremiumHeader is replaced.
 }
 
 // =============================================================================
@@ -1084,7 +1056,7 @@ private fun HavenCard(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = "Talk to Haven",
+                    text = "Your Haven",
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 16.sp,
@@ -1092,7 +1064,7 @@ private fun HavenCard(
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
-                    text = "Your supportive AI friend is here to listen",
+                    text = "A safe space to clear your mind",
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Normal,
                     fontSize = 13.sp,
@@ -1716,22 +1688,13 @@ private fun BuddhaWisdomCard(
 
                     Column {
                         Text(
-                            text = "BUDDHA'S WISDOM",
+                            text = "DAILY INSIGHT",
                             fontFamily = PoppinsFamily,
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 11.sp,
                             letterSpacing = 1.sp,
                             color = buddhaGold
                         )
-                        if (isAiGenerated) {
-                            Text(
-                                text = "AI Generated",
-                                fontFamily = PoppinsFamily,
-                                fontWeight = FontWeight.Normal,
-                                fontSize = 9.sp,
-                                color = secondaryTextColor
-                            )
-                        }
                     }
                 }
 
@@ -1948,6 +1911,7 @@ private fun TodayProgressCard(
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(12.dp))
                         .background(accentColor.copy(alpha = 0.1f))
+                        .premiumShimmer(isVisible = true, shimmerColor = accentColor) // Highlight next action
                         .clickable { onNextActionClick(action.actionRoute) }
                         .padding(horizontal = 16.dp, vertical = 12.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,

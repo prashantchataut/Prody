@@ -21,17 +21,14 @@ import javax.inject.Inject
 @HiltAndroidApp
 class ProdyApplication : Application(), Configuration.Provider {
 
-    @Inject
+        @Inject
     lateinit var workerFactory: HiltWorkerFactory
-        private set
 
     @Inject
     lateinit var gamificationService: GamificationService
-        private set
 
     @Inject
     lateinit var witnessModeManager: WitnessModeManager
-        private set
 
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 

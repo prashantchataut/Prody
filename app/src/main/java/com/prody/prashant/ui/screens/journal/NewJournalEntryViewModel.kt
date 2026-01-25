@@ -28,6 +28,10 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+enum class TranscriptionChoice {
+    NOW, LATER, NEVER
+}
+
 data class NewJournalEntryUiState(
     val title: String = "",
     val content: String = "",
@@ -73,7 +77,10 @@ data class NewJournalEntryUiState(
     val transcriptionText: String = "",
     val transcriptionPartial: String = "",
     val transcriptionSoundLevel: Float = 0f,
-    val transcriptionAvailable: Boolean = true
+    val transcriptionAvailable: Boolean = true,
+    // Transcription choice UI
+    val showTranscriptionChoice: Boolean = false,
+    val pendingTranscriptionUri: String? = null
 ) {
     // Check if there are any unsaved changes
     val hasContent: Boolean
@@ -545,8 +552,40 @@ class NewJournalEntryViewModel @Inject constructor(
                 it.copy(
                     voiceRecordingUri = recordingUri.toString(),
                     voiceRecordingDuration = recordingDuration,
-                    hasUnsavedChanges = true
+                    hasUnsavedChanges = true,
+                    // If transcription is available, ask the user
+                    showTranscriptionChoice = it.transcriptionAvailable,
+                    pendingTranscriptionUri = recordingUri.toString()
                 )
+            }
+        }
+    }
+
+    /**
+     * Handle the user's choice for transcription.
+     */
+    fun onTranscriptionChoiceSelected(choice: TranscriptionChoice) {
+        val uri = _uiState.value.pendingTranscriptionUri
+        
+        _uiState.update { it.copy(showTranscriptionChoice = false, pendingTranscriptionUri = null) }
+        
+        when (choice) {
+            TranscriptionChoice.NOW -> {
+                // For now, we use the existing startTranscription method 
+                // which uses real-time transcription. 
+                // TODO: Implement file-based transcription if available in VoiceTranscriptionService
+                startTranscription()
+            }
+            TranscriptionChoice.LATER -> {
+                // Queue for later sync (handled by SyncManager)
+                uri?.let {
+                    // Logic to be implemented in SyncManager or a dedicated TranscriptionWorker
+                    android.util.Log.d(TAG, "Queued recording for later transcription: $it")
+                }
+            }
+            TranscriptionChoice.NEVER -> {
+                // Do nothing
+                android.util.Log.d(TAG, "User chose not to transcribe recording")
             }
         }
     }

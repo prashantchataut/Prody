@@ -72,9 +72,9 @@ fun AchievementBadge(
     onClick: (() -> Unit)? = null
 ) {
     val dimensions = when (size) {
-        AchievementBadgeSize.Small -> AchievementDimensions(64.dp, 48.dp, 10.sp, 8.sp)
-        AchievementBadgeSize.Medium -> AchievementDimensions(80.dp, 60.dp, 12.sp, 10.sp)
-        AchievementBadgeSize.Large -> AchievementDimensions(100.dp, 80.dp, 14.sp, 12.sp)
+        AchievementBadgeSize.Small -> AchievementDimensions(72.dp, 48.dp, 10.sp, 8.sp)
+        AchievementBadgeSize.Medium -> AchievementDimensions(88.dp, 60.dp, 12.sp, 10.sp)
+        AchievementBadgeSize.Large -> AchievementDimensions(110.dp, 80.dp, 14.sp, 12.sp)
     }
 
     val rarityColor = rarity.color
@@ -91,12 +91,12 @@ fun AchievementBadge(
         label = "glow_pulse"
     )
 
-Column(
+    Column(
         modifier = modifier
             .width(dimensions.cardWidth)
             .then(if (onClick != null) {
                 Modifier.clickable(
-                    onClickLabel = if (isUnlocked) "View ${title}" else "View locked ${title}",
+                    onClickLabel = if (isUnlocked) "View ${name}" else "View locked ${name}",
                     role = Role.Button,
                     onClick = onClick
                 )
@@ -209,7 +209,9 @@ Column(
                 text = rarity.displayName,
                 style = MaterialTheme.typography.labelSmall,
                 color = rarityColor,
-                fontSize = dimensions.raritySize
+                fontSize = dimensions.raritySize,
+                maxLines = 1,
+                softWrap = false
             )
         } else if (progress > 0f) {
             Text(
@@ -274,7 +276,7 @@ fun AchievementCard(
             .border(
                 width = if (isUnlocked) 2.dp else 1.dp,
                 color = if (isUnlocked) borderColor else borderColor.copy(alpha = 0.3f),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(20.dp)
             )
             .then(if (onClick != null) Modifier.clickable { onClick() } else Modifier),
         colors = CardDefaults.cardColors(
@@ -284,7 +286,7 @@ fun AchievementCard(
                 MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
             }
         ),
-        shape = RoundedCornerShape(12.dp)
+        shape = RoundedCornerShape(20.dp)
     ) {
         Row(
             modifier = Modifier
@@ -625,7 +627,7 @@ fun AchievementSummaryCard(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
         ),
-        shape = RoundedCornerShape(16.dp)
+        shape = RoundedCornerShape(20.dp)
     ) {
         Column(
             modifier = Modifier.padding(16.dp)

@@ -156,7 +156,6 @@ object ProdyIcons {
     val Settings: ImageVector = Icons.Filled.Settings
     val Share: ImageVector = Icons.Filled.Share
     val Star: ImageVector = Icons.Filled.Star
-    val Star: ImageVector = Icons.Filled.Star
     val Warning: ImageVector = Icons.Filled.Warning
     val Mic: ImageVector = Icons.Filled.Mic
     val MicNone: ImageVector = Icons.Filled.MicNone
@@ -391,116 +390,6 @@ object ProdyIcons {
         ).forEach { _ -> }
     }
 
-    val CheckCircle: ImageVector by lazy {
-        createIcon("CheckCircle") {
-            path(fill = SolidColor(Color.Black)) {
-                moveTo(12f, 2f)
-                curveTo(6.48f, 2f, 2f, 6.48f, 2f, 12f)
-                reflectiveCurveToRelative(4.48f, 10f, 10f, 10f)
-                reflectiveCurveToRelative(10f, -4.48f, 10f, -10f)
-                reflectiveCurveTo(17.52f, 2f, 12f, 2f)
-                close()
-                moveTo(9.29f, 16.29f)
-                lineTo(5.7f, 12.7f)
-                curveToRelative(-0.39f, -0.39f, -0.39f, -1.02f, 0f, -1.41f)
-                curveToRelative(0.39f, -0.39f, 1.02f, -0.39f, 1.41f, 0f)
-                lineTo(10f, 14.17f)
-                lineTo(16.88f, 7.29f)
-                curveToRelative(0.39f, -0.39f, 1.02f, -0.39f, 1.41f, 0f)
-                curveToRelative(0.39f, 0.39f, 0.39f, 1.02f, 0f, 1.41f)
-                lineTo(10.7f, 16.3f)
-                curveToRelative(-0.39f, 0.39f, -1.02f, 0.39f, -1.41f, -0.01f)
-                close()
-            }
-        }
-    }
-
-    val SelfImprovement: ImageVector by lazy {
-        createIcon("SelfImprovement") {
-            path(fill = SolidColor(Color.Black)) {
-                moveTo(12f, 2f)
-                curveTo(13.1f, 2f, 14f, 2.9f, 14f, 4f)
-                reflectiveCurveToRelative(-0.9f, 2f, -2f, 2f)
-                reflectiveCurveToRelative(-2f, -0.9f, -2f, -2f)
-                reflectiveCurveToRelative(0.9f, -2f, 2f, -2f)
-                close()
-                moveTo(21f, 9f)
-                horizontalLineToRelative(-6f)
-                verticalLineToRelative(13f)
-                horizontalLineToRelative(-2f)
-                verticalLineToRelative(-6f)
-                horizontalLineToRelative(-2f)
-                verticalLineToRelative(6f)
-                horizontalLineTo(9f)
-                verticalLineTo(9f)
-                horizontalLineTo(3f)
-                verticalLineTo(7f)
-                horizontalLineToRelative(18f)
-                verticalLineToRelative(2f)
-                close()
-            }
-        }
-    }
-
-    val Lightbulb: ImageVector by lazy {
-        createIcon("Lightbulb") {
-            path(fill = SolidColor(Color.Black)) {
-                moveTo(9f, 21f)
-                curveToRelative(0f, 0.5f, 0.4f, 1f, 1f, 1f)
-                horizontalLineToRelative(4f)
-                curveToRelative(0.6f, 0f, 1f, -0.5f, 1f, -1f)
-                verticalLineToRelative(-1f)
-                horizontalLineTo(9f)
-                verticalLineToRelative(1f)
-                close()
-                moveTo(12f, 2f)
-                curveTo(8.1f, 2f, 5f, 5.1f, 5f, 9f)
-                curveToRelative(0f, 2.4f, 1.2f, 4.5f, 3f, 5.7f)
-                verticalLineTo(17f)
-                curveToRelative(0f, 0.5f, 0.4f, 1f, 1f, 1f)
-                horizontalLineToRelative(6f)
-                curveToRelative(0.6f, 0f, 1f, -0.5f, 1f, -1f)
-                verticalLineToRelative(-2.3f)
-                curveToRelative(1.8f, -1.3f, 3f, -3.4f, 3f, -5.7f)
-                curveToRelative(0f, -3.9f, -3.1f, -7f, -7f, -7f)
-                close()
-            }
-        }
-    }
-
-    val AutoAwesome: ImageVector by lazy {
-        createIcon("AutoAwesome") {
-            path(fill = SolidColor(Color.Black)) {
-                moveTo(19f, 9f)
-                lineToRelative(1.25f, -2.75f)
-                lineTo(23f, 5f)
-                lineToRelative(-2.75f, -1.25f)
-                lineTo(19f, 1f)
-                lineToRelative(-1.25f, 2.75f)
-                lineTo(15f, 5f)
-                lineToRelative(2.75f, 1.25f)
-                close()
-                moveTo(19f, 15f)
-                lineToRelative(-1.25f, 2.75f)
-                lineTo(15f, 19f)
-                lineToRelative(2.75f, 1.25f)
-                lineTo(19f, 23f)
-                lineToRelative(1.25f, -2.75f)
-                lineTo(23f, 19f)
-                lineToRelative(-2.75f, -1.25f)
-                close()
-                moveTo(11.5f, 9.5f)
-                lineTo(9f, 4f)
-                lineTo(6.5f, 9.5f)
-                lineTo(1f, 12f)
-                lineToRelative(5.5f, 2.5f)
-                lineTo(9f, 20f)
-                lineToRelative(2.5f, -5.5f)
-                lineTo(17f, 12f)
-                close()
-            }
-        }
-    }
 
     val Schedule: ImageVector by lazy {
         createIcon("Schedule") {

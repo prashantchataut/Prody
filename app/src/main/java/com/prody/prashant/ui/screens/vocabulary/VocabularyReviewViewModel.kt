@@ -6,6 +6,7 @@ import com.prody.prashant.data.local.dao.VocabularyDao
 import com.prody.prashant.data.local.dao.VocabularyLearningDao
 import com.prody.prashant.data.local.dao.WordUsageDao
 import com.prody.prashant.data.local.entity.VocabularyEntity
+import com.prody.prashant.data.local.preferences.PreferencesManager
 import com.prody.prashant.domain.vocabulary.VocabularyCelebrationService
 import com.prody.prashant.domain.vocabulary.VocabularySuggestionEngine
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -31,15 +32,15 @@ class VocabularyReviewViewModel @Inject constructor(
     private val vocabularyLearningDao: VocabularyLearningDao,
     private val wordUsageDao: WordUsageDao,
     private val celebrationService: VocabularyCelebrationService,
-    private val suggestionEngine: VocabularySuggestionEngine
+    private val suggestionEngine: VocabularySuggestionEngine,
+    private val preferencesManager: PreferencesManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(VocabularyReviewUiState())
     val uiState: StateFlow<VocabularyReviewUiState> = _uiState.asStateFlow()
 
-    // Temporary userId - will be replaced with user authentication system
-    // TODO: Implement user authentication service and get current userId
-    private val userId = "local"
+    // Get current user ID from authentication service
+    private val userId = preferencesManager.getCurrentUserId() ?: "local"
 
     init {
         loadVocabularyReview()

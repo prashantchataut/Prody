@@ -93,6 +93,8 @@ private object ProdyButtonDefaults {
     val CornerRadius = ProdyTokens.Radius.sm
 }
 
+import com.prody.prashant.ui.animation.premiumShimmer
+
 // =============================================================================
 // PRIMARY BUTTON
 // =============================================================================
@@ -151,6 +153,7 @@ fun ProdyPrimaryButton(
         modifier = modifier
             .scale(scale)
             .defaultMinSize(minHeight = height)
+            .premiumShimmer(isVisible = enabled && !loading)
             .semantics {
                 role = Role.Button
                 if (contentDescription != null) {
