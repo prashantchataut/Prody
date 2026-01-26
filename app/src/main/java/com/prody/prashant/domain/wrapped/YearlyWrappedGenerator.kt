@@ -4,6 +4,7 @@ import android.util.Log
 import com.google.gson.Gson
 import com.prody.prashant.data.local.dao.*
 import com.prody.prashant.data.local.entity.YearlyWrappedEntity
+import kotlinx.coroutines.flow.first
 import com.prody.prashant.domain.model.MoodTrend
 import com.prody.prashant.domain.model.TimeOfDay
 import java.time.*

@@ -53,28 +53,23 @@ fun WeeklyDigestScreen(
     /**
      * Share weekly digest content
      */
-    fun shareWeeklyDigest(digest: WeeklyDigestEntity) {
+    val shareWeeklyDigest: (WeeklyDigestEntity) -> Unit = { digest ->
         val shareText = buildString {
             appendLine("📊 My Prody Weekly Digest")
-            appendLine("🗓️ ${formatDate(digest.endDate)}")
+            appendLine("🗓️ ${formatDate(digest.weekEndDate)}")
             appendLine()
             appendLine("📈 Summary:")
-            appendLine("• Journal entries: ${digest.journalCount}")
-            appendLine("• Active streak: ${digest.currentStreak} days")
-            appendLine("• Mood: ${getMoodEmoji(digest.avgMood)} ${getMoodName(digest.avgMood)}")
-            appendLine("• XP earned: ${digest.weeklyXp}")
+            appendLine("• Journal entries: ${digest.entriesCount}")
+            appendLine("• Active days: ${digest.activeDays}/7")
+            appendLine("• Dominant Mood: ${getMoodEmoji(digest.dominantMood)} ${getMoodName(digest.dominantMood)}")
             
-            if (digest.topAchievements.isNotEmpty()) {
+            val themes = digest.topThemes.split(",").filter { it.isNotBlank() }
+            if (themes.isNotEmpty()) {
                 appendLine()
-                appendLine("🏆 Achievements:")
-                digest.topAchievements.take(3).forEach { achievement ->
-                    appendLine("• $achievement")
+                appendLine("🌱 Top Themes:")
+                themes.take(3).forEach { theme ->
+                    appendLine("• ${theme.trim().replaceFirstChar { it.uppercase() }}")
                 }
-            }
-            
-            if (digest.wordOfTheDay.isNotBlank()) {
-                appendLine()
-                appendLine("📚 Word of the Day: ${digest.wordOfTheDay}")
             }
             
             appendLine()
@@ -88,7 +83,7 @@ fun WeeklyDigestScreen(
             putExtra(Intent.EXTRA_SUBJECT, "My Prody Weekly Digest")
         }
         
-        ContextCompat.startActivity(context, Intent.createChooser(shareIntent, "Share Weekly Digest"), null)
+        context.startActivity(Intent.createChooser(shareIntent, "Share Weekly Digest"))
     }
 
     // Handle messages
@@ -197,12 +192,28 @@ fun WeeklyDigestScreen(
                         highlightEntryId = uiState.highlightEntryId,
                         onDigestSelected = viewModel::selectDigest,
                         onViewHighlight = viewModel::navigateToHighlightEntry,
+                        onShareDigest = shareWeeklyDigest,
                         viewModel = viewModel
                     )
                 }
             }
         }
     }
+}
+
+private fun formatDate(timestamp: Long): String {
+    return Instant.ofEpochMilli(timestamp)
+        .atZone(ZoneId.systemDefault())
+        .toLocalDate()
+        .format(DateTimeFormatter.ofPattern("MMM d, yyyy"))
+}
+
+private fun getMoodEmoji(mood: String?): String {
+    return mood?.let { Mood.fromString(it)?.emoji } ?: "😶"
+}
+
+private fun getMoodName(mood: String?): String {
+    return mood?.let { Mood.fromString(it)?.displayName } ?: "Neutral"
 }
 
 @Composable
@@ -215,6 +226,7 @@ private fun DigestContent(
     highlightEntryId: Long?,
     onDigestSelected: (WeeklyDigestEntity) -> Unit,
     onViewHighlight: () -> Unit,
+    onShareDigest: (WeeklyDigestEntity) -> Unit,
     viewModel: WeeklyDigestViewModel
 ) {
     LazyColumn(
@@ -303,7 +315,7 @@ private fun DigestContent(
 // Share button
             item {
                 ShareSummaryButton(
-                    onClick = { shareWeeklyDigest(digest) },
+                    onClick = { onShareDigest(currentDigest) },
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
             }

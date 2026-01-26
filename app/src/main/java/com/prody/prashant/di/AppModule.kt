@@ -24,6 +24,8 @@ import com.prody.prashant.data.onboarding.AiOnboardingManager
 import com.prody.prashant.data.security.EncryptionManager
 import com.prody.prashant.data.security.SecurityPreferences
 import com.prody.prashant.data.sync.SyncManager
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
 import com.prody.prashant.util.TextToSpeechManager
 import dagger.Module
 import dagger.Provides
@@ -393,9 +395,10 @@ object AppModule {
     fun provideSyncManager(
         @ApplicationContext context: Context,
         networkManager: NetworkConnectivityManager,
-        preferencesManager: PreferencesManager
+        preferencesManager: PreferencesManager,
+        @Named("SyncDataStore") syncDataStore: DataStore<Preferences>
     ): SyncManager {
-        return SyncManager(context, networkManager, preferencesManager)
+        return SyncManager(context, networkManager, preferencesManager, syncDataStore)
     }
 
     @Provides

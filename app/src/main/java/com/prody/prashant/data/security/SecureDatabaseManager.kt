@@ -10,6 +10,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.sqlcipher.database.SQLiteDatabase
 import net.sqlcipher.database.SupportFactory
+import com.prody.prashant.BuildConfig
 import java.io.File
 import java.io.IOException
 import javax.inject.Inject
@@ -128,12 +129,12 @@ class SecureDatabaseManager @Inject constructor(
      */
     private suspend fun storeDatabaseKey(keyFile: File, key: String) = withContext(Dispatchers.IO) {
         try {
-            val encryptedFile = EncryptedFile.create(
+            val encryptedFile = EncryptedFile.Builder(
                 context,
-                keyFile.absolutePath,
+                keyFile,
                 masterKey,
                 EncryptedFile.FileEncryptionScheme.AES256_GCM_HKDF_4KB
-            )
+            ).build()
             
             encryptedFile.openFileOutput().use { output ->
                 output.write(key.toByteArray())
@@ -152,12 +153,12 @@ class SecureDatabaseManager @Inject constructor(
      */
     private suspend fun readDatabaseKey(keyFile: File): String = withContext(Dispatchers.IO) {
         try {
-            val encryptedFile = EncryptedFile.create(
+            val encryptedFile = EncryptedFile.Builder(
                 context,
-                keyFile.absolutePath,
+                keyFile,
                 masterKey,
                 EncryptedFile.FileEncryptionScheme.AES256_GCM_HKDF_4KB
-            )
+            ).build()
             
             encryptedFile.openFileInput().use { input ->
                 val bytes = input.readBytes()
@@ -181,12 +182,11 @@ class SecureDatabaseManager @Inject constructor(
 
             // Try to open the database with the current passphrase
             val passphrase = getDatabasePassphrase()
-            val passphraseBytes = SQLiteDatabase.getBytes(passphrase.toCharArray())
             
             // Test database connection
             val testDb = SQLiteDatabase.openDatabase(
                 databaseFile.absolutePath,
-                passphraseBytes,
+                passphrase,
                 null,
                 SQLiteDatabase.OPEN_READONLY
             )

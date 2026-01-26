@@ -927,49 +927,4 @@ val DisciplineSkillDark = Color(0xFF7B50C0)
 val CourageSkillLight = Color(0xFFFF9A7D)
 val CourageSkillDark = Color(0xFFE65C37)
 
-// =============================================================================
-// HAVEN COLORS - Blush & Bone Aesthetic
-// =============================================================================
-
-// Primary Mode (Light) - Blush & Bone
-val HavenBackgroundLight = Color(0xFFFAF9F6)          // Off-white/Bone
-val HavenBubbleLight = Color(0xFFE2A9A9)              // Muted Blush
-val HavenTextLight = Color(0xFF2D2424)                // Deep Espresso
-val HavenUserBubbleLight = Color(0xFFE8EDEC)          // Soft Grey/White for user
-
-// Dark Mode - The "Night Sanctuary"
-val HavenBackgroundDark = Color(0xFF1A1616)           // Deep Plum/Charcoal base (not pure black)
-val HavenBubbleDark = Color(0xFF5E3E3E)               // Deepened Rose
-val HavenTextDark = Color(0xFFE8E4E4)                 // Soft Cream
-val HavenUserBubbleDark = Color(0xFF2A2424)           // Darker charcoal for user
-
-// Accents
-val HavenAccentGold = Color(0xFFD4AF37)               // Soft Gold
-val HavenAccentRoseGold = Color(0xFFB76E79)           // Rose Gold
-
-// Breathing/Pulsing Colors
-val HavenPulseStart = Color(0xFFE2A9A9)
-val HavenPulseEnd = Color(0xFFF4C2C2)
-
-// =============================================================================
-// BLOOM SYSTEM COLORS - Vocabulary Growth
-// =============================================================================
-
-/** Seed state - Word learned but not yet ready to bloom */
-val SeedDormant = Color(0xFF8D6E63)                         // Earth brown
-
-/** Growing state - Word in transition */
-val BloomGrowing = Color(0xFF81C784)                        // Fresh green
-
-/** Ready state - Word ready to be used */
-val BloomReady = Color(0xFF66BB6A)                          // Vibrant green
-
-/** Flourishing state - Word fully mastered */
-val BloomFlourishing = Color(0xFF4CAF50)                    // Deep green
-
-// Bloom gradient colors
-val BloomSeedLight = Color(0xFFA1887F)
-val BloomGrowingLight = Color(0xFFA5D6A7)
-val BloomReadyLight = Color(0xFF81C784)
-
 // Note: WisdomPerspective color is defined above in "Wisdom category colors" section

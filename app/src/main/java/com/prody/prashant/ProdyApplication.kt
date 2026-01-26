@@ -11,6 +11,8 @@ import androidx.work.Configuration
 import com.prody.prashant.debug.CrashHandler
 import com.prody.prashant.domain.gamification.GamificationService
 import com.prody.prashant.domain.haven.WitnessModeManager
+import com.prody.prashant.BuildConfig
+import com.prody.prashant.R
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -34,17 +36,18 @@ class ProdyApplication : Application(), Configuration.Provider {
 
     override val workManagerConfiguration: Configuration
         get() = try {
-            // Safe access to workerFactory with null check
-            val factory = ::workerFactory.isInitialized.let { 
-                if (it) workerFactory else HiltWorkerFactory()
-            }
-            Configuration.Builder()
-                .setWorkerFactory(factory)
+            val builder = Configuration.Builder()
                 .setMinimumLoggingLevel(if (BuildConfig.DEBUG) Log.DEBUG else Log.ERROR)
-                .build()
+            
+            if (::workerFactory.isInitialized) {
+                builder.setWorkerFactory(workerFactory)
+            } else {
+                Log.e(TAG, "WorkerFactory not initialized")
+            }
+            
+            builder.build()
         } catch (e: Exception) {
-            // Fallback configuration if workerFactory is not initialized
-            Log.e(TAG, "WorkerFactory not ready, using default configuration", e)
+            Log.e(TAG, "Error building WorkManager configuration", e)
             Configuration.Builder()
                 .setMinimumLoggingLevel(if (BuildConfig.DEBUG) Log.DEBUG else Log.ERROR)
                 .build()

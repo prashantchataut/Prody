@@ -522,6 +522,13 @@ class PreferencesManager @Inject constructor(
         }
     }
 
+    /**
+     * Synchronous access to current user ID (using runBlocking for simplicity in this legacy call)
+     */
+    fun getCurrentUserId(): String? = runBlocking {
+        dataStore.data.map { it[PreferencesKeys.USER_ID] }.first()
+    }
+
     // Gamification Initialized Flag
     val gamificationInitialized: Flow<Boolean> = dataStore.data
         .catch { exception ->
