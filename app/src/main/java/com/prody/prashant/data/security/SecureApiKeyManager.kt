@@ -30,10 +30,6 @@ class SecureApiKeyManager @Inject constructor(
         private const val THERAPIST_API_KEY = "therapist_api_key"
         private const val TTS_API_KEY = "tts_api_key"
         
-        // Fallback keys for development (replace in production)
-        private const val FALLBACK_GEMINI_KEY = "AIzaSyBVyruHi0KsWNBdiR7y9ZDD0_88kI4IMRk"
-        private const val FALLBACK_OPENROUTER_KEY = "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"
-        private const val FALLBACK_THERAPIST_KEY = "AIzaSyAwSv7S5y9Rk8x1ySk5cGtVj3trwPzlPbw"
     }
 
     private val masterKey = MasterKey.Builder(context)
@@ -61,8 +57,9 @@ class SecureApiKeyManager @Inject constructor(
     }
 
     /**
-     * Initialize API keys from build config and store them securely
-     * This should be called once during app initialization
+     * Initialize API keys from build config and store them securely.
+     * This should be called once during app initialization.
+     * API keys are loaded silently from local.properties via BuildConfig.
      */
     suspend fun initializeApiKeys(
         geminiKey: String,
@@ -71,32 +68,35 @@ class SecureApiKeyManager @Inject constructor(
         ttsKey: String = ""
     ) = withContext(Dispatchers.IO) {
         securePrefs.edit().apply {
-            putString(GEMINI_API_KEY, geminiKey.ifBlank { FALLBACK_GEMINI_KEY })
-            putString(OPENROUTER_API_KEY, openrouterKey.ifBlank { FALLBACK_OPENROUTER_KEY })
-            putString(THERAPIST_API_KEY, therapistKey.ifBlank { FALLBACK_THERAPIST_KEY })
-            putString(TTS_API_KEY, ttsKey)
+            if (geminiKey.isNotBlank()) putString(GEMINI_API_KEY, geminiKey)
+            if (openrouterKey.isNotBlank()) putString(OPENROUTER_API_KEY, openrouterKey)
+            if (therapistKey.isNotBlank()) putString(THERAPIST_API_KEY, therapistKey)
+            if (ttsKey.isNotBlank()) putString(TTS_API_KEY, ttsKey)
         }.apply()
     }
 
     /**
-     * Get Gemini API key securely
+     * Get Gemini API key securely.
+     * Returns empty string if not configured.
      */
     suspend fun getGeminiApiKey(): String = withContext(Dispatchers.IO) {
-        securePrefs.getString(GEMINI_API_KEY, FALLBACK_GEMINI_KEY) ?: FALLBACK_GEMINI_KEY
+        securePrefs.getString(GEMINI_API_KEY, "") ?: ""
     }
 
     /**
-     * Get OpenRouter API key securely
+     * Get OpenRouter API key securely.
+     * Returns empty string if not configured.
      */
     suspend fun getOpenRouterApiKey(): String = withContext(Dispatchers.IO) {
-        securePrefs.getString(OPENROUTER_API_KEY, FALLBACK_OPENROUTER_KEY) ?: FALLBACK_OPENROUTER_KEY
+        securePrefs.getString(OPENROUTER_API_KEY, "") ?: ""
     }
 
     /**
-     * Get Therapist API key securely
+     * Get Therapist API key securely.
+     * Returns empty string if not configured.
      */
     suspend fun getTherapistApiKey(): String = withContext(Dispatchers.IO) {
-        securePrefs.getString(THERAPIST_API_KEY, FALLBACK_THERAPIST_KEY) ?: FALLBACK_THERAPIST_KEY
+        securePrefs.getString(THERAPIST_API_KEY, "") ?: ""
     }
 
     /**

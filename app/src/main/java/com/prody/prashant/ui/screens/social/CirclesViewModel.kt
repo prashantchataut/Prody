@@ -86,7 +86,11 @@ class CirclesViewModel @Inject constructor(
     private fun loadNotificationCounts() {
         viewModelScope.launch {
             socialRepository.observeUnreadNotificationCount(userId)
-                .catch { }
+                .catch { e ->
+                    android.util.Log.w("CirclesViewModel", "Failed to load notification count: ${e.message}")
+                    // Non-critical: reset to 0 on error to avoid stale data
+                    _uiState.update { it.copy(unreadNotificationCount = 0) }
+                }
                 .collect { count ->
                     _uiState.update { it.copy(unreadNotificationCount = count) }
                 }
@@ -94,7 +98,11 @@ class CirclesViewModel @Inject constructor(
 
         viewModelScope.launch {
             socialRepository.observeUnreadNudgeCount(userId)
-                .catch { }
+                .catch { e ->
+                    android.util.Log.w("CirclesViewModel", "Failed to load nudge count: ${e.message}")
+                    // Non-critical: reset to 0 on error to avoid stale data
+                    _uiState.update { it.copy(unreadNudgeCount = 0) }
+                }
                 .collect { count ->
                     _uiState.update { it.copy(unreadNudgeCount = count) }
                 }
