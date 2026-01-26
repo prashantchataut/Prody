@@ -143,6 +143,19 @@ val MoodInspired = Color(0xFF9B6DD4)                  // Creative purple - imagi
 val MoodNostalgic = Color(0xFFD4A574)                 // Warm sepia - remembrance
 
 // =============================================================================
+// BLOOM SYSTEM COLORS - Vocabulary Growth Visualization
+// =============================================================================
+
+/** Bloom ready state - vibrant green indicating word is ready to bloom */
+val BloomReady = Color(0xFF36F97F)                        // Accent green - ready to bloom
+
+/** Seed dormant state - muted earthy tone for seeds waiting */
+val SeedDormant = Color(0xFFA0A89B)                       // Muted sage - dormant seed
+
+/** Bloom growing state - transitional golden green */
+val BloomGrowing = Color(0xFF7ED321)                      // Fresh green - actively growing
+
+// =============================================================================
 // GAMIFICATION COLORS - Leaderboard & Achievements (Flat)
 // =============================================================================
 

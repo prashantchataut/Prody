@@ -102,7 +102,7 @@ class SecureHttpClient @Inject constructor(
             // For now, use the default trust manager
             // In production, you can load custom certificates from assets
             val defaultTrustManagers = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())
-            defaultTrustManagers.init(null)
+            defaultTrustManagers.init(null as java.security.KeyStore?)
             
             val trustManagers = defaultTrustManagers.trustManagers
             for (trustManager in trustManagers) {
