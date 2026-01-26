@@ -133,7 +133,7 @@ jobs:
         path: release-apk
 
     - name: Create Release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         files: release-apk/*.apk
         generate_release_notes: true
