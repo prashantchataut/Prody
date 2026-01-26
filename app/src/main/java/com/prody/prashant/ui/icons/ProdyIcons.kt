@@ -5,11 +5,8 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathFillType
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.graphics.vector.ImageVector.Builder
-import androidx.compose.ui.graphics.vector.path
+import androidx.compose.ui.graphics.vector.*
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.graphics.vector.PathNode
 
 /**
  * Optimized Icon System for Prody App

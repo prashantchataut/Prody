@@ -158,8 +158,8 @@ class DailyRitualViewModel @Inject constructor(
                             _uiState.update { it.copy(wisdomForMorning = wisdom.first()) }
                         }
                     }
-                    .onFailure { e ->
-                        android.util.Log.w("DailyRitualViewModel", "Failed to load morning wisdom: ${e.message}")
+                    .onError { error ->
+                        android.util.Log.w("DailyRitualViewModel", "Failed to load morning wisdom: ${error.userMessage}")
                         // Wisdom is optional for the ritual, continue without it
                     }
             }
@@ -361,10 +361,10 @@ class DailyRitualViewModel @Inject constructor(
                         )}
                         loadRitualStatus() // Refresh stats
                     },
-                    onFailure = { error ->
+                    onError = { error ->
                         _uiState.update { it.copy(
                             isSaving = false,
-                            errorMessage = error.message
+                            errorMessage = error.userMessage
                         )}
                     }
                 )
