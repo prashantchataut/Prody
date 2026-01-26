@@ -47,10 +47,10 @@ fun AiProofModeDebugInfo(
         Column(
             verticalArrangement = Arrangement.spacedBy(2.dp)
         ) {
-            // API Key Warning - show prominently if not configured
+            // API Warning - show prominently if not configured
             if (!proofInfo.isAiConfigured) {
                 Text(
-                    text = "AI is not configured. Add an API key in local.properties or Settings.",
+                    text = "AI service not available",
                     style = MaterialTheme.typography.labelSmall,
                     fontFamily = FontFamily.Monospace,
                     fontWeight = FontWeight.SemiBold,
