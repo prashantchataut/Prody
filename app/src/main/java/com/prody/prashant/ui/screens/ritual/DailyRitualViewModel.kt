@@ -158,6 +158,10 @@ class DailyRitualViewModel @Inject constructor(
                             _uiState.update { it.copy(wisdomForMorning = wisdom.first()) }
                         }
                     }
+                    .onFailure { e ->
+                        android.util.Log.w("DailyRitualViewModel", "Failed to load morning wisdom: ${e.message}")
+                        // Wisdom is optional for the ritual, continue without it
+                    }
             }
 
             // Generate smart contextual prompts using the engines

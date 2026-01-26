@@ -2067,16 +2067,15 @@ private fun LoginSignupScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Social Login Buttons Row
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            // Google Sign-in Button - Full width for single social login option
+            SocialLoginButton(
+                onClick = onGoogleLogin,
+                backgroundColor = inputBackground,
+                modifier = Modifier.fillMaxWidth()
             ) {
-                // Google Button
-                SocialLoginButton(
-                    onClick = onGoogleLogin,
-                    backgroundColor = inputBackground,
-                    modifier = Modifier.weight(1f)
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     // Google logo using Canvas
                     Canvas(modifier = Modifier.size(24.dp)) {
@@ -2140,22 +2139,15 @@ private fun LoginSignupScreen(
                             size = Size(radius + 2.dp.toPx(), 4.dp.toPx())
                         )
                     }
-                }
-
-                // Adding soon Button
-                SocialLoginButton(
-                    onClick = { },
-                    backgroundColor = inputBackground,
-                    modifier = Modifier.weight(1f)
-                ) {
+                    Spacer(modifier = Modifier.width(12.dp))
                     Text(
-                        text = "Adding soon",
+                        text = "Continue with Google",
                         style = TextStyle(
                             fontFamily = PoppinsFamily,
-                            fontWeight = FontWeight.Normal,
+                            fontWeight = FontWeight.Medium,
                             fontSize = 14.sp
                         ),
-                        color = socialButtonAddingSoonColor
+                        color = textPrimary
                     )
                 }
             }

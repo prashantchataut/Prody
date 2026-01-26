@@ -1972,9 +1972,9 @@ private fun AiConfigAlert(
         else -> "AI Status Unknown"
     }
     val message = when (status) {
-        AiConfigStatus.MISSING_API_KEY -> "Gemini API key missing in local.properties. Buddha is using limited fallback mode."
-        AiConfigStatus.ERROR -> "Problem starting AI service. Please checks logs or connection."
-        else -> "Buddha is unavailable."
+        AiConfigStatus.MISSING_API_KEY -> "AI features require configuration. Please contact the developer."
+        AiConfigStatus.ERROR -> "Problem connecting to AI service. Please check your network connection."
+        else -> "AI features are temporarily unavailable."
     }
 
     Surface(

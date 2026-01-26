@@ -70,7 +70,10 @@ class CircleDetailViewModel @Inject constructor(
 
         viewModelScope.launch {
             socialRepository.observeCircleMembers(circleId)
-                .catch { }
+                .catch { e ->
+                    android.util.Log.w("CircleDetailViewModel", "Failed to load members: ${e.message}")
+                    _uiState.update { it.copy(members = emptyList()) }
+                }
                 .collect { members ->
                     _uiState.update { it.copy(members = members) }
                 }
@@ -78,7 +81,10 @@ class CircleDetailViewModel @Inject constructor(
 
         viewModelScope.launch {
             socialRepository.observeCircleUpdates(circleId, limit = 50)
-                .catch { }
+                .catch { e ->
+                    android.util.Log.w("CircleDetailViewModel", "Failed to load updates: ${e.message}")
+                    _uiState.update { it.copy(updates = emptyList()) }
+                }
                 .collect { updates ->
                     _uiState.update { it.copy(updates = updates) }
                 }
@@ -86,7 +92,10 @@ class CircleDetailViewModel @Inject constructor(
 
         viewModelScope.launch {
             socialRepository.observeActiveChallenges(circleId)
-                .catch { }
+                .catch { e ->
+                    android.util.Log.w("CircleDetailViewModel", "Failed to load challenges: ${e.message}")
+                    _uiState.update { it.copy(activeChallenges = emptyList()) }
+                }
                 .collect { challenges ->
                     _uiState.update { it.copy(activeChallenges = challenges) }
                 }
@@ -190,7 +199,17 @@ class CircleDetailViewModel @Inject constructor(
 
     fun onReactToUpdate(updateId: Long, emoji: String) {
         viewModelScope.launch {
-            socialRepository.reactToUpdate(updateId, userId, emoji)
+            when (socialRepository.reactToUpdate(updateId, userId, emoji)) {
+                is Result.Success -> {
+                    // Reaction applied successfully - UI will update via Flow observation
+                }
+                is Result.Error -> {
+                    _uiState.update { it.copy(errorMessage = "Failed to add reaction. Please try again.") }
+                }
+                is Result.Loading -> {
+                    // Loading state handled by Flow
+                }
+            }
         }
     }
 

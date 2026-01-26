@@ -435,7 +435,7 @@ Icon(
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
-                    text = "Add your Gemini API key in local.properties to enable Buddha AI features.",
+                    text = "Some AI-powered features are currently unavailable.",
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Normal,
                     fontSize = 12.sp,

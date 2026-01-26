@@ -94,12 +94,15 @@ class HavenViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            // Load stats
+            // Load stats - non-critical, use default stats on failure
             havenRepository.getStats().fold(
                 onSuccess = { stats ->
                     _homeState.update { it.copy(stats = stats) }
                 },
-                onFailure = { /* Stats loading failure is non-critical */ }
+                onFailure = { e ->
+                    android.util.Log.w("HavenViewModel", "Failed to load stats: ${e.message}")
+                    // Stats are non-critical, UI will show default/empty stats
+                }
             )
         }
     }

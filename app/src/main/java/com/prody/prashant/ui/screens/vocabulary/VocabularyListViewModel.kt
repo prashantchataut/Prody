@@ -79,6 +79,8 @@ class VocabularyListViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 android.util.Log.e(TAG, "Error loading vocabulary counts", e)
+                // Set counts to 0 on error to avoid showing stale data
+                _uiState.update { it.copy(learnedCount = 0, totalCount = 0) }
             }
         }
     }

@@ -35,6 +35,8 @@ data class QuotesUiState(
     // AI-generated quote explanations (keyed by quote ID)
     val quoteExplanations: Map<Long, QuoteExplanationResult> = emptyMap(),
     val loadingExplanations: Set<Long> = emptySet(),
+    // Failed explanation attempts (keyed by quote ID) - for showing retry option
+    val failedExplanations: Set<Long> = emptySet(),
     // Onboarding hint for first quote explanation
     val showQuoteExplanationHint: Boolean = false
 )
@@ -217,9 +219,12 @@ class QuotesViewModel @Inject constructor(
 
         viewModelScope.launch {
             try {
-                // Mark as loading
+                // Mark as loading, clear any previous failure state
                 _uiState.update { state ->
-                    state.copy(loadingExplanations = state.loadingExplanations + quote.id)
+                    state.copy(
+                        loadingExplanations = state.loadingExplanations + quote.id,
+                        failedExplanations = state.failedExplanations - quote.id
+                    )
                 }
 
                 val result = buddhaAiRepository.getQuoteExplanation(
@@ -232,21 +237,48 @@ class QuotesViewModel @Inject constructor(
                     _uiState.update { state ->
                         state.copy(
                             quoteExplanations = state.quoteExplanations + (quote.id to explanation),
-                            loadingExplanations = state.loadingExplanations - quote.id
+                            loadingExplanations = state.loadingExplanations - quote.id,
+                            failedExplanations = state.failedExplanations - quote.id
                         )
                     }
                 } else {
+                    // Mark as failed so UI can show retry option
                     _uiState.update { state ->
-                        state.copy(loadingExplanations = state.loadingExplanations - quote.id)
+                        state.copy(
+                            loadingExplanations = state.loadingExplanations - quote.id,
+                            failedExplanations = state.failedExplanations + quote.id
+                        )
                     }
                 }
             } catch (e: Exception) {
                 android.util.Log.e("QuotesViewModel", "Error loading quote explanation", e)
+                // Mark as failed so UI can show retry option
                 _uiState.update { state ->
-                    state.copy(loadingExplanations = state.loadingExplanations - quote.id)
+                    state.copy(
+                        loadingExplanations = state.loadingExplanations - quote.id,
+                        failedExplanations = state.failedExplanations + quote.id
+                    )
                 }
             }
         }
+    }
+
+    /**
+     * Check if explanation loading failed for a quote.
+     */
+    fun isExplanationFailed(quoteId: Long): Boolean {
+        return _uiState.value.failedExplanations.contains(quoteId)
+    }
+
+    /**
+     * Retry loading explanation for a quote that previously failed.
+     */
+    fun retryExplanation(quote: QuoteEntity) {
+        // Clear failure state and retry
+        _uiState.update { state ->
+            state.copy(failedExplanations = state.failedExplanations - quote.id)
+        }
+        loadQuoteExplanation(quote)
     }
 
     /**
