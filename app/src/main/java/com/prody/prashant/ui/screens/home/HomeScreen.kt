@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.screens.home
+import com.prody.prashant.ui.animation.premiumShimmer
 import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.AnimatedVisibility
@@ -442,10 +443,8 @@ Icon(
                 )
             }
         }
-    }
 }
-
-import com.prody.prashant.ui.animation.premiumShimmer
+}
 
 // =============================================================================
 // PREMIUM HEADER SECTION

@@ -42,6 +42,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.prody.prashant.ui.animation.premiumShimmer
 import com.prody.prashant.ui.theme.ProdyTokens
 
 /**
@@ -90,10 +91,8 @@ private object ProdyButtonDefaults {
     val LoadingIndicatorSize = 20.dp
     val IconTextGap = 8.dp
 
-    val CornerRadius = ProdyTokens.Radius.sm
+val CornerRadius = ProdyTokens.Radius.sm
 }
-
-import com.prody.prashant.ui.animation.premiumShimmer
 
 // =============================================================================
 // PRIMARY BUTTON

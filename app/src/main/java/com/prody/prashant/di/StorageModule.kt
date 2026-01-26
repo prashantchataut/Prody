@@ -2,6 +2,9 @@ package com.prody.prashant.di
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.preferencesDataStore
 import dagger.Module
 import dagger.Provides
 import androidx.security.crypto.EncryptedSharedPreferences
@@ -45,12 +48,21 @@ object StorageModule {
                 EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
                 EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
             )
-        } catch (e: GeneralSecurityException) {
+} catch (e: GeneralSecurityException) {
             Log.e("StorageModule", "Could not create EncryptedSharedPreferences", e)
             throw RuntimeException("Could not create EncryptedSharedPreferences", e)
         } catch (e: IOException) {
             Log.e("StorageModule", "Could not create EncryptedSharedPreferences", e)
             throw RuntimeException("Could not create EncryptedSharedPreferences", e)
         }
+    }
+
+    private val Context.syncDataStore: DataStore<Preferences> by preferencesDataStore(name = "sync_preferences")
+
+    @Provides
+    @Singleton
+    @Named("SyncDataStore")
+    fun provideSyncDataStore(@ApplicationContext context: Context): DataStore<Preferences> {
+        return context.syncDataStore
     }
 }

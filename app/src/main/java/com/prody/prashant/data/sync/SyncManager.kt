@@ -26,6 +26,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.util.concurrent.ConcurrentLinkedQueue
 import javax.inject.Inject
+import javax.inject.Named
 import javax.inject.Singleton
 
 /**
@@ -113,7 +114,7 @@ class SyncManager @Inject constructor(
     @ApplicationContext private val context: Context,
     private val networkManager: NetworkConnectivityManager,
     private val preferencesManager: PreferencesManager,
-    private val syncDataStore: DataStore<Preferences>
+    @Named("SyncDataStore") private val syncDataStore: DataStore<Preferences>
 ) {
     companion object {
         private const val TAG = "SyncManager"
