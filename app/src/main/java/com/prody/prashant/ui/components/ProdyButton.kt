@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.prody.prashant.ui.animation.premiumShimmer
 import com.prody.prashant.ui.theme.ProdyTokens
+import com.prody.prashant.util.rememberProdyHaptic
 
 /**
  * Prody Premium Button System
@@ -124,6 +125,7 @@ fun ProdyPrimaryButton(
     contentDescription: String? = null
 ) {
     val interactionSource = remember { MutableInteractionSource() }
+    val haptic = rememberProdyHaptic()
     val isPressed by interactionSource.collectIsPressedAsState()
 
     val scale by animateFloatAsState(
@@ -148,7 +150,12 @@ fun ProdyPrimaryButton(
     }
 
     Button(
-        onClick = { if (!loading) onClick() },
+        onClick = {
+            if (!loading) {
+                haptic.click()
+                onClick()
+            }
+        },
         modifier = modifier
             .scale(scale)
             .defaultMinSize(minHeight = height)
@@ -201,6 +208,7 @@ fun ProdySecondaryButton(
     contentDescription: String? = null
 ) {
     val interactionSource = remember { MutableInteractionSource() }
+    val haptic = rememberProdyHaptic()
     val isPressed by interactionSource.collectIsPressedAsState()
 
     val scale by animateFloatAsState(
@@ -225,7 +233,12 @@ fun ProdySecondaryButton(
     }
 
     Button(
-        onClick = { if (!loading) onClick() },
+        onClick = {
+            if (!loading) {
+                haptic.click()
+                onClick()
+            }
+        },
         modifier = modifier
             .scale(scale)
             .defaultMinSize(minHeight = height)
@@ -278,6 +291,7 @@ fun ProdyOutlinedButton(
     borderColor: Color = MaterialTheme.colorScheme.outline
 ) {
     val interactionSource = remember { MutableInteractionSource() }
+    val haptic = rememberProdyHaptic()
     val isPressed by interactionSource.collectIsPressedAsState()
 
     val scale by animateFloatAsState(
@@ -302,7 +316,12 @@ fun ProdyOutlinedButton(
     }
 
     OutlinedButton(
-        onClick = { if (!loading) onClick() },
+        onClick = {
+            if (!loading) {
+                haptic.click()
+                onClick()
+            }
+        },
         modifier = modifier
             .scale(scale)
             .defaultMinSize(minHeight = height)
@@ -357,6 +376,7 @@ fun ProdyGhostButton(
     contentColor: Color = MaterialTheme.colorScheme.primary
 ) {
     val interactionSource = remember { MutableInteractionSource() }
+    val haptic = rememberProdyHaptic()
     val isPressed by interactionSource.collectIsPressedAsState()
 
     val scale by animateFloatAsState(
@@ -381,7 +401,12 @@ fun ProdyGhostButton(
     }
 
     TextButton(
-        onClick = { if (!loading) onClick() },
+        onClick = {
+            if (!loading) {
+                haptic.click()
+                onClick()
+            }
+        },
         modifier = modifier
             .scale(scale)
             .defaultMinSize(minHeight = height)
@@ -488,6 +513,7 @@ fun ProdyIconButton(
     size: Dp = ProdyTokens.Touch.minimum
 ) {
     val interactionSource = remember { MutableInteractionSource() }
+    val haptic = rememberProdyHaptic()
     val isPressed by interactionSource.collectIsPressedAsState()
 
     val scale by animateFloatAsState(
@@ -500,7 +526,10 @@ fun ProdyIconButton(
     )
 
     Surface(
-        onClick = onClick,
+        onClick = {
+            haptic.click()
+            onClick()
+        },
         modifier = modifier
             .scale(scale)
             .size(size)
