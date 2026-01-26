@@ -407,6 +407,11 @@ val IdiomPurple = Color(0xFFB39DDB)              // Soft lavender - idioms
 val ProverbTeal = Color(0xFF26A69A)              // Teal - proverbs
 val SeedGold = Color(0xFFE8B42F)                 // Golden yellow - seeds
 
+// Bloom System Colors
+val SeedDormant = Color(0xFF8A9493)              // Muted gray/green
+val BloomGrowing = Color(0xFF5DFA96)             // Lighter fresh green
+val BloomReady = Color(0xFF36F97F)               // Vibrant neon green
+
 // =============================================================================
 // WISDOM & QUOTES COLORS (Flat)
 // =============================================================================

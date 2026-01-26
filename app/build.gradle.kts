@@ -134,7 +134,7 @@ android {
 
     buildFeatures {
         compose = true
-        // buildConfig is enabled via gradle.properties: android.defaults.buildfeatures.buildconfig=true
+        buildConfig = true
     }
 
     packaging {
@@ -185,10 +185,6 @@ dependencies {
     implementation(libs.sqlcipher.android)
     implementation(libs.sqlite.ktx)
     
-    // Network Security
-    implementation("com.squareup.okhttp3:okhttp:4.12.0")
-    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
-
     // Hilt
     implementation(libs.hilt.android)
     ksp(libs.hilt.android.compiler)

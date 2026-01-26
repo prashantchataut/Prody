@@ -1721,7 +1721,7 @@ private fun buildDatabase(context: Context): ProdyDatabase {
                         MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20
                     )
                     .fallbackToDestructiveMigration()
-                    .addCallback(SecureDatabaseCallback(secureDbManager))
+                    .addCallback(SecureDatabaseCallback(context, secureDbManager))
                     .build()
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to create secure database, falling back to unencrypted", e)
@@ -1767,6 +1767,7 @@ private fun buildDatabase(context: Context): ProdyDatabase {
          * Secure Database callback with encryption verification
          */
         private class SecureDatabaseCallback(
+            private val context: Context,
             private val secureDbManager: SecureDatabaseManager
         ) : Callback() {
             override fun onCreate(db: SupportSQLiteDatabase) {
