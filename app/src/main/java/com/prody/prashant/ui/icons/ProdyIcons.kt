@@ -5,7 +5,8 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathFillType
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.vector.*
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.unit.dp
 
 /**
@@ -373,7 +374,7 @@ object ProdyIcons {
     /**
      * Helper function to create a standard icon with consistent sizing
      */
-    private fun createIcon(name: String, pathData: Builder.() -> Unit): ImageVector {
+    private fun createIcon(name: String, pathData: ImageVector.Builder.() -> Unit): ImageVector {
         return ImageVector.Builder(
             name = name,
             defaultWidth = 24.dp,
