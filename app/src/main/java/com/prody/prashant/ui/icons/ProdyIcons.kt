@@ -1,7 +1,6 @@
 package com.prody.prashant.ui.icons
 
 import androidx.compose.material.icons.Icons
-
 import androidx.compose.material.icons.filled.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathFillType
@@ -10,18 +9,41 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.ImageVector.Builder
 import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.vector.PathNode
 
 /**
  * Optimized Icon System for Prody App
- * 
+ *
  * This object provides efficient access to Material Design icons and custom icons
  * without excessive lazy initialization that can cause memory pressure.
- * 
+ *
  * Key optimizations:
  * - Pre-loaded core icons for immediate access
  * - Lazy initialization only for complex custom icons
  * - Reused icon definitions to reduce memory footprint
  * - Proper resource cleanup and management
+ *
+ * BEST PRACTICES FOR COMPOSE CUSTOM ICONS:
+ * 1. Use consistent sizing (typically 24x24 dp with 24x24 viewport)
+ * 2. Use proper path fill types (EvenOdd or NonZero) as needed
+ * 3. Use relative methods (lineToRelative, curveToRelative) when possible for cleaner paths
+ * 4. Cache custom icons using getOrPut or lazy delegates to avoid recreation
+ * 5. Use SolidColor for fills instead of gradients for performance
+ * 6. Follow Material Design guidelines for icon design
+ * 7. Use descriptive names that match the icon's purpose
+ * 8. Group related icons in objects (e.g., Gamification, Social, etc.)
+ * 9. Import correct Compose vector graphics methods:
+ *    - androidx.compose.ui.graphics.vector.PathNode for path operations
+ *    - Use correct method names: horizontalLineToRelative, verticalLineToRelative, reflectiveCurveTo
+ * 10. Validate SVG path data for correctness before converting to Compose
+ *
+ * COMMON CAUSES OF ICON ERRORS:
+ * 1. Missing imports for Compose vector graphics methods
+ * 2. Incorrect method names (e.g., 'horizontalrelativeLineTo' instead of 'horizontalLineToRelative')
+ * 3. API changes in Compose versions (method renames/deprecations)
+ * 4. SVG-to-Compose conversion tools generating incorrect method names
+ * 5. Copying icon code from different Compose versions with incompatible APIs
+ * 6. Using experimental or deprecated Compose APIs that have changed
  */
 object ProdyIcons {
     
@@ -41,7 +63,7 @@ object ProdyIcons {
                 relativeLineTo(1.41f, -1.41f)
                 lineTo(7.83f, 13f)
                 horizontalLineTo(20f)
-                verticalrelativeLineTo(-2f)
+                verticalLineToRelative(-2f)
                 close()
             }
         }
@@ -54,8 +76,8 @@ object ProdyIcons {
                 relativeLineTo(-1.41f, 1.41f)
                 lineTo(16.17f, 11f)
                 horizontalLineTo(4f)
-                verticalrelativeLineTo(2f)
-                horizontalrelativeLineTo(12.17f)
+                verticalLineToRelative(2f)
+                horizontalLineToRelative(12.17f)
                 relativeLineTo(-5.58f, 5.59f)
                 lineTo(12f, 20f)
                 relativeLineTo(8f, -8f)
@@ -84,40 +106,40 @@ object ProdyIcons {
         createIcon("List") {
              path(fill = SolidColor(Color.Black)) {
                 moveTo(3f, 13f)
-                horizontalrelativeLineTo(2f)
-                verticalrelativeLineTo(-2f)
+                horizontalLineToRelative(2f)
+                verticalLineToRelative(-2f)
                 horizontalLineTo(3f)
-                verticalrelativeLineTo(2f)
+                verticalLineToRelative(2f)
                 close()
                 moveTo(3f, 17f)
-                horizontalrelativeLineTo(2f)
-                verticalrelativeLineTo(-2f)
+                horizontalLineToRelative(2f)
+                verticalLineToRelative(-2f)
                 horizontalLineTo(3f)
-                verticalrelativeLineTo(2f)
+                verticalLineToRelative(2f)
                 close()
                 moveTo(3f, 9f)
-                horizontalrelativeLineTo(2f)
+                horizontalLineToRelative(2f)
                 verticalLineTo(7f)
                 horizontalLineTo(3f)
-                verticalrelativeLineTo(2f)
+                verticalLineToRelative(2f)
                 close()
                 moveTo(7f, 13f)
-                horizontalrelativeLineTo(14f)
-                verticalrelativeLineTo(-2f)
+                horizontalLineToRelative(14f)
+                verticalLineToRelative(-2f)
                 horizontalLineTo(7f)
-                verticalrelativeLineTo(2f)
+                verticalLineToRelative(2f)
                 close()
                 moveTo(7f, 17f)
-                horizontalrelativeLineTo(14f)
-                verticalrelativeLineTo(-2f)
+                horizontalLineToRelative(14f)
+                verticalLineToRelative(-2f)
                 horizontalLineTo(7f)
-                verticalrelativeLineTo(2f)
+                verticalLineToRelative(2f)
                 close()
                 moveTo(7f, 9f)
-                horizontalrelativeLineTo(14f)
+                horizontalLineToRelative(14f)
                 verticalLineTo(7f)
                 horizontalLineTo(7f)
-                verticalrelativeLineTo(2f)
+                verticalLineToRelative(2f)
                 close()
             }
         }
@@ -176,9 +198,9 @@ object ProdyIcons {
                 path(fill = SolidColor(Color.Black), pathFillType = PathFillType.EvenOdd) {
                     moveTo(12f, 2f)
                     curveTo(6.48f, 2f, 2f, 6.48f, 2f, 12f)
-                    reflectiverelativeCurveTo(4.48f, 10f, 10f, 10f)
-                    reflectiverelativeCurveTo(10f, -4.48f, 10f, -10f)
-                    reflectiverelativeCurveTo(4.48f, 2f, 12f, 2f)
+                    reflectiveCurveTo(4.48f, 10f, 10f, 10f)
+                    reflectiveCurveTo(10f, -4.48f, 10f, -10f)
+                    reflectiveCurveTo(4.48f, -2f, 12f, -2f)
                     close()
                     moveTo(10f, 17f)
                     relativeLineTo(-5f, -5f)
@@ -201,23 +223,23 @@ object ProdyIcons {
                 path(fill = SolidColor(Color.Black)) {
                     moveTo(12f, 2f)
                     curveTo(13.1f, 2f, 14f, 2.9f, 14f, 4f)
-                    reflectiverelativeCurveTo(-0.9f, 2f, -2f, 2f)
-                    reflectiverelativeCurveTo(-2f, -0.9f, -2f, -2f)
-                    reflectiverelativeCurveTo(0.9f, -2f, 2f, -2f)
+                    reflectiveCurveTo(-0.9f, 2f, -2f, 2f)
+                    reflectiveCurveTo(-2f, -0.9f, -2f, -2f)
+                    reflectiveCurveTo(0.9f, -2f, 2f, -2f)
                     close()
                     moveTo(21f, 9f)
-                    horizontalrelativeLineTo(-6f)
-                    verticalrelativeLineTo(13f)
-                    horizontalrelativeLineTo(-2f)
-                    verticalrelativeLineTo(-6f)
-                    horizontalrelativeLineTo(-2f)
-                    verticalrelativeLineTo(6f)
+                    horizontalLineToRelative(-6f)
+                    verticalLineToRelative(13f)
+                    horizontalLineToRelative(-2f)
+                    verticalLineToRelative(-6f)
+                    horizontalLineToRelative(-2f)
+                    verticalLineToRelative(6f)
                     horizontalLineTo(9f)
-                    verticalrelativeLineTo(9f)
+                    verticalLineToRelative(9f)
                     horizontalLineTo(3f)
-                    verticalrelativeLineTo(7f)
-                    horizontalrelativeLineTo(18f)
-                    verticalrelativeLineTo(2f)
+                    verticalLineToRelative(7f)
+                    horizontalLineToRelative(18f)
+                    verticalLineToRelative(2f)
                     close()
                 }
             }
@@ -232,20 +254,20 @@ object ProdyIcons {
                 path(fill = SolidColor(Color.Black)) {
                     moveTo(9f, 21f)
                     relativeCurveTo(0f, 0.5f, 0.4f, 1f, 1f, 1f)
-                    horizontalrelativeLineTo(4f)
+                    horizontalLineToRelative(4f)
                     relativeCurveTo(0.6f, 0f, 1f, -0.5f, 1f, -1f)
-                    verticalrelativeLineTo(-1f)
-                    horizontalrelativeLineTo(9f)
-                    verticalrelativeLineTo(1f)
+                    verticalLineToRelative(-1f)
+                    horizontalLineToRelative(9f)
+                    verticalLineToRelative(1f)
                     close()
                     moveTo(12f, 2f)
                     relativeCurveTo(8.1f, 2f, 5f, 5.1f, 5f, 9f)
                     relativeCurveTo(0f, 2.4f, 1.2f, 4.5f, 3f, 5.7f)
                     verticalrelativeLineTo(17f)
                     relativeCurveTo(0f, 0.5f, 0.4f, 1f, 1f, 1f)
-                    horizontalrelativeLineTo(6f)
+                    horizontalLineToRelative(6f)
                     relativeCurveTo(0.6f, 0f, 1f, -0.5f, 1f, -1f)
-                    verticalrelativeLineTo(-2.3f)
+                    verticalLineToRelative(-2.3f)
                     relativeCurveTo(1.8f, -1.3f, 3f, -3.4f, 3f, -5.7f)
                     relativeCurveTo(0f, -3.9f, -3.1f, -7f, -7f, -7f)
                     close()
@@ -322,27 +344,27 @@ object ProdyIcons {
                 createIcon("Trophy") {
                     path(fill = SolidColor(Color.Black)) {
                         moveTo(19f, 5f)
-                        horizontalrelativeLineTo(-2f)
-                        verticalrelativeLineTo(3f)
+                        horizontalLineToRelative(-2f)
+                        verticalLineToRelative(3f)
                         relativeCurveTo(0f, -1.1f, -0.9f, -2f, -2f, -2f)
-                        reflectiverelativeCurveTo(-2f, 0.9f, -2f, 2f)
-                        verticalrelativeLineTo(2f)
-                        horizontalrelativeLineTo(7f)
-                        verticalrelativeLineTo(3f)
+                        reflectiveCurveTo(-2f, 0.9f, -2f, 2f)
+                        verticalLineToRelative(2f)
+                        horizontalLineToRelative(7f)
+                        verticalLineToRelative(3f)
                         relativeCurveTo(0f, -1.1f, -0.9f, -2f, -2f, -2f)
-                        reflectiverelativeCurveTo(-2f, 0.9f, -2f, 2f)
-                        verticalrelativeLineTo(2f)
-                        horizontalrelativeLineTo(5f)
+                        reflectiveCurveTo(-2f, 0.9f, -2f, 2f)
+                        verticalLineToRelative(2f)
+                        horizontalLineToRelative(5f)
                         relativeCurveTo(-1.1f, 0f, -2f, 0.9f, -2f, 2f)
-                        verticalrelativeLineTo(1f)
+                        verticalLineToRelative(1f)
                         relativeCurveTo(0f, 2.6f, 1.8f, 4.8f, 4.2f, 5.4f)
                         relativeCurveTo(-0.4f, 0.8f, -0.7f, 1.7f, -0.7f, 2.6f)
-                        verticalrelativeLineTo(5f)
-                        horizontalrelativeLineTo(12f)
-                        verticalrelativeLineTo(-5f)
+                        verticalLineToRelative(5f)
+                        horizontalLineToRelative(12f)
+                        verticalLineToRelative(-5f)
                         relativeCurveTo(0f, -0.9f, -0.3f, -1.8f, -0.7f, -2.6f)
                         relativeCurveTo(2.4f, -0.6f, 4.2f, -2.8f, 4.2f, -5.4f)
-                        verticalrelativeLineTo(-1f)
+                        verticalLineToRelative(-1f)
                         relativeCurveTo(0f, -1.1f, -0.9f, -2f, -2f, -2f)
                     }
                 }
@@ -396,19 +418,19 @@ object ProdyIcons {
             path(fill = SolidColor(Color.Black)) {
                 moveTo(11.99f, 2f)
                 curveTo(6.47f, 2f, 2f, 6.48f, 2f, 12f)
-                reflectiverelativeCurveTo(4.47f, 10f, 9.99f, 10f)
+                reflectiveCurveTo(4.47f, 10f, 9.99f, 10f)
                 curveTo(17.52f, 22f, 22f, 17.52f, 22f, 12f)
                 reflectiveCurveTo(17.52f, 2f, 11.99f, 2f)
                 close()
                 moveTo(12f, 20f)
                 relativeCurveTo(-4.42f, 0f, -8f, -3.58f, -8f, -8f)
-                reflectiverelativeCurveTo(3.58f, -8f, 8f, -8f)
-                reflectiverelativeCurveTo(8f, 3.58f, 8f, 8f)
-                reflectiverelativeCurveTo(-3.58f, 8f, -8f, 8f)
+                reflectiveCurveTo(3.58f, -8f, 8f, -8f)
+                reflectiveCurveTo(8f, 3.58f, 8f, 8f)
+                reflectiveCurveTo(-3.58f, 8f, -8f, 8f)
                 close()
                 moveTo(12.5f, 7f)
                 horizontalLineTo(11f)
-                verticalrelativeLineTo(6f)
+                verticalLineToRelative(6f)
                 relativeLineTo(5.25f, 3.15f)
                 relativeLineTo(0.75f, -1.23f)
                 relativeLineTo(-4.5f, -2.67f)
@@ -431,9 +453,9 @@ object ProdyIcons {
                 relativeLineTo(-0.44f, 0.55f)
                 curveTo(14.38f, 8.02f, 12f, 7.19f, 12f, 5.3f)
                 verticalLineTo(2f)
-                reflectiverelativeCurveTo(-8f, 4f, -8f, 11f)
+                reflectiveCurveTo(-8f, 4f, -8f, 11f)
                 relativeCurveTo(0f, 4.42f, 3.58f, 8f, 8f, 8f)
-                reflectiverelativeCurveTo(8f, -3.58f, 8f, -8f)
+                reflectiveCurveTo(8f, -3.58f, 8f, -8f)
                 relativeCurveTo(0f, -2.96f, -1.61f, -5.62f, -4f, -7f)
                 close()
             }

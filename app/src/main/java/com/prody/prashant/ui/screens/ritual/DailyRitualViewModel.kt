@@ -330,38 +330,40 @@ class DailyRitualViewModel @Inject constructor(
             }
 
             result
-                .onSuccess {
-                    // Generate warm, personal completion message using engines
-                    val message = when (state.ritualMode) {
-                        RitualMode.MORNING -> {
-                            morningIntentionEngine.getMorningCompletionMessage(
-                                hasIntention = state.intention.isNotBlank()
-                            )
+                .fold(
+                    onSuccess = {
+                        // Generate warm, personal completion message using engines
+                        val message = when (state.ritualMode) {
+                            RitualMode.MORNING -> {
+                                morningIntentionEngine.getMorningCompletionMessage(
+                                    hasIntention = state.intention.isNotBlank()
+                                )
+                            }
+                            RitualMode.EVENING -> {
+                                eveningReflectionEngine.getEveningCompletionMessage(
+                                    dayRating = state.dayRating?.value,
+                                    intentionOutcome = state.intentionOutcome,
+                                    currentStreak = state.currentStreak
+                                )
+                            }
                         }
-                        RitualMode.EVENING -> {
-                            eveningReflectionEngine.getEveningCompletionMessage(
-                                dayRating = state.dayRating?.value,
-                                intentionOutcome = state.intentionOutcome,
-                                currentStreak = state.currentStreak
-                            )
-                        }
-                    }
 
-                    _uiState.update { it.copy(
-                        isSaving = false,
-                        isComplete = true,
-                        completionMessage = message,
-                        isMorningCompleted = state.ritualMode == RitualMode.MORNING || it.isMorningCompleted,
-                        isEveningCompleted = state.ritualMode == RitualMode.EVENING || it.isEveningCompleted
-                    )}
-                    loadRitualStatus() // Refresh stats
-                }
-                .onError { error ->
-                    _uiState.update { it.copy(
-                        isSaving = false,
-                        errorMessage = error.userMessage
-                    )}
-                }
+                        _uiState.update { it.copy(
+                            isSaving = false,
+                            isComplete = true,
+                            completionMessage = message,
+                            isMorningCompleted = state.ritualMode == RitualMode.MORNING || it.isMorningCompleted,
+                            isEveningCompleted = state.ritualMode == RitualMode.EVENING || it.isEveningCompleted
+                        )}
+                        loadRitualStatus() // Refresh stats
+                    },
+                    onFailure = { error ->
+                        _uiState.update { it.copy(
+                            isSaving = false,
+                            errorMessage = error.message
+                        )}
+                    }
+                )
         }
     }
 
