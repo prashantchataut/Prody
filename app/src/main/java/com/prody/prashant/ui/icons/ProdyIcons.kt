@@ -6,27 +6,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathFillType
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.graphics.vector.ImageVector.Builder
 import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.graphics.vector.PathNode
-import androidx.compose.ui.graphics.vector.*
-import androidx.compose.ui.graphics.vector.PathBuilder
-import androidx.compose.ui.graphics.vector.lineTo
-import androidx.compose.ui.graphics.vector.moveTo
-import androidx.compose.ui.graphics.vector.relativeLineTo
-import androidx.compose.ui.graphics.vector.relativeCurveTo
-import androidx.compose.ui.graphics.vector.reflectiveCurveTo
-import androidx.compose.ui.graphics.vector.horizontalLineTo
-import androidx.compose.ui.graphics.vector.verticalLineTo
-import androidx.compose.ui.graphics.vector.curveTo
-import androidx.compose.ui.graphics.vector.close
-import androidx.compose.ui.graphics.vector.arcTo
-import androidx.compose.ui.graphics.vector.horizontalLineToRelative
-import androidx.compose.ui.graphics.vector.verticalLineToRelative
-import androidx.compose.ui.graphics.vector.lineToRelative
-import androidx.compose.ui.graphics.vector.curveToRelative
-import androidx.compose.ui.graphics.vector.reflectiveCurveToRelative
 
 /**
  * Optimized Icon System for Prody App
