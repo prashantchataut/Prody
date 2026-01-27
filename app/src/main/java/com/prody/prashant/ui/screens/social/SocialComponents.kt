@@ -113,7 +113,7 @@ fun CircleCard(
             // Recent activity preview
             if (recentActivity.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(12.dp))
-                Divider(color = circle.colorTheme.textColor.copy(alpha = 0.2f))
+                HorizontalDivider(color = circle.colorTheme.textColor.copy(alpha = 0.2f))
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(

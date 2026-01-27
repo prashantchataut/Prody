@@ -96,6 +96,7 @@ data class DailySeed(
                 "${base}ing",        // gerund
                 "${base}ly",         // adverb
                 "${base}ness",       // noun form
+                base.removeSuffix("e") + "ed",   // e.g., hope -> hoped
                 base.removeSuffix("e") + "ing",  // e.g., hope -> hoping
                 base.removeSuffix("y") + "ies",  // e.g., happy -> happies
                 base.removeSuffix("y") + "ied",  // e.g., happy -> happied
