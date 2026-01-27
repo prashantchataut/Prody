@@ -221,13 +221,13 @@ class HomeViewModel @Inject constructor(
                 dualStreakManager.getDualStreakStatusFlow(),
                 preferencesManager.debugAiProofMode.distinctUntilChanged()
             ) { args ->
-                val profile = args[0] as UserProfileEntity?
-                val weeklyJournalEntries = args[1] as List<JournalEntryEntity>
-                val weeklyLearnedWords = args[2] as Int
-                val streakHistory = args[3] as List<StreakHistoryEntity>
-                val todayJournalEntries = args[4] as List<JournalEntryEntity>
-                val dualStreak = args[5] as DualStreakStatus
-                val aiProofMode = args[6] as Boolean
+                val profile = args.getOrNull(0) as? UserProfileEntity
+                val weeklyJournalEntries = (args.getOrNull(1) as? List<*>)?.filterIsInstance<JournalEntryEntity>() ?: emptyList()
+                val weeklyLearnedWords = args.getOrNull(2) as? Int ?: 0
+                val streakHistory = (args.getOrNull(3) as? List<*>)?.filterIsInstance<StreakHistoryEntity>() ?: emptyList()
+                val todayJournalEntries = (args.getOrNull(4) as? List<*>)?.filterIsInstance<JournalEntryEntity>() ?: emptyList()
+                val dualStreak = args.getOrNull(5) as? DualStreakStatus ?: DualStreakStatus.empty()
+                val aiProofMode = args.getOrNull(6) as? Boolean ?: false
 
                 // Calculate weekly active days.
                 val daysActiveThisWeek = streakHistory.count { it.date >= weekStart }

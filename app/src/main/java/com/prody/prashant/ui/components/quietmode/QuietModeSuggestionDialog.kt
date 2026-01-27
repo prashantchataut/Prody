@@ -144,7 +144,7 @@ fun QuietModeSuggestionDialog(
                             )
                         }
 
-                        Divider(
+                        HorizontalDivider(
                             color = if (isDarkTheme()) {
                                 QuietModeTheme.QuietDividerDark
                             } else {
@@ -239,7 +239,9 @@ fun QuietModeSuggestionDialog(
                                 ProdyTextSecondaryLight
                             }
                         ),
-                        border = ButtonDefaults.outlinedButtonBorder.copy(
+                        border = ButtonDefaults.outlinedButtonBorder(
+                            enabled = true
+                        ).copy(
                             width = 1.dp
                         ),
                         shape = RoundedCornerShape(14.dp)
@@ -370,7 +372,9 @@ fun QuietModeExitCheckInDialog(
                                 QuietModeTheme.QuietTextSecondaryLight
                             }
                         ),
-                        border = ButtonDefaults.outlinedButtonBorder.copy(
+                        border = ButtonDefaults.outlinedButtonBorder(
+                            enabled = true
+                        ).copy(
                             width = 1.dp
                         ),
                         shape = RoundedCornerShape(14.dp)

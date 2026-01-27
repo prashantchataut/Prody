@@ -292,7 +292,7 @@ fun LetterContent(
             )
         }
 
-        Divider(color = MaterialTheme.colorScheme.outlineVariant)
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
 
         // Greeting
         Text(
@@ -390,7 +390,7 @@ fun LetterContent(
             )
         }
 
-        Divider(color = MaterialTheme.colorScheme.outlineVariant)
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
 
         // Closing
         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {

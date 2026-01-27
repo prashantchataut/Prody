@@ -92,7 +92,7 @@ data class DailySeed(
             return listOf(
                 base,
                 "${base}s",          // plural
-                "${base}ed",         // past tense
+                base.removeSuffix("e") + "ed",         // past tense
                 "${base}ing",        // gerund
                 "${base}ly",         // adverb
                 "${base}ness",       // noun form
