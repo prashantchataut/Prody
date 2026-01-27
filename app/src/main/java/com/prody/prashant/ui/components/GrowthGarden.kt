@@ -420,8 +420,8 @@ private fun DrawScope.drawLeaf(
             // Withered leaf - droopy
             val path = Path().apply {
                 moveTo(x, y - size / 2)
-                quadraticBezierTo(x + size / 2, y + size / 4, x, y + size)
-                quadraticBezierTo(x - size / 2, y + size / 4, x, y - size / 2)
+                quadraticTo(x + size / 2, y + size / 4, x, y + size)
+                quadraticTo(x - size / 2, y + size / 4, x, y - size / 2)
                 close()
             }
             drawPath(path = path, color = color.copy(alpha = 0.6f))
@@ -429,8 +429,8 @@ private fun DrawScope.drawLeaf(
             // Healthy leaf - upward pointing
             val path = Path().apply {
                 moveTo(x, y - size)
-                quadraticBezierTo(x + size / 2, y - size / 2, x, y + size / 2)
-                quadraticBezierTo(x - size / 2, y - size / 2, x, y - size)
+                quadraticTo(x + size / 2, y - size / 2, x, y + size / 2)
+                quadraticTo(x - size / 2, y - size / 2, x, y - size)
                 close()
             }
             drawPath(path = path, color = color)

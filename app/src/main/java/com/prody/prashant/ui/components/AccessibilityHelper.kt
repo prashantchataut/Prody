@@ -3,6 +3,9 @@ package com.prody.prashant.ui.components
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Assignment
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -280,7 +283,7 @@ object AccessibilityHelper {
      */
     private fun getIconVector(iconType: IconType) = when (iconType) {
         IconType.ADD -> Icons.Default.Add
-        IconType.BACK -> Icons.Default.ArrowBack
+        IconType.BACK -> Icons.AutoMirrored.Filled.ArrowBack
         IconType.CHECK -> Icons.Default.Check
         IconType.CLOSE -> Icons.Default.Close
         IconType.DELETE -> Icons.Default.Delete
@@ -297,12 +300,12 @@ object AccessibilityHelper {
         IconType.ACHIEVEMENTS -> Icons.Default.EmojiEvents
         IconType.STREAKS -> Icons.Default.LocalFireDepartment
         IconType.LEVEL -> Icons.Default.MilitaryTech
-        IconType.JOURNAL -> Icons.Default.MenuBook
+        IconType.JOURNAL -> Icons.AutoMirrored.Filled.MenuBook
         IconType.MESSAGE -> Icons.Default.Email
         IconType.QUOTE -> Icons.Default.FormatQuote
         IconType.VOCABULARY -> Icons.Default.School
         IconType.CHALLENGE -> Icons.Default.FitnessCenter
-        IconType.MISSION -> Icons.Default.Assignment
+        IconType.MISSION -> Icons.AutoMirrored.Filled.Assignment
         IconType.NOTIFICATIONS -> Icons.Default.Notifications
         IconType.MEDITATION -> Icons.Default.SelfImprovement
     }

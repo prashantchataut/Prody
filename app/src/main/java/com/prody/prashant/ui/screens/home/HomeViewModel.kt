@@ -221,10 +221,14 @@ class HomeViewModel @Inject constructor(
                 dualStreakManager.getDualStreakStatusFlow(),
                 preferencesManager.debugAiProofMode.distinctUntilChanged()
             ) { args ->
+                @Suppress("UNCHECKED_CAST")
                 val profile = args[0] as UserProfileEntity?
+                @Suppress("UNCHECKED_CAST")
                 val weeklyJournalEntries = args[1] as List<JournalEntryEntity>
                 val weeklyLearnedWords = args[2] as Int
+                @Suppress("UNCHECKED_CAST")
                 val streakHistory = args[3] as List<StreakHistoryEntity>
+                @Suppress("UNCHECKED_CAST")
                 val todayJournalEntries = args[4] as List<JournalEntryEntity>
                 val dualStreak = args[5] as DualStreakStatus
                 val aiProofMode = args[6] as Boolean

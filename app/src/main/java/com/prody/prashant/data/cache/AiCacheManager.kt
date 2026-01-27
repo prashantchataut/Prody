@@ -563,7 +563,7 @@ class AiCacheManager @Inject constructor(
                 val keysToRemove = mutableListOf<Preferences.Key<String>>()
 
                 preferences.asMap().forEach { (key, value) ->
-                    if (key is Preferences.Key<*> && value is String) {
+                    if (value is String) {
                         try {
                             val cached = json.decodeFromString<CachedAiResponse>(value)
                             val cacheType = AiCacheType.entries.find { it.key == cached.cacheType }

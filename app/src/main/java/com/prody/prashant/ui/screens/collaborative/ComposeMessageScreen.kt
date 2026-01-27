@@ -159,7 +159,7 @@ fun ComposeMessageScreen(
                 onSelectFromContacts = { showContactPicker = true }
             )
 
-            Divider(modifier = Modifier.padding(vertical = 16.dp))
+            HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
 
             // Message content
             SectionHeader(title = "Message")
@@ -193,7 +193,7 @@ fun ComposeMessageScreen(
                 )
             )
 
-            Divider(modifier = Modifier.padding(vertical = 16.dp))
+            HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
 
             // Occasion selection
             SectionHeader(title = "Occasion (Optional)")
@@ -212,7 +212,7 @@ fun ComposeMessageScreen(
                 onShowPicker = { showThemePicker = true }
             )
 
-            Divider(modifier = Modifier.padding(vertical = 16.dp))
+            HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
 
             // Delivery scheduling
             SectionHeader(title = "Delivery")

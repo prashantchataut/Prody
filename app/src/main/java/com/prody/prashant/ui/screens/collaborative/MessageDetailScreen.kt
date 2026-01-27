@@ -520,7 +520,7 @@ private fun MessageCard(
                         fontWeight = FontWeight.Medium
                     )
                 }
-                Divider(
+                HorizontalDivider(
                     color = Color(theme.colorDark).copy(alpha = 0.2f),
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
@@ -551,7 +551,7 @@ private fun MessageCard(
             attachments?.let { attach ->
                 if (attach.images.isNotEmpty() || attach.audioUrl != null) {
                     Spacer(modifier = Modifier.height(20.dp))
-                    Divider(
+                    HorizontalDivider(
                         color = Color(theme.colorDark).copy(alpha = 0.2f),
                         modifier = Modifier.padding(vertical = 8.dp)
                     )
