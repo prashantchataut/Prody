@@ -117,6 +117,7 @@ fun ProdyClickableCard(
     content: @Composable BoxScope.() -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
+    val haptic = rememberProdyHaptic()
     val isPressed by interactionSource.collectIsPressedAsState()
 
     // Animate scale on press for tactile feedback
@@ -135,7 +136,10 @@ fun ProdyClickableCard(
                 interactionSource = interactionSource,
                 indication = null, // Custom animation replaces ripple
                 enabled = enabled,
-                onClick = onClick
+                onClick = {
+                    haptic.click()
+                    onClick()
+                }
             )
             .semantics {
                 role = Role.Button
@@ -303,6 +307,7 @@ fun ProdyPremiumCard(
     content: @Composable ColumnScope.() -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
+    val haptic = rememberProdyHaptic()
     val isPressed by interactionSource.collectIsPressedAsState()
 
     val scale by animateFloatAsState(
@@ -322,7 +327,10 @@ fun ProdyPremiumCard(
                     Modifier.clickable(
                         interactionSource = interactionSource,
                         indication = null,
-                        onClick = onClick
+                        onClick = {
+                            haptic.click()
+                            onClick()
+                        }
                     )
                 } else Modifier
             )
@@ -375,6 +383,7 @@ fun ProdyPremiumGradientCard(
     content: @Composable ColumnScope.() -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
+    val haptic = rememberProdyHaptic()
     val isPressed by interactionSource.collectIsPressedAsState()
 
     val scale by animateFloatAsState(
@@ -396,7 +405,10 @@ fun ProdyPremiumGradientCard(
                     Modifier.clickable(
                         interactionSource = interactionSource,
                         indication = null,
-                        onClick = onClick
+                        onClick = {
+                            haptic.click()
+                            onClick()
+                        }
                     )
                 } else Modifier
             )
@@ -443,6 +455,7 @@ fun ProdyNotificationCard(
     content: @Composable BoxScope.() -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
+    val haptic = rememberProdyHaptic()
     val isPressed by interactionSource.collectIsPressedAsState()
 
     val scale by animateFloatAsState(
@@ -464,7 +477,10 @@ fun ProdyNotificationCard(
                     Modifier.clickable(
                         interactionSource = interactionSource,
                         indication = null,
-                        onClick = onClick
+                        onClick = {
+                            haptic.click()
+                            onClick()
+                        }
                     )
                 } else Modifier
             )
