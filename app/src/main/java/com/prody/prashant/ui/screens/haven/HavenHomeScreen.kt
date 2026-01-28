@@ -90,6 +90,7 @@ fun HavenHomeScreen(
             }
         } else if (!uiState.isConfigured) {
             HavenNotConfiguredState(
+                error = uiState.configStatus,
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding)
@@ -611,6 +612,7 @@ private fun CrisisResourceItem(
 
 @Composable
 private fun HavenNotConfiguredState(
+    error: String? = null,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -640,6 +642,23 @@ private fun HavenNotConfiguredState(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
             )
+            
+            if (error != null) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = error,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .background(
+                            color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f),
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                        .padding(12.dp)
+                )
+            }
         }
     }
 }

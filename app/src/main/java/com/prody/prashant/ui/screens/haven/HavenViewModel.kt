@@ -18,6 +18,7 @@ data class HavenHomeUiState(
     val sessions: List<HavenSessionEntity> = emptyList(),
     val stats: HavenStats? = null,
     val isConfigured: Boolean = true,
+    val configStatus: String? = null,
     val error: String? = null
 )
 
@@ -85,7 +86,14 @@ class HavenViewModel @Inject constructor(
 
             // Check if Haven is configured
             val isConfigured = havenRepository.isConfigured()
-            _homeState.update { it.copy(isConfigured = isConfigured) }
+            val configStatus = if (!isConfigured) havenRepository.getConfigurationStatus() else null
+            
+            _homeState.update { 
+                it.copy(
+                    isConfigured = isConfigured,
+                    configStatus = configStatus
+                ) 
+            }
 
             // Load sessions
             havenRepository.getSessions().collect { sessions ->

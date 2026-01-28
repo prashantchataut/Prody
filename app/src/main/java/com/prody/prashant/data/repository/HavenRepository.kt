@@ -366,4 +366,9 @@ class HavenRepository @Inject constructor(
      * Check if Haven is configured
      */
     fun isConfigured(): Boolean = havenAiService.isConfigured()
+
+    /**
+     * Get details about configuration status for debugging
+     */
+    fun getConfigurationStatus(): String = havenAiService.getConfigurationStatus()
 }
