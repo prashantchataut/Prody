@@ -10,8 +10,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -24,12 +26,15 @@ class MainViewModel @Inject constructor(
     val uiState: StateFlow<MainActivityUiState> = _uiState.asStateFlow()
 
     init {
-        // Performance Optimization: Use a two-phase loading strategy.
+        // --- CRITICAL PATH ---
+        // Immediately determine the start destination to unblock the UI.
         viewModelScope.launch {
-            // Phase 1: Load only the critical data needed for navigation.
             val onboardingCompleted = preferencesManager.onboardingCompleted
-                .catch { emit(false) }
-                .first() // We only need the initial value to decide the route.
+                .catch {
+                    // In case of error, default to showing onboarding
+                    emit(false)
+                }
+                .first() // We only need the initial value
 
             val startDestination = if (onboardingCompleted) {
                 Screen.Home.route
@@ -37,14 +42,18 @@ class MainViewModel @Inject constructor(
                 Screen.Onboarding.route
             }
 
-            // Dismiss the splash screen as soon as we have the correct start destination.
-            // The theme and other settings will load shortly after.
-            _uiState.value = MainActivityUiState(
-                isLoading = false,
-                startDestination = startDestination
-            )
+            // Use atomic update to set initial state and dismiss splash screen
+            _uiState.update {
+                it.copy(
+                    isLoading = false,
+                    startDestination = startDestination
+                )
+            }
+        }
 
-            // Phase 2: Asynchronously load the remaining non-critical user preferences.
+        // --- NON-CRITICAL PATH ---
+        // Asynchronously load user preferences and apply them.
+        viewModelScope.launch {
             combine(
                 preferencesManager.themeMode.catch { emit("system") },
                 preferencesManager.hapticFeedbackEnabled.catch { emit(true) }
@@ -54,14 +63,16 @@ class MainViewModel @Inject constructor(
                     "dark" -> ThemeMode.DARK
                     else -> ThemeMode.SYSTEM
                 }
-                // Update the state with the loaded non-critical preferences.
-                _uiState.value.copy(
-                    themeMode = themeMode,
-                    hapticFeedbackEnabled = hapticEnabled
-                )
-            }.collect { newState ->
-                // Apply the final state with all preferences loaded.
-                _uiState.value = newState
+                // Return a pair of the loaded preferences
+                themeMode to hapticEnabled
+            }.collectLatest { (themeMode, hapticEnabled) ->
+                // Use atomic update to apply non-critical preferences
+                _uiState.update {
+                    it.copy(
+                        themeMode = themeMode,
+                        hapticFeedbackEnabled = hapticEnabled
+                    )
+                }
             }
         }
     }
