@@ -1,6 +1,8 @@
 package com.prody.prashant.ui.screens.journal
 import com.prody.prashant.ui.icons.ProdyIcons
 
+import android.app.Activity
+import android.view.WindowManager
 import android.media.MediaPlayer
 import android.net.Uri
 import androidx.compose.animation.animateColorAsState
@@ -56,6 +58,16 @@ fun JournalDetailScreen(
     viewModel: JournalDetailViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+
+    // Security: Prevent screenshots and screen recordings of private journal content
+    DisposableEffect(Unit) {
+        val window = (context as? Activity)?.window
+        window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        onDispose {
+            window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        }
+    }
 
     LaunchedEffect(entryId) {
         viewModel.loadEntry(entryId)
@@ -103,8 +115,6 @@ fun JournalDetailScreen(
             )
         }
     ) { padding ->
-        val context = LocalContext.current
-
         // Loading state
         if (uiState.isLoading) {
             Box(

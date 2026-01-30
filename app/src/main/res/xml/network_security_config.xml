@@ -16,9 +16,12 @@
         </trust-anchors>
         <!-- Pin the certificate to prevent MITM attacks -->
         <pin-set>
-            <pin digest="SHA-256">GThRnpaJ1x8I2c4e8p5h6k7l8m9n0o1p2q3r4s5t6u8=</pin>
-            <!-- Backup pin for certificate rotation -->
-            <pin digest="SHA-256">Y1a2b3c4d5e6f7g8h9i0j1k2l3m4n5o6p7q8r9s0t1u=</pin>
+            <!-- Leaf Certificate -->
+            <pin digest="SHA-256">ePd8DjIPDZVBxKmWbWHXy+wZjO75a6PEiRzXE7mbzZ0=</pin>
+            <!-- Intermediate CA (Google Trust Services) -->
+            <pin digest="SHA-256">YPtHaftLw6/0vnc2BnNKGF54xiCA28WFcccjkA4ypCM=</pin>
+            <!-- Backup Intermediate/Root CA -->
+            <pin digest="SHA-256">hxqRlPTu1bMS/0DITB1SSu0vd4u/8l8TjPgfaAp63Gc=</pin>
         </pin-set>
     </domain-config>
     
@@ -27,13 +30,15 @@
         <domain includeSubdomains="true">openrouter.ai</domain>
         <trust-anchors>
             <certificates src="system" />
-            <!-- Certificate pinning for OpenRouter API -->
         </trust-anchors>
         <!-- Pin the certificate to prevent MITM attacks -->
         <pin-set>
-            <pin digest="SHA-256">H2i3j4k5l6m7n8o9p0q1r2s3t4u5v6w7x8y9z0a1b2c=</pin>
-            <!-- Backup pin for certificate rotation -->
-            <pin digest="SHA-256">Z2b3c4d5e6f7g8h9i0j1k2l3m4n5o6p7q8r9s0t1u2v=</pin>
+            <!-- Leaf Certificate (Cloudflare) -->
+            <pin digest="SHA-256">2ETytvFJ0SYiiaUyT3xMrJ3Yuen/K58SNiB87YChuRg=</pin>
+            <!-- Intermediate CA (Cloudflare Inc) -->
+            <pin digest="SHA-256">kIdp6NNEd8wsugYyyIYFsi1ylMCED3hZbSR8ZFsa/A4=</pin>
+            <!-- Backup Intermediate/Root CA -->
+            <pin digest="SHA-256">mEflZT5enoR1FuXLgYYGqnVEoZvmf9c2bVBpiOjYQ0c=</pin>
         </pin-set>
     </domain-config>
     
