@@ -206,3 +206,31 @@ val FutureCategoryMotivation = ProdyWarmAmber
 
 // Journal
 val JournalAccent = ProdyForestGreen
+
+// Missing symbols needed for build
+val ProdySurfaceContainerDark = ProdySurfaceVariantDark
+val ProdySurfaceContainerLight = ProdySurfaceVariantLight
+val ProdyPremiumViolet = Color(0xFF673AB7)
+val ProdyPremiumVioletContainer = Color(0xFFD1C4E9)
+
+val RarityCommon = Color(0xFF9E9E9E)
+val RarityUncommon = Color(0xFF4CAF50)
+val RarityRare = Color(0xFF2196F3)
+val RarityEpic = Color(0xFF9C27B0)
+val RarityLegendary = Color(0xFFFF9800)
+val RarityMythic = Color(0xFFFF5722)
+
+val LeaderboardGoldLight = Color(0xFFFFD700)
+val LeaderboardGoldDark = Color(0xFFCFB53B)
+val LeaderboardSilverLight = Color(0xFFC0C0C0)
+val LeaderboardSilverDark = Color(0xFFA9A9A9)
+val LeaderboardBronzeLight = Color(0xFFCD7F32)
+val LeaderboardBronzeDark = Color(0xFF8B4513)
+
+val ActivityPulseBackground = ProdyPrimary.copy(alpha = 0.1f)
+val ActivityPulseBackgroundLight = ProdyPrimary.copy(alpha = 0.05f)
+
+val ProdyTextOnAccentLight = Color(0xFFFFFFFF)
+val AchievementUnlocked = ProdySuccess
+val GoldTier = LeaderboardGold
+val StreakColor = ProdyWarmAmber
