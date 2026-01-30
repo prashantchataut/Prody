@@ -44,6 +44,7 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.prody.prashant.util.rememberProdyHaptic
 import com.prody.prashant.ui.theme.ProdyTokens
 
 /**
@@ -105,6 +106,7 @@ fun ProdyFilterChip(
     contentDescription: String? = null
 ) {
     val interactionSource = remember { MutableInteractionSource() }
+    val haptic = rememberProdyHaptic()
     val isPressed by interactionSource.collectIsPressedAsState()
 
     val scale by animateFloatAsState(
@@ -156,7 +158,10 @@ fun ProdyFilterChip(
                     this.contentDescription = contentDescription
                 }
             },
-        onClick = onClick,
+        onClick = {
+            haptic.selection()
+            onClick()
+        },
         enabled = enabled,
         shape = RoundedCornerShape(ChipDefaults.CornerRadius),
         color = backgroundColor,
@@ -217,6 +222,7 @@ fun ProdySelectionChip(
     selectedContentColor: Color = MaterialTheme.colorScheme.onPrimary
 ) {
     val interactionSource = remember { MutableInteractionSource() }
+    val haptic = rememberProdyHaptic()
     val isPressed by interactionSource.collectIsPressedAsState()
 
     val scale by animateFloatAsState(
@@ -258,7 +264,10 @@ fun ProdySelectionChip(
                     this.contentDescription = contentDescription
                 }
             },
-        onClick = onClick,
+        onClick = {
+            haptic.selection()
+            onClick()
+        },
         enabled = enabled,
         shape = RoundedCornerShape(ChipDefaults.CornerRadius),
         color = backgroundColor,
@@ -307,6 +316,7 @@ fun ProdyInputChip(
     contentDescription: String? = null
 ) {
     val interactionSource = remember { MutableInteractionSource() }
+    val haptic = rememberProdyHaptic()
     val contentColor = if (enabled)
         MaterialTheme.colorScheme.onSurfaceVariant
     else
@@ -354,7 +364,10 @@ fun ProdyInputChip(
 
             Surface(
                 modifier = Modifier.size(24.dp),
-                onClick = onRemove,
+                onClick = {
+                    haptic.click()
+                    onRemove()
+                },
                 enabled = enabled,
                 shape = RoundedCornerShape(50),
                 color = Color.Transparent,
@@ -391,6 +404,7 @@ fun ProdyAssistChip(
     contentDescription: String? = null
 ) {
     val interactionSource = remember { MutableInteractionSource() }
+    val haptic = rememberProdyHaptic()
     val isPressed by interactionSource.collectIsPressedAsState()
 
     val scale by animateFloatAsState(
@@ -417,7 +431,10 @@ fun ProdyAssistChip(
                     this.contentDescription = contentDescription
                 }
             },
-        onClick = onClick,
+        onClick = {
+            haptic.click()
+            onClick()
+        },
         enabled = enabled,
         shape = RoundedCornerShape(ChipDefaults.CornerRadius),
         color = MaterialTheme.colorScheme.surface,
@@ -479,6 +496,7 @@ fun ProdySuggestionChip(
     contentColor: Color = MaterialTheme.colorScheme.onTertiaryContainer
 ) {
     val interactionSource = remember { MutableInteractionSource() }
+    val haptic = rememberProdyHaptic()
     val isPressed by interactionSource.collectIsPressedAsState()
 
     val scale by animateFloatAsState(
@@ -500,7 +518,10 @@ fun ProdySuggestionChip(
                     this.contentDescription = contentDescription
                 }
             },
-        onClick = onClick,
+        onClick = {
+            haptic.click()
+            onClick()
+        },
         enabled = enabled,
         shape = RoundedCornerShape(ChipDefaults.CornerRadius),
         color = if (enabled) backgroundColor
