@@ -672,7 +672,13 @@ private fun MessageBubble(
                         ),
                         border = androidx.compose.foundation.BorderStroke(1.dp, textColor.copy(alpha = 0.3f))
                     ) {
-                        Text("${exercise.icon} Try ${exercise.displayName}", fontFamily = PoppinsFamily)
+                        Icon(
+                            imageVector = exercise.icon,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Try ${exercise.displayName}", fontFamily = PoppinsFamily)
                     }
                 }
             }
@@ -822,7 +828,12 @@ private fun SuggestedExerciseCard(
                     .background(ProdyAccentGreen.copy(alpha = 0.2f)),
                 contentAlignment = Alignment.Center
             ) {
-                Text(text = exerciseType.icon, fontSize = 24.sp)
+                Icon(
+                    imageVector = exerciseType.icon,
+                    contentDescription = null,
+                    tint = ProdyAccentGreen,
+                    modifier = Modifier.size(24.dp)
+                )
             }
             Spacer(modifier = Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
@@ -1010,13 +1021,21 @@ private fun MoodSelectionDialog(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     listOf(1, 3, 5, 7, 10).forEach { mood ->
-                        val emoji = when (mood) {
-                            1 -> "😔"
-                            3 -> "😕"
-                            5 -> "😐"
-                            7 -> "🙂"
-                            10 -> "😊"
-                            else -> "😐"
+                        val icon = when (mood) {
+                            1 -> ProdyIcons.SentimentVeryDissatisfied
+                            3 -> ProdyIcons.SentimentDissatisfied
+                            5 -> ProdyIcons.SentimentNeutral
+                            7 -> ProdyIcons.SentimentSatisfied
+                            10 -> ProdyIcons.SentimentVerySatisfied
+                            else -> ProdyIcons.SentimentNeutral
+                        }
+                        val iconColor = when (mood) {
+                            1 -> Color(0xFF5E7CE2) // Blue/sad
+                            3 -> Color(0xFF9B7BF7) // Purple/concerned
+                            5 -> Color(0xFFE2A14A) // Amber/neutral
+                            7 -> Color(0xFF7B61FF) // Violet/content
+                            10 -> ProdyAccentGreen // Green/happy
+                            else -> Color.Gray
                         }
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
@@ -1025,7 +1044,12 @@ private fun MoodSelectionDialog(
                                 .clickable(onClick = { onMoodSelected(mood) })
                                 .padding(8.dp)
                         ) {
-                            Text(text = emoji, fontSize = 28.sp)
+                            Icon(
+                                imageVector = icon,
+                                contentDescription = "Mood $mood",
+                                tint = iconColor,
+                                modifier = Modifier.size(32.dp)
+                            )
                             Text(
                                 text = mood.toString(),
                                 style = MaterialTheme.typography.labelSmall

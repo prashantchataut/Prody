@@ -1,5 +1,9 @@
 package com.prody.prashant.domain.haven
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.*
+import androidx.compose.ui.graphics.vector.ImageVector
 import java.util.UUID
 
 /**
@@ -8,52 +12,59 @@ import java.util.UUID
  */
 enum class SessionType(
     val displayName: String,
-    val icon: String,
     val description: String,
     val color: Long // ARGB color for UI theming
 ) {
     CHECK_IN(
         "Daily Check-in",
-        "👋",
         "How are you feeling today?",
         0xFF7B61FF
     ),
     ANXIETY(
         "Feeling Anxious",
-        "🌊",
         "Let's work through anxious feelings together",
         0xFF4A90E2
     ),
     STRESS(
         "Feeling Overwhelmed",
-        "⛰️",
         "Take a breath. We'll tackle this step by step",
         0xFFE2A14A
     ),
     SADNESS(
         "Feeling Down",
-        "💙",
         "It's okay to not be okay. I'm here",
         0xFF5E7CE2
     ),
     ANGER(
         "Processing Anger",
-        "🔥",
         "Let's understand and channel this energy",
         0xFFE24A4A
     ),
     GENERAL(
         "Just Want to Talk",
-        "💭",
         "Sometimes we just need to talk. I'm listening",
         0xFF9B7BF7
     ),
     CRISIS_SUPPORT(
         "Need Support Now",
-        "🤝",
         "You're not alone. Let's get you help",
         0xFFE24A8D
     );
+
+    /**
+     * Get the Material Icon for this session type.
+     * Use this instead of the old emoji icon property.
+     */
+    val icon: ImageVector
+        get() = when (this) {
+            CHECK_IN -> Icons.Outlined.WavingHand
+            ANXIETY -> Icons.Outlined.Waves
+            STRESS -> Icons.Outlined.Terrain
+            SADNESS -> Icons.Outlined.Favorite
+            ANGER -> Icons.Outlined.LocalFireDepartment
+            GENERAL -> Icons.Outlined.Chat
+            CRISIS_SUPPORT -> Icons.Outlined.Handshake
+        }
 
     companion object {
         fun fromString(value: String): SessionType {
@@ -144,64 +155,71 @@ enum class TherapeuticTechnique(
  */
 enum class ExerciseType(
     val displayName: String,
-    val icon: String,
     val estimatedDuration: Int, // seconds
     val description: String
 ) {
     BOX_BREATHING(
         "Box Breathing",
-        "⬜",
         240, // 4 minutes
         "4-4-4-4 breathing pattern to calm your nervous system"
     ),
     FOUR_SEVEN_EIGHT_BREATHING(
         "4-7-8 Breathing",
-        "💨",
         300, // 5 minutes
         "Dr. Weil's relaxation breathing technique"
     ),
     GROUNDING_54321(
         "5-4-3-2-1 Grounding",
-        "🌍",
         300, // 5 minutes
         "Engage your senses to anchor in the present moment"
     ),
     BODY_SCAN(
         "Body Scan Meditation",
-        "🧘",
         600, // 10 minutes
         "Progressive awareness of physical sensations"
     ),
     THOUGHT_RECORD(
         "Thought Record",
-        "📝",
         600, // 10 minutes
         "CBT worksheet to examine and reframe thoughts"
     ),
     EMOTION_WHEEL(
         "Emotion Wheel",
-        "🎡",
         300, // 5 minutes
         "Identify and name your emotions with precision"
     ),
     GRATITUDE_MOMENT(
         "Gratitude Moment",
-        "🙏",
         180, // 3 minutes
         "Shift focus to what you're thankful for"
     ),
     PROGRESSIVE_RELAXATION(
         "Progressive Muscle Relaxation",
-        "💪",
         900, // 15 minutes
         "Tense and release muscle groups to reduce tension"
     ),
     LOVING_KINDNESS(
         "Loving-Kindness Meditation",
-        "❤️",
         600, // 10 minutes
         "Cultivate compassion for yourself and others"
     );
+
+    /**
+     * Get the Material Icon for this exercise type.
+     * Use this instead of the old emoji icon property.
+     */
+    val icon: ImageVector
+        get() = when (this) {
+            BOX_BREATHING -> Icons.Outlined.Square
+            FOUR_SEVEN_EIGHT_BREATHING -> Icons.Outlined.Air
+            GROUNDING_54321 -> Icons.Outlined.Public
+            BODY_SCAN -> Icons.Outlined.SelfImprovement
+            THOUGHT_RECORD -> Icons.Outlined.EditNote
+            EMOTION_WHEEL -> Icons.Outlined.EmojiEmotions
+            GRATITUDE_MOMENT -> Icons.Outlined.VolunteerActivism
+            PROGRESSIVE_RELAXATION -> Icons.Outlined.FitnessCenter
+            LOVING_KINDNESS -> Icons.Outlined.Favorite
+        }
 
     companion object {
         fun fromString(value: String): ExerciseType? {

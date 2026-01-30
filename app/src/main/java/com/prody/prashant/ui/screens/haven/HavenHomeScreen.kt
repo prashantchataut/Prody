@@ -501,9 +501,11 @@ private fun SessionHistoryCard(
                     .background(Color(sessionType.color).copy(alpha = 0.15f)),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = sessionType.icon,
-                    fontSize = 18.sp
+                Icon(
+                    imageVector = sessionType.icon,
+                    contentDescription = null,
+                    tint = Color(sessionType.color),
+                    modifier = Modifier.size(20.dp)
                 )
             }
 

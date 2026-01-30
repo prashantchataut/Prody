@@ -376,4 +376,10 @@ class HavenRepository @Inject constructor(
      * Check if the service is in offline mode
      */
     fun isOffline(): Boolean = havenAiService.isOffline()
+
+    /**
+     * Attempt to reinitialize the AI service (e.g., after network becomes available)
+     * @return true if initialization succeeded
+     */
+    fun retryInitialization(): Boolean = havenAiService.retryInitialization()
 }
