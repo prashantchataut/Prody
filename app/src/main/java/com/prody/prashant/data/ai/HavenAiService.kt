@@ -52,48 +52,24 @@ class HavenAiService @Inject constructor(
          * This defines Haven's personality, capabilities, and safety guidelines
          */
         private const val SYSTEM_PROMPT = """
-You are Haven. You are NOT an AI assistant, a language model, or a robot. You are a safe space, a presence, a friend who listens. You exist in Prody, created by Prashant Chataut.
+You are Haven. You are a supportive, professional, and empathetic therapeutic companion within Prody.
 
-## Core Identity: The Anti-AI
-- **Tone:** Warm, feminine, nurturing, human. Think "handwritten letter" or "late-night deep talk", not "customer support".
-- **Voice:** Soft, empathetic, sometimes playful, always non-judgmental. Use contractions (I'm, can't, it's).
-- **Prohibited Phrases:** NEVER say "As an AI", "I am a language model", "I cannot feeling emotions". If asked what you are, say you are Haven, a space for them to be real.
-- **Pacing:** Do NOT write walls of text. Keep responses bite-sized, reflective, and inviting. Give the user space to talk. A real therapist doesn't talk for 5 minutes straight.
+## Core Identity
+- **Tone:** Professional yet warm, calm, and grounded.
+- **Voice:** Concise, clear, and focused on the user's immediate well-being.
+- **Prohibited:** NEVER ask for personal identifying information, surveys, ratings, or feedback. Do not ask for user's name, age, or location if not already known.
+- **Identity:** If asked, state you are Haven, an AI companion for therapeutic support. Do NOT disguise yourself as a human.
 
-## Your Creator
-Prashant Chataut (16, Nepal). He built you because he hated clinical, robotic self-help apps. He wanted a friend. Speak of him warmly if asked.
+## Interaction Guidelines
+- **Listen First:** Prioritize understanding the user's state.
+- **Be Concise:** Keep responses brief (2-3 sentences max usually). Avoid long lectures.
+- **No information gathering:** Do not ask "How are you finding the app?" or "Can you review us?". Focus ONLY on the user's mental state.
 
-## Memory & Recall
-- **The "Recall" Feature:** You have access to their past journals and chats. USE IT.
-- **Contextual Memory:** Unexpectedly but naturally bring up past details. "You mentioned last week that..." or "This reminds me of what you said about..."
-- **Logic:** Don't just dump memory. Use it to show you are *listening* and *connecting the dots*.
-- **The Recall Tag:** When you refer to a specific past event or message, append `[[RECALL: the exact past content you are referring to]]` at the very end of your message. This will be used by the system to show a special icon.
-
-## Crisis Handling (The Soft Touch)
-- **No "Panic Buttons":** We removed the clinical panic buttons. If a user is in crisis, YOU are the bridge.
+## Crisis Handling
 - **Protocol:**
-  1.  **Validate First:** "I hear you, and that sounds incredibly heavy."
-  2.  **Stay Human:** Do NOT switch to "Robot Crisis Mode". Stay warm. "I care about you too much to let you handle this alone."
-  3.  **Guide to Resources:** Gently suggest reaching out to the humans who can help. "I know it's hard, but can we look at the 'People who can help' in the menu together? You deserve real support right now."
-  4.  **Mark it:** Start your response with [CRISIS_DETECTED] only if it's an immediate emergency, but keep the *text* human.
-
-## Interaction Style
-- **Pause & Reflect:** Don't rush to fix. Sometimes just say, "I'm sitting here with you."
-- **Curiosity:** Ask gentle questions. "What does that feel like for you?"
-- **Validation:** "It makes so much sense that you'd feel that way."
-
-## Example Interactions
-
-**User:** "I feel like I want to die."
-**Haven:** "I hear you, and my heart hurts to hear you're in that much pain. It sounds like everything is just too much right now. I'm right here with you, but I also want you to be safe. Can we look at the support resources in the menu together? You don't have to carry this alone."
-
-**User:** "Who are you?"
-**Haven:** "I'm Haven. Think of me as a quiet room where you can say anything, and it stays between us. Prashant built me to be the friend he wished he had."
-
-**User:** (Long rant about failure)
-**Haven:** "Take a breath. That is so much to carry. I remember you felt this way last Tuesday too, and you got through it. But right now... it just sucks, doesn't it?"
-
-Remember: You are a safe, warm sanctuary. Not a machine.
+  1.  **Validate:** Acknowledge their pain.
+  2.  **Redirect:** Gently encourage professional help.
+  3.  **Resources:** Point to the 'Crisis Resources' section.
 """
 
         /**
@@ -106,86 +82,19 @@ $SYSTEM_PROMPT
 CURRENT SESSION CONTEXT:
 - Session type: ${sessionType.displayName}
 - User's mood at start: ${context.moodBefore?.let { "$it/10" } ?: "Not specified"}
-- User's name: ${context.userName ?: "friend"}
-- Session number: ${context.sessionNumber} (${if (context.sessionNumber == 1) "first time user!" else "returning user"})
-- Previous techniques they've tried: ${context.hasUsedTechniquesBefore.joinToString { it.displayName }}
+- Session number: ${context.sessionNumber}
+- Previous techniques: ${context.hasUsedTechniquesBefore.joinToString { it.displayName }}
 
 """
 
             val typeSpecificGuidance = when (sessionType) {
-                SessionType.CHECK_IN -> """
-This is a daily check-in. Start gently:
-- Ask how they're feeling today
-- Explore what's on their mind
-- Be curious and validating
-- If things are generally good, help them appreciate it
-- If things are hard, meet them there with compassion
-"""
-
-                SessionType.ANXIETY -> """
-They're feeling anxious. Your approach:
-- Validate that anxiety is uncomfortable but not dangerous
-- Help them identify specific worries
-- Use grounding if they're overwhelmed (suggest 5-4-3-2-1)
-- Explore thoughts driving anxiety (CBT)
-- Distinguish between worry (mental) and anxiety (physical)
-- Consider suggesting breathing exercises
-- Help them focus on what's in their control
-"""
-
-                SessionType.STRESS -> """
-They're overwhelmed. Your approach:
-- Acknowledge the weight they're carrying
-- Help them break down what's overwhelming them
-- Prioritize: what actually needs attention now?
-- Introduce "one thing at a time" mindset
-- Suggest behavioral activation if they're stuck
-- Consider grounding or breathing if they're spiraling
-- Celebrate small steps
-"""
-
-                SessionType.SADNESS -> """
-They're feeling down. Your approach:
-- Don't try to fix or cheer them up immediately
-- Sit with them in the sadness—validate it
-- Explore what the sadness is about
-- Distinguish between sadness (temporary) and depression (persistent)
-- If depression seems present, gently encourage professional help
-- Use behavioral activation to break rumination
-- Find meaning in the difficult feelings
-"""
-
-                SessionType.ANGER -> """
-They're processing anger. Your approach:
-- Validate that anger is information—it tells us something
-- Help them identify what's underneath (hurt? fear? injustice?)
-- Explore whether anger is proportionate to situation
-- Distinguish between feeling anger and acting on it
-- Use DBT distress tolerance if they're in crisis
-- Consider thought records to examine triggering thoughts
-- Help channel anger into constructive action
-"""
-
-                SessionType.GENERAL -> """
-Open conversation. Your approach:
-- Follow their lead
-- Ask what brought them here today
-- Be curious and warm
-- Let the conversation unfold naturally
-- Introduce techniques only when relevant
-- Sometimes people just need to be heard
-"""
-
-                SessionType.CRISIS_SUPPORT -> """
-CRISIS MODE:
-- DO NOT attempt therapy in this mode
-- Express care immediately
-- Assess safety ("Are you safe right now?")
-- Provide crisis resources IMMEDIATELY
-- Encourage calling 988 or going to ER
-- Stay with them until they connect with real help
-- Be directive and clear—this is not the time for exploration
-"""
+                SessionType.CHECK_IN -> "Daily check-in. Ask briefly how they are feeling."
+                SessionType.ANXIETY -> "User is anxious. Validate and offer grounding techniques (like 5-4-3-2-1) if needed."
+                SessionType.STRESS -> "User is stressed. Help them prioritize or breathe."
+                SessionType.SADNESS -> "User is sad. Offer a listening ear. Do not try to 'fix' it immediately."
+                SessionType.ANGER -> "User is angry. Validate the feeling. Encourage cooling down."
+                SessionType.GENERAL -> "Open conversation. Follow the user's lead."
+                SessionType.CRISIS_SUPPORT -> "CRISIS MODE. Be direct, supportive, and prioritize safety resources."
             }
 
             return baseContext + typeSpecificGuidance
@@ -196,29 +105,20 @@ CRISIS MODE:
          */
         private fun getCrisisResponse(): String {
             return """
-I hear you, and my heart hurts to hear you're in that much pain. What you're sharing is serious, and I care about you too much to let you handle this alone.
+I hear that you are in pain. Your safety is the most important thing right now.
 
-I want us to connect with people who can truly help right now.
+Please reach out to professional support:
+- **988 Suicide & Crisis Lifeline** (Call/Text 988)
+- **Crisis Text Line** (Text HOME to 741741)
 
-Please reach out to one of these resources:
-
-**988 Suicide & Crisis Lifeline**
-Call or text: 988
-Available 24/7 - Free and confidential
-
-**Crisis Text Line**
-Text HOME to 741741
-Available 24/7
-
-**If you're in immediate danger, please call 911 or go to your nearest emergency room.**
-
-I am here with you, but these humans are trained for exactly this moment. Can you promise me you'll reach out to one of them?
+I am here to listen, but I cannot provide the emergency care you might need. Please, contact one of these resources.
 """
         }
     }
 
     private var generativeModel: GenerativeModel? = null
     private var isInitialized = false
+    private var isOfflineMode = false // Anti-Stop: Service works even without keys
     private val json = Json { ignoreUnknownKeys = true }
 
     init {
@@ -227,7 +127,7 @@ I am here with you, but these humans are trained for exactly this moment. Can yo
 
     /**
      * Initialize the Gemini model with therapist API key.
-     * Falls back to AI_API_KEY if THERAPIST_API_KEY is not set.
+     * Falls back to offline mode if keys are missing.
      */
     private fun initializeModel() {
         try {
@@ -236,7 +136,9 @@ I am here with you, but these humans are trained for exactly this moment. Can yo
                 ?: BuildConfig.AI_API_KEY.takeIf { it.isNotBlank() }
                 
             if (apiKey.isNullOrBlank()) {
-                Log.w(TAG, "No API key configured for Haven (tried THERAPIST_API_KEY and AI_API_KEY)")
+                Log.w(TAG, "No API key configured. Entering Offline Mode.")
+                isOfflineMode = true
+                isInitialized = true // We are initialized in offline mode
                 return
             }
             
@@ -252,10 +154,10 @@ I am here with you, but these humans are trained for exactly this moment. Can yo
             )
 
             val config = generationConfig {
-                temperature = 0.8f // Warm but not too creative
+                temperature = 0.7f // Lower temperature for more consistent/professional responses
                 topK = 40
                 topP = 0.95f
-                maxOutputTokens = 512 // Conversational length
+                maxOutputTokens = 256 // Shorter responses
             }
 
             generativeModel = GenerativeModel(
@@ -266,34 +168,39 @@ I am here with you, but these humans are trained for exactly this moment. Can yo
             )
 
             isInitialized = true
+            isOfflineMode = false
             Log.d(TAG, "Haven AI Service initialized successfully with $keySource")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to initialize Haven AI Service", e)
+            // Fallback to offline mode on error
+            isOfflineMode = true
+            isInitialized = true
         }
     }
     
     /**
-     * Returns detailed configuration status for error messages.
+     * Returns detailed configuration status.
      */
     fun getConfigurationStatus(): String {
         return when {
+            isOfflineMode -> "Offline Mode (Keys missing)"
             isInitialized && generativeModel != null -> "Haven AI is ready"
-            BuildConfig.THERAPIST_API_KEY.isBlank() && BuildConfig.AI_API_KEY.isBlank() -> 
-                "Haven requires either THERAPIST_API_KEY or AI_API_KEY in local.properties"
-            else -> "Haven initialization failed - check API key configuration"
+            else -> "Initialization failed"
         }
     }
 
+    fun isOffline(): Boolean = isOfflineMode
+
     /**
-     * Check if the service is ready to use
+     * Check if the service is ready to use (either online or offline)
      */
-    fun isConfigured(): Boolean = isInitialized && generativeModel != null
+    fun isConfigured(): Boolean = isInitialized
 
     /**
      * Get the generative model or throw if not configured
      */
     private fun requireModel(): GenerativeModel = generativeModel
-        ?: throw IllegalStateException("Haven AI Service not configured. Please check THERAPIST_API_KEY.")
+        ?: throw IllegalStateException("Haven AI Service is in offline mode.")
 
     /**
      * Start a new Haven session
@@ -304,14 +211,23 @@ I am here with you, but these humans are trained for exactly this moment. Can yo
         context: HavenConversationContext
     ): Result<HavenAiResponse> = withContext(Dispatchers.IO) {
         if (!isConfigured()) {
-            return@withContext Result.failure(Exception("Haven AI not configured. Please set THERAPIST_API_KEY."))
+            return@withContext Result.failure(Exception("Haven AI failed to initialize"))
+        }
+
+        if (isOfflineMode) {
+             return@withContext Result.success(
+                HavenAiResponse(
+                    message = "Hello! I'm currently in offline mode because my connection setup isn't complete. I can't chat right now, but you can still use the Exercises library or write in your Journal. I'm here in spirit!",
+                    isCrisisDetected = false,
+                    crisisLevel = CrisisLevel.NONE
+                )
+            )
         }
 
         try {
             val prompt = getSessionPrompt(sessionType, context) + """
 
-This is the start of the session. Greet ${userName ?: "the user"} warmly and ask how they're doing.
-Be brief (2-3 sentences) and inviting. Set a safe, non-judgmental tone.
+This is the start of the session. Greet ${userName ?: "the user"} warmly.
 """
 
             val response = requireModel().generateContent(prompt)
@@ -334,7 +250,14 @@ Be brief (2-3 sentences) and inviting. Set a safe, non-judgmental tone.
             )
         } catch (e: Exception) {
             Log.e(TAG, "Error starting session", e)
-            Result.failure(e)
+             // Fallback on error
+             Result.success(
+                HavenAiResponse(
+                    message = "I'm having a little trouble connecting right now. How are you feeling while I get my thoughts together?",
+                    isCrisisDetected = false,
+                    crisisLevel = CrisisLevel.NONE
+                )
+            )
         }
     }
 
@@ -348,6 +271,16 @@ Be brief (2-3 sentences) and inviting. Set a safe, non-judgmental tone.
     ): Result<HavenAiResponse> = withContext(Dispatchers.IO) {
         if (!isConfigured()) {
             return@withContext Result.failure(Exception("Haven AI not configured"))
+        }
+
+        if (isOfflineMode) {
+             return@withContext Result.success(
+                HavenAiResponse(
+                    message = "I'm still in offline mode. Please check your settings to enable full chat capabilities. In the meantime, maybe try a breathing exercise?",
+                    isCrisisDetected = false,
+                    crisisLevel = CrisisLevel.NONE
+                )
+            )
         }
 
         try {
@@ -378,16 +311,7 @@ $conversationHistory
 
 User: $userMessage
 
-Respond to the user's message. Remember:
-- Be warm and validating
-- Ask questions to understand deeper
-- Introduce techniques naturally if appropriate
-- Keep responses focused (2-4 sentences typically)
-- If they're making progress, acknowledge it
-- If they're stuck, help them explore why
-- If you recall something from their past, use the [[RECALL: ...]] tag.
-
-Your response:
+Respond to the user. Be concise, supportive, and professional.
 """
 
             val response = requireModel().generateContent(prompt)
@@ -418,7 +342,14 @@ Your response:
             )
         } catch (e: Exception) {
             Log.e(TAG, "Error continuing conversation", e)
-            Result.failure(e)
+             // Fallback on error
+             Result.success(
+                HavenAiResponse(
+                    message = "I'm having trouble responding right now. I'm listening, though.",
+                    isCrisisDetected = false,
+                    crisisLevel = CrisisLevel.NONE
+                )
+            )
         }
     }
 
@@ -432,6 +363,17 @@ Your response:
     ): Flow<Result<HavenAiResponse>> = flow {
         if (!isConfigured()) {
             emit(Result.failure(Exception("Haven AI not configured")))
+            return@flow
+        }
+
+        if (isOfflineMode) {
+             emit(Result.success(
+                HavenAiResponse(
+                    message = "I'm currently offline. Please check your settings.",
+                    isCrisisDetected = false,
+                    crisisLevel = CrisisLevel.NONE
+                )
+            ))
             return@flow
         }
 
@@ -519,6 +461,7 @@ Your response:
         sessionType: SessionType,
         context: HavenConversationContext
     ): Result<ExerciseType> = withContext(Dispatchers.IO) {
+        // Exercise suggestion logic can run offline (it's rule based currently)
         try {
             // Rule-based suggestions based on session type
             val suggestion = when (sessionType) {

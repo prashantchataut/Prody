@@ -371,4 +371,9 @@ class HavenRepository @Inject constructor(
      * Get details about configuration status for debugging
      */
     fun getConfigurationStatus(): String = havenAiService.getConfigurationStatus()
+
+    /**
+     * Check if the service is in offline mode
+     */
+    fun isOffline(): Boolean = havenAiService.isOffline()
 }

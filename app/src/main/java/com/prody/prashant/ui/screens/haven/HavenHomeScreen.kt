@@ -88,7 +88,8 @@ fun HavenHomeScreen(
             ) {
                 CircularProgressIndicator(color = ProdyAccentGreen)
             }
-        } else if (!uiState.isConfigured) {
+        } else if (!uiState.isConfigured && !uiState.isOffline) {
+            // Only show blocking screen if initialization failed AND we are not in offline mode
             HavenNotConfiguredState(
                 error = uiState.configStatus,
                 modifier = Modifier
@@ -103,6 +104,15 @@ fun HavenHomeScreen(
                 contentPadding = PaddingValues(bottom = 24.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
+                // Offline Mode Banner
+                if (uiState.isOffline) {
+                    item(key = "offline_banner") {
+                        OfflineModeBanner(
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        )
+                    }
+                }
+
                 // Welcome header
                 item(key = "header") {
                     HavenWelcomeHeader(
@@ -166,6 +176,44 @@ fun HavenHomeScreen(
         LaunchedEffect(error) {
             // Show error then clear
             viewModel.clearHomeError()
+        }
+    }
+}
+
+@Composable
+private fun OfflineModeBanner(
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.tertiaryContainer
+        )
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = ProdyIcons.WifiOff,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onTertiaryContainer
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Column {
+                Text(
+                    text = "Offline Mode",
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onTertiaryContainer,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "AI chat is limited. Exercises & Journal are available.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onTertiaryContainer
+                )
+            }
         }
     }
 }

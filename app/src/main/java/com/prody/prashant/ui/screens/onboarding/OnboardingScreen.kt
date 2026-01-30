@@ -123,6 +123,7 @@ private val LoginLightLogoLeaf = ProdyTextPrimaryLight
 
 private enum class OnboardingPageType {
     WELCOME,
+    HAVEN,
     JOURNALING,
     GAMIFICATION_LEADERBOARD,
     GAMIFICATION_XP,
@@ -141,7 +142,7 @@ fun OnboardingScreen(
     onComplete: () -> Unit,
     viewModel: OnboardingViewModel = hiltViewModel()
 ) {
-    val pagerState = rememberPagerState(pageCount = { 7 })
+    val pagerState = rememberPagerState(pageCount = { 8 })
     val coroutineScope = rememberCoroutineScope()
     val isDarkTheme = isDarkTheme()
 
@@ -163,7 +164,7 @@ fun OnboardingScreen(
                 OnboardingPageType.WELCOME -> WelcomeScreen(
                     isDarkTheme = isDarkTheme,
                     currentPage = page,
-                    totalPages = 7,
+                    totalPages = 8,
                     onNext = {
                         coroutineScope.launch {
                             pagerState.animateScrollToPage(page + 1)
@@ -171,17 +172,24 @@ fun OnboardingScreen(
                     },
                     onLogin = {
                         coroutineScope.launch {
-                            pagerState.animateScrollToPage(6) // Navigate to login screen
+                            pagerState.animateScrollToPage(7) // Navigate to login screen
+                        }
+                    }
+                )
+                OnboardingPageType.HAVEN -> HavenOnboardingScreen(
+                    onNext = {
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(page + 1)
                         }
                     }
                 )
                 OnboardingPageType.JOURNALING -> JournalingScreen(
                     isDarkTheme = isDarkTheme,
                     currentPage = page,
-                    totalPages = 7,
+                    totalPages = 8,
                     onSkip = {
                         coroutineScope.launch {
-                            pagerState.animateScrollToPage(6) // Skip to login screen
+                            pagerState.animateScrollToPage(7) // Skip to login screen
                         }
                     },
                     onBack = {
@@ -196,17 +204,17 @@ fun OnboardingScreen(
                     },
                     onLogin = {
                         coroutineScope.launch {
-                            pagerState.animateScrollToPage(6) // Navigate to login screen
+                            pagerState.animateScrollToPage(7) // Navigate to login screen
                         }
                     }
                 )
                 OnboardingPageType.GAMIFICATION_LEADERBOARD -> GamificationLeaderboardScreen(
                     isDarkTheme = isDarkTheme,
                     currentPage = page,
-                    totalPages = 7,
+                    totalPages = 8,
                     onSkip = {
                         coroutineScope.launch {
-                            pagerState.animateScrollToPage(6) // Skip to login screen
+                            pagerState.animateScrollToPage(7) // Skip to login screen
                         }
                     },
                     onContinue = {
@@ -218,7 +226,7 @@ fun OnboardingScreen(
                 OnboardingPageType.GAMIFICATION_XP -> GamificationXpScreen(
                     isDarkTheme = isDarkTheme,
                     currentPage = page,
-                    totalPages = 7,
+                    totalPages = 8,
                     onStartQuest = {
                         coroutineScope.launch {
                             pagerState.animateScrollToPage(page + 1)
@@ -228,10 +236,10 @@ fun OnboardingScreen(
                 OnboardingPageType.DAILY_WISDOM -> DailyWisdomFeaturesScreen(
                     isDarkTheme = isDarkTheme,
                     currentPage = page,
-                    totalPages = 7,
+                    totalPages = 8,
                     onSkip = {
                         coroutineScope.launch {
-                            pagerState.animateScrollToPage(6) // Skip to login screen
+                            pagerState.animateScrollToPage(7) // Skip to login screen
                         }
                     },
                     onContinue = {
@@ -248,10 +256,10 @@ fun OnboardingScreen(
                 OnboardingPageType.PERSONALIZED_INSIGHTS -> PersonalizedInsightsScreen(
                     isDarkTheme = isDarkTheme,
                     currentPage = page,
-                    totalPages = 7,
+                    totalPages = 8,
                     onSkip = {
                         coroutineScope.launch {
-                            pagerState.animateScrollToPage(6) // Skip to login screen
+                            pagerState.animateScrollToPage(7) // Skip to login screen
                         }
                     },
                     onEnableNotifications = {
