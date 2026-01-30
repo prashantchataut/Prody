@@ -370,9 +370,11 @@ private fun SessionTypeCard(
                     .background(typeColor.copy(alpha = 0.15f)),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = sessionType.icon,
-                    fontSize = 24.sp
+                Icon(
+                    imageVector = sessionTypeIcon(sessionType),
+                    contentDescription = sessionType.displayName,
+                    tint = typeColor,
+                    modifier = Modifier.size(24.dp)
                 )
             }
             Spacer(modifier = Modifier.height(8.dp))
@@ -444,9 +446,11 @@ private fun ExerciseChip(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(
-                text = exerciseType.icon,
-                fontSize = 20.sp
+            Icon(
+                imageVector = exerciseTypeIcon(exerciseType),
+                contentDescription = exerciseType.displayName,
+                tint = ProdyAccentGreen,
+                modifier = Modifier.size(24.dp)
             )
             Column {
                 Text(
@@ -710,3 +714,36 @@ private fun HavenNotConfiguredState(
         }
     }
 }
+
+/**
+ * Maps SessionType to appropriate Material Icon
+ */
+private fun sessionTypeIcon(sessionType: SessionType): androidx.compose.ui.graphics.vector.ImageVector {
+    return when (sessionType) {
+        SessionType.CHECK_IN -> ProdyIcons.Favorite       // Heart for check-in
+        SessionType.ANXIETY -> ProdyIcons.Psychology      // Brain for anxiety
+        SessionType.STRESS -> ProdyIcons.Warning          // Warning for stress
+        SessionType.SADNESS -> ProdyIcons.Stars           // Stars for sadness (hope)
+        SessionType.ANGER -> ProdyIcons.LocalFireDepartment // Fire for anger
+        SessionType.GENERAL -> ProdyIcons.Chat            // Chat bubble for general
+        SessionType.CRISIS_SUPPORT -> ProdyIcons.HealthAndSafety // Safety for crisis
+    }
+}
+
+/**
+ * Maps ExerciseType to appropriate Material Icon
+ */
+private fun exerciseTypeIcon(exerciseType: ExerciseType): androidx.compose.ui.graphics.vector.ImageVector {
+    return when (exerciseType) {
+        ExerciseType.BOX_BREATHING -> ProdyIcons.Spa
+        ExerciseType.FOUR_SEVEN_EIGHT_BREATHING -> ProdyIcons.SelfImprovement
+        ExerciseType.GROUNDING_54321 -> ProdyIcons.Psychology
+        ExerciseType.BODY_SCAN -> ProdyIcons.Person
+        ExerciseType.THOUGHT_RECORD -> ProdyIcons.Edit
+        ExerciseType.EMOTION_WHEEL -> ProdyIcons.Stars
+        ExerciseType.GRATITUDE_MOMENT -> ProdyIcons.Favorite
+        ExerciseType.PROGRESSIVE_RELAXATION -> ProdyIcons.SelfImprovement
+        ExerciseType.LOVING_KINDNESS -> ProdyIcons.FavoriteBorder
+    }
+}
+

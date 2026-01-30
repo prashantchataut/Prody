@@ -119,6 +119,7 @@ I am here to listen, but I cannot provide the emergency care you might need. Ple
     private var generativeModel: GenerativeModel? = null
     private var isInitialized = false
     private var isOfflineMode = false // Anti-Stop: Service works even without keys
+    private var initializationError: String? = null // Track why initialization failed
     private val json = Json { ignoreUnknownKeys = true }
 
     init {
@@ -131,19 +132,33 @@ I am here to listen, but I cannot provide the emergency care you might need. Ple
      */
     private fun initializeModel() {
         try {
+            // Log key presence for debugging (never log actual keys!)
+            val therapistKeyPresent = BuildConfig.THERAPIST_API_KEY.isNotBlank()
+            val aiKeyPresent = BuildConfig.AI_API_KEY.isNotBlank()
+            
+            Log.d(TAG, "API Key Check - THERAPIST_API_KEY present: $therapistKeyPresent, AI_API_KEY present: $aiKeyPresent")
+            
+            if (therapistKeyPresent) {
+                Log.d(TAG, "THERAPIST_API_KEY length: ${BuildConfig.THERAPIST_API_KEY.length}, starts with: ${BuildConfig.THERAPIST_API_KEY.take(10)}...")
+            }
+            if (aiKeyPresent) {
+                Log.d(TAG, "AI_API_KEY length: ${BuildConfig.AI_API_KEY.length}, starts with: ${BuildConfig.AI_API_KEY.take(10)}...")
+            }
+            
             // Try THERAPIST_API_KEY first, then fall back to AI_API_KEY (Gemini)
             val apiKey = BuildConfig.THERAPIST_API_KEY.takeIf { it.isNotBlank() }
                 ?: BuildConfig.AI_API_KEY.takeIf { it.isNotBlank() }
                 
             if (apiKey.isNullOrBlank()) {
                 Log.w(TAG, "No API key configured. Entering Offline Mode.")
+                initializationError = "No API key found in BuildConfig. Check local.properties and rebuild."
                 isOfflineMode = true
                 isInitialized = true // We are initialized in offline mode
                 return
             }
             
             val keySource = if (BuildConfig.THERAPIST_API_KEY.isNotBlank()) "THERAPIST_API_KEY" else "AI_API_KEY"
-            Log.d(TAG, "Initializing Haven with $keySource")
+            Log.d(TAG, "Initializing Haven with $keySource (length: ${apiKey.length})")
 
             // Safety settings - less restrictive for mental health content
             val safetySettings = listOf(
@@ -169,9 +184,11 @@ I am here to listen, but I cannot provide the emergency care you might need. Ple
 
             isInitialized = true
             isOfflineMode = false
+            initializationError = null
             Log.d(TAG, "Haven AI Service initialized successfully with $keySource")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to initialize Haven AI Service", e)
+            initializationError = "Initialization error: ${e.message}"
             // Fallback to offline mode on error
             isOfflineMode = true
             isInitialized = true
@@ -179,13 +196,25 @@ I am here to listen, but I cannot provide the emergency care you might need. Ple
     }
     
     /**
-     * Returns detailed configuration status.
+     * Returns detailed configuration status for debugging.
      */
     fun getConfigurationStatus(): String {
+        val therapistKeyStatus = if (BuildConfig.THERAPIST_API_KEY.isNotBlank()) 
+            "present (${BuildConfig.THERAPIST_API_KEY.length} chars)" else "missing"
+        val aiKeyStatus = if (BuildConfig.AI_API_KEY.isNotBlank()) 
+            "present (${BuildConfig.AI_API_KEY.length} chars)" else "missing"
+            
         return when {
-            isOfflineMode -> "Offline Mode (Keys missing)"
+            isOfflineMode -> buildString {
+                append("Offline Mode")
+                if (initializationError != null) {
+                    append(": $initializationError")
+                }
+                append("\nTHERAPIST_API_KEY: $therapistKeyStatus")
+                append("\nAI_API_KEY: $aiKeyStatus")
+            }
             isInitialized && generativeModel != null -> "Haven AI is ready"
-            else -> "Initialization failed"
+            else -> "Initialization failed: ${initializationError ?: "Unknown error"}"
         }
     }
 

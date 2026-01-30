@@ -50,6 +50,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
+import com.google.accompanist.permissions.shouldShowRationale
 import com.prody.prashant.R
 import com.prody.prashant.domain.haven.*
 import com.prody.prashant.ui.theme.*
@@ -332,6 +336,7 @@ fun HavenChatScreen(
     }
 }
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 private fun ChatInputBar(
     value: String,
@@ -345,8 +350,14 @@ private fun ChatInputBar(
     val contentColor = if (isDark) HavenTextDark else HavenTextLight
     val context = LocalContext.current
     
+    // Microphone permission state using Accompanist
+    val microphonePermissionState = rememberPermissionState(
+        android.Manifest.permission.RECORD_AUDIO
+    )
+    
     // Speech Recognizer State
     var isListening by remember { mutableStateOf(false) }
+    var showPermissionRationale by remember { mutableStateOf(false) }
     val speechRecognizer = remember { android.speech.SpeechRecognizer.createSpeechRecognizer(context) }
     val intent = remember {
         android.content.Intent(android.speech.RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
@@ -363,9 +374,31 @@ private fun ChatInputBar(
             }
         }
     }
+    
+    // Permission rationale dialog
+    if (showPermissionRationale) {
+        AlertDialog(
+            onDismissRequest = { showPermissionRationale = false },
+            title = { Text("Microphone Permission Needed") },
+            text = { Text("Haven needs microphone access to transcribe your voice into text. This helps you express yourself more naturally.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showPermissionRationale = false
+                    microphonePermissionState.launchPermissionRequest()
+                }) {
+                    Text("Grant Permission", color = ProdyAccentGreen)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showPermissionRationale = false }) {
+                    Text("Not Now")
+                }
+            }
+        )
+    }
 
     Surface(
-        modifier = modifier,
+        modifier = modifier.imePadding(), // Fix keyboard overlap
         shape = RoundedCornerShape(24.dp),
         color = containerColor,
         tonalElevation = 0.dp
@@ -387,41 +420,60 @@ private fun ChatInputBar(
                         }
                         isListening = false
                     } else {
-                        if (androidx.core.content.ContextCompat.checkSelfPermission(
-                                context,
-                                android.Manifest.permission.RECORD_AUDIO
-                            ) == android.content.pm.PackageManager.PERMISSION_GRANTED
-                        ) {
-                            try {
-                                isListening = true
-                                speechRecognizer.setRecognitionListener(object : android.speech.RecognitionListener {
-                                    override fun onReadyForSpeech(params: android.os.Bundle?) {}
-                                    override fun onBeginningOfSpeech() {}
-                                    override fun onRmsChanged(rmsdB: Float) {}
-                                    override fun onBufferReceived(buffer: ByteArray?) {}
-                                    override fun onEndOfSpeech() { isListening = false }
-                                    override fun onError(error: Int) { 
-                                        isListening = false 
-                                        // Silent fail or subtle toast
-                                    }
-                                    override fun onResults(results: android.os.Bundle?) {
-                                        val matches = results?.getStringArrayList(android.speech.SpeechRecognizer.RESULTS_RECOGNITION)
-                                        if (!matches.isNullOrEmpty()) {
-                                            onValueChange(value + (if (value.isNotEmpty()) " " else "") + matches[0])
+                        // Check permission using Accompanist
+                        when {
+                            microphonePermissionState.status.isGranted -> {
+                                // Permission granted, start listening
+                                try {
+                                    isListening = true
+                                    speechRecognizer.setRecognitionListener(object : android.speech.RecognitionListener {
+                                        override fun onReadyForSpeech(params: android.os.Bundle?) {}
+                                        override fun onBeginningOfSpeech() {}
+                                        override fun onRmsChanged(rmsdB: Float) {}
+                                        override fun onBufferReceived(buffer: ByteArray?) {}
+                                        override fun onEndOfSpeech() { isListening = false }
+                                        override fun onError(error: Int) { 
+                                            isListening = false 
+                                            val errorMsg = when (error) {
+                                                android.speech.SpeechRecognizer.ERROR_AUDIO -> "Audio recording error"
+                                                android.speech.SpeechRecognizer.ERROR_CLIENT -> "Client error"
+                                                android.speech.SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS -> "Permission denied"
+                                                android.speech.SpeechRecognizer.ERROR_NETWORK -> "Network error"
+                                                android.speech.SpeechRecognizer.ERROR_NETWORK_TIMEOUT -> "Network timeout"
+                                                android.speech.SpeechRecognizer.ERROR_NO_MATCH -> "No speech detected"
+                                                android.speech.SpeechRecognizer.ERROR_RECOGNIZER_BUSY -> "Recognizer busy"
+                                                android.speech.SpeechRecognizer.ERROR_SERVER -> "Server error"
+                                                android.speech.SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> "Speech timeout"
+                                                else -> "Voice error"
+                                            }
+                                            if (error != android.speech.SpeechRecognizer.ERROR_NO_MATCH) {
+                                                Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show()
+                                            }
                                         }
-                                        isListening = false
-                                    }
-                                    override fun onPartialResults(partialResults: android.os.Bundle?) {}
-                                    override fun onEvent(eventType: Int, params: android.os.Bundle?) {}
-                                })
-                                speechRecognizer.startListening(intent)
-                            } catch (e: Exception) {
-                                isListening = false
-                                Toast.makeText(context, "Voice error: ${e.message}", Toast.LENGTH_SHORT).show()
+                                        override fun onResults(results: android.os.Bundle?) {
+                                            val matches = results?.getStringArrayList(android.speech.SpeechRecognizer.RESULTS_RECOGNITION)
+                                            if (!matches.isNullOrEmpty()) {
+                                                onValueChange(value + (if (value.isNotEmpty()) " " else "") + matches[0])
+                                            }
+                                            isListening = false
+                                        }
+                                        override fun onPartialResults(partialResults: android.os.Bundle?) {}
+                                        override fun onEvent(eventType: Int, params: android.os.Bundle?) {}
+                                    })
+                                    speechRecognizer.startListening(intent)
+                                } catch (e: Exception) {
+                                    isListening = false
+                                    Toast.makeText(context, "Voice error: ${e.message}", Toast.LENGTH_SHORT).show()
+                                }
                             }
-                        } else {
-                            Toast.makeText(context, "Microphone permission required", Toast.LENGTH_SHORT).show()
-                            // In a real app, trigger permission request here
+                            microphonePermissionState.status.shouldShowRationale -> {
+                                // Show rationale dialog
+                                showPermissionRationale = true
+                            }
+                            else -> {
+                                // Request permission directly
+                                microphonePermissionState.launchPermissionRequest()
+                            }
                         }
                     }
                 }

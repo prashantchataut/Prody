@@ -397,16 +397,16 @@ data class JournalThemeColors(
 val LocalJournalThemeColors = staticCompositionLocalOf {
     JournalThemeColors(
         isDark = false,
-        background = JournalBackgroundLight,
-        surface = JournalSurfaceLight,
-        primaryText = JournalTextPrimaryLight,
-        secondaryText = JournalTextSecondaryLight,
-        placeholderText = JournalPlaceholderLight,
-        accent = JournalAccentGreen,
-        sliderInactive = JournalSliderInactiveLight,
-        saveButtonBg = JournalSaveButtonBgLight,
-        iconCircleBorder = JournalIconCircleBorderLight,
-        cardCornerDetail = JournalCardCornerDetailLight
+        background = ProdyBackgroundLight,
+        surface = ProdySurfaceLight,
+        primaryText = ProdyTextPrimaryLight,
+        secondaryText = ProdyTextSecondaryLight,
+        placeholderText = ProdyTextTertiaryLight,
+        accent = ProdyForestGreen,
+        sliderInactive = ProdyOutlineLight,
+        saveButtonBg = ProdySuccessContainer,
+        iconCircleBorder = ProdyOutlineLight,
+        cardCornerDetail = ProdySurfaceVariantLight
     )
 }
 
@@ -414,9 +414,33 @@ val LocalJournalThemeColors = staticCompositionLocalOf {
 fun JournalTheme(content: @Composable () -> Unit) {
     val isDark = !MaterialTheme.colorScheme.background.luminance().let { it > 0.5f }
     val colors = if (isDark) {
-        JournalThemeColors(true, JournalBackgroundDark, JournalSurfaceDark, JournalTextPrimaryDark, JournalTextSecondaryDark, JournalPlaceholderDark, JournalAccentGreen, JournalSliderInactiveDark, JournalSaveButtonBgDark, JournalIconCircleBorderDark, JournalCardCornerDetailDark)
+        JournalThemeColors(
+            isDark = true,
+            background = ProdyBackgroundDark,
+            surface = ProdySurfaceDark,
+            primaryText = ProdyTextPrimaryDark,
+            secondaryText = ProdyTextSecondaryDark,
+            placeholderText = ProdyTextTertiaryDark,
+            accent = ProdyForestGreen,
+            sliderInactive = ProdyOutlineDark,
+            saveButtonBg = ProdySuccessContainerDark,
+            iconCircleBorder = ProdyOutlineDark,
+            cardCornerDetail = ProdySurfaceVariantDark
+        )
     } else {
-        JournalThemeColors(false, JournalBackgroundLight, JournalSurfaceLight, JournalTextPrimaryLight, JournalTextSecondaryLight, JournalPlaceholderLight, JournalAccentGreen, JournalSliderInactiveLight, JournalSaveButtonBgLight, JournalIconCircleBorderLight, JournalCardCornerDetailLight)
+        JournalThemeColors(
+            isDark = false,
+            background = ProdyBackgroundLight,
+            surface = ProdySurfaceLight,
+            primaryText = ProdyTextPrimaryLight,
+            secondaryText = ProdyTextSecondaryLight,
+            placeholderText = ProdyTextTertiaryLight,
+            accent = ProdyForestGreen,
+            sliderInactive = ProdyOutlineLight,
+            saveButtonBg = ProdySuccessContainer,
+            iconCircleBorder = ProdyOutlineLight,
+            cardCornerDetail = ProdySurfaceVariantLight
+        )
     }
     CompositionLocalProvider(LocalJournalThemeColors provides colors) { content() }
 }
