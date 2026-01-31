@@ -14,11 +14,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -55,6 +52,7 @@ import com.prody.prashant.ui.theme.ProdyTokens
  * @param title Main headline - should be brief and clear
  * @param message Supporting text explaining the empty state
  * @param modifier Modifier for the component
+ * @param iconContentDescription Accessibility description for the icon
  * @param actionButton Optional composable for a call-to-action button
  */
 @Composable
@@ -63,6 +61,7 @@ fun ProdyEmptyState(
     title: String,
     message: String,
     modifier: Modifier = Modifier,
+    iconContentDescription: String? = null,
     actionButton: @Composable (() -> Unit)? = null
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "empty_state")
@@ -86,7 +85,7 @@ fun ProdyEmptyState(
     ) {
         Icon(
             imageVector = icon,
-            contentDescription = null,
+            contentDescription = iconContentDescription,
             modifier = Modifier
                 .size(ProdyTokens.IconSize.hero)
                 .alpha(iconAlpha),
@@ -133,6 +132,7 @@ fun ProdyEmptyState(
  * @param actionLabel Label for the action button
  * @param onActionClick Callback when action button is clicked
  * @param modifier Modifier for the component
+ * @param iconContentDescription Optional icon description
  */
 @Composable
 fun ProdyEmptyStateWithAction(
@@ -141,28 +141,21 @@ fun ProdyEmptyStateWithAction(
     message: String,
     actionLabel: String,
     onActionClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    iconContentDescription: String? = null
 ) {
     ProdyEmptyState(
         icon = icon,
         title = title,
         message = message,
         modifier = modifier,
+        iconContentDescription = iconContentDescription,
         actionButton = {
-            Button(
+            ProdyPrimaryButton(
+                text = actionLabel,
                 onClick = onActionClick,
-                modifier = Modifier.height(ProdyTokens.Touch.minimum),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary
-                )
-            ) {
-                Text(
-                    text = actionLabel,
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
+                modifier = Modifier.height(ProdyTokens.Touch.minimum)
+            )
         }
     )
 }
@@ -180,6 +173,7 @@ fun ProdyEmptyStateWithAction(
  * @param actionLabel Label for the action button
  * @param onActionClick Callback when action button is clicked
  * @param modifier Modifier for the component
+ * @param iconContentDescription Optional icon description
  */
 @Composable
 fun ProdyEmptyStateWithSecondaryAction(
@@ -188,23 +182,21 @@ fun ProdyEmptyStateWithSecondaryAction(
     message: String,
     actionLabel: String,
     onActionClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    iconContentDescription: String? = null
 ) {
     ProdyEmptyState(
         icon = icon,
         title = title,
         message = message,
         modifier = modifier,
+        iconContentDescription = iconContentDescription,
         actionButton = {
-            OutlinedButton(
+            ProdyOutlinedButton(
+                text = actionLabel,
                 onClick = onActionClick,
                 modifier = Modifier.height(ProdyTokens.Touch.minimum)
-            ) {
-                Text(
-                    text = actionLabel,
-                    style = MaterialTheme.typography.labelLarge
-                )
-            }
+            )
         }
     )
 }
@@ -235,7 +227,7 @@ fun ProdyCompactEmptyState(
     ) {
         Icon(
             imageVector = icon,
-            contentDescription = null,
+            contentDescription = null, // Compact icon is typically decorative
             modifier = Modifier.size(ProdyTokens.IconSize.xl),
             tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
         )
@@ -326,7 +318,7 @@ fun ProdyErrorEmptyState(
     ) {
         Icon(
             imageVector = icon,
-            contentDescription = null,
+            contentDescription = AccessibilityHelper.ContentDescriptions.ERROR,
             modifier = Modifier
                 .size(ProdyTokens.IconSize.hero)
                 .alpha(iconAlpha),
@@ -355,18 +347,11 @@ fun ProdyErrorEmptyState(
 
         Spacer(modifier = Modifier.height(ProdyTokens.Spacing.xl))
 
-        OutlinedButton(
+        ProdyOutlinedButton(
+            text = retryLabel,
             onClick = onRetryClick,
-            modifier = Modifier.height(ProdyTokens.Touch.minimum),
-            colors = ButtonDefaults.outlinedButtonColors(
-                contentColor = MaterialTheme.colorScheme.primary
-            )
-        ) {
-            Text(
-                text = retryLabel,
-                style = MaterialTheme.typography.labelLarge
-            )
-        }
+            modifier = Modifier.height(ProdyTokens.Touch.minimum)
+        )
     }
 }
 
@@ -414,7 +399,7 @@ fun ProdyWelcomeEmptyState(
     ) {
         Icon(
             imageVector = icon,
-            contentDescription = null,
+            contentDescription = "Welcome",
             modifier = Modifier
                 .size(96.dp)
                 .alpha(0.9f),
@@ -443,21 +428,13 @@ fun ProdyWelcomeEmptyState(
 
         Spacer(modifier = Modifier.height(ProdyTokens.Spacing.xxl))
 
-        Button(
+        ProdyPrimaryButton(
+            text = getStartedLabel,
             onClick = onGetStartedClick,
             modifier = Modifier
                 .height(ProdyTokens.Touch.comfortable)
                 .widthIn(min = 200.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
-            )
-        ) {
-            Text(
-                text = getStartedLabel,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold
-            )
-        }
+            size = ProdyButtonSize.LARGE
+        )
     }
 }
