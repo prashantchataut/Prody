@@ -207,13 +207,6 @@ I am here to listen, but I cannot provide the emergency care you might need. Ple
 
             Log.d(TAG, "API Key Check (attempt $initializationAttempts) - THERAPIST_API_KEY present: $therapistKeyPresent, AI_API_KEY present: $aiKeyPresent")
 
-            if (therapistKeyPresent) {
-                Log.d(TAG, "THERAPIST_API_KEY length: ${BuildConfig.THERAPIST_API_KEY.length}, starts with: ${BuildConfig.THERAPIST_API_KEY.take(10)}...")
-            }
-            if (aiKeyPresent) {
-                Log.d(TAG, "AI_API_KEY length: ${BuildConfig.AI_API_KEY.length}, starts with: ${BuildConfig.AI_API_KEY.take(10)}...")
-            }
-
             // Try THERAPIST_API_KEY first, then fall back to AI_API_KEY (Gemini)
             val apiKey = BuildConfig.THERAPIST_API_KEY.takeIf { it.isNotBlank() }
                 ?: BuildConfig.AI_API_KEY.takeIf { it.isNotBlank() }
