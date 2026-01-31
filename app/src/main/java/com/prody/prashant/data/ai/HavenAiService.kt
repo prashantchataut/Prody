@@ -36,6 +36,12 @@ class HavenAiService @Inject constructor(
         private const val TAG = "HavenAiService"
         private const val MODEL_NAME = "gemini-1.5-flash" // Fast responses for real-time chat
 
+        // Retry configuration with exponential backoff
+        private const val MAX_RETRY_ATTEMPTS = 3
+        private const val INITIAL_RETRY_DELAY_MS = 1000L
+        private const val MAX_RETRY_DELAY_MS = 8000L
+        private const val RETRY_MULTIPLIER = 2.0
+
         // Crisis keywords for detection (case-insensitive matching)
         private val CRISIS_KEYWORDS_SEVERE = listOf(
             "kill myself", "end my life", "suicide", "want to die",
@@ -120,6 +126,7 @@ I am here to listen, but I cannot provide the emergency care you might need. Ple
     private var isInitialized = false
     private var isOfflineMode = false // Anti-Stop: Service works even without keys
     private var initializationError: String? = null // Track why initialization failed
+    private var initializationAttempts = 0 // Track initialization attempts
     private val json = Json { ignoreUnknownKeys = true }
 
     init {
@@ -127,28 +134,90 @@ I am here to listen, but I cannot provide the emergency care you might need. Ple
     }
 
     /**
+     * Execute an API call with exponential backoff retry logic.
+     * Returns the result or throws after max retries exhausted.
+     */
+    private suspend fun <T> withRetry(
+        operation: String,
+        block: suspend () -> T
+    ): T {
+        var lastException: Exception? = null
+        var delayMs = INITIAL_RETRY_DELAY_MS
+
+        repeat(MAX_RETRY_ATTEMPTS) { attempt ->
+            try {
+                return block()
+            } catch (e: Exception) {
+                lastException = e
+                val isRetryable = isRetryableError(e)
+
+                Log.w(TAG, "$operation failed (attempt ${attempt + 1}/$MAX_RETRY_ATTEMPTS): ${e.message}")
+
+                if (!isRetryable || attempt == MAX_RETRY_ATTEMPTS - 1) {
+                    throw e
+                }
+
+                Log.d(TAG, "Retrying $operation in ${delayMs}ms...")
+                kotlinx.coroutines.delay(delayMs)
+                delayMs = (delayMs * RETRY_MULTIPLIER).toLong().coerceAtMost(MAX_RETRY_DELAY_MS)
+            }
+        }
+
+        throw lastException ?: Exception("$operation failed after $MAX_RETRY_ATTEMPTS attempts")
+    }
+
+    /**
+     * Determine if an error is retryable (network issues, rate limits, server errors).
+     */
+    private fun isRetryableError(e: Exception): Boolean {
+        val message = e.message?.lowercase() ?: ""
+        return message.contains("network") ||
+                message.contains("timeout") ||
+                message.contains("connection") ||
+                message.contains("429") || // Rate limit
+                message.contains("503") || // Service unavailable
+                message.contains("500") || // Server error
+                message.contains("unavailable") ||
+                e is java.io.IOException
+    }
+
+    /**
+     * Attempt to reinitialize the model if it failed previously.
+     * Can be called to retry initialization after network becomes available.
+     */
+    fun retryInitialization(): Boolean {
+        if (!isOfflineMode || initializationAttempts >= MAX_RETRY_ATTEMPTS) {
+            return !isOfflineMode
+        }
+        Log.d(TAG, "Retrying initialization (attempt ${initializationAttempts + 1})")
+        initializeModel()
+        return !isOfflineMode
+    }
+
+    /**
      * Initialize the Gemini model with therapist API key.
      * Falls back to offline mode if keys are missing.
      */
     private fun initializeModel() {
+        initializationAttempts++
         try {
             // Log key presence for debugging (never log actual keys!)
             val therapistKeyPresent = BuildConfig.THERAPIST_API_KEY.isNotBlank()
             val aiKeyPresent = BuildConfig.AI_API_KEY.isNotBlank()
-            
-            Log.d(TAG, "API Key Check - THERAPIST_API_KEY present: $therapistKeyPresent, AI_API_KEY present: $aiKeyPresent")
-            
+
+            Log.d(TAG, "API Key Check (attempt $initializationAttempts) - THERAPIST_API_KEY present: $therapistKeyPresent, AI_API_KEY present: $aiKeyPresent")
+
             if (therapistKeyPresent) {
                 Log.d(TAG, "THERAPIST_API_KEY length: ${BuildConfig.THERAPIST_API_KEY.length}, starts with: ${BuildConfig.THERAPIST_API_KEY.take(10)}...")
             }
             if (aiKeyPresent) {
                 Log.d(TAG, "AI_API_KEY length: ${BuildConfig.AI_API_KEY.length}, starts with: ${BuildConfig.AI_API_KEY.take(10)}...")
             }
-            
+
             // Try THERAPIST_API_KEY first, then fall back to AI_API_KEY (Gemini)
             val apiKey = BuildConfig.THERAPIST_API_KEY.takeIf { it.isNotBlank() }
                 ?: BuildConfig.AI_API_KEY.takeIf { it.isNotBlank() }
-                
+
             if (apiKey.isNullOrBlank()) {
                 Log.w(TAG, "No API key configured. Entering Offline Mode.")
                 initializationError = "No API key found in BuildConfig. Check local.properties and rebuild."
@@ -156,7 +225,7 @@ I am here to listen, but I cannot provide the emergency care you might need. Ple
                 isInitialized = true // We are initialized in offline mode
                 return
             }
-            
+
             val keySource = if (BuildConfig.THERAPIST_API_KEY.isNotBlank()) "THERAPIST_API_KEY" else "AI_API_KEY"
             Log.d(TAG, "Initializing Haven with $keySource (length: ${apiKey.length})")
 
@@ -259,7 +328,10 @@ I am here to listen, but I cannot provide the emergency care you might need. Ple
 This is the start of the session. Greet ${userName ?: "the user"} warmly.
 """
 
-            val response = requireModel().generateContent(prompt)
+            // Use retry logic for the API call
+            val response = withRetry("startSession") {
+                requireModel().generateContent(prompt)
+            }
             val text = response.text?.trim() ?: throw Exception("Empty response from AI")
 
             // Extract recall content if present
@@ -278,15 +350,9 @@ This is the start of the session. Greet ${userName ?: "the user"} warmly.
                 )
             )
         } catch (e: Exception) {
-            Log.e(TAG, "Error starting session", e)
-             // Fallback on error
-             Result.success(
-                HavenAiResponse(
-                    message = "I'm having a little trouble connecting right now. How are you feeling while I get my thoughts together?",
-                    isCrisisDetected = false,
-                    crisisLevel = CrisisLevel.NONE
-                )
-            )
+            Log.e(TAG, "Error starting session after retries", e)
+            // Return failure instead of silent fallback
+            Result.failure(Exception("Failed to start session: ${e.message}"))
         }
     }
 
@@ -343,7 +409,10 @@ User: $userMessage
 Respond to the user. Be concise, supportive, and professional.
 """
 
-            val response = requireModel().generateContent(prompt)
+            // Use retry logic for the API call
+            val response = withRetry("continueConversation") {
+                requireModel().generateContent(prompt)
+            }
             val text = response.text?.trim() ?: throw Exception("Empty response from AI")
 
             // Extract recall content
@@ -370,15 +439,9 @@ Respond to the user. Be concise, supportive, and professional.
                 )
             )
         } catch (e: Exception) {
-            Log.e(TAG, "Error continuing conversation", e)
-             // Fallback on error
-             Result.success(
-                HavenAiResponse(
-                    message = "I'm having trouble responding right now. I'm listening, though.",
-                    isCrisisDetected = false,
-                    crisisLevel = CrisisLevel.NONE
-                )
-            )
+            Log.e(TAG, "Error continuing conversation after retries", e)
+            // Return failure with specific error message
+            Result.failure(Exception("Failed to get AI response: ${e.message}"))
         }
     }
 

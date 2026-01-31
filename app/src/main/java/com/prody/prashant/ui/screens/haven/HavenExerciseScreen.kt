@@ -814,9 +814,11 @@ private fun ExerciseCompletionScreen(
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = exerciseType.icon,
-                        fontSize = 32.sp
+                    Icon(
+                        imageVector = exerciseType.icon,
+                        contentDescription = null,
+                        tint = ProdyAccentGreen,
+                        modifier = Modifier.size(32.dp)
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
