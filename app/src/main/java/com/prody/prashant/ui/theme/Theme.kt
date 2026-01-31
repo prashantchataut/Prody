@@ -16,6 +16,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 
 /**
@@ -101,6 +103,38 @@ private val DarkColorScheme = darkColorScheme(
 enum class ThemeMode {
     LIGHT, DARK, SYSTEM
 }
+
+/**
+ * Prody Design System - Spacing System
+ */
+data class ProdySpacing(
+    val none: Dp = 0.dp,
+    val extraSmall: Dp = 4.dp,
+    val small: Dp = 8.dp,
+    val medium: Dp = 12.dp,
+    val default: Dp = 16.dp,
+    val large: Dp = 24.dp,
+    val extraLarge: Dp = 32.dp,
+    val huge: Dp = 48.dp
+)
+
+/**
+ * Prody Design System - Elevation System
+ */
+data class ProdyElevation(
+    val none: Dp = 0.dp,
+    val extraLow: Dp = 1.dp,
+    val low: Dp = 2.dp,
+    val medium: Dp = 4.dp,
+    val high: Dp = 8.dp,
+    val extraHigh: Dp = 12.dp
+)
+
+/**
+ * Helper to determine if the theme is dark.
+ */
+@Composable
+fun isDarkTheme(): Boolean = isSystemInDarkTheme()
 
 // Re-export composition locals
 val LocalProdySpacing = staticCompositionLocalOf { ProdySpacing() }

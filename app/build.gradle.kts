@@ -134,6 +134,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
         // buildConfig is enabled via gradle.properties: android.defaults.buildfeatures.buildconfig=true
     }
 
