@@ -10,7 +10,6 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import com.prody.prashant.data.local.dao.*
 import com.prody.prashant.data.local.entity.*
 import com.prody.prashant.data.security.SecureDatabaseManager
-import kotlinx.coroutines.runBlocking
 import net.sqlcipher.database.SupportFactory
 
 /**
@@ -1703,10 +1702,9 @@ private fun buildDatabase(context: Context): ProdyDatabase {
                 // Initialize secure database manager
                 val secureDbManager = SecureDatabaseManager(context)
                 
-                // Create SQLCipher support factory with secure passphrase
-                val supportFactory = runBlocking {
-                    secureDbManager.createSQLCipherSupportFactory()
-                }
+                // Create SQLCipher support factory with secure passphrase synchronously
+                // Uses EncryptedSharedPreferences for fast, non-blocking access.
+                val supportFactory = secureDbManager.createSQLCipherSupportFactorySync()
                 
                 Room.databaseBuilder(
                     context.applicationContext,
@@ -1779,15 +1777,13 @@ private fun buildDatabase(context: Context): ProdyDatabase {
                 super.onOpen(db)
                 Log.d(TAG, "Secure database opened")
                 
-                // Verify database integrity
-                runBlocking {
-                    val databaseFile = context.getDatabasePath(DATABASE_NAME)
-                    val isIntegrityValid = secureDbManager.verifyDatabaseIntegrity(databaseFile)
-                    
-                    if (!isIntegrityValid) {
-                        Log.e(TAG, "Database integrity check failed!")
-                        // Handle integrity failure appropriately
-                    }
+                // Verify database integrity synchronously
+                val databaseFile = context.getDatabasePath(DATABASE_NAME)
+                val isIntegrityValid = secureDbManager.verifyDatabaseIntegritySync(databaseFile)
+
+                if (!isIntegrityValid) {
+                    Log.e(TAG, "Database integrity check failed!")
+                    // Handle integrity failure appropriately
                 }
             }
 
@@ -1795,10 +1791,8 @@ private fun buildDatabase(context: Context): ProdyDatabase {
                 super.onDestructiveMigration(db)
                 Log.w(TAG, "Secure database destructive migration performed - data was cleared")
                 
-                // Clear encryption data after destructive migration
-                runBlocking {
-                    secureDbManager.clearDatabaseEncryption()
-                }
+                // Clear encryption data after destructive migration synchronously
+                secureDbManager.clearDatabaseEncryptionSync()
             }
         }
     }

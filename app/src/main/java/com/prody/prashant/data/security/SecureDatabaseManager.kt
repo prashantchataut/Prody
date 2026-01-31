@@ -3,6 +3,7 @@ package com.prody.prashant.data.security
 import android.content.Context
 import android.util.Log
 import androidx.security.crypto.EncryptedFile
+import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import com.prody.prashant.data.local.database.ProdyDatabase
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -34,52 +35,74 @@ class SecureDatabaseManager @Inject constructor(
         private const val DATABASE_VERSION = 1
     }
 
-    private val masterKey = MasterKey.Builder(context)
-        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-        .setKeyGenParameterSpec(
-            android.security.keystore.KeyGenParameterSpec.Builder(
-                MasterKey.DEFAULT_MASTER_KEY_ALIAS,
-                android.security.keystore.KeyProperties.PURPOSE_ENCRYPT or android.security.keystore.KeyProperties.PURPOSE_DECRYPT
-            )
-                .setBlockModes(android.security.keystore.KeyProperties.BLOCK_MODE_GCM)
-                .setEncryptionPaddings(android.security.keystore.KeyProperties.ENCRYPTION_PADDING_NONE)
-                .setUserAuthenticationRequired(false)
-                .build()
+    private val masterKey by lazy {
+        MasterKey.Builder(context)
+            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+            .build()
+    }
+
+    private val encryptedPrefs by lazy {
+        EncryptedSharedPreferences.create(
+            context,
+            "prody_db_secure_prefs",
+            masterKey,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
         )
-        .build()
+    }
 
     /**
-     * Get the database passphrase for SQLCipher
-     * Uses a combination of device-specific and app-specific data
+     * Get the database passphrase for SQLCipher synchronously.
+     * Uses EncryptedSharedPreferences for fast access to avoid blocking.
+     */
+    fun getDatabasePassphraseSync(): String {
+        try {
+            // 1. Try to get from EncryptedSharedPreferences (fastest, synchronous)
+            val storedKey = encryptedPrefs.getString("db_passphrase", null)
+            if (storedKey != null) return storedKey
+
+            // 2. If not found, check if it exists in the legacy EncryptedFile (migration)
+            val keyFile = getDatabaseKeyFile()
+            if (keyFile.exists()) {
+                val key = readDatabaseKeySync(keyFile)
+                encryptedPrefs.edit().putString("db_passphrase", key).apply()
+                Log.d(TAG, "Migrated database passphrase from file to EncryptedSharedPreferences")
+                return key
+            }
+
+            // 3. Generate and store new key
+            val newKey = generateSecureDatabaseKey()
+            encryptedPrefs.edit().putString("db_passphrase", newKey).apply()
+            return newKey
+        } catch (e: Exception) {
+            Log.e(TAG, "Error getting database passphrase synchronously", e)
+            return generateFallbackPassphrase()
+        }
+    }
+
+    /**
+     * Get the database passphrase for SQLCipher (suspend version)
      */
     suspend fun getDatabasePassphrase(): String = withContext(Dispatchers.IO) {
-        try {
-            // Get or create the encrypted database key file
-            val keyFile = getDatabaseKeyFile()
-            
-            if (keyFile.exists()) {
-                // Read existing key
-                readDatabaseKey(keyFile)
-            } else {
-                // Generate and store new key
-                val newKey = generateSecureDatabaseKey()
-                storeDatabaseKey(keyFile, newKey)
-                newKey
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error getting database passphrase", e)
-            // Fallback to a derived key in case of errors
-            generateFallbackPassphrase()
-        }
+        getDatabasePassphraseSync()
+    }
+
+    /**
+     * Create a SupportFactory for SQLCipher with the secure passphrase synchronously
+     */
+    fun createSQLCipherSupportFactorySync(): SupportFactory {
+        val passphrase = getDatabasePassphraseSync()
+        val passphraseBytes = SQLiteDatabase.getBytes(passphrase.toCharArray())
+        return SupportFactory(passphraseBytes)
     }
 
     /**
      * Create a SupportFactory for SQLCipher with the secure passphrase
      */
     suspend fun createSQLCipherSupportFactory(): SupportFactory {
-        val passphrase = getDatabasePassphrase()
-        val passphraseBytes = SQLiteDatabase.getBytes(passphrase.toCharArray())
-        return SupportFactory(passphraseBytes)
+        return withContext(Dispatchers.IO) {
+            createSQLCipherSupportFactorySync()
+        }
     }
 
     /**
@@ -109,7 +132,8 @@ class SecureDatabaseManager @Inject constructor(
     }
 
     /**
-     * Generate a fallback passphrase in case of errors
+     * Generate a fallback passphrase in case of errors.
+     * Uses a deterministic SHA-256 hash of stable identifiers.
      */
     private fun generateFallbackPassphrase(): String {
         // Use device-specific and app-specific data for fallback
@@ -121,7 +145,15 @@ class SecureDatabaseManager @Inject constructor(
         val appData = "${context.packageName}_${BuildConfig.VERSION_CODE}"
         val combined = "${deviceId}_${appData}_prody_secure_fallback"
         
-        return combined.hashCode().toString() + System.currentTimeMillis().toString()
+        return try {
+            val digest = java.security.MessageDigest.getInstance("SHA-256")
+            val hash = digest.digest(combined.toByteArray(Charsets.UTF_8))
+            android.util.Base64.encodeToString(hash, android.util.Base64.NO_WRAP)
+        } catch (e: Exception) {
+            // Extreme fallback if SHA-256 is somehow unavailable
+            Log.e(TAG, "SHA-256 unavailable for fallback passphrase", e)
+            combined.hashCode().toString()
+        }
     }
 
     /**
@@ -149,9 +181,16 @@ class SecureDatabaseManager @Inject constructor(
     }
 
     /**
-     * Read database key securely
+     * Read database key securely (suspend version)
      */
     private suspend fun readDatabaseKey(keyFile: File): String = withContext(Dispatchers.IO) {
+        readDatabaseKeySync(keyFile)
+    }
+
+    /**
+     * Read database key securely synchronously
+     */
+    private fun readDatabaseKeySync(keyFile: File): String {
         try {
             val encryptedFile = EncryptedFile.Builder(
                 context,
@@ -160,28 +199,35 @@ class SecureDatabaseManager @Inject constructor(
                 EncryptedFile.FileEncryptionScheme.AES256_GCM_HKDF_4KB
             ).build()
             
-            encryptedFile.openFileInput().use { input ->
+            return encryptedFile.openFileInput().use { input ->
                 val bytes = input.readBytes()
                 String(bytes)
             }
         } catch (e: IOException) {
-            Log.e(TAG, "Error reading database key", e)
+            Log.e(TAG, "Error reading database key synchronously", e)
             throw SecurityException("Failed to read database key", e)
         }
     }
 
     /**
-     * Verify database integrity
+     * Verify database integrity (suspend version)
      */
     suspend fun verifyDatabaseIntegrity(databaseFile: File): Boolean = withContext(Dispatchers.IO) {
+        verifyDatabaseIntegritySync(databaseFile)
+    }
+
+    /**
+     * Verify database integrity synchronously
+     */
+    fun verifyDatabaseIntegritySync(databaseFile: File): Boolean {
         try {
             if (!databaseFile.exists()) {
                 Log.w(TAG, "Database file does not exist")
-                return@withContext false
+                return false
             }
 
             // Try to open the database with the current passphrase
-            val passphrase = getDatabasePassphrase()
+            val passphrase = getDatabasePassphraseSync()
             
             // Test database connection
             val testDb = SQLiteDatabase.openDatabase(
@@ -195,11 +241,11 @@ class SecureDatabaseManager @Inject constructor(
             testDb.close()
             
             Log.d(TAG, "Database integrity check: ${if (isIntact) "PASSED" else "FAILED"}")
-            isIntact
+            return isIntact
             
         } catch (e: Exception) {
             Log.e(TAG, "Database integrity check failed", e)
-            false
+            return false
         }
     }
 
@@ -225,18 +271,28 @@ class SecureDatabaseManager @Inject constructor(
     }
 
     /**
-     * Clear all database encryption data (for testing or reset)
+     * Clear all database encryption data (for testing or reset) (suspend version)
      */
     suspend fun clearDatabaseEncryption() = withContext(Dispatchers.IO) {
+        clearDatabaseEncryptionSync()
+    }
+
+    /**
+     * Clear all database encryption data synchronously
+     */
+    fun clearDatabaseEncryptionSync() {
         try {
             val keyFile = getDatabaseKeyFile()
             if (keyFile.exists()) {
                 keyFile.delete()
             }
             
+            // Also clear from preferences
+            encryptedPrefs.edit().remove("db_passphrase").apply()
+
             Log.d(TAG, "Database encryption data cleared")
         } catch (e: Exception) {
-            Log.e(TAG, "Error clearing database encryption", e)
+            Log.e(TAG, "Error clearing database encryption synchronously", e)
         }
     }
 }

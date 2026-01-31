@@ -1,5 +1,6 @@
 package com.prody.prashant.widget
 
+import android.appwidget.AppWidgetManager
 import android.content.Context
 import android.content.Intent
 import androidx.compose.runtime.Composable
@@ -41,11 +42,6 @@ import java.time.LocalDateTime
 class QuickJournalWidget : GlanceAppWidget() {
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
-        // Security: Rate-limit widget updates to prevent DoS attacks.
-        if (!WidgetUpdateThrottler.shouldUpdate(context, this::class.java)) {
-            return
-        }
-
         val prompt = getIntelligentPrompt(context)
 
         provideContent {
@@ -234,4 +230,16 @@ private data class IntelligentPromptData(
 
 class QuickJournalWidgetReceiver : GlanceAppWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = QuickJournalWidget()
+
+    override fun onUpdate(
+        context: Context,
+        appWidgetManager: AppWidgetManager,
+        appWidgetIds: IntArray
+    ) {
+        // Security: Rate-limit widget updates to prevent DoS attacks.
+        if (!WidgetUpdateThrottler.shouldUpdate(context, this::class.java)) {
+            return
+        }
+        super.onUpdate(context, appWidgetManager, appWidgetIds)
+    }
 }

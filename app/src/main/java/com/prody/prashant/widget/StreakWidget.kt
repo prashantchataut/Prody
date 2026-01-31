@@ -1,5 +1,6 @@
 package com.prody.prashant.widget
 
+import android.appwidget.AppWidgetManager
 import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
@@ -38,11 +39,6 @@ import kotlinx.coroutines.withContext
 class StreakWidget : GlanceAppWidget() {
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
-        // Security: Rate-limit widget updates to prevent DoS attacks.
-        if (!WidgetUpdateThrottler.shouldUpdate(context, this::class.java)) {
-            return
-        }
-
         // Get streak from shared preferences (widget-accessible storage)
         val prefs = context.getSharedPreferences("prody_widget_prefs", Context.MODE_PRIVATE)
         val streak = prefs.getInt("current_streak", 0)
@@ -230,4 +226,16 @@ class RefreshStreakAction : androidx.glance.appwidget.action.ActionCallback {
 
 class StreakWidgetReceiver : GlanceAppWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = StreakWidget()
+
+    override fun onUpdate(
+        context: Context,
+        appWidgetManager: AppWidgetManager,
+        appWidgetIds: IntArray
+    ) {
+        // Security: Rate-limit widget updates to prevent DoS attacks.
+        if (!WidgetUpdateThrottler.shouldUpdate(context, this::class.java)) {
+            return
+        }
+        super.onUpdate(context, appWidgetManager, appWidgetIds)
+    }
 }

@@ -2061,9 +2061,6 @@ object ProdyIcons {
     }
     val RecordVoiceOver: ImageVector by lazy { Mic }
     val Hearing: ImageVector by lazy { Mic }
-    val SentimentSatisfied: ImageVector by lazy { EmojiEvents }
-    val SentimentVerySatisfied: ImageVector by lazy { EmojiEvents }
-    val SentimentDissatisfied: ImageVector by lazy { Warning }
     val Mood: ImageVector by lazy { EmojiEvents }
     val EmojiNature: ImageVector by lazy { LocalFlorist }
     val Terrain: ImageVector by lazy { LocalFlorist }
