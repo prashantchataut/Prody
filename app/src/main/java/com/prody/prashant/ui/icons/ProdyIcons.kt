@@ -2061,9 +2061,6 @@ object ProdyIcons {
     }
     val RecordVoiceOver: ImageVector by lazy { Mic }
     val Hearing: ImageVector by lazy { Mic }
-    val SentimentSatisfied: ImageVector by lazy { EmojiEvents }
-    val SentimentVerySatisfied: ImageVector by lazy { EmojiEvents }
-    val SentimentDissatisfied: ImageVector by lazy { Warning }
     val Mood: ImageVector by lazy { EmojiEvents }
     val EmojiNature: ImageVector by lazy { LocalFlorist }
     val Terrain: ImageVector by lazy { LocalFlorist }
@@ -2388,9 +2385,6 @@ object ProdyIcons {
             val ArrowForward: ImageVector get() = ProdyIcons.ArrowForward
         }
     }
-
-    // The "let" is probably a typo - it's not a real icon
-    val let: ImageVector by lazy { Info }
 
     // =========================================================================
     // Additional missing icons for UI screens

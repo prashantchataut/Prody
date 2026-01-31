@@ -57,20 +57,21 @@ fun OnboardingScreen(
 ) {
     val pagerState = rememberPagerState(pageCount = { 8 })
     val coroutineScope = rememberCoroutineScope()
-    // Determine theme for background only if needed, but we mostly use specific colors
-    // We will use the ProdyTheme colors.
     
-    // Gradient Background: White to #F5F5F5 for light mode
-    val gradientColors = if (!isSystemInDarkTheme()) {
-        listOf(Color.White, Color(0xFFF5F5F5))
-    } else {
-        listOf(ProdyBackgroundDark, ProdyBackgroundDark) // Keep dark mode simple
+    val isDark = isSystemInDarkTheme()
+    val backgroundBrush = remember(isDark) {
+        val colors = if (!isDark) {
+            listOf(Color.White, Color(0xFFF5F5F5))
+        } else {
+            listOf(ProdyBackgroundDark, ProdyBackgroundDark)
+        }
+        Brush.verticalGradient(colors)
     }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Brush.verticalGradient(gradientColors))
+            .background(backgroundBrush)
             .systemBarsPadding()
     ) {
         HorizontalPager(
@@ -418,6 +419,9 @@ private fun FeatureScreenLayout(
 private fun StandardFeatureCard(
     content: @Composable ColumnScope.() -> Unit
 ) {
+    val cardShape = remember { RoundedCornerShape(12.dp) }
+    val shadowColor = remember { Color(0x1A000000) }
+
     // Card Design: 12dp corner radius, 8dp elevation with proper shadow
     Surface(
         modifier = Modifier
@@ -425,11 +429,11 @@ private fun StandardFeatureCard(
             .aspectRatio(0.8f)
             .shadow(
                 elevation = 8.dp,
-                shape = RoundedCornerShape(12.dp),
-                spotColor = Color(0x1A000000), // Soft shadow
-                ambientColor = Color(0x1A000000)
+                shape = cardShape,
+                spotColor = shadowColor,
+                ambientColor = shadowColor
             ),
-        shape = RoundedCornerShape(12.dp),
+        shape = cardShape,
         color = Color.White
     ) {
         Column(

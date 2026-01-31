@@ -2,6 +2,9 @@ package com.prody.prashant.ui.screens.home
 
 import com.prody.prashant.ui.icons.ProdyIcons
 import androidx.compose.foundation.Canvas
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -29,6 +32,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.prody.prashant.ui.components.AccessibilityHelper
 import com.prody.prashant.ui.theme.*
 
 // =============================================================================
@@ -50,10 +55,8 @@ fun HomeScreen(
     onNavigateToIdiomDetail: (Long) -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
-    // We assume ViewModel provides necessary state. For this UI revamp, 
-    // we'll focus on the UI structure and use placeholder data where ViewModel might not strictly align yet.
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     
-    val surfaceColor = MaterialTheme.colorScheme.surface
     val backgroundColor = MaterialTheme.colorScheme.background
 
     LazyColumn(
@@ -65,7 +68,8 @@ fun HomeScreen(
         // Header with Greeting and Notification
         item {
             DashboardHeader(
-                userName = "Prashant", // Replace with real name
+                userName = uiState.userName,
+                greeting = uiState.intelligentGreeting.ifEmpty { "Welcome back" },
                 onProfileClick = {}, // TODO: Profile Nav
                 onNotificationClick = {}
             )
@@ -74,7 +78,7 @@ fun HomeScreen(
         // Overview Section (Streak & Badges)
         item {
             OverviewSection(
-                streakDays = 7,
+                streakDays = uiState.currentStreak,
                 badges = listOf(
                     BadgeData(ProdyIcons.EmojiEvents, 0.75f, ProdyWarmAmber),
                     BadgeData(ProdyIcons.Edit, 0.5f, ProdyForestGreen),
@@ -86,16 +90,16 @@ fun HomeScreen(
         // Mood Trend Chart
         item {
             MoodTrendSection(
-                moodData = listOf(3f, 4f, 2f, 5f, 4f, 5f, 4f) // 1-5 Scale
+                moodData = listOf(3f, 4f, 2f, 5f, 4f, 5f, 4f) // 1-5 Scale (Last 7 days)
             )
         }
 
         // Weekly Summary
         item {
             WeeklySummarySection(
-                journalEntries = 5,
-                wordsLearned = 12,
-                mindfulMinutes = 45
+                journalEntries = uiState.journalEntriesThisWeek,
+                wordsLearned = uiState.wordsLearnedThisWeek,
+                mindfulMinutes = 45 // Placeholder until meditation integration
             )
         }
         
@@ -111,7 +115,11 @@ fun HomeScreen(
         
         // Recent / Suggestions
         item {
-            RecentActivitySection()
+            RecentActivitySection(
+                journaledToday = uiState.journaledToday,
+                todayMood = uiState.todayEntryMood,
+                todayPreview = uiState.todayEntryPreview
+            )
         }
     }
 }
@@ -123,20 +131,21 @@ fun HomeScreen(
 @Composable
 fun DashboardHeader(
     userName: String,
+    greeting: String,
     onProfileClick: () -> Unit,
     onNotificationClick: () -> Unit
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 24.dp)
+            .padding(horizontal = ProdyTokens.Spacing.xxl, vertical = ProdyTokens.Spacing.xxl)
             .statusBarsPadding(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column {
             Text(
-                text = "Good Morning,",
+                text = greeting,
                 style = TextStyle(
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Normal,
@@ -159,7 +168,7 @@ fun DashboardHeader(
             IconButton(onClick = onNotificationClick) {
                 Icon(
                     imageVector = Icons.Outlined.Notifications,
-                    contentDescription = "Notifications",
+                    contentDescription = AccessibilityHelper.ContentDescriptions.NOTIFICATIONS,
                     tint = ProdyTextPrimaryLight
                 )
             }
@@ -190,15 +199,15 @@ fun OverviewSection(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 24.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
+            .padding(horizontal = ProdyTokens.Spacing.xxl),
+        horizontalArrangement = Arrangement.spacedBy(ProdyTokens.Spacing.lg)
     ) {
         // Streak Card
         Surface(
             modifier = Modifier.weight(1f),
-            shape = RoundedCornerShape(16.dp),
+            shape = RoundedCornerShape(ProdyTokens.Radius.lg),
             color = ProdySurfaceLight,
-            shadowElevation = 4.dp
+            shadowElevation = ProdyTokens.Elevation.md
         ) {
             Column(
                 modifier = Modifier.padding(16.dp),
@@ -228,9 +237,9 @@ fun OverviewSection(
         // Badges Card
         Surface(
             modifier = Modifier.weight(1f),
-            shape = RoundedCornerShape(16.dp),
+            shape = RoundedCornerShape(ProdyTokens.Radius.lg),
             color = ProdySurfaceLight,
-            shadowElevation = 4.dp
+            shadowElevation = ProdyTokens.Elevation.md
         ) {
             Column(
                 modifier = Modifier.padding(16.dp),
@@ -272,7 +281,7 @@ fun BadgeItem(badge: BadgeData) {
         )
         Icon(
             imageVector = badge.icon,
-            contentDescription = null,
+            contentDescription = AccessibilityHelper.ContentDescriptions.ACHIEVEMENTS,
             tint = badge.color,
             modifier = Modifier.size(16.dp)
         )
@@ -281,10 +290,11 @@ fun BadgeItem(badge: BadgeData) {
 
 @Composable
 fun MoodTrendSection(moodData: List<Float>) {
+    val rememberedMoodData = remember(moodData) { moodData }
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(24.dp)
+            .padding(ProdyTokens.Spacing.xxl)
     ) {
         Text(
             text = "Mood Trend",
@@ -303,19 +313,25 @@ fun MoodTrendSection(moodData: List<Float>) {
             modifier = Modifier
                 .fillMaxWidth()
                 .height(200.dp),
-            shape = RoundedCornerShape(16.dp),
+            shape = RoundedCornerShape(ProdyTokens.Radius.lg),
             color = ProdySurfaceLight,
-            shadowElevation = 4.dp
+            shadowElevation = ProdyTokens.Elevation.md
         ) {
-            MoodChart(data = moodData, modifier = Modifier.padding(24.dp))
+            MoodChart(data = rememberedMoodData, modifier = Modifier.padding(ProdyTokens.Spacing.xxl))
         }
     }
 }
 
 @Composable
 fun MoodChart(data: List<Float>, modifier: Modifier = Modifier) {
-    Canvas(modifier = modifier.fillMaxSize()) {
-        if (data.isEmpty()) return@Canvas
+    val strokeWidth = with(LocalDensity.current) { 4.dp.toPx() }
+    val pointRadius = with(LocalDensity.current) { 6.dp.toPx() }
+    val pointInnerRadius = with(LocalDensity.current) { 4.dp.toPx() }
+
+    Canvas(modifier = modifier.fillMaxSize().semantics {
+        contentDescription = "Mood trend chart over the last 7 days"
+    }) {
+        if (data.size < 2) return@Canvas
 
         val width = size.width
         val height = size.height
@@ -344,19 +360,19 @@ fun MoodChart(data: List<Float>, modifier: Modifier = Modifier) {
         drawPath(
             path = path,
             color = ProdyForestGreen,
-            style = Stroke(width = 4.dp.toPx(), cap = StrokeCap.Round)
+            style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
         )
 
         // Draw Points
         points.forEach { point ->
             drawCircle(
                 color = Color.White,
-                radius = 6.dp.toPx(),
+                radius = pointRadius,
                 center = point
             )
             drawCircle(
                 color = ProdyForestGreen,
-                radius = 4.dp.toPx(),
+                radius = pointInnerRadius,
                 center = point
             )
         }
@@ -368,7 +384,7 @@ fun WeeklySummarySection(journalEntries: Int, wordsLearned: Int, mindfulMinutes:
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 24.dp)
+            .padding(horizontal = ProdyTokens.Spacing.xxl)
     ) {
         Text(
             text = "This Week",
@@ -458,7 +474,7 @@ fun QuickActionsGrid(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(24.dp)
+            .padding(ProdyTokens.Spacing.xxl)
     ) {
         Text(
             text = "Quick Actions",
@@ -553,11 +569,14 @@ fun QuickActionTile(title: String, icon: androidx.compose.ui.graphics.vector.Ima
 }
 
 @Composable
-fun RecentActivitySection() {
-    // Placeholder for Recent Activity
-    Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+fun RecentActivitySection(
+    journaledToday: Boolean,
+    todayMood: String,
+    todayPreview: String
+) {
+    Column(modifier = Modifier.padding(horizontal = ProdyTokens.Spacing.xxl)) {
         Text(
-            text = "Recent",
+            text = "Recent Activity",
             style = TextStyle(
                 fontFamily = PoppinsFamily,
                 fontWeight = FontWeight.SemiBold,
@@ -578,15 +597,28 @@ fun RecentActivitySection() {
                     modifier = Modifier
                         .size(40.dp)
                         .clip(CircleShape)
-                        .background(ProdyForestGreen.copy(alpha = 0.1f)),
+                        .background(if (journaledToday) ProdyForestGreen.copy(alpha = 0.1f) else ProdyWarmAmber.copy(alpha = 0.1f)),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(ProdyIcons.Check, null, tint = ProdyForestGreen)
+                    Icon(
+                        imageVector = if (journaledToday) ProdyIcons.Check else ProdyIcons.Edit,
+                        contentDescription = null,
+                        tint = if (journaledToday) ProdyForestGreen else ProdyWarmAmber
+                    )
                 }
                 Spacer(modifier = Modifier.width(16.dp))
                 Column {
-                    Text("Daily Journal", fontWeight = FontWeight.SemiBold, fontFamily = PoppinsFamily)
-                    Text("Completed today", fontSize = 12.sp, color = ProdyTextSecondaryLight, fontFamily = PoppinsFamily)
+                    Text(
+                        text = if (journaledToday) "Daily Journal" else "Journal Pending",
+                        fontWeight = FontWeight.SemiBold,
+                        fontFamily = PoppinsFamily
+                    )
+                    Text(
+                        text = if (journaledToday) "Today's mood: $todayMood" else "Capture your thoughts for today",
+                        fontSize = 12.sp,
+                        color = ProdyTextSecondaryLight,
+                        fontFamily = PoppinsFamily
+                    )
                 }
             }
         }

@@ -54,6 +54,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -189,6 +190,63 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+/**
+ * Optimized Haven FAB Icon with breathing animation.
+ * Isolated into its own composable to prevent unnecessary recompositions of parent components.
+ */
+@Composable
+private fun HavenPulseIcon(
+    selected: Boolean,
+    imageVector: ImageVector
+) {
+    // Breathing Pulse Animation (only active when not selected)
+    val infiniteTransition = rememberInfiniteTransition(label = "HavenPulse")
+    val alpha by infiniteTransition.animateFloat(
+        initialValue = 0.6f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2000, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "HavenAlpha"
+    )
+    val scalePulse by infiniteTransition.animateFloat(
+        initialValue = 0.95f,
+        targetValue = 1.05f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2000, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "HavenScale"
+    )
+
+    val gradient = remember {
+        Brush.verticalGradient(
+            colors = listOf(
+                com.prody.prashant.ui.theme.HavenBubbleLight,
+                com.prody.prashant.ui.theme.HavenBubbleLight.copy(alpha = 0.8f)
+            )
+        )
+    }
+
+    Box(
+        modifier = Modifier
+            .size(56.dp)
+            .scale(if (selected) 1f else scalePulse)
+            .clip(CircleShape)
+            .background(gradient)
+            .alpha(if (selected) 1f else alpha),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            imageVector = imageVector,
+            contentDescription = null,
+            tint = com.prody.prashant.ui.theme.HavenTextLight,
+            modifier = Modifier.size(28.dp)
+        )
+    }
+}
+
 @Composable
 fun ProdyApp(
     startDestination: String
@@ -251,50 +309,10 @@ fun ProdyApp(
                                     }
                                 },
                                 icon = {
-                                    // Breathing Pulse Animation
-                                    val infiniteTransition = rememberInfiniteTransition(label = "HavenPulse")
-                                    val alpha by infiniteTransition.animateFloat(
-                                        initialValue = 0.6f,
-                                        targetValue = 1f,
-                                        animationSpec = infiniteRepeatable(
-                                            animation = tween(2000, easing = LinearEasing),
-                                            repeatMode = RepeatMode.Reverse
-                                        ),
-                                        label = "HavenAlpha"
+                                    HavenPulseIcon(
+                                        selected = selected,
+                                        imageVector = if (selected) item.selectedIcon else item.unselectedIcon
                                     )
-                                    val scale by infiniteTransition.animateFloat(
-                                        initialValue = 0.95f,
-                                        targetValue = 1.05f,
-                                        animationSpec = infiniteRepeatable(
-                                            animation = tween(2000, easing = LinearEasing),
-                                            repeatMode = RepeatMode.Reverse
-                                        ),
-                                        label = "HavenScale"
-                                    )
-
-                                    Box(
-                                        modifier = Modifier
-                                            .size(56.dp) // Larger than standard icon
-                                            .scale(scale)
-                                            .clip(CircleShape)
-                                            .background(
-                                                androidx.compose.ui.graphics.Brush.verticalGradient(
-                                                    colors = listOf(
-                                                        com.prody.prashant.ui.theme.HavenBubbleLight,
-                                                        com.prody.prashant.ui.theme.HavenBubbleLight.copy(alpha = 0.8f)
-                                                    )
-                                                )
-                                            )
-                                            .alpha(if (selected) 1f else alpha), // Pulse when not selected (waiting)
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Icon(
-                                            imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
-                                            contentDescription = null,
-                                            tint = com.prody.prashant.ui.theme.HavenTextLight,
-                                            modifier = Modifier.size(28.dp)
-                                        )
-                                    }
                                 },
                                 label = { /* No label for FAB look */ },
                                 colors = NavigationBarItemDefaults.colors(
