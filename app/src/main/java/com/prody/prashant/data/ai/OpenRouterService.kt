@@ -173,6 +173,8 @@ class OpenRouterService @Inject constructor() {
                 } else {
                     HttpLoggingInterceptor.Level.NONE
                 }
+                // Security: Redact sensitive headers from logs
+                redactHeader("Authorization")
             })
             .build()
     }

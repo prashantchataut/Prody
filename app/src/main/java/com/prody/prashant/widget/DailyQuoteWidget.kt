@@ -1,5 +1,6 @@
 package com.prody.prashant.widget
 
+import android.appwidget.AppWidgetManager
 import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
@@ -44,11 +45,6 @@ import java.util.Calendar
 class DailyQuoteWidget : GlanceAppWidget() {
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
-        // Security: Rate-limit widget updates to prevent DoS attacks.
-        if (!WidgetUpdateThrottler.shouldUpdate(context, this::class.java)) {
-            return
-        }
-
         val quoteData = getDailyQuoteData()
 
         provideContent {
@@ -194,4 +190,17 @@ class RefreshQuoteAction : ActionCallback {
 
 class DailyQuoteWidgetReceiver : GlanceAppWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = DailyQuoteWidget()
+
+    override fun onUpdate(
+        context: Context,
+        appWidgetManager: AppWidgetManager,
+        appWidgetIds: IntArray
+    ) {
+        // Security: Rate-limit widget updates to prevent DoS attacks.
+        // Check performed at entry point before calling super.onUpdate()
+        if (!WidgetUpdateThrottler.shouldUpdate(context, this::class.java)) {
+            return
+        }
+        super.onUpdate(context, appWidgetManager, appWidgetIds)
+    }
 }

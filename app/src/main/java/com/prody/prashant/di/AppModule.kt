@@ -22,7 +22,6 @@ import com.prody.prashant.data.monitoring.PerformanceMonitor
 import com.prody.prashant.data.network.NetworkConnectivityManager
 import com.prody.prashant.data.onboarding.AiOnboardingManager
 import com.prody.prashant.data.security.EncryptionManager
-import com.prody.prashant.data.security.SecurityPreferences
 import com.prody.prashant.data.sync.SyncManager
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
@@ -423,14 +422,6 @@ object AppModule {
         @ApplicationContext context: Context
     ): ContentModerationManager {
         return ContentModerationManager(context)
-    }
-
-    @Provides
-    @Singleton
-    fun provideSecurityPreferences(
-        @ApplicationContext context: Context
-    ): SecurityPreferences {
-        return SecurityPreferences(context)
     }
 
     // ============================================================================

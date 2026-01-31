@@ -6,15 +6,11 @@ import com.prody.prashant.data.local.preferences.PreferencesManager
 import com.prody.prashant.ui.navigation.Screen
 import com.prody.prashant.ui.theme.ThemeMode
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
 @HiltViewModel
@@ -22,58 +18,31 @@ class MainViewModel @Inject constructor(
     private val preferencesManager: PreferencesManager
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(MainActivityUiState())
-    val uiState: StateFlow<MainActivityUiState> = _uiState.asStateFlow()
-
-    init {
-        // --- CRITICAL PATH ---
-        // Immediately determine the start destination to unblock the UI.
-        viewModelScope.launch {
-            val onboardingCompleted = preferencesManager.onboardingCompleted
-                .catch {
-                    // In case of error, default to showing onboarding
-                    emit(false)
-                }
-                .first() // We only need the initial value
-
-            val startDestination = if (onboardingCompleted) {
-                Screen.Home.route
-            } else {
-                Screen.Onboarding.route
-            }
-
-            // Use atomic update to set initial state and dismiss splash screen
-            _uiState.update {
-                it.copy(
-                    isLoading = false,
-                    startDestination = startDestination
-                )
-            }
-        }
-
-        // --- NON-CRITICAL PATH ---
-        // Asynchronously load user preferences and apply them.
-        viewModelScope.launch {
-            combine(
-                preferencesManager.themeMode.catch { emit("system") },
-                preferencesManager.hapticFeedbackEnabled.catch { emit(true) }
-            ) { themeModeString, hapticEnabled ->
-                val themeMode = when (themeModeString.lowercase()) {
-                    "light" -> ThemeMode.LIGHT
-                    "dark" -> ThemeMode.DARK
-                    else -> ThemeMode.SYSTEM
-                }
-                // Return a pair of the loaded preferences
-                themeMode to hapticEnabled
-            }.collectLatest { (themeMode, hapticEnabled) ->
-                // Use atomic update to apply non-critical preferences
-                _uiState.update {
-                    it.copy(
-                        themeMode = themeMode,
-                        hapticFeedbackEnabled = hapticEnabled
-                    )
-                }
-            }
-        }
-    }
+    /**
+     * The UI state for [MainActivity], managed declaratively using [stateIn].
+     * This approach ensures that:
+     * 1. All necessary data is loaded before dismissing the splash screen (isLoading = false).
+     * 2. There are no race conditions between different preference updates.
+     * 3. The startup logic is clean and follows modern Architectural Patterns.
+     */
+    val uiState: StateFlow<MainActivityUiState> = combine(
+        preferencesManager.onboardingCompleted.catch { emit(false) },
+        preferencesManager.themeMode.catch { emit("system") },
+        preferencesManager.hapticFeedbackEnabled.catch { emit(true) }
+    ) { onboardingCompleted, themeModeString, hapticEnabled ->
+        MainActivityUiState(
+            isLoading = false,
+            startDestination = if (onboardingCompleted) Screen.Home.route else Screen.Onboarding.route,
+            themeMode = when (themeModeString.lowercase()) {
+                "light" -> ThemeMode.LIGHT
+                "dark" -> ThemeMode.DARK
+                else -> ThemeMode.SYSTEM
+            },
+            hapticFeedbackEnabled = hapticEnabled
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = MainActivityUiState(isLoading = true)
+    )
 }
