@@ -80,6 +80,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
+import com.google.accompanist.permissions.shouldShowRationale
 import com.prody.prashant.R
 import com.prody.prashant.domain.model.Mood
 import com.prody.prashant.domain.validation.ContentValidation
@@ -95,6 +99,7 @@ import com.prody.prashant.ui.theme.*
 /**
  * Journal New Entry Screen - Premium Minimalist Design
  */
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun NewJournalEntryScreen(
     onNavigateBack: () -> Unit,
@@ -131,24 +136,17 @@ fun NewJournalEntryScreen(
         }
     }
 
-    // Audio recording permission state
-    var hasRecordingPermission by remember {
-        mutableStateOf(
-            ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.RECORD_AUDIO
-            ) == PackageManager.PERMISSION_GRANTED
-        )
-    }
+    // Audio recording permission state using Accompanist
+    val audioPermissionState = rememberPermissionState(
+        android.Manifest.permission.RECORD_AUDIO
+    )
 
-    // Audio permission launcher
-    val audioPermissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        hasRecordingPermission = isGranted
-        if (isGranted) {
-            viewModel.startRecording()
-        }
+    // State for showing permission rationale dialog
+    var showPermissionRationale by remember { mutableStateOf(false) }
+
+    // Check if speech recognition is available
+    val isSpeechRecognitionAvailable = remember {
+        android.speech.SpeechRecognizer.isRecognitionAvailable(context)
     }
 
     // Function to handle voice button click
@@ -158,16 +156,48 @@ fun NewJournalEntryScreen(
         } else if (uiState.isRecording) {
             viewModel.stopRecording()
         } else {
-            if (hasRecordingPermission) {
-                if (uiState.transcriptionAvailable) {
-                    viewModel.startTranscription()
-                } else {
-                    viewModel.startRecording()
+            // Check permission using Accompanist
+            when {
+                audioPermissionState.status.isGranted -> {
+                    // Permission granted
+                    if (uiState.transcriptionAvailable && isSpeechRecognitionAvailable) {
+                        viewModel.startTranscription()
+                    } else {
+                        viewModel.startRecording()
+                    }
                 }
-            } else {
-                audioPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+                audioPermissionState.status.shouldShowRationale -> {
+                    // Show rationale dialog
+                    showPermissionRationale = true
+                }
+                else -> {
+                    // Request permission directly
+                    audioPermissionState.launchPermissionRequest()
+                }
             }
         }
+    }
+
+    // Permission rationale dialog
+    if (showPermissionRationale) {
+        AlertDialog(
+            onDismissRequest = { showPermissionRationale = false },
+            title = { Text("Microphone Permission Needed") },
+            text = { Text("The journal needs microphone access to record voice notes and transcribe your thoughts. This helps you capture moments naturally.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showPermissionRationale = false
+                    audioPermissionState.launchPermissionRequest()
+                }) {
+                    Text("Grant Permission", color = ProdyForestGreen)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showPermissionRationale = false }) {
+                    Text("Not Now")
+                }
+            }
+        )
     }
 
     // Mood suggestion state

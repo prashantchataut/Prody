@@ -251,6 +251,12 @@ class NewJournalEntryViewModel @Inject constructor(
         viewModelScope.launch {
             val state = _uiState.value
 
+            // Guard against double-taps - prevent duplicate saves
+            if (state.isSaving || state.isSaved) {
+                android.util.Log.d(TAG, "Save already in progress or completed, ignoring duplicate save request")
+                return@launch
+            }
+
             // Validate content before saving
             val validation = state.contentValidation
             when (validation) {

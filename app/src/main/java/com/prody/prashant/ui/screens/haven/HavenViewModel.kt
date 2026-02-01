@@ -122,6 +122,20 @@ class HavenViewModel @Inject constructor(
         loadHomeData()
     }
 
+    /**
+     * Attempt to reconnect the AI service if it's in offline mode.
+     * This is useful after network becomes available.
+     */
+    fun retryAiConnection() {
+        viewModelScope.launch {
+            val success = havenRepository.retryInitialization()
+            if (success) {
+                // Refresh home data to update the offline status
+                loadHomeData()
+            }
+        }
+    }
+
     // ==================== CHAT SESSION ====================
 
     /**

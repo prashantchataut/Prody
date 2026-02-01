@@ -159,6 +159,188 @@ object ProdyIcons {
     // === CUSTOM ICONS (Lazy-loaded on demand) ===
     
     private val _customIcons = mutableMapOf<String, ImageVector>()
+
+    // === SENTIMENT ICONS for Mood Selection ===
+    val SentimentVeryDissatisfied: ImageVector
+        get() = _customIcons.getOrPut("SentimentVeryDissatisfied") {
+            createIcon("SentimentVeryDissatisfied") {
+                path(fill = SolidColor(Color.Black)) {
+                    moveTo(12f, 2f)
+                    curveTo(6.48f, 2f, 2f, 6.48f, 2f, 12f)
+                    reflectiveCurveTo(6.48f, 22f, 12f, 22f)
+                    reflectiveCurveTo(22f, 17.52f, 22f, 12f)
+                    reflectiveCurveTo(17.52f, 2f, 12f, 2f)
+                    close()
+                    moveTo(12f, 20f)
+                    curveToRelative(-4.42f, 0f, -8f, -3.58f, -8f, -8f)
+                    reflectiveCurveTo(7.58f, 4f, 12f, 4f)
+                    reflectiveCurveTo(20f, 7.58f, 20f, 12f)
+                    reflectiveCurveTo(16.42f, 20f, 12f, 20f)
+                    close()
+                    moveTo(8.5f, 8f)
+                    curveTo(7.67f, 8f, 7f, 8.67f, 7f, 9.5f)
+                    reflectiveCurveTo(7.67f, 11f, 8.5f, 11f)
+                    reflectiveCurveTo(10f, 10.33f, 10f, 9.5f)
+                    reflectiveCurveTo(9.33f, 8f, 8.5f, 8f)
+                    close()
+                    moveTo(15.5f, 8f)
+                    curveTo(14.67f, 8f, 14f, 8.67f, 14f, 9.5f)
+                    reflectiveCurveTo(14.67f, 11f, 15.5f, 11f)
+                    reflectiveCurveTo(17f, 10.33f, 17f, 9.5f)
+                    reflectiveCurveTo(16.33f, 8f, 15.5f, 8f)
+                    close()
+                    moveTo(12f, 14f)
+                    curveToRelative(-2.33f, 0f, -4.32f, 1.45f, -5.12f, 3.5f)
+                    horizontalLineToRelative(1.67f)
+                    curveToRelative(0.69f, -1.19f, 1.97f, -2f, 3.45f, -2f)
+                    reflectiveCurveTo(14.64f, 16.31f, 15.33f, 17.5f)
+                    horizontalLineToRelative(1.67f)
+                    curveTo(16.2f, 15.45f, 14.22f, 14f, 12f, 14f)
+                    close()
+                }
+            }
+        }
+
+    val SentimentDissatisfied: ImageVector
+        get() = _customIcons.getOrPut("SentimentDissatisfied") {
+            createIcon("SentimentDissatisfied") {
+                path(fill = SolidColor(Color.Black)) {
+                    moveTo(15.5f, 9.5f)
+                    moveToRelative(-1.5f, 0f)
+                    arcToRelative(1.5f, 1.5f, 0f, isMoreThanHalf = true, isPositiveArc = true, 3f, 0f)
+                    arcToRelative(1.5f, 1.5f, 0f, isMoreThanHalf = true, isPositiveArc = true, -3f, 0f)
+                    moveTo(8.5f, 9.5f)
+                    moveToRelative(-1.5f, 0f)
+                    arcToRelative(1.5f, 1.5f, 0f, isMoreThanHalf = true, isPositiveArc = true, 3f, 0f)
+                    arcToRelative(1.5f, 1.5f, 0f, isMoreThanHalf = true, isPositiveArc = true, -3f, 0f)
+                    moveTo(12f, 14f)
+                    curveToRelative(-2f, 0f, -3.7f, 1.2f, -4.5f, 3f)
+                    horizontalLineToRelative(9f)
+                    curveToRelative(-0.8f, -1.8f, -2.5f, -3f, -4.5f, -3f)
+                    close()
+                    moveTo(12f, 2f)
+                    curveTo(6.5f, 2f, 2f, 6.5f, 2f, 12f)
+                    reflectiveCurveTo(6.5f, 22f, 12f, 22f)
+                    reflectiveCurveTo(22f, 17.5f, 22f, 12f)
+                    reflectiveCurveTo(17.5f, 2f, 12f, 2f)
+                    close()
+                    moveTo(12f, 20f)
+                    curveToRelative(-4.4f, 0f, -8f, -3.6f, -8f, -8f)
+                    reflectiveCurveTo(7.6f, 4f, 12f, 4f)
+                    reflectiveCurveTo(20f, 7.6f, 20f, 12f)
+                    reflectiveCurveTo(16.4f, 20f, 12f, 20f)
+                    close()
+                }
+            }
+        }
+
+    val SentimentNeutral: ImageVector
+        get() = _customIcons.getOrPut("SentimentNeutral") {
+            createIcon("SentimentNeutral") {
+                path(fill = SolidColor(Color.Black)) {
+                    moveTo(9f, 14f)
+                    horizontalLineToRelative(6f)
+                    verticalLineToRelative(1.5f)
+                    horizontalLineTo(9f)
+                    verticalLineTo(14f)
+                    close()
+                    moveTo(15.5f, 9.5f)
+                    moveToRelative(-1.5f, 0f)
+                    arcToRelative(1.5f, 1.5f, 0f, isMoreThanHalf = true, isPositiveArc = true, 3f, 0f)
+                    arcToRelative(1.5f, 1.5f, 0f, isMoreThanHalf = true, isPositiveArc = true, -3f, 0f)
+                    moveTo(8.5f, 9.5f)
+                    moveToRelative(-1.5f, 0f)
+                    arcToRelative(1.5f, 1.5f, 0f, isMoreThanHalf = true, isPositiveArc = true, 3f, 0f)
+                    arcToRelative(1.5f, 1.5f, 0f, isMoreThanHalf = true, isPositiveArc = true, -3f, 0f)
+                    moveTo(12f, 2f)
+                    curveTo(6.5f, 2f, 2f, 6.5f, 2f, 12f)
+                    reflectiveCurveTo(6.5f, 22f, 12f, 22f)
+                    reflectiveCurveTo(22f, 17.5f, 22f, 12f)
+                    reflectiveCurveTo(17.5f, 2f, 12f, 2f)
+                    close()
+                    moveTo(12f, 20f)
+                    curveToRelative(-4.4f, 0f, -8f, -3.6f, -8f, -8f)
+                    reflectiveCurveTo(7.6f, 4f, 12f, 4f)
+                    reflectiveCurveTo(20f, 7.6f, 20f, 12f)
+                    reflectiveCurveTo(16.4f, 20f, 12f, 20f)
+                    close()
+                }
+            }
+        }
+
+    val SentimentSatisfied: ImageVector
+        get() = _customIcons.getOrPut("SentimentSatisfied") {
+            createIcon("SentimentSatisfied") {
+                path(fill = SolidColor(Color.Black)) {
+                    moveTo(15.5f, 9.5f)
+                    moveToRelative(-1.5f, 0f)
+                    arcToRelative(1.5f, 1.5f, 0f, isMoreThanHalf = true, isPositiveArc = true, 3f, 0f)
+                    arcToRelative(1.5f, 1.5f, 0f, isMoreThanHalf = true, isPositiveArc = true, -3f, 0f)
+                    moveTo(8.5f, 9.5f)
+                    moveToRelative(-1.5f, 0f)
+                    arcToRelative(1.5f, 1.5f, 0f, isMoreThanHalf = true, isPositiveArc = true, 3f, 0f)
+                    arcToRelative(1.5f, 1.5f, 0f, isMoreThanHalf = true, isPositiveArc = true, -3f, 0f)
+                    moveTo(12f, 16f)
+                    curveToRelative(1.5f, 0f, 2.7f, -0.8f, 3.5f, -2f)
+                    horizontalLineToRelative(-7f)
+                    curveToRelative(0.8f, 1.2f, 2f, 2f, 3.5f, 2f)
+                    close()
+                    moveTo(12f, 2f)
+                    curveTo(6.5f, 2f, 2f, 6.5f, 2f, 12f)
+                    reflectiveCurveTo(6.5f, 22f, 12f, 22f)
+                    reflectiveCurveTo(22f, 17.5f, 22f, 12f)
+                    reflectiveCurveTo(17.5f, 2f, 12f, 2f)
+                    close()
+                    moveTo(12f, 20f)
+                    curveToRelative(-4.4f, 0f, -8f, -3.6f, -8f, -8f)
+                    reflectiveCurveTo(7.6f, 4f, 12f, 4f)
+                    reflectiveCurveTo(20f, 7.6f, 20f, 12f)
+                    reflectiveCurveTo(16.4f, 20f, 12f, 20f)
+                    close()
+                }
+            }
+        }
+
+    val SentimentVerySatisfied: ImageVector
+        get() = _customIcons.getOrPut("SentimentVerySatisfied") {
+            createIcon("SentimentVerySatisfied") {
+                path(fill = SolidColor(Color.Black)) {
+                    moveTo(12f, 2f)
+                    curveTo(6.48f, 2f, 2f, 6.48f, 2f, 12f)
+                    reflectiveCurveTo(6.48f, 22f, 12f, 22f)
+                    reflectiveCurveTo(22f, 17.52f, 22f, 12f)
+                    reflectiveCurveTo(17.52f, 2f, 12f, 2f)
+                    close()
+                    moveTo(12f, 20f)
+                    curveToRelative(-4.42f, 0f, -8f, -3.58f, -8f, -8f)
+                    reflectiveCurveTo(7.58f, 4f, 12f, 4f)
+                    reflectiveCurveTo(20f, 7.58f, 20f, 12f)
+                    reflectiveCurveTo(16.42f, 20f, 12f, 20f)
+                    close()
+                    moveTo(13f, 9.94f)
+                    lineTo(14.06f, 11f)
+                    lineTo(15.12f, 9.94f)
+                    lineTo(16.18f, 11f)
+                    lineTo(17.24f, 9.94f)
+                    lineTo(15.12f, 7.82f)
+                    lineTo(13f, 9.94f)
+                    close()
+                    moveTo(8.88f, 9.94f)
+                    lineTo(9.94f, 11f)
+                    lineTo(11f, 9.94f)
+                    lineTo(8.88f, 7.82f)
+                    lineTo(6.76f, 9.94f)
+                    lineTo(7.82f, 11f)
+                    lineTo(8.88f, 9.94f)
+                    close()
+                    moveTo(12f, 17.5f)
+                    curveToRelative(2.33f, 0f, 4.31f, -1.46f, 5.11f, -3.5f)
+                    horizontalLineTo(6.89f)
+                    curveTo(7.69f, 16.04f, 9.67f, 17.5f, 12f, 17.5f)
+                    close()
+                }
+            }
+        }
     
     val CheckCircle: ImageVector get() = Icons.Filled.CheckCircle
     val SelfImprovement: ImageVector get() = Icons.Filled.SelfImprovement
