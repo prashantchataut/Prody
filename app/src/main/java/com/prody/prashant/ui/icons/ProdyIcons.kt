@@ -8,20 +8,11 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.PathFillType
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.*
 import androidx.compose.ui.unit.dp
 
-/**
- * Optimized Icon System for Prody App
- *
- * This object provides efficient access to Material Design icons and custom icons.
- */
 object ProdyIcons {
-    
-    // === CORE MATERIAL ICONS (Pre-loaded) ===
-    
     val Add: ImageVector = Icons.Filled.Add
     val ArrowBack: ImageVector = Icons.AutoMirrored.Filled.ArrowBack
     val ArrowForward: ImageVector = Icons.AutoMirrored.Filled.ArrowForward
@@ -59,9 +50,11 @@ object ProdyIcons {
     val Image: ImageVector = Icons.Filled.Image
     val Stop: ImageVector = Icons.Filled.Stop
     val Pause: ImageVector = Icons.Filled.Pause
-    
-    // === NESTED OBJECTS FOR STYLE VARIANTS ===
-    
+    val Token: ImageVector = Icons.Filled.Star
+    val BarChart: ImageVector = Icons.AutoMirrored.Filled.List
+    val Dashboard: ImageVector = Icons.Filled.Home
+    val Leaderboard: ImageVector = Icons.AutoMirrored.Filled.List
+
     object Outlined {
         val Info: ImageVector = Icons.Outlined.Info
         val LocalFireDepartment: ImageVector = Icons.Outlined.LocalFireDepartment
@@ -82,7 +75,7 @@ object ProdyIcons {
         val SelfImprovement: ImageVector = Icons.Outlined.SelfImprovement
         val School: ImageVector = Icons.Outlined.School
         val ChatBubble: ImageVector = Icons.Outlined.ChatBubble
-        val TextFormat: ImageVector = Icons.AutoMirrored.Outlined.TextFormat
+        val TextFormat: ImageVector = Icons.Outlined.TextFormat
         val AutoAwesome: ImageVector = Icons.Outlined.AutoAwesome
         val Leaderboard: ImageVector = Icons.Outlined.Leaderboard
         val Star: ImageVector = Icons.Outlined.Star
@@ -99,8 +92,8 @@ object ProdyIcons {
         val Groups: ImageVector = Icons.Outlined.Person
         val MoreHoriz: ImageVector = Icons.Outlined.MoreVert
         val StickyNote2: ImageVector = Icons.Outlined.Edit
-        val Article: ImageVector = Icons.AutoMirrored.Outlined.Article
-        val TextFields: ImageVector = Icons.AutoMirrored.Outlined.TextFormat
+        val Article: ImageVector = Icons.Outlined.Article
+        val TextFields: ImageVector = Icons.Outlined.TextFormat
         val CalendarToday: ImageVector = Icons.Outlined.DateRange
         val TrendingFlat: ImageVector = Icons.AutoMirrored.Outlined.ArrowForward
         val Tag: ImageVector = Icons.Outlined.Label
@@ -113,7 +106,7 @@ object ProdyIcons {
         val Pause: ImageVector = Icons.Outlined.Pause
         val PlayArrow: ImageVector = Icons.Outlined.PlayArrow
         val SearchOff: ImageVector = Icons.Outlined.SearchOff
-        val AutoStories: ImageVector = Icons.AutoMirrored.Outlined.AutoStories
+        val AutoStories: ImageVector = Icons.Outlined.AutoStories
         val BookmarkBorder: ImageVector = Icons.Outlined.BookmarkBorder
         val HelpOutline: ImageVector = Icons.AutoMirrored.Outlined.Help
         val Tips: ImageVector = Icons.Outlined.Lightbulb
@@ -144,7 +137,7 @@ object ProdyIcons {
         val TrendingUp: ImageVector = Icons.AutoMirrored.Rounded.TrendingUp
         val Celebration: ImageVector = Icons.Rounded.Celebration
         val Favorite: ImageVector = Icons.Rounded.Favorite
-        val Token: ImageVector = Icons.Rounded.Star // Fallback
+        val Token: ImageVector = Icons.Rounded.Star
         val Book: ImageVector = Icons.Rounded.Book
         val Send: ImageVector = Icons.AutoMirrored.Rounded.Send
         val Mail: ImageVector = Icons.Rounded.Email
@@ -156,222 +149,7 @@ object ProdyIcons {
         val CalendarMonth: ImageVector = Icons.Rounded.DateRange
     }
 
-    // === CUSTOM ICONS (Lazy-loaded on demand) ===
-    
     private val _customIcons = mutableMapOf<String, ImageVector>()
-
-    // === SENTIMENT ICONS for Mood Selection ===
-    val SentimentVeryDissatisfied: ImageVector
-        get() = _customIcons.getOrPut("SentimentVeryDissatisfied") {
-            createIcon("SentimentVeryDissatisfied") {
-                path(fill = SolidColor(Color.Black)) {
-                    moveTo(12f, 2f)
-                    curveTo(6.48f, 2f, 2f, 6.48f, 2f, 12f)
-                    reflectiveCurveTo(6.48f, 22f, 12f, 22f)
-                    reflectiveCurveTo(22f, 17.52f, 22f, 12f)
-                    reflectiveCurveTo(17.52f, 2f, 12f, 2f)
-                    close()
-                    moveTo(12f, 20f)
-                    curveToRelative(-4.42f, 0f, -8f, -3.58f, -8f, -8f)
-                    reflectiveCurveTo(7.58f, 4f, 12f, 4f)
-                    reflectiveCurveTo(20f, 7.58f, 20f, 12f)
-                    reflectiveCurveTo(16.42f, 20f, 12f, 20f)
-                    close()
-                    moveTo(8.5f, 8f)
-                    curveTo(7.67f, 8f, 7f, 8.67f, 7f, 9.5f)
-                    reflectiveCurveTo(7.67f, 11f, 8.5f, 11f)
-                    reflectiveCurveTo(10f, 10.33f, 10f, 9.5f)
-                    reflectiveCurveTo(9.33f, 8f, 8.5f, 8f)
-                    close()
-                    moveTo(15.5f, 8f)
-                    curveTo(14.67f, 8f, 14f, 8.67f, 14f, 9.5f)
-                    reflectiveCurveTo(14.67f, 11f, 15.5f, 11f)
-                    reflectiveCurveTo(17f, 10.33f, 17f, 9.5f)
-                    reflectiveCurveTo(16.33f, 8f, 15.5f, 8f)
-                    close()
-                    moveTo(12f, 14f)
-                    curveToRelative(-2.33f, 0f, -4.32f, 1.45f, -5.12f, 3.5f)
-                    horizontalLineToRelative(1.67f)
-                    curveToRelative(0.69f, -1.19f, 1.97f, -2f, 3.45f, -2f)
-                    reflectiveCurveTo(14.64f, 16.31f, 15.33f, 17.5f)
-                    horizontalLineToRelative(1.67f)
-                    curveTo(16.2f, 15.45f, 14.22f, 14f, 12f, 14f)
-                    close()
-                }
-            }
-        }
-
-    val SentimentDissatisfied: ImageVector
-        get() = _customIcons.getOrPut("SentimentDissatisfied") {
-            createIcon("SentimentDissatisfied") {
-                path(fill = SolidColor(Color.Black)) {
-                    moveTo(15.5f, 9.5f)
-                    moveToRelative(-1.5f, 0f)
-                    arcToRelative(1.5f, 1.5f, 0f, isMoreThanHalf = true, isPositiveArc = true, 3f, 0f)
-                    arcToRelative(1.5f, 1.5f, 0f, isMoreThanHalf = true, isPositiveArc = true, -3f, 0f)
-                    moveTo(8.5f, 9.5f)
-                    moveToRelative(-1.5f, 0f)
-                    arcToRelative(1.5f, 1.5f, 0f, isMoreThanHalf = true, isPositiveArc = true, 3f, 0f)
-                    arcToRelative(1.5f, 1.5f, 0f, isMoreThanHalf = true, isPositiveArc = true, -3f, 0f)
-                    moveTo(12f, 14f)
-                    curveToRelative(-2f, 0f, -3.7f, 1.2f, -4.5f, 3f)
-                    horizontalLineToRelative(9f)
-                    curveToRelative(-0.8f, -1.8f, -2.5f, -3f, -4.5f, -3f)
-                    close()
-                    moveTo(12f, 2f)
-                    curveTo(6.5f, 2f, 2f, 6.5f, 2f, 12f)
-                    reflectiveCurveTo(6.5f, 22f, 12f, 22f)
-                    reflectiveCurveTo(22f, 17.5f, 22f, 12f)
-                    reflectiveCurveTo(17.5f, 2f, 12f, 2f)
-                    close()
-                    moveTo(12f, 20f)
-                    curveToRelative(-4.4f, 0f, -8f, -3.6f, -8f, -8f)
-                    reflectiveCurveTo(7.6f, 4f, 12f, 4f)
-                    reflectiveCurveTo(20f, 7.6f, 20f, 12f)
-                    reflectiveCurveTo(16.4f, 20f, 12f, 20f)
-                    close()
-                }
-            }
-        }
-
-    val SentimentNeutral: ImageVector
-        get() = _customIcons.getOrPut("SentimentNeutral") {
-            createIcon("SentimentNeutral") {
-                path(fill = SolidColor(Color.Black)) {
-                    moveTo(9f, 14f)
-                    horizontalLineToRelative(6f)
-                    verticalLineToRelative(1.5f)
-                    horizontalLineTo(9f)
-                    verticalLineTo(14f)
-                    close()
-                    moveTo(15.5f, 9.5f)
-                    moveToRelative(-1.5f, 0f)
-                    arcToRelative(1.5f, 1.5f, 0f, isMoreThanHalf = true, isPositiveArc = true, 3f, 0f)
-                    arcToRelative(1.5f, 1.5f, 0f, isMoreThanHalf = true, isPositiveArc = true, -3f, 0f)
-                    moveTo(8.5f, 9.5f)
-                    moveToRelative(-1.5f, 0f)
-                    arcToRelative(1.5f, 1.5f, 0f, isMoreThanHalf = true, isPositiveArc = true, 3f, 0f)
-                    arcToRelative(1.5f, 1.5f, 0f, isMoreThanHalf = true, isPositiveArc = true, -3f, 0f)
-                    moveTo(12f, 2f)
-                    curveTo(6.5f, 2f, 2f, 6.5f, 2f, 12f)
-                    reflectiveCurveTo(6.5f, 22f, 12f, 22f)
-                    reflectiveCurveTo(22f, 17.5f, 22f, 12f)
-                    reflectiveCurveTo(17.5f, 2f, 12f, 2f)
-                    close()
-                    moveTo(12f, 20f)
-                    curveToRelative(-4.4f, 0f, -8f, -3.6f, -8f, -8f)
-                    reflectiveCurveTo(7.6f, 4f, 12f, 4f)
-                    reflectiveCurveTo(20f, 7.6f, 20f, 12f)
-                    reflectiveCurveTo(16.4f, 20f, 12f, 20f)
-                    close()
-                }
-            }
-        }
-
-    val SentimentSatisfied: ImageVector
-        get() = _customIcons.getOrPut("SentimentSatisfied") {
-            createIcon("SentimentSatisfied") {
-                path(fill = SolidColor(Color.Black)) {
-                    moveTo(15.5f, 9.5f)
-                    moveToRelative(-1.5f, 0f)
-                    arcToRelative(1.5f, 1.5f, 0f, isMoreThanHalf = true, isPositiveArc = true, 3f, 0f)
-                    arcToRelative(1.5f, 1.5f, 0f, isMoreThanHalf = true, isPositiveArc = true, -3f, 0f)
-                    moveTo(8.5f, 9.5f)
-                    moveToRelative(-1.5f, 0f)
-                    arcToRelative(1.5f, 1.5f, 0f, isMoreThanHalf = true, isPositiveArc = true, 3f, 0f)
-                    arcToRelative(1.5f, 1.5f, 0f, isMoreThanHalf = true, isPositiveArc = true, -3f, 0f)
-                    moveTo(12f, 16f)
-                    curveToRelative(1.5f, 0f, 2.7f, -0.8f, 3.5f, -2f)
-                    horizontalLineToRelative(-7f)
-                    curveToRelative(0.8f, 1.2f, 2f, 2f, 3.5f, 2f)
-                    close()
-                    moveTo(12f, 2f)
-                    curveTo(6.5f, 2f, 2f, 6.5f, 2f, 12f)
-                    reflectiveCurveTo(6.5f, 22f, 12f, 22f)
-                    reflectiveCurveTo(22f, 17.5f, 22f, 12f)
-                    reflectiveCurveTo(17.5f, 2f, 12f, 2f)
-                    close()
-                    moveTo(12f, 20f)
-                    curveToRelative(-4.4f, 0f, -8f, -3.6f, -8f, -8f)
-                    reflectiveCurveTo(7.6f, 4f, 12f, 4f)
-                    reflectiveCurveTo(20f, 7.6f, 20f, 12f)
-                    reflectiveCurveTo(16.4f, 20f, 12f, 20f)
-                    close()
-                }
-            }
-        }
-
-    val SentimentVerySatisfied: ImageVector
-        get() = _customIcons.getOrPut("SentimentVerySatisfied") {
-            createIcon("SentimentVerySatisfied") {
-                path(fill = SolidColor(Color.Black)) {
-                    moveTo(12f, 2f)
-                    curveTo(6.48f, 2f, 2f, 6.48f, 2f, 12f)
-                    reflectiveCurveTo(6.48f, 22f, 12f, 22f)
-                    reflectiveCurveTo(22f, 17.52f, 22f, 12f)
-                    reflectiveCurveTo(17.52f, 2f, 12f, 2f)
-                    close()
-                    moveTo(12f, 20f)
-                    curveToRelative(-4.42f, 0f, -8f, -3.58f, -8f, -8f)
-                    reflectiveCurveTo(7.58f, 4f, 12f, 4f)
-                    reflectiveCurveTo(20f, 7.58f, 20f, 12f)
-                    reflectiveCurveTo(16.42f, 20f, 12f, 20f)
-                    close()
-                    moveTo(13f, 9.94f)
-                    lineTo(14.06f, 11f)
-                    lineTo(15.12f, 9.94f)
-                    lineTo(16.18f, 11f)
-                    lineTo(17.24f, 9.94f)
-                    lineTo(15.12f, 7.82f)
-                    lineTo(13f, 9.94f)
-                    close()
-                    moveTo(8.88f, 9.94f)
-                    lineTo(9.94f, 11f)
-                    lineTo(11f, 9.94f)
-                    lineTo(8.88f, 7.82f)
-                    lineTo(6.76f, 9.94f)
-                    lineTo(7.82f, 11f)
-                    lineTo(8.88f, 9.94f)
-                    close()
-                    moveTo(12f, 17.5f)
-                    curveToRelative(2.33f, 0f, 4.31f, -1.46f, 5.11f, -3.5f)
-                    horizontalLineTo(6.89f)
-                    curveTo(7.69f, 16.04f, 9.67f, 17.5f, 12f, 17.5f)
-                    close()
-                }
-            }
-        }
-    
-    val CheckCircle: ImageVector get() = Icons.Filled.CheckCircle
-    val SelfImprovement: ImageVector get() = Icons.Filled.SelfImprovement
-    val Lightbulb: ImageVector get() = Icons.Filled.Lightbulb
-    val AutoAwesome: ImageVector get() = Icons.Filled.AutoAwesome
-
-    // === COMMON ALIASES ===
-    
-    val Mail: ImageVector = Email
-    val Lock: ImageVector = Icons.Filled.Lock
-    val SendIcon: ImageVector = Send
-    val ArrowRight: ImageVector = KeyboardArrowRight
-    val ListIcon: ImageVector = List
-
-    object Common {
-        val Add = ProdyIcons.Add
-        val Check = ProdyIcons.Check
-        val Close = ProdyIcons.Close
-        val Home = ProdyIcons.Home
-        val Menu = ProdyIcons.Menu
-        val Person = ProdyIcons.Person
-        val Search = ProdyIcons.Search
-        val Settings = ProdyIcons.Settings
-        val Star = ProdyIcons.Star
-    }
-
-    object Gamification {
-        val Trophy: ImageVector = Icons.Filled.EmojiEvents
-    }
-
-    // === UTILITY METHODS ===
 
     private fun createIcon(name: String, pathData: ImageVector.Builder.() -> Unit): ImageVector {
         return ImageVector.Builder(
@@ -383,11 +161,191 @@ object ProdyIcons {
         ).apply(pathData).build()
     }
 
-    fun clearIconCache() { _customIcons.clear() }
-    
-    fun getIconMemoryInfo(): String = "Icons loaded"
-    fun preloadCommonIcons() {}
+    val SentimentVeryDissatisfied: ImageVector get() = _customIcons.getOrPut("SentimentVeryDissatisfied") {
+        createIcon("SentimentVeryDissatisfied") {
+            path(fill = SolidColor(Color.Black)) {
+                moveTo(12f, 2f)
+                curveTo(6.48f, 2f, 2f, 6.48f, 2f, 12f)
+                reflectiveCurveTo(6.48f, 22f, 12f, 22f)
+                reflectiveCurveTo(22f, 17.52f, 22f, 12f)
+                reflectiveCurveTo(17.52f, 2f, 12f, 2f)
+                close()
+                moveTo(12f, 20f)
+                curveToRelative(-4.42f, 0f, -8f, -3.58f, -8f, -8f)
+                reflectiveCurveTo(7.58f, 4f, 12f, 4f)
+                reflectiveCurveTo(20f, 7.58f, 20f, 12f)
+                reflectiveCurveTo(16.42f, 20f, 12f, 20f)
+                close()
+                moveTo(8.5f, 8f)
+                curveTo(7.67f, 8f, 7f, 8.67f, 7f, 9.5f)
+                reflectiveCurveTo(7.67f, 11f, 8.5f, 11f)
+                reflectiveCurveTo(10f, 10.33f, 10f, 9.5f)
+                reflectiveCurveTo(9.33f, 8f, 8.5f, 8f)
+                close()
+                moveTo(15.5f, 8f)
+                curveTo(14.67f, 8f, 14f, 8.67f, 14f, 9.5f)
+                reflectiveCurveTo(14.67f, 11f, 15.5f, 11f)
+                reflectiveCurveTo(17f, 10.33f, 17f, 9.5f)
+                reflectiveCurveTo(16.33f, 8f, 15.5f, 8f)
+                close()
+                moveTo(12f, 14f)
+                curveToRelative(-2.33f, 0f, -4.32f, 1.45f, -5.12f, 3.5f)
+                horizontalLineToRelative(1.67f)
+                curveToRelative(0.69f, -1.19f, 1.97f, -2f, 3.45f, -2f)
+                reflectiveCurveTo(14.64f, 16.31f, 15.33f, 17.5f)
+                horizontalLineToRelative(1.67f)
+                curveTo(16.2f, 15.45f, 14.22f, 14f, 12f, 14f)
+                close()
+            }
+        }
+    }
 
+    val SentimentDissatisfied: ImageVector get() = _customIcons.getOrPut("SentimentDissatisfied") {
+        createIcon("SentimentDissatisfied") {
+            path(fill = SolidColor(Color.Black)) {
+                moveTo(15.5f, 9.5f)
+                moveToRelative(-1.5f, 0f)
+                arcToRelative(1.5f, 1.5f, 0f, isMoreThanHalf = true, isPositiveArc = true, 3f, 0f)
+                arcToRelative(1.5f, 1.5f, 0f, isMoreThanHalf = true, isPositiveArc = true, -3f, 0f)
+                moveTo(8.5f, 9.5f)
+                moveToRelative(-1.5f, 0f)
+                arcToRelative(1.5f, 1.5f, 0f, isMoreThanHalf = true, isPositiveArc = true, 3f, 0f)
+                arcToRelative(1.5f, 1.5f, 0f, isMoreThanHalf = true, isPositiveArc = true, -3f, 0f)
+                moveTo(12f, 14f)
+                curveToRelative(-2f, 0f, -3.7f, 1.2f, -4.5f, 3f)
+                horizontalLineToRelative(9f)
+                curveToRelative(-0.8f, -1.8f, -2.5f, -3f, -4.5f, -3f)
+                close()
+                moveTo(12f, 2f)
+                curveTo(6.5f, 2f, 2f, 6.5f, 2f, 12f)
+                reflectiveCurveTo(6.5f, 22f, 12f, 22f)
+                reflectiveCurveTo(22f, 17.5f, 22f, 12f)
+                reflectiveCurveTo(17.5f, 2f, 12f, 2f)
+                close()
+                moveTo(12f, 20f)
+                curveToRelative(-4.4f, 0f, -8f, -3.6f, -8f, -8f)
+                reflectiveCurveTo(7.6f, 4f, 12f, 4f)
+                reflectiveCurveTo(20f, 7.6f, 20f, 12f)
+                reflectiveCurveTo(16.4f, 20f, 12f, 20f)
+                close()
+            }
+        }
+    }
+
+    val SentimentNeutral: ImageVector get() = _customIcons.getOrPut("SentimentNeutral") {
+        createIcon("SentimentNeutral") {
+            path(fill = SolidColor(Color.Black)) {
+                moveTo(9f, 14f)
+                horizontalLineToRelative(6f)
+                verticalLineToRelative(1.5f)
+                horizontalLineTo(9f)
+                verticalLineTo(14f)
+                close()
+                moveTo(15.5f, 9.5f)
+                moveToRelative(-1.5f, 0f)
+                arcToRelative(1.5f, 1.5f, 0f, isMoreThanHalf = true, isPositiveArc = true, 3f, 0f)
+                arcToRelative(1.5f, 1.5f, 0f, isMoreThanHalf = true, isPositiveArc = true, -3f, 0f)
+                moveTo(8.5f, 9.5f)
+                moveToRelative(-1.5f, 0f)
+                arcToRelative(1.5f, 1.5f, 0f, isMoreThanHalf = true, isPositiveArc = true, 3f, 0f)
+                arcToRelative(1.5f, 1.5f, 0f, isMoreThanHalf = true, isPositiveArc = true, -3f, 0f)
+                moveTo(12f, 2f)
+                curveTo(6.5f, 2f, 2f, 6.5f, 2f, 12f)
+                reflectiveCurveTo(6.5f, 22f, 12f, 22f)
+                reflectiveCurveTo(22f, 17.5f, 22f, 12f)
+                reflectiveCurveTo(17.5f, 2f, 12f, 2f)
+                close()
+                moveTo(12f, 20f)
+                curveToRelative(-4.4f, 0f, -8f, -3.6f, -8f, -8f)
+                reflectiveCurveTo(7.6f, 4f, 12f, 4f)
+                reflectiveCurveTo(20f, 7.6f, 20f, 12f)
+                reflectiveCurveTo(16.4f, 20f, 12f, 20f)
+                close()
+            }
+        }
+    }
+
+    val SentimentSatisfied: ImageVector get() = _customIcons.getOrPut("SentimentSatisfied") {
+        createIcon("SentimentSatisfied") {
+            path(fill = SolidColor(Color.Black)) {
+                moveTo(15.5f, 9.5f)
+                moveToRelative(-1.5f, 0f)
+                arcToRelative(1.5f, 1.5f, 0f, isMoreThanHalf = true, isPositiveArc = true, 3f, 0f)
+                arcToRelative(1.5f, 1.5f, 0f, isMoreThanHalf = true, isPositiveArc = true, -3f, 0f)
+                moveTo(8.5f, 9.5f)
+                moveToRelative(-1.5f, 0f)
+                arcToRelative(1.5f, 1.5f, 0f, isMoreThanHalf = true, isPositiveArc = true, 3f, 0f)
+                arcToRelative(1.5f, 1.5f, 0f, isMoreThanHalf = true, isPositiveArc = true, -3f, 0f)
+                moveTo(12f, 16f)
+                curveToRelative(1.5f, 0f, 2.7f, -0.8f, 3.5f, -2f)
+                horizontalLineToRelative(-7f)
+                curveToRelative(0.8f, 1.2f, 2f, 2f, 3.5f, 2f)
+                close()
+                moveTo(12f, 2f)
+                curveTo(6.5f, 2f, 2f, 6.5f, 2f, 12f)
+                reflectiveCurveTo(6.5f, 22f, 12f, 22f)
+                reflectiveCurveTo(22f, 17.5f, 22f, 12f)
+                reflectiveCurveTo(17.5f, 2f, 12f, 2f)
+                close()
+                moveTo(12f, 20f)
+                curveToRelative(-4.4f, 0f, -8f, -3.6f, -8f, -8f)
+                reflectiveCurveTo(7.6f, 4f, 12f, 4f)
+                reflectiveCurveTo(20f, 7.6f, 20f, 12f)
+                reflectiveCurveTo(16.4f, 20f, 12f, 20f)
+                close()
+            }
+        }
+    }
+
+    val SentimentVerySatisfied: ImageVector get() = _customIcons.getOrPut("SentimentVerySatisfied") {
+        createIcon("SentimentVerySatisfied") {
+            path(fill = SolidColor(Color.Black)) {
+                moveTo(12f, 2f)
+                curveTo(6.48f, 2f, 2f, 6.48f, 2f, 12f)
+                reflectiveCurveTo(6.48f, 22f, 12f, 22f)
+                reflectiveCurveTo(22f, 17.52f, 22f, 12f)
+                reflectiveCurveTo(17.52f, 2f, 12f, 2f)
+                close()
+                moveTo(12f, 20f)
+                curveToRelative(-4.42f, 0f, -8f, -3.58f, -8f, -8f)
+                reflectiveCurveTo(7.58f, 4f, 12f, 4f)
+                reflectiveCurveTo(20f, 7.58f, 20f, 12f)
+                reflectiveCurveTo(16.42f, 20f, 12f, 20f)
+                close()
+                moveTo(13f, 9.94f)
+                lineTo(14.06f, 11f)
+                lineTo(15.12f, 9.94f)
+                lineTo(16.18f, 11f)
+                lineTo(17.24f, 9.94f)
+                lineTo(15.12f, 7.82f)
+                lineTo(13f, 9.94f)
+                close()
+                moveTo(8.88f, 9.94f)
+                lineTo(9.94f, 11f)
+                lineTo(11f, 9.94f)
+                lineTo(8.88f, 7.82f)
+                lineTo(6.76f, 9.94f)
+                lineTo(7.82f, 11f)
+                lineTo(8.88f, 9.94f)
+                close()
+                moveTo(12f, 17.5f)
+                curveToRelative(2.33f, 0f, 4.31f, -1.46f, 5.11f, -3.5f)
+                horizontalLineTo(6.89f)
+                curveTo(7.69f, 16.04f, 9.67f, 17.5f, 12f, 17.5f)
+                close()
+            }
+        }
+    }
+    
+    val CheckCircle: ImageVector get() = Icons.Filled.CheckCircle
+    val SelfImprovement: ImageVector get() = Icons.Filled.SelfImprovement
+    val Lightbulb: ImageVector get() = Icons.Filled.Lightbulb
+    val AutoAwesome: ImageVector get() = Icons.Filled.AutoAwesome
+    val Mail: ImageVector = Email
+    val Lock: ImageVector = Icons.Filled.Lock
+    val SendIcon: ImageVector = Send
+    val ArrowRight: ImageVector = KeyboardArrowRight
+    val ListIcon: ImageVector = List
     val Schedule: ImageVector = Icons.Filled.DateRange
     val LocalFireDepartment: ImageVector = Icons.Filled.LocalFireDepartment
     val EmojiEvents: ImageVector = Icons.Filled.EmojiEvents
@@ -430,20 +388,20 @@ object ProdyIcons {
     val Create: ImageVector = Edit
     val FilterList: ImageVector = Icons.Filled.List
     val Assignment: ImageVector = Icons.AutoMirrored.Filled.Assignment
-    val BarChart: ImageVector = Icons.AutoMirrored.Filled.List // Fallback
+    val BarChart: ImageVector = Icons.AutoMirrored.Filled.List
     val CalendarMonth: ImageVector = Icons.Filled.DateRange
     val Code: ImageVector = Icons.Filled.Code
-    val Dashboard: ImageVector = Icons.Filled.Home // Fallback
+    val Dashboard: ImageVector = Icons.Filled.Home
     val Explore: ImageVector = Icons.Filled.Place
     val Forum: ImageVector = Icons.Filled.Email
     val Grass: ImageVector = LocalFlorist
     val Eco: ImageVector = LocalFlorist
     val Park: ImageVector = LocalFlorist
     val Nature: ImageVector = LocalFlorist
-    val Shield: ImageVector = Icons.Filled.Info // Fallback if Shield missing
+    val Shield: ImageVector = Icons.Filled.Info
     val WorkspacePremium: ImageVector = EmojiEvents
     val MilitaryTech: ImageVector = EmojiEvents
-    val Leaderboard: ImageVector = Icons.AutoMirrored.Filled.List // Fallback
+    val Leaderboard: ImageVector = Icons.AutoMirrored.Filled.List
     val ShowChart: ImageVector = TrendingUp
     val HistoryEdu: ImageVector = MenuBook
     val EditNote: ImageVector = Edit
@@ -462,8 +420,8 @@ object ProdyIcons {
     val Groups: ImageVector = Person
     val Diversity: ImageVector = Person
     val Elderly: ImageVector = Person
-    val Visibility: ImageVector = Icons.Filled.Info // Fallback
-    val FitnessCenter: ImageVector = Icons.Filled.Info // Fallback
+    val Visibility: ImageVector = Icons.Filled.Info
+    val FitnessCenter: ImageVector = Icons.Filled.Info
     val RecordVoiceOver: ImageVector = Mic
     val Hearing: ImageVector = Mic
     val Mood: ImageVector = EmojiEvents
@@ -508,7 +466,7 @@ object ProdyIcons {
     val Moving: ImageVector = TrendingUp
     val NewReleases: ImageVector = AutoAwesome
     val CloudOff: ImageVector = Close
-    val Cloud: ImageVector = Icons.Filled.Info // Fallback
+    val Cloud: ImageVector = Icons.Filled.Info
     val CloudDone: ImageVector = Cloud
     val CloudSync: ImageVector = Cloud
     val Cached: ImageVector = Refresh
@@ -524,9 +482,8 @@ object ProdyIcons {
     val LocalOffer: ImageVector = Star
     val HourglassBottom: ImageVector = HourglassEmpty
     val Handshake: ImageVector = Person
-    val LockOpen: ImageVector = Icons.Filled.Lock // Fallback
+    val LockOpen: ImageVector = Icons.Filled.Lock
 
-    // Top-level aliases for nested icons
     val Tips: ImageVector = Outlined.Tips
     val Quiz: ImageVector = Outlined.Quiz
     val OpenInFull: ImageVector = Outlined.OpenInFull
@@ -535,4 +492,24 @@ object ProdyIcons {
     val BookmarkRemove: ImageVector = Outlined.BookmarkRemove
     val HelpOutline: ImageVector = Outlined.HelpOutline
     val Diversity3: ImageVector = Outlined.Diversity3
+
+    object Common {
+        val Add = ProdyIcons.Add
+        val Check = ProdyIcons.Check
+        val Close = ProdyIcons.Close
+        val Home = ProdyIcons.Home
+        val Menu = ProdyIcons.Menu
+        val Person = ProdyIcons.Person
+        val Search = ProdyIcons.Search
+        val Settings = ProdyIcons.Settings
+        val Star = ProdyIcons.Star
     }
+
+    object Gamification {
+        val Trophy: ImageVector = Icons.Filled.EmojiEvents
+    }
+
+    fun clearIconCache() { _customIcons.clear() }
+    fun getIconMemoryInfo(): String = "Icons loaded"
+    fun preloadCommonIcons() {}
+}
