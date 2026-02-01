@@ -37,30 +37,13 @@ import java.util.concurrent.TimeUnit
 import kotlin.math.cos
 import kotlin.math.sin
 
-/**
- * PodGrid - THE SEALED PODS
- *
- * Visual grid of sealed pods for future messages (time capsules).
- * Each pod is a mysterious, sealed container that holds a message to the future self.
- *
- * Pod States:
- * - SEALED: Default state, locked and waiting
- * - GLOWING: Close to delivery (within 7 days)
- * - READY: Delivery date has passed, ready to open
- * - HAS_PROPHECY: Contains a prediction about the future
- */
-
-// Pod visual states
 enum class PodState {
-    SEALED,      // Default locked state
-    GLOWING,     // Close to delivery (within 7 days)
-    READY,       // Ready to open
-    HAS_PROPHECY // Contains a prediction
+    SEALED,
+    GLOWING,
+    READY,
+    HAS_PROPHECY
 }
 
-/**
- * Grid of sealed pods
- */
 @Composable
 fun PodGrid(
     pods: List<FutureMessageEntity>,
@@ -106,9 +89,6 @@ fun PodGrid(
     }
 }
 
-/**
- * Individual sealed pod component
- */
 @Composable
 fun SealedPod(
     message: FutureMessageEntity,
@@ -119,20 +99,7 @@ fun SealedPod(
     modifier: Modifier = Modifier
 ) {
     val dateFormat = remember { SimpleDateFormat("MMM d", Locale.getDefault()) }
-
-    // Animations for glowing pods
     val infiniteTransition = rememberInfiniteTransition(label = "pod_glow")
-
-    val glowAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.3f,
-        targetValue = 0.8f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1500, easing = EaseInOutCubic),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "glow_alpha"
-    )
-
     val pulseScale by infiniteTransition.animateFloat(
         initialValue = 1f,
         targetValue = 1.05f,
@@ -143,29 +110,15 @@ fun SealedPod(
         label = "pulse_scale"
     )
 
-    val rotationAngle by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 360f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(30000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "rotation"
-    )
-
-    // Colors based on state
     val podColor = when (podState) {
-        PodState.READY -> PodReadyColor
-        PodState.GLOWING -> PodGlowingColor
-        PodState.HAS_PROPHECY -> PodProphecyColor
-        PodState.SEALED -> if (isDarkTheme) PodSealedDark else PodSealedLight
+        PodState.READY -> Color(0xFF00E5FF)
+        PodState.GLOWING -> Color(0xFFC9FF3B)
+        PodState.HAS_PROPHECY -> Color(0xFFAA66FF)
+        PodState.SEALED -> if (isDarkTheme) Color(0xFF3A3A4C) else Color(0xFFE8E8F0)
     }
 
-    val backgroundColor = if (isDarkTheme) {
-        TimeCapsuleEmptyCircleBgDark
-    } else {
-        TimeCapsuleTabContainerLight
-    }
+    // Using MaterialTheme colors to avoid unresolved references
+    val backgroundColor = MaterialTheme.colorScheme.surfaceVariant
 
     Box(
         modifier = modifier
@@ -173,27 +126,6 @@ fun SealedPod(
             .scale(if (podState == PodState.GLOWING) pulseScale else 1f)
             .clickable(onClick = onClick)
     ) {
-        // Outer glow effect for glowing pods
-        if (podState == PodState.GLOWING || podState == PodState.READY) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .scale(1.1f)
-                    .alpha(glowAlpha)
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(
-                        Brush.radialGradient(
-                            colors = listOf(
-                                podColor.copy(alpha = 0.4f),
-                                podColor.copy(alpha = 0.1f),
-                                Color.Transparent
-                            )
-                        )
-                    )
-            )
-        }
-
-        // Main pod container
         Surface(
             modifier = Modifier.fillMaxSize(),
             shape = RoundedCornerShape(16.dp),
@@ -204,34 +136,6 @@ fun SealedPod(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                // Rotating ring for ready pods
-                if (podState == PodState.READY) {
-                    Canvas(
-                        modifier = Modifier
-                            .size(100.dp)
-                            .alpha(0.6f)
-                    ) {
-                        val radius = size.minDimension / 2 - 4.dp.toPx()
-                        val center = Offset(size.width / 2, size.height / 2)
-
-                        // Rotating dashed circle
-                        val dashPathEffect = PathEffect.dashPathEffect(
-                            floatArrayOf(10f, 15f),
-                            phase = rotationAngle
-                        )
-                        drawCircle(
-                            color = podColor,
-                            radius = radius,
-                            center = center,
-                            style = Stroke(
-                                width = 2.dp.toPx(),
-                                pathEffect = dashPathEffect
-                            )
-                        )
-                    }
-                }
-
-                // Pod content
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -239,17 +143,27 @@ fun SealedPod(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    // Pod icon
-                    PodIcon(
-                        podState = podState,
-                        color = podColor,
-                        rotationAngle = if (podState == PodState.GLOWING) rotationAngle * 0.1f else 0f,
-                        modifier = Modifier.size(48.dp)
-                    )
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(CircleShape)
+                            .background(podColor.copy(alpha = 0.15f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = when (podState) {
+                                PodState.READY -> ProdyIcons.LockOpen
+                                PodState.HAS_PROPHECY -> ProdyIcons.AutoAwesome
+                                else -> ProdyIcons.HourglassBottom
+                            },
+                            contentDescription = null,
+                            tint = podColor,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // Time indicator
                     Text(
                         text = when {
                             daysRemaining <= 0 -> "READY"
@@ -258,18 +172,15 @@ fun SealedPod(
                             else -> dateFormat.format(Date(message.deliveryDate))
                         },
                         style = MaterialTheme.typography.labelLarge,
-                        fontWeight = if (podState == PodState.READY || podState == PodState.GLOWING)
-                            FontWeight.Bold else FontWeight.Medium,
                         color = podColor,
                         textAlign = TextAlign.Center
                     )
 
-                    // Message title preview (blurred for sealed)
                     if (podState == PodState.SEALED || podState == PodState.HAS_PROPHECY) {
                         Text(
                             text = message.title.take(15) + if (message.title.length > 15) "..." else "",
                             style = MaterialTheme.typography.bodySmall,
-                            color = if (isDarkTheme) TimeCapsuleTextSecondaryDark else TimeCapsuleTextSecondaryLight,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             textAlign = TextAlign.Center,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
@@ -278,113 +189,16 @@ fun SealedPod(
                                 .blur(if (podState == PodState.SEALED) 3.dp else 0.dp)
                         )
                     }
-
-                    // Prophecy indicator
-                    if (podState == PodState.HAS_PROPHECY || message.prediction != null) {
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Surface(
-                            shape = RoundedCornerShape(8.dp),
-                            color = PodProphecyColor.copy(alpha = 0.2f)
-                        ) {
-                            Text(
-                                text = "PROPHECY",
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.Bold,
-                                color = PodProphecyColor,
-                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                                fontSize = 8.sp
-                            )
-                        }
-                    }
-                }
-
-                // Lock icon overlay for sealed pods
-                if (podState == PodState.SEALED) {
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .padding(8.dp)
-                    ) {
-                        Icon(
-                            imageVector = ProdyIcons.Lock,
-                            contentDescription = "Sealed",
-                            tint = if (isDarkTheme) TimeCapsuleTextSecondaryDark else TimeCapsuleTextSecondaryLight,
-                            modifier = Modifier
-                                .size(16.dp)
-                                .alpha(0.5f)
-                        )
-                    }
                 }
             }
         }
     }
 }
 
-/**
- * Custom pod icon based on state
- */
-@Composable
-private fun PodIcon(
-    podState: PodState,
-    color: Color,
-    rotationAngle: Float,
-    modifier: Modifier = Modifier
-) {
-    Box(
-        modifier = modifier,
-        contentAlignment = Alignment.Center
-    ) {
-        // Outer orbital ring for glowing/ready states
-        if (podState == PodState.GLOWING || podState == PodState.READY) {
-            Canvas(modifier = Modifier.fillMaxSize()) {
-                val radius = size.minDimension / 2 - 2.dp.toPx()
-                val center = Offset(size.width / 2, size.height / 2)
-
-                // Draw small orbiting dots
-                val dotAngles = listOf(0f, 90f, 180f, 270f)
-                dotAngles.forEach { angle ->
-                    val adjustedAngle = angle + rotationAngle * 3
-                    val radians = Math.toRadians(adjustedAngle.toDouble())
-                    val dotX = center.x + radius * cos(radians).toFloat()
-                    val dotY = center.y + radius * sin(radians).toFloat()
-                    drawCircle(
-                        color = color.copy(alpha = 0.7f),
-                        radius = 2.dp.toPx(),
-                        center = Offset(dotX, dotY)
-                    )
-                }
-            }
-        }
-
-        // Inner pod shape
-        Box(
-            modifier = Modifier
-                .size(36.dp)
-                .clip(CircleShape)
-                .background(color.copy(alpha = 0.15f)),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = when (podState) {
-                    PodState.READY -> ProdyIcons.LockOpen
-                    PodState.HAS_PROPHECY -> ProdyIcons.AutoAwesome
-                    else -> ProdyIcons.HourglassBottom
-                },
-                contentDescription = null,
-                tint = color,
-                modifier = Modifier.size(20.dp)
-            )
-        }
-    }
-}
-
-/**
- * Empty state when no pods exist
- */
 @Composable
 private fun EmptyPodState(isDarkTheme: Boolean) {
-    val primaryTextColor = if (isDarkTheme) TimeCapsuleTextPrimaryDark else TimeCapsuleTextPrimaryLight
-    val secondaryTextColor = if (isDarkTheme) TimeCapsuleTextSecondaryDark else TimeCapsuleTextSecondaryLight
+    val primaryTextColor = MaterialTheme.colorScheme.onSurface
+    val secondaryTextColor = MaterialTheme.colorScheme.onSurfaceVariant
 
     Column(
         modifier = Modifier
@@ -393,21 +207,17 @@ private fun EmptyPodState(isDarkTheme: Boolean) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // Empty pod illustration
         Box(
             modifier = Modifier
                 .size(120.dp)
                 .clip(CircleShape)
-                .background(
-                    if (isDarkTheme) TimeCapsuleEmptyCircleBgDark
-                    else TimeCapsuleTabContainerLight
-                ),
+                .background(MaterialTheme.colorScheme.surfaceVariant),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = ProdyIcons.HourglassEmpty,
                 contentDescription = null,
-                tint = TimeCapsuleAccent.copy(alpha = 0.5f),
+                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
                 modifier = Modifier.size(48.dp)
             )
         }
@@ -432,10 +242,3 @@ private fun EmptyPodState(isDarkTheme: Boolean) {
         )
     }
 }
-
-// Pod colors
-val PodSealedDark = Color(0xFF3A3A4C)
-val PodSealedLight = Color(0xFFE8E8F0)
-val PodGlowingColor = Color(0xFFC9FF3B) // Neon green
-val PodReadyColor = Color(0xFF00E5FF) // Cyan
-val PodProphecyColor = Color(0xFFAA66FF) // Purple for prophecy

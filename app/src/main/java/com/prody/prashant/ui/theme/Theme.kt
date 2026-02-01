@@ -104,15 +104,42 @@ enum class ThemeMode {
     LIGHT, DARK, SYSTEM
 }
 
+<<<<<<< HEAD
+// =============================================================================
+// SPACING & ELEVATION SYSTEM
+// =============================================================================
+
+=======
 /**
  * Prody Design System - Spacing System
  */
+>>>>>>> 26f4e7045c9ec07ffeda32c017c37bb4a42f9a6d
 data class ProdySpacing(
     val none: Dp = 0.dp,
     val extraSmall: Dp = 4.dp,
     val small: Dp = 8.dp,
     val medium: Dp = 12.dp,
     val default: Dp = 16.dp,
+<<<<<<< HEAD
+    val large: Dp = 20.dp,
+    val extraLarge: Dp = 24.dp,
+    val xxl: Dp = 32.dp,
+    val xxxl: Dp = 40.dp,
+    val huge: Dp = 48.dp,
+    val massive: Dp = 64.dp
+)
+
+data class ProdyElevation(
+    val none: Dp = 0.dp,
+    val extraSmall: Dp = 0.dp,
+    val small: Dp = 0.dp,
+    val medium: Dp = 0.dp,
+    val large: Dp = 0.dp,
+    val extraLarge: Dp = 0.dp,
+    val overlay: Dp = 0.dp
+)
+
+=======
     val large: Dp = 24.dp,
     val extraLarge: Dp = 32.dp,
     val huge: Dp = 48.dp
@@ -136,6 +163,7 @@ data class ProdyElevation(
 @Composable
 fun isDarkTheme(): Boolean = isSystemInDarkTheme()
 
+>>>>>>> 26f4e7045c9ec07ffeda32c017c37bb4a42f9a6d
 // Re-export composition locals
 val LocalProdySpacing = staticCompositionLocalOf { ProdySpacing() }
 val LocalProdyElevation = staticCompositionLocalOf { ProdyElevation() }
@@ -206,4 +234,19 @@ object ProdyTheme {
     val elevation: ProdyElevation
         @Composable
         get() = LocalProdyElevation.current
+}
+
+/**
+ * Check if the current theme is dark mode.
+ */
+@Composable
+fun isDarkTheme(): Boolean {
+    // This is a simple approximation. A more robust way would be to check LocalConfiguration or similar.
+    // However, checking background color against the known dark background is a reliable heuristic here.
+    return MaterialTheme.colorScheme.background == ProdyBackgroundDark
+}
+
+@Composable
+fun getTextPrimary(): Color {
+    return if (isDarkTheme()) ProdyTextPrimaryDark else ProdyTextPrimaryLight
 }
