@@ -16,6 +16,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 
 /**
@@ -102,6 +104,34 @@ enum class ThemeMode {
     LIGHT, DARK, SYSTEM
 }
 
+// =============================================================================
+// SPACING & ELEVATION SYSTEM
+// =============================================================================
+
+data class ProdySpacing(
+    val none: Dp = 0.dp,
+    val extraSmall: Dp = 4.dp,
+    val small: Dp = 8.dp,
+    val medium: Dp = 12.dp,
+    val default: Dp = 16.dp,
+    val large: Dp = 20.dp,
+    val extraLarge: Dp = 24.dp,
+    val xxl: Dp = 32.dp,
+    val xxxl: Dp = 40.dp,
+    val huge: Dp = 48.dp,
+    val massive: Dp = 64.dp
+)
+
+data class ProdyElevation(
+    val none: Dp = 0.dp,
+    val extraSmall: Dp = 0.dp,
+    val small: Dp = 0.dp,
+    val medium: Dp = 0.dp,
+    val large: Dp = 0.dp,
+    val extraLarge: Dp = 0.dp,
+    val overlay: Dp = 0.dp
+)
+
 // Re-export composition locals
 val LocalProdySpacing = staticCompositionLocalOf { ProdySpacing() }
 val LocalProdyElevation = staticCompositionLocalOf { ProdyElevation() }
@@ -172,4 +202,19 @@ object ProdyTheme {
     val elevation: ProdyElevation
         @Composable
         get() = LocalProdyElevation.current
+}
+
+/**
+ * Check if the current theme is dark mode.
+ */
+@Composable
+fun isDarkTheme(): Boolean {
+    // This is a simple approximation. A more robust way would be to check LocalConfiguration or similar.
+    // However, checking background color against the known dark background is a reliable heuristic here.
+    return MaterialTheme.colorScheme.background == ProdyBackgroundDark
+}
+
+@Composable
+fun getTextPrimary(): Color {
+    return if (isDarkTheme()) ProdyTextPrimaryDark else ProdyTextPrimaryLight
 }

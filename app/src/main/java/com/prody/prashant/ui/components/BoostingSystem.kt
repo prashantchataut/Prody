@@ -36,11 +36,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Bolt
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -64,7 +59,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
-// shadow import removed - flat design with no shadows
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -89,34 +83,15 @@ import kotlinx.coroutines.launch
 
 /**
  * Prody Gamification 2.0 - Boosting System
- *
- * A modern, tasteful, and motivating support interaction system.
- * Replaces the old obtrusive boost/congrats buttons with:
- * - Single contextual "Support" action
- * - Elegant bottom sheet with options
- * - Subtle feedback animations
- * - Daily rate limiting and anti-spam
- *
- * Design principles:
- * - Non-obtrusive: triggered via long-press or small icon
- * - Meaningful: each action has purpose
- * - Minimal UI: no giant buttons per row
- * - Premium feel: smooth animations, tasteful effects
  */
 
 // =============================================================================
 // SUPPORT INTERACTION TYPES
 // =============================================================================
 
-/**
- * Types of support interactions available.
- */
 enum class SupportType {
-    /** Lightweight acknowledgment of effort */
     BOOST,
-    /** Show respect for achievement */
     RESPECT,
-    /** Friendly encouragement */
     ENCOURAGE
 }
 
@@ -156,14 +131,6 @@ private val supportActions = listOf(
 // SUPPORT ICON BUTTON (FOR LEADERBOARD ROWS)
 // =============================================================================
 
-/**
- * Small, contextual support action icon for leaderboard rows.
- *
- * @param onSupportClick Callback when support is triggered
- * @param modifier Modifier for the component
- * @param enabled Whether the action is enabled (rate limiting)
- * @param hasSupported Whether the user has already supported this person today
- */
 @Composable
 fun ProdySupportIconButton(
     onSupportClick: () -> Unit,
@@ -214,15 +181,6 @@ fun ProdySupportIconButton(
 // SUPPORT BOTTOM SHEET
 // =============================================================================
 
-/**
- * Elegant bottom sheet for support interactions.
- *
- * @param userName Name of the user being supported
- * @param isVisible Whether the sheet is visible
- * @param onDismiss Callback when sheet is dismissed
- * @param onSupportSelected Callback when a support type is selected
- * @param dailyBoostsRemaining Number of daily boosts remaining
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProdySupportBottomSheet(
@@ -259,7 +217,6 @@ fun ProdySupportBottomSheet(
                     .padding(bottom = ProdyTokens.Spacing.xxl),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Header
                 Text(
                     text = "Support $userName",
                     style = MaterialTheme.typography.titleLarge,
@@ -277,7 +234,6 @@ fun ProdySupportBottomSheet(
 
                 Spacer(modifier = Modifier.height(ProdyTokens.Spacing.xl))
 
-                // Support options
                 supportActions.forEach { action ->
                     SupportOptionCard(
                         action = action,
@@ -296,7 +252,6 @@ fun ProdySupportBottomSheet(
 
                 Spacer(modifier = Modifier.height(ProdyTokens.Spacing.md))
 
-                // Note about local storage
                 Text(
                     text = "Supports are stored locally",
                     style = MaterialTheme.typography.labelSmall,
@@ -352,7 +307,6 @@ private fun SupportOptionCard(
                 .padding(ProdyTokens.Spacing.lg),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Icon container with colored background
             Box(
                 modifier = Modifier
                     .size(48.dp)
@@ -398,13 +352,6 @@ private fun SupportOptionCard(
 // SUPPORT SUCCESS FEEDBACK
 // =============================================================================
 
-/**
- * Subtle animation feedback when support is sent.
- *
- * @param supportType Type of support that was sent
- * @param isVisible Whether the feedback is visible
- * @param onAnimationComplete Callback when animation completes
- */
 @Composable
 fun ProdySupportFeedback(
     supportType: SupportType,
@@ -486,12 +433,6 @@ fun ProdySupportFeedback(
 // SUPPORT COUNTER DISPLAY
 // =============================================================================
 
-/**
- * Compact display of boost count for leaderboard rows.
- *
- * @param boostCount Number of boosts received
- * @param modifier Modifier for the component
- */
 @Composable
 fun ProdyBoostCounter(
     boostCount: Int,
@@ -514,7 +455,7 @@ fun ProdyBoostCounter(
         Spacer(modifier = Modifier.width(2.dp))
 
         Text(
-            text = formatBoostCount(boostCount),
+            text = if (boostCount >= 1000) "${boostCount / 1000}k" else boostCount.toString(),
             style = MaterialTheme.typography.labelSmall,
             fontWeight = FontWeight.Medium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -522,23 +463,10 @@ fun ProdyBoostCounter(
     }
 }
 
-private fun formatBoostCount(count: Int): String {
-    return when {
-        count >= 1000 -> "${count / 1000}k"
-        else -> count.toString()
-    }
-}
-
 // =============================================================================
 // LEADERBOARD ROW ADORNMENTS
 // =============================================================================
 
-/**
- * Top 3 position indicator with rank-based styling.
- *
- * @param rank Position in leaderboard (1, 2, or 3)
- * @param modifier Modifier for the component
- */
 @Composable
 fun ProdyTopRankIndicator(
     rank: Int,
@@ -558,14 +486,13 @@ fun ProdyTopRankIndicator(
         label = "glow_pulse"
     )
 
-    val (color, emoji) = when (rank) {
-        1 -> LeaderboardGold to "1st"
-        2 -> LeaderboardSilver to "2nd"
-        3 -> LeaderboardBronze to "3rd"
-        else -> Color.Gray to ""
+    val color = when (rank) {
+        1 -> LeaderboardGold
+        2 -> LeaderboardSilver
+        3 -> LeaderboardBronze
+        else -> Color.Gray
     }
 
-    // Flat design - use subtle alpha pulse instead of shadow
     Box(
         modifier = modifier
             .size(28.dp)
@@ -586,12 +513,6 @@ fun ProdyTopRankIndicator(
 // STREAK MILESTONE ADORNMENT
 // =============================================================================
 
-/**
- * Special adornment for streak milestones.
- *
- * @param streakDays Number of consecutive days
- * @param modifier Modifier for the component
- */
 @Composable
 fun ProdyStreakMilestoneIndicator(
     streakDays: Int,
