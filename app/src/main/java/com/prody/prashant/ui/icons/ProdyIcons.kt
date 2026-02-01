@@ -417,8 +417,6 @@ object ProdyIcons {
     val Bolt: ImageVector = Icons.Filled.Bolt
     val History: ImageVector = Icons.Filled.History
     val Celebration: ImageVector = Icons.Filled.Celebration
-    val Pause: ImageVector = Icons.Filled.Pause
-    val Stop: ImageVector = Icons.Filled.Stop
     val SkipNext: ImageVector = Icons.Filled.SkipNext
     val Verified: ImageVector = Icons.Filled.Verified
     val Palette: ImageVector = Icons.Filled.Palette
@@ -430,7 +428,6 @@ object ProdyIcons {
     val Wallpaper: ImageVector = Icons.Filled.Wallpaper
     val HourglassEmpty: ImageVector = Icons.Filled.HourglassEmpty
     val Create: ImageVector = Edit
-    val Image: ImageVector = Icons.Filled.Image
     val FilterList: ImageVector = Icons.Filled.List
     val Assignment: ImageVector = Icons.AutoMirrored.Filled.Assignment
     val BarChart: ImageVector = Icons.AutoMirrored.Filled.List // Fallback
@@ -469,9 +466,6 @@ object ProdyIcons {
     val FitnessCenter: ImageVector = Icons.Filled.Info // Fallback
     val RecordVoiceOver: ImageVector = Mic
     val Hearing: ImageVector = Mic
-    val SentimentSatisfied: ImageVector = Icons.Filled.Face
-    val SentimentVerySatisfied: ImageVector = Icons.Filled.Face
-    val SentimentDissatisfied: ImageVector = Icons.Filled.Warning
     val Mood: ImageVector = EmojiEvents
     val EmojiNature: ImageVector = LocalFlorist
     val Terrain: ImageVector = LocalFlorist
@@ -488,7 +482,6 @@ object ProdyIcons {
     val AutoGraph: ImageVector = TrendingUp
     val Flag: ImageVector = Icons.Filled.Flag
     val Map: ImageVector = Place
-    val GridView: ImageVector = Dashboard
     val Storage: ImageVector = Dashboard
     val Memory: ImageVector = Dashboard
     val Inventory: ImageVector = Dashboard
@@ -532,4 +525,14 @@ object ProdyIcons {
     val HourglassBottom: ImageVector = HourglassEmpty
     val Handshake: ImageVector = Person
     val LockOpen: ImageVector = Icons.Filled.Lock // Fallback
-}
+
+    // Top-level aliases for nested icons
+    val Tips: ImageVector = Outlined.Tips
+    val Quiz: ImageVector = Outlined.Quiz
+    val OpenInFull: ImageVector = Outlined.OpenInFull
+    val NoteAlt: ImageVector = Outlined.NoteAlt
+    val NoteAdd: ImageVector = Outlined.NoteAdd
+    val BookmarkRemove: ImageVector = Outlined.BookmarkRemove
+    val HelpOutline: ImageVector = Outlined.HelpOutline
+    val Diversity3: ImageVector = Outlined.Diversity3
+    }
