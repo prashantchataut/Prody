@@ -109,19 +109,28 @@ class SecureDatabaseManager @Inject constructor(
     }
 
     /**
-     * Generate a fallback passphrase in case of errors
+     * Generate a deterministic fallback passphrase in case of errors.
+     * Uses device-specific and app-specific data hashed with SHA-256.
      */
     private fun generateFallbackPassphrase(): String {
-        // Use device-specific and app-specific data for fallback
-        val deviceId = android.provider.Settings.Secure.getString(
-            context.contentResolver,
-            android.provider.Settings.Secure.ANDROID_ID
-        ) ?: "unknown_device"
-        
-        val appData = "${context.packageName}_${BuildConfig.VERSION_CODE}"
-        val combined = "${deviceId}_${appData}_prody_secure_fallback"
-        
-        return combined.hashCode().toString() + System.currentTimeMillis().toString()
+        try {
+            // Use device-specific and app-specific data for fallback
+            val deviceId = android.provider.Settings.Secure.getString(
+                context.contentResolver,
+                android.provider.Settings.Secure.ANDROID_ID
+            ) ?: "unknown_device"
+
+            val appData = "${context.packageName}_${BuildConfig.VERSION_CODE}"
+            val combined = "${deviceId}_${appData}_prody_secure_fallback"
+
+            // Security: Use SHA-256 for a deterministic, robust fallback key
+            val digest = java.security.MessageDigest.getInstance("SHA-256")
+            val hash = digest.digest(combined.toByteArray(Charsets.UTF_8))
+            return android.util.Base64.encodeToString(hash, android.util.Base64.NO_WRAP)
+        } catch (e: Exception) {
+            // Ultimate fallback if even hashing fails
+            return "prody_ultimate_fallback_${BuildConfig.VERSION_CODE}"
+        }
     }
 
     /**
