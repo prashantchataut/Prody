@@ -7,3 +7,8 @@
 **Vulnerability:** Leaking API keys in Logcat via OkHttp interceptors and debug logs, and missing UI protection for therapeutic chats.
 **Learning:** Prody's `OpenRouterService` used `HttpLoggingInterceptor.Level.BODY` in debug mode without redacting the `Authorization` header, exposing API keys to anybody with ADB access. Additionally, Haven't therapeutic screens lacked `FLAG_SECURE`, risking user privacy.
 **Prevention:** Always use `redactHeader("Authorization")` in network interceptors. Remove logs that print partial secrets. Enforce `FLAG_SECURE` on all therapeutic and reflection screens by default.
+
+## 2026-05-20 - Centralized Widget DoS Protection
+**Vulnerability:** Exported GlanceAppWidgetReceivers were vulnerable to Denial-of-Service (DoS) attacks via broadcast storms, as rate-limiting was performed too late in the lifecycle.
+**Learning:** While `WidgetUpdateThrottler` was used in `provideGlance`, this method runs in a background worker after it has already been scheduled by the receiver's `onUpdate`. A malicious app could still exhaust system resources by triggering thousands of worker schedules.
+**Prevention:** Always implement rate-limiting at the earliest entry point for exported components. Using a base class like `BaseSecureWidgetReceiver` to override `onUpdate` ensures all widgets are protected before any expensive background work is initiated.

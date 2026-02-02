@@ -10,7 +10,6 @@ import androidx.glance.GlanceModifier
 import androidx.glance.GlanceTheme
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
-import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.glance.appwidget.action.actionRunCallback
 import androidx.glance.appwidget.provideContent
 import androidx.glance.appwidget.updateAll
@@ -38,11 +37,6 @@ import kotlinx.coroutines.withContext
 class StreakWidget : GlanceAppWidget() {
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
-        // Security: Rate-limit widget updates to prevent DoS attacks.
-        if (!WidgetUpdateThrottler.shouldUpdate(context, this::class.java)) {
-            return
-        }
-
         // Get streak from shared preferences (widget-accessible storage)
         val prefs = context.getSharedPreferences("prody_widget_prefs", Context.MODE_PRIVATE)
         val streak = prefs.getInt("current_streak", 0)
@@ -228,6 +222,6 @@ class RefreshStreakAction : androidx.glance.appwidget.action.ActionCallback {
     }
 }
 
-class StreakWidgetReceiver : GlanceAppWidgetReceiver() {
+class StreakWidgetReceiver : BaseSecureWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = StreakWidget()
 }

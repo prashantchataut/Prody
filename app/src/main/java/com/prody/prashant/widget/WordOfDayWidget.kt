@@ -10,7 +10,6 @@ import androidx.glance.GlanceModifier
 import androidx.glance.GlanceTheme
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
-import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.glance.appwidget.action.actionRunCallback
 import androidx.glance.appwidget.provideContent
 import androidx.glance.appwidget.updateAll
@@ -41,11 +40,6 @@ import java.util.Calendar
 class WordOfDayWidget : GlanceAppWidget() {
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
-        // Security: Rate-limit widget updates to prevent DoS attacks.
-        if (!WidgetUpdateThrottler.shouldUpdate(context, this::class.java)) {
-            return
-        }
-
         val wordData = getDailyWordData()
 
         provideContent {
@@ -173,6 +167,6 @@ class RefreshWordAction : androidx.glance.appwidget.action.ActionCallback {
     }
 }
 
-class WordOfDayWidgetReceiver : GlanceAppWidgetReceiver() {
+class WordOfDayWidgetReceiver : BaseSecureWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = WordOfDayWidget()
 }

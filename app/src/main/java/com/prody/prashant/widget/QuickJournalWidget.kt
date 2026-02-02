@@ -11,7 +11,6 @@ import androidx.glance.GlanceModifier
 import androidx.glance.GlanceTheme
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
-import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.glance.appwidget.action.actionSendBroadcast
 import androidx.glance.appwidget.provideContent
 import androidx.glance.background
@@ -41,11 +40,6 @@ import java.time.LocalDateTime
 class QuickJournalWidget : GlanceAppWidget() {
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
-        // Security: Rate-limit widget updates to prevent DoS attacks.
-        if (!WidgetUpdateThrottler.shouldUpdate(context, this::class.java)) {
-            return
-        }
-
         val prompt = getIntelligentPrompt(context)
 
         provideContent {
@@ -232,6 +226,6 @@ private data class IntelligentPromptData(
     val userName: String?
 )
 
-class QuickJournalWidgetReceiver : GlanceAppWidgetReceiver() {
+class QuickJournalWidgetReceiver : BaseSecureWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = QuickJournalWidget()
 }

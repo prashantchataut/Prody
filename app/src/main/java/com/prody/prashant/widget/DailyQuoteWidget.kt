@@ -11,7 +11,6 @@ import androidx.glance.GlanceTheme
 import androidx.glance.action.ActionParameters
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
-import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.glance.appwidget.action.ActionCallback
 import androidx.glance.appwidget.action.actionRunCallback
 import androidx.glance.appwidget.provideContent
@@ -44,11 +43,6 @@ import java.util.Calendar
 class DailyQuoteWidget : GlanceAppWidget() {
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
-        // Security: Rate-limit widget updates to prevent DoS attacks.
-        if (!WidgetUpdateThrottler.shouldUpdate(context, this::class.java)) {
-            return
-        }
-
         val quoteData = getDailyQuoteData()
 
         provideContent {
@@ -192,6 +186,6 @@ class RefreshQuoteAction : ActionCallback {
     }
 }
 
-class DailyQuoteWidgetReceiver : GlanceAppWidgetReceiver() {
+class DailyQuoteWidgetReceiver : BaseSecureWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = DailyQuoteWidget()
 }
