@@ -13,11 +13,17 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -29,8 +35,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.prody.prashant.ui.components.AccessibilityHelper
 import com.prody.prashant.ui.theme.*
+import com.prody.prashant.util.rememberProdyHaptic
 
 // =============================================================================
 // PERSONALIZATION DASHBOARD - REVAMPED 2026
@@ -127,6 +138,8 @@ fun DashboardHeader(
     onProfileClick: () -> Unit,
     onNotificationClick: () -> Unit
 ) {
+    val haptic = rememberProdyHaptic()
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -157,10 +170,13 @@ fun DashboardHeader(
         }
         
         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            IconButton(onClick = onNotificationClick) {
+            IconButton(onClick = {
+                haptic.click()
+                onNotificationClick()
+            }) {
                 Icon(
                     imageVector = Icons.Outlined.Notifications,
-                    contentDescription = "Notifications",
+                    contentDescription = AccessibilityHelper.ContentDescriptions.NOTIFICATIONS,
                     tint = ProdyTextPrimaryLight
                 )
             }
@@ -170,7 +186,11 @@ fun DashboardHeader(
                     .size(40.dp)
                     .clip(CircleShape)
                     .background(ProdyForestGreen)
-                    .clickable { onProfileClick() },
+                    .semantics { role = Role.Button }
+                    .clickable {
+                        haptic.click()
+                        onProfileClick()
+                    },
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -520,10 +540,32 @@ fun QuickActionsGrid(
 
 @Composable
 fun QuickActionTile(title: String, icon: androidx.compose.ui.graphics.vector.ImageVector, color: Color, onClick: () -> Unit, modifier: Modifier) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val haptic = rememberProdyHaptic()
+    val isPressed by interactionSource.collectIsPressedAsState()
+
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.98f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
+        label = "tile_scale"
+    )
+
     Surface(
         modifier = modifier
             .height(100.dp)
-            .clickable(onClick = onClick),
+            .scale(scale)
+            .semantics { role = Role.Button }
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = {
+                    haptic.click()
+                    onClick()
+                }
+            ),
         shape = RoundedCornerShape(16.dp),
         color = color.copy(alpha = 0.1f),
         border = androidx.compose.foundation.BorderStroke(1.dp, color.copy(alpha = 0.2f))
