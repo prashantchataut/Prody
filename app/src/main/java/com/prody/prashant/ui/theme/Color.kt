@@ -352,3 +352,9 @@ val JournalTextPrimaryDark = ProdyTextPrimaryDark
 val JournalTextSecondaryDark = ProdyTextSecondaryDark
 val JournalPlaceholderDark = ProdyTextSecondaryDark
 val JournalSliderInactiveDark = ProdyOutlineDark
+
+// Time Capsule Colors
+val TimeCapsuleTextPrimaryLight = Color(0xFF1A1C1E)
+val TimeCapsuleTextSecondaryLight = Color(0xFF42474E)
+val TimeCapsuleTextPrimaryDark = Color(0xFFE2E2E6)
+val TimeCapsuleTextSecondaryDark = Color(0xFFC4C7C5)
