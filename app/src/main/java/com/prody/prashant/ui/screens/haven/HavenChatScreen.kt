@@ -234,11 +234,50 @@ fun HavenChatScreen(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    // Subtle pulse instead of spinner could be here
                     CircularProgressIndicator(color = HavenBubbleLight) 
+                }
+            } else if (uiState.messages.isEmpty()) {
+                // Empty State / Welcome
+                Box(
+                    modifier = Modifier.fillMaxSize().padding(32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = "Start a conversation",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = havenText.copy(alpha = 0.7f)
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Haven is here to listen. Say hello!",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = havenText.copy(alpha = 0.5f),
+                            textAlign = TextAlign.Center
+                        )
+                    }
                 }
             } else {
                 Column(modifier = Modifier.fillMaxSize()) {
+                    // Persistent Error Banner (if error exists)
+                    if (uiState.error != null) {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.errorContainer
+                            )
+                        ) {
+                            Text(
+                                text = uiState.error ?: "Unknown error",
+                                color = MaterialTheme.colorScheme.onErrorContainer,
+                                modifier = Modifier.padding(16.dp),
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                    }
+
                     // Crisis resources banner (if applicable)
                     AnimatedVisibility(visible = uiState.showCrisisResources) {
                         CrisisResourcesBanner(

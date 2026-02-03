@@ -809,7 +809,7 @@ val LetterMetadataStyle = TextStyle(
  * Uses default Serif as a fallback for a handwritten aesthetic
  */
 val HavenMessageStyle = TextStyle(
-    fontFamily = FontFamily.Serif, // Explicitly Serif for "Anti-AI" feel
+    fontFamily = PoppinsFamily, // Switched to Poppins for a cleaner, premium look
     fontWeight = FontWeight.Normal,
     fontSize = 16.sp,
     lineHeight = 24.sp,
