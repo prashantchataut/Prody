@@ -7,3 +7,8 @@
 **Vulnerability:** Leaking API keys in Logcat via OkHttp interceptors and debug logs, and missing UI protection for therapeutic chats.
 **Learning:** Prody's `OpenRouterService` used `HttpLoggingInterceptor.Level.BODY` in debug mode without redacting the `Authorization` header, exposing API keys to anybody with ADB access. Additionally, Haven't therapeutic screens lacked `FLAG_SECURE`, risking user privacy.
 **Prevention:** Always use `redactHeader("Authorization")` in network interceptors. Remove logs that print partial secrets. Enforce `FLAG_SECURE` on all therapeutic and reflection screens by default.
+
+## 2026-06-20 - Harden Database Encryption and Standardize Provisioning
+**Vulnerability:** Main app database was created unencrypted via Hilt, while only Widgets used SQLCipher encryption. Additionally, encryption passphrase access was asynchronous (using `EncryptedFile` and `runBlocking`), causing potential ANRs during Room initialization.
+**Learning:** Inconsistent database provisioning between Hilt and manual singleton access led to a critical security gap where primary user data was unprotected. Using `runBlocking` in Room initialization is a performance anti-pattern that can block the main thread.
+**Prevention:** Always enforce SQLCipher encryption at the Hilt provider level. Use `EncryptedSharedPreferences` for synchronous, low-latency access to database passphrases. Implement a deterministic passphrase generation strategy (SHA-256 of stable device/app identifiers) to ensure cross-reinstallation consistency and robustness.

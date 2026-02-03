@@ -22,6 +22,7 @@ import com.prody.prashant.data.monitoring.PerformanceMonitor
 import com.prody.prashant.data.network.NetworkConnectivityManager
 import com.prody.prashant.data.onboarding.AiOnboardingManager
 import com.prody.prashant.data.security.EncryptionManager
+import com.prody.prashant.data.security.SecureDatabaseManager
 import com.prody.prashant.data.security.SecurityPreferences
 import com.prody.prashant.data.sync.SyncManager
 import androidx.datastore.core.DataStore
@@ -76,14 +77,19 @@ object AppModule {
     @Provides
     @Singleton
     fun provideDatabase(
-        @ApplicationContext context: Context
+        @ApplicationContext context: Context,
+        secureDbManager: SecureDatabaseManager
     ): ProdyDatabase {
         return databaseInstance ?: synchronized(this) {
+            // Security: Use SQLCipher for transparent database encryption
+            val supportFactory = secureDbManager.createSQLCipherSupportFactory()
+
             val instance = Room.databaseBuilder(
                 context.applicationContext,
                 ProdyDatabase::class.java,
                 ProdyDatabase.DATABASE_NAME
             )
+                .openHelperFactory(supportFactory)
                 .addMigrations(
                     ProdyDatabase.MIGRATION_4_5,
                     ProdyDatabase.MIGRATION_5_6,
