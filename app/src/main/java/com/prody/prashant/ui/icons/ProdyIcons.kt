@@ -10,6 +10,7 @@ import androidx.compose.material.icons.rounded.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.unit.dp
 
 /**
@@ -24,6 +25,7 @@ object ProdyIcons {
     val Add: ImageVector = Icons.Filled.Add
     val ArrowBack: ImageVector = Icons.AutoMirrored.Filled.ArrowBack
     val ArrowForward: ImageVector = Icons.AutoMirrored.Filled.ArrowForward
+    val BarChart: ImageVector = Icons.AutoMirrored.Filled.TrendingUp // Fallback for Stats
     val ChevronRight: ImageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight
     val KeyboardArrowRight: ImageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight
     val List: ImageVector = Icons.AutoMirrored.Filled.List
@@ -100,6 +102,20 @@ object ProdyIcons {
     val Code: ImageVector = Icons.Filled.Code
     val Lock: ImageVector = Icons.Filled.Lock
     
+    // Fallbacks for missing icons in standard set
+    val HourglassBottom: ImageVector = Icons.Filled.HourglassEmpty 
+    val Shuffle: ImageVector = Icons.Filled.Refresh 
+    val Quiz: ImageVector = Icons.AutoMirrored.Outlined.Help 
+    val TextFields: ImageVector = Icons.AutoMirrored.Filled.TextFormat 
+    val Inventory2: ImageVector = Icons.Filled.Home // Fallback
+    val SwapHoriz: ImageVector = Icons.AutoMirrored.Filled.CompareArrows
+    val Analytics: ImageVector = Icons.Filled.DateRange
+    val AlternateEmail: ImageVector = Icons.Filled.Email
+    val Contacts: ImageVector = Icons.Filled.Person
+    val MoreHoriz: ImageVector = Icons.Filled.MoreVert
+    val CalendarMonth: ImageVector = Icons.Filled.DateRange
+    val Assignment: ImageVector = Icons.AutoMirrored.Filled.List
+
     // === NESTED OBJECTS FOR STYLE VARIANTS ===
     
     object Outlined {
@@ -124,6 +140,7 @@ object ProdyIcons {
         val ChatBubble: ImageVector = Icons.Outlined.ChatBubble
         val TextFormat: ImageVector = Icons.AutoMirrored.Outlined.TextFormat
         val AutoAwesome: ImageVector = Icons.Outlined.AutoAwesome
+        val BarChart: ImageVector = Icons.AutoMirrored.Outlined.TrendingUp // Fallback for Stats
         val Leaderboard: ImageVector = Icons.Outlined.Leaderboard
         val Star: ImageVector = Icons.Outlined.Star
         val Email: ImageVector = Icons.Outlined.Email
