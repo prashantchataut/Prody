@@ -1,16 +1,17 @@
 package com.prody.prashant.data.security
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.util.Log
 import androidx.security.crypto.EncryptedFile
+import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
-import com.prody.prashant.data.local.database.ProdyDatabase
+import com.prody.prashant.BuildConfig
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.sqlcipher.database.SQLiteDatabase
 import net.sqlcipher.database.SupportFactory
-import com.prody.prashant.BuildConfig
 import java.io.File
 import java.io.IOException
 import javax.inject.Inject
@@ -18,11 +19,12 @@ import javax.inject.Singleton
 
 /**
  * Secure Database Manager with SQLCipher Encryption
- * 
+ *
  * Provides encrypted database storage using:
  * - SQLCipher for transparent database encryption
  * - Android Keystore for key management
  * - Secure key derivation for database password
+ * - Synchronous access via EncryptedSharedPreferences (optimized for Room initialization)
  */
 @Singleton
 class SecureDatabaseManager @Inject constructor(
@@ -30,67 +32,123 @@ class SecureDatabaseManager @Inject constructor(
 ) {
     companion object {
         private const val TAG = "SecureDatabaseManager"
-        private const val DATABASE_KEY_ALIAS = "ProdyDatabaseEncryptionKey"
-        private const val DATABASE_VERSION = 1
+        private const val SECURE_PREFS_NAME = "prody_secure_db_prefs"
+        private const val KEY_DATABASE_PASSPHRASE = "database_passphrase"
+        private const val LEGACY_KEY_FILE_NAME = "prody_db_key.enc"
     }
 
     private val masterKey = MasterKey.Builder(context)
         .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-        .setKeyGenParameterSpec(
-            android.security.keystore.KeyGenParameterSpec.Builder(
-                MasterKey.DEFAULT_MASTER_KEY_ALIAS,
-                android.security.keystore.KeyProperties.PURPOSE_ENCRYPT or android.security.keystore.KeyProperties.PURPOSE_DECRYPT
-            )
-                .setBlockModes(android.security.keystore.KeyProperties.BLOCK_MODE_GCM)
-                .setEncryptionPaddings(android.security.keystore.KeyProperties.ENCRYPTION_PADDING_NONE)
-                .setUserAuthenticationRequired(false)
-                .build()
-        )
         .build()
 
     /**
-     * Get the database passphrase for SQLCipher
-     * Uses a combination of device-specific and app-specific data
+     * Lazy initialization of EncryptedSharedPreferences for synchronous access
      */
-    suspend fun getDatabasePassphrase(): String = withContext(Dispatchers.IO) {
+    private val securePrefs: SharedPreferences by lazy {
         try {
-            // Get or create the encrypted database key file
-            val keyFile = getDatabaseKeyFile()
-            
-            if (keyFile.exists()) {
-                // Read existing key
-                readDatabaseKey(keyFile)
-            } else {
-                // Generate and store new key
-                val newKey = generateSecureDatabaseKey()
-                storeDatabaseKey(keyFile, newKey)
-                newKey
-            }
+            EncryptedSharedPreferences.create(
+                context,
+                SECURE_PREFS_NAME,
+                masterKey,
+                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+            )
         } catch (e: Exception) {
-            Log.e(TAG, "Error getting database passphrase", e)
-            // Fallback to a derived key in case of errors
+            Log.e(TAG, "Failed to create EncryptedSharedPreferences, falling back to standard", e)
+            // Fallback to standard SharedPreferences if encryption fails (better than crash)
+            context.getSharedPreferences(SECURE_PREFS_NAME, Context.MODE_PRIVATE)
+        }
+    }
+
+    /**
+     * Get the database passphrase for SQLCipher synchronously.
+     * Uses EncryptedSharedPreferences for persistent, secure storage.
+     *
+     * Performance: Optimized to avoid runBlocking during Room initialization.
+     */
+    fun getDatabasePassphrase(): String {
+        return try {
+            // 1. Try to get existing key from secure preferences
+            val existingKey = securePrefs.getString(KEY_DATABASE_PASSPHRASE, null)
+            if (existingKey != null) {
+                return existingKey
+            }
+
+            // 2. Check for legacy key file and migrate if needed
+            val legacyKeyFile = File(context.filesDir, LEGACY_KEY_FILE_NAME)
+            if (legacyKeyFile.exists()) {
+                val migratedKey = migrateLegacyKey(legacyKeyFile)
+                if (migratedKey != null) {
+                    return migratedKey
+                }
+            }
+
+            // 3. Generate and store new key if none exists
+            val newKey = generateSecureDatabaseKey()
+            storeDatabaseKeyInPrefs(newKey)
+            newKey
+        } catch (e: Exception) {
+            Log.e(TAG, "Error getting database passphrase, using fallback", e)
             generateFallbackPassphrase()
         }
     }
 
     /**
-     * Create a SupportFactory for SQLCipher with the secure passphrase
+     * Create a SupportFactory for SQLCipher with the secure passphrase synchronously.
      */
-    suspend fun createSQLCipherSupportFactory(): SupportFactory {
+    fun createSQLCipherSupportFactory(): SupportFactory {
         val passphrase = getDatabasePassphrase()
         val passphraseBytes = SQLiteDatabase.getBytes(passphrase.toCharArray())
         return SupportFactory(passphraseBytes)
     }
 
     /**
-     * Get the database key file path
+     * Stores the database key in secure preferences.
      */
-    private fun getDatabaseKeyFile(): File {
-        return File(context.filesDir, "prody_db_key.enc")
+    private fun storeDatabaseKeyInPrefs(key: String) {
+        try {
+            securePrefs.edit().putString(KEY_DATABASE_PASSPHRASE, key).apply()
+            Log.d(TAG, "Database key stored in secure preferences")
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to store database key in prefs", e)
+        }
     }
 
     /**
-     * Generate a secure database key
+     * Migrates the database key from legacy EncryptedFile storage to EncryptedSharedPreferences.
+     */
+    private fun migrateLegacyKey(keyFile: File): String? {
+        return try {
+            Log.d(TAG, "Legacy key file found, attempting migration...")
+            val encryptedFile = EncryptedFile.Builder(
+                context,
+                keyFile,
+                masterKey,
+                EncryptedFile.FileEncryptionScheme.AES256_GCM_HKDF_4KB
+            ).build()
+
+            val key = encryptedFile.openFileInput().use { input ->
+                String(input.readBytes())
+            }
+
+            if (key.isNotEmpty()) {
+                storeDatabaseKeyInPrefs(key)
+                // Delete legacy file after successful migration
+                if (keyFile.delete()) {
+                    Log.d(TAG, "Legacy key file migrated and deleted")
+                }
+                key
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to migrate legacy key", e)
+            null
+        }
+    }
+
+    /**
+     * Generate a secure database key using SecureRandom and app metadata.
      */
     private fun generateSecureDatabaseKey(): String {
         val random = java.security.SecureRandom()
@@ -134,53 +192,7 @@ class SecureDatabaseManager @Inject constructor(
     }
 
     /**
-     * Store database key securely
-     */
-    private suspend fun storeDatabaseKey(keyFile: File, key: String) = withContext(Dispatchers.IO) {
-        try {
-            val encryptedFile = EncryptedFile.Builder(
-                context,
-                keyFile,
-                masterKey,
-                EncryptedFile.FileEncryptionScheme.AES256_GCM_HKDF_4KB
-            ).build()
-            
-            encryptedFile.openFileOutput().use { output ->
-                output.write(key.toByteArray())
-                output.flush()
-            }
-            
-            Log.d(TAG, "Database key stored securely")
-        } catch (e: IOException) {
-            Log.e(TAG, "Error storing database key", e)
-            throw SecurityException("Failed to store database key", e)
-        }
-    }
-
-    /**
-     * Read database key securely
-     */
-    private suspend fun readDatabaseKey(keyFile: File): String = withContext(Dispatchers.IO) {
-        try {
-            val encryptedFile = EncryptedFile.Builder(
-                context,
-                keyFile,
-                masterKey,
-                EncryptedFile.FileEncryptionScheme.AES256_GCM_HKDF_4KB
-            ).build()
-            
-            encryptedFile.openFileInput().use { input ->
-                val bytes = input.readBytes()
-                String(bytes)
-            }
-        } catch (e: IOException) {
-            Log.e(TAG, "Error reading database key", e)
-            throw SecurityException("Failed to read database key", e)
-        }
-    }
-
-    /**
-     * Verify database integrity
+     * Verify database integrity asynchronously.
      */
     suspend fun verifyDatabaseIntegrity(databaseFile: File): Boolean = withContext(Dispatchers.IO) {
         try {
@@ -213,20 +225,15 @@ class SecureDatabaseManager @Inject constructor(
     }
 
     /**
-     * Change database passphrase (for key rotation)
+     * Change database passphrase (for key rotation).
      */
-    suspend fun rotateDatabasePassphrase(): Boolean = withContext(Dispatchers.IO) {
-        try {
+    fun rotateDatabasePassphrase(): Boolean {
+        return try {
             // Generate new key
             val newKey = generateSecureDatabaseKey()
-            
-            // Store new key
-            val keyFile = getDatabaseKeyFile()
-            storeDatabaseKey(keyFile, newKey)
-            
+            storeDatabaseKeyInPrefs(newKey)
             Log.d(TAG, "Database passphrase rotated successfully")
             true
-            
         } catch (e: Exception) {
             Log.e(TAG, "Failed to rotate database passphrase", e)
             false
@@ -234,11 +241,13 @@ class SecureDatabaseManager @Inject constructor(
     }
 
     /**
-     * Clear all database encryption data (for testing or reset)
+     * Clear all database encryption data (for testing or reset).
      */
-    suspend fun clearDatabaseEncryption() = withContext(Dispatchers.IO) {
+    fun clearDatabaseEncryption() {
         try {
-            val keyFile = getDatabaseKeyFile()
+            securePrefs.edit().remove(KEY_DATABASE_PASSPHRASE).apply()
+
+            val keyFile = File(context.filesDir, LEGACY_KEY_FILE_NAME)
             if (keyFile.exists()) {
                 keyFile.delete()
             }
