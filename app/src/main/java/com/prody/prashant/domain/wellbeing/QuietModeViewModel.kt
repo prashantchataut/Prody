@@ -310,9 +310,9 @@ class QuietModeViewModel @Inject constructor(
  *     viewModel: HomeViewModel,
  *     quietModeViewModel: QuietModeViewModel
  * ) {
- *     val isQuietMode by quietModeViewModel.isQuietModeEnabled.collectAsState()
- *     val showSuggestion by quietModeViewModel.showSuggestionDialog.collectAsState()
- *     val showCheckIn by quietModeViewModel.showExitCheckIn.collectAsState()
+ *     val isQuietMode by quietModeViewModel.isQuietModeEnabled.collectAsStateWithLifecycle()
+ *     val showSuggestion by quietModeViewModel.showSuggestionDialog.collectAsStateWithLifecycle()
+ *     val showCheckIn by quietModeViewModel.showExitCheckIn.collectAsStateWithLifecycle()
  *
  *     // Suggestion dialog
  *     if (showSuggestion) {

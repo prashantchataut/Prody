@@ -2,7 +2,7 @@ package com.prody.prashant.util
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -122,7 +122,7 @@ fun ProvideHapticEnabled(
     preferencesManager: PreferencesManager,
     content: @Composable () -> Unit
 ) {
-    val isEnabled by preferencesManager.hapticFeedbackEnabled.collectAsState(initial = true)
+    val isEnabled by preferencesManager.hapticFeedbackEnabled.collectAsStateWithLifecycle(initialValue = true)
 
     CompositionLocalProvider(LocalHapticEnabled provides isEnabled) {
         content()
@@ -137,7 +137,7 @@ fun ProvideHapticEnabled(
     hapticEnabledFlow: Flow<Boolean>,
     content: @Composable () -> Unit
 ) {
-    val isEnabled by hapticEnabledFlow.collectAsState(initial = true)
+    val isEnabled by hapticEnabledFlow.collectAsStateWithLifecycle(initialValue = true)
 
     CompositionLocalProvider(LocalHapticEnabled provides isEnabled) {
         content()
@@ -191,7 +191,7 @@ fun rememberProdyHaptic(): ProdyHapticFeedback {
 @Composable
 fun rememberProdyHaptic(preferencesManager: PreferencesManager): ProdyHapticFeedback {
     val hapticFeedback = LocalHapticFeedback.current
-    val isEnabled by preferencesManager.hapticFeedbackEnabled.collectAsState(initial = true)
+    val isEnabled by preferencesManager.hapticFeedbackEnabled.collectAsStateWithLifecycle(initialValue = true)
 
     return remember(hapticFeedback, isEnabled) {
         ProdyHapticFeedback(hapticFeedback, isEnabled)
@@ -207,7 +207,7 @@ fun rememberProdyHaptic(preferencesManager: PreferencesManager): ProdyHapticFeed
 @Composable
 fun rememberProdyHaptic(hapticEnabledFlow: Flow<Boolean>): ProdyHapticFeedback {
     val hapticFeedback = LocalHapticFeedback.current
-    val isEnabled by hapticEnabledFlow.collectAsState(initial = true)
+    val isEnabled by hapticEnabledFlow.collectAsStateWithLifecycle(initialValue = true)
 
     return remember(hapticFeedback, isEnabled) {
         ProdyHapticFeedback(hapticFeedback, isEnabled)

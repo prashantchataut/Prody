@@ -1698,15 +1698,26 @@ abstract class ProdyDatabase : RoomDatabase() {
             }
         }
 
-private fun buildDatabase(context: Context): ProdyDatabase {
+        private fun buildDatabase(context: Context): ProdyDatabase {
             return try {
-                // Initialize secure database manager
-                val secureDbManager = SecureDatabaseManager(context)
+                // Initialize secure database manager synchronously
+                val masterKey = androidx.security.crypto.MasterKey.Builder(context)
+                    .setKeyScheme(androidx.security.crypto.MasterKey.KeyScheme.AES256_GCM)
+                    .build()
+
+                val encryptedPrefs = androidx.security.crypto.EncryptedSharedPreferences.create(
+                    context,
+                    "prody_encrypted_shared_prefs",
+                    masterKey,
+                    androidx.security.crypto.EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                    androidx.security.crypto.EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+                )
+
+                val secureDbManager = SecureDatabaseManager(context, encryptedPrefs)
                 
-                // Create SQLCipher support factory with secure passphrase
-                val supportFactory = runBlocking {
-                    secureDbManager.createSQLCipherSupportFactory()
-                }
+                // Create SQLCipher support factory with secure passphrase synchronously
+                // This avoids runBlocking which can block the main thread during Room initialization
+                val supportFactory = secureDbManager.createSQLCipherSupportFactorySync()
                 
                 Room.databaseBuilder(
                     context.applicationContext,
@@ -1738,18 +1749,22 @@ private fun buildDatabase(context: Context): ProdyDatabase {
                         MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20
                     )
                     .fallbackToDestructiveMigration()
-                    .addCallback(DatabaseCallback())
+                    .addCallback(DatabaseCallback(context))
                     .build()
             }
         }
 
-/**
+        /**
          * Database callback for initialization tasks
          */
-        private class DatabaseCallback : Callback() {
+        private class DatabaseCallback(private val context: Context) : Callback() {
             override fun onCreate(db: SupportSQLiteDatabase) {
                 super.onCreate(db)
-                Log.d(TAG, "Database created successfully")
+                Log.d(TAG, "Database created successfully - initiating data seeding")
+                // Seed the database with initial content
+                // Safety: Use INSTANCE directly if available to avoid recursion
+                INSTANCE?.let { DatabaseSeeder.seedDatabase(it) }
+                    ?: Log.e(TAG, "Failed to seed database: INSTANCE is null")
             }
 
             override fun onOpen(db: SupportSQLiteDatabase) {
@@ -1759,7 +1774,9 @@ private fun buildDatabase(context: Context): ProdyDatabase {
 
             override fun onDestructiveMigration(db: SupportSQLiteDatabase) {
                 super.onDestructiveMigration(db)
-                Log.w(TAG, "Destructive migration performed - data was cleared")
+                Log.w(TAG, "Destructive migration performed - re-seeding database")
+                // Re-seed the database after destructive migration
+                INSTANCE?.let { DatabaseSeeder.seedDatabase(it) }
             }
         }
 
@@ -1772,7 +1789,11 @@ private fun buildDatabase(context: Context): ProdyDatabase {
         ) : Callback() {
             override fun onCreate(db: SupportSQLiteDatabase) {
                 super.onCreate(db)
-                Log.d(TAG, "Secure database created successfully")
+                Log.d(TAG, "Secure database created successfully - initiating data seeding")
+                // Seed the database with initial content
+                // Safety: Use INSTANCE directly if available to avoid recursion
+                INSTANCE?.let { DatabaseSeeder.seedDatabase(it) }
+                    ?: Log.e(TAG, "Failed to seed secure database: INSTANCE is null")
             }
 
             override fun onOpen(db: SupportSQLiteDatabase) {
@@ -1793,12 +1814,14 @@ private fun buildDatabase(context: Context): ProdyDatabase {
 
             override fun onDestructiveMigration(db: SupportSQLiteDatabase) {
                 super.onDestructiveMigration(db)
-                Log.w(TAG, "Secure database destructive migration performed - data was cleared")
+                Log.w(TAG, "Secure database destructive migration performed - data was cleared and re-seeding")
                 
                 // Clear encryption data after destructive migration
                 runBlocking {
                     secureDbManager.clearDatabaseEncryption()
                 }
+                // Re-seed the database after destructive migration
+                INSTANCE?.let { DatabaseSeeder.seedDatabase(it) }
             }
         }
     }

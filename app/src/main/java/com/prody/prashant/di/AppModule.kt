@@ -41,73 +41,12 @@ object AppModule {
 
     private const val TAG = "AppModule"
 
-    @Volatile
-    private var databaseInstance: ProdyDatabase? = null
-
-    /**
-     * Database callback for initialization tasks, seeding, and logging.
-     * Seeds the database with initial wisdom content on first creation.
-     */
-    private val databaseCallback = object : RoomDatabase.Callback() {
-        override fun onCreate(db: SupportSQLiteDatabase) {
-            super.onCreate(db)
-            Log.d(TAG, "Database created successfully - initiating data seeding")
-            // Seed the database with initial content
-            databaseInstance?.let { database ->
-                DatabaseSeeder.seedDatabase(database)
-            }
-        }
-
-        override fun onOpen(db: SupportSQLiteDatabase) {
-            super.onOpen(db)
-            Log.d(TAG, "Database opened")
-        }
-
-        override fun onDestructiveMigration(db: SupportSQLiteDatabase) {
-            super.onDestructiveMigration(db)
-            Log.w(TAG, "Destructive migration performed - re-seeding database")
-            // Re-seed the database after destructive migration
-            databaseInstance?.let { database ->
-                DatabaseSeeder.seedDatabase(database)
-            }
-        }
-    }
-
     @Provides
     @Singleton
     fun provideDatabase(
         @ApplicationContext context: Context
     ): ProdyDatabase {
-        return databaseInstance ?: synchronized(this) {
-            val instance = Room.databaseBuilder(
-                context.applicationContext,
-                ProdyDatabase::class.java,
-                ProdyDatabase.DATABASE_NAME
-            )
-                .addMigrations(
-                    ProdyDatabase.MIGRATION_4_5,
-                    ProdyDatabase.MIGRATION_5_6,
-                    ProdyDatabase.MIGRATION_6_7,
-                    ProdyDatabase.MIGRATION_7_8,
-                    ProdyDatabase.MIGRATION_8_9,
-                    ProdyDatabase.MIGRATION_9_10,
-                    ProdyDatabase.MIGRATION_10_11,
-                    ProdyDatabase.MIGRATION_11_12,
-                    ProdyDatabase.MIGRATION_12_13,
-                    ProdyDatabase.MIGRATION_13_14,
-                    ProdyDatabase.MIGRATION_14_15,
-                    ProdyDatabase.MIGRATION_15_16,
-                    ProdyDatabase.MIGRATION_16_17,
-                    ProdyDatabase.MIGRATION_17_18,
-                    ProdyDatabase.MIGRATION_18_19,
-                    ProdyDatabase.MIGRATION_19_20
-                )
-                .fallbackToDestructiveMigration()
-                .addCallback(databaseCallback)
-                .build()
-            databaseInstance = instance
-            instance
-        }
+        return ProdyDatabase.getInstance(context)
     }
 
     @Provides

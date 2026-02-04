@@ -232,6 +232,6 @@ private data class IntelligentPromptData(
     val userName: String?
 )
 
-class QuickJournalWidgetReceiver : GlanceAppWidgetReceiver() {
+class QuickJournalWidgetReceiver : BaseSecureWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = QuickJournalWidget()
 }

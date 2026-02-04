@@ -192,6 +192,6 @@ class RefreshQuoteAction : ActionCallback {
     }
 }
 
-class DailyQuoteWidgetReceiver : GlanceAppWidgetReceiver() {
+class DailyQuoteWidgetReceiver : BaseSecureWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = DailyQuoteWidget()
 }
