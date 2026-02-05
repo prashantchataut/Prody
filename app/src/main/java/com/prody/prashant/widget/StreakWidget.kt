@@ -228,6 +228,6 @@ class RefreshStreakAction : androidx.glance.appwidget.action.ActionCallback {
     }
 }
 
-class StreakWidgetReceiver : GlanceAppWidgetReceiver() {
+class StreakWidgetReceiver : BaseSecureWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = StreakWidget()
 }

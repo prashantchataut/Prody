@@ -173,6 +173,6 @@ class RefreshWordAction : androidx.glance.appwidget.action.ActionCallback {
     }
 }
 
-class WordOfDayWidgetReceiver : GlanceAppWidgetReceiver() {
+class WordOfDayWidgetReceiver : BaseSecureWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = WordOfDayWidget()
 }

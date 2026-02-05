@@ -1,7 +1,7 @@
 package com.prody.prashant.domain.wellbeing
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import com.prody.prashant.data.local.preferences.PreferencesManager
 import kotlinx.coroutines.flow.Flow
@@ -32,7 +32,7 @@ import kotlinx.coroutines.flow.map
  */
 @Composable
 fun PreferencesManager.isQuietModeActive(): Boolean {
-    val isActive by this.quietModeEnabled.collectAsState(initial = false)
+    val isActive by this.quietModeEnabled.collectAsStateWithLifecycle(initialValue = false)
     return isActive
 }
 
