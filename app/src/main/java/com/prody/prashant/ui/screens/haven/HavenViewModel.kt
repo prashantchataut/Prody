@@ -88,14 +88,15 @@ class HavenViewModel @Inject constructor(
             // Check if Haven is configured
             val isConfigured = havenRepository.isConfigured()
             val isOffline = havenRepository.isOffline()
-            val configStatus = if (!isConfigured && !isOffline) havenRepository.getConfigurationStatus() else null
-            
-            _homeState.update { 
+            // Always get config status when offline or not configured for better diagnostics
+            val configStatus = if (isOffline || !isConfigured) havenRepository.getConfigurationStatus() else null
+
+            _homeState.update {
                 it.copy(
                     isConfigured = isConfigured,
                     isOffline = isOffline,
                     configStatus = configStatus
-                ) 
+                )
             }
 
             // Load sessions
