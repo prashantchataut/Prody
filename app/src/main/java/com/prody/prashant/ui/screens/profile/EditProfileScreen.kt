@@ -59,7 +59,9 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.R
+import com.prody.prashant.ui.components.ProdyIconButton
 import com.prody.prashant.ui.theme.*
+import com.prody.prashant.ui.theme.ProdyDesignTokens
 import kotlinx.coroutines.delay
 
 /**
@@ -536,17 +538,32 @@ private fun DisplayNameSection(
                 onNext = { onNext() }
             ),
             decorationBox = { innerTextField ->
-                Box {
-                    if (displayName.isEmpty()) {
-                        Text(
-                            text = "Enter your name",
-                            fontFamily = PoppinsFamily,
-                            fontSize = 16.sp,
-                            color = if (isDarkMode) EditProfileColors.TextTertiaryDark
-                                    else EditProfileColors.TextTertiaryLight
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(modifier = Modifier.weight(1f)) {
+                        if (displayName.isEmpty()) {
+                            Text(
+                                text = "Enter your name",
+                                fontFamily = PoppinsFamily,
+                                fontSize = 16.sp,
+                                color = if (isDarkMode) EditProfileColors.TextTertiaryDark
+                                        else EditProfileColors.TextTertiaryLight
+                            )
+                        }
+                        innerTextField()
+                    }
+                    if (displayName.isNotEmpty()) {
+                        ProdyIconButton(
+                            icon = ProdyIcons.Clear,
+                            onClick = { onDisplayNameChange("") },
+                            contentDescription = "Clear name",
+                            size = 32.dp,
+                            tint = if (isDarkMode) EditProfileColors.AccentGreen
+                                   else EditProfileColors.AccentGreenLight
                         )
                     }
-                    innerTextField()
                 }
             }
         )
@@ -555,8 +572,12 @@ private fun DisplayNameSection(
             text = "${displayName.length}/30",
             fontFamily = PoppinsFamily,
             fontSize = 12.sp,
-            color = if (isDarkMode) EditProfileColors.TextTertiaryDark
-                    else EditProfileColors.TextTertiaryLight,
+            color = when {
+                displayName.length >= 30 -> MaterialTheme.colorScheme.error
+                displayName.length >= 24 -> ProdyDesignTokens.SemanticColors.warning
+                else -> if (isDarkMode) EditProfileColors.TextTertiaryDark
+                        else EditProfileColors.TextTertiaryLight
+            },
             modifier = Modifier
                 .align(Alignment.End)
                 .padding(top = 4.dp)
@@ -643,8 +664,12 @@ private fun BioSection(
             text = "${bio.length}/150",
             fontFamily = PoppinsFamily,
             fontSize = 12.sp,
-            color = if (isDarkMode) EditProfileColors.TextTertiaryDark
-                    else EditProfileColors.TextTertiaryLight,
+            color = when {
+                bio.length >= 150 -> MaterialTheme.colorScheme.error
+                bio.length >= 120 -> ProdyDesignTokens.SemanticColors.warning
+                else -> if (isDarkMode) EditProfileColors.TextTertiaryDark
+                        else EditProfileColors.TextTertiaryLight
+            },
             modifier = Modifier
                 .align(Alignment.End)
                 .padding(top = 4.dp)
