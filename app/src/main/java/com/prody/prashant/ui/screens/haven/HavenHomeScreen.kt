@@ -108,6 +108,8 @@ fun HavenHomeScreen(
                 if (uiState.isOffline) {
                     item(key = "offline_banner") {
                         OfflineModeBanner(
+                            onRetryConnection = { viewModel.retryAiConnection() },
+                            configStatus = uiState.configStatus ?: "No API key configured",
                             modifier = Modifier.padding(horizontal = 16.dp)
                         )
                     }
@@ -182,8 +184,13 @@ fun HavenHomeScreen(
 
 @Composable
 private fun OfflineModeBanner(
+    onRetryConnection: () -> Unit,
+    configStatus: String? = null,
     modifier: Modifier = Modifier
 ) {
+    var showDiagnostics by remember { mutableStateOf(false) }
+    var isRetrying by remember { mutableStateOf(false) }
+
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
@@ -191,30 +198,132 @@ private fun OfflineModeBanner(
             containerColor = MaterialTheme.colorScheme.tertiaryContainer
         )
     ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+        Column(
+            modifier = Modifier.padding(16.dp)
         ) {
-            Icon(
-                imageVector = ProdyIcons.WifiOff,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onTertiaryContainer
-            )
-            Spacer(modifier = Modifier.width(16.dp))
-            Column {
-                Text(
-                    text = "Offline Mode",
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onTertiaryContainer,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = "AI chat is limited. Exercises & Journal are available.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onTertiaryContainer
-                )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.1f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = ProdyIcons.WifiOff,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onTertiaryContainer,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(12.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "AI Chat Offline",
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onTertiaryContainer,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "Exercises & Journal remain available",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.8f)
+                    )
+                }
+
+                // Retry button
+                OutlinedButton(
+                    onClick = {
+                        isRetrying = true
+                        onRetryConnection()
+                    },
+                    enabled = !isRetrying,
+                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                    modifier = Modifier.height(32.dp)
+                ) {
+                    if (isRetrying) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(14.dp),
+                            strokeWidth = 2.dp,
+                            color = MaterialTheme.colorScheme.onTertiaryContainer
+                        )
+                    } else {
+                        Icon(
+                            imageVector = ProdyIcons.Refresh,
+                            contentDescription = "Retry",
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Retry", style = MaterialTheme.typography.labelSmall)
+                    }
+                }
+            }
+
+            // Diagnostics section (expandable)
+            if (configStatus != null) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable { showDiagnostics = !showDiagnostics }
+                        .padding(vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = if (showDiagnostics) ProdyIcons.ExpandLess else ProdyIcons.ExpandMore,
+                        contentDescription = if (showDiagnostics) "Hide details" else "Show details",
+                        modifier = Modifier.size(16.dp),
+                        tint = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.6f)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "Troubleshooting",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.6f)
+                    )
+                }
+
+                AnimatedVisibility(visible = showDiagnostics) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.05f),
+                                RoundedCornerShape(8.dp)
+                            )
+                            .padding(12.dp)
+                    ) {
+                        Text(
+                            text = "Configuration Status:",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onTertiaryContainer
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = configStatus,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.8f)
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "To fix this:\n1. Add API key to local.properties\n2. Rebuild the project\n3. Restart the app",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.7f)
+                        )
+                    }
+                }
             }
         }
+    }
+
+    // Reset retry state when config changes
+    LaunchedEffect(configStatus) {
+        isRetrying = false
     }
 }
 
