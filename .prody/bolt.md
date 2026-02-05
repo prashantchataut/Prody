@@ -1,11 +1,13 @@
-# BOLT'S JOURNAL - PRODY PERFORMANCE GUARDIAN
+# BOLT ⚡ - PRODY PERFORMANCE JOURNAL
 
-## 2025-05-15 - Animation Recomposition Optimization
-**Context:** MainActivity Navigation Bar and MagicalEffects.kt
-**Learning:** Using `Modifier.scale()` and `Modifier.alpha()` inside a composable with frequently updating state (like an `InfiniteTransition`) triggers recomposition of the scope where the state is read on every frame.
-**Action:** Use `Modifier.graphicsLayer { ... }` instead. Reading state inside the `graphicsLayer` block defers state reading to the draw phase, avoiding recomposition entirely. Also, isolating frequent animations into their own small Composables (e.g., `HavenPulseIcon`) ensures that if recomposition *does* occur, it's limited to the smallest possible part of the UI tree.
+This journal contains CRITICAL performance learnings specific to the Prody codebase.
 
-## 2025-05-15 - Memoization of Static Lists
-**Context:** MainActivity ProdyApp
-**Learning:** Static lists (like navigation items) created directly inside a Composable are re-allocated on every recomposition.
-**Action:** Wrap such allocations in `remember { ... }` to ensure they are only created once per composition lifecycle.
+## 2024-05-20 - Animation Recomposition in NavigationBar
+**Context:** Bottom navigation animations in `MainActivity.kt` and `MagicalEffects.kt`.
+**Learning:** Inlining frequent animations (like breathing pulses) directly inside complex parent layouts like `NavigationBar` causes the entire parent to recompose every frame. Even small components like `NavigationBreathingGlow` can trigger wide invalidation if they don't use `graphicsLayer` correctly.
+**Action:** Isolate frequent UI animations into their own small, private Composables. Use `Modifier.graphicsLayer { ... }` to apply `alpha` and `scale` updates, as this modifies the drawing layer directly without triggering recomposition of the parent scope.
+
+## 2024-05-20 - Placeholder Feature Gap
+**Context:** `HomeScreen.kt` vs `HomeViewModel.kt`.
+**Learning:** Prody had a significant "feature gap" where sophisticated logic was implemented in ViewModels but the UI was stuck with hardcoded placeholders. This gave the impression of broken functionality ("Only 1% works").
+**Action:** Always verify that UI components are correctly bound to the corresponding state fields in `UiState`. Explicitly mapping previously ignored fields like `dualStreakStatus`, `nextAction`, and `dailySeed` drastically improves the functional surface area of the app.
