@@ -1,5 +1,6 @@
 package com.prody.prashant.ui.screens.home
 
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.prody.prashant.data.ai.BuddhaAiRepository
@@ -39,6 +40,7 @@ import javax.inject.Inject
  * AI Proof Mode debug info - shown on AI surfaces when enabled in Settings.
  * Provides visibility into AI generation status for debugging.
  */
+@Immutable
 data class AiProofModeInfo(
     val provider: String = "",           // Gemini, OpenRouter, Fallback
     val cacheStatus: String = "",        // HIT, MISS, or empty if no call
@@ -57,6 +59,7 @@ enum class AiConfigurationStatus {
     ERROR
 }
 
+@Immutable
 data class HomeUiState(
     val userName: String = "Growth Seeker",
     val currentStreak: Int = 0,
@@ -82,6 +85,7 @@ data class HomeUiState(
     val journalEntriesThisWeek: Int = 0,
     val wordsLearnedThisWeek: Int = 0,
     val daysActiveThisWeek: Int = 0,
+    val mindfulMinutes: Int = 0,
     val isLoading: Boolean = true,
     val hasLoadError: Boolean = false,
     val error: String? = null,
@@ -232,6 +236,9 @@ class HomeViewModel @Inject constructor(
                 // Calculate weekly active days.
                 val daysActiveThisWeek = streakHistory.count { it.date >= weekStart }
 
+                // Calculate mindful minutes from totalReflectionTime (seconds to minutes)
+                val mindfulMinutes = (profile?.totalReflectionTime ?: 0L) / 60
+
                 // Determine today's journaling status.
                 val (journaledToday, todayMood, todayPreview) = if (todayJournalEntries.isNotEmpty()) {
                     val latestEntry = todayJournalEntries.maxByOrNull { it.createdAt }
@@ -261,6 +268,7 @@ class HomeViewModel @Inject constructor(
                     journalEntriesThisWeek = weeklyJournalEntries.size,
                     wordsLearnedThisWeek = weeklyLearnedWords,
                     daysActiveThisWeek = daysActiveThisWeek,
+                    mindfulMinutes = mindfulMinutes.toInt(),
                     journaledToday = journaledToday,
                     todayEntryMood = todayMood,
                     todayEntryPreview = todayPreview,
