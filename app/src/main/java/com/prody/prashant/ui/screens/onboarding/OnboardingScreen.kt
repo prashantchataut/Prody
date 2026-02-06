@@ -743,18 +743,24 @@ fun ProdyProgressIndicator(
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        repeat(totalPages) { index ->
-            val isActive = index == currentPage
-            val width by animateDpAsState(if (isActive) 24.dp else 8.dp, label = "width")
-            val color = if (isActive) ProdyForestGreen else ProdyOutlineLight
-            
-            Box(
-                modifier = Modifier
-                    .height(4.dp)
-                    .width(width)
-                    .clip(CircleShape)
-                    .background(color)
-            )
+        for (index in 0 until totalPages) {
+            key(index) {
+                val isActive = index == currentPage
+                val width by animateDpAsState(
+                    targetValue = if (isActive) 24.dp else 8.dp,
+                    animationSpec = spring(stiffness = Spring.StiffnessLow),
+                    label = "width"
+                )
+                val color = if (isActive) ProdyForestGreen else ProdyOutlineLight
+
+                Box(
+                    modifier = Modifier
+                        .height(4.dp)
+                        .width(width)
+                        .clip(CircleShape)
+                        .background(color)
+                )
+            }
         }
     }
 }
