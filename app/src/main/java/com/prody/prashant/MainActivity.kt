@@ -339,7 +339,7 @@ private fun HavenPulseIcon(
         targetValue = 1f,
         animationSpec = infiniteRepeatable(
             animation = tween(2000, easing = LinearEasing),
-            repeatMode = Reverse
+            repeatMode = RepeatMode.Reverse
         ),
         label = "HavenAlpha"
     )
@@ -349,7 +349,7 @@ private fun HavenPulseIcon(
         targetValue = 1.05f,
         animationSpec = infiniteRepeatable(
             animation = tween(2000, easing = LinearEasing),
-            repeatMode = Reverse
+            repeatMode = RepeatMode.Reverse
         ),
         label = "HavenScale"
     )
