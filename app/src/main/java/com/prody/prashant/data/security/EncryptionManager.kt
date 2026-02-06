@@ -115,8 +115,8 @@ class EncryptionManager @Inject constructor(
             "ENC:" + Base64.encodeToString(combined, Base64.NO_WRAP)
         } catch (e: Exception) {
             Log.e(TAG, "Encryption failed", e)
-            // Return original text if encryption fails (fallback for safety)
-            plaintext
+            // CRITICAL SECURITY FIX: Fail-secure. Do not return plaintext on failure.
+            throw EncryptionException("Encryption failed for a given plaintext.", e)
         }
     }
 
@@ -154,8 +154,8 @@ class EncryptionManager @Inject constructor(
             String(cipher.doFinal(ciphertext), Charsets.UTF_8)
         } catch (e: Exception) {
             Log.e(TAG, "Decryption failed", e)
-            // Return original text if decryption fails
-            encryptedText
+            // CRITICAL SECURITY FIX: Fail-secure. Do not return encrypted text on failure.
+            throw EncryptionException("Decryption failed for a given encrypted text.", e)
         }
     }
 
