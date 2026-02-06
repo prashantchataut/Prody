@@ -60,6 +60,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.R
 import com.prody.prashant.ui.components.ProdyIconButton
+import com.prody.prashant.util.rememberProdyHaptic
 import com.prody.prashant.ui.theme.*
 import com.prody.prashant.ui.theme.ProdyDesignTokens
 import kotlinx.coroutines.delay
@@ -282,18 +283,13 @@ private fun EditProfileHeader(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        IconButton(
+        ProdyIconButton(
+            icon = ProdyIcons.ArrowBack,
             onClick = onBackClick,
-            modifier = Modifier.size(48.dp)
-        ) {
-            Icon(
-                imageVector = ProdyIcons.ArrowBack,
-                contentDescription = stringResource(R.string.back),
-                tint = if (isDarkMode) EditProfileColors.TextPrimaryDark
-                       else EditProfileColors.TextPrimaryLight,
-                modifier = Modifier.size(24.dp)
-            )
-        }
+            contentDescription = stringResource(R.string.back),
+            tint = if (isDarkMode) EditProfileColors.TextPrimaryDark
+                   else EditProfileColors.TextPrimaryLight
+        )
 
         Text(
             text = "Edit Profile",
@@ -411,6 +407,7 @@ private fun AvatarOptionItem(
     onClick: () -> Unit,
     isDarkMode: Boolean
 ) {
+    val haptic = rememberProdyHaptic()
     val scale by animateFloatAsState(
         targetValue = if (isSelected) 1.1f else 1f,
         animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
@@ -442,7 +439,10 @@ private fun AvatarOptionItem(
                 },
                 shape = CircleShape
             )
-            .clickable(enabled = !avatar.isLocked) { onClick() },
+            .clickable(enabled = !avatar.isLocked) {
+                haptic.selection()
+                onClick()
+            },
         contentAlignment = Alignment.Center
     ) {
         if (avatar.isLocked) {
@@ -645,17 +645,29 @@ private fun BioSection(
                 imeAction = ImeAction.Default // Multi-line, default behavior
             ),
             decorationBox = { innerTextField ->
-                Box {
-                    if (bio.isEmpty()) {
-                        Text(
-                            text = "Tell us about yourself...",
-                            fontFamily = PoppinsFamily,
-                            fontSize = 14.sp,
-                            color = if (isDarkMode) EditProfileColors.TextTertiaryDark
-                                    else EditProfileColors.TextTertiaryLight
+                Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
+                    Box(modifier = Modifier.weight(1f)) {
+                        if (bio.isEmpty()) {
+                            Text(
+                                text = "Tell us about yourself...",
+                                fontFamily = PoppinsFamily,
+                                fontSize = 14.sp,
+                                color = if (isDarkMode) EditProfileColors.TextTertiaryDark
+                                        else EditProfileColors.TextTertiaryLight
+                            )
+                        }
+                        innerTextField()
+                    }
+                    if (bio.isNotEmpty()) {
+                        ProdyIconButton(
+                            icon = ProdyIcons.Clear,
+                            onClick = { onBioChange("") },
+                            contentDescription = "Clear bio",
+                            size = 32.dp,
+                            tint = if (isDarkMode) EditProfileColors.AccentGreen
+                                   else EditProfileColors.AccentGreenLight
                         )
                     }
-                    innerTextField()
                 }
             }
         )
@@ -727,6 +739,7 @@ private fun TitleOptionChip(
     onClick: () -> Unit,
     isDarkMode: Boolean
 ) {
+    val haptic = rememberProdyHaptic()
     val backgroundColor by animateColorAsState(
         when {
             title.isLocked -> if (isDarkMode) EditProfileColors.CardBackgroundDark.copy(alpha = 0.5f)
@@ -755,7 +768,10 @@ private fun TitleOptionChip(
         modifier = Modifier
             .clip(RoundedCornerShape(20.dp))
             .background(backgroundColor)
-            .clickable(enabled = !title.isLocked) { onClick() }
+            .clickable(enabled = !title.isLocked) {
+                haptic.selection()
+                onClick()
+            }
             .padding(horizontal = 16.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp)
@@ -859,6 +875,7 @@ private fun SaveProfileButton(
     isDarkMode: Boolean,
     modifier: Modifier = Modifier
 ) {
+    val haptic = rememberProdyHaptic()
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -873,7 +890,10 @@ private fun SaveProfileButton(
                     else EditProfileColors.AccentGreenLight.copy(alpha = 0.3f)
                 }
             )
-            .clickable(enabled = enabled && !isLoading) { onClick() },
+            .clickable(enabled = enabled && !isLoading) {
+                haptic.click()
+                onClick()
+            },
         contentAlignment = Alignment.Center
     ) {
         if (isLoading) {
