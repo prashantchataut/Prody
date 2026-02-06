@@ -60,7 +60,7 @@ class HavenRepository @Inject constructor(
             // Get AI greeting
             val aiResult = havenAiService.startSession(sessionType, userName, context)
             if (aiResult.isFailure) {
-                return@withContext Result.failure(aiResult.exceptionOrNull()!!)
+                return@withContext Result.failure(aiResult.exceptionOrNull() ?: Exception("Failed to start Haven session"))
             }
 
             val aiResponse = aiResult.getOrThrow()
@@ -128,7 +128,7 @@ class HavenRepository @Inject constructor(
             )
 
             if (aiResult.isFailure) {
-                return@withContext Result.failure(aiResult.exceptionOrNull()!!)
+                return@withContext Result.failure(aiResult.exceptionOrNull() ?: Exception("Failed to continue Haven conversation"))
             }
 
             val aiResponse = aiResult.getOrThrow()

@@ -596,15 +596,21 @@ class UserContextEngine @Inject constructor(
             )
         }
         val dominantTime = timeDistribution.maxByOrNull { it.value.size }?.key
-        if (dominantTime != null && timeDistribution[dominantTime]!!.size >= journals.size * 0.6) {
-            patterns.add("Prefers journaling in the ${dominantTime.displayName.lowercase()}")
+        if (dominantTime != null) {
+            val count = timeDistribution[dominantTime]?.size ?: 0
+            if (count >= journals.size * 0.6) {
+                patterns.add("Prefers journaling in the ${dominantTime.displayName.lowercase()}")
+            }
         }
 
         // Mood patterns
         val moodDistribution = journals.groupBy { Mood.fromString(it.mood) }
         val dominantMood = moodDistribution.maxByOrNull { it.value.size }?.key
-        if (dominantMood != null && moodDistribution[dominantMood]!!.size >= journals.size * 0.5) {
-            patterns.add("Often journals when feeling ${dominantMood.displayName.lowercase()}")
+        if (dominantMood != null) {
+            val count = moodDistribution[dominantMood]?.size ?: 0
+            if (count >= journals.size * 0.5) {
+                patterns.add("Often journals when feeling ${dominantMood.displayName.lowercase()}")
+            }
         }
 
         return patterns.take(3)
