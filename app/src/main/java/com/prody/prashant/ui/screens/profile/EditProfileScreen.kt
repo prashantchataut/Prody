@@ -645,17 +645,32 @@ private fun BioSection(
                 imeAction = ImeAction.Default // Multi-line, default behavior
             ),
             decorationBox = { innerTextField ->
-                Box {
-                    if (bio.isEmpty()) {
-                        Text(
-                            text = "Tell us about yourself...",
-                            fontFamily = PoppinsFamily,
-                            fontSize = 14.sp,
-                            color = if (isDarkMode) EditProfileColors.TextTertiaryDark
-                                    else EditProfileColors.TextTertiaryLight
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.Top
+                ) {
+                    Box(modifier = Modifier.weight(1f)) {
+                        if (bio.isEmpty()) {
+                            Text(
+                                text = "Tell us about yourself...",
+                                fontFamily = PoppinsFamily,
+                                fontSize = 14.sp,
+                                color = if (isDarkMode) EditProfileColors.TextTertiaryDark
+                                        else EditProfileColors.TextTertiaryLight
+                            )
+                        }
+                        innerTextField()
+                    }
+                    if (bio.isNotEmpty()) {
+                        ProdyIconButton(
+                            icon = ProdyIcons.Clear,
+                            onClick = { onBioChange("") },
+                            contentDescription = "Clear bio",
+                            size = 32.dp,
+                            tint = if (isDarkMode) EditProfileColors.AccentGreen
+                                   else EditProfileColors.AccentGreenLight
                         )
                     }
-                    innerTextField()
                 }
             }
         )
