@@ -28,9 +28,11 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.prody.prashant.ui.theme.*
+import com.prody.prashant.ui.components.*
 
 // =============================================================================
 // PERSONALIZATION DASHBOARD - REVAMPED 2026
@@ -51,8 +53,7 @@ fun HomeScreen(
     onNavigateToIdiomDetail: (Long) -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
-    // We assume ViewModel provides necessary state. For this UI revamp, 
-    // we'll focus on the UI structure and use placeholder data where ViewModel might not strictly align yet.
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     
     val surfaceColor = MaterialTheme.colorScheme.surface
     val backgroundColor = MaterialTheme.colorScheme.background
@@ -66,21 +67,56 @@ fun HomeScreen(
         // Header with Greeting and Notification
         item {
             DashboardHeader(
-                userName = "Prashant", // Replace with real name
+                greeting = uiState.intelligentGreeting.ifEmpty { "Good Morning," },
+                subtext = uiState.greetingSubtext.ifEmpty { "Welcome back" },
+                userName = uiState.userName,
                 onProfileClick = {}, // TODO: Profile Nav
                 onNotificationClick = {}
             )
         }
 
+        // Active Progress Layer (Contextual Suggestions)
+        if (uiState.nextAction != null) {
+            item {
+                ActiveProgressSection(
+                    nextAction = uiState.nextAction!!,
+                    onActionClick = {
+                        // Handle contextual navigation based on action type
+                    }
+                )
+            }
+        }
+
         // Overview Section (Streak & Badges)
         item {
             OverviewSection(
-                streakDays = 7,
+                streakDays = uiState.currentStreak,
                 badges = listOf(
                     BadgeData(ProdyIcons.EmojiEvents, 0.75f, ProdyWarmAmber),
                     BadgeData(ProdyIcons.Edit, 0.5f, ProdyForestGreen),
                     BadgeData(ProdyIcons.Psychology, 0.3f, ProdyInfo)
                 )
+            )
+        }
+
+        // Buddha's Daily Wisdom (AI-Powered)
+        item {
+            BuddhaWisdomSection(
+                thought = uiState.buddhaThought,
+                explanation = uiState.buddhaThoughtExplanation,
+                isLoading = uiState.isBuddhaThoughtLoading,
+                onRefresh = { viewModel.refreshBuddhaThought() }
+            )
+        }
+
+        // Wisdom Cards (Quote, Word, Proverb, Idiom)
+        item {
+            WisdomCardsSection(
+                uiState = uiState,
+                onQuoteClick = onNavigateToQuotes,
+                onWordClick = onNavigateToVocabulary,
+                onProverbClick = onNavigateToProverbs,
+                onIdiomClick = onNavigateToIdioms
             )
         }
 
@@ -94,9 +130,9 @@ fun HomeScreen(
         // Weekly Summary
         item {
             WeeklySummarySection(
-                journalEntries = 5,
-                wordsLearned = 12,
-                mindfulMinutes = 45
+                journalEntries = uiState.journalEntriesThisWeek,
+                wordsLearned = uiState.wordsLearnedThisWeek,
+                mindfulMinutes = uiState.daysActiveThisWeek * 15 // Placeholder calc
             )
         }
         
@@ -118,11 +154,316 @@ fun HomeScreen(
 }
 
 // =============================================================================
+// NEW FUNCTIONAL SECTIONS
+// =============================================================================
+
+@Composable
+fun ActiveProgressSection(
+    nextAction: com.prody.prashant.domain.progress.NextAction,
+    onActionClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp, vertical = 8.dp)
+    ) {
+        ProdyPremiumCard(
+            backgroundColor = ProdyForestGreen.copy(alpha = 0.05f),
+            borderColor = ProdyForestGreen.copy(alpha = 0.1f),
+            onClick = onActionClick
+        ) {
+            Row(
+                modifier = Modifier.padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(ProdyForestGreen.copy(alpha = 0.1f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = ProdyIcons.AutoAwesome,
+                        contentDescription = null,
+                        tint = ProdyForestGreen
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(16.dp))
+
+                Column {
+                    Text(
+                        text = "Next Step",
+                        style = TextStyle(
+                            fontFamily = PoppinsFamily,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 12.sp,
+                            color = ProdyForestGreen
+                        )
+                    )
+                    Text(
+                        text = nextAction.title,
+                        style = TextStyle(
+                            fontFamily = PoppinsFamily,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp,
+                            color = ProdyTextPrimaryLight
+                        )
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun BuddhaWisdomSection(
+    thought: String,
+    explanation: String,
+    isLoading: Boolean,
+    onRefresh: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(24.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Buddha's Thought",
+                style = TextStyle(
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 18.sp,
+                    color = ProdyTextPrimaryLight
+                )
+            )
+
+            IconButton(
+                onClick = onRefresh,
+                modifier = Modifier.size(24.dp),
+                enabled = !isLoading
+            ) {
+                Icon(
+                    imageVector = ProdyIcons.Refresh,
+                    contentDescription = "Refresh",
+                    tint = if (isLoading) ProdyTextSecondaryLight else ProdyForestGreen,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        ProdyPremiumCard(
+            backgroundColor = ProdySurfaceLight,
+            borderColor = ProdyOutlineLight.copy(alpha = 0.5f)
+        ) {
+            Column(modifier = Modifier.padding(20.dp)) {
+                if (isLoading) {
+                    LinearProgressIndicator(
+                        modifier = Modifier.fillMaxWidth(),
+                        color = ProdyForestGreen,
+                        trackColor = ProdyForestGreen.copy(alpha = 0.1f)
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+
+                Icon(
+                    imageVector = ProdyIcons.FormatQuote,
+                    contentDescription = null,
+                    tint = ProdyForestGreen.copy(alpha = 0.2f),
+                    modifier = Modifier.size(32.dp)
+                )
+
+                Text(
+                    text = thought,
+                    style = TextStyle(
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 16.sp,
+                        lineHeight = 24.sp,
+                        color = ProdyTextPrimaryLight
+                    ),
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
+
+                if (explanation.isNotEmpty()) {
+                    Text(
+                        text = explanation,
+                        style = TextStyle(
+                            fontFamily = PoppinsFamily,
+                            fontWeight = FontWeight.Normal,
+                            fontSize = 13.sp,
+                            color = ProdyTextSecondaryLight
+                        )
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun WisdomCardsSection(
+    uiState: HomeUiState,
+    onQuoteClick: () -> Unit,
+    onWordClick: () -> Unit,
+    onProverbClick: () -> Unit,
+    onIdiomClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 16.dp)
+    ) {
+        Text(
+            text = "Daily Wisdom",
+            style = TextStyle(
+                fontFamily = PoppinsFamily,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 18.sp,
+                color = ProdyTextPrimaryLight
+            ),
+            modifier = Modifier.padding(horizontal = 24.dp)
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        LazyRow(
+            contentPadding = PaddingValues(horizontal = 24.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            // Quote Card
+            item {
+                WisdomTile(
+                    title = "Daily Quote",
+                    content = uiState.dailyQuote,
+                    subcontent = "- " + uiState.dailyQuoteAuthor,
+                    icon = ProdyIcons.FormatQuote,
+                    color = ProdyForestGreen,
+                    onClick = onQuoteClick
+                )
+            }
+
+            // Word Card
+            item {
+                WisdomTile(
+                    title = "Word of the Day",
+                    content = uiState.wordOfTheDay,
+                    subcontent = uiState.wordDefinition,
+                    icon = ProdyIcons.School,
+                    color = ProdyWarmAmber,
+                    onClick = onWordClick
+                )
+            }
+
+            // Proverb Card
+            item {
+                WisdomTile(
+                    title = "Daily Proverb",
+                    content = uiState.dailyProverb,
+                    subcontent = uiState.proverbMeaning,
+                    icon = ProdyIcons.MenuBook,
+                    color = ProdyInfo,
+                    onClick = onProverbClick
+                )
+            }
+
+            // Idiom Card
+            item {
+                WisdomTile(
+                    title = "Daily Idiom",
+                    content = uiState.dailyIdiom,
+                    subcontent = uiState.idiomMeaning,
+                    icon = ProdyIcons.Lightbulb,
+                    color = Color(0xFF9C27B0),
+                    onClick = onIdiomClick
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun WisdomTile(
+    title: String,
+    content: String,
+    subcontent: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    color: Color,
+    onClick: () -> Unit
+) {
+    ProdyPremiumCard(
+        modifier = Modifier.width(280.dp),
+        onClick = onClick,
+        backgroundColor = color.copy(alpha = 0.05f),
+        borderColor = color.copy(alpha = 0.1f)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = color,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = title,
+                    style = TextStyle(
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 12.sp,
+                        color = color
+                    )
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Text(
+                text = content,
+                style = TextStyle(
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp,
+                    color = ProdyTextPrimaryLight
+                ),
+                maxLines = 2,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Text(
+                text = subcontent,
+                style = TextStyle(
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Normal,
+                    fontSize = 12.sp,
+                    color = ProdyTextSecondaryLight
+                ),
+                maxLines = 2,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+            )
+        }
+    }
+}
+
+// =============================================================================
 // DASHBOARD COMPONENTS
 // =============================================================================
 
 @Composable
 fun DashboardHeader(
+    greeting: String,
+    subtext: String,
     userName: String,
     onProfileClick: () -> Unit,
     onNotificationClick: () -> Unit
@@ -137,22 +478,22 @@ fun DashboardHeader(
     ) {
         Column {
             Text(
-                text = "Good Morning,",
-                style = TextStyle(
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Normal,
-                    fontSize = 16.sp
-                ),
-                color = ProdyTextSecondaryLight
-            )
-            Text(
-                text = userName,
+                text = greeting,
                 style = TextStyle(
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Bold,
                     fontSize = 24.sp
                 ),
                 color = ProdyTextPrimaryLight
+            )
+            Text(
+                text = if (subtext.isNotEmpty()) subtext else userName,
+                style = TextStyle(
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Normal,
+                    fontSize = 16.sp
+                ),
+                color = ProdyTextSecondaryLight
             )
         }
         

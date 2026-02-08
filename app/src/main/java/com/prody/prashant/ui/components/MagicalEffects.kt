@@ -268,8 +268,11 @@ fun MoodBreathingHalo(
         Box(
             modifier = Modifier
                 .size(size * haloScale)
-                .scale(haloScale)
-                .alpha(haloAlpha)
+                .graphicsLayer {
+                    scaleX = haloScale
+                    scaleY = haloScale
+                    alpha = haloAlpha
+                }
                 .blur(12.dp)
                 .background(haloColor, CircleShape)
         )
@@ -278,7 +281,9 @@ fun MoodBreathingHalo(
         Box(
             modifier = Modifier
                 .size(size * 0.9f)
-                .alpha(haloAlpha * 0.5f)
+                .graphicsLayer {
+                    alpha = haloAlpha * 0.5f
+                }
                 .blur(6.dp)
                 .background(haloColor.copy(alpha = 0.3f), CircleShape)
         )
@@ -1053,8 +1058,11 @@ fun NavigationBreathingGlow(
             Box(
                 modifier = Modifier
                     .size(48.dp)
-                    .scale(glowScale)
-                    .alpha(glowAlpha * activeAlpha)
+                    .graphicsLayer {
+                        scaleX = glowScale
+                        scaleY = glowScale
+                        alpha = glowAlpha * activeAlpha
+                    }
                     .blur(12.dp)
                     .background(color, CircleShape)
             )
@@ -1131,8 +1139,8 @@ fun WisdomTextReveal(
         androidx.compose.material3.Text(
             text = text,
             modifier = Modifier
-                .alpha(revealProgress)
                 .graphicsLayer {
+                    alpha = revealProgress
                     // Subtle vertical unfolding effect
                     scaleY = 0.9f + (revealProgress * 0.1f)
                     transformOrigin = TransformOrigin(0.5f, 0f)
