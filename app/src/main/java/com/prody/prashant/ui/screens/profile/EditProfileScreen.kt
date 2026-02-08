@@ -559,6 +559,7 @@ private fun DisplayNameSection(
                             icon = ProdyIcons.Clear,
                             onClick = { onDisplayNameChange("") },
                             contentDescription = "Clear name",
+                            tooltip = "Clear name",
                             size = 32.dp,
                             tint = if (isDarkMode) EditProfileColors.AccentGreen
                                    else EditProfileColors.AccentGreenLight
