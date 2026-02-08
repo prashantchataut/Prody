@@ -26,6 +26,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.SpanStyle
@@ -44,6 +45,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.prody.prashant.ui.theme.*
 import kotlinx.coroutines.launch
+import kotlin.math.abs
 
 // =============================================================================
 // PRODY ONBOARDING - REVAMPED 2026
@@ -733,28 +735,53 @@ fun ProdyLogo(modifier: Modifier = Modifier) {
     }
 }
 
+/**
+ * Optimized Progress Indicator for Onboarding.
+ *
+ * Uses a single Canvas to draw all indicators, allowing for smooth width animations
+ * purely in the drawing phase, avoiding expensive recompositions and layout passes
+ * for each individual indicator bar.
+ */
 @Composable
 fun ProdyProgressIndicator(
     currentPage: Int,
     totalPages: Int,
     modifier: Modifier = Modifier
 ) {
-    Row(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    val density = LocalDensity.current
+    val inactiveWidthPx = with(density) { 8.dp.toPx() }
+    val activeWidthPx = with(density) { 24.dp.toPx() }
+    val spacingPx = with(density) { 4.dp.toPx() }
+    val heightPx = with(density) { 4.dp.toPx() }
+
+    // Animate the "active index" as a float to allow for smooth transitions between dots
+    val animatedIndex by animateFloatAsState(
+        targetValue = currentPage.toFloat(),
+        animationSpec = spring(stiffness = Spring.StiffnessLow),
+        label = "animatedIndex"
+    )
+
+    Canvas(
+        modifier = modifier
+            .height(4.dp)
+            .width(with(density) { (activeWidthPx + (totalPages - 1) * (inactiveWidthPx + spacingPx)).toDp() })
     ) {
+        var currentX = 0f
         repeat(totalPages) { index ->
-            val isActive = index == currentPage
-            val width by animateDpAsState(if (isActive) 24.dp else 8.dp, label = "width")
-            val color = if (isActive) ProdyForestGreen else ProdyOutlineLight
+            // Calculate how "active" this dot is (0.0 to 1.0)
+            val distance = abs(index - animatedIndex)
+            val activeFraction = (1f - distance).coerceIn(0f, 1f)
+
+            val width = inactiveWidthPx + (activeWidthPx - inactiveWidthPx) * activeFraction
+            val color = lerp(ProdyOutlineLight, ProdyForestGreen, activeFraction)
             
-            Box(
-                modifier = Modifier
-                    .height(4.dp)
-                    .width(width)
-                    .clip(CircleShape)
-                    .background(color)
+            drawRoundRect(
+                color = color,
+                topLeft = Offset(currentX, 0f),
+                size = Size(width, heightPx),
+                cornerRadius = androidx.compose.ui.geometry.CornerRadius(heightPx / 2)
             )
+            currentX += width + spacingPx
         }
     }
 }
