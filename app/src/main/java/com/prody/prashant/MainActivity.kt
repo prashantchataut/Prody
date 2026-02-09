@@ -49,6 +49,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
@@ -253,7 +254,7 @@ fun ProdyApp(
                                 icon = {
                                     // Breathing Pulse Animation
                                     val infiniteTransition = rememberInfiniteTransition(label = "HavenPulse")
-                                    val alpha by infiniteTransition.animateFloat(
+                                    val alphaAnim = infiniteTransition.animateFloat(
                                         initialValue = 0.6f,
                                         targetValue = 1f,
                                         animationSpec = infiniteRepeatable(
@@ -262,7 +263,7 @@ fun ProdyApp(
                                         ),
                                         label = "HavenAlpha"
                                     )
-                                    val scale by infiniteTransition.animateFloat(
+                                    val scaleAnim = infiniteTransition.animateFloat(
                                         initialValue = 0.95f,
                                         targetValue = 1.05f,
                                         animationSpec = infiniteRepeatable(
@@ -275,7 +276,11 @@ fun ProdyApp(
                                     Box(
                                         modifier = Modifier
                                             .size(56.dp) // Larger than standard icon
-                                            .scale(scale)
+                                            .graphicsLayer {
+                                                scaleX = scaleAnim.value
+                                                scaleY = scaleAnim.value
+                                                alpha = if (selected) 1f else alphaAnim.value
+                                            }
                                             .clip(CircleShape)
                                             .background(
                                                 androidx.compose.ui.graphics.Brush.verticalGradient(
@@ -284,8 +289,7 @@ fun ProdyApp(
                                                         com.prody.prashant.ui.theme.HavenBubbleLight.copy(alpha = 0.8f)
                                                     )
                                                 )
-                                            )
-                                            .alpha(if (selected) 1f else alpha), // Pulse when not selected (waiting)
+                                            ),
                                         contentAlignment = Alignment.Center
                                     ) {
                                         Icon(

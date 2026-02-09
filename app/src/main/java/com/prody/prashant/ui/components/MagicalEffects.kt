@@ -1018,7 +1018,7 @@ fun NavigationBreathingGlow(
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "nav_breathing")
 
-    val glowAlpha by infiniteTransition.animateFloat(
+    val glowAlphaAnim = infiniteTransition.animateFloat(
         initialValue = 0.2f,
         targetValue = 0.5f,
         animationSpec = infiniteRepeatable(
@@ -1028,7 +1028,7 @@ fun NavigationBreathingGlow(
         label = "nav_glow_alpha"
     )
 
-    val glowScale by infiniteTransition.animateFloat(
+    val glowScaleAnim = infiniteTransition.animateFloat(
         initialValue = 1f,
         targetValue = 1.2f,
         animationSpec = infiniteRepeatable(
@@ -1038,7 +1038,7 @@ fun NavigationBreathingGlow(
         label = "nav_glow_scale"
     )
 
-    val activeAlpha by animateFloatAsState(
+    val activeAlphaAnim = animateFloatAsState(
         targetValue = if (isActive) 1f else 0f,
         animationSpec = tween(300),
         label = "active_alpha"
@@ -1049,16 +1049,24 @@ fun NavigationBreathingGlow(
         contentAlignment = Alignment.Center
     ) {
         // Breathing glow behind active item
-        if (isActive) {
-            Box(
-                modifier = Modifier
-                    .size(48.dp)
-                    .scale(glowScale)
-                    .alpha(glowAlpha * activeAlpha)
-                    .blur(12.dp)
-                    .background(color, CircleShape)
-            )
-        }
+        // Performance Optimization: Use graphicsLayer to animate alpha and scale
+        // and read state inside the lambda to bypass recomposition.
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .graphicsLayer {
+                    val currentActiveAlpha = activeAlphaAnim.value
+                    if (currentActiveAlpha > 0f) {
+                        alpha = glowAlphaAnim.value * currentActiveAlpha
+                        scaleX = glowScaleAnim.value
+                        scaleY = glowScaleAnim.value
+                    } else {
+                        alpha = 0f
+                    }
+                }
+                .blur(12.dp)
+                .background(color, CircleShape)
+        )
 
         content()
     }

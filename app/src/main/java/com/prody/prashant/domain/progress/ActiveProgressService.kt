@@ -1,6 +1,7 @@
 package com.prody.prashant.domain.progress
 
 import android.util.Log
+import androidx.compose.runtime.Immutable
 import com.prody.prashant.data.local.dao.JournalDao
 import com.prody.prashant.data.local.dao.UserDao
 import com.prody.prashant.data.local.dao.VocabularyDao
@@ -322,6 +323,7 @@ class ActiveProgressService @Inject constructor(
 
 // ================= DATA CLASSES =================
 
+@Immutable
 data class NextAction(
     val type: NextActionType,
     val title: String,
@@ -340,6 +342,7 @@ enum class NextActionType {
     COMPLETE_CHALLENGE
 }
 
+@Immutable
 data class TodayProgress(
     val journalEntries: Int = 0,
     val wordsWritten: Int = 0,
@@ -349,6 +352,7 @@ data class TodayProgress(
     val isEmpty: Boolean = false
 )
 
+@Immutable
 data class WeeklyProgress(
     val journalEntries: Int = 0,
     val wordsWritten: Int = 0,

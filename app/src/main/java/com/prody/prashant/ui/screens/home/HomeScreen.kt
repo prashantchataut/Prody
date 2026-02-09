@@ -28,6 +28,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.prody.prashant.ui.theme.*
@@ -51,10 +52,7 @@ fun HomeScreen(
     onNavigateToIdiomDetail: (Long) -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
-    // We assume ViewModel provides necessary state. For this UI revamp, 
-    // we'll focus on the UI structure and use placeholder data where ViewModel might not strictly align yet.
-    
-    val surfaceColor = MaterialTheme.colorScheme.surface
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val backgroundColor = MaterialTheme.colorScheme.background
 
     LazyColumn(
@@ -66,7 +64,7 @@ fun HomeScreen(
         // Header with Greeting and Notification
         item {
             DashboardHeader(
-                userName = "Prashant", // Replace with real name
+                userName = uiState.userName,
                 onProfileClick = {}, // TODO: Profile Nav
                 onNotificationClick = {}
             )
@@ -75,11 +73,11 @@ fun HomeScreen(
         // Overview Section (Streak & Badges)
         item {
             OverviewSection(
-                streakDays = 7,
+                streakDays = uiState.currentStreak,
                 badges = listOf(
                     BadgeData(ProdyIcons.EmojiEvents, 0.75f, ProdyWarmAmber),
-                    BadgeData(ProdyIcons.Edit, 0.5f, ProdyForestGreen),
-                    BadgeData(ProdyIcons.Psychology, 0.3f, ProdyInfo)
+                    BadgeData(ProdyIcons.Edit, (uiState.journalEntriesThisWeek / 7f).coerceIn(0f, 1f), ProdyForestGreen),
+                    BadgeData(ProdyIcons.Psychology, (uiState.wordsLearnedThisWeek / 20f).coerceIn(0f, 1f), ProdyInfo)
                 )
             )
         }
@@ -87,16 +85,16 @@ fun HomeScreen(
         // Mood Trend Chart
         item {
             MoodTrendSection(
-                moodData = listOf(3f, 4f, 2f, 5f, 4f, 5f, 4f) // 1-5 Scale
+                moodData = uiState.moodTrend.ifEmpty { listOf(3f, 3f, 3f, 3f, 3f, 3f, 3f) }
             )
         }
 
         // Weekly Summary
         item {
             WeeklySummarySection(
-                journalEntries = 5,
-                wordsLearned = 12,
-                mindfulMinutes = 45
+                journalEntries = uiState.journalEntriesThisWeek,
+                wordsLearned = uiState.wordsLearnedThisWeek,
+                mindfulMinutes = (uiState.journalEntriesThisWeek * 5) // Simplified calc
             )
         }
         
@@ -112,7 +110,9 @@ fun HomeScreen(
         
         // Recent / Suggestions
         item {
-            RecentActivitySection()
+            RecentActivitySection(
+                journaledToday = uiState.journaledToday
+            )
         }
     }
 }
@@ -554,11 +554,11 @@ fun QuickActionTile(title: String, icon: androidx.compose.ui.graphics.vector.Ima
 }
 
 @Composable
-fun RecentActivitySection() {
-    // Placeholder for Recent Activity
+fun RecentActivitySection(journaledToday: Boolean) {
+    // Performance Optimization: Themed recent activity card
     Column(modifier = Modifier.padding(horizontal = 24.dp)) {
         Text(
-            text = "Recent",
+            text = if (journaledToday) "Recent" else "Up Next",
             style = TextStyle(
                 fontFamily = PoppinsFamily,
                 fontWeight = FontWeight.SemiBold,
@@ -579,15 +579,31 @@ fun RecentActivitySection() {
                     modifier = Modifier
                         .size(40.dp)
                         .clip(CircleShape)
-                        .background(ProdyForestGreen.copy(alpha = 0.1f)),
+                        .background(
+                            if (journaledToday) ProdyForestGreen.copy(alpha = 0.1f)
+                            else ProdyWarmAmber.copy(alpha = 0.1f)
+                        ),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(ProdyIcons.Check, null, tint = ProdyForestGreen)
+                    Icon(
+                        imageVector = if (journaledToday) ProdyIcons.Check else ProdyIcons.Edit,
+                        contentDescription = null,
+                        tint = if (journaledToday) ProdyForestGreen else ProdyWarmAmber
+                    )
                 }
                 Spacer(modifier = Modifier.width(16.dp))
                 Column {
-                    Text("Daily Journal", fontWeight = FontWeight.SemiBold, fontFamily = PoppinsFamily)
-                    Text("Completed today", fontSize = 12.sp, color = ProdyTextSecondaryLight, fontFamily = PoppinsFamily)
+                    Text(
+                        text = if (journaledToday) "Daily Journal" else "Daily Reflection",
+                        fontWeight = FontWeight.SemiBold,
+                        fontFamily = PoppinsFamily
+                    )
+                    Text(
+                        text = if (journaledToday) "Completed today" else "Capture your thoughts",
+                        fontSize = 12.sp,
+                        color = ProdyTextSecondaryLight,
+                        fontFamily = PoppinsFamily
+                    )
                 }
             }
         }
