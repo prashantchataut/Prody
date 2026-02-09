@@ -1,5 +1,6 @@
 package com.prody.prashant.domain.streak
 
+import androidx.compose.runtime.Immutable
 import java.time.LocalDate
 import java.time.ZoneId
 
@@ -48,6 +49,7 @@ sealed class StreakResult {
 /**
  * Complete dual streak status for display in UI.
  */
+@Immutable
 data class DualStreakStatus(
     val wisdomStreak: StreakInfo,
     val reflectionStreak: StreakInfo
@@ -65,6 +67,7 @@ data class DualStreakStatus(
 /**
  * Information about a single streak (Wisdom or Reflection).
  */
+@Immutable
 data class StreakInfo(
     val type: StreakType,
     val current: Int,

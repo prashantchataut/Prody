@@ -739,22 +739,50 @@ fun ProdyProgressIndicator(
     totalPages: Int,
     modifier: Modifier = Modifier
 ) {
-    Row(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    // Performance Optimization: Use a single Canvas to draw all indicator dots.
+    // This avoids multiple Box allocations and layout passes when animating widths.
+    val activeColor = ProdyForestGreen
+    val inactiveColor = ProdyOutlineLight
+
+    val animatedPageProgress = animateFloatAsState(
+        targetValue = currentPage.toFloat(),
+        animationSpec = spring(stiffness = Spring.StiffnessLow),
+        label = "page_progress"
+    )
+
+    Canvas(
+        modifier = modifier
+            .height(4.dp)
+            .width((totalPages * 8 + (totalPages - 1) * 4 + 16).dp)
     ) {
+        val pageProgress = animatedPageProgress.value
+        val spacing = 4.dp.toPx()
+        val minWidth = 8.dp.toPx()
+        val maxWidth = 24.dp.toPx()
+        val height = 4.dp.toPx()
+
+        var currentX = 0f
         repeat(totalPages) { index ->
-            val isActive = index == currentPage
-            val width by animateDpAsState(if (isActive) 24.dp else 8.dp, label = "width")
-            val color = if (isActive) ProdyForestGreen else ProdyOutlineLight
-            
-            Box(
-                modifier = Modifier
-                    .height(4.dp)
-                    .width(width)
-                    .clip(CircleShape)
-                    .background(color)
+            val distance = kotlin.math.abs(index - pageProgress)
+            val activeFraction = (1f - distance).coerceIn(0f, 1f)
+
+            val dotWidth = minWidth + (maxWidth - minWidth) * activeFraction
+
+            // Manual color interpolation for precision
+            val dotColor = Color(
+                red = inactiveColor.red + (activeColor.red - inactiveColor.red) * activeFraction,
+                green = inactiveColor.green + (activeColor.green - inactiveColor.green) * activeFraction,
+                blue = inactiveColor.blue + (activeColor.blue - inactiveColor.blue) * activeFraction,
+                alpha = inactiveColor.alpha + (activeColor.alpha - inactiveColor.alpha) * activeFraction
             )
+            
+            drawRoundRect(
+                color = dotColor,
+                topLeft = Offset(currentX, 0f),
+                size = Size(dotWidth, height),
+                cornerRadius = androidx.compose.ui.geometry.CornerRadius(height / 2)
+            )
+            currentX += dotWidth + spacing
         }
     }
 }

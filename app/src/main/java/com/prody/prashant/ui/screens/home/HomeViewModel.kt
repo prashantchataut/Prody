@@ -1,5 +1,6 @@
 package com.prody.prashant.ui.screens.home
 
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.prody.prashant.data.ai.BuddhaAiRepository
@@ -39,6 +40,7 @@ import javax.inject.Inject
  * AI Proof Mode debug info - shown on AI surfaces when enabled in Settings.
  * Provides visibility into AI generation status for debugging.
  */
+@Immutable
 data class AiProofModeInfo(
     val provider: String = "",           // Gemini, OpenRouter, Fallback
     val cacheStatus: String = "",        // HIT, MISS, or empty if no call
@@ -57,6 +59,7 @@ enum class AiConfigurationStatus {
     ERROR
 }
 
+@Immutable
 data class HomeUiState(
     val userName: String = "Growth Seeker",
     val currentStreak: Int = 0,
@@ -131,7 +134,8 @@ data class HomeUiState(
     val userArchetype: UserArchetype = UserArchetype.EXPLORER,
     val trustLevel: TrustLevel = TrustLevel.NEW,
     val isUserStruggling: Boolean = false,
-    val isUserThriving: Boolean = false
+    val isUserThriving: Boolean = false,
+    val moodTrend: List<Float> = emptyList()
 )
 
 private data class DailyContent(
@@ -229,6 +233,20 @@ class HomeViewModel @Inject constructor(
                 val dualStreak = args.getOrNull(5) as? DualStreakStatus ?: DualStreakStatus.empty()
                 val aiProofMode = args.getOrNull(6) as? Boolean ?: false
 
+                // Map weekly journal entries to mood trend (1-5 scale)
+                val moodTrend = weeklyJournalEntries
+                    .sortedBy { it.createdAt }
+                    .map { entry ->
+                        when (entry.mood.lowercase()) {
+                            "great", "joyful", "happy" -> 5f
+                            "good", "satisfied", "content" -> 4f
+                            "neutral", "okay", "calm" -> 3f
+                            "bad", "sad", "tired" -> 2f
+                            "awful", "terrible", "angry" -> 1f
+                            else -> 3f
+                        }
+                    }.takeLast(7) // Last 7 entries for the chart
+
                 // Calculate weekly active days.
                 val daysActiveThisWeek = streakHistory.count { it.date >= weekStart }
 
@@ -266,6 +284,7 @@ class HomeViewModel @Inject constructor(
                     todayEntryPreview = todayPreview,
                     dualStreakStatus = dualStreak,
                     buddhaWisdomProofInfo = _uiState.value.buddhaWisdomProofInfo.copy(isEnabled = aiProofMode),
+                    moodTrend = moodTrend,
                     isLoading = false // <-- Critical: Signal that loading is complete.
                 )
             }.catch { e ->
