@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
+import com.prody.prashant.BuildConfig
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -194,14 +195,25 @@ private fun CrashScreen(
             Text(text = "$timestamp • $threadName", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(modifier = Modifier.height(20.dp))
             
-            // Simplified for brevity and compilation safety
-            Text(text = exceptionType, color = Color(0xFFE65C5C), fontWeight = FontWeight.Bold)
-            Text(text = exceptionMessage, color = MaterialTheme.colorScheme.onSurface)
+            if (BuildConfig.DEBUG) {
+                // Technical details for developers
+                Text(text = exceptionType, color = Color(0xFFE65C5C), fontWeight = FontWeight.Bold)
+                Text(text = exceptionMessage, color = MaterialTheme.colorScheme.onSurface)
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                Button(onClick = onCopyClick) { Text("Copy Report") }
+            } else {
+                // User-friendly message for production
+                Text(
+                    text = "Prody encountered an unexpected error. Please restart the app to continue your journey.",
+                    color = MaterialTheme.colorScheme.onSurface,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+            }
             
             Spacer(modifier = Modifier.height(20.dp))
-            
-            Button(onClick = onCopyClick) { Text("Copy Report") }
-            Spacer(modifier = Modifier.height(10.dp))
             Button(onClick = onRestartClick) { Text("Restart App") }
         }
     }
