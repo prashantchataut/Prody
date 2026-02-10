@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.prody.prashant.domain.model.MonthlyLetter
 import com.prody.prashant.ui.theme.*
+import com.prody.prashant.util.SecureScreen
 
 /**
  * Monthly Letter Screen - Full-screen letter reading experience with envelope animation
@@ -37,6 +38,9 @@ fun MonthlyLetterScreen(
     viewModel: MonthlyLetterViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    // Security: Prevent screenshots and screen recordings of private monthly reflections
+    SecureScreen()
 
     // Load specific letter if ID provided
     LaunchedEffect(letterId) {

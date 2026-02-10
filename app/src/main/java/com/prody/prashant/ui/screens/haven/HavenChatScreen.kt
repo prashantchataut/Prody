@@ -40,7 +40,6 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import android.widget.Toast
-import androidx.compose.ui.platform.LocalContext as ComposeLocalContext
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -57,6 +56,7 @@ import com.google.accompanist.permissions.shouldShowRationale
 import com.prody.prashant.R
 import com.prody.prashant.domain.haven.*
 import com.prody.prashant.ui.theme.*
+import com.prody.prashant.util.SecureScreen
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.*
@@ -94,13 +94,7 @@ fun HavenChatScreen(
     val context = LocalContext.current
 
     // Security: Prevent screenshots and screen recordings while in a therapeutic chat
-    DisposableEffect(Unit) {
-        val window = (context as? android.app.Activity)?.window
-        window?.addFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)
-        onDispose {
-            window?.clearFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)
-        }
-    }
+    SecureScreen()
 
     // Haven Theme Colors
     val havenBackground = if (isDark) HavenBackgroundDark else HavenBackgroundLight
