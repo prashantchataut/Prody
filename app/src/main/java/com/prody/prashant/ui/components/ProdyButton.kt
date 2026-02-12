@@ -20,12 +20,17 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
+import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -43,6 +48,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.prody.prashant.ui.animation.premiumShimmer
+import com.prody.prashant.ui.theme.PoppinsFamily
 import com.prody.prashant.ui.theme.ProdyTokens
 import com.prody.prashant.util.rememberProdyHaptic
 
@@ -501,7 +507,17 @@ private fun ButtonContent(
 
 /**
  * Circular icon button with proper touch target.
+ *
+ * @param icon The icon to display
+ * @param onClick Click callback
+ * @param modifier Modifier for the button
+ * @param enabled Whether the button is enabled
+ * @param contentDescription Accessibility description
+ * @param tooltip Optional tooltip text
+ * @param tint Icon color tint
+ * @param size Button touch target size
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProdyIconButton(
     icon: ImageVector,
@@ -509,6 +525,7 @@ fun ProdyIconButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     contentDescription: String? = null,
+    tooltip: String? = null,
     tint: Color = MaterialTheme.colorScheme.onSurface,
     size: Dp = ProdyTokens.Touch.minimum
 ) {
@@ -525,33 +542,62 @@ fun ProdyIconButton(
         label = "icon_button_scale"
     )
 
-    Surface(
-        onClick = {
-            haptic.click()
-            onClick()
-        },
-        modifier = modifier
-            .scale(scale)
-            .size(size)
-            .semantics {
-                role = Role.Button
-                if (contentDescription != null) {
-                    this.contentDescription = contentDescription
+    val buttonContent = @Composable { contentModifier: Modifier ->
+        Surface(
+            onClick = {
+                haptic.click()
+                onClick()
+            },
+            modifier = contentModifier
+                .scale(scale)
+                .size(size)
+                .semantics {
+                    role = Role.Button
+                    if (contentDescription != null) {
+                        this.contentDescription = contentDescription
+                    }
+                },
+            enabled = enabled,
+            shape = RoundedCornerShape(50),
+            color = Color.Transparent,
+            contentColor = tint,
+            interactionSource = interactionSource
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = contentDescription,
+                modifier = Modifier
+                    .padding(12.dp)
+                    .size(24.dp),
+                tint = if (enabled) tint else tint.copy(alpha = 0.38f)
+            )
+        }
+    }
+
+    if (tooltip != null) {
+        TooltipBox(
+            positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+            tooltip = {
+                PlainTooltip(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    shape = RoundedCornerShape(ProdyTokens.Radius.sm)
+                ) {
+                    Text(
+                        text = tooltip,
+                        style = MaterialTheme.typography.labelMedium.copy(
+                            fontFamily = PoppinsFamily,
+                            fontWeight = FontWeight.Medium
+                        )
+                    )
                 }
             },
-        enabled = enabled,
-        shape = RoundedCornerShape(50),
-        color = Color.Transparent,
-        contentColor = tint,
-        interactionSource = interactionSource
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = contentDescription,
-            modifier = Modifier
-                .padding(12.dp)
-                .size(24.dp),
-            tint = if (enabled) tint else tint.copy(alpha = 0.38f)
-        )
+            state = rememberTooltipState(isPersistent = false),
+            modifier = modifier
+        ) {
+            buttonContent(Modifier)
+        }
+    } else {
+        buttonContent(modifier)
     }
 }
