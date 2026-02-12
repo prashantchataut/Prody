@@ -733,28 +733,59 @@ fun ProdyLogo(modifier: Modifier = Modifier) {
     }
 }
 
+/**
+ * Performance-optimized progress indicator for onboarding.
+ * Uses a single Canvas to draw all indicators, avoiding the overhead of multiple
+ * Box composables and layout passes during animations.
+ */
 @Composable
 fun ProdyProgressIndicator(
     currentPage: Int,
     totalPages: Int,
     modifier: Modifier = Modifier
 ) {
-    Row(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    val activeWidth = 24.dp
+    val inactiveWidth = 8.dp
+    val indicatorHeight = 4.dp
+    val spacing = 4.dp
+
+    val activeColor = ProdyForestGreen
+    val inactiveColor = ProdyOutlineLight
+
+    // Animate the page index as a float for smooth width/color transitions
+    val animatedPage by animateFloatAsState(
+        targetValue = currentPage.toFloat(),
+        animationSpec = spring(stiffness = Spring.StiffnessLow),
+        label = "onboarding_progress"
+    )
+
+    val density = LocalDensity.current
+    val totalWidth = remember(totalPages) {
+        activeWidth + (inactiveWidth * (totalPages - 1)) + (spacing * (totalPages - 1))
+    }
+
+    Canvas(
+        modifier = modifier
+            .size(width = totalWidth, height = indicatorHeight)
     ) {
+        var currentX = 0f
+
         repeat(totalPages) { index ->
-            val isActive = index == currentPage
-            val width by animateDpAsState(if (isActive) 24.dp else 8.dp, label = "width")
-            val color = if (isActive) ProdyForestGreen else ProdyOutlineLight
+            // Calculate how "active" this indicator is (0.0 to 1.0)
+            val distance = kotlin.math.abs(index - animatedPage)
+            val activeFraction = (1f - distance).coerceIn(0f, 1f)
             
-            Box(
-                modifier = Modifier
-                    .height(4.dp)
-                    .width(width)
-                    .clip(CircleShape)
-                    .background(color)
+            val width = inactiveWidth.toPx() + (activeWidth.toPx() - inactiveWidth.toPx()) * activeFraction
+            val color = androidx.compose.ui.graphics.lerp(inactiveColor, activeColor, activeFraction)
+
+            drawRoundRect(
+                color = color,
+                topLeft = Offset(currentX, 0f),
+                size = Size(width, indicatorHeight.toPx()),
+                cornerRadius = androidx.compose.ui.geometry.CornerRadius(indicatorHeight.toPx() / 2)
             )
+
+            currentX += width + spacing.toPx()
         }
     }
 }
