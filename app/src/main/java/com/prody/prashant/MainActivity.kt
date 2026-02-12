@@ -52,6 +52,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -275,7 +276,11 @@ fun ProdyApp(
                                     Box(
                                         modifier = Modifier
                                             .size(56.dp) // Larger than standard icon
-                                            .scale(scale)
+                                            .graphicsLayer {
+                                                scaleX = scale
+                                                scaleY = scale
+                                                this.alpha = if (selected) 1f else alpha
+                                            }
                                             .clip(CircleShape)
                                             .background(
                                                 androidx.compose.ui.graphics.Brush.verticalGradient(
@@ -284,8 +289,7 @@ fun ProdyApp(
                                                         com.prody.prashant.ui.theme.HavenBubbleLight.copy(alpha = 0.8f)
                                                     )
                                                 )
-                                            )
-                                            .alpha(if (selected) 1f else alpha), // Pulse when not selected (waiting)
+                                            ),
                                         contentAlignment = Alignment.Center
                                     ) {
                                         Icon(

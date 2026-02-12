@@ -265,11 +265,15 @@ fun MoodBreathingHalo(
         contentAlignment = Alignment.Center
     ) {
         // Outer glow halo
+        // Performance Optimization: Use graphicsLayer for both scale and alpha
         Box(
             modifier = Modifier
-                .size(size * haloScale)
-                .scale(haloScale)
-                .alpha(haloAlpha)
+                .size(size)
+                .graphicsLayer {
+                    scaleX = haloScale
+                    scaleY = haloScale
+                    alpha = haloAlpha
+                }
                 .blur(12.dp)
                 .background(haloColor, CircleShape)
         )
@@ -278,7 +282,9 @@ fun MoodBreathingHalo(
         Box(
             modifier = Modifier
                 .size(size * 0.9f)
-                .alpha(haloAlpha * 0.5f)
+                .graphicsLayer {
+                    alpha = haloAlpha * 0.5f
+                }
                 .blur(6.dp)
                 .background(haloColor.copy(alpha = 0.3f), CircleShape)
         )
@@ -1049,16 +1055,23 @@ fun NavigationBreathingGlow(
         contentAlignment = Alignment.Center
     ) {
         // Breathing glow behind active item
-        if (isActive) {
-            Box(
-                modifier = Modifier
-                    .size(48.dp)
-                    .scale(glowScale)
-                    .alpha(glowAlpha * activeAlpha)
-                    .blur(12.dp)
-                    .background(color, CircleShape)
-            )
-        }
+        // Performance Optimization: Use graphicsLayer to avoid recomposition during animation
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .graphicsLayer {
+                    val a = activeAlpha
+                    if (a > 0f) {
+                        alpha = glowAlpha * a
+                        scaleX = glowScale
+                        scaleY = glowScale
+                    } else {
+                        alpha = 0f
+                    }
+                }
+                .blur(12.dp)
+                .background(color, CircleShape)
+        )
 
         content()
     }
@@ -1113,7 +1126,9 @@ fun WisdomTextReveal(
             Box(
                 modifier = Modifier
                     .matchParentSize()
-                    .alpha(ambientGlow * revealProgress)
+                    .graphicsLayer {
+                        alpha = ambientGlow * revealProgress
+                    }
                     .blur(30.dp)
                     .background(
                         brush = Brush.radialGradient(
@@ -1128,11 +1143,12 @@ fun WisdomTextReveal(
         }
 
         // Text with character-by-character reveal effect simulation
+        // Performance Optimization: Use graphicsLayer for both alpha and scale
         androidx.compose.material3.Text(
             text = text,
             modifier = Modifier
-                .alpha(revealProgress)
                 .graphicsLayer {
+                    alpha = revealProgress
                     // Subtle vertical unfolding effect
                     scaleY = 0.9f + (revealProgress * 0.1f)
                     transformOrigin = TransformOrigin(0.5f, 0f)
