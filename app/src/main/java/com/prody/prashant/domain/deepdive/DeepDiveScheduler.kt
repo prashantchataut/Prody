@@ -12,6 +12,8 @@ import com.prody.prashant.R
 import com.prody.prashant.data.local.dao.DeepDiveDao
 import com.prody.prashant.data.local.dao.JournalDao
 import com.prody.prashant.data.local.entity.DeepDiveEntity
+import com.prody.prashant.core.logging.AppLogger
+import com.prody.prashant.core.logging.ErrorCode
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -35,7 +37,8 @@ import javax.inject.Singleton
 class DeepDiveScheduler @Inject constructor(
     @ApplicationContext private val context: Context,
     private val deepDiveDao: DeepDiveDao,
-    private val journalDao: JournalDao
+    private val journalDao: JournalDao,
+    private val logger: AppLogger
 ) {
 
     companion object {
@@ -313,8 +316,14 @@ class DeepDiveScheduler @Inject constructor(
                 )
             }
         } catch (e: Exception) {
-            // Log error but don't crash
-            e.printStackTrace()
+            logger.e(
+                tag = "DeepDiveScheduler",
+                message = "Failed scheduling deep dive notification",
+                throwable = e,
+                errorCode = ErrorCode.DEEP_DIVE_NOTIFICATION_SCHEDULE_FAILED,
+                metadata = mapOf("deepDiveId" to deepDive.id, "theme" to theme.id),
+                reportToCrashAnalytics = true
+            )
         }
     }
 
@@ -334,7 +343,14 @@ class DeepDiveScheduler @Inject constructor(
             val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
             alarmManager.cancel(pendingIntent)
         } catch (e: Exception) {
-            e.printStackTrace()
+            logger.e(
+                tag = "DeepDiveScheduler",
+                message = "Failed canceling deep dive notification",
+                throwable = e,
+                errorCode = ErrorCode.DEEP_DIVE_NOTIFICATION_CANCEL_FAILED,
+                metadata = mapOf("deepDiveId" to deepDiveId),
+                reportToCrashAnalytics = true
+            )
         }
     }
 
