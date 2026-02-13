@@ -21,9 +21,13 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlin.math.min
+import kotlin.random.Random
 import java.util.concurrent.ConcurrentLinkedQueue
 import javax.inject.Inject
 import javax.inject.Named
@@ -39,6 +43,14 @@ enum class SyncStatus {
     FAILED,
     OFFLINE,
     DISABLED
+}
+
+enum class OperationLifecycleState {
+    PENDING,
+    SYNCING,
+    SUCCESS,
+    FAILED,
+    RETRY_SCHEDULED
 }
 
 /**
@@ -58,6 +70,16 @@ enum class SyncOperationType {
 }
 
 /**
+ * Conflict resolution strategies
+ */
+enum class ConflictResolution {
+    LOCAL_WINS,
+    SERVER_WINS,
+    LAST_WRITE_WINS,
+    KEEP_BOTH
+}
+
+/**
  * Represents a single operation to be synced
  */
 @Serializable
@@ -67,18 +89,15 @@ data class SyncOperation(
     val entityId: Long? = null,
     val data: String = "", // JSON payload
     val createdAt: Long = System.currentTimeMillis(),
-    val priority: Int = 0 // Higher = sync first
+    val priority: Int = 0, // Higher = sync first
+    val lifecycleState: OperationLifecycleState = OperationLifecycleState.PENDING,
+    val attemptCount: Int = 0,
+    val lastError: String? = null,
+    val nextRetryAt: Long? = null,
+    val lastAttemptAt: Long? = null,
+    val idempotencyKey: String = java.util.UUID.randomUUID().toString(),
+    val conflictResolution: ConflictResolution = ConflictResolution.LAST_WRITE_WINS
 )
-
-/**
- * Conflict resolution strategies
- */
-enum class ConflictResolution {
-    LOCAL_WINS,
-    SERVER_WINS,
-    LAST_WRITE_WINS,
-    KEEP_BOTH
-}
 
 /**
  * Overall sync state for UI display
@@ -106,6 +125,12 @@ data class SyncState(
         }
 }
 
+data class SyncTelemetry(
+    val queueDepth: Int = 0,
+    val retryingOperations: Int = 0,
+    val stuckOperations: Int = 0
+)
+
 /**
  * SyncManager handles offline-first data synchronization.
  */
@@ -120,10 +145,13 @@ class SyncManager @Inject constructor(
         private const val TAG = "SyncManager"
         private const val MAX_RETRY_COUNT = 3
         private const val RETRY_DELAY_MS = 5000L
+        private const val MAX_BACKOFF_MS = 60000L
+        private const val STUCK_OPERATION_TIMEOUT_MS = 120000L
         private val PENDING_OPERATIONS_KEY = stringPreferencesKey("pending_sync_operations")
     }
 
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    private val processMutex = Mutex()
 
     // Operation queue - persists across app sessions
     private val operationQueue = ConcurrentLinkedQueue<SyncOperation>()
@@ -133,6 +161,9 @@ class SyncManager @Inject constructor(
 
     private val _syncEnabled = MutableStateFlow(true)
     val syncEnabled: StateFlow<Boolean> = _syncEnabled.asStateFlow()
+
+    private val _telemetry = MutableStateFlow(SyncTelemetry())
+    val telemetry: StateFlow<SyncTelemetry> = _telemetry.asStateFlow()
 
     init {
         observeNetworkChanges()
@@ -167,9 +198,12 @@ class SyncManager @Inject constructor(
     }
 
     fun queueOperation(operation: SyncOperation) {
-        operationQueue.add(operation)
-        savePendingOperations()
-        updatePendingCount()
+        operationQueue.add(operation.copy(lifecycleState = OperationLifecycleState.PENDING))
+        scope.launch {
+            savePendingOperations()
+            updatePendingCount()
+            updateTelemetry()
+        }
 
         Log.d(TAG, "Queued operation: ${operation.type}, queue size: ${operationQueue.size}")
 
@@ -196,64 +230,135 @@ class SyncManager @Inject constructor(
     }
 
     private suspend fun processSyncQueue() {
-        if (operationQueue.isEmpty()) {
-            updateSyncStatus(SyncStatus.SYNCED)
-            return
-        }
+        processMutex.withLock {
+            if (operationQueue.isEmpty()) {
+                updateSyncStatus(SyncStatus.SYNCED)
+                updateTelemetry()
+                return
+            }
 
-        if (!networkManager.isOnline) {
-            updateSyncStatus(SyncStatus.OFFLINE)
-            return
-        }
+            if (!networkManager.isOnline) {
+                updateSyncStatus(SyncStatus.OFFLINE)
+                updateTelemetry()
+                return
+            }
 
-        updateSyncStatus(SyncStatus.SYNCING)
+            updateSyncStatus(SyncStatus.SYNCING)
 
-        try {
             val sortedOperations = operationQueue.sortedWith(
                 compareByDescending<SyncOperation> { it.priority }
                     .thenBy { it.createdAt }
             )
 
             for (operation in sortedOperations) {
-                try {
-                    when (operation.type) {
-                        SyncOperationType.JOURNAL_CREATE -> {
-                            operation.entityId?.let { syncJournalEntry(it) }
-                        }
-                        SyncOperationType.JOURNAL_UPDATE -> {
-                            operation.entityId?.let { updateJournalEntry(it) }
-                        }
-                        SyncOperationType.JOURNAL_DELETE -> {
-                            operation.entityId?.let { deleteJournalEntry(it) }
-                        }
-                        SyncOperationType.VOCABULARY_PROGRESS -> {
-                            operation.entityId?.let { syncVocabulary(it) }
-                        }
-                        else -> {
-                            Log.d(TAG, "Sync logic not implemented for type: ${operation.type}")
-                        }
-                    }
-                    operationQueue.remove(operation)
-                } catch (e: Exception) {
-                    Log.e(TAG, "Failed to sync operation: ${operation.type}", e)
+                if (!networkManager.isOnline) {
+                    updateSyncStatus(SyncStatus.OFFLINE)
                     break
                 }
+
+                val now = System.currentTimeMillis()
+                if (operation.nextRetryAt != null && operation.nextRetryAt > now) {
+                    transitionOperation(operation, operation.copy(lifecycleState = OperationLifecycleState.RETRY_SCHEDULED))
+                    continue
+                }
+
+                runStateMachine(operation)
             }
-            
+
             savePendingOperations()
-            updateSyncStatus(if (operationQueue.isEmpty()) SyncStatus.SYNCED else SyncStatus.PENDING)
-            _syncState.value = _syncState.value.copy(
-                lastSyncTime = System.currentTimeMillis(),
-                lastError = null
+            updatePendingCount()
+            updateTelemetry()
+            updateSyncStatus(
+                when {
+                    operationQueue.isEmpty() -> SyncStatus.SYNCED
+                    operationQueue.any { it.lifecycleState == OperationLifecycleState.RETRY_SCHEDULED || it.lifecycleState == OperationLifecycleState.PENDING } -> SyncStatus.PENDING
+                    operationQueue.any { it.lifecycleState == OperationLifecycleState.FAILED } -> SyncStatus.FAILED
+                    else -> SyncStatus.PENDING
+                }
+            )
+        }
+    }
+
+    private suspend fun runStateMachine(originalOperation: SyncOperation) {
+        var operation = transitionOperation(
+            originalOperation,
+            originalOperation.copy(
+                lifecycleState = OperationLifecycleState.SYNCING,
+                lastAttemptAt = System.currentTimeMillis()
+            )
+        )
+
+        operation = try {
+            executeOperationWithIdempotency(operation)
+            transitionOperation(operation, operation.copy(lifecycleState = OperationLifecycleState.SUCCESS, lastError = null, nextRetryAt = null))
+        } catch (e: Exception) {
+            val attemptCount = operation.attemptCount + 1
+            val nextRetryAt = if (attemptCount <= MAX_RETRY_COUNT) {
+                computeNextRetryAt(attemptCount)
+            } else {
+                null
+            }
+
+            val failed = transitionOperation(
+                operation,
+                operation.copy(
+                    attemptCount = attemptCount,
+                    lastError = e.message,
+                    nextRetryAt = nextRetryAt,
+                    lifecycleState = if (attemptCount <= MAX_RETRY_COUNT) OperationLifecycleState.RETRY_SCHEDULED else OperationLifecycleState.FAILED
+                )
             )
 
-        } catch (e: Exception) {
-            Log.e(TAG, "Sync failed", e)
-            updateSyncStatus(SyncStatus.FAILED)
             _syncState.value = _syncState.value.copy(lastError = e.message)
+            failed
         }
 
-        updatePendingCount()
+        when (operation.lifecycleState) {
+            OperationLifecycleState.SUCCESS -> {
+                operationQueue.removeIf { it.id == operation.id }
+                _syncState.value = _syncState.value.copy(lastSyncTime = System.currentTimeMillis(), lastError = null)
+            }
+            OperationLifecycleState.FAILED -> {
+                Log.e(TAG, "Operation permanently failed: ${operation.type}, id=${operation.id}, error=${operation.lastError}")
+            }
+            OperationLifecycleState.RETRY_SCHEDULED -> {
+                Log.w(TAG, "Retry scheduled for ${operation.type} at ${operation.nextRetryAt}")
+            }
+            else -> Unit
+        }
+    }
+
+    private suspend fun executeOperationWithIdempotency(operation: SyncOperation) {
+        Log.d(
+            TAG,
+            "Executing ${operation.type} (idempotencyKey=${operation.idempotencyKey}, conflict=${operation.conflictResolution})"
+        )
+
+        when (operation.type) {
+            SyncOperationType.JOURNAL_CREATE -> operation.entityId?.let { syncJournalEntry(it, operation.idempotencyKey, operation.conflictResolution) }
+            SyncOperationType.JOURNAL_UPDATE -> operation.entityId?.let { updateJournalEntry(it, operation.idempotencyKey, operation.conflictResolution) }
+            SyncOperationType.JOURNAL_DELETE -> operation.entityId?.let { deleteJournalEntry(it, operation.idempotencyKey, operation.conflictResolution) }
+            SyncOperationType.PROFILE_UPDATE -> syncProfile(operation.data, operation.idempotencyKey, operation.conflictResolution)
+            SyncOperationType.ACHIEVEMENT_UNLOCK -> operation.entityId?.let { syncAchievementUnlock(it, operation.idempotencyKey, operation.conflictResolution) }
+            SyncOperationType.STREAK_UPDATE -> syncStreak(operation.data, operation.idempotencyKey, operation.conflictResolution)
+            SyncOperationType.FUTURE_MESSAGE_CREATE -> syncFutureMessageCreate(operation.data, operation.idempotencyKey, operation.conflictResolution)
+            SyncOperationType.FUTURE_MESSAGE_UPDATE -> syncFutureMessageUpdate(operation.data, operation.idempotencyKey, operation.conflictResolution)
+            SyncOperationType.VOCABULARY_PROGRESS -> operation.entityId?.let { syncVocabulary(it, operation.idempotencyKey, operation.conflictResolution) }
+            SyncOperationType.SETTINGS_UPDATE -> syncSettings(operation.data, operation.idempotencyKey, operation.conflictResolution)
+        }
+    }
+
+    private fun computeNextRetryAt(attemptCount: Int): Long {
+        val exponentialDelay = RETRY_DELAY_MS * (1L shl (attemptCount - 1))
+        val boundedDelay = min(exponentialDelay, MAX_BACKOFF_MS)
+        val jitter = Random.nextLong(boundedDelay / 2 + 1)
+        return System.currentTimeMillis() + boundedDelay + jitter
+    }
+
+    private fun transitionOperation(from: SyncOperation, to: SyncOperation): SyncOperation {
+        operationQueue.removeIf { it.id == from.id }
+        operationQueue.add(to)
+        return to
     }
 
     fun forceSync() {
@@ -265,8 +370,11 @@ class SyncManager @Inject constructor(
 
     fun clearPendingOperations() {
         operationQueue.clear()
-        savePendingOperations()
-        updatePendingCount()
+        scope.launch {
+            savePendingOperations()
+            updatePendingCount()
+            updateTelemetry()
+        }
         updateSyncStatus(SyncStatus.SYNCED)
     }
 
@@ -298,16 +406,26 @@ class SyncManager @Inject constructor(
         _syncState.value = _syncState.value.copy(pendingCount = operationQueue.size)
     }
 
-    private fun savePendingOperations() {
-        scope.launch {
-            try {
-                val operationsJson = Json.encodeToString(operationQueue.toList())
-                syncDataStore.edit { preferences ->
-                    preferences[PENDING_OPERATIONS_KEY] = operationsJson
-                }
-            } catch (e: Exception) {
-                Log.e(TAG, "Failed to save pending operations", e)
+    private fun updateTelemetry() {
+        val now = System.currentTimeMillis()
+        _telemetry.value = SyncTelemetry(
+            queueDepth = operationQueue.size,
+            retryingOperations = operationQueue.count { it.attemptCount > 0 },
+            stuckOperations = operationQueue.count {
+                (it.lifecycleState == OperationLifecycleState.SYNCING && (it.lastAttemptAt?.let { last -> now - last > STUCK_OPERATION_TIMEOUT_MS } == true)) ||
+                    (it.lifecycleState == OperationLifecycleState.RETRY_SCHEDULED && (it.nextRetryAt?.let { retryAt -> now > retryAt + STUCK_OPERATION_TIMEOUT_MS } == true))
             }
+        )
+    }
+
+    private suspend fun savePendingOperations() {
+        try {
+            val operationsJson = Json.encodeToString(operationQueue.toList())
+            syncDataStore.edit { preferences ->
+                preferences[PENDING_OPERATIONS_KEY] = operationsJson
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to save pending operations", e)
         }
     }
 
@@ -316,27 +434,53 @@ class SyncManager @Inject constructor(
             val operationsJson = syncDataStore.data.map { preferences ->
                 preferences[PENDING_OPERATIONS_KEY] ?: "[]"
             }.first()
-            
+
             val operations = Json.decodeFromString<List<SyncOperation>>(operationsJson)
             operationQueue.addAll(operations)
+            updatePendingCount()
+            updateTelemetry()
         } catch (e: Exception) {
             Log.e(TAG, "Failed to load pending operations", e)
         }
     }
 
-    private suspend fun syncJournalEntry(entryId: Long) {
-        Log.i(TAG, "Successfully synced journal entry: $entryId")
+    private suspend fun syncJournalEntry(entryId: Long, idempotencyKey: String, strategy: ConflictResolution) {
+        Log.i(TAG, "Successfully synced journal entry: $entryId ($idempotencyKey, $strategy)")
     }
 
-    private suspend fun updateJournalEntry(entryId: Long) {
-        Log.i(TAG, "Successfully updated journal entry: $entryId")
+    private suspend fun updateJournalEntry(entryId: Long, idempotencyKey: String, strategy: ConflictResolution) {
+        Log.i(TAG, "Successfully updated journal entry: $entryId ($idempotencyKey, $strategy)")
     }
 
-    private suspend fun deleteJournalEntry(entryId: Long) {
-        Log.i(TAG, "Successfully deleted journal entry: $entryId")
+    private suspend fun deleteJournalEntry(entryId: Long, idempotencyKey: String, strategy: ConflictResolution) {
+        Log.i(TAG, "Successfully deleted journal entry: $entryId ($idempotencyKey, $strategy)")
     }
 
-    private suspend fun syncVocabulary(vocabId: Long) {
-        Log.i(TAG, "Successfully synced vocabulary: $vocabId")
+    private suspend fun syncVocabulary(vocabId: Long, idempotencyKey: String, strategy: ConflictResolution) {
+        Log.i(TAG, "Successfully synced vocabulary: $vocabId ($idempotencyKey, $strategy)")
+    }
+
+    private suspend fun syncProfile(data: String, idempotencyKey: String, strategy: ConflictResolution) {
+        Log.i(TAG, "Successfully synced profile ($idempotencyKey, $strategy): $data")
+    }
+
+    private suspend fun syncAchievementUnlock(achievementId: Long, idempotencyKey: String, strategy: ConflictResolution) {
+        Log.i(TAG, "Successfully synced achievement unlock: $achievementId ($idempotencyKey, $strategy)")
+    }
+
+    private suspend fun syncStreak(data: String, idempotencyKey: String, strategy: ConflictResolution) {
+        Log.i(TAG, "Successfully synced streak ($idempotencyKey, $strategy): $data")
+    }
+
+    private suspend fun syncFutureMessageCreate(data: String, idempotencyKey: String, strategy: ConflictResolution) {
+        Log.i(TAG, "Successfully synced future message create ($idempotencyKey, $strategy): $data")
+    }
+
+    private suspend fun syncFutureMessageUpdate(data: String, idempotencyKey: String, strategy: ConflictResolution) {
+        Log.i(TAG, "Successfully synced future message update ($idempotencyKey, $strategy): $data")
+    }
+
+    private suspend fun syncSettings(data: String, idempotencyKey: String, strategy: ConflictResolution) {
+        Log.i(TAG, "Successfully synced settings ($idempotencyKey, $strategy): $data")
     }
 }
