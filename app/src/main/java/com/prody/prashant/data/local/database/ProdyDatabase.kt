@@ -1,6 +1,7 @@
 package com.prody.prashant.data.local.database
 
 import android.content.Context
+import android.database.sqlite.SQLiteDatabase
 import android.util.Log
 import androidx.room.Database
 import androidx.room.Room
@@ -11,7 +12,6 @@ import com.prody.prashant.data.local.dao.*
 import com.prody.prashant.data.local.entity.*
 import com.prody.prashant.data.security.SecureDatabaseManager
 import kotlinx.coroutines.runBlocking
-import net.sqlcipher.database.SupportFactory
 
 /**
  * Prody Room Database
@@ -30,8 +30,8 @@ import net.sqlcipher.database.SupportFactory
  * - Enhanced streak system with Mindful Breaks
  *
  * Migration Strategy:
- * - For development: Uses fallbackToDestructiveMigration()
- * - For production: Implement proper migrations before release
+ * - Production-first migrations only (no destructive fallback)
+ * - Explicit legacy version gating for unsupported historic installs
  *
  * Schema Version History:
  * - Version 1: Initial schema with all core entities
@@ -289,9 +289,22 @@ abstract class ProdyDatabase : RoomDatabase() {
     companion object {
         private const val TAG = "ProdyDatabase"
         const val DATABASE_NAME = "prody_database"
+        private const val MIN_SUPPORTED_MIGRATION_VERSION = 4
+        const val DATABASE_RECOVERY_PREFS = "database_recovery"
+        const val KEY_RECOVERY_REQUIRED = "recovery_required"
+        const val KEY_RECOVERY_REASON = "recovery_reason"
 
         @Volatile
         private var INSTANCE: ProdyDatabase? = null
+
+        private val ALL_MIGRATIONS: Array<Migration> by lazy {
+            arrayOf(
+            MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8,
+            MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12,
+            MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16,
+            MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20
+            )
+        }
 
         val MIGRATION_4_5: Migration = object : Migration(4, 5) {
             override fun migrate(db: SupportSQLiteDatabase) {
@@ -1698,7 +1711,104 @@ abstract class ProdyDatabase : RoomDatabase() {
             }
         }
 
+        fun ensureDatabaseReady(context: Context): Boolean {
+            return try {
+                getInstance(context)
+                true
+            } catch (e: IllegalStateException) {
+                Log.e(TAG, "Database startup guard blocked initialization", e)
+                false
+            }
+        }
+
+        fun requiresRecovery(context: Context): Boolean {
+            return context.getSharedPreferences(DATABASE_RECOVERY_PREFS, Context.MODE_PRIVATE)
+                .getBoolean(KEY_RECOVERY_REQUIRED, false)
+        }
+
+        fun getRecoveryReason(context: Context): String? {
+            return context.getSharedPreferences(DATABASE_RECOVERY_PREFS, Context.MODE_PRIVATE)
+                .getString(KEY_RECOVERY_REASON, null)
+        }
+
+        fun clearRecoveryFlag(context: Context) {
+            context.getSharedPreferences(DATABASE_RECOVERY_PREFS, Context.MODE_PRIVATE)
+                .edit()
+                .putBoolean(KEY_RECOVERY_REQUIRED, false)
+                .remove(KEY_RECOVERY_REASON)
+                .apply()
+        }
+
+        fun prepareFreshDatabaseForRecovery(context: Context) {
+            synchronized(this) {
+                INSTANCE?.close()
+                INSTANCE = null
+            }
+            context.deleteDatabase(DATABASE_NAME)
+            clearRecoveryFlag(context)
+        }
+
+        private fun markRecoveryRequired(context: Context, reason: String) {
+            context.getSharedPreferences(DATABASE_RECOVERY_PREFS, Context.MODE_PRIVATE)
+                .edit()
+                .putBoolean(KEY_RECOVERY_REQUIRED, true)
+                .putString(KEY_RECOVERY_REASON, reason)
+                .apply()
+            Log.e(TAG, "Recovery required: $reason")
+        }
+
+        private fun validateMigrationPathOrThrow(context: Context) {
+            val dbFile = context.getDatabasePath(DATABASE_NAME)
+            if (!dbFile.exists()) {
+                clearRecoveryFlag(context)
+                return
+            }
+
+            val currentVersion = try {
+                SQLiteDatabase.openDatabase(dbFile.path, null, SQLiteDatabase.OPEN_READONLY).use { db ->
+                    db.version
+                }
+            } catch (e: Exception) {
+                // Encrypted/corrupt DB will be handled by SQLCipher and integrity checks.
+                Log.w(TAG, "Could not read database version during startup guard", e)
+                return
+            }
+
+            if (currentVersion == 0 || currentVersion == ProdyDatabase::class.java.getAnnotation(Database::class.java)?.version) {
+                clearRecoveryFlag(context)
+                return
+            }
+
+            if (currentVersion in 1 until MIN_SUPPORTED_MIGRATION_VERSION) {
+                val reason = "Unsupported legacy schema version $currentVersion. Supported upgrade path starts at v$MIN_SUPPORTED_MIGRATION_VERSION. Use recovery + backup restore."
+                markRecoveryRequired(context, reason)
+                throw IllegalStateException(reason)
+            }
+
+            val targetVersion = ProdyDatabase::class.java.getAnnotation(Database::class.java)?.version ?: 20
+            val migrationsByStart = ALL_MIGRATIONS.associateBy { it.startVersion }
+            var fromVersion = currentVersion
+            var hasPath = true
+            while (fromVersion < targetVersion) {
+                val migration = migrationsByStart[fromVersion]
+                if (migration == null || migration.endVersion != fromVersion + 1) {
+                    hasPath = false
+                    break
+                }
+                fromVersion = migration.endVersion
+            }
+
+            if (!hasPath) {
+                val reason = "No safe migration path from schema v$currentVersion to v$targetVersion. Recovery and backup restore are required."
+                markRecoveryRequired(context, reason)
+                throw IllegalStateException(reason)
+            }
+
+            clearRecoveryFlag(context)
+        }
+
         private fun buildDatabase(context: Context): ProdyDatabase {
+            validateMigrationPathOrThrow(context)
             return try {
                 // Initialize secure database manager synchronously
                 val masterKey = androidx.security.crypto.MasterKey.Builder(context)
@@ -1726,12 +1836,8 @@ abstract class ProdyDatabase : RoomDatabase() {
                 )
                     .openHelperFactory(supportFactory)
                     .addMigrations(
-                        MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8,
-                        MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12,
-                        MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16,
-                        MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20
+                        *ALL_MIGRATIONS
                     )
-                    .fallbackToDestructiveMigration()
                     .addCallback(SecureDatabaseCallback(context, secureDbManager))
                     .build()
             } catch (e: Exception) {
@@ -1743,12 +1849,8 @@ abstract class ProdyDatabase : RoomDatabase() {
                     DATABASE_NAME
                 )
                     .addMigrations(
-                        MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8,
-                        MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12,
-                        MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16,
-                        MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20
+                        *ALL_MIGRATIONS
                     )
-                    .fallbackToDestructiveMigration()
                     .addCallback(DatabaseCallback(context))
                     .build()
             }

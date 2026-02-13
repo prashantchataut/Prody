@@ -238,6 +238,7 @@ dependencies {
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.test.espresso.core)
     androidTestImplementation(libs.mockk.android)
+    androidTestImplementation("androidx.room:room-testing:2.6.1")
 
     // Debug
     debugImplementation(libs.androidx.ui.tooling)

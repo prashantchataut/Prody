@@ -28,6 +28,7 @@ import com.prody.prashant.ui.screens.journal.JournalListScreen
 import com.prody.prashant.ui.screens.journal.NewJournalEntryScreen
 import com.prody.prashant.ui.screens.meditation.MeditationTimerScreen
 import com.prody.prashant.ui.screens.onboarding.OnboardingScreen
+import com.prody.prashant.ui.screens.recovery.DatabaseRecoveryScreen
 import com.prody.prashant.ui.screens.profile.AchievementsCollectionScreen
 import com.prody.prashant.ui.screens.profile.BannerSelectionScreen
 import com.prody.prashant.ui.screens.profile.EditProfileScreen
@@ -91,6 +92,7 @@ private const val SLIDE_OFFSET_FRACTION = 0.15f
 
 sealed class Screen(val route: String) {
     data object Onboarding : Screen("onboarding")
+    data object DatabaseRecovery : Screen("database_recovery")
     data object Home : Screen("home")
     data object JournalList : Screen("journal")
     data object JournalHistory : Screen("journal/history")
@@ -265,6 +267,19 @@ fun ProdyNavHost(
         // =====================================================================
         // ONBOARDING
         // =====================================================================
+        composable(Screen.DatabaseRecovery.route) {
+            val context = androidx.compose.ui.platform.LocalContext.current
+            DatabaseRecoveryScreen(
+                reason = com.prody.prashant.data.local.database.ProdyDatabase.getRecoveryReason(context),
+                onResetDatabase = {
+                    com.prody.prashant.data.local.database.ProdyDatabase.prepareFreshDatabaseForRecovery(context)
+                    navController.navigate(Screen.Onboarding.route) {
+                        popUpTo(Screen.DatabaseRecovery.route) { inclusive = true }
+                    }
+                }
+            )
+        }
+
         composable(
             route = Screen.Onboarding.route,
             // Special fade-only transition for onboarding

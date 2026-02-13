@@ -1,11 +1,14 @@
 package com.prody.prashant.ui.main
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.prody.prashant.data.local.database.ProdyDatabase
 import com.prody.prashant.data.local.preferences.PreferencesManager
 import com.prody.prashant.ui.navigation.Screen
 import com.prody.prashant.ui.theme.ThemeMode
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,6 +22,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val preferencesManager: PreferencesManager
 ) : ViewModel() {
 
@@ -29,17 +33,18 @@ class MainViewModel @Inject constructor(
         // --- CRITICAL PATH ---
         // Immediately determine the start destination to unblock the UI.
         viewModelScope.launch {
-            val onboardingCompleted = preferencesManager.onboardingCompleted
-                .catch {
-                    // In case of error, default to showing onboarding
-                    emit(false)
-                }
-                .first() // We only need the initial value
-
-            val startDestination = if (onboardingCompleted) {
-                Screen.Home.route
+            val databaseReady = ProdyDatabase.ensureDatabaseReady(context)
+            val startDestination = if (!databaseReady || ProdyDatabase.requiresRecovery(context)) {
+                Screen.DatabaseRecovery.route
             } else {
-                Screen.Onboarding.route
+                val onboardingCompleted = preferencesManager.onboardingCompleted
+                    .catch {
+                        // In case of error, default to showing onboarding
+                        emit(false)
+                    }
+                    .first() // We only need the initial value
+
+                if (onboardingCompleted) Screen.Home.route else Screen.Onboarding.route
             }
 
             // Use atomic update to set initial state and dismiss splash screen
