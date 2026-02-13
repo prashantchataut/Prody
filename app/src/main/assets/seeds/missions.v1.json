@@ -1,0 +1,5 @@
+{"version":1,"date":1735689600000,"items":[
+{"missionId":"reflect_120","missionType":"reflect","title":"Reflect for 120 words","description":"Write one thoughtful reflection.","targetValue":120,"rewardXp":80,"rewardTokens":5},
+{"missionId":"sharpen_10","missionType":"sharpen","title":"Sharpen with 10 cards","description":"Review 10 vocabulary flashcards.","targetValue":10,"rewardXp":60,"rewardTokens":4},
+{"missionId":"commit_1","missionType":"commit","title":"Commit to your future","description":"Send one future message.","targetValue":1,"rewardXp":70,"rewardTokens":6}
+]}

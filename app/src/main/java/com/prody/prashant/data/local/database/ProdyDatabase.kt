@@ -132,6 +132,8 @@ import net.sqlcipher.database.SupportFactory
  * - Version 20: Mirror Evolution - Sealed Pods (Future Message Prophecy)
  *              Added prediction, predictionVerified, predictionVerifiedAt to FutureMessageEntity
  *              Enables "Prophecy" evidence drops when predictions are verified
+ * - Version 21: Versioned seed tracking
+ *              Added SeedVersionEntity for checksum-based idempotent domain seeding
  */
 @Database(
     entities = [
@@ -221,9 +223,10 @@ import net.sqlcipher.database.SupportFactory
         // Mirror Evolution: Haven Memory (THE VAULT) for Witness Mode
         HavenMemoryEntity::class,
         // Mirror Evolution: Evidence Locker
-        EvidenceEntity::class
+        EvidenceEntity::class,
+        SeedVersionEntity::class
     ],
-    version = 20,
+    version = 21,
     exportSchema = true // Enable for migration verification
 )
 abstract class ProdyDatabase : RoomDatabase() {
@@ -241,6 +244,7 @@ abstract class ProdyDatabase : RoomDatabase() {
     abstract fun profileLoadoutDao(): ProfileLoadoutDao
     abstract fun seedDao(): SeedDao
     abstract fun missionDao(): MissionDao
+    abstract fun seedVersionDao(): SeedVersionDao
 
     // New DAOs for Daily Engagement Features
     abstract fun savedWisdomDao(): SavedWisdomDao
@@ -1692,6 +1696,22 @@ abstract class ProdyDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_20_21: Migration = object : Migration(20, 21) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS seed_versions (
+                        domain TEXT NOT NULL,
+                        version INTEGER NOT NULL,
+                        checksum TEXT NOT NULL,
+                        appliedAt INTEGER NOT NULL,
+                        PRIMARY KEY(domain, version)
+                    )
+                    """.trimIndent()
+                )
+            }
+        }
+
         fun getInstance(context: Context): ProdyDatabase {
             return INSTANCE ?: synchronized(this) {
                 INSTANCE ?: buildDatabase(context).also { INSTANCE = it }
@@ -1729,7 +1749,8 @@ abstract class ProdyDatabase : RoomDatabase() {
                         MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8,
                         MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12,
                         MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16,
-                        MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20
+                        MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20,
+                        MIGRATION_20_21
                     )
                     .fallbackToDestructiveMigration()
                     .addCallback(SecureDatabaseCallback(context, secureDbManager))
@@ -1746,7 +1767,8 @@ abstract class ProdyDatabase : RoomDatabase() {
                         MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8,
                         MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12,
                         MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16,
-                        MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20
+                        MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20,
+                        MIGRATION_20_21
                     )
                     .fallbackToDestructiveMigration()
                     .addCallback(DatabaseCallback(context))
@@ -1763,7 +1785,7 @@ abstract class ProdyDatabase : RoomDatabase() {
                 Log.d(TAG, "Database created successfully - initiating data seeding")
                 // Seed the database with initial content
                 // Safety: Use INSTANCE directly if available to avoid recursion
-                INSTANCE?.let { DatabaseSeeder.seedDatabase(it) }
+                INSTANCE?.let { DatabaseSeeder.seedDatabase(context, it) }
                     ?: Log.e(TAG, "Failed to seed database: INSTANCE is null")
             }
 
@@ -1776,7 +1798,7 @@ abstract class ProdyDatabase : RoomDatabase() {
                 super.onDestructiveMigration(db)
                 Log.w(TAG, "Destructive migration performed - re-seeding database")
                 // Re-seed the database after destructive migration
-                INSTANCE?.let { DatabaseSeeder.seedDatabase(it) }
+                INSTANCE?.let { DatabaseSeeder.seedDatabase(context, it) }
             }
         }
 
@@ -1792,7 +1814,7 @@ abstract class ProdyDatabase : RoomDatabase() {
                 Log.d(TAG, "Secure database created successfully - initiating data seeding")
                 // Seed the database with initial content
                 // Safety: Use INSTANCE directly if available to avoid recursion
-                INSTANCE?.let { DatabaseSeeder.seedDatabase(it) }
+                INSTANCE?.let { DatabaseSeeder.seedDatabase(context, it) }
                     ?: Log.e(TAG, "Failed to seed secure database: INSTANCE is null")
             }
 
@@ -1821,7 +1843,7 @@ abstract class ProdyDatabase : RoomDatabase() {
                     secureDbManager.clearDatabaseEncryption()
                 }
                 // Re-seed the database after destructive migration
-                INSTANCE?.let { DatabaseSeeder.seedDatabase(it) }
+                INSTANCE?.let { DatabaseSeeder.seedDatabase(context, it) }
             }
         }
     }
