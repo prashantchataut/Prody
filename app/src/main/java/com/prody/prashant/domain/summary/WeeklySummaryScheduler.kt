@@ -168,7 +168,7 @@ class WeeklySummaryWorker @AssistedInject constructor(
 
             Result.success()
         } catch (e: Exception) {
-            Log.e("WeeklySummaryWorker", "Failed to generate weekly summary", e)
+            com.prody.prashant.util.AppLogger.e("WeeklySummaryWorker", "Failed to generate weekly summary", e)
             Result.retry()
         }
     }
@@ -179,9 +179,9 @@ class WeeklySummaryWorker @AssistedInject constructor(
         // Note: WeeklySummaryNotificationWorker needs to be implemented separately
         try {
             // For now, we'll skip the notification worker as it's not yet implemented
-            Log.d("WeeklySummaryWorker", "Weekly summary notification would be scheduled here")
+            com.prody.prashant.util.AppLogger.d("WeeklySummaryWorker", "Weekly summary notification would be scheduled here")
         } catch (e: Exception) {
-            Log.e("WeeklySummaryWorker", "Failed to schedule weekly summary notification", e)
+            com.prody.prashant.util.AppLogger.e("WeeklySummaryWorker", "Failed to schedule weekly summary notification", e)
         }
     }
 }

@@ -159,7 +159,7 @@ class DailyRitualViewModel @Inject constructor(
                         }
                     }
                     .onError { error ->
-                        android.util.Log.w("DailyRitualViewModel", "Failed to load morning wisdom: ${error.userMessage}")
+                        com.prody.prashant.util.AppLogger.w("DailyRitualViewModel", "Failed to load morning wisdom: ${error.userMessage}")
                         // Wisdom is optional for the ritual, continue without it
                     }
             }

@@ -151,13 +151,13 @@ I am here to listen, but I cannot provide the emergency care you might need. Ple
                 lastException = e
                 val isRetryable = isRetryableError(e)
 
-                Log.w(TAG, "$operation failed (attempt ${attempt + 1}/$MAX_RETRY_ATTEMPTS): ${e.message}")
+                com.prody.prashant.util.AppLogger.w(TAG, "$operation failed (attempt ${attempt + 1}/$MAX_RETRY_ATTEMPTS): ${e.message}")
 
                 if (!isRetryable || attempt == MAX_RETRY_ATTEMPTS - 1) {
                     throw e
                 }
 
-                Log.d(TAG, "Retrying $operation in ${delayMs}ms...")
+                com.prody.prashant.util.AppLogger.d(TAG, "Retrying $operation in ${delayMs}ms...")
                 kotlinx.coroutines.delay(delayMs)
                 delayMs = (delayMs * RETRY_MULTIPLIER).toLong().coerceAtMost(MAX_RETRY_DELAY_MS)
             }
@@ -189,7 +189,7 @@ I am here to listen, but I cannot provide the emergency care you might need. Ple
         if (!isOfflineMode || initializationAttempts >= MAX_RETRY_ATTEMPTS) {
             return !isOfflineMode
         }
-        Log.d(TAG, "Retrying initialization (attempt ${initializationAttempts + 1})")
+        com.prody.prashant.util.AppLogger.d(TAG, "Retrying initialization (attempt ${initializationAttempts + 1})")
         initializeModel()
         return !isOfflineMode
     }
@@ -205,14 +205,14 @@ I am here to listen, but I cannot provide the emergency care you might need. Ple
             val therapistKeyPresent = BuildConfig.THERAPIST_API_KEY.isNotBlank()
             val aiKeyPresent = BuildConfig.AI_API_KEY.isNotBlank()
 
-            Log.d(TAG, "API Key Check (attempt $initializationAttempts) - THERAPIST_API_KEY present: $therapistKeyPresent, AI_API_KEY present: $aiKeyPresent")
+            com.prody.prashant.util.AppLogger.d(TAG, "API Key Check (attempt $initializationAttempts) - THERAPIST_API_KEY present: $therapistKeyPresent, AI_API_KEY present: $aiKeyPresent")
 
             // Try THERAPIST_API_KEY first, then fall back to AI_API_KEY (Gemini)
             val apiKey = BuildConfig.THERAPIST_API_KEY.takeIf { it.isNotBlank() }
                 ?: BuildConfig.AI_API_KEY.takeIf { it.isNotBlank() }
 
             if (apiKey.isNullOrBlank()) {
-                Log.w(TAG, "No API key configured. Entering Offline Mode.")
+                com.prody.prashant.util.AppLogger.w(TAG, "No API key configured. Entering Offline Mode.")
                 initializationError = "No API key found in BuildConfig. Check local.properties and rebuild."
                 isOfflineMode = true
                 isInitialized = true // We are initialized in offline mode
@@ -220,7 +220,7 @@ I am here to listen, but I cannot provide the emergency care you might need. Ple
             }
 
             val keySource = if (BuildConfig.THERAPIST_API_KEY.isNotBlank()) "THERAPIST_API_KEY" else "AI_API_KEY"
-            Log.d(TAG, "Initializing Haven with $keySource (length: ${apiKey.length})")
+            com.prody.prashant.util.AppLogger.d(TAG, "Initializing Haven with $keySource (length: ${apiKey.length})")
 
             // Safety settings - less restrictive for mental health content
             val safetySettings = listOf(
@@ -247,9 +247,9 @@ I am here to listen, but I cannot provide the emergency care you might need. Ple
             isInitialized = true
             isOfflineMode = false
             initializationError = null
-            Log.d(TAG, "Haven AI Service initialized successfully with $keySource")
+            com.prody.prashant.util.AppLogger.d(TAG, "Haven AI Service initialized successfully with $keySource")
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to initialize Haven AI Service", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Failed to initialize Haven AI Service", e)
             initializationError = "Initialization error: ${e.message}"
             // Fallback to offline mode on error
             isOfflineMode = true
@@ -343,7 +343,7 @@ This is the start of the session. Greet ${userName ?: "the user"} warmly.
                 )
             )
         } catch (e: Exception) {
-            Log.e(TAG, "Error starting session after retries", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error starting session after retries", e)
             // Return failure instead of silent fallback
             Result.failure(Exception("Failed to start session: ${e.message}"))
         }
@@ -375,7 +375,7 @@ This is the start of the session. Greet ${userName ?: "the user"} warmly.
             // Check user message for crisis indicators
             val userCrisis = detectCrisis(userMessage)
             if (userCrisis.level >= CrisisLevel.SEVERE_CRISIS) {
-                Log.w(TAG, "Crisis detected in user message: ${userCrisis.level}")
+                com.prody.prashant.util.AppLogger.w(TAG, "Crisis detected in user message: ${userCrisis.level}")
                 return@withContext Result.success(
                     HavenAiResponse(
                         message = getCrisisResponse(),
@@ -432,7 +432,7 @@ Respond to the user. Be concise, supportive, and professional.
                 )
             )
         } catch (e: Exception) {
-            Log.e(TAG, "Error continuing conversation after retries", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error continuing conversation after retries", e)
             // Return failure with specific error message
             Result.failure(Exception("Failed to get AI response: ${e.message}"))
         }
@@ -534,7 +534,7 @@ Your response:
             ))
 
         } catch (e: Exception) {
-            Log.e(TAG, "Error in streaming conversation", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error in streaming conversation", e)
             emit(Result.failure(e))
         }
     }.flowOn(Dispatchers.IO)
@@ -607,7 +607,7 @@ Provide insights as a simple list, one per line. No numbers or bullets.
 
             Result.success(insights)
         } catch (e: Exception) {
-            Log.e(TAG, "Error extracting insights", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error extracting insights", e)
             Result.failure(e)
         }
     }
@@ -696,7 +696,7 @@ Your response:
             Result.success(facts)
 
         } catch (e: Exception) {
-            Log.e(TAG, "Error extracting facts", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error extracting facts", e)
             Result.failure(e)
         }
     }
@@ -742,7 +742,7 @@ Your response:
             return facts.take(5) // Limit to 5 facts per message
 
         } catch (e: Exception) {
-            Log.e(TAG, "Error parsing extracted facts", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error parsing extracted facts", e)
             return emptyList()
         }
     }
@@ -813,7 +813,7 @@ Your response:
             }
 
         } catch (e: Exception) {
-            Log.e(TAG, "Error parsing date: $dateStr", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error parsing date: $dateStr", e)
         }
 
         return null

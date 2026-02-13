@@ -39,7 +39,7 @@ class TextToSpeechManager @Inject constructor(
         try {
             initialize()
         } catch (e: Exception) {
-            android.util.Log.e(TAG, "Failed to initialize TextToSpeech", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Failed to initialize TextToSpeech", e)
             _isInitialized.value = false
         }
     }
@@ -73,15 +73,15 @@ class TextToSpeechManager @Inject constructor(
                         })
                     } else {
                         _isInitialized.value = false
-                        android.util.Log.w(TAG, "TextToSpeech initialization failed with status: $status")
+                        com.prody.prashant.util.AppLogger.w(TAG, "TextToSpeech initialization failed with status: $status")
                     }
                 } catch (e: Exception) {
-                    android.util.Log.e(TAG, "Error during TTS initialization callback", e)
+                    com.prody.prashant.util.AppLogger.e(TAG, "Error during TTS initialization callback", e)
                     _isInitialized.value = false
                 }
             }
         } catch (e: Exception) {
-            android.util.Log.e(TAG, "Failed to create TextToSpeech instance", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Failed to create TextToSpeech instance", e)
             _isInitialized.value = false
         }
     }

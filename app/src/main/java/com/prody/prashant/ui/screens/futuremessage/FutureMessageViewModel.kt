@@ -55,7 +55,7 @@ class FutureMessageViewModel @Inject constructor(
                     _uiState.value = state
                 }
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error loading messages", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error loading messages", e)
                 _uiState.update { it.copy(isLoading = false, error = "Failed to load messages. Please try again.") }
             }
         }
@@ -69,11 +69,11 @@ class FutureMessageViewModel @Inject constructor(
                     try {
                         futureMessageDao.markAsDelivered(message.id)
                     } catch (e: Exception) {
-                        android.util.Log.e(TAG, "Error marking message as delivered: ${message.id}", e)
+                        com.prody.prashant.util.AppLogger.e(TAG, "Error marking message as delivered: ${message.id}", e)
                     }
                 }
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error checking for delivered messages", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error checking for delivered messages", e)
             }
         }
     }
@@ -83,7 +83,7 @@ class FutureMessageViewModel @Inject constructor(
             try {
                 futureMessageDao.markAsRead(messageId)
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error marking message as read: $messageId", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error marking message as read: $messageId", e)
             }
         }
     }
@@ -118,7 +118,7 @@ class FutureMessageViewModel @Inject constructor(
                     _uiState.update { it.copy(error = "Failed to share message. Please try again.") }
                 }
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error sharing message", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error sharing message", e)
                 _uiState.update { it.copy(error = "Failed to share message. Please try again.") }
             }
         }

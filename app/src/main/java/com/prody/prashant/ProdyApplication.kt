@@ -42,12 +42,12 @@ class ProdyApplication : Application(), Configuration.Provider {
             if (::workerFactory.isInitialized) {
                 builder.setWorkerFactory(workerFactory)
             } else {
-                Log.e(TAG, "WorkerFactory not initialized")
+                com.prody.prashant.util.AppLogger.e(TAG, "WorkerFactory not initialized")
             }
             
             builder.build()
         } catch (e: Exception) {
-            Log.e(TAG, "Error building WorkManager configuration", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error building WorkManager configuration", e)
             Configuration.Builder()
                 .setMinimumLoggingLevel(if (BuildConfig.DEBUG) Log.DEBUG else Log.ERROR)
                 .build()
@@ -82,7 +82,7 @@ class ProdyApplication : Application(), Configuration.Provider {
         } catch (e: Throwable) {
             // If super.attachBaseContext fails, we're in a very bad state
             // Log to system log and rethrow - there's nothing we can do
-            Log.e(TAG, "CRITICAL: super.attachBaseContext failed", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "CRITICAL: super.attachBaseContext failed", e)
             throw e
         }
 
@@ -91,11 +91,11 @@ class ProdyApplication : Application(), Configuration.Provider {
         // This MUST happen IMMEDIATELY after super.attachBaseContext() completes.
         try {
             CrashHandler.initialize(this)
-            Log.d(TAG, "CrashHandler initialized in attachBaseContext")
+            com.prody.prashant.util.AppLogger.d(TAG, "CrashHandler initialized in attachBaseContext")
         } catch (e: Exception) {
             // Failed to initialize crash handler - log but don't crash
             // The app will run without crash reporting, but at least it might start
-            Log.e(TAG, "Failed to initialize crash handler in attachBaseContext", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Failed to initialize crash handler in attachBaseContext", e)
         }
     }
 
@@ -112,12 +112,12 @@ class ProdyApplication : Application(), Configuration.Provider {
         inCrashProcess = try {
             CrashHandler.isCrashProcess(this)
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to determine crash process status, assuming main process", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Failed to determine crash process status, assuming main process", e)
             false
         }
 
         if (inCrashProcess) {
-            Log.d(TAG, "Running in crash process, skipping Hilt injection and initialization")
+            com.prody.prashant.util.AppLogger.d(TAG, "Running in crash process, skipping Hilt injection and initialization")
             // CRITICAL: For the crash process, we skip Hilt initialization entirely.
             // CrashActivity is designed to work without any Hilt/DI dependencies.
             // We don't call super.onCreate() because:
@@ -136,7 +136,7 @@ class ProdyApplication : Application(), Configuration.Provider {
         try {
             super.onCreate()
         } catch (e: Throwable) {
-            Log.e(TAG, "CRITICAL ERROR IN APPLICATION ONCREATE / HILT INIT", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "CRITICAL ERROR IN APPLICATION ONCREATE / HILT INIT", e)
 
             // Invoke uncaught exception handler directly to ensure we show the crash screen
             val handler = Thread.getDefaultUncaughtExceptionHandler()
@@ -161,7 +161,7 @@ class ProdyApplication : Application(), Configuration.Provider {
                 createNotificationChannels()
             } catch (e: Exception) {
                 // Log error but don't crash the app - notifications are not critical for launch
-                Log.e(TAG, "Failed to create notification channels", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Failed to create notification channels", e)
             }
         }
 
@@ -171,10 +171,10 @@ class ProdyApplication : Application(), Configuration.Provider {
                 if (::gamificationService.isInitialized) {
                     gamificationService.initializeUserData()
                     gamificationService.checkAndResetDailyStats()
-                    Log.d(TAG, "Gamification data initialized")
+                    com.prody.prashant.util.AppLogger.d(TAG, "Gamification data initialized")
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Failed to initialize gamification data", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Failed to initialize gamification data", e)
             }
         }
 
@@ -183,10 +183,10 @@ class ProdyApplication : Application(), Configuration.Provider {
             try {
                 if (::witnessModeManager.isInitialized) {
                     witnessModeManager.checkForPendingFollowUps()
-                    Log.d(TAG, "Witness Mode check completed")
+                    com.prody.prashant.util.AppLogger.d(TAG, "Witness Mode check completed")
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Failed to check Witness Mode follow-ups", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Failed to check Witness Mode follow-ups", e)
             }
         }
     }
@@ -196,7 +196,7 @@ class ProdyApplication : Application(), Configuration.Provider {
             // Safely obtain NotificationManager - can be null on some custom ROMs
             val notificationManager = getSystemService(NotificationManager::class.java)
             if (notificationManager == null) {
-                Log.w(TAG, "NotificationManager not available, skipping channel creation")
+                com.prody.prashant.util.AppLogger.w(TAG, "NotificationManager not available, skipping channel creation")
                 return
             }
 
@@ -266,9 +266,9 @@ class ProdyApplication : Application(), Configuration.Provider {
                 notificationManager.createNotificationChannels(
                     listOf(mainChannel, wisdomChannel, journalChannel, futureChannel, achievementsChannel, havenChannel)
                 )
-                Log.d(TAG, "Notification channels created successfully")
+                com.prody.prashant.util.AppLogger.d(TAG, "Notification channels created successfully")
             } catch (e: Exception) {
-                Log.e(TAG, "Failed to create notification channels", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Failed to create notification channels", e)
             }
         }
     }

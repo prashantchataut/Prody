@@ -49,10 +49,10 @@ object StorageModule {
                 EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
             )
 } catch (e: GeneralSecurityException) {
-            Log.e("StorageModule", "Could not create EncryptedSharedPreferences", e)
+            com.prody.prashant.util.AppLogger.e("StorageModule", "Could not create EncryptedSharedPreferences", e)
             throw RuntimeException("Could not create EncryptedSharedPreferences", e)
         } catch (e: IOException) {
-            Log.e("StorageModule", "Could not create EncryptedSharedPreferences", e)
+            com.prody.prashant.util.AppLogger.e("StorageModule", "Could not create EncryptedSharedPreferences", e)
             throw RuntimeException("Could not create EncryptedSharedPreferences", e)
         }
     }

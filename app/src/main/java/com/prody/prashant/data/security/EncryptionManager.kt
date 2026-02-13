@@ -78,7 +78,7 @@ class EncryptionManager @Inject constructor(
                 .putString(KEY_JOURNAL_KEY, Base64.encodeToString(keyBytes, Base64.NO_WRAP))
                 .apply()
 
-            Log.d(TAG, "Created new journal encryption key")
+            com.prody.prashant.util.AppLogger.d(TAG, "Created new journal encryption key")
             key
         }
     }
@@ -114,7 +114,7 @@ class EncryptionManager @Inject constructor(
             // Prefix with marker to identify encrypted content
             "ENC:" + Base64.encodeToString(combined, Base64.NO_WRAP)
         } catch (e: Exception) {
-            Log.e(TAG, "Encryption failed", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Encryption failed", e)
             // Return original text if encryption fails (fallback for safety)
             plaintext
         }
@@ -153,7 +153,7 @@ class EncryptionManager @Inject constructor(
 
             String(cipher.doFinal(ciphertext), Charsets.UTF_8)
         } catch (e: Exception) {
-            Log.e(TAG, "Decryption failed", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Decryption failed", e)
             // Return original text if decryption fails
             encryptedText
         }
@@ -170,7 +170,7 @@ class EncryptionManager @Inject constructor(
             val decrypted = decryptText(encrypted)
             decrypted == testText
         } catch (e: Exception) {
-            Log.e(TAG, "Encryption availability check failed", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Encryption availability check failed", e)
             false
         }
     }
@@ -182,9 +182,9 @@ class EncryptionManager @Inject constructor(
     fun clearEncryptionKeys() {
         try {
             encryptedPrefs.edit().clear().apply()
-            Log.d(TAG, "Encryption keys cleared")
+            com.prody.prashant.util.AppLogger.d(TAG, "Encryption keys cleared")
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to clear encryption keys", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Failed to clear encryption keys", e)
         }
     }
 

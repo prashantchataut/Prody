@@ -364,7 +364,7 @@ class BuddhaAiRepository @Inject constructor(
                 BuddhaAiResult.Fallback(fallback)
 
             } catch (e: Exception) {
-                Log.e(TAG, "Error generating daily wisdom", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error generating daily wisdom", e)
                 recordApiCall(0, "error", "daily_wisdom", e.message)
                 BuddhaAiResult.Fallback(
                     DailyWisdomResult(
@@ -413,7 +413,7 @@ class BuddhaAiRepository @Inject constructor(
                     BuddhaAiResult.Fallback(getStaticQuoteExplanation(quote, author))
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Error generating quote explanation", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error generating quote explanation", e)
                 recordApiCall(0, "error", "quote_explanation", e.message)
                 BuddhaAiResult.Fallback(getStaticQuoteExplanation(quote, author))
             }
@@ -506,7 +506,7 @@ class BuddhaAiRepository @Inject constructor(
                     BuddhaAiResult.Fallback(getStaticJournalInsight(content, mood, wordCount))
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Error generating journal insight", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error generating journal insight", e)
                 recordApiCall(0, "error", "journal_insight", e.message)
                 BuddhaAiResult.Fallback(getStaticJournalInsight(content, mood, wordCount))
             }
@@ -592,7 +592,7 @@ class BuddhaAiRepository @Inject constructor(
                     BuddhaAiResult.Fallback(getStaticWeeklyPattern(journalCount, dominantMood, streakDays))
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Error generating weekly pattern", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error generating weekly pattern", e)
                 recordApiCall(0, "error", "weekly_pattern", e.message)
                 BuddhaAiResult.Fallback(getStaticWeeklyPattern(journalCount, dominantMood, streakDays))
             }
@@ -632,7 +632,7 @@ class BuddhaAiRepository @Inject constructor(
                     BuddhaAiResult.Fallback(getStaticVocabularyContext(word, definition))
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Error generating vocabulary context", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error generating vocabulary context", e)
                 recordApiCall(0, "error", "vocabulary_context", e.message)
                 BuddhaAiResult.Fallback(getStaticVocabularyContext(word, definition))
             }
@@ -686,7 +686,7 @@ class BuddhaAiRepository @Inject constructor(
                     BuddhaAiResult.Fallback(getStaticMessageHelper())
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Error generating message helper", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error generating message helper", e)
                 recordApiCall(0, "error", "message_helper", e.message)
                 BuddhaAiResult.Fallback(getStaticMessageHelper())
             }
@@ -731,14 +731,14 @@ class BuddhaAiRepository @Inject constructor(
 
                         // Validate response doesn't contain generic AI language
                         if (!containsGenericAiLanguage(lastResponse)) {
-                            Log.d(TAG, "Gemini response passed persona validation on attempt $attempts")
+                            com.prody.prashant.util.AppLogger.d(TAG, "Gemini response passed persona validation on attempt $attempts")
                             return lastResponse
                         } else {
-                            Log.w(TAG, "Gemini response contained generic AI language, retrying... (attempt $attempts)")
+                            com.prody.prashant.util.AppLogger.w(TAG, "Gemini response contained generic AI language, retrying... (attempt $attempts)")
                         }
                     }
                 } catch (e: Exception) {
-                    Log.w(TAG, "Gemini failed on attempt $attempts", e)
+                    com.prody.prashant.util.AppLogger.w(TAG, "Gemini failed on attempt $attempts", e)
                 }
             }
 
@@ -754,14 +754,14 @@ class BuddhaAiRepository @Inject constructor(
 
                         // Validate response doesn't contain generic AI language
                         if (!containsGenericAiLanguage(response)) {
-                            Log.d(TAG, "OpenRouter response passed persona validation on attempt $attempts")
+                            com.prody.prashant.util.AppLogger.d(TAG, "OpenRouter response passed persona validation on attempt $attempts")
                             return response
                         } else {
-                            Log.w(TAG, "OpenRouter response contained generic AI language, retrying... (attempt $attempts)")
+                            com.prody.prashant.util.AppLogger.w(TAG, "OpenRouter response contained generic AI language, retrying... (attempt $attempts)")
                         }
                     }
                 } catch (e: Exception) {
-                    Log.w(TAG, "OpenRouter failed on attempt $attempts", e)
+                    com.prody.prashant.util.AppLogger.w(TAG, "OpenRouter failed on attempt $attempts", e)
                 }
             }
         }
@@ -770,12 +770,12 @@ class BuddhaAiRepository @Inject constructor(
         lastResponse?.let { response ->
             val cleanedResponse = sanitizeGenericAiLanguage(response)
             if (cleanedResponse.isNotBlank()) {
-                Log.d(TAG, "Returning sanitized response after $attempts attempts")
+                com.prody.prashant.util.AppLogger.d(TAG, "Returning sanitized response after $attempts attempts")
                 return cleanedResponse
             }
         }
 
-        Log.w(TAG, "All AI attempts failed after $attempts tries")
+        com.prody.prashant.util.AppLogger.w(TAG, "All AI attempts failed after $attempts tries")
         return null
     }
 
@@ -1094,7 +1094,7 @@ class BuddhaAiRepository @Inject constructor(
         return try {
             json.decodeFromString<T>(entry.data)
         } catch (e: Exception) {
-            Log.w(TAG, "Failed to deserialize cache entry", e)
+            com.prody.prashant.util.AppLogger.w(TAG, "Failed to deserialize cache entry", e)
             memoryCache.remove(key)
             null
         }
@@ -1117,7 +1117,7 @@ class BuddhaAiRepository @Inject constructor(
             // Persist to disk periodically
             saveCacheToDisk()
         } catch (e: Exception) {
-            Log.w(TAG, "Failed to cache result", e)
+            com.prody.prashant.util.AppLogger.w(TAG, "Failed to cache result", e)
         }
     }
 
@@ -1135,7 +1135,7 @@ class BuddhaAiRepository @Inject constructor(
                 cacheList.forEach { memoryCache[it.key] = it }
             }
         } catch (e: Exception) {
-            Log.w(TAG, "Failed to load cache from disk", e)
+            com.prody.prashant.util.AppLogger.w(TAG, "Failed to load cache from disk", e)
         }
     }
 
@@ -1144,7 +1144,7 @@ class BuddhaAiRepository @Inject constructor(
             val file = File(context.cacheDir, CACHE_FILE_NAME)
             file.writeText(json.encodeToString(memoryCache.values.toList()))
         } catch (e: Exception) {
-            Log.w(TAG, "Failed to save cache to disk", e)
+            com.prody.prashant.util.AppLogger.w(TAG, "Failed to save cache to disk", e)
         }
     }
 
@@ -1205,7 +1205,7 @@ class BuddhaAiRepository @Inject constructor(
                 stats = json.decodeFromString<AiStats>(file.readText())
             }
         } catch (e: Exception) {
-            Log.w(TAG, "Failed to load stats from disk", e)
+            com.prody.prashant.util.AppLogger.w(TAG, "Failed to load stats from disk", e)
         }
     }
 
@@ -1214,7 +1214,7 @@ class BuddhaAiRepository @Inject constructor(
             val file = File(context.cacheDir, STATS_FILE_NAME)
             file.writeText(json.encodeToString(stats))
         } catch (e: Exception) {
-            Log.w(TAG, "Failed to save stats to disk", e)
+            com.prody.prashant.util.AppLogger.w(TAG, "Failed to save stats to disk", e)
         }
     }
 

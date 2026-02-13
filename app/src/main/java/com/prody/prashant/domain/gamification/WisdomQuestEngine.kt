@@ -255,7 +255,7 @@ class WisdomQuestEngine @Inject constructor(
             vocabularyDao.markAsLearned(challenge.word.id)
             userDao.incrementWordsLearned()
 
-            Log.d(TAG, "Correct! XP: $totalXp (base: $baseXp, streak: $streakBonus, focus: $dailyFocusBonus)")
+            com.prody.prashant.util.AppLogger.d(TAG, "Correct! XP: $totalXp (base: $baseXp, streak: $streakBonus, focus: $dailyFocusBonus)")
 
             QuestResult(
                 isCorrect = true,
@@ -270,7 +270,7 @@ class WisdomQuestEngine @Inject constructor(
             // Reset streak on wrong answer
             updateActiveRecallStreak(0)
 
-            Log.d(TAG, "Incorrect. Streak reset.")
+            com.prody.prashant.util.AppLogger.d(TAG, "Incorrect. Streak reset.")
 
             QuestResult(
                 isCorrect = false,
@@ -301,7 +301,7 @@ class WisdomQuestEngine @Inject constructor(
 
             userDao.updatePreferences(currentPrefs.toString())
         } catch (e: Exception) {
-            Log.e(TAG, "Error updating streak", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error updating streak", e)
         }
     }
 
@@ -334,9 +334,9 @@ class WisdomQuestEngine @Inject constructor(
             currentPrefs.put("dailyFocusSetDate", System.currentTimeMillis())
 
             userDao.updatePreferences(currentPrefs.toString())
-            Log.d(TAG, "Daily focus set to: ${focus.displayName}")
+            com.prody.prashant.util.AppLogger.d(TAG, "Daily focus set to: ${focus.displayName}")
         } catch (e: Exception) {
-            Log.e(TAG, "Error setting daily focus", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error setting daily focus", e)
         }
     }
 

@@ -251,7 +251,7 @@ class QuotesViewModel @Inject constructor(
                     }
                 }
             } catch (e: Exception) {
-                android.util.Log.e("QuotesViewModel", "Error loading quote explanation", e)
+                com.prody.prashant.util.AppLogger.e("QuotesViewModel", "Error loading quote explanation", e)
                 // Mark as failed so UI can show retry option
                 _uiState.update { state ->
                     state.copy(

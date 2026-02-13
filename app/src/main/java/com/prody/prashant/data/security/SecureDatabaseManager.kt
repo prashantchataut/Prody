@@ -68,13 +68,13 @@ class SecureDatabaseManager @Inject constructor(
             // 2. Not in SharedPreferences, check if migration from legacy file is needed
             val legacyFile = getDatabaseKeyFile()
             if (legacyFile.exists()) {
-                Log.i(TAG, "Legacy database key file found, migrating to EncryptedSharedPreferences")
+                com.prody.prashant.util.AppLogger.i(TAG, "Legacy database key file found, migrating to EncryptedSharedPreferences")
                 val legacyKey = readDatabaseKeySync(legacyFile)
                 if (legacyKey != null) {
                     // Use commit() instead of apply() to ensure the key is written before deleting the legacy file
                     val success = encryptedPrefs.edit().putString(DB_PASSPHRASE_KEY, legacyKey).commit()
                     if (success) {
-                        Log.d(TAG, "Successfully migrated database key, deleting legacy file")
+                        com.prody.prashant.util.AppLogger.d(TAG, "Successfully migrated database key, deleting legacy file")
                         legacyFile.delete()
                     }
                     return legacyKey
@@ -86,7 +86,7 @@ class SecureDatabaseManager @Inject constructor(
             encryptedPrefs.edit().putString(DB_PASSPHRASE_KEY, newKey).apply()
             newKey
         } catch (e: Exception) {
-            Log.e(TAG, "Error getting database passphrase synchronously", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error getting database passphrase synchronously", e)
             generateFallbackPassphrase()
         }
     }
@@ -180,7 +180,7 @@ class SecureDatabaseManager @Inject constructor(
                 String(bytes)
             }
         } catch (e: IOException) {
-            Log.e(TAG, "Error reading legacy database key", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error reading legacy database key", e)
             null
         }
     }
@@ -191,7 +191,7 @@ class SecureDatabaseManager @Inject constructor(
     suspend fun verifyDatabaseIntegrity(databaseFile: File): Boolean = withContext(Dispatchers.IO) {
         try {
             if (!databaseFile.exists()) {
-                Log.w(TAG, "Database file does not exist")
+                com.prody.prashant.util.AppLogger.w(TAG, "Database file does not exist")
                 return@withContext false
             }
 
@@ -207,11 +207,11 @@ class SecureDatabaseManager @Inject constructor(
             val isIntact = testDb.isOpen
             testDb.close()
             
-            Log.d(TAG, "Database integrity check: ${if (isIntact) "PASSED" else "FAILED"}")
+            com.prody.prashant.util.AppLogger.d(TAG, "Database integrity check: ${if (isIntact) "PASSED" else "FAILED"}")
             isIntact
             
         } catch (e: Exception) {
-            Log.e(TAG, "Database integrity check failed", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Database integrity check failed", e)
             false
         }
     }
@@ -228,9 +228,9 @@ class SecureDatabaseManager @Inject constructor(
                 keyFile.delete()
             }
             
-            Log.d(TAG, "Database encryption data cleared")
+            com.prody.prashant.util.AppLogger.d(TAG, "Database encryption data cleared")
         } catch (e: Exception) {
-            Log.e(TAG, "Error clearing database encryption", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error clearing database encryption", e)
         }
     }
 }

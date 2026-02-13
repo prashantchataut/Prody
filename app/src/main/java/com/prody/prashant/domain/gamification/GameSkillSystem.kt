@@ -67,7 +67,7 @@ class GameSkillSystem @Inject constructor(
             if (idempotencyKey != null) {
                 val alreadyAwarded = userDao.hasProcessedRewardKey(idempotencyKey)
                 if (alreadyAwarded) {
-                    Log.d(TAG, "Reward already processed for key: $idempotencyKey")
+                    com.prody.prashant.util.AppLogger.d(TAG, "Reward already processed for key: $idempotencyKey")
                     return SkillXpResult.AlreadyAwarded
                 }
             }
@@ -81,7 +81,7 @@ class GameSkillSystem @Inject constructor(
             val actualXp = baseXp.coerceAtMost(remainingCap)
 
             if (actualXp <= 0) {
-                Log.d(TAG, "Daily cap reached for $skillType")
+                com.prody.prashant.util.AppLogger.d(TAG, "Daily cap reached for $skillType")
                 return SkillXpResult.DailyCapReached
             }
 
@@ -102,7 +102,7 @@ class GameSkillSystem @Inject constructor(
 
             val leveledUp = newLevel > previousLevel
 
-            Log.d(TAG, "Awarded $actualXp $skillType XP (base: $baseXp, capped: ${actualXp != baseXp})")
+            com.prody.prashant.util.AppLogger.d(TAG, "Awarded $actualXp $skillType XP (base: $baseXp, capped: ${actualXp != baseXp})")
 
             SkillXpResult.Success(
                 skillType = skillType,
@@ -113,7 +113,7 @@ class GameSkillSystem @Inject constructor(
                 previousLevel = previousLevel
             )
         } catch (e: Exception) {
-            Log.e(TAG, "Error awarding skill XP", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error awarding skill XP", e)
             SkillXpResult.Error(e.message ?: "Unknown error")
         }
     }

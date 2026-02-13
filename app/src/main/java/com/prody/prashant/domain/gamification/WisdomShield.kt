@@ -89,7 +89,7 @@ class WisdomShield @Inject constructor(
                 shieldEarnedAt = shieldEarnedAt
             )
         } catch (e: Exception) {
-            Log.e(TAG, "Error getting shield status", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error getting shield status", e)
             ShieldStatus(
                 hasShield = false,
                 isActive = false,
@@ -135,10 +135,10 @@ class WisdomShield @Inject constructor(
             prefs.put("wisdomShieldEarnedDate", System.currentTimeMillis())
 
             userDao.updatePreferences(prefs.toString())
-            Log.d(TAG, "Wisdom Shield earned at $currentStreak day streak!")
+            com.prody.prashant.util.AppLogger.d(TAG, "Wisdom Shield earned at $currentStreak day streak!")
             true
         } catch (e: Exception) {
-            Log.e(TAG, "Error earning shield", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error earning shield", e)
             false
         }
     }
@@ -168,10 +168,10 @@ class WisdomShield @Inject constructor(
             prefs.put("wisdomShieldUsedDate", System.currentTimeMillis())
 
             userDao.updatePreferences(prefs.toString())
-            Log.d(TAG, "Wisdom Shield used to protect streak!")
+            com.prody.prashant.util.AppLogger.d(TAG, "Wisdom Shield used to protect streak!")
             true
         } catch (e: Exception) {
-            Log.e(TAG, "Error using shield", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error using shield", e)
             false
         }
     }
@@ -199,7 +199,7 @@ class WisdomShield @Inject constructor(
 
             false
         } catch (e: Exception) {
-            Log.e(TAG, "Error checking shield protection", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error checking shield protection", e)
             false
         }
     }
@@ -236,13 +236,13 @@ class WisdomShield @Inject constructor(
                 prefs.put("wisdomShieldEarnedDate", System.currentTimeMillis())
 
                 userDao.updatePreferences(prefs.toString())
-                Log.d(TAG, "Wisdom Shield regenerated!")
+                com.prody.prashant.util.AppLogger.d(TAG, "Wisdom Shield regenerated!")
                 return@withContext true
             }
 
             false
         } catch (e: Exception) {
-            Log.e(TAG, "Error regenerating shield", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error regenerating shield", e)
             false
         }
     }

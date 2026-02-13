@@ -87,7 +87,7 @@ class CrashHandler private constructor(
                             context.applicationContext ?: context
                         } catch (e: Exception) {
                             // If applicationContext throws, use the context directly
-                            Log.w(TAG, "Failed to get applicationContext, using context directly", e)
+                            com.prody.prashant.util.AppLogger.w(TAG, "Failed to get applicationContext, using context directly", e)
                             context
                         }
                     }
@@ -96,9 +96,9 @@ class CrashHandler private constructor(
                     Thread.setDefaultUncaughtExceptionHandler(handler)
                     instance = handler
                     isInitialized = true
-                    Log.i(TAG, "CrashHandler initialized successfully")
+                    com.prody.prashant.util.AppLogger.i(TAG, "CrashHandler initialized successfully")
                 } catch (e: Exception) {
-                    Log.e(TAG, "Failed to initialize CrashHandler", e)
+                    com.prody.prashant.util.AppLogger.e(TAG, "Failed to initialize CrashHandler", e)
                 }
             }
         }
@@ -137,7 +137,7 @@ class CrashHandler private constructor(
                     }
                 } catch (e: Exception) {
                     // ActivityManager access failed, continue to next method
-                    Log.w(TAG, "Failed to get process name from ActivityManager", e)
+                    com.prody.prashant.util.AppLogger.w(TAG, "Failed to get process name from ActivityManager", e)
                 }
 
                 // Method 3: Fallback - check /proc/self/cmdline
@@ -150,14 +150,14 @@ class CrashHandler private constructor(
                     }
                 } catch (e: Exception) {
                     // /proc access failed
-                    Log.w(TAG, "Failed to read /proc/self/cmdline", e)
+                    com.prody.prashant.util.AppLogger.w(TAG, "Failed to read /proc/self/cmdline", e)
                 }
 
                 // Default: assume we're in main process
                 false
             } catch (e: Exception) {
                 // Outer catch-all - never let this method crash
-                Log.e(TAG, "Unexpected error checking crash process", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Unexpected error checking crash process", e)
                 false
             }
         }
@@ -167,7 +167,7 @@ class CrashHandler private constructor(
         // SAFETY CHECK: If we are already in the crash process, DO NOT launch CrashActivity again.
         // This prevents infinite crash loops if the CrashActivity itself fails.
         if (isCrashProcess(applicationContext)) {
-             Log.e(TAG, "CRASH IN CRASH PROCESS! Creating infinite loop detected. Terminating.", throwable)
+             com.prody.prashant.util.AppLogger.e(TAG, "CRASH IN CRASH PROCESS! Creating infinite loop detected. Terminating.", throwable)
              // Log to system log so at least adb logcat catches it
              defaultHandler?.uncaughtException(thread, throwable)
              android.os.Process.killProcess(android.os.Process.myPid())
@@ -175,10 +175,10 @@ class CrashHandler private constructor(
              return
         }
 
-        Log.e(TAG, "═══════════════════════════════════════════════════════════════")
-        Log.e(TAG, "UNCAUGHT EXCEPTION in thread: ${thread.name}")
-        Log.e(TAG, "═══════════════════════════════════════════════════════════════")
-        Log.e(TAG, "Exception:", throwable)
+        com.prody.prashant.util.AppLogger.e(TAG, "═══════════════════════════════════════════════════════════════")
+        com.prody.prashant.util.AppLogger.e(TAG, "UNCAUGHT EXCEPTION in thread: ${thread.name}")
+        com.prody.prashant.util.AppLogger.e(TAG, "═══════════════════════════════════════════════════════════════")
+        com.prody.prashant.util.AppLogger.e(TAG, "Exception:", throwable)
 
         try {
             // Build crash information
@@ -195,7 +195,7 @@ class CrashHandler private constructor(
             }
 
         } catch (e: Exception) {
-            Log.e(TAG, "Error handling crash - falling back to default handler", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error handling crash - falling back to default handler", e)
             // If we fail to handle the crash, let the default handler take over
             defaultHandler?.uncaughtException(thread, throwable)
         } finally {
@@ -296,10 +296,10 @@ private fun getRootCause(throwable: Throwable): Throwable {
             }
 
             applicationContext.startActivity(intent)
-            Log.i(TAG, "CrashActivity launched successfully")
+            com.prody.prashant.util.AppLogger.i(TAG, "CrashActivity launched successfully")
 
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to launch CrashActivity", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Failed to launch CrashActivity", e)
         }
     }
 }

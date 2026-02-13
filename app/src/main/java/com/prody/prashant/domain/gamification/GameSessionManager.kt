@@ -113,10 +113,10 @@ class GameSessionManager @Inject constructor(
                 builder.addDetail("Daily Clarity cap reached")
             }
             is SkillXpResult.AlreadyAwarded -> {
-                Log.d(TAG, "Journal entry already rewarded: $entryId")
+                com.prody.prashant.util.AppLogger.d(TAG, "Journal entry already rewarded: $entryId")
             }
             is SkillXpResult.Error -> {
-                Log.e(TAG, "Error awarding journal XP: ${xpResult.message}")
+                com.prody.prashant.util.AppLogger.e(TAG, "Error awarding journal XP: ${xpResult.message}")
             }
         }
 
@@ -185,7 +185,7 @@ class GameSessionManager @Inject constructor(
                 builder.tokens((builder.build().rewards.tokens) + CONTEXT_BLOOM_MULTI_WORD_TOKENS)
             }
 
-            Log.d(TAG, "Context Bloom: ${contextBloomResult.bloomedWords.size} words used naturally!")
+            com.prody.prashant.util.AppLogger.d(TAG, "Context Bloom: ${contextBloomResult.bloomedWords.size} words used naturally!")
         }
 
         // Suggest next action
@@ -194,7 +194,7 @@ class GameSessionManager @Inject constructor(
         // Update streak
         updateStreak()
 
-        Log.d(TAG, "Reflect session completed: $wordCount words, ${builder.build().rewards.totalXp} XP")
+        com.prody.prashant.util.AppLogger.d(TAG, "Reflect session completed: $wordCount words, ${builder.build().rewards.totalXp} XP")
 
         return builder.build()
     }
@@ -250,10 +250,10 @@ class GameSessionManager @Inject constructor(
                 builder.addDetail("Daily Discipline cap reached")
             }
             is SkillXpResult.AlreadyAwarded -> {
-                Log.d(TAG, "Flashcard session already rewarded: $sessionId")
+                com.prody.prashant.util.AppLogger.d(TAG, "Flashcard session already rewarded: $sessionId")
             }
             is SkillXpResult.Error -> {
-                Log.e(TAG, "Error awarding flashcard XP: ${xpResult.message}")
+                com.prody.prashant.util.AppLogger.e(TAG, "Error awarding flashcard XP: ${xpResult.message}")
             }
         }
 
@@ -283,7 +283,7 @@ class GameSessionManager @Inject constructor(
         // Update streak
         updateStreak()
 
-        Log.d(TAG, "Sharpen session completed: $cardsReviewed cards, ${builder.build().rewards.totalXp} XP")
+        com.prody.prashant.util.AppLogger.d(TAG, "Sharpen session completed: $cardsReviewed cards, ${builder.build().rewards.totalXp} XP")
 
         return builder.build()
     }
@@ -344,10 +344,10 @@ class GameSessionManager @Inject constructor(
                 builder.addDetail("Daily Courage cap reached")
             }
             is SkillXpResult.AlreadyAwarded -> {
-                Log.d(TAG, "Future message already rewarded: $messageId")
+                com.prody.prashant.util.AppLogger.d(TAG, "Future message already rewarded: $messageId")
             }
             is SkillXpResult.Error -> {
-                Log.e(TAG, "Error awarding future message XP: ${xpResult.message}")
+                com.prody.prashant.util.AppLogger.e(TAG, "Error awarding future message XP: ${xpResult.message}")
             }
         }
 
@@ -386,7 +386,7 @@ class GameSessionManager @Inject constructor(
         // Update streak
         updateStreak()
 
-        Log.d(TAG, "Commit session completed: ${builder.build().rewards.totalXp} XP")
+        com.prody.prashant.util.AppLogger.d(TAG, "Commit session completed: ${builder.build().rewards.totalXp} XP")
 
         return builder.build()
     }
@@ -456,7 +456,7 @@ class GameSessionManager @Inject constructor(
 
             userDao.updateLastActiveDate(now)
         } catch (e: Exception) {
-            Log.e(TAG, "Error updating streak", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error updating streak", e)
         }
     }
 
@@ -507,7 +507,7 @@ class GameSessionManager @Inject constructor(
             }
 
         } catch (e: Exception) {
-            Log.e(TAG, "Error detecting context blooms", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error detecting context blooms", e)
         }
 
         // Calculate total XP (capped)

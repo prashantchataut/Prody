@@ -215,7 +215,7 @@ class PerformanceMonitor @Inject constructor(
         checkBaseline(metric)
         updateReport()
 
-        Log.d(TAG, "Recorded ${metric.type}: ${metric.durationMs}ms, success=${metric.success}")
+        com.prody.prashant.util.AppLogger.d(TAG, "Recorded ${metric.type}: ${metric.durationMs}ms, success=${metric.success}")
     }
 
     /**
@@ -244,7 +244,7 @@ class PerformanceMonitor @Inject constructor(
         }
 
         updateReport()
-        Log.e(TAG, "Error recorded: $sanitizedMessage")
+        com.prody.prashant.util.AppLogger.e(TAG, "Error recorded: $sanitizedMessage")
     }
 
     /**
@@ -276,7 +276,7 @@ class PerformanceMonitor @Inject constructor(
         }
 
         if (target != null && metric.durationMs > target) {
-            Log.w(TAG, "Baseline violation: ${metric.type} took ${metric.durationMs}ms (target: ${target}ms)")
+            com.prody.prashant.util.AppLogger.w(TAG, "Baseline violation: ${metric.type} took ${metric.durationMs}ms (target: ${target}ms)")
         }
     }
 

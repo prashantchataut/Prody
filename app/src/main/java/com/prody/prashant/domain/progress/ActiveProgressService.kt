@@ -133,7 +133,7 @@ class ActiveProgressService @Inject constructor(
                 }
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error getting next action", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error getting next action", e)
             // Fallback to safe default
             NextAction(
                 type = NextActionType.START_JOURNAL,
@@ -171,7 +171,7 @@ class ActiveProgressService @Inject constructor(
                 isEmpty = journalEntries == 0 && wordsLearned == 0
             )
         } catch (e: Exception) {
-            Log.e(TAG, "Error getting today's progress", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error getting today's progress", e)
             TodayProgress(isEmpty = true)
         }
     }
@@ -218,7 +218,7 @@ class ActiveProgressService @Inject constructor(
                 weeklyInsight = weeklyInsight
             )
         } catch (e: Exception) {
-            Log.e(TAG, "Error getting weekly progress", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error getting weekly progress", e)
             WeeklyProgress()
         }
     }

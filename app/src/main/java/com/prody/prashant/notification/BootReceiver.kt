@@ -38,7 +38,7 @@ class BootReceiver : BroadcastReceiver() {
 
     // Coroutine exception handler to prevent silent failures
     private val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
-        Log.e(TAG, "Coroutine exception during notification rescheduling", throwable)
+        com.prody.prashant.util.AppLogger.e(TAG, "Coroutine exception during notification rescheduling", throwable)
     }
 
     // SupervisorJob ensures that if one notification fails, others can still be scheduled
@@ -48,11 +48,11 @@ class BootReceiver : BroadcastReceiver() {
         // Validate intent action
         val action = intent.action
         if (action != Intent.ACTION_BOOT_COMPLETED && action != Intent.ACTION_MY_PACKAGE_REPLACED) {
-            Log.d(TAG, "Ignoring unhandled action: $action")
+            com.prody.prashant.util.AppLogger.d(TAG, "Ignoring unhandled action: $action")
             return
         }
 
-        Log.d(TAG, "Received action: $action")
+        com.prody.prashant.util.AppLogger.d(TAG, "Received action: $action")
 
         // Use goAsync() to get more time for background work in BroadcastReceiver
         val pendingResult = goAsync()
@@ -62,7 +62,7 @@ class BootReceiver : BroadcastReceiver() {
             // This can throw if Hilt is not initialized or the application context is invalid
             val applicationContext = context.applicationContext
             if (applicationContext == null) {
-                Log.e(TAG, "Application context is null, cannot access Hilt")
+                com.prody.prashant.util.AppLogger.e(TAG, "Application context is null, cannot access Hilt")
                 pendingResult.finish()
                 return
             }
@@ -73,7 +73,7 @@ class BootReceiver : BroadcastReceiver() {
                     BootReceiverEntryPoint::class.java
                 )
             } catch (e: IllegalStateException) {
-                Log.e(TAG, "Hilt not initialized yet, skipping notification rescheduling", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Hilt not initialized yet, skipping notification rescheduling", e)
                 pendingResult.finish()
                 return
             }
@@ -84,9 +84,9 @@ class BootReceiver : BroadcastReceiver() {
             scope.launch {
                 try {
                     notificationScheduler.rescheduleAllNotifications()
-                    Log.d(TAG, "Notifications rescheduled successfully after $action")
+                    com.prody.prashant.util.AppLogger.d(TAG, "Notifications rescheduled successfully after $action")
                 } catch (e: Exception) {
-                    Log.e(TAG, "Failed to reschedule notifications", e)
+                    com.prody.prashant.util.AppLogger.e(TAG, "Failed to reschedule notifications", e)
                 } finally {
                     // Always finish the pending result to avoid ANR
                     pendingResult.finish()
@@ -94,7 +94,7 @@ class BootReceiver : BroadcastReceiver() {
             }
         } catch (e: Exception) {
             // Catch-all for any unexpected errors during initialization
-            Log.e(TAG, "Unexpected error in BootReceiver", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Unexpected error in BootReceiver", e)
             pendingResult.finish()
         }
     }

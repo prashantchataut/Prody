@@ -118,7 +118,7 @@ class MainActivity : ComponentActivity() {
         try {
             requestNotificationPermission()
         } catch (e: Exception) {
-            android.util.Log.e("MainActivity", "Failed to request notification permission", e)
+            com.prody.prashant.util.AppLogger.e("MainActivity", "Failed to request notification permission", e)
         }
 
         enableEdgeToEdge()
@@ -171,7 +171,7 @@ class MainActivity : ComponentActivity() {
      */
     private fun scheduleNotificationsSafely() {
         if (!isInjectionComplete) {
-            android.util.Log.w("MainActivity", "Injection not complete, skipping notification scheduling")
+            com.prody.prashant.util.AppLogger.w("MainActivity", "Injection not complete, skipping notification scheduling")
             return
         }
 
@@ -180,10 +180,10 @@ class MainActivity : ComponentActivity() {
                 if (::notificationScheduler.isInitialized) {
                     notificationScheduler.rescheduleAllNotifications()
                 } else {
-                    android.util.Log.w("MainActivity", "NotificationScheduler not initialized")
+                    com.prody.prashant.util.AppLogger.w("MainActivity", "NotificationScheduler not initialized")
                 }
             } catch (e: Exception) {
-                android.util.Log.e("MainActivity", "Failed to schedule notifications", e)
+                com.prody.prashant.util.AppLogger.e("MainActivity", "Failed to schedule notifications", e)
             }
         }
     }

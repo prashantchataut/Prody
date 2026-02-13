@@ -203,7 +203,7 @@ class SettingsViewModel @Inject constructor(
                     )
                 }
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error loading settings", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error loading settings", e)
             }
         }
     }
@@ -265,7 +265,7 @@ class SettingsViewModel @Inject constructor(
             try {
                 preferencesManager.setThemeMode(mode)
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error setting theme mode", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error setting theme mode", e)
             }
         }
     }
@@ -275,7 +275,7 @@ class SettingsViewModel @Inject constructor(
             try {
                 preferencesManager.setDynamicColors(enabled)
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error setting dynamic colors", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error setting dynamic colors", e)
             }
         }
     }
@@ -285,7 +285,7 @@ class SettingsViewModel @Inject constructor(
             try {
                 preferencesManager.setNotificationsEnabled(enabled)
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error setting notifications enabled", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error setting notifications enabled", e)
             }
         }
     }
@@ -295,7 +295,7 @@ class SettingsViewModel @Inject constructor(
             try {
                 preferencesManager.setWisdomNotificationEnabled(enabled)
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error setting wisdom notifications", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error setting wisdom notifications", e)
             }
         }
     }
@@ -305,7 +305,7 @@ class SettingsViewModel @Inject constructor(
             try {
                 preferencesManager.setJournalReminderEnabled(enabled)
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error setting journal reminders", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error setting journal reminders", e)
             }
         }
     }
@@ -316,7 +316,7 @@ class SettingsViewModel @Inject constructor(
                 preferencesManager.setDailyReminderTime(hour, minute)
                 notificationScheduler.rescheduleAllNotifications()
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error setting morning notification time", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error setting morning notification time", e)
             }
         }
     }
@@ -327,7 +327,7 @@ class SettingsViewModel @Inject constructor(
                 preferencesManager.setEveningReminderTime(hour, minute)
                 notificationScheduler.rescheduleAllNotifications()
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error setting evening notification time", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error setting evening notification time", e)
             }
         }
     }
@@ -337,7 +337,7 @@ class SettingsViewModel @Inject constructor(
             try {
                 preferencesManager.setHapticFeedbackEnabled(enabled)
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error setting haptic feedback", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error setting haptic feedback", e)
             }
         }
     }
@@ -347,7 +347,7 @@ class SettingsViewModel @Inject constructor(
             try {
                 preferencesManager.setCompactCardView(compact)
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error setting compact view", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error setting compact view", e)
             }
         }
     }
@@ -357,7 +357,7 @@ class SettingsViewModel @Inject constructor(
             try {
                 preferencesManager.setBuddhaAiEnabled(enabled)
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error setting Buddha AI enabled", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error setting Buddha AI enabled", e)
             }
         }
     }
@@ -369,7 +369,7 @@ class SettingsViewModel @Inject constructor(
             try {
                 preferencesManager.setBuddhaDailyWisdomEnabled(enabled)
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error setting Buddha daily wisdom enabled", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error setting Buddha daily wisdom enabled", e)
             }
         }
     }
@@ -379,7 +379,7 @@ class SettingsViewModel @Inject constructor(
             try {
                 preferencesManager.setBuddhaQuoteExplanationEnabled(enabled)
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error setting Buddha quote explanation enabled", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error setting Buddha quote explanation enabled", e)
             }
         }
     }
@@ -389,7 +389,7 @@ class SettingsViewModel @Inject constructor(
             try {
                 preferencesManager.setBuddhaJournalInsightsEnabled(enabled)
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error setting Buddha journal insights enabled", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error setting Buddha journal insights enabled", e)
             }
         }
     }
@@ -399,7 +399,7 @@ class SettingsViewModel @Inject constructor(
             try {
                 preferencesManager.setBuddhaPatternTrackingEnabled(enabled)
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error setting Buddha pattern tracking enabled", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error setting Buddha pattern tracking enabled", e)
             }
         }
     }
@@ -409,7 +409,7 @@ class SettingsViewModel @Inject constructor(
             try {
                 preferencesManager.setBuddhaPlayfulMode(enabled)
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error setting Buddha playful mode", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error setting Buddha playful mode", e)
             }
         }
     }
@@ -419,7 +419,7 @@ class SettingsViewModel @Inject constructor(
             try {
                 preferencesManager.setBuddhaReduceAiUsage(enabled)
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error setting Buddha reduce AI usage", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error setting Buddha reduce AI usage", e)
             }
         }
     }
@@ -431,7 +431,7 @@ class SettingsViewModel @Inject constructor(
             try {
                 preferencesManager.setPrivacyLockJournal(enabled)
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error setting privacy lock journal", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error setting privacy lock journal", e)
             }
         }
     }
@@ -441,7 +441,7 @@ class SettingsViewModel @Inject constructor(
             try {
                 preferencesManager.setPrivacyLockFutureMessages(enabled)
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error setting privacy lock future messages", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error setting privacy lock future messages", e)
             }
         }
     }
@@ -451,7 +451,7 @@ class SettingsViewModel @Inject constructor(
             try {
                 preferencesManager.setPrivacyLockOnBackground(enabled)
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error setting privacy lock on background", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error setting privacy lock on background", e)
             }
         }
     }
@@ -507,7 +507,7 @@ class SettingsViewModel @Inject constructor(
                 _uiState.update { it.copy(isClearingData = false) }
                 onComplete()
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error clearing data", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error clearing data", e)
                 _uiState.update { it.copy(isClearingData = false, dataError = "Failed to clear data") }
             }
         }
@@ -530,7 +530,7 @@ class SettingsViewModel @Inject constructor(
                 _uiState.update { it.copy(debugNotificationSent = null) }
             }
         } catch (e: Exception) {
-            android.util.Log.e(TAG, "Error sending test notification", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error sending test notification", e)
         }
     }
 
@@ -551,7 +551,7 @@ class SettingsViewModel @Inject constructor(
             try {
                 preferencesManager.setDebugAiProofMode(enabled)
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error setting AI Proof Mode", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error setting AI Proof Mode", e)
             }
         }
     }

@@ -109,7 +109,7 @@ class BackupManager @Inject constructor(
                 backupFile
             )
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to export backup", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Failed to export backup", e)
             null
         }
     }
@@ -227,7 +227,7 @@ class BackupManager @Inject constructor(
                 backupDate = backup.createdAt
             )
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to restore backup", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Failed to restore backup", e)
             RestoreResult.Error("Failed to restore backup: ${e.message}")
         }
     }
@@ -253,7 +253,7 @@ class BackupManager @Inject constructor(
                 streakHistoryCount = backup.streakHistory.size
             )
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to validate backup", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Failed to validate backup", e)
             null
         }
     }

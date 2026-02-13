@@ -60,7 +60,7 @@ class VocabularyListViewModel @Inject constructor(
                     _uiState.update { it.copy(words = words, isLoading = false) }
                 }
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error loading vocabulary", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error loading vocabulary", e)
                 _uiState.update { it.copy(isLoading = false, error = "Failed to load vocabulary. Please try again.") }
             }
         }
@@ -78,7 +78,7 @@ class VocabularyListViewModel @Inject constructor(
                     _uiState.update { it.copy(learnedCount = learned, totalCount = total) }
                 }
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error loading vocabulary counts", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error loading vocabulary counts", e)
                 // Set counts to 0 on error to avoid showing stale data
                 _uiState.update { it.copy(learnedCount = 0, totalCount = 0) }
             }
@@ -103,7 +103,7 @@ class VocabularyListViewModel @Inject constructor(
                     vocabularyDao.updateFavoriteStatus(wordId, !it.isFavorite)
                 }
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error toggling favorite for word: $wordId", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error toggling favorite for word: $wordId", e)
                 _uiState.update { it.copy(error = "Failed to update favorite status") }
             }
         }

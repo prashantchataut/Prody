@@ -79,12 +79,12 @@ class OnboardingViewModel @Inject constructor(
                 // Populate initial content
                 populateInitialContent()
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error during onboarding completion", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error during onboarding completion", e)
                 // Still mark onboarding as completed to prevent being stuck in a loop
                 try {
                     preferencesManager.setOnboardingCompleted(true)
                 } catch (prefError: Exception) {
-                    android.util.Log.e(TAG, "Failed to set onboarding completed flag", prefError)
+                    com.prody.prashant.util.AppLogger.e(TAG, "Failed to set onboarding completed flag", prefError)
                 }
             }
         }
@@ -95,35 +95,35 @@ class OnboardingViewModel @Inject constructor(
             // Insert vocabulary
             vocabularyDao.insertWords(InitialContentData.vocabularyWords)
         } catch (e: Exception) {
-            android.util.Log.e(TAG, "Error inserting vocabulary", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error inserting vocabulary", e)
         }
 
         try {
             // Insert quotes
             quoteDao.insertQuotes(InitialContentData.quotes)
         } catch (e: Exception) {
-            android.util.Log.e(TAG, "Error inserting quotes", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error inserting quotes", e)
         }
 
         try {
             // Insert proverbs
             proverbDao.insertProverbs(InitialContentData.proverbs)
         } catch (e: Exception) {
-            android.util.Log.e(TAG, "Error inserting proverbs", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error inserting proverbs", e)
         }
 
         try {
             // Insert idioms
             idiomDao.insertIdioms(InitialContentData.idioms)
         } catch (e: Exception) {
-            android.util.Log.e(TAG, "Error inserting idioms", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error inserting idioms", e)
         }
 
         try {
             // Insert phrases
             phraseDao.insertPhrases(InitialContentData.phrases)
         } catch (e: Exception) {
-            android.util.Log.e(TAG, "Error inserting phrases", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error inserting phrases", e)
         }
     }
 }

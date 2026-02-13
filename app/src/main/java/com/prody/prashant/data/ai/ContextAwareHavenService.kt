@@ -66,7 +66,7 @@ class ContextAwareHavenService @Inject constructor(
         userName: String?,
         baseContext: HavenSessionContext
     ): Result<HavenAiResponse> = withContext(Dispatchers.IO) {
-        Log.d(TAG, "Starting context-aware Haven session")
+        com.prody.prashant.util.AppLogger.d(TAG, "Starting context-aware Haven session")
 
         // Get rich Haven context from Soul Layer
         val soulLayerContext = userContextEngine.getContextForHaven()
@@ -86,7 +86,7 @@ class ContextAwareHavenService @Inject constructor(
         baseContext: HavenSessionContext,
         userMessage: String
     ): Result<HavenAiResponse> = withContext(Dispatchers.IO) {
-        Log.d(TAG, "Continuing context-aware conversation")
+        com.prody.prashant.util.AppLogger.d(TAG, "Continuing context-aware conversation")
 
         val soulLayerContext = userContextEngine.getContextForHaven()
         val enrichedContext = enrichHavenContext(baseContext, soulLayerContext)
@@ -102,7 +102,7 @@ class ContextAwareHavenService @Inject constructor(
         baseContext: HavenSessionContext,
         userMessage: String
     ): Flow<Result<HavenAiResponse>> = flow {
-        Log.d(TAG, "Starting context-aware streaming conversation")
+        com.prody.prashant.util.AppLogger.d(TAG, "Starting context-aware streaming conversation")
 
         val soulLayerContext = userContextEngine.getContextForHaven()
         val enrichedContext = enrichHavenContext(baseContext, soulLayerContext)
@@ -122,7 +122,7 @@ class ContextAwareHavenService @Inject constructor(
      * This uses Soul Layer intelligence to make informed recommendations.
      */
     suspend fun suggestSessionType(): SessionTypeSuggestion = withContext(Dispatchers.IO) {
-        Log.d(TAG, "Generating session type suggestion")
+        com.prody.prashant.util.AppLogger.d(TAG, "Generating session type suggestion")
 
         val havenContext = userContextEngine.getContextForHaven()
         val userContext = havenContext.userContext
@@ -183,7 +183,7 @@ class ContextAwareHavenService @Inject constructor(
      * Gets a personalized opening message for Haven based on context.
      */
     suspend fun getContextAwareOpening(): HavenOpeningContent = withContext(Dispatchers.IO) {
-        Log.d(TAG, "Generating context-aware opening")
+        com.prody.prashant.util.AppLogger.d(TAG, "Generating context-aware opening")
 
         val havenContext = userContextEngine.getContextForHaven()
         val userContext = havenContext.userContext
@@ -250,7 +250,7 @@ class ContextAwareHavenService @Inject constructor(
      */
     suspend fun getRecommendedApproach(): TherapeuticApproachRecommendation =
         withContext(Dispatchers.IO) {
-            Log.d(TAG, "Getting recommended therapeutic approach")
+            com.prody.prashant.util.AppLogger.d(TAG, "Getting recommended therapeutic approach")
 
             val havenContext = userContextEngine.getContextForHaven()
 
@@ -270,7 +270,7 @@ class ContextAwareHavenService @Inject constructor(
     suspend fun suggestContextAwareExercise(
         sessionType: SessionType
     ): Result<ExerciseSuggestion> = withContext(Dispatchers.IO) {
-        Log.d(TAG, "Suggesting context-aware exercise")
+        com.prody.prashant.util.AppLogger.d(TAG, "Suggesting context-aware exercise")
 
         val havenContext = userContextEngine.getContextForHaven()
         val userContext = havenContext.userContext

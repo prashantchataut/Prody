@@ -77,31 +77,31 @@ class GamificationService @Inject constructor(
     suspend fun initializeUserData() = withContext(Dispatchers.IO) {
         // PERF: Check flag to ensure this heavy setup runs only once, ever.
         if (preferencesManager.gamificationInitialized.first()) {
-            Log.d(TAG, "Gamification data already initialized. Skipping setup.")
+            com.prody.prashant.util.AppLogger.d(TAG, "Gamification data already initialized. Skipping setup.")
             return@withContext
         }
 
         try {
-            Log.d(TAG, "Performing one-time initialization of gamification data...")
+            com.prody.prashant.util.AppLogger.d(TAG, "Performing one-time initialization of gamification data...")
 
             // Initialize user profile if needed
             val existingProfile = userDao.getUserProfileSync()
             if (existingProfile == null) {
-                Log.d(TAG, "Creating new user profile")
+                com.prody.prashant.util.AppLogger.d(TAG, "Creating new user profile")
                 userDao.insertUserProfile(UserProfileEntity())
             }
 
             // Initialize user stats if needed
             val existingStats = userDao.getUserStats().firstOrNull()
             if (existingStats == null) {
-                Log.d(TAG, "Creating new user stats")
+                com.prody.prashant.util.AppLogger.d(TAG, "Creating new user stats")
                 userDao.insertUserStats(UserStatsEntity())
             }
 
             // Initialize achievements if needed
             val existingAchievements = userDao.getAllAchievements().first()
             if (existingAchievements.isEmpty()) {
-                Log.d(TAG, "Initializing ${ProdyAchievements.allAchievements.size} achievements")
+                com.prody.prashant.util.AppLogger.d(TAG, "Initializing ${ProdyAchievements.allAchievements.size} achievements")
                 val achievementEntities = ProdyAchievements.allAchievements.map { achievement ->
                     AchievementEntity.fromDomain(
                         id = achievement.id,
@@ -116,15 +116,15 @@ class GamificationService @Inject constructor(
                     )
                 }
                 userDao.insertAchievements(achievementEntities)
-                Log.d(TAG, "Achievements initialized successfully")
+                com.prody.prashant.util.AppLogger.d(TAG, "Achievements initialized successfully")
             }
 
             // Set the flag to true after successful initialization
             preferencesManager.setGamificationInitialized(true)
-            Log.d(TAG, "Gamification data initialization complete. Flag set to true.")
+            com.prody.prashant.util.AppLogger.d(TAG, "Gamification data initialization complete. Flag set to true.")
 
         } catch (e: Exception) {
-            Log.e(TAG, "Error initializing user data. The process will retry on next launch.", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error initializing user data. The process will retry on next launch.", e)
             // Do NOT set the flag to true if initialization fails
         }
     }
@@ -144,7 +144,7 @@ class GamificationService @Inject constructor(
             val stats = userDao.getUserStats().firstOrNull()
             val todayPoints = stats?.dailyPointsEarned ?: 0
             if (todayPoints >= MAX_DAILY_POINTS) {
-                Log.d(TAG, "Daily points cap reached ($MAX_DAILY_POINTS)")
+                com.prody.prashant.util.AppLogger.d(TAG, "Daily points cap reached ($MAX_DAILY_POINTS)")
                 return@withContext 0
             }
 
@@ -185,10 +185,10 @@ class GamificationService @Inject constructor(
             // Record progress for any joined challenges that match this activity type
             recordChallengeProgress(activityType)
 
-            Log.d(TAG, "Awarded $totalPoints points for $activityType (base: $basePoints, streak bonus: $streakBonus)")
+            com.prody.prashant.util.AppLogger.d(TAG, "Awarded $totalPoints points for $activityType (base: $basePoints, streak bonus: $streakBonus)")
             return@withContext totalPoints
         } catch (e: Exception) {
-            Log.e(TAG, "Error recording activity", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error recording activity", e)
             return@withContext 0
         }
     }
@@ -227,9 +227,9 @@ class GamificationService @Inject constructor(
             // Check streak achievements
             checkStreakAchievements(newStreak)
 
-            Log.d(TAG, "Streak updated: $newStreak (previous: ${profile.currentStreak}, days gap: $daysDiff)")
+            com.prody.prashant.util.AppLogger.d(TAG, "Streak updated: $newStreak (previous: ${profile.currentStreak}, days gap: $daysDiff)")
         } catch (e: Exception) {
-            Log.e(TAG, "Error updating streak", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error updating streak", e)
         }
     }
 
@@ -368,7 +368,7 @@ class GamificationService @Inject constructor(
                     }
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Error checking achievement $achievementId", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error checking achievement $achievementId", e)
             }
         }
     }
@@ -380,9 +380,9 @@ class GamificationService @Inject constructor(
         try {
             userDao.unlockAchievement(achievementId)
             userDao.addPoints(bonusPoints)
-            Log.d(TAG, "Achievement unlocked: $achievementId (+$bonusPoints points)")
+            com.prody.prashant.util.AppLogger.d(TAG, "Achievement unlocked: $achievementId (+$bonusPoints points)")
         } catch (e: Exception) {
-            Log.e(TAG, "Error unlocking achievement $achievementId", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error unlocking achievement $achievementId", e)
         }
     }
 
@@ -409,7 +409,7 @@ class GamificationService @Inject constructor(
                 }
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error checking time-based achievements", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error checking time-based achievements", e)
         }
     }
 
@@ -422,7 +422,7 @@ class GamificationService @Inject constructor(
             val totalPoints = profile?.totalPoints ?: 0
             ProdyRanks.Rank.fromPoints(totalPoints)
         } catch (e: Exception) {
-            Log.e(TAG, "Error getting current rank", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error getting current rank", e)
             ProdyRanks.Rank.SEEKER
         }
     }
@@ -439,10 +439,10 @@ class GamificationService @Inject constructor(
 
             if (today > lastReset) {
                 userDao.resetDailyStats(today)
-                Log.d(TAG, "Daily stats reset")
+                com.prody.prashant.util.AppLogger.d(TAG, "Daily stats reset")
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error resetting daily stats", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error resetting daily stats", e)
         }
     }
 
@@ -493,14 +493,14 @@ class GamificationService @Inject constructor(
                     challengeDao.markChallengeCompleted(challenge.id)
                     if (challenge.rewardPoints > 0) {
                         userDao.addPoints(challenge.rewardPoints)
-                        Log.d(TAG, "Challenge completed: ${challenge.title} (+${challenge.rewardPoints} points)")
+                        com.prody.prashant.util.AppLogger.d(TAG, "Challenge completed: ${challenge.title} (+${challenge.rewardPoints} points)")
                     }
                 } else {
-                    Log.d(TAG, "Challenge progress: ${challenge.title} ($newProgress/${challenge.targetCount})")
+                    com.prody.prashant.util.AppLogger.d(TAG, "Challenge progress: ${challenge.title} ($newProgress/${challenge.targetCount})")
                 }
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error recording challenge progress", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error recording challenge progress", e)
         }
     }
 }

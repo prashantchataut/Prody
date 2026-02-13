@@ -506,7 +506,7 @@ class GeminiService @Inject constructor() {
      */
     fun initialize(apiKey: String, model: GeminiModel = GeminiModel.GEMINI_1_5_FLASH) {
         if (apiKey.isBlank()) {
-            android.util.Log.e("GeminiService", "Cannot initialize: API key is blank")
+            com.prody.prashant.util.AppLogger.e("GeminiService", "Cannot initialize: API key is blank")
             generativeModel = null
             currentApiKey = null
             return
@@ -514,7 +514,7 @@ class GeminiService @Inject constructor() {
 
         if (apiKey != currentApiKey || model != currentModel) {
             try {
-                android.util.Log.d("GeminiService", "Initializing Gemini with model: ${model.displayName}")
+                com.prody.prashant.util.AppLogger.d("GeminiService", "Initializing Gemini with model: ${model.displayName}")
                 currentApiKey = apiKey
                 currentModel = model
 
@@ -525,7 +525,7 @@ class GeminiService @Inject constructor() {
                     safetySettings = safetySettings
                 )
             } catch (e: Exception) {
-                android.util.Log.e("GeminiService", "Failed to initialize Gemini", e)
+                com.prody.prashant.util.AppLogger.e("GeminiService", "Failed to initialize Gemini", e)
                 generativeModel = null
             }
         }
@@ -543,7 +543,7 @@ class GeminiService @Inject constructor() {
 
         val configured = generativeModel != null && !currentApiKey.isNullOrBlank()
         if (!configured) {
-            android.util.Log.w("GeminiService", "GeminiService is NOT configured. API Key present: ${!currentApiKey.isNullOrBlank()}")
+            com.prody.prashant.util.AppLogger.w("GeminiService", "GeminiService is NOT configured. API Key present: ${!currentApiKey.isNullOrBlank()}")
         }
         return configured
     }

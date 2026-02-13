@@ -91,7 +91,7 @@ class ContextBloomService @Inject constructor(
             seedContent = seedResult.seedContent
             totalXp += BASE_BLOOM_XP + WORD_OF_DAY_BONUS_XP
             totalTokens += BLOOM_TOKENS
-            Log.d(TAG, "Daily seed bloomed: ${seedResult.seedContent}")
+            com.prody.prashant.util.AppLogger.d(TAG, "Daily seed bloomed: ${seedResult.seedContent}")
         }
 
         // 2. Detect learned vocabulary usage
@@ -100,7 +100,7 @@ class ContextBloomService @Inject constructor(
             val detectedUsages = vocabularyDetector.detectLearnedWords(content, learnedWords)
 
             if (detectedUsages.isNotEmpty()) {
-                Log.d(TAG, "Detected ${detectedUsages.size} learned words in context")
+                com.prody.prashant.util.AppLogger.d(TAG, "Detected ${detectedUsages.size} learned words in context")
 
                 // Process each detected word
                 for (usage in detectedUsages) {
@@ -135,7 +135,7 @@ class ContextBloomService @Inject constructor(
                 // Bonus for using multiple words
                 if (bloomedWords.size >= 3) {
                     totalTokens += MULTI_WORD_BONUS_TOKENS
-                    Log.d(TAG, "Multi-word bonus awarded for ${bloomedWords.size} words")
+                    com.prody.prashant.util.AppLogger.d(TAG, "Multi-word bonus awarded for ${bloomedWords.size} words")
                 }
             }
         }
@@ -167,7 +167,7 @@ class ContextBloomService @Inject constructor(
             )
             _lastBloomEvent.value = event
 
-            Log.d(TAG, "Context Bloom complete: ${bloomedWords.size} words, seed=$seedBloomed, XP=$actualXpAwarded")
+            com.prody.prashant.util.AppLogger.d(TAG, "Context Bloom complete: ${bloomedWords.size} words, seed=$seedBloomed, XP=$actualXpAwarded")
 
             return ContextBloomResult.Success(
                 bloomedWords = bloomedWords,

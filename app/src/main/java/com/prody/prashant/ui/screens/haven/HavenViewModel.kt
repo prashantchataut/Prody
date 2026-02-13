@@ -112,7 +112,7 @@ class HavenViewModel @Inject constructor(
                     _homeState.update { it.copy(stats = stats) }
                 },
                 onFailure = { e ->
-                    android.util.Log.w("HavenViewModel", "Failed to load stats: ${e.message}")
+                    com.prody.prashant.util.AppLogger.w("HavenViewModel", "Failed to load stats: ${e.message}")
                     // Stats are non-critical, UI will show default/empty stats
                 }
             )

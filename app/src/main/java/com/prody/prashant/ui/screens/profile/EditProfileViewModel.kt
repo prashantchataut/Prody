@@ -95,7 +95,7 @@ class EditProfileViewModel @Inject constructor(
                     }
                 }
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error loading profile", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error loading profile", e)
                 _uiState.update { it.copy(isLoading = false, error = "Failed to load profile") }
             }
         }
@@ -145,7 +145,7 @@ class EditProfileViewModel @Inject constructor(
                 )
                 _uiState.update { it.copy(availableTitles = titles) }
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error loading title options", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error loading title options", e)
             }
         }
     }
@@ -229,7 +229,7 @@ class EditProfileViewModel @Inject constructor(
                     )
                 }
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error saving profile", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error saving profile", e)
                 _uiState.update {
                     it.copy(
                         isSaving = false,

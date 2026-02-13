@@ -71,12 +71,12 @@ class SecurityPreferences @Inject constructor(
                 localPropertiesFile.inputStream().use { input ->
                     properties.load(input)
                 }
-                Log.d(TAG, "Loaded API keys from local.properties")
+                com.prody.prashant.util.AppLogger.d(TAG, "Loaded API keys from local.properties")
             } else {
-                Log.w(TAG, "local.properties file not found. API keys will need to be configured.")
+                com.prody.prashant.util.AppLogger.w(TAG, "local.properties file not found. API keys will need to be configured.")
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to load local.properties", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Failed to load local.properties", e)
         }
     }
 
@@ -105,7 +105,7 @@ class SecurityPreferences @Inject constructor(
                 key
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error getting Gemini API key", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error getting Gemini API key", e)
             ""
         }
     }
@@ -129,7 +129,7 @@ class SecurityPreferences @Inject constructor(
                 key
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error getting OpenRouter API key", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error getting OpenRouter API key", e)
             ""
         }
     }
@@ -143,9 +143,9 @@ class SecurityPreferences @Inject constructor(
             dataStore.edit { preferences ->
                 preferences[ENCRYPTED_AI_API_KEY] = encryptedKey
             }
-            Log.d(TAG, "Gemini API key stored securely")
+            com.prody.prashant.util.AppLogger.d(TAG, "Gemini API key stored securely")
         } catch (e: Exception) {
-            Log.e(TAG, "Error storing Gemini API key", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error storing Gemini API key", e)
         }
     }
 
@@ -158,9 +158,9 @@ class SecurityPreferences @Inject constructor(
             dataStore.edit { preferences ->
                 preferences[ENCRYPTED_OPENROUTER_API_KEY] = encryptedKey
             }
-            Log.d(TAG, "OpenRouter API key stored securely")
+            com.prody.prashant.util.AppLogger.d(TAG, "OpenRouter API key stored securely")
         } catch (e: Exception) {
-            Log.e(TAG, "Error storing OpenRouter API key", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error storing OpenRouter API key", e)
         }
     }
 
@@ -172,7 +172,7 @@ class SecurityPreferences @Inject constructor(
             preferences.remove(ENCRYPTED_AI_API_KEY)
             preferences.remove(ENCRYPTED_OPENROUTER_API_KEY)
         }
-        Log.d(TAG, "All API keys cleared")
+        com.prody.prashant.util.AppLogger.d(TAG, "All API keys cleared")
     }
 
     /**
@@ -202,7 +202,7 @@ class SecurityPreferences @Inject constructor(
             keyStore.getKey(KEY_ALIAS, null) as? SecretKey
                 ?: createNewEncryptionKey(keyStore)
         } catch (e: Exception) {
-            Log.e(TAG, "Error getting encryption key from keystore", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error getting encryption key from keystore", e)
             throw SecurityException("Failed to get encryption key", e)
         }
     }
@@ -228,10 +228,10 @@ class SecurityPreferences @Inject constructor(
             keyGenerator.init(keyGenParameterSpec)
             val key = keyGenerator.generateKey()
             
-            Log.d(TAG, "Created new encryption key in Android Keystore")
+            com.prody.prashant.util.AppLogger.d(TAG, "Created new encryption key in Android Keystore")
             key
         } catch (e: Exception) {
-            Log.e(TAG, "Error creating encryption key", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error creating encryption key", e)
             throw SecurityException("Failed to create encryption key", e)
         }
     }
@@ -260,7 +260,7 @@ class SecurityPreferences @Inject constructor(
             Base64.encodeToString(encryptedData, Base64.NO_WRAP)
             
         } catch (e: Exception) {
-            Log.e(TAG, "Error encrypting API key", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error encrypting API key", e)
             throw SecurityException("Failed to encrypt API key", e)
         }
     }
@@ -292,7 +292,7 @@ class SecurityPreferences @Inject constructor(
             String(plaintext, StandardCharsets.UTF_8)
             
         } catch (e: Exception) {
-            Log.e(TAG, "Error decrypting API key", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error decrypting API key", e)
             // Return empty string on decryption failure instead of crashing
             ""
         }

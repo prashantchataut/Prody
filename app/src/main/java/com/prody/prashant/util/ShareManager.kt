@@ -93,11 +93,11 @@ class ShareManager @Inject constructor(
                 )
                 true
             } else {
-                Log.e(TAG, "Failed to save bitmap to cache")
+                com.prody.prashant.util.AppLogger.e(TAG, "Failed to save bitmap to cache")
                 false
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to share future message", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Failed to share future message", e)
             false
         }
     }
@@ -125,7 +125,7 @@ class ShareManager @Inject constructor(
                 false
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to share quote", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Failed to share quote", e)
             false
         }
     }
@@ -154,7 +154,7 @@ class ShareManager @Inject constructor(
                 false
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to share vocabulary word", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Failed to share vocabulary word", e)
             false
         }
     }
@@ -177,7 +177,7 @@ class ShareManager @Inject constructor(
             })
             true
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to share text", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Failed to share text", e)
             false
         }
     }
@@ -222,7 +222,7 @@ class ShareManager @Inject constructor(
             
             FileProvider.getUriForFile(context, FILE_PROVIDER_AUTHORITY, file)
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to save bitmap to cache", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Failed to save bitmap to cache", e)
             null
         }
     }
@@ -235,7 +235,7 @@ class ShareManager @Inject constructor(
             val files = directory.listFiles()?.sortedByDescending { it.lastModified() }
             files?.drop(keepCount)?.forEach { it.delete() }
         } catch (e: Exception) {
-            Log.w(TAG, "Failed to cleanup old files", e)
+            com.prody.prashant.util.AppLogger.w(TAG, "Failed to cleanup old files", e)
         }
     }
     
