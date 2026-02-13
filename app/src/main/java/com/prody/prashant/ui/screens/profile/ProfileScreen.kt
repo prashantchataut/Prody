@@ -134,6 +134,7 @@ fun ProfileScreen(
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val screenState = rememberProfileScreenState(uiState)
     val isDarkMode = isDarkTheme()
 
     // Premium theme colors using MaterialTheme
@@ -187,50 +188,17 @@ fun ProfileScreen(
                 )
             }
 
-            // Hero Section - Avatar, Name, Badges
             item {
-                AnimatedVisibility(
-                    visible = isVisible,
-                    enter = fadeIn(tween(400)) + slideInVertically(
-                        initialOffsetY = { -it / 4 },
-                        animationSpec = tween(400, easing = EaseOutCubic)
-                    )
-                ) {
-                    PremiumHeroSection(
-                        displayName = uiState.displayName,
-                        title = uiState.title,
-                        bio = uiState.bio,
-                        level = getLevelFromPoints(uiState.totalPoints),
-                        levelProgress = calculateLevelProgress(uiState.totalPoints),
-                        isDev = uiState.isDev,
-                        isBetaPioneer = uiState.isBetaPioneer,
-                        isDarkMode = isDarkMode,
-                        onEditClick = onNavigateToEditProfile,
-                        textPrimary = textPrimary,
-                        accentColor = accentColor
-                    )
-                }
-            }
-
-            // Key Metrics Row
-            item {
-                AnimatedVisibility(
-                    visible = isVisible,
-                    enter = fadeIn(tween(400, delayMillis = 100)) + slideInVertically(
-                        initialOffsetY = { it / 3 },
-                        animationSpec = tween(400, delayMillis = 100, easing = EaseOutCubic)
-                    )
-                ) {
-                    PremiumKeyMetricsRow(
-                        level = getLevelFromPoints(uiState.totalPoints),
-                        streak = uiState.currentStreak,
-                        wordsLearned = uiState.wordsLearned,
-                        surfaceColor = surfaceColor,
-                        textPrimary = textPrimary,
-                        textTertiary = textTertiary,
-                        accentColor = accentColor
-                    )
-                }
+                ProfileOverviewSection(
+                    isVisible = isVisible,
+                    state = screenState,
+                    isDarkMode = isDarkMode,
+                    textPrimary = textPrimary,
+                    textTertiary = textTertiary,
+                    accentColor = accentColor,
+                    surfaceColor = surfaceColor,
+                    onEditClick = onNavigateToEditProfile
+                )
             }
 
             // Growth Garden Section (replaces boring bar charts with organic tree visualization)
@@ -425,7 +393,7 @@ private fun PremiumProfileHeader(
 // ============================================================================
 
 @Composable
-private fun PremiumHeroSection(
+internal fun PremiumHeroSection(
     displayName: String,
     title: String,
     bio: String,
@@ -740,7 +708,7 @@ private fun PremiumBetaPioneerBadge() {
 // ============================================================================
 
 @Composable
-private fun PremiumKeyMetricsRow(
+internal fun PremiumKeyMetricsRow(
     level: Int,
     streak: Int,
     wordsLearned: Int,
