@@ -82,6 +82,8 @@ data class HomeUiState(
     val journalEntriesThisWeek: Int = 0,
     val wordsLearnedThisWeek: Int = 0,
     val daysActiveThisWeek: Int = 0,
+    val mindfulMinutes: Int = 0,
+    val moodHistory: List<Float> = emptyList(),
     val isLoading: Boolean = true,
     val hasLoadError: Boolean = false,
     val error: String? = null,
@@ -225,6 +227,21 @@ class HomeViewModel @Inject constructor(
                 val weeklyJournalEntries = (args.getOrNull(1) as? List<*>)?.filterIsInstance<JournalEntryEntity>() ?: emptyList()
                 val weeklyLearnedWords = args.getOrNull(2) as? Int ?: 0
                 val streakHistory = (args.getOrNull(3) as? List<*>)?.filterIsInstance<StreakHistoryEntity>() ?: emptyList()
+
+                // Calculate mood history for the trend chart (last 7 days)
+                val moodHistory = weeklyJournalEntries
+                    .sortedBy { it.createdAt }
+                    .takeLast(7)
+                    .map { entry ->
+                        when (entry.mood.lowercase()) {
+                            "blessed", "happy", "excited", "energetic" -> 5f
+                            "good", "pleasant", "content" -> 4f
+                            "neutral", "okay", "stable" -> 3f
+                            "meh", "bored", "tired", "confused" -> 2f
+                            "bad", "sad", "angry", "stressed" -> 1f
+                            else -> 3f
+                        }
+                    }
                 val todayJournalEntries = (args.getOrNull(4) as? List<*>)?.filterIsInstance<JournalEntryEntity>() ?: emptyList()
                 val dualStreak = args.getOrNull(5) as? DualStreakStatus ?: DualStreakStatus.empty()
                 val aiProofMode = args.getOrNull(6) as? Boolean ?: false
@@ -261,6 +278,8 @@ class HomeViewModel @Inject constructor(
                     journalEntriesThisWeek = weeklyJournalEntries.size,
                     wordsLearnedThisWeek = weeklyLearnedWords,
                     daysActiveThisWeek = daysActiveThisWeek,
+                    mindfulMinutes = (profile?.totalReflectionTime ?: 0L).toInt() / 60,
+                    moodHistory = moodHistory,
                     journaledToday = journaledToday,
                     todayEntryMood = todayMood,
                     todayEntryPreview = todayPreview,
