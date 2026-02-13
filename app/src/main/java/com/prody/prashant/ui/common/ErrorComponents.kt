@@ -40,6 +40,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.prody.prashant.domain.common.ErrorType
 import com.prody.prashant.domain.common.Result
+import com.prody.prashant.domain.error.UiErrorHandling
+import com.prody.prashant.domain.error.toHandlingPolicy
 
 /**
  * Displays an error dialog with optional retry functionality.
@@ -72,7 +74,7 @@ fun ErrorDialog(
                     text = error.userMessage,
                     style = MaterialTheme.typography.bodyMedium
                 )
-                if (error.errorType.isRetryable) {
+                if (error.errorType.toHandlingPolicy().uiHandling == UiErrorHandling.INLINE_RETRY) {
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = "You can try again.",
@@ -83,7 +85,7 @@ fun ErrorDialog(
             }
         },
         confirmButton = {
-            if (onRetry != null && error.errorType.isRetryable) {
+            if (onRetry != null && error.errorType.toHandlingPolicy().uiHandling == UiErrorHandling.INLINE_RETRY) {
                 Button(onClick = {
                     onDismiss()
                     onRetry()
@@ -103,7 +105,7 @@ fun ErrorDialog(
             }
         },
         dismissButton = {
-            if (onRetry != null && error.errorType.isRetryable) {
+            if (onRetry != null && error.errorType.toHandlingPolicy().uiHandling == UiErrorHandling.INLINE_RETRY) {
                 TextButton(onClick = onDismiss) {
                     Text("Cancel")
                 }
@@ -150,7 +152,7 @@ fun ErrorCard(
                 color = MaterialTheme.colorScheme.onErrorContainer,
                 textAlign = TextAlign.Center
             )
-            if (onRetry != null && error.errorType.isRetryable) {
+            if (onRetry != null && error.errorType.toHandlingPolicy().uiHandling == UiErrorHandling.INLINE_RETRY) {
                 Spacer(modifier = Modifier.height(12.dp))
                 OutlinedButton(
                     onClick = onRetry,
@@ -240,7 +242,7 @@ fun ErrorSnackbar(
     LaunchedEffect(error) {
         val result = snackbarHostState.showSnackbar(
             message = error.userMessage,
-            actionLabel = if (onRetry != null && error.errorType.isRetryable) "Retry" else null,
+            actionLabel = if (onRetry != null && error.errorType.toHandlingPolicy().uiHandling == UiErrorHandling.INLINE_RETRY) "Retry" else null,
             duration = SnackbarDuration.Long
         )
         when (result) {
@@ -287,7 +289,7 @@ fun ErrorScreen(
             textAlign = TextAlign.Center
         )
         Spacer(modifier = Modifier.height(32.dp))
-        if (onRetry != null && error.errorType.isRetryable) {
+        if (onRetry != null && error.errorType.toHandlingPolicy().uiHandling == UiErrorHandling.INLINE_RETRY) {
             Button(onClick = onRetry) {
                 Icon(
                     imageVector = ProdyIcons.Refresh,
