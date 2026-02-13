@@ -258,6 +258,23 @@ Please use [GitHub Issues](https://github.com/prashantchataut/prody/issues) for:
 
 ### FAQ
 
+
+### Secure Storage Prerequisites
+
+Prody requires encrypted local storage for sensitive features (journal, Haven sessions, and future messages). Supported setups:
+
+- Android 7.0+ (API 24+) with Android Keystore availability.
+- Working cryptographic provider support for `AES256_GCM` master keys.
+- Device lock screen credentials configured (PIN/pattern/password) for reliable keystore operation.
+- No enterprise/device policy that disables keystore-backed key generation.
+
+If secure database initialization fails, Prody now blocks sensitive features and shows a recovery flow instead of creating an unencrypted fallback database. The in-app remediation guides users to:
+
+1. Confirm device security settings (lock screen + keystore support).
+2. Restart app after restoring security prerequisites.
+3. Clear app storage if keystore state is corrupted.
+4. Reinstall/update app or OS when cryptographic providers are unavailable.
+
 **Q: Does Buddha work offline?**
 A: Yes, previously cached responses work offline. New journal entries queue for AI response when online.
 

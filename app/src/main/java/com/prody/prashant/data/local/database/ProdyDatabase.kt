@@ -2,6 +2,7 @@ package com.prody.prashant.data.local.database
 
 import android.content.Context
 import android.util.Log
+import androidx.annotation.VisibleForTesting
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -12,6 +13,7 @@ import com.prody.prashant.data.local.entity.*
 import com.prody.prashant.data.security.SecureDatabaseManager
 import kotlinx.coroutines.runBlocking
 import net.sqlcipher.database.SupportFactory
+import java.util.UUID
 
 /**
  * Prody Room Database
@@ -290,8 +292,26 @@ abstract class ProdyDatabase : RoomDatabase() {
         private const val TAG = "ProdyDatabase"
         const val DATABASE_NAME = "prody_database"
 
+        /**
+         * Security hard-stop guard used when secure database initialization fails.
+         * Sensitive features should read this state and remain disabled until remediation succeeds.
+         */
+        @Volatile
+        var secureDatabaseStatus: SecureDatabaseStatus = SecureDatabaseStatus.Available
+            private set
+
+        fun isSensitiveFeaturesBlocked(): Boolean = secureDatabaseStatus is SecureDatabaseStatus.Blocked
+
+        fun guidedRemediation(): List<String> =
+            (secureDatabaseStatus as? SecureDatabaseStatus.Blocked)?.remediationSteps.orEmpty()
+
         @Volatile
         private var INSTANCE: ProdyDatabase? = null
+
+        @VisibleForTesting
+        internal var secureContextInitializer: (Context) -> SecureContext = { context ->
+            defaultSecureContextInitializer(context)
+        }
 
         val MIGRATION_4_5: Migration = object : Migration(4, 5) {
             override fun migrate(db: SupportSQLiteDatabase) {
@@ -1699,58 +1719,126 @@ abstract class ProdyDatabase : RoomDatabase() {
         }
 
         private fun buildDatabase(context: Context): ProdyDatabase {
+            val secureContext = initializeSecureContext(context)
+            secureDatabaseStatus = SecureDatabaseStatus.Available
+
+            return Room.databaseBuilder(
+                context.applicationContext,
+                ProdyDatabase::class.java,
+                DATABASE_NAME
+            )
+                .openHelperFactory(secureContext.supportFactory)
+                .addMigrations(
+                    MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8,
+                    MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12,
+                    MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16,
+                    MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20
+                )
+                .fallbackToDestructiveMigration()
+                .addCallback(SecureDatabaseCallback(context, secureContext.manager))
+                .build()
+        }
+
+        private fun initializeSecureContext(context: Context): SecureContext {
             return try {
-                // Initialize secure database manager synchronously
-                val masterKey = androidx.security.crypto.MasterKey.Builder(context)
-                    .setKeyScheme(androidx.security.crypto.MasterKey.KeyScheme.AES256_GCM)
-                    .build()
-
-                val encryptedPrefs = androidx.security.crypto.EncryptedSharedPreferences.create(
-                    context,
-                    "prody_encrypted_shared_prefs",
-                    masterKey,
-                    androidx.security.crypto.EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-                    androidx.security.crypto.EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-                )
-
-                val secureDbManager = SecureDatabaseManager(context, encryptedPrefs)
-                
-                // Create SQLCipher support factory with secure passphrase synchronously
-                // This avoids runBlocking which can block the main thread during Room initialization
-                val supportFactory = secureDbManager.createSQLCipherSupportFactorySync()
-                
-                Room.databaseBuilder(
-                    context.applicationContext,
-                    ProdyDatabase::class.java,
-                    DATABASE_NAME
-                )
-                    .openHelperFactory(supportFactory)
-                    .addMigrations(
-                        MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8,
-                        MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12,
-                        MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16,
-                        MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20
-                    )
-                    .fallbackToDestructiveMigration()
-                    .addCallback(SecureDatabaseCallback(context, secureDbManager))
-                    .build()
+                secureContextInitializer(context)
             } catch (e: Exception) {
-                Log.e(TAG, "Failed to create secure database, falling back to unencrypted", e)
-                // Fallback to unencrypted database for development
-                Room.databaseBuilder(
-                    context.applicationContext,
-                    ProdyDatabase::class.java,
-                    DATABASE_NAME
+                val correlationId = UUID.randomUUID().toString()
+                val remediation = listOf(
+                    "Use a device with Android Keystore support (hardware-backed when available).",
+                    "Ensure lock screen credentials are configured and retry the app.",
+                    "Clear app storage and relaunch if the keystore state is corrupted.",
+                    "Reinstall/update the app or OS if keystore providers are unavailable."
                 )
-                    .addMigrations(
-                        MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8,
-                        MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12,
-                        MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16,
-                        MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20
+                SecurityEventLogger.logSecurityEvent(
+                    eventType = "secure_db_init_failed",
+                    severity = "critical",
+                    correlationId = correlationId,
+                    throwable = e,
+                    extra = mapOf(
+                        "database" to DATABASE_NAME,
+                        "sdkInt" to android.os.Build.VERSION.SDK_INT.toString(),
+                        "manufacturer" to android.os.Build.MANUFACTURER,
+                        "model" to android.os.Build.MODEL
                     )
-                    .fallbackToDestructiveMigration()
-                    .addCallback(DatabaseCallback(context))
-                    .build()
+                )
+                secureDatabaseStatus = SecureDatabaseStatus.Blocked(
+                    reason = "Secure local storage is unavailable.",
+                    remediationSteps = remediation,
+                    correlationId = correlationId
+                )
+                throw SecureDatabaseInitializationException(
+                    status = secureDatabaseStatus,
+                    cause = e
+                )
+            }
+        }
+
+        @VisibleForTesting
+        internal fun resetForTests() {
+            INSTANCE = null
+            secureDatabaseStatus = SecureDatabaseStatus.Available
+            secureContextInitializer = { context -> defaultSecureContextInitializer(context) }
+        }
+
+        private fun defaultSecureContextInitializer(context: Context): SecureContext {
+            val masterKey = androidx.security.crypto.MasterKey.Builder(context)
+                .setKeyScheme(androidx.security.crypto.MasterKey.KeyScheme.AES256_GCM)
+                .build()
+
+            val encryptedPrefs = androidx.security.crypto.EncryptedSharedPreferences.create(
+                context,
+                "prody_encrypted_shared_prefs",
+                masterKey,
+                androidx.security.crypto.EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                androidx.security.crypto.EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+            )
+
+            val secureDbManager = SecureDatabaseManager(context, encryptedPrefs)
+            val supportFactory = secureDbManager.createSQLCipherSupportFactorySync()
+            return SecureContext(secureDbManager, supportFactory)
+        }
+
+        private data class SecureContext(
+            val manager: SecureDatabaseManager,
+            val supportFactory: SupportFactory
+        )
+
+        sealed class SecureDatabaseStatus {
+            data object Available : SecureDatabaseStatus()
+            data class Blocked(
+                val reason: String,
+                val remediationSteps: List<String>,
+                val correlationId: String
+            ) : SecureDatabaseStatus()
+        }
+
+        class SecureDatabaseInitializationException(
+            val status: SecureDatabaseStatus,
+            cause: Throwable
+        ) : IllegalStateException("Secure database initialization failed", cause)
+
+        private object SecurityEventLogger {
+            private const val SECURITY_TAG = "ProdySecurity"
+
+            fun logSecurityEvent(
+                eventType: String,
+                severity: String,
+                correlationId: String,
+                throwable: Throwable,
+                extra: Map<String, String>
+            ) {
+                val payload = buildString {
+                    append("event=").append(eventType)
+                    append(" severity=").append(severity)
+                    append(" correlationId=").append(correlationId)
+                    append(" errorType=").append(throwable::class.java.simpleName)
+                    append(" message=").append(throwable.message ?: "unknown")
+                    extra.forEach { (key, value) ->
+                        append(" ").append(key).append("=").append(value)
+                    }
+                }
+                Log.e(SECURITY_TAG, payload, throwable)
             }
         }
 
