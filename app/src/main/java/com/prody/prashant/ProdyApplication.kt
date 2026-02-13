@@ -9,6 +9,8 @@ import android.util.Log
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import com.prody.prashant.debug.CrashHandler
+import com.prody.prashant.data.local.database.integrity.DatabaseIntegrityMonitor
+import com.prody.prashant.data.local.database.integrity.DatabaseIntegrityStartupTask
 import com.prody.prashant.domain.gamification.GamificationService
 import com.prody.prashant.domain.haven.WitnessModeManager
 import com.prody.prashant.BuildConfig
@@ -155,6 +157,9 @@ class ProdyApplication : Application(), Configuration.Provider {
     }
 
     private fun initializeApp() {
+        DatabaseIntegrityMonitor.initialize(this)
+        DatabaseIntegrityStartupTask.schedule(this, "application_startup")
+
         // Launch on a background thread to avoid blocking startup
         applicationScope.launch {
             try {

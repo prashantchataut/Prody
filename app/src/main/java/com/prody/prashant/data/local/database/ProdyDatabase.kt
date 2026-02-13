@@ -9,8 +9,12 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.prody.prashant.data.local.dao.*
 import com.prody.prashant.data.local.entity.*
+import com.prody.prashant.data.local.database.integrity.DatabaseIntegrityStartupTask
 import com.prody.prashant.data.security.SecureDatabaseManager
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import net.sqlcipher.database.SupportFactory
 
 /**
@@ -1770,11 +1774,13 @@ abstract class ProdyDatabase : RoomDatabase() {
             override fun onOpen(db: SupportSQLiteDatabase) {
                 super.onOpen(db)
                 Log.d(TAG, "Database opened")
+                DatabaseIntegrityStartupTask.schedule(context, "database_open")
             }
 
             override fun onDestructiveMigration(db: SupportSQLiteDatabase) {
                 super.onDestructiveMigration(db)
                 Log.w(TAG, "Destructive migration performed - re-seeding database")
+                DatabaseIntegrityStartupTask.schedule(context, "destructive_migration")
                 // Re-seed the database after destructive migration
                 INSTANCE?.let { DatabaseSeeder.seedDatabase(it) }
             }
@@ -1787,6 +1793,8 @@ abstract class ProdyDatabase : RoomDatabase() {
             private val context: Context,
             private val secureDbManager: SecureDatabaseManager
         ) : Callback() {
+            private val callbackScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
             override fun onCreate(db: SupportSQLiteDatabase) {
                 super.onCreate(db)
                 Log.d(TAG, "Secure database created successfully - initiating data seeding")
@@ -1799,27 +1807,17 @@ abstract class ProdyDatabase : RoomDatabase() {
             override fun onOpen(db: SupportSQLiteDatabase) {
                 super.onOpen(db)
                 Log.d(TAG, "Secure database opened")
-                
-                // Verify database integrity
-                runBlocking {
-                    val databaseFile = context.getDatabasePath(DATABASE_NAME)
-                    val isIntegrityValid = secureDbManager.verifyDatabaseIntegrity(databaseFile)
-                    
-                    if (!isIntegrityValid) {
-                        Log.e(TAG, "Database integrity check failed!")
-                        // Handle integrity failure appropriately
-                    }
-                }
+                DatabaseIntegrityStartupTask.schedule(context, "secure_database_open")
             }
 
             override fun onDestructiveMigration(db: SupportSQLiteDatabase) {
                 super.onDestructiveMigration(db)
                 Log.w(TAG, "Secure database destructive migration performed - data was cleared and re-seeding")
-                
-                // Clear encryption data after destructive migration
-                runBlocking {
+
+                callbackScope.launch {
                     secureDbManager.clearDatabaseEncryption()
                 }
+                DatabaseIntegrityStartupTask.schedule(context, "secure_destructive_migration")
                 // Re-seed the database after destructive migration
                 INSTANCE?.let { DatabaseSeeder.seedDatabase(it) }
             }
