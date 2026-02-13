@@ -61,11 +61,11 @@ data class HomeUiState(
     val userName: String = "Growth Seeker",
     val currentStreak: Int = 0,
     val totalPoints: Int = 0,
-    val dailyQuote: String = "The obstacle is the way.",
-    val dailyQuoteAuthor: String = "Marcus Aurelius",
-    val wordOfTheDay: String = "Serendipity",
-    val wordDefinition: String = "The occurrence of events by chance in a happy or beneficial way",
-    val wordPronunciation: String = "ser-uhn-DIP-i-tee",
+    val dailyQuote: String = "",
+    val dailyQuoteAuthor: String = "",
+    val wordOfTheDay: String = "",
+    val wordDefinition: String = "",
+    val wordPronunciation: String = "",
     val wordId: Long = 0,
     val dailyProverb: String = "",
     val proverbMeaning: String = "",
@@ -131,7 +131,21 @@ data class HomeUiState(
     val userArchetype: UserArchetype = UserArchetype.EXPLORER,
     val trustLevel: TrustLevel = TrustLevel.NEW,
     val isUserStruggling: Boolean = false,
-    val isUserThriving: Boolean = false
+    val isUserThriving: Boolean = false,
+    val aggregateState: HomeAggregateState = HomeAggregateState()
+)
+
+data class HomeAggregateState(
+    val journalEntries: Int = 0,
+    val streakDays: Int = 0,
+    val badges: List<HomeBadgeProgress> = emptyList(),
+    val recommendations: List<String> = emptyList(),
+    val hasData: Boolean = false
+)
+
+data class HomeBadgeProgress(
+    val id: String,
+    val progress: Float
 )
 
 private data class DailyContent(
@@ -266,6 +280,14 @@ class HomeViewModel @Inject constructor(
                     todayEntryPreview = todayPreview,
                     dualStreakStatus = dualStreak,
                     buddhaWisdomProofInfo = _uiState.value.buddhaWisdomProofInfo.copy(isEnabled = aiProofMode),
+                    aggregateState = buildAggregateState(
+                        journalCount = weeklyJournalEntries.size,
+                        streakDays = profile?.currentStreak ?: 0,
+                        wordsLearned = weeklyLearnedWords,
+                        hasQuote = !dailyContent.quote?.content.isNullOrBlank(),
+                        hasWord = !dailyContent.word?.word.isNullOrBlank(),
+                        hasJournalToday = journaledToday
+                    ),
                     isLoading = false // <-- Critical: Signal that loading is complete.
                 )
             }.catch { e ->
@@ -290,6 +312,47 @@ class HomeViewModel @Inject constructor(
             launch { checkAiConfiguration() }
             launch { loadSoulLayerContent() }
         }
+    }
+
+    fun retryLoad() {
+        _uiState.update {
+            it.copy(
+                isLoading = true,
+                hasLoadError = false,
+                error = null
+            )
+        }
+        loadInitialData()
+    }
+
+    private fun buildAggregateState(
+        journalCount: Int,
+        streakDays: Int,
+        wordsLearned: Int,
+        hasQuote: Boolean,
+        hasWord: Boolean,
+        hasJournalToday: Boolean
+    ): HomeAggregateState {
+        val badgeProgress = listOf(
+            HomeBadgeProgress(id = "streak", progress = (streakDays / 30f).coerceIn(0f, 1f)),
+            HomeBadgeProgress(id = "journal", progress = (journalCount / 7f).coerceIn(0f, 1f)),
+            HomeBadgeProgress(id = "vocabulary", progress = (wordsLearned / 14f).coerceIn(0f, 1f))
+        )
+
+        val recommendations = buildList {
+            if (!hasJournalToday) add("Write a short journal entry to keep your reflection streak alive.")
+            if (!hasWord) add("Review a vocabulary word to strengthen your wisdom streak.")
+            if (!hasQuote) add("Open Daily Wisdom for today's quote and reflection prompt.")
+            if (isEmpty()) add("You're on track today. Explore Haven for a mindful reset.")
+        }
+
+        return HomeAggregateState(
+            journalEntries = journalCount,
+            streakDays = streakDays,
+            badges = badgeProgress,
+            recommendations = recommendations,
+            hasData = journalCount > 0 || hasWord || hasQuote || streakDays > 0
+        )
     }
 
     private suspend fun fetchDailyContentConcurrently(): DailyContent = coroutineScope {
