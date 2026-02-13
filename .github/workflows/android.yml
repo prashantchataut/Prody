@@ -23,16 +23,16 @@ jobs:
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
     - name: Set up JDK 17
-      uses: actions/setup-java@3a4f6d1af2337a0bc9e9914f605751996f896541 # v4.7.0
+      uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4.8.0
       with:
         java-version: '17'
         distribution: 'temurin'
 
     - name: Validate Gradle Wrapper
-      uses: gradle/actions/wrapper-validation@0bd663587b120c909670737a28892410a7674261 # v4.1.0
+      uses: gradle/actions/wrapper-validation@ed408507eac070d1f99cc633dbcf757c94c7933a # v4
 
     - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@0bd663587b120c909670737a28892410a7674261 # v4.1.0
+      uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4
       with:
         gradle-home-cache-cleanup: false
         cache-read-only: false
@@ -149,16 +149,16 @@ jobs:
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
     - name: Set up JDK 17
-      uses: actions/setup-java@3a4f6d1af2337a0bc9e9914f605751996f896541 # v4.7.0
+      uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4.8.0
       with:
         java-version: '17'
         distribution: 'temurin'
 
     - name: Validate Gradle Wrapper
-      uses: gradle/actions/wrapper-validation@0bd663587b120c909670737a28892410a7674261 # v4.1.0
+      uses: gradle/actions/wrapper-validation@ed408507eac070d1f99cc633dbcf757c94c7933a # v4
 
     - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@0bd663587b120c909670737a28892410a7674261 # v4.1.0
+      uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4
       with:
         gradle-home-cache-cleanup: false
         cache-read-only: false
@@ -188,16 +188,16 @@ jobs:
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
     - name: Set up JDK 17
-      uses: actions/setup-java@3a4f6d1af2337a0bc9e9914f605751996f896541 # v4.7.0
+      uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4.8.0
       with:
         java-version: '17'
         distribution: 'temurin'
 
     - name: Validate Gradle Wrapper
-      uses: gradle/actions/wrapper-validation@0bd663587b120c909670737a28892410a7674261 # v4.1.0
+      uses: gradle/actions/wrapper-validation@ed408507eac070d1f99cc633dbcf757c94c7933a # v4
 
     - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@0bd663587b120c909670737a28892410a7674261 # v4.1.0
+      uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4
       with:
         gradle-home-cache-cleanup: false
         cache-read-only: false
