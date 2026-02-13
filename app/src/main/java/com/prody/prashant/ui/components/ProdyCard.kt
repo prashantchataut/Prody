@@ -33,12 +33,11 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import com.prody.prashant.util.rememberProdyHaptic
 import com.prody.prashant.ui.theme.CardShape
 import com.prody.prashant.ui.theme.ElevatedCardShape
 import com.prody.prashant.ui.theme.FeaturedCardShape
-import com.prody.prashant.ui.theme.ProdyTokens
+import com.prody.prashant.ui.theme.ProdyDesignTokens
 
 /**
  * Prody Design System - Card Components (Phase 2 Redesign)
@@ -225,7 +224,7 @@ fun ProdyOutlinedCard(
     shape: Shape = CardShape,
     backgroundColor: Color = MaterialTheme.colorScheme.surface,
     borderColor: Color = MaterialTheme.colorScheme.outlineVariant,
-    borderWidth: Dp = 1.dp,
+    borderWidth: Dp = ProdyDesignTokens.Elevation.low,
     contentDescription: String? = null,
     content: @Composable BoxScope.() -> Unit
 ) {
@@ -301,9 +300,9 @@ fun ProdyPremiumCard(
     onClick: (() -> Unit)? = null,
     backgroundColor: Color = MaterialTheme.colorScheme.surface,
     contentColor: Color = MaterialTheme.colorScheme.onSurface,
-    shape: Shape = RoundedCornerShape(ProdyTokens.Radius.lg),
+    shape: Shape = RoundedCornerShape(ProdyDesignTokens.Radius.card),
     borderColor: Color? = null,
-    borderWidth: Dp = 1.dp,
+    borderWidth: Dp = ProdyDesignTokens.Elevation.low,
     contentDescription: String? = null,
     content: @Composable ColumnScope.() -> Unit
 ) {
@@ -351,7 +350,7 @@ fun ProdyPremiumCard(
         shape = shape,
         color = backgroundColor,
         contentColor = contentColor,
-        shadowElevation = 0.dp
+        shadowElevation = ProdyDesignTokens.Elevation.none
     ) {
         Column(content = content)
     }
@@ -379,7 +378,7 @@ fun ProdyPremiumGradientCard(
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
     contentColor: Color = Color.White,
-    shape: Shape = RoundedCornerShape(ProdyTokens.Radius.lg),
+    shape: Shape = RoundedCornerShape(ProdyDesignTokens.Radius.card),
     contentDescription: String? = null,
     content: @Composable ColumnScope.() -> Unit
 ) {
@@ -423,7 +422,7 @@ fun ProdyPremiumGradientCard(
             }
     ) {
         Column(
-            modifier = Modifier.padding(ProdyTokens.Spacing.lg),
+            modifier = Modifier.padding(ProdyDesignTokens.Spacing.medium),
             content = content
         )
     }
@@ -471,7 +470,7 @@ fun ProdyNotificationCard(
     Box(
         modifier = modifier
             .scale(scale)
-            .clip(RoundedCornerShape(ProdyTokens.Radius.lg))
+            .clip(RoundedCornerShape(ProdyDesignTokens.Radius.card))
             .background(backgroundColor)
             .then(
                 if (onClick != null) {
@@ -502,24 +501,24 @@ fun ProdyNotificationCard(
             Box(
                 modifier = Modifier
                     .align(androidx.compose.ui.Alignment.CenterStart)
-                    .padding(start = 0.dp)
+                    .padding(start = ProdyDesignTokens.Spacing.none)
                     .background(
                         color = accentColor,
                         shape = RoundedCornerShape(
-                            topStart = ProdyTokens.Radius.lg,
-                            bottomStart = ProdyTokens.Radius.lg
+                            topStart = ProdyDesignTokens.Radius.card,
+                            bottomStart = ProdyDesignTokens.Radius.card
                         )
                     )
-                    .padding(horizontal = 4.dp)
+                    .padding(horizontal = ProdyDesignTokens.Spacing.extraSmall)
             )
         }
 
         Box(
             modifier = Modifier.padding(
-                start = ProdyTokens.Spacing.md,
-                top = ProdyTokens.Spacing.lg,
-                end = ProdyTokens.Spacing.lg,
-                bottom = ProdyTokens.Spacing.lg
+                start = ProdyDesignTokens.Spacing.medium,
+                top = ProdyDesignTokens.Spacing.medium,
+                end = ProdyDesignTokens.Spacing.medium,
+                bottom = ProdyDesignTokens.Spacing.medium
             ),
             content = content
         )
