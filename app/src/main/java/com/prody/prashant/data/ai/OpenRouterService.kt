@@ -1,6 +1,9 @@
 package com.prody.prashant.data.ai
 
 import com.prody.prashant.BuildConfig
+import com.prody.prashant.data.monitoring.PerformanceMonitor
+import com.prody.prashant.data.security.FallbackTransportMode
+import com.prody.prashant.data.security.PinningPolicyManager
 import com.prody.prashant.domain.model.Mood
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import kotlinx.serialization.SerialName
@@ -16,6 +19,7 @@ import retrofit2.http.Headers
 import retrofit2.http.POST
 import java.io.IOException
 import java.util.concurrent.TimeUnit
+import javax.net.ssl.SSLPeerUnverifiedException
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -125,7 +129,10 @@ Be specific to what they wrote - reference details from their entry."""
  * Supports multiple AI models through OpenRouter's unified API.
  */
 @Singleton
-class OpenRouterService @Inject constructor() {
+class OpenRouterService @Inject constructor(
+    private val pinningPolicyManager: PinningPolicyManager,
+    private val performanceMonitor: PerformanceMonitor
+) {
 
     companion object {
         // Cost-effective models that work well for Buddha responses
@@ -147,11 +154,8 @@ class OpenRouterService @Inject constructor() {
         encodeDefaults = true
     }
 
-    private val client: OkHttpClient by lazy {
-        OkHttpClient.Builder()
-            .connectTimeout(30, TimeUnit.SECONDS)
-            .readTimeout(60, TimeUnit.SECONDS)
-            .writeTimeout(30, TimeUnit.SECONDS)
+    private val pinnedClient: OkHttpClient by lazy {
+        baseClientBuilder()
             .certificatePinner(
                 CertificatePinner.Builder()
                     .add("openrouter.ai", "sha256/2ETytvFJ0SYiiaUyT3xMrJ3Yuen/K58SNiB87YChuRg=")
@@ -159,6 +163,21 @@ class OpenRouterService @Inject constructor() {
                     .add("openrouter.ai", "sha256/mEflZT5enoR1FuXLgYYGqnVEoZvmf9c2bVBpiOjYQ0c=")
                     .build()
             )
+            .build()
+    }
+
+    private val fallbackClient: OkHttpClient by lazy {
+        baseClientBuilder().build()
+    }
+
+    private val pinnedApi: OpenRouterApi by lazy { createApi(pinnedClient) }
+    private val fallbackApi: OpenRouterApi by lazy { createApi(fallbackClient) }
+
+    private fun baseClientBuilder(): OkHttpClient.Builder {
+        return OkHttpClient.Builder()
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(60, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
             .addInterceptor { chain ->
                 val request = chain.request().newBuilder()
                     .addHeader("Authorization", "Bearer ${BuildConfig.OPENROUTER_API_KEY}")
@@ -168,24 +187,39 @@ class OpenRouterService @Inject constructor() {
                 chain.proceed(request)
             }
             .addInterceptor(HttpLoggingInterceptor().apply {
-                level = if (BuildConfig.DEBUG) {
-                    HttpLoggingInterceptor.Level.BODY
-                } else {
-                    HttpLoggingInterceptor.Level.NONE
-                }
-                // Security: Redact Authorization header to prevent API key leak in logs
+                level = if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BODY else HttpLoggingInterceptor.Level.NONE
                 redactHeader("Authorization")
             })
-            .build()
     }
 
-    private val api: OpenRouterApi by lazy {
-        Retrofit.Builder()
+    private fun createApi(client: OkHttpClient): OpenRouterApi {
+        return Retrofit.Builder()
             .baseUrl("https://openrouter.ai/")
             .client(client)
             .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
             .build()
             .create(OpenRouterApi::class.java)
+    }
+
+    private suspend fun activeApi(): OpenRouterApi {
+        val policy = pinningPolicyManager.refreshPolicyIfNeeded()
+        return if (policy.pinningEnabled) pinnedApi else fallbackApi
+    }
+
+    private fun shouldAttemptFallback(exception: Exception): Boolean {
+        if (exception !is SSLPeerUnverifiedException) return false
+        val policy = pinningPolicyManager.getCurrentPolicy()
+        if (!policy.allowAutomaticFallbackOnPinFailure) {
+            return false
+        }
+
+        performanceMonitor.recordTlsPinMismatch("openrouter.ai", exception)
+        if (policy.fallbackTransportMode == FallbackTransportMode.SYSTEM_CA_ONLY) {
+            pinningPolicyManager.activateTemporaryFallback("pin_mismatch")
+            return true
+        }
+
+        return false
     }
 
     /**
@@ -225,7 +259,15 @@ class OpenRouterService @Inject constructor() {
                 maxTokens = 800
             )
 
-            val response = api.chatCompletions(request)
+            val response = runCatching {
+                activeApi().chatCompletions(request)
+            }.recoverCatching { error ->
+                if (error is Exception && shouldAttemptFallback(error)) {
+                    fallbackApi.chatCompletions(request)
+                } else {
+                    throw error
+                }
+            }.getOrThrow()
             val responseContent = response.choices.firstOrNull()?.message?.content
 
             if (responseContent != null && responseContent.isNotBlank()) {
@@ -265,7 +307,15 @@ class OpenRouterService @Inject constructor() {
                 maxTokens = 1000
             )
 
-            val response = api.chatCompletions(request)
+            val response = runCatching {
+                activeApi().chatCompletions(request)
+            }.recoverCatching { error ->
+                if (error is Exception && shouldAttemptFallback(error)) {
+                    fallbackApi.chatCompletions(request)
+                } else {
+                    throw error
+                }
+            }.getOrThrow()
             val content = response.choices.firstOrNull()?.message?.content
 
             if (content != null && content.isNotBlank()) {
