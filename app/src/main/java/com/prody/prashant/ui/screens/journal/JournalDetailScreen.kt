@@ -43,6 +43,7 @@ import com.prody.prashant.domain.model.Mood
 import com.prody.prashant.ui.components.ContextualAiHint
 import com.prody.prashant.ui.components.ProdyCard
 import com.prody.prashant.ui.theme.*
+import com.prody.prashant.util.SecureScreen
 import kotlinx.coroutines.delay
 import org.json.JSONArray
 import java.text.SimpleDateFormat
@@ -58,16 +59,9 @@ fun JournalDetailScreen(
     viewModel: JournalDetailViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val context = LocalContext.current
 
     // Security: Prevent screenshots and screen recordings of private journal content
-    DisposableEffect(Unit) {
-        val window = (context as? Activity)?.window
-        window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
-        onDispose {
-            window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
-        }
-    }
+    SecureScreen()
 
     LaunchedEffect(entryId) {
         viewModel.loadEntry(entryId)

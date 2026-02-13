@@ -30,6 +30,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.R
 import com.prody.prashant.domain.haven.ExerciseType
 import com.prody.prashant.ui.theme.*
+import com.prody.prashant.util.SecureScreen
 import kotlinx.coroutines.delay
 
 /**
@@ -50,16 +51,8 @@ fun HavenExerciseScreen(
     viewModel: HavenViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.exerciseState.collectAsStateWithLifecycle()
-    val context = androidx.compose.ui.platform.LocalContext.current
-
     // Security: Prevent screenshots and screen recordings while in a therapeutic exercise
-    DisposableEffect(Unit) {
-        val window = (context as? android.app.Activity)?.window
-        window?.addFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)
-        onDispose {
-            window?.clearFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)
-        }
-    }
+    SecureScreen()
 
     // Start exercise when screen loads
     LaunchedEffect(exerciseType) {
