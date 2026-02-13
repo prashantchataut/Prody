@@ -263,3 +263,39 @@ jobs:
         name: test-reports
         path: app/build/reports/tests/
         retention-days: 7
+
+  performance:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v4
+
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+
+    - name: Run macrobenchmark for top destinations
+      uses: reactivecircus/android-emulator-runner@v2
+      with:
+        api-level: 31
+        arch: x86_64
+        script: ./gradlew :baselineprofile:connectedAndroidTest --stacktrace --no-configuration-cache
+
+    - name: Gate regressions in frame and recomposition metrics
+      run: |
+        BENCHMARK_REPORT=$(find baselineprofile/build/outputs -name benchmarkData.json | head -n 1)
+        if [ -z "$BENCHMARK_REPORT" ]; then
+          echo "benchmarkData.json not found"
+          exit 2
+        fi
+        python3 scripts/ci/check_perf_regressions.py "$BENCHMARK_REPORT" config/perf/thresholds.json

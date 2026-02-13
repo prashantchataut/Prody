@@ -45,8 +45,11 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -62,7 +65,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
@@ -197,23 +199,40 @@ fun ProdyApp(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
-    // Bottom navigation items
-    val bottomNavItems = listOf(
-        BottomNavItem.Home,
-        BottomNavItem.Journal,
-        BottomNavItem.Haven,
-        BottomNavItem.Stats,
-        BottomNavItem.Profile
-    )
+    val bottomNavModels = remember {
+        listOf(
+            BottomNavItem.Home,
+            BottomNavItem.Journal,
+            BottomNavItem.Haven,
+            BottomNavItem.Stats,
+            BottomNavItem.Profile
+        ).map { BottomNavUiModel(it) }
+    }
 
-    // Determine if bottom nav should be shown (only on main tabs)
-    val showBottomBar = currentDestination?.route in listOf(
-        Screen.Home.route,
-        Screen.JournalList.route,
-        Screen.HavenHome.route,
-        Screen.Stats.route,
-        Screen.Profile.route
-    )
+    val navigateToRoute: (String) -> Unit = remember(navController) {
+        { route ->
+            navController.navigate(route) {
+                popUpTo(navController.graph.findStartDestination().id) {
+                    saveState = true
+                }
+                launchSingleTop = true
+                restoreState = true
+            }
+        }
+    }
+
+    val mainTabRoutes = remember {
+        setOf(
+            Screen.Home.route,
+            Screen.JournalList.route,
+            Screen.HavenHome.route,
+            Screen.Stats.route,
+            Screen.Profile.route
+        )
+    }
+    val showBottomBar by remember(currentDestination, mainTabRoutes) {
+        derivedStateOf { currentDestination?.route in mainTabRoutes }
+    }
 
     Scaffold(
         bottomBar = {
@@ -231,106 +250,11 @@ fun ProdyApp(
                     animationSpec = tween(200)
                 )
             ) {
-                NavigationBar {
-                    bottomNavItems.forEach { item ->
-                        val selected = currentDestination?.hierarchy?.any {
-                            it.route == item.route
-                        } == true
-
-                        if (item == BottomNavItem.Haven) {
-                            // Special Haven FAB Item
-                            NavigationBarItem(
-                                selected = selected,
-                                onClick = {
-                                    navController.navigate(item.route) {
-                                        popUpTo(navController.graph.findStartDestination().id) {
-                                            saveState = true
-                                        }
-                                        launchSingleTop = true
-                                        restoreState = true
-                                    }
-                                },
-                                icon = {
-                                    // Breathing Pulse Animation
-                                    val infiniteTransition = rememberInfiniteTransition(label = "HavenPulse")
-                                    val alpha by infiniteTransition.animateFloat(
-                                        initialValue = 0.6f,
-                                        targetValue = 1f,
-                                        animationSpec = infiniteRepeatable(
-                                            animation = tween(2000, easing = LinearEasing),
-                                            repeatMode = RepeatMode.Reverse
-                                        ),
-                                        label = "HavenAlpha"
-                                    )
-                                    val scale by infiniteTransition.animateFloat(
-                                        initialValue = 0.95f,
-                                        targetValue = 1.05f,
-                                        animationSpec = infiniteRepeatable(
-                                            animation = tween(2000, easing = LinearEasing),
-                                            repeatMode = RepeatMode.Reverse
-                                        ),
-                                        label = "HavenScale"
-                                    )
-
-                                    Box(
-                                        modifier = Modifier
-                                            .size(56.dp) // Larger than standard icon
-                                            .scale(scale)
-                                            .clip(CircleShape)
-                                            .background(
-                                                androidx.compose.ui.graphics.Brush.verticalGradient(
-                                                    colors = listOf(
-                                                        com.prody.prashant.ui.theme.HavenBubbleLight,
-                                                        com.prody.prashant.ui.theme.HavenBubbleLight.copy(alpha = 0.8f)
-                                                    )
-                                                )
-                                            )
-                                            .alpha(if (selected) 1f else alpha), // Pulse when not selected (waiting)
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Icon(
-                                            imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
-                                            contentDescription = null,
-                                            tint = com.prody.prashant.ui.theme.HavenTextLight,
-                                            modifier = Modifier.size(28.dp)
-                                        )
-                                    }
-                                },
-                                label = { /* No label for FAB look */ },
-                                colors = NavigationBarItemDefaults.colors(
-                                    indicatorColor = Color.Transparent // Disable standard indicator
-                                )
-                            )
-                        } else {
-                            // Standard Navigation Item
-                            NavigationBarItem(
-                                icon = {
-                                    // Wrap icon with magical breathing glow effect
-                                    NavigationBreathingGlow(
-                                        isActive = selected,
-                                        color = ProdyPrimary
-                                    ) {
-                                        Icon(
-                                            imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
-                                            contentDescription = null
-                                        )
-                                    }
-                                },
-                                label = { Text(stringResource(item.labelResId)) },
-                                selected = selected,
-                                onClick = {
-                                    navController.navigate(item.route) {
-                                        popUpTo(navController.graph.findStartDestination().id) {
-                                            saveState = true
-                                        }
-                                        launchSingleTop = true
-                                        restoreState = true
-                                    }
-                                }
-                            )
-                        }
-                    }
-                }
+                ProdyBottomNavigationBar(
+                    items = bottomNavModels,
+                    currentRoute = currentDestination?.route,
+                    onNavigate = navigateToRoute
+                )
             }
         }
     ) { innerPadding ->
@@ -341,6 +265,126 @@ fun ProdyApp(
             modifier = Modifier.padding(innerPadding)
         )
     }
+}
+
+@Immutable
+private data class BottomNavUiModel(
+    val item: BottomNavItem,
+    val route: String = item.route,
+    val isHaven: Boolean = item == BottomNavItem.Haven
+)
+
+@Composable
+private fun ProdyBottomNavigationBar(
+    items: List<BottomNavUiModel>,
+    currentRoute: String?,
+    onNavigate: (String) -> Unit
+) {
+    val latestOnNavigate by rememberUpdatedState(onNavigate)
+
+    NavigationBar {
+        items.forEach { model ->
+            val selected = currentRoute == model.route
+            val navigateToDestination = remember(model.route) { { latestOnNavigate(model.route) } }
+
+            if (model.isHaven) {
+                HavenNavigationItem(
+                    selected = selected,
+                    item = model.item,
+                    onClick = navigateToDestination
+                )
+            } else {
+                StandardNavigationItem(
+                    selected = selected,
+                    item = model.item,
+                    onClick = navigateToDestination
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun HavenNavigationItem(
+    selected: Boolean,
+    item: BottomNavItem,
+    onClick: () -> Unit
+) {
+    NavigationBarItem(
+        selected = selected,
+        onClick = onClick,
+        icon = {
+            val infiniteTransition = rememberInfiniteTransition(label = "HavenPulse")
+            val alpha by infiniteTransition.animateFloat(
+                initialValue = 0.6f,
+                targetValue = 1f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(2000, easing = LinearEasing),
+                    repeatMode = RepeatMode.Reverse
+                ),
+                label = "HavenAlpha"
+            )
+            val scale by infiniteTransition.animateFloat(
+                initialValue = 0.95f,
+                targetValue = 1.05f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(2000, easing = LinearEasing),
+                    repeatMode = RepeatMode.Reverse
+                ),
+                label = "HavenScale"
+            )
+
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .scale(scale)
+                    .clip(CircleShape)
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                com.prody.prashant.ui.theme.HavenBubbleLight,
+                                com.prody.prashant.ui.theme.HavenBubbleLight.copy(alpha = 0.8f)
+                            )
+                        )
+                    )
+                    .alpha(if (selected) 1f else alpha),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
+                    contentDescription = null,
+                    tint = com.prody.prashant.ui.theme.HavenTextLight,
+                    modifier = Modifier.size(28.dp)
+                )
+            }
+        },
+        label = { },
+        colors = NavigationBarItemDefaults.colors(indicatorColor = Color.Transparent)
+    )
+}
+
+@Composable
+private fun StandardNavigationItem(
+    selected: Boolean,
+    item: BottomNavItem,
+    onClick: () -> Unit
+) {
+    NavigationBarItem(
+        icon = {
+            NavigationBreathingGlow(
+                isActive = selected,
+                color = ProdyPrimary
+            ) {
+                Icon(
+                    imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
+                    contentDescription = null
+                )
+            }
+        },
+        label = { Text(stringResource(item.labelResId)) },
+        selected = selected,
+        onClick = onClick
+    )
 }
 
 // =============================================================================
