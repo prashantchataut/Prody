@@ -238,6 +238,8 @@ dependencies {
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.test.espresso.core)
     androidTestImplementation(libs.mockk.android)
+    androidTestImplementation("androidx.benchmark:benchmark-macro-junit4:1.3.3")
+    androidTestImplementation("androidx.test.uiautomator:uiautomator:2.3.0")
 
     // Debug
     debugImplementation(libs.androidx.ui.tooling)
