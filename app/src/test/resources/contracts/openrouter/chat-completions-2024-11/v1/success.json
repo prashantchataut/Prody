@@ -1,0 +1,14 @@
+{
+  "id": "chatcmpl-1",
+  "model": "openai/gpt-3.5-turbo",
+  "created": 1731000000,
+  "choices": [
+    {
+      "message": {
+        "role": "assistant",
+        "content": "You showed up today. That matters."
+      },
+      "finish_reason": "stop"
+    }
+  ]
+}

@@ -129,7 +129,7 @@ class OpenRouterService @Inject constructor() {
 
     companion object {
         // Cost-effective models that work well for Buddha responses
-        const val MODEL_GPT_35_TURBO = "openai/gpt-3.5-turbo"
+        const val MODEL_GPT_35_TURBO = ProviderContractCatalog.OPENROUTER_MODEL
         const val MODEL_CLAUDE_INSTANT = "anthropic/claude-instant-1"
         const val MODEL_MISTRAL_7B = "mistralai/mistral-7b-instruct"
         const val MODEL_GEMINI_PRO = "google/gemini-pro"
