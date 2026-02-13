@@ -6,13 +6,14 @@ import com.google.ai.client.generativeai.type.BlockThreshold
 import com.google.ai.client.generativeai.type.HarmCategory
 import com.google.ai.client.generativeai.type.SafetySetting
 import com.google.ai.client.generativeai.type.generationConfig
-import com.prody.prashant.BuildConfig
 import com.prody.prashant.data.security.EncryptionManager
+import com.prody.prashant.data.security.SecureApiKeyManager
 import com.prody.prashant.domain.haven.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -26,11 +27,12 @@ import javax.inject.Singleton
  * CBT and DBT techniques. It includes critical safety features like crisis detection
  * and always directs users to professional help when appropriate.
  *
- * IMPORTANT: Uses THERAPIST_API_KEY (separate from regular Gemini key)
+ * IMPORTANT: Uses short-lived runtime credentials for Haven.
  */
 @Singleton
 class HavenAiService @Inject constructor(
-    private val encryptionManager: EncryptionManager
+    private val encryptionManager: EncryptionManager,
+    private val secureApiKeyManager: SecureApiKeyManager
 ) {
     companion object {
         private const val TAG = "HavenAiService"
@@ -201,26 +203,25 @@ I am here to listen, but I cannot provide the emergency care you might need. Ple
     private fun initializeModel() {
         initializationAttempts++
         try {
-            // Log key presence for debugging (never log actual keys!)
-            val therapistKeyPresent = BuildConfig.THERAPIST_API_KEY.isNotBlank()
-            val aiKeyPresent = BuildConfig.AI_API_KEY.isNotBlank()
+            val therapistToken = runBlocking { secureApiKeyManager.getTherapistApiKey() }
+            val geminiToken = runBlocking { secureApiKeyManager.getGeminiApiKey() }
+            val therapistKeyPresent = therapistToken.isNotBlank()
+            val aiKeyPresent = geminiToken.isNotBlank()
 
-            Log.d(TAG, "API Key Check (attempt $initializationAttempts) - THERAPIST_API_KEY present: $therapistKeyPresent, AI_API_KEY present: $aiKeyPresent")
+            Log.d(TAG, "Credential Check (attempt $initializationAttempts) - HAVEN token present: $therapistKeyPresent, Gemini token present: $aiKeyPresent")
 
-            // Try THERAPIST_API_KEY first, then fall back to AI_API_KEY (Gemini)
-            val apiKey = BuildConfig.THERAPIST_API_KEY.takeIf { it.isNotBlank() }
-                ?: BuildConfig.AI_API_KEY.takeIf { it.isNotBlank() }
+            val apiKey = therapistToken.ifBlank { geminiToken }
 
-            if (apiKey.isNullOrBlank()) {
-                Log.w(TAG, "No API key configured. Entering Offline Mode.")
-                initializationError = "No API key found in BuildConfig. Check local.properties and rebuild."
+            if (apiKey.isBlank()) {
+                Log.w(TAG, "No runtime token configured. Entering Offline Mode.")
+                initializationError = "AI session token unavailable. Haven will stay in offline mode until secure provisioning succeeds."
                 isOfflineMode = true
-                isInitialized = true // We are initialized in offline mode
+                isInitialized = true
                 return
             }
 
-            val keySource = if (BuildConfig.THERAPIST_API_KEY.isNotBlank()) "THERAPIST_API_KEY" else "AI_API_KEY"
-            Log.d(TAG, "Initializing Haven with $keySource (length: ${apiKey.length})")
+            val keySource = if (therapistToken.isNotBlank()) "HAVEN_RUNTIME_TOKEN" else "GEMINI_RUNTIME_TOKEN"
+            Log.d(TAG, "Initializing Haven with $keySource")
 
             // Safety settings - less restrictive for mental health content
             val safetySettings = listOf(
@@ -261,10 +262,10 @@ I am here to listen, but I cannot provide the emergency care you might need. Ple
      * Returns detailed configuration status for debugging.
      */
     fun getConfigurationStatus(): String {
-        val therapistKeyStatus = if (BuildConfig.THERAPIST_API_KEY.isNotBlank()) 
-            "present (${BuildConfig.THERAPIST_API_KEY.length} chars)" else "missing"
-        val aiKeyStatus = if (BuildConfig.AI_API_KEY.isNotBlank()) 
-            "present (${BuildConfig.AI_API_KEY.length} chars)" else "missing"
+        val therapistToken = runBlocking { secureApiKeyManager.getTherapistApiKey() }
+        val geminiToken = runBlocking { secureApiKeyManager.getGeminiApiKey() }
+        val therapistKeyStatus = if (therapistToken.isNotBlank()) "available" else "missing"
+        val aiKeyStatus = if (geminiToken.isNotBlank()) "available" else "missing"
             
         return when {
             isOfflineMode -> buildString {
@@ -364,7 +365,7 @@ This is the start of the session. Greet ${userName ?: "the user"} warmly.
         if (isOfflineMode) {
              return@withContext Result.success(
                 HavenAiResponse(
-                    message = "I'm still in offline mode. Please check your settings to enable full chat capabilities. In the meantime, maybe try a breathing exercise?",
+                    message = "I'm still offline right now, so live chat is temporarily unavailable. You can still try a breathing exercise while I reconnect.",
                     isCrisisDetected = false,
                     crisisLevel = CrisisLevel.NONE
                 )

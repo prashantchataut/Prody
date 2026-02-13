@@ -1,8 +1,10 @@
 package com.prody.prashant.data.ai
 
 import com.prody.prashant.BuildConfig
+import com.prody.prashant.data.security.SecureApiKeyManager
 import com.prody.prashant.domain.model.Mood
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -125,7 +127,9 @@ Be specific to what they wrote - reference details from their entry."""
  * Supports multiple AI models through OpenRouter's unified API.
  */
 @Singleton
-class OpenRouterService @Inject constructor() {
+class OpenRouterService @Inject constructor(
+    private val secureApiKeyManager: SecureApiKeyManager
+) {
 
     companion object {
         // Cost-effective models that work well for Buddha responses
@@ -134,12 +138,6 @@ class OpenRouterService @Inject constructor() {
         const val MODEL_MISTRAL_7B = "mistralai/mistral-7b-instruct"
         const val MODEL_GEMINI_PRO = "google/gemini-pro"
 
-        /**
-         * Checks if an API key is configured in BuildConfig.
-         */
-        fun isApiKeyConfiguredInBuildConfig(): Boolean {
-            return BuildConfig.OPENROUTER_API_KEY.isNotBlank()
-        }
     }
 
     private val json = Json {
@@ -161,7 +159,7 @@ class OpenRouterService @Inject constructor() {
             )
             .addInterceptor { chain ->
                 val request = chain.request().newBuilder()
-                    .addHeader("Authorization", "Bearer ${BuildConfig.OPENROUTER_API_KEY}")
+                    .addHeader("Authorization", "Bearer ${runBlocking { secureApiKeyManager.getOpenRouterApiKey() }}")
                     .addHeader("HTTP-Referer", "https://prody.app")
                     .addHeader("X-Title", "Prody - Self Improvement Companion")
                     .build()
@@ -192,7 +190,7 @@ class OpenRouterService @Inject constructor() {
      * Checks if the service is properly configured with an API key.
      */
     fun isConfigured(): Boolean {
-        return BuildConfig.OPENROUTER_API_KEY.isNotBlank()
+        return runBlocking { secureApiKeyManager.getOpenRouterApiKey().isNotBlank() }
     }
 
     /**

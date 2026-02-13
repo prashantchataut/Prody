@@ -109,7 +109,7 @@ fun HavenHomeScreen(
                     item(key = "offline_banner") {
                         OfflineModeBanner(
                             onRetryConnection = { viewModel.retryAiConnection() },
-                            configStatus = uiState.configStatus ?: "No API key configured",
+                            configStatus = uiState.configStatus ?: "AI session token unavailable",
                             modifier = Modifier.padding(horizontal = 16.dp)
                         )
                     }
@@ -311,7 +311,7 @@ private fun OfflineModeBanner(
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "To fix this:\n1. Add API key to local.properties\n2. Rebuild the project\n3. Restart the app",
+                            text = "We are unable to start a secure AI session right now. Please try again in a moment.",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.7f)
                         )
@@ -800,7 +800,7 @@ private fun HavenNotConfiguredState(
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Haven requires AI configuration to provide therapeutic support. Please configure your API key in Settings.",
+                text = "Haven needs a secure AI session token to chat right now. You can continue using journal and exercises while we reconnect.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center

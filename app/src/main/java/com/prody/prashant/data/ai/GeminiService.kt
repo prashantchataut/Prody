@@ -8,12 +8,13 @@ import com.google.ai.client.generativeai.type.HarmCategory
 import com.google.ai.client.generativeai.type.SafetySetting
 import com.google.ai.client.generativeai.type.content
 import com.google.ai.client.generativeai.type.generationConfig
-import com.prody.prashant.BuildConfig
+import com.prody.prashant.data.security.SecureApiKeyManager
 import com.prody.prashant.domain.model.Mood
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -430,57 +431,26 @@ data class PastEntryContext(
  * Production-grade Gemini AI service for Buddha (Stoic AI Mentor) functionality.
  * Handles API communication, error handling, and response generation.
  *
- * The service auto-initializes from BuildConfig API key on first use if not manually initialized.
+ * The service auto-initializes from short-lived runtime credentials.
  */
 @Singleton
-class GeminiService @Inject constructor() {
+class GeminiService @Inject constructor(
+    private val secureApiKeyManager: SecureApiKeyManager
+) {
 
     private var generativeModel: GenerativeModel? = null
     private var currentApiKey: String? = null
     private var currentModel: GeminiModel = GeminiModel.GEMINI_1_5_FLASH
-    @Volatile
-    private var isAutoInitialized: Boolean = false
-
-    companion object {
-        /**
-         * Gets the API key from BuildConfig (set via local.properties).
-         * This is the recommended way to configure the API key for security.
-         *
-         * To configure:
-         * 1. Open local.properties in the project root
-         * 2. Add: AI_API_KEY=your_gemini_api_key_here
-         * 3. Rebuild the project
-         *
-         * The API key will be injected at compile time and NOT stored in source control.
-         */
-        fun getApiKeyFromBuildConfig(): String? {
-            return BuildConfig.AI_API_KEY.takeIf { it.isNotBlank() }
-        }
-
-        /**
-         * Checks if an API key is configured in BuildConfig.
-         */
-        fun isApiKeyConfiguredInBuildConfig(): Boolean {
-            return BuildConfig.AI_API_KEY.isNotBlank()
-        }
-    }
 
     init {
-        // Auto-initialize from BuildConfig if API key is available
-        autoInitializeFromBuildConfig()
+        autoInitializeFromRuntimeToken()
     }
 
-    /**
-     * Automatically initializes the service from BuildConfig API key.
-     * This is called during construction and can be called again to reinitialize.
-     */
-    private fun autoInitializeFromBuildConfig() {
-        if (!isAutoInitialized) {
-            val apiKey = getApiKeyFromBuildConfig()
-            if (apiKey != null) {
-                initialize(apiKey, GeminiModel.GEMINI_1_5_FLASH)
-                isAutoInitialized = true
-            }
+    private fun autoInitializeFromRuntimeToken() {
+        if (generativeModel != null) return
+        val apiKey = runBlocking { secureApiKeyManager.getGeminiApiKey() }
+        if (apiKey.isNotBlank()) {
+            initialize(apiKey, GeminiModel.GEMINI_1_5_FLASH)
         }
     }
 
@@ -533,12 +503,12 @@ class GeminiService @Inject constructor() {
 
     /**
      * Checks if the service is properly configured with an API key.
-     * Attempts auto-initialization from BuildConfig if not already configured.
+     * Attempts auto-initialization from runtime credentials if not already configured.
      */
     fun isConfigured(): Boolean {
         // Try auto-initialization if not yet configured
-        if (generativeModel == null && !isAutoInitialized) {
-            autoInitializeFromBuildConfig()
+        if (generativeModel == null) {
+            autoInitializeFromRuntimeToken()
         }
 
         val configured = generativeModel != null && !currentApiKey.isNullOrBlank()
@@ -554,7 +524,7 @@ class GeminiService @Inject constructor() {
     fun getConfigStatus(): AiConfigStatus {
         if (currentApiKey.isNullOrBlank()) return AiConfigStatus.MISSING_API_KEY
         if (generativeModel == null) {
-            autoInitializeFromBuildConfig()
+            autoInitializeFromRuntimeToken()
             if (generativeModel == null) return AiConfigStatus.ERROR
         }
         return AiConfigStatus.READY
