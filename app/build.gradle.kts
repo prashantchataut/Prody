@@ -64,6 +64,11 @@ android {
             "TTS_API_KEY",
             "\"${localProperties.getProperty("TTS_API_KEY", "").trim()}\""
         )
+        buildConfigField(
+            "String",
+            "PINNING_POLICY_URL",
+            "\"${localProperties.getProperty("PINNING_POLICY_URL", "https://raw.githubusercontent.com/prashantchataut/Prody/main/latest_update.json").trim()}\""
+        )
     }
 
     sourceSets {
