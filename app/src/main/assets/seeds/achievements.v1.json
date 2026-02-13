@@ -1,0 +1,4 @@
+{"version":1,"items":[
+{"id":"first_entry","name":"First Reflection","description":"Write your first journal entry.","iconId":"ic_journal","category":"reflection","requirement":1,"rewardType":"points","rewardValue":"100","rarity":"common","celebrationMessage":"A thoughtful beginning.","xpReward":50},
+{"id":"word_collector","name":"Word Collector","description":"Learn 10 new words.","iconId":"ic_vocabulary","category":"mastery","requirement":10,"rewardType":"points","rewardValue":"150","rarity":"uncommon","celebrationMessage":"Your vocabulary is expanding.","xpReward":100}
+]}
