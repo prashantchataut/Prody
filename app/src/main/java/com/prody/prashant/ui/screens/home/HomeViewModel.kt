@@ -1,5 +1,6 @@
 package com.prody.prashant.ui.screens.home
 
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.prody.prashant.data.ai.BuddhaAiRepository
@@ -39,6 +40,7 @@ import javax.inject.Inject
  * AI Proof Mode debug info - shown on AI surfaces when enabled in Settings.
  * Provides visibility into AI generation status for debugging.
  */
+@Immutable
 data class AiProofModeInfo(
     val provider: String = "",           // Gemini, OpenRouter, Fallback
     val cacheStatus: String = "",        // HIT, MISS, or empty if no call
@@ -57,6 +59,7 @@ enum class AiConfigurationStatus {
     ERROR
 }
 
+@Immutable
 data class HomeUiState(
     val userName: String = "Growth Seeker",
     val currentStreak: Int = 0,
@@ -131,7 +134,9 @@ data class HomeUiState(
     val userArchetype: UserArchetype = UserArchetype.EXPLORER,
     val trustLevel: TrustLevel = TrustLevel.NEW,
     val isUserStruggling: Boolean = false,
-    val isUserThriving: Boolean = false
+    val isUserThriving: Boolean = false,
+    // Mood trend for chart
+    val moodHistory: List<Float> = emptyList()
 )
 
 private data class DailyContent(
@@ -232,6 +237,21 @@ class HomeViewModel @Inject constructor(
                 // Calculate weekly active days.
                 val daysActiveThisWeek = streakHistory.count { it.date >= weekStart }
 
+                // Map journal entries to mood values for the chart (last 7 entries)
+                val moodHistory = weeklyJournalEntries
+                    .sortedBy { it.createdAt }
+                    .takeLast(7)
+                    .map { entry ->
+                        when (entry.mood.lowercase()) {
+                            "blessed", "happy" -> 5f
+                            "good" -> 4f
+                            "neutral" -> 3f
+                            "meh" -> 2f
+                            "bad" -> 1f
+                            else -> 3f
+                        }
+                    }
+
                 // Determine today's journaling status.
                 val (journaledToday, todayMood, todayPreview) = if (todayJournalEntries.isNotEmpty()) {
                     val latestEntry = todayJournalEntries.maxByOrNull { it.createdAt }
@@ -266,6 +286,7 @@ class HomeViewModel @Inject constructor(
                     todayEntryPreview = todayPreview,
                     dualStreakStatus = dualStreak,
                     buddhaWisdomProofInfo = _uiState.value.buddhaWisdomProofInfo.copy(isEnabled = aiProofMode),
+                    moodHistory = moodHistory,
                     isLoading = false // <-- Critical: Signal that loading is complete.
                 )
             }.catch { e ->

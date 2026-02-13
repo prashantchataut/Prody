@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -51,10 +52,7 @@ fun HomeScreen(
     onNavigateToIdiomDetail: (Long) -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
-    // We assume ViewModel provides necessary state. For this UI revamp, 
-    // we'll focus on the UI structure and use placeholder data where ViewModel might not strictly align yet.
-    
-    val surfaceColor = MaterialTheme.colorScheme.surface
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val backgroundColor = MaterialTheme.colorScheme.background
 
     LazyColumn(
@@ -66,7 +64,8 @@ fun HomeScreen(
         // Header with Greeting and Notification
         item {
             DashboardHeader(
-                userName = "Prashant", // Replace with real name
+                userName = uiState.userName,
+                greeting = uiState.intelligentGreeting,
                 onProfileClick = {}, // TODO: Profile Nav
                 onNotificationClick = {}
             )
@@ -75,10 +74,10 @@ fun HomeScreen(
         // Overview Section (Streak & Badges)
         item {
             OverviewSection(
-                streakDays = 7,
+                streakDays = uiState.currentStreak,
                 badges = listOf(
-                    BadgeData(ProdyIcons.EmojiEvents, 0.75f, ProdyWarmAmber),
-                    BadgeData(ProdyIcons.Edit, 0.5f, ProdyForestGreen),
+                    BadgeData(ProdyIcons.EmojiEvents, 0.75f, ProdyWarmAmber), // TODO: Real achievement progress
+                    BadgeData(ProdyIcons.Edit, (uiState.journalEntriesThisWeek / 7f).coerceIn(0f, 1f), ProdyForestGreen),
                     BadgeData(ProdyIcons.Psychology, 0.3f, ProdyInfo)
                 )
             )
@@ -87,16 +86,16 @@ fun HomeScreen(
         // Mood Trend Chart
         item {
             MoodTrendSection(
-                moodData = listOf(3f, 4f, 2f, 5f, 4f, 5f, 4f) // 1-5 Scale
+                moodData = uiState.moodHistory.ifEmpty { listOf(3f, 3f, 3f, 3f, 3f, 3f, 3f) }
             )
         }
 
         // Weekly Summary
         item {
             WeeklySummarySection(
-                journalEntries = 5,
-                wordsLearned = 12,
-                mindfulMinutes = 45
+                journalEntries = uiState.journalEntriesThisWeek,
+                wordsLearned = uiState.wordsLearnedThisWeek,
+                mindfulMinutes = uiState.todayProgress.pointsEarned / 10 // Approximation
             )
         }
         
@@ -112,7 +111,10 @@ fun HomeScreen(
         
         // Recent / Suggestions
         item {
-            RecentActivitySection()
+            RecentActivitySection(
+                nextAction = uiState.nextAction,
+                journaledToday = uiState.journaledToday
+            )
         }
     }
 }
@@ -124,6 +126,7 @@ fun HomeScreen(
 @Composable
 fun DashboardHeader(
     userName: String,
+    greeting: String,
     onProfileClick: () -> Unit,
     onNotificationClick: () -> Unit
 ) {
@@ -137,7 +140,7 @@ fun DashboardHeader(
     ) {
         Column {
             Text(
-                text = "Good Morning,",
+                text = greeting.ifEmpty { "Good Morning," },
                 style = TextStyle(
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Normal,
@@ -554,11 +557,13 @@ fun QuickActionTile(title: String, icon: androidx.compose.ui.graphics.vector.Ima
 }
 
 @Composable
-fun RecentActivitySection() {
-    // Placeholder for Recent Activity
+fun RecentActivitySection(
+    nextAction: com.prody.prashant.domain.progress.NextAction?,
+    journaledToday: Boolean
+) {
     Column(modifier = Modifier.padding(horizontal = 24.dp)) {
         Text(
-            text = "Recent",
+            text = if (nextAction != null) "Recommended" else "Recent",
             style = TextStyle(
                 fontFamily = PoppinsFamily,
                 fontWeight = FontWeight.SemiBold,
@@ -575,6 +580,21 @@ fun RecentActivitySection() {
             shadowElevation = 2.dp
         ) {
             Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                val icon = if (nextAction != null) {
+                    when (nextAction.type) {
+                        com.prody.prashant.domain.progress.NextActionType.START_JOURNAL,
+                        com.prody.prashant.domain.progress.NextActionType.FOLLOW_UP_JOURNAL -> ProdyIcons.Book
+                        com.prody.prashant.domain.progress.NextActionType.REVIEW_WORDS,
+                        com.prody.prashant.domain.progress.NextActionType.LEARN_WORD -> ProdyIcons.School
+                        com.prody.prashant.domain.progress.NextActionType.WRITE_FUTURE_MESSAGE -> ProdyIcons.Send
+                        else -> ProdyIcons.Lightbulb
+                    }
+                } else if (journaledToday) {
+                    ProdyIcons.Check
+                } else {
+                    ProdyIcons.Edit
+                }
+
                 Box(
                     modifier = Modifier
                         .size(40.dp)
@@ -582,12 +602,21 @@ fun RecentActivitySection() {
                         .background(ProdyForestGreen.copy(alpha = 0.1f)),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(ProdyIcons.Check, null, tint = ProdyForestGreen)
+                    Icon(icon, null, tint = ProdyForestGreen)
                 }
                 Spacer(modifier = Modifier.width(16.dp))
                 Column {
-                    Text("Daily Journal", fontWeight = FontWeight.SemiBold, fontFamily = PoppinsFamily)
-                    Text("Completed today", fontSize = 12.sp, color = ProdyTextSecondaryLight, fontFamily = PoppinsFamily)
+                    Text(
+                        text = nextAction?.title ?: if (journaledToday) "Daily Journal" else "Start Reflecting",
+                        fontWeight = FontWeight.SemiBold,
+                        fontFamily = PoppinsFamily
+                    )
+                    Text(
+                        text = nextAction?.subtitle ?: if (journaledToday) "Completed today" else "Capture your thoughts",
+                        fontSize = 12.sp,
+                        color = ProdyTextSecondaryLight,
+                        fontFamily = PoppinsFamily
+                    )
                 }
             }
         }
