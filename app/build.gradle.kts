@@ -252,3 +252,50 @@ dependencies {
     // Gson
     implementation(libs.gson)
 }
+
+val hardcodedStylePattern = Regex(
+    """(Color\s*\(\s*0x[0-9A-Fa-f]{6,8}\s*\))|(\b\d+(?:\.\d+)?\.(dp|sp)\b)"""
+)
+
+tasks.register("enforceDesignTokens") {
+    group = "verification"
+    description = "Blocks hardcoded color/size literals in production composables."
+
+    doLast {
+        val sourceRoot = file("src/main/java/com/prody/prashant/ui")
+        val targetDirs = listOf("components", "screens")
+        val violations = mutableListOf<String>()
+
+        targetDirs.forEach { dir ->
+            sourceRoot.resolve(dir)
+                .walkTopDown()
+                .filter { it.isFile && it.extension == "kt" }
+                .forEach { file ->
+                    val lines = file.readLines()
+                    lines.forEachIndexed { index, line ->
+                        if (hardcodedStylePattern.containsMatchIn(line)) {
+                            violations += "${file.relativeTo(projectDir)}:${index + 1}: ${line.trim()}"
+                        }
+                    }
+                }
+        }
+
+        if (violations.isNotEmpty()) {
+            throw GradleException(
+                buildString {
+                    appendLine("Hardcoded style literal(s) detected in production composables.")
+                    appendLine("Use ProdyDesignTokens + MaterialTheme semantic roles instead.")
+                    appendLine("Sample violations:")
+                    violations.take(80).forEach { appendLine(" - $it") }
+                    if (violations.size > 80) {
+                        appendLine(" ... and ${violations.size - 80} more")
+                    }
+                }
+            )
+        }
+    }
+}
+
+tasks.named("check") {
+    dependsOn("enforceDesignTokens")
+}
