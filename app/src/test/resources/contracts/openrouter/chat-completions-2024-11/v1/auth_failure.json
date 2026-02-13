@@ -1,0 +1,6 @@
+{
+  "error": {
+    "message": "Invalid credentials",
+    "code": 401
+  }
+}
