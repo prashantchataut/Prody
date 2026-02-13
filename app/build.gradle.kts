@@ -1,4 +1,3 @@
-import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
@@ -7,14 +6,6 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
     alias(libs.plugins.kotlin.serialization)
-}
-
-// Load local.properties for API key configuration
-val localProperties = Properties().apply {
-    val localPropertiesFile = rootProject.file("local.properties")
-    if (localPropertiesFile.exists()) {
-        load(localPropertiesFile.inputStream())
-    }
 }
 
 android {
@@ -39,31 +30,6 @@ android {
             arg("room.incremental", "true")
             arg("room.generateKotlin", "true")
         }
-
-// AI API Key configuration - Secure management
-        // API keys are now managed securely through SecureApiKeyManager
-        // Add your API keys to local.properties (see file for instructions)
-        buildConfigField(
-            "String",
-            "AI_API_KEY",
-            "\"${localProperties.getProperty("AI_API_KEY", "").trim()}\""
-        )
-        buildConfigField(
-            "String",
-            "OPENROUTER_API_KEY",
-            "\"${localProperties.getProperty("OPENROUTER_API_KEY", "").trim()}\""
-        )
-        // Haven Therapist API Key - separate key for therapeutic AI
-        buildConfigField(
-            "String",
-            "THERAPIST_API_KEY",
-            "\"${localProperties.getProperty("THERAPIST_API_KEY", "").trim()}\""
-        )
-        buildConfigField(
-            "String",
-            "TTS_API_KEY",
-            "\"${localProperties.getProperty("TTS_API_KEY", "").trim()}\""
-        )
     }
 
     sourceSets {

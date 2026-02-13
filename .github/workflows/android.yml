@@ -15,7 +15,18 @@ env:
   JAVA_OPTS: "-Xmx4g"
 
 jobs:
+  secret-scan:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Run Gradle/build-config secret scan
+      run: ./.github/scripts/secret_scan.sh
+
   build:
+    needs: secret-scan
     runs-on: ubuntu-latest
 
     steps:
