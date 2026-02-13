@@ -11,3 +11,8 @@ This journal contains CRITICAL performance learnings specific to the Prody codeb
 **Context:** `HomeScreen.kt` vs `HomeViewModel.kt`.
 **Learning:** Prody had a significant "feature gap" where sophisticated logic was implemented in ViewModels but the UI was stuck with hardcoded placeholders. This gave the impression of broken functionality ("Only 1% works").
 **Action:** Always verify that UI components are correctly bound to the corresponding state fields in `UiState`. Explicitly mapping previously ignored fields like `dualStreakStatus`, `nextAction`, and `dailySeed` drastically improves the functional surface area of the app.
+
+## 2026-02-13 - Canvas-based Progress Indicators
+**Context:** `OnboardingScreen.kt` and `ProdyProgressIndicator`.
+**Learning:** Using a `Row` of `Box`es with individual `animateDpAsState` for a multi-dot progress indicator causes numerous recompositions and layout passes during page transitions.
+**Action:** Refactor multi-element indicators to a single `Canvas`. Use a single `animateFloatAsState` for the current page index and calculate individual element properties (width, color) using distance-based logic and `lerp` within the `DrawScope`. This keeps the entire animation in the drawing phase, drastically reducing CPU/GPU overhead.

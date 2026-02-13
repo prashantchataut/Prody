@@ -267,9 +267,12 @@ fun MoodBreathingHalo(
         // Outer glow halo
         Box(
             modifier = Modifier
-                .size(size * haloScale)
-                .scale(haloScale)
-                .alpha(haloAlpha)
+                .size(size)
+                .graphicsLayer {
+                    this.scaleX = haloScale
+                    this.scaleY = haloScale
+                    this.alpha = haloAlpha
+                }
                 .blur(12.dp)
                 .background(haloColor, CircleShape)
         )
@@ -278,7 +281,9 @@ fun MoodBreathingHalo(
         Box(
             modifier = Modifier
                 .size(size * 0.9f)
-                .alpha(haloAlpha * 0.5f)
+                .graphicsLayer {
+                    this.alpha = haloAlpha * 0.5f
+                }
                 .blur(6.dp)
                 .background(haloColor.copy(alpha = 0.3f), CircleShape)
         )
@@ -1053,8 +1058,11 @@ fun NavigationBreathingGlow(
             Box(
                 modifier = Modifier
                     .size(48.dp)
-                    .scale(glowScale)
-                    .alpha(glowAlpha * activeAlpha)
+                    .graphicsLayer {
+                        this.scaleX = glowScale
+                        this.scaleY = glowScale
+                        this.alpha = glowAlpha * activeAlpha
+                    }
                     .blur(12.dp)
                     .background(color, CircleShape)
             )
@@ -1113,7 +1121,9 @@ fun WisdomTextReveal(
             Box(
                 modifier = Modifier
                     .matchParentSize()
-                    .alpha(ambientGlow * revealProgress)
+                    .graphicsLayer {
+                        this.alpha = ambientGlow * revealProgress
+                    }
                     .blur(30.dp)
                     .background(
                         brush = Brush.radialGradient(
@@ -1131,15 +1141,13 @@ fun WisdomTextReveal(
         androidx.compose.material3.Text(
             text = text,
             modifier = Modifier
-                .alpha(revealProgress)
                 .graphicsLayer {
+                    this.alpha = revealProgress
                     // Subtle vertical unfolding effect
-                    scaleY = 0.9f + (revealProgress * 0.1f)
-                    transformOrigin = TransformOrigin(0.5f, 0f)
+                    this.scaleY = 0.9f + (revealProgress * 0.1f)
+                    this.transformOrigin = TransformOrigin(0.5f, 0f)
                 },
-            style = MaterialTheme.typography.bodyLarge.copy(
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = revealProgress)
-            )
+            style = MaterialTheme.typography.bodyLarge
         )
     }
 }
