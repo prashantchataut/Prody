@@ -85,7 +85,7 @@ class AudioRecorderManager @Inject constructor(
      */
     fun startRecording(): Uri? {
         if (_isRecording.value) {
-            Log.w(TAG, "Recording already in progress")
+            com.prody.prashant.util.AppLogger.w(TAG, "Recording already in progress")
             return null
         }
 
@@ -113,13 +113,13 @@ class AudioRecorderManager @Inject constructor(
 
                 setOnInfoListener { _, what, _ ->
                     if (what == MediaRecorder.MEDIA_RECORDER_INFO_MAX_DURATION_REACHED) {
-                        Log.d(TAG, "Max recording duration reached")
+                        com.prody.prashant.util.AppLogger.d(TAG, "Max recording duration reached")
                         stopRecording()
                     }
                 }
 
                 setOnErrorListener { _, what, extra ->
-                    Log.e(TAG, "MediaRecorder error: what=$what, extra=$extra")
+                    com.prody.prashant.util.AppLogger.e(TAG, "MediaRecorder error: what=$what, extra=$extra")
                     _error.value = "Recording error occurred"
                     stopRecording()
                 }
@@ -136,21 +136,21 @@ class AudioRecorderManager @Inject constructor(
             startRecordingTimer()
 
             val uri = getUriForFile(currentRecordingFile!!)
-            Log.d(TAG, "Recording started: ${currentRecordingFile?.absolutePath}")
+            com.prody.prashant.util.AppLogger.d(TAG, "Recording started: ${currentRecordingFile?.absolutePath}")
             return uri
 
         } catch (e: IOException) {
-            Log.e(TAG, "Failed to start recording: IOException", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Failed to start recording: IOException", e)
             _error.value = "Failed to start recording: Storage error"
             cleanupRecording()
             return null
         } catch (e: SecurityException) {
-            Log.e(TAG, "Failed to start recording: SecurityException", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Failed to start recording: SecurityException", e)
             _error.value = "Microphone permission required"
             cleanupRecording()
             return null
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to start recording", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Failed to start recording", e)
             _error.value = "Failed to start recording"
             cleanupRecording()
             return null
@@ -163,7 +163,7 @@ class AudioRecorderManager @Inject constructor(
      */
     fun stopRecording(): Pair<Uri, Long>? {
         if (!_isRecording.value) {
-            Log.w(TAG, "No recording in progress")
+            com.prody.prashant.util.AppLogger.w(TAG, "No recording in progress")
             return null
         }
 
@@ -186,16 +186,16 @@ class AudioRecorderManager @Inject constructor(
 
             if (file != null && file.exists() && file.length() > 0) {
                 val uri = getUriForFile(file)
-                Log.d(TAG, "Recording stopped: duration=${duration}ms, file=${file.absolutePath}")
+                com.prody.prashant.util.AppLogger.d(TAG, "Recording stopped: duration=${duration}ms, file=${file.absolutePath}")
                 return Pair(uri, duration)
             } else {
-                Log.w(TAG, "Recording file is empty or doesn't exist")
+                com.prody.prashant.util.AppLogger.w(TAG, "Recording file is empty or doesn't exist")
                 _error.value = "Recording failed - file empty"
                 return null
             }
 
         } catch (e: Exception) {
-            Log.e(TAG, "Error stopping recording", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error stopping recording", e)
             _error.value = "Error saving recording"
             cleanupRecording()
             return null
@@ -216,7 +216,7 @@ class AudioRecorderManager @Inject constructor(
                 release()
             }
         } catch (e: Exception) {
-            Log.w(TAG, "Error stopping recorder during cancel", e)
+            com.prody.prashant.util.AppLogger.w(TAG, "Error stopping recorder during cancel", e)
         }
         mediaRecorder = null
 
@@ -228,7 +228,7 @@ class AudioRecorderManager @Inject constructor(
         _recordingDuration.value = 0L
         _recordingAmplitude.value = 0
 
-        Log.d(TAG, "Recording cancelled")
+        com.prody.prashant.util.AppLogger.d(TAG, "Recording cancelled")
     }
 
     /**
@@ -250,7 +250,7 @@ class AudioRecorderManager @Inject constructor(
                 }
 
                 setOnErrorListener { _, what, extra ->
-                    Log.e(TAG, "MediaPlayer error: what=$what, extra=$extra")
+                    com.prody.prashant.util.AppLogger.e(TAG, "MediaPlayer error: what=$what, extra=$extra")
                     _error.value = "Playback error"
                     stopPlayback()
                     true
@@ -267,10 +267,10 @@ class AudioRecorderManager @Inject constructor(
             // Start playback progress tracking
             startPlaybackTimer()
 
-            Log.d(TAG, "Playback started: $uri")
+            com.prody.prashant.util.AppLogger.d(TAG, "Playback started: $uri")
 
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to start playback", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Failed to start playback", e)
             _error.value = "Failed to play audio"
             stopPlayback()
         }
@@ -292,14 +292,14 @@ class AudioRecorderManager @Inject constructor(
                 release()
             }
         } catch (e: Exception) {
-            Log.w(TAG, "Error stopping playback", e)
+            com.prody.prashant.util.AppLogger.w(TAG, "Error stopping playback", e)
         }
         mediaPlayer = null
 
         _isPlaying.value = false
         _playbackProgress.value = 0f
 
-        Log.d(TAG, "Playback stopped")
+        com.prody.prashant.util.AppLogger.d(TAG, "Playback stopped")
     }
 
     /**
@@ -351,7 +351,7 @@ class AudioRecorderManager @Inject constructor(
                 false
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to delete recording: $uri", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Failed to delete recording: $uri", e)
             false
         }
     }
@@ -369,7 +369,7 @@ class AudioRecorderManager @Inject constructor(
             player.release()
             duration
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to get audio duration", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Failed to get audio duration", e)
             0L
         } finally {
             player?.release()

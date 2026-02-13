@@ -78,7 +78,7 @@ class BannerSelectionViewModel @Inject constructor(
                     }
                 }
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error loading current banner", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error loading current banner", e)
                 _uiState.update { it.copy(isLoading = false, error = "Failed to load banner") }
             }
         }
@@ -260,7 +260,7 @@ class BannerSelectionViewModel @Inject constructor(
 
                 _uiState.update { it.copy(banners = banners) }
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error loading banner options", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error loading banner options", e)
             }
         }
     }
@@ -298,7 +298,7 @@ class BannerSelectionViewModel @Inject constructor(
                     )
                 }
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error saving banner", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error saving banner", e)
                 _uiState.update {
                     it.copy(
                         isSaving = false,

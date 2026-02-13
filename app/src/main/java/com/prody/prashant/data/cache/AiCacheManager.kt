@@ -168,20 +168,20 @@ class AiCacheManager @Inject constructor(
 
                 if (isValid) {
                     incrementCacheHits()
-                    Log.d(TAG, "Cache HIT for ${cacheType.key}${keyVariant?.let { "[$it]" } ?: ""}")
+                    com.prody.prashant.util.AppLogger.d(TAG, "Cache HIT for ${cacheType.key}${keyVariant?.let { "[$it]" } ?: ""}")
                     cached
                 } else {
-                    Log.d(TAG, "Cache EXPIRED for ${cacheType.key}${keyVariant?.let { "[$it]" } ?: ""}")
+                    com.prody.prashant.util.AppLogger.d(TAG, "Cache EXPIRED for ${cacheType.key}${keyVariant?.let { "[$it]" } ?: ""}")
                     incrementCacheMisses()
                     null
                 }
             } else {
                 incrementCacheMisses()
-                Log.d(TAG, "Cache MISS for ${cacheType.key}${keyVariant?.let { "[$it]" } ?: ""}")
+                com.prody.prashant.util.AppLogger.d(TAG, "Cache MISS for ${cacheType.key}${keyVariant?.let { "[$it]" } ?: ""}")
                 null
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error reading cache for ${cacheType.key}", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error reading cache for ${cacheType.key}", e)
             null
         }
     }
@@ -216,12 +216,12 @@ class AiCacheManager @Inject constructor(
                 preferences[stringPreferencesKey(fullKey)] = cachedJson
             }
 
-            Log.d(TAG, "Cached ${cacheType.key}${keyVariant?.let { "[$it]" } ?: ""} (${content.length} chars)")
+            com.prody.prashant.util.AppLogger.d(TAG, "Cached ${cacheType.key}${keyVariant?.let { "[$it]" } ?: ""} (${content.length} chars)")
 
             // Perform periodic cleanup
             maybePerformCleanup()
         } catch (e: Exception) {
-            Log.e(TAG, "Error caching ${cacheType.key}", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error caching ${cacheType.key}", e)
         }
     }
 
@@ -241,9 +241,9 @@ class AiCacheManager @Inject constructor(
             dataStore.edit { preferences ->
                 preferences.remove(stringPreferencesKey(fullKey))
             }
-            Log.d(TAG, "Invalidated cache for ${cacheType.key}${keyVariant?.let { "[$it]" } ?: ""}")
+            com.prody.prashant.util.AppLogger.d(TAG, "Invalidated cache for ${cacheType.key}${keyVariant?.let { "[$it]" } ?: ""}")
         } catch (e: Exception) {
-            Log.e(TAG, "Error invalidating cache for ${cacheType.key}", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error invalidating cache for ${cacheType.key}", e)
         }
     }
 
@@ -259,9 +259,9 @@ class AiCacheManager @Inject constructor(
                     .filter { it.name.startsWith(prefix) || it.name == cacheType.key }
                     .forEach { preferences.remove(it) }
             }
-            Log.d(TAG, "Invalidated all caches for ${cacheType.key}")
+            com.prody.prashant.util.AppLogger.d(TAG, "Invalidated all caches for ${cacheType.key}")
         } catch (e: Exception) {
-            Log.e(TAG, "Error invalidating cache type ${cacheType.key}", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error invalidating cache type ${cacheType.key}", e)
         }
     }
 
@@ -445,9 +445,9 @@ class AiCacheManager @Inject constructor(
                 misses?.let { preferences[CACHE_MISSES] = it }
                 preferences[LAST_CLEANUP] = System.currentTimeMillis()
             }
-            Log.d(TAG, "Cleared all AI cache")
+            com.prody.prashant.util.AppLogger.d(TAG, "Cleared all AI cache")
         } catch (e: Exception) {
-            Log.e(TAG, "Error clearing cache", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error clearing cache", e)
         }
     }
 
@@ -460,9 +460,9 @@ class AiCacheManager @Inject constructor(
                 preferences[CACHE_HITS] = 0
                 preferences[CACHE_MISSES] = 0
             }
-            Log.d(TAG, "Reset cache statistics")
+            com.prody.prashant.util.AppLogger.d(TAG, "Reset cache statistics")
         } catch (e: Exception) {
-            Log.e(TAG, "Error resetting statistics", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error resetting statistics", e)
         }
     }
 
@@ -478,9 +478,9 @@ class AiCacheManager @Inject constructor(
             dataStore.edit { preferences ->
                 preferences[LAST_CLEANUP] = System.currentTimeMillis()
             }
-            Log.d(TAG, "Cleaned up cache entries older than $retentionDays days")
+            com.prody.prashant.util.AppLogger.d(TAG, "Cleaned up cache entries older than $retentionDays days")
         } catch (e: Exception) {
-            Log.e(TAG, "Error cleaning up old entries", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error cleaning up old entries", e)
         }
         return 0L
     }
@@ -550,13 +550,13 @@ class AiCacheManager @Inject constructor(
                 performCleanup()
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error checking cleanup status", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error checking cleanup status", e)
         }
     }
 
     private suspend fun performCleanup() {
         try {
-            Log.d(TAG, "Performing cache cleanup...")
+            com.prody.prashant.util.AppLogger.d(TAG, "Performing cache cleanup...")
             var cleanedCount = 0
 
             dataStore.edit { preferences ->
@@ -589,9 +589,9 @@ class AiCacheManager @Inject constructor(
                 preferences[LAST_CLEANUP] = System.currentTimeMillis()
             }
 
-            Log.d(TAG, "Cache cleanup complete. Removed $cleanedCount expired entries.")
+            com.prody.prashant.util.AppLogger.d(TAG, "Cache cleanup complete. Removed $cleanedCount expired entries.")
         } catch (e: Exception) {
-            Log.e(TAG, "Error performing cache cleanup", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error performing cache cleanup", e)
         }
     }
 }

@@ -158,7 +158,7 @@ class ChallengesViewModel @Inject constructor(
                 generateSimulatedCommunityData()
             }
         } catch (e: Exception) {
-            android.util.Log.e("ChallengesViewModel", "Failed to initialize default challenges", e)
+            com.prody.prashant.util.AppLogger.e("ChallengesViewModel", "Failed to initialize default challenges", e)
         }
     }
 
@@ -184,7 +184,7 @@ class ChallengesViewModel @Inject constructor(
                 challengeDao.insertLeaderboardEntries(leaderboardEntries)
             }
         } catch (e: Exception) {
-            android.util.Log.e("ChallengesViewModel", "Failed to generate simulated community data", e)
+            com.prody.prashant.util.AppLogger.e("ChallengesViewModel", "Failed to generate simulated community data", e)
         }
     }
 
@@ -378,7 +378,7 @@ class ChallengesViewModel @Inject constructor(
                 }
             }
         } catch (e: Exception) {
-            android.util.Log.e("ChallengesViewModel", "Failed to check milestones for challenge: $challengeId", e)
+            com.prody.prashant.util.AppLogger.e("ChallengesViewModel", "Failed to check milestones for challenge: $challengeId", e)
         }
     }
 

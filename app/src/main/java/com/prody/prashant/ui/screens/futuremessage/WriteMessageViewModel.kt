@@ -382,7 +382,7 @@ class WriteMessageViewModel @Inject constructor(
             try {
                 audioRecorderManager.deleteRecording(android.net.Uri.parse(uri))
             } catch (e: Exception) {
-                android.util.Log.w(TAG, "Failed to delete recording file", e)
+                com.prody.prashant.util.AppLogger.w(TAG, "Failed to delete recording file", e)
             }
         }
         audioRecorderManager.stopPlayback()

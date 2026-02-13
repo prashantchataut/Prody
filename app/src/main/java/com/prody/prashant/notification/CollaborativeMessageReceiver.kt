@@ -39,7 +39,7 @@ class CollaborativeMessageReceiver : BroadcastReceiver() {
     }
 
     override fun onReceive(context: Context, intent: Intent) {
-        Log.d(TAG, "Received broadcast: ${intent.action}")
+        com.prody.prashant.util.AppLogger.d(TAG, "Received broadcast: ${intent.action}")
 
         when (intent.action) {
             CollaborativeMessageScheduler.ACTION_DELIVER_MESSAGE -> {
@@ -57,16 +57,16 @@ class CollaborativeMessageReceiver : BroadcastReceiver() {
     private fun handleMessageDelivery(intent: Intent) {
         val messageId = intent.getStringExtra(CollaborativeMessageScheduler.EXTRA_MESSAGE_ID)
         if (messageId == null) {
-            Log.e(TAG, "Message ID not found in intent")
+            com.prody.prashant.util.AppLogger.e(TAG, "Message ID not found in intent")
             return
         }
 
         scope.launch {
             try {
-                Log.d(TAG, "Delivering message: $messageId")
+                com.prody.prashant.util.AppLogger.d(TAG, "Delivering message: $messageId")
                 repository.deliverMessage(messageId)
             } catch (e: Exception) {
-                Log.e(TAG, "Failed to deliver message $messageId", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Failed to deliver message $messageId", e)
             }
         }
     }
@@ -78,13 +78,13 @@ class CollaborativeMessageReceiver : BroadcastReceiver() {
         val daysUntil = intent.getIntExtra(CollaborativeMessageScheduler.EXTRA_DAYS_UNTIL, 7)
 
         if (occasionId == null || contactId == null || occasionName == null) {
-            Log.e(TAG, "Missing occasion reminder data in intent")
+            com.prody.prashant.util.AppLogger.e(TAG, "Missing occasion reminder data in intent")
             return
         }
 
         scope.launch {
             try {
-                Log.d(TAG, "Showing occasion reminder: $occasionName in $daysUntil days")
+                com.prody.prashant.util.AppLogger.d(TAG, "Showing occasion reminder: $occasionName in $daysUntil days")
 
                 // Get contact details
                 val contactResult = repository.getContactById(contactId)
@@ -108,7 +108,7 @@ class CollaborativeMessageReceiver : BroadcastReceiver() {
                     }
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Failed to show occasion reminder", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Failed to show occasion reminder", e)
             }
         }
     }
@@ -116,12 +116,12 @@ class CollaborativeMessageReceiver : BroadcastReceiver() {
     private fun handleBootCompleted() {
         scope.launch {
             try {
-                Log.d(TAG, "Rescheduling all pending messages and reminders after boot")
+                com.prody.prashant.util.AppLogger.d(TAG, "Rescheduling all pending messages and reminders after boot")
                 scheduler.rescheduleAllPendingMessages()
                 scheduler.rescheduleAllOccasionReminders()
                 scheduler.deliverOverdueMessages()
             } catch (e: Exception) {
-                Log.e(TAG, "Failed to reschedule after boot", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Failed to reschedule after boot", e)
             }
         }
     }

@@ -25,7 +25,7 @@ abstract class BaseSecureWidgetReceiver : GlanceAppWidgetReceiver() {
     ) {
         // Security: Earliest entry point rate-limiting check
         if (!WidgetUpdateThrottler.shouldUpdate(context, this::class.java)) {
-            Log.w(TAG, "Widget update throttled for ${this::class.java.simpleName}")
+            com.prody.prashant.util.AppLogger.w(TAG, "Widget update throttled for ${this::class.java.simpleName}")
             return
         }
 
@@ -37,7 +37,7 @@ abstract class BaseSecureWidgetReceiver : GlanceAppWidgetReceiver() {
         if (intent.action == AppWidgetManager.ACTION_APPWIDGET_UPDATE ||
             intent.action == "androidx.glance.appwidget.action.UPDATE_ALL") {
             if (!WidgetUpdateThrottler.shouldUpdate(context, this::class.java)) {
-                Log.w(TAG, "Widget broadcast throttled for ${this::class.java.simpleName}")
+                com.prody.prashant.util.AppLogger.w(TAG, "Widget broadcast throttled for ${this::class.java.simpleName}")
                 return
             }
         }

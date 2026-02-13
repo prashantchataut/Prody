@@ -80,7 +80,7 @@ class VoiceTranscriptionService @Inject constructor(
         }
 
         if (_isListening.value) {
-            Log.w(TAG, "Already listening")
+            com.prody.prashant.util.AppLogger.w(TAG, "Already listening")
             return
         }
 
@@ -99,10 +99,10 @@ class VoiceTranscriptionService @Inject constructor(
             _partialTranscription.value = ""
             _error.value = null
 
-            Log.d(TAG, "Started listening")
+            com.prody.prashant.util.AppLogger.d(TAG, "Started listening")
 
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to start listening", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Failed to start listening", e)
             _error.value = TranscriptionError.Unknown(e.message ?: "Failed to start")
             _isListening.value = false
         }
@@ -115,9 +115,9 @@ class VoiceTranscriptionService @Inject constructor(
         try {
             speechRecognizer?.stopListening()
             _isListening.value = false
-            Log.d(TAG, "Stopped listening")
+            com.prody.prashant.util.AppLogger.d(TAG, "Stopped listening")
         } catch (e: Exception) {
-            Log.w(TAG, "Error stopping listener", e)
+            com.prody.prashant.util.AppLogger.w(TAG, "Error stopping listener", e)
         }
     }
 
@@ -129,9 +129,9 @@ class VoiceTranscriptionService @Inject constructor(
             speechRecognizer?.cancel()
             _isListening.value = false
             _partialTranscription.value = ""
-            Log.d(TAG, "Cancelled recognition")
+            com.prody.prashant.util.AppLogger.d(TAG, "Cancelled recognition")
         } catch (e: Exception) {
-            Log.w(TAG, "Error cancelling", e)
+            com.prody.prashant.util.AppLogger.w(TAG, "Error cancelling", e)
         }
     }
 
@@ -143,9 +143,9 @@ class VoiceTranscriptionService @Inject constructor(
             speechRecognizer?.destroy()
             speechRecognizer = null
             _isListening.value = false
-            Log.d(TAG, "Released resources")
+            com.prody.prashant.util.AppLogger.d(TAG, "Released resources")
         } catch (e: Exception) {
-            Log.w(TAG, "Error releasing", e)
+            com.prody.prashant.util.AppLogger.w(TAG, "Error releasing", e)
         }
     }
 
@@ -240,11 +240,11 @@ class VoiceTranscriptionService @Inject constructor(
     private fun createRecognitionListener(): RecognitionListener {
         return object : RecognitionListener {
             override fun onReadyForSpeech(params: Bundle?) {
-                Log.d(TAG, "Ready for speech")
+                com.prody.prashant.util.AppLogger.d(TAG, "Ready for speech")
             }
 
             override fun onBeginningOfSpeech() {
-                Log.d(TAG, "Speech started")
+                com.prody.prashant.util.AppLogger.d(TAG, "Speech started")
             }
 
             override fun onRmsChanged(rmsdB: Float) {
@@ -256,12 +256,12 @@ class VoiceTranscriptionService @Inject constructor(
             override fun onBufferReceived(buffer: ByteArray?) {}
 
             override fun onEndOfSpeech() {
-                Log.d(TAG, "Speech ended")
+                com.prody.prashant.util.AppLogger.d(TAG, "Speech ended")
             }
 
             override fun onError(errorCode: Int) {
                 val error = mapErrorCode(errorCode)
-                Log.e(TAG, "Recognition error: $error")
+                com.prody.prashant.util.AppLogger.e(TAG, "Recognition error: $error")
                 _error.value = error
                 _isListening.value = false
             }
@@ -272,7 +272,7 @@ class VoiceTranscriptionService @Inject constructor(
                 _transcription.value = text
                 _partialTranscription.value = ""
                 _isListening.value = false
-                Log.d(TAG, "Final result: $text")
+                com.prody.prashant.util.AppLogger.d(TAG, "Final result: ${com.prody.prashant.util.AppLogger.redactJournalText(text)}")
             }
 
             override fun onPartialResults(partialResults: Bundle?) {

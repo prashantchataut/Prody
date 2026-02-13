@@ -120,7 +120,7 @@ class ProfileViewModel @Inject constructor(
                     }
                 }
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error loading profile", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error loading profile", e)
                 _uiState.update { state ->
                     state.copy(isLoading = false, error = "Failed to load profile. Please try again.")
                 }
@@ -146,7 +146,7 @@ class ProfileViewModel @Inject constructor(
                     }
                 }
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error loading achievements", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error loading achievements", e)
             }
         }
     }
@@ -170,7 +170,7 @@ class ProfileViewModel @Inject constructor(
                     }
                 }
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error loading player skills", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error loading player skills", e)
             }
         }
     }
@@ -262,7 +262,7 @@ class ProfileViewModel @Inject constructor(
                             hasEnoughDataForPattern = true
                         )
                     }
-                    android.util.Log.d(TAG, "Weekly pattern loaded: ${pattern.keyPattern}")
+                    com.prody.prashant.util.AppLogger.d(TAG, "Weekly pattern loaded: ${pattern.keyPattern}")
                 } ?: run {
                     _uiState.update {
                         it.copy(isLoadingWeeklyPattern = false)
@@ -270,7 +270,7 @@ class ProfileViewModel @Inject constructor(
                 }
 
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error loading weekly pattern", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error loading weekly pattern", e)
                 _uiState.update { it.copy(isLoadingWeeklyPattern = false) }
             }
         }

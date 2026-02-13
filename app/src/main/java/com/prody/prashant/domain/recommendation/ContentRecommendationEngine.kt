@@ -119,7 +119,7 @@ class ContentRecommendationEngine @Inject constructor(
                 )
             )
         } catch (e: Exception) {
-            android.util.Log.e(TAG, "Error getting recommended quote", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error getting recommended quote", e)
             null
         }
     }
@@ -171,7 +171,7 @@ class ContentRecommendationEngine @Inject constructor(
                 )
             )
         } catch (e: Exception) {
-            android.util.Log.e(TAG, "Error getting recommended vocabulary", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error getting recommended vocabulary", e)
             null
         }
     }
@@ -199,7 +199,7 @@ class ContentRecommendationEngine @Inject constructor(
                 )
             )
         } catch (e: Exception) {
-            android.util.Log.e(TAG, "Error getting recommended prompt", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error getting recommended prompt", e)
             null
         }
     }

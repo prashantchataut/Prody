@@ -147,7 +147,7 @@ class SyncManager @Inject constructor(
                 when (networkState.status) {
                     NetworkStatus.AVAILABLE -> {
                         if (_syncEnabled.value && operationQueue.isNotEmpty()) {
-                            Log.d(TAG, "Network available, starting sync")
+                            com.prody.prashant.util.AppLogger.d(TAG, "Network available, starting sync")
                             processSyncQueue()
                         } else {
                             updateSyncStatus(
@@ -157,7 +157,7 @@ class SyncManager @Inject constructor(
                         }
                     }
                     NetworkStatus.LOST, NetworkStatus.UNAVAILABLE -> {
-                        Log.d(TAG, "Network lost, entering offline mode")
+                        com.prody.prashant.util.AppLogger.d(TAG, "Network lost, entering offline mode")
                         updateSyncStatus(SyncStatus.OFFLINE)
                     }
                     else -> {}
@@ -171,7 +171,7 @@ class SyncManager @Inject constructor(
         savePendingOperations()
         updatePendingCount()
 
-        Log.d(TAG, "Queued operation: ${operation.type}, queue size: ${operationQueue.size}")
+        com.prody.prashant.util.AppLogger.d(TAG, "Queued operation: ${operation.type}, queue size: ${operationQueue.size}")
 
         if (networkManager.isOnline && _syncEnabled.value) {
             scope.launch {
@@ -230,12 +230,12 @@ class SyncManager @Inject constructor(
                             operation.entityId?.let { syncVocabulary(it) }
                         }
                         else -> {
-                            Log.d(TAG, "Sync logic not implemented for type: ${operation.type}")
+                            com.prody.prashant.util.AppLogger.d(TAG, "Sync logic not implemented for type: ${operation.type}")
                         }
                     }
                     operationQueue.remove(operation)
                 } catch (e: Exception) {
-                    Log.e(TAG, "Failed to sync operation: ${operation.type}", e)
+                    com.prody.prashant.util.AppLogger.e(TAG, "Failed to sync operation: ${operation.type}", e)
                     break
                 }
             }
@@ -248,7 +248,7 @@ class SyncManager @Inject constructor(
             )
 
         } catch (e: Exception) {
-            Log.e(TAG, "Sync failed", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Sync failed", e)
             updateSyncStatus(SyncStatus.FAILED)
             _syncState.value = _syncState.value.copy(lastError = e.message)
         }
@@ -306,7 +306,7 @@ class SyncManager @Inject constructor(
                     preferences[PENDING_OPERATIONS_KEY] = operationsJson
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Failed to save pending operations", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Failed to save pending operations", e)
             }
         }
     }
@@ -320,23 +320,23 @@ class SyncManager @Inject constructor(
             val operations = Json.decodeFromString<List<SyncOperation>>(operationsJson)
             operationQueue.addAll(operations)
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to load pending operations", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Failed to load pending operations", e)
         }
     }
 
     private suspend fun syncJournalEntry(entryId: Long) {
-        Log.i(TAG, "Successfully synced journal entry: $entryId")
+        com.prody.prashant.util.AppLogger.i(TAG, "Successfully synced journal entry: $entryId")
     }
 
     private suspend fun updateJournalEntry(entryId: Long) {
-        Log.i(TAG, "Successfully updated journal entry: $entryId")
+        com.prody.prashant.util.AppLogger.i(TAG, "Successfully updated journal entry: $entryId")
     }
 
     private suspend fun deleteJournalEntry(entryId: Long) {
-        Log.i(TAG, "Successfully deleted journal entry: $entryId")
+        com.prody.prashant.util.AppLogger.i(TAG, "Successfully deleted journal entry: $entryId")
     }
 
     private suspend fun syncVocabulary(vocabId: Long) {
-        Log.i(TAG, "Successfully synced vocabulary: $vocabId")
+        com.prody.prashant.util.AppLogger.i(TAG, "Successfully synced vocabulary: $vocabId")
     }
 }

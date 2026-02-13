@@ -99,22 +99,22 @@ class NetworkConnectivityManager @Inject constructor(
 
     private val networkCallback = object : ConnectivityManager.NetworkCallback() {
         override fun onAvailable(network: Network) {
-            Log.d(TAG, "Network available")
+            com.prody.prashant.util.AppLogger.d(TAG, "Network available")
             updateNetworkState(NetworkStatus.AVAILABLE)
         }
 
         override fun onLosing(network: Network, maxMsToLive: Int) {
-            Log.d(TAG, "Network losing, max ms to live: $maxMsToLive")
+            com.prody.prashant.util.AppLogger.d(TAG, "Network losing, max ms to live: $maxMsToLive")
             updateNetworkState(NetworkStatus.LOSING)
         }
 
         override fun onLost(network: Network) {
-            Log.d(TAG, "Network lost")
+            com.prody.prashant.util.AppLogger.d(TAG, "Network lost")
             updateNetworkState(NetworkStatus.LOST)
         }
 
         override fun onUnavailable() {
-            Log.d(TAG, "Network unavailable")
+            com.prody.prashant.util.AppLogger.d(TAG, "Network unavailable")
             updateNetworkState(NetworkStatus.UNAVAILABLE)
         }
 
@@ -137,7 +137,7 @@ class NetworkConnectivityManager @Inject constructor(
                 isRoaming = isRoaming
             )
 
-            Log.d(TAG, "Network capabilities changed: type=$type, metered=$isMetered, roaming=$isRoaming")
+            com.prody.prashant.util.AppLogger.d(TAG, "Network capabilities changed: type=$type, metered=$isMetered, roaming=$isRoaming")
         }
     }
 
@@ -151,9 +151,9 @@ class NetworkConnectivityManager @Inject constructor(
                 .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
                 .build()
             connectivityManager.registerNetworkCallback(networkRequest, networkCallback)
-            Log.d(TAG, "Network callback registered")
+            com.prody.prashant.util.AppLogger.d(TAG, "Network callback registered")
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to register network callback", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Failed to register network callback", e)
         }
     }
 
@@ -235,9 +235,9 @@ class NetworkConnectivityManager @Inject constructor(
     fun unregister() {
         try {
             connectivityManager.unregisterNetworkCallback(networkCallback)
-            Log.d(TAG, "Network callback unregistered")
+            com.prody.prashant.util.AppLogger.d(TAG, "Network callback unregistered")
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to unregister network callback", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Failed to unregister network callback", e)
         }
     }
 }

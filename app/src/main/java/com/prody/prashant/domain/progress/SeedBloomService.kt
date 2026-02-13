@@ -93,14 +93,14 @@ class SeedBloomService @Inject constructor(
             userDao.addPoints(BLOOM_REWARD_POINTS)
             seedDao.markRewardClaimed(todaySeed.id)
 
-            Log.d(TAG, "Seed '${todaySeed.seedContent}' bloomed in $bloomSource!")
+            com.prody.prashant.util.AppLogger.d(TAG, "Seed '${todaySeed.seedContent}' bloomed in $bloomSource!")
 
             BloomResult.Bloomed(
                 seedContent = todaySeed.seedContent,
                 pointsAwarded = BLOOM_REWARD_POINTS
             )
         } catch (e: Exception) {
-            Log.e(TAG, "Error checking bloom", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error checking bloom", e)
             BloomResult.Error(e.message ?: "Unknown error")
         }
     }
@@ -113,7 +113,7 @@ class SeedBloomService @Inject constructor(
             val seeds = seedDao.getAllSeeds().first()
             SeedBloomSummary.calculate(seeds)
         } catch (e: Exception) {
-            Log.e(TAG, "Error getting bloom summary", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error getting bloom summary", e)
             SeedBloomSummary()
         }
     }
@@ -170,7 +170,7 @@ class SeedBloomService @Inject constructor(
                 )
             }
         } catch (e: Exception) {
-            Log.w(TAG, "Failed to create word seed", e)
+            com.prody.prashant.util.AppLogger.w(TAG, "Failed to create word seed", e)
             null
         }
     }
@@ -191,7 +191,7 @@ class SeedBloomService @Inject constructor(
                 )
             }
         } catch (e: Exception) {
-            Log.w(TAG, "Failed to create proverb seed", e)
+            com.prody.prashant.util.AppLogger.w(TAG, "Failed to create proverb seed", e)
             null
         }
     }
@@ -212,7 +212,7 @@ class SeedBloomService @Inject constructor(
                 )
             }
         } catch (e: Exception) {
-            Log.w(TAG, "Failed to create quote seed", e)
+            com.prody.prashant.util.AppLogger.w(TAG, "Failed to create quote seed", e)
             null
         }
     }

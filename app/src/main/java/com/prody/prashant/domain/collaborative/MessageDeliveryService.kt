@@ -35,7 +35,7 @@ class MessageDeliveryService @Inject constructor(
     suspend fun deliverMessage(message: CollaborativeMessage): DeliveryResult {
         return withContext(Dispatchers.IO) {
             try {
-                Log.d(TAG, "Attempting to deliver message ${message.id} via ${message.recipient.method}")
+                com.prody.prashant.util.AppLogger.d(TAG, "Attempting to deliver message ${message.id} via ${message.recipient.method}")
 
                 val result = when (message.recipient.method) {
                     ContactMethod.APP_USER -> deliverInApp(message)
@@ -60,7 +60,7 @@ class MessageDeliveryService @Inject constructor(
                         // Notify sender that message was delivered
                         notifications.notifyMessageDelivered(message)
 
-                        Log.d(TAG, "Successfully delivered message ${message.id}")
+                        com.prody.prashant.util.AppLogger.d(TAG, "Successfully delivered message ${message.id}")
                     }
                     is DeliveryResult.Failure -> {
                         dao.incrementRetryCount(message.id)
@@ -68,16 +68,16 @@ class MessageDeliveryService @Inject constructor(
 
                         if (entity != null && entity.retryCount >= MAX_RETRY_COUNT) {
                             dao.updateMessageStatus(message.id, MessageStatus.FAILED.name.lowercase())
-                            Log.e(TAG, "Message ${message.id} failed after ${entity.retryCount} attempts")
+                            com.prody.prashant.util.AppLogger.e(TAG, "Message ${message.id} failed after ${entity.retryCount} attempts")
                         } else {
-                            Log.w(TAG, "Message ${message.id} delivery failed, will retry")
+                            com.prody.prashant.util.AppLogger.w(TAG, "Message ${message.id} delivery failed, will retry")
                         }
                     }
                 }
 
                 result
             } catch (e: Exception) {
-                Log.e(TAG, "Error delivering message ${message.id}", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error delivering message ${message.id}", e)
                 DeliveryResult.Failure(e.message ?: "Unknown error")
             }
         }
@@ -115,7 +115,7 @@ class MessageDeliveryService @Inject constructor(
 
             DeliveryResult.Success("Message delivered in-app")
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to deliver in-app message", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Failed to deliver in-app message", e)
             DeliveryResult.Failure(e.message ?: "In-app delivery failed")
         }
     }
@@ -158,7 +158,7 @@ class MessageDeliveryService @Inject constructor(
                 DeliveryResult.Failure("No email client available")
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to deliver via email", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Failed to deliver via email", e)
             DeliveryResult.Failure(e.message ?: "Email delivery failed")
         }
     }
@@ -185,7 +185,7 @@ class MessageDeliveryService @Inject constructor(
                 DeliveryResult.Failure("No SMS app available")
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to deliver via SMS", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Failed to deliver via SMS", e)
             DeliveryResult.Failure(e.message ?: "SMS delivery failed")
         }
     }
@@ -212,7 +212,7 @@ class MessageDeliveryService @Inject constructor(
                 DeliveryResult.Failure("WhatsApp not available")
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to deliver via WhatsApp", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Failed to deliver via WhatsApp", e)
             DeliveryResult.Failure(e.message ?: "WhatsApp delivery failed")
         }
     }

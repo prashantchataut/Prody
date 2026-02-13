@@ -24,7 +24,7 @@ class NotificationScheduler @Inject constructor(
         try {
             context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager
         } catch (e: Exception) {
-            android.util.Log.e(TAG, "Failed to get AlarmManager", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Failed to get AlarmManager", e)
             null
         }
     }
@@ -54,36 +54,36 @@ class NotificationScheduler @Inject constructor(
         try {
             val notificationsEnabled = preferencesManager.notificationsEnabled.first()
             if (!notificationsEnabled) {
-                android.util.Log.d(TAG, "Notifications disabled, cancelling all")
+                com.prody.prashant.util.AppLogger.d(TAG, "Notifications disabled, cancelling all")
                 cancelAllNotifications()
                 return
             }
 
-            android.util.Log.d(TAG, "Rescheduling all notifications...")
+            com.prody.prashant.util.AppLogger.d(TAG, "Rescheduling all notifications...")
 
             // Schedule each notification type independently
             // If one fails, the others should still be scheduled
             runCatching { scheduleMorningWisdom() }
-                .onFailure { android.util.Log.e(TAG, "Failed to schedule morning wisdom", it) }
+                .onFailure { com.prody.prashant.util.AppLogger.e(TAG, "Failed to schedule morning wisdom", it) }
 
             runCatching { scheduleEveningReflection() }
-                .onFailure { android.util.Log.e(TAG, "Failed to schedule evening reflection", it) }
+                .onFailure { com.prody.prashant.util.AppLogger.e(TAG, "Failed to schedule evening reflection", it) }
 
             runCatching { scheduleWordOfDay() }
-                .onFailure { android.util.Log.e(TAG, "Failed to schedule word of day", it) }
+                .onFailure { com.prody.prashant.util.AppLogger.e(TAG, "Failed to schedule word of day", it) }
 
             runCatching { scheduleStreakReminder() }
-                .onFailure { android.util.Log.e(TAG, "Failed to schedule streak reminder", it) }
+                .onFailure { com.prody.prashant.util.AppLogger.e(TAG, "Failed to schedule streak reminder", it) }
 
             runCatching { scheduleJournalReminder() }
-                .onFailure { android.util.Log.e(TAG, "Failed to schedule journal reminder", it) }
+                .onFailure { com.prody.prashant.util.AppLogger.e(TAG, "Failed to schedule journal reminder", it) }
 
             runCatching { scheduleFutureMessages() }
-                .onFailure { android.util.Log.e(TAG, "Failed to schedule future messages", it) }
+                .onFailure { com.prody.prashant.util.AppLogger.e(TAG, "Failed to schedule future messages", it) }
 
-            android.util.Log.d(TAG, "Notification rescheduling completed")
+            com.prody.prashant.util.AppLogger.d(TAG, "Notification rescheduling completed")
         } catch (e: Exception) {
-            android.util.Log.e(TAG, "Failed to reschedule notifications", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Failed to reschedule notifications", e)
         }
     }
 
@@ -108,7 +108,7 @@ class NotificationScheduler @Inject constructor(
                 intervalMillis = AlarmManager.INTERVAL_DAY
             )
         } catch (e: Exception) {
-            android.util.Log.e(TAG, "Failed to schedule morning wisdom", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Failed to schedule morning wisdom", e)
         }
     }
 
@@ -133,7 +133,7 @@ class NotificationScheduler @Inject constructor(
                 intervalMillis = AlarmManager.INTERVAL_DAY
             )
         } catch (e: Exception) {
-            android.util.Log.e(TAG, "Failed to schedule evening reflection", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Failed to schedule evening reflection", e)
         }
     }
 
@@ -210,11 +210,11 @@ class NotificationScheduler @Inject constructor(
                         )
                     }
                 } catch (e: Exception) {
-                    android.util.Log.e(TAG, "Failed to schedule future message: ${message.id}", e)
+                    com.prody.prashant.util.AppLogger.e(TAG, "Failed to schedule future message: ${message.id}", e)
                 }
             }
         } catch (e: Exception) {
-            android.util.Log.e(TAG, "Failed to fetch future messages from database", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Failed to fetch future messages from database", e)
         }
     }
 
@@ -234,7 +234,7 @@ class NotificationScheduler @Inject constructor(
 
     fun cancelFutureMessageNotification(messageId: Long) {
         val manager = alarmManager ?: run {
-            android.util.Log.w(TAG, "AlarmManager not available, skipping future message cancellation")
+            com.prody.prashant.util.AppLogger.w(TAG, "AlarmManager not available, skipping future message cancellation")
             return
         }
 
@@ -253,7 +253,7 @@ class NotificationScheduler @Inject constructor(
                 it.cancel()
             }
         } catch (e: Exception) {
-            android.util.Log.e(TAG, "Failed to cancel future message notification: $messageId", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Failed to cancel future message notification: $messageId", e)
         }
     }
 
@@ -264,7 +264,7 @@ class NotificationScheduler @Inject constructor(
         intervalMillis: Long
     ) {
         val manager = alarmManager ?: run {
-            android.util.Log.w(TAG, "AlarmManager not available, skipping alarm scheduling")
+            com.prody.prashant.util.AppLogger.w(TAG, "AlarmManager not available, skipping alarm scheduling")
             return
         }
 
@@ -286,7 +286,7 @@ class NotificationScheduler @Inject constructor(
                 pendingIntent
             )
         } catch (e: Exception) {
-            android.util.Log.e(TAG, "Failed to schedule repeating alarm", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Failed to schedule repeating alarm", e)
         }
     }
 
@@ -297,7 +297,7 @@ class NotificationScheduler @Inject constructor(
         extras: Map<String, String> = emptyMap()
     ) {
         val manager = alarmManager ?: run {
-            android.util.Log.w(TAG, "AlarmManager not available, skipping exact alarm scheduling")
+            com.prody.prashant.util.AppLogger.w(TAG, "AlarmManager not available, skipping exact alarm scheduling")
             return
         }
 
@@ -337,7 +337,7 @@ class NotificationScheduler @Inject constructor(
                 )
             }
         } catch (e: Exception) {
-            android.util.Log.e(TAG, "Failed to schedule exact alarm", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Failed to schedule exact alarm", e)
         }
     }
 
@@ -353,7 +353,7 @@ class NotificationScheduler @Inject constructor(
      */
     fun debugTriggerNotificationNow(type: String) {
         if (!com.prody.prashant.BuildConfig.DEBUG) {
-            android.util.Log.w(TAG, "Debug notifications only available in debug builds")
+            com.prody.prashant.util.AppLogger.w(TAG, "Debug notifications only available in debug builds")
             return
         }
 
@@ -365,12 +365,12 @@ class NotificationScheduler @Inject constructor(
             "journal" -> NotificationReceiver.ACTION_JOURNAL_REMINDER
             "future" -> NotificationReceiver.ACTION_FUTURE_MESSAGE
             else -> {
-                android.util.Log.w(TAG, "Unknown notification type: $type")
+                com.prody.prashant.util.AppLogger.w(TAG, "Unknown notification type: $type")
                 return
             }
         }
 
-        android.util.Log.d(TAG, "Triggering debug notification: $type")
+        com.prody.prashant.util.AppLogger.d(TAG, "Triggering debug notification: $type")
 
         val intent = Intent(context, NotificationReceiver::class.java).apply {
             this.action = action
@@ -382,7 +382,7 @@ class NotificationScheduler @Inject constructor(
 
         // Send broadcast immediately
         context.sendBroadcast(intent)
-        android.util.Log.d(TAG, "Debug notification broadcast sent for: $type")
+        com.prody.prashant.util.AppLogger.d(TAG, "Debug notification broadcast sent for: $type")
     }
 
     /**
@@ -394,7 +394,7 @@ class NotificationScheduler @Inject constructor(
      */
     fun debugScheduleNotificationIn(type: String, delaySeconds: Int) {
         if (!com.prody.prashant.BuildConfig.DEBUG) {
-            android.util.Log.w(TAG, "Debug notifications only available in debug builds")
+            com.prody.prashant.util.AppLogger.w(TAG, "Debug notifications only available in debug builds")
             return
         }
 
@@ -405,13 +405,13 @@ class NotificationScheduler @Inject constructor(
             "streak" -> NotificationReceiver.ACTION_STREAK_REMINDER to REQUEST_STREAK
             "journal" -> NotificationReceiver.ACTION_JOURNAL_REMINDER to REQUEST_JOURNAL
             else -> {
-                android.util.Log.w(TAG, "Unknown notification type: $type")
+                com.prody.prashant.util.AppLogger.w(TAG, "Unknown notification type: $type")
                 return
             }
         }
 
         val triggerTime = System.currentTimeMillis() + (delaySeconds * 1000L)
-        android.util.Log.d(TAG, "Scheduling debug notification '$type' in $delaySeconds seconds")
+        com.prody.prashant.util.AppLogger.d(TAG, "Scheduling debug notification '$type' in $delaySeconds seconds")
 
         scheduleExactAlarm(
             action = action,
@@ -422,7 +422,7 @@ class NotificationScheduler @Inject constructor(
 
     private fun cancelAllNotifications() {
         val manager = alarmManager ?: run {
-            android.util.Log.w(TAG, "AlarmManager not available, skipping notification cancellation")
+            com.prody.prashant.util.AppLogger.w(TAG, "AlarmManager not available, skipping notification cancellation")
             return
         }
 
@@ -448,7 +448,7 @@ class NotificationScheduler @Inject constructor(
                     it.cancel()
                 }
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Failed to cancel notification for action: $action", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Failed to cancel notification for action: $action", e)
             }
         }
     }

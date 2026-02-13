@@ -46,7 +46,7 @@ class SearchViewModel @Inject constructor(
                     _uiState.update { it.copy(recentContent = recent) }
                 }
             } catch (e: Exception) {
-                android.util.Log.e("SearchViewModel", "Error loading recent content", e)
+                com.prody.prashant.util.AppLogger.e("SearchViewModel", "Error loading recent content", e)
             }
         }
     }
@@ -66,7 +66,7 @@ class SearchViewModel @Inject constructor(
                     searchRepository.search(query, category)
                 }
             }.catch { e ->
-                android.util.Log.e("SearchViewModel", "Search error", e)
+                com.prody.prashant.util.AppLogger.e("SearchViewModel", "Search error", e)
                 _uiState.update {
                     it.copy(
                         isSearching = false,

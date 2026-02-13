@@ -57,7 +57,7 @@ class ContextAwareBuddhaService @Inject constructor(
         moodIntensity: Int,
         wordCount: Int
     ): GeminiResult<String> = withContext(Dispatchers.IO) {
-        Log.d(TAG, "Generating context-aware journal response")
+        com.prody.prashant.util.AppLogger.d(TAG, "Generating context-aware journal response")
 
         // Get rich Buddha context
         val buddhaContext = userContextEngine.getContextForBuddha()
@@ -84,7 +84,7 @@ class ContextAwareBuddhaService @Inject constructor(
         moodIntensity: Int,
         wordCount: Int
     ): Flow<GeminiResult<String>> = flow {
-        Log.d(TAG, "Starting context-aware streaming response")
+        com.prody.prashant.util.AppLogger.d(TAG, "Starting context-aware streaming response")
 
         // Get rich Buddha context
         val buddhaContext = userContextEngine.getContextForBuddha()
@@ -113,7 +113,7 @@ class ContextAwareBuddhaService @Inject constructor(
      * Gets daily wisdom tailored to the user's current state.
      */
     suspend fun getDailyWisdom(): GeminiResult<String> = withContext(Dispatchers.IO) {
-        Log.d(TAG, "Generating context-aware daily wisdom")
+        com.prody.prashant.util.AppLogger.d(TAG, "Generating context-aware daily wisdom")
 
         val context = userContextEngine.getCurrentContext()
         val buddhaContext = userContextEngine.getContextForBuddha()
@@ -132,7 +132,7 @@ class ContextAwareBuddhaService @Inject constructor(
      * Gets a journal prompt tailored to user context.
      */
     suspend fun getJournalPrompt(mood: Mood): GeminiResult<String> = withContext(Dispatchers.IO) {
-        Log.d(TAG, "Generating context-aware journal prompt")
+        com.prody.prashant.util.AppLogger.d(TAG, "Generating context-aware journal prompt")
 
         val context = userContextEngine.getCurrentContext()
         val buddhaContext = userContextEngine.getContextForBuddha()
@@ -150,7 +150,7 @@ class ContextAwareBuddhaService @Inject constructor(
      * Gets a morning reflection tailored to user.
      */
     suspend fun getMorningReflection(): GeminiResult<String> = withContext(Dispatchers.IO) {
-        Log.d(TAG, "Generating context-aware morning reflection")
+        com.prody.prashant.util.AppLogger.d(TAG, "Generating context-aware morning reflection")
 
         val context = userContextEngine.getCurrentContext()
 
@@ -163,7 +163,7 @@ class ContextAwareBuddhaService @Inject constructor(
      * Gets an evening reflection tailored to user.
      */
     suspend fun getEveningReflection(): GeminiResult<String> = withContext(Dispatchers.IO) {
-        Log.d(TAG, "Generating context-aware evening reflection")
+        com.prody.prashant.util.AppLogger.d(TAG, "Generating context-aware evening reflection")
 
         val context = userContextEngine.getCurrentContext()
 
@@ -183,7 +183,7 @@ class ContextAwareBuddhaService @Inject constructor(
         streakCount: Int,
         previousBest: Int = 0
     ): GeminiResult<String> = withContext(Dispatchers.IO) {
-        Log.d(TAG, "Generating context-aware streak celebration")
+        com.prody.prashant.util.AppLogger.d(TAG, "Generating context-aware streak celebration")
 
         val context = userContextEngine.getCurrentContext()
 

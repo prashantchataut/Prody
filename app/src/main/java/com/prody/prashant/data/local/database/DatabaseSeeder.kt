@@ -41,7 +41,7 @@ object DatabaseSeeder {
     fun seedDatabase(database: ProdyDatabase) {
         scope.launch {
             try {
-                Log.d(TAG, "Starting database seeding...")
+                com.prody.prashant.util.AppLogger.d(TAG, "Starting database seeding...")
 
                 // Seed all content types in parallel for faster initialization
                 launch { seedQuotes(database) }
@@ -53,9 +53,9 @@ object DatabaseSeeder {
                 launch { seedUserProfile(database) }
                 launch { seedAchievements(database) }
 
-                Log.d(TAG, "Database seeding initiated successfully")
+                com.prody.prashant.util.AppLogger.d(TAG, "Database seeding initiated successfully")
             } catch (e: Exception) {
-                Log.e(TAG, "Error seeding database", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error seeding database", e)
             }
         }
     }
@@ -64,9 +64,9 @@ object DatabaseSeeder {
         try {
             val quoteDao = database.quoteDao()
             quoteDao.insertQuotes(getInitialQuotes())
-            Log.d(TAG, "Seeded ${getInitialQuotes().size} quotes")
+            com.prody.prashant.util.AppLogger.d(TAG, "Seeded ${getInitialQuotes().size} quotes")
         } catch (e: Exception) {
-            Log.e(TAG, "Error seeding quotes", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error seeding quotes", e)
         }
     }
 
@@ -74,9 +74,9 @@ object DatabaseSeeder {
         try {
             val proverbDao = database.proverbDao()
             proverbDao.insertProverbs(getInitialProverbs())
-            Log.d(TAG, "Seeded ${getInitialProverbs().size} proverbs")
+            com.prody.prashant.util.AppLogger.d(TAG, "Seeded ${getInitialProverbs().size} proverbs")
         } catch (e: Exception) {
-            Log.e(TAG, "Error seeding proverbs", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error seeding proverbs", e)
         }
     }
 
@@ -84,9 +84,9 @@ object DatabaseSeeder {
         try {
             val idiomDao = database.idiomDao()
             idiomDao.insertIdioms(getInitialIdioms())
-            Log.d(TAG, "Seeded ${getInitialIdioms().size} idioms")
+            com.prody.prashant.util.AppLogger.d(TAG, "Seeded ${getInitialIdioms().size} idioms")
         } catch (e: Exception) {
-            Log.e(TAG, "Error seeding idioms", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error seeding idioms", e)
         }
     }
 
@@ -94,9 +94,9 @@ object DatabaseSeeder {
         try {
             val phraseDao = database.phraseDao()
             phraseDao.insertPhrases(getInitialPhrases())
-            Log.d(TAG, "Seeded ${getInitialPhrases().size} phrases")
+            com.prody.prashant.util.AppLogger.d(TAG, "Seeded ${getInitialPhrases().size} phrases")
         } catch (e: Exception) {
-            Log.e(TAG, "Error seeding phrases", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error seeding phrases", e)
         }
     }
 
@@ -1088,9 +1088,9 @@ object DatabaseSeeder {
         try {
             val vocabularyDao = database.vocabularyDao()
             vocabularyDao.insertWords(getInitialVocabulary())
-            Log.d(TAG, "Seeded ${getInitialVocabulary().size} vocabulary words")
+            com.prody.prashant.util.AppLogger.d(TAG, "Seeded ${getInitialVocabulary().size} vocabulary words")
         } catch (e: Exception) {
-            Log.e(TAG, "Error seeding vocabulary", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error seeding vocabulary", e)
         }
     }
 
@@ -1670,9 +1670,9 @@ object DatabaseSeeder {
         try {
             val userDao = database.userDao()
             userDao.insertLeaderboardEntries(getInitialLeaderboard())
-            Log.d(TAG, "Seeded ${getInitialLeaderboard().size} leaderboard entries")
+            com.prody.prashant.util.AppLogger.d(TAG, "Seeded ${getInitialLeaderboard().size} leaderboard entries")
         } catch (e: Exception) {
-            Log.e(TAG, "Error seeding leaderboard", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error seeding leaderboard", e)
         }
     }
 
@@ -2006,10 +2006,10 @@ object DatabaseSeeder {
             if (existingProfile == null) {
                 userDao.insertUserProfile(getInitialUserProfile())
                 userDao.insertUserStats(getInitialUserStats())
-                Log.d(TAG, "Seeded initial user profile")
+                com.prody.prashant.util.AppLogger.d(TAG, "Seeded initial user profile")
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error seeding user profile", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error seeding user profile", e)
         }
     }
 
@@ -2045,9 +2045,9 @@ object DatabaseSeeder {
         try {
             val userDao = database.userDao()
             userDao.insertAchievements(getInitialAchievements())
-            Log.d(TAG, "Seeded ${getInitialAchievements().size} achievements")
+            com.prody.prashant.util.AppLogger.d(TAG, "Seeded ${getInitialAchievements().size} achievements")
         } catch (e: Exception) {
-            Log.e(TAG, "Error seeding achievements", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error seeding achievements", e)
         }
     }
 

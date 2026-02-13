@@ -774,7 +774,7 @@ private fun VoiceRecordingPlayer(
                                 mediaPlayer?.start()
                                 isPlaying = true
                             } catch (e: Exception) {
-                                android.util.Log.e("VoicePlayer", "Error playing voice", e)
+                                com.prody.prashant.util.AppLogger.e("VoicePlayer", "Error playing voice", e)
                             }
                         }
                     },
@@ -914,7 +914,7 @@ private fun MediaGallerySection(
                             }
                             context.startActivity(intent)
                         } catch (e: Exception) {
-                            android.util.Log.e("JournalDetail", "No video player found", e)
+                            com.prody.prashant.util.AppLogger.e("JournalDetail", "No video player found", e)
                         }
                     }
                 )

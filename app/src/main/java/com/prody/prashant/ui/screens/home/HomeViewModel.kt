@@ -269,7 +269,7 @@ class HomeViewModel @Inject constructor(
                     isLoading = false // <-- Critical: Signal that loading is complete.
                 )
             }.catch { e ->
-                android.util.Log.e(TAG, "Error in combined home data flow", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error in combined home data flow", e)
                 _uiState.update {
                     it.copy(
                         isLoading = false,
@@ -293,10 +293,10 @@ class HomeViewModel @Inject constructor(
     }
 
     private suspend fun fetchDailyContentConcurrently(): DailyContent = coroutineScope {
-        val quoteDeferred = async { try { quoteDao.getQuoteOfTheDay() } catch (e: Exception) { android.util.Log.e(TAG, "Failed to load quote", e); null } }
-        val wordDeferred = async { try { vocabularyDao.getWordOfTheDay() } catch (e: Exception) { android.util.Log.e(TAG, "Failed to load word", e); null } }
-        val proverbDeferred = async { try { proverbDao.getProverbOfTheDay() } catch (e: Exception) { android.util.Log.e(TAG, "Failed to load proverb", e); null } }
-        val idiomDeferred = async { try { idiomDao.getIdiomOfTheDay() } catch (e: Exception) { android.util.Log.e(TAG, "Failed to load idiom", e); null } }
+        val quoteDeferred = async { try { quoteDao.getQuoteOfTheDay() } catch (e: Exception) { com.prody.prashant.util.AppLogger.e(TAG, "Failed to load quote", e); null } }
+        val wordDeferred = async { try { vocabularyDao.getWordOfTheDay() } catch (e: Exception) { com.prody.prashant.util.AppLogger.e(TAG, "Failed to load word", e); null } }
+        val proverbDeferred = async { try { proverbDao.getProverbOfTheDay() } catch (e: Exception) { com.prody.prashant.util.AppLogger.e(TAG, "Failed to load proverb", e); null } }
+        val idiomDeferred = async { try { idiomDao.getIdiomOfTheDay() } catch (e: Exception) { com.prody.prashant.util.AppLogger.e(TAG, "Failed to load idiom", e); null } }
 
         DailyContent(quoteDeferred.await(), wordDeferred.await(), proverbDeferred.await(), idiomDeferred.await())
     }
@@ -337,7 +337,7 @@ class HomeViewModel @Inject constructor(
                 val todayProgress = activeProgressService.getTodayProgress()
                 _uiState.update { it.copy(todayProgress = todayProgress) }
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error loading active progress", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error loading active progress", e)
             }
         }
     }
@@ -355,7 +355,7 @@ class HomeViewModel @Inject constructor(
                     todayProgress = todayProgress
                 )}
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error refreshing next action", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error refreshing next action", e)
             }
         }
     }
@@ -369,7 +369,7 @@ class HomeViewModel @Inject constructor(
                 val seed = seedBloomService.getTodaySeed()
                 _uiState.update { it.copy(dailySeed = seed) }
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error loading daily seed", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error loading daily seed", e)
             }
         }
     }
@@ -406,9 +406,9 @@ class HomeViewModel @Inject constructor(
             try {
                 val result = dualStreakManager.maintainWisdomStreak()
                 // Result can be used to show feedback/celebration if needed
-                android.util.Log.d(TAG, "Wisdom streak result: $result")
+                com.prody.prashant.util.AppLogger.d(TAG, "Wisdom streak result: $result")
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error maintaining wisdom streak", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error maintaining wisdom streak", e)
             }
         }
     }
@@ -422,9 +422,9 @@ class HomeViewModel @Inject constructor(
             try {
                 val result = dualStreakManager.maintainReflectionStreak()
                 // Result can be used to show feedback/celebration if needed
-                android.util.Log.d(TAG, "Reflection streak result: $result")
+                com.prody.prashant.util.AppLogger.d(TAG, "Reflection streak result: $result")
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error maintaining reflection streak", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error maintaining reflection streak", e)
             }
         }
     }
@@ -471,10 +471,10 @@ class HomeViewModel @Inject constructor(
                 // Load anniversary memories
                 loadAnniversaryMemories()
 
-                android.util.Log.d(TAG, "Soul Layer content loaded - Archetype: ${context.userArchetype}, Trust: ${context.trustLevel}")
+                com.prody.prashant.util.AppLogger.d(TAG, "Soul Layer content loaded - Archetype: ${context.userArchetype}, Trust: ${context.trustLevel}")
 
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error loading Soul Layer content", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error loading Soul Layer content", e)
             }
         }
     }
@@ -498,7 +498,7 @@ class HomeViewModel @Inject constructor(
                 )
             }
         } catch (e: Exception) {
-            android.util.Log.e(TAG, "Error loading greeting", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error loading greeting", e)
             // Fallback to generic greeting
             _uiState.update { state ->
                 state.copy(
@@ -527,7 +527,7 @@ class HomeViewModel @Inject constructor(
                 )
             }
         } catch (e: Exception) {
-            android.util.Log.e(TAG, "Error loading first week state", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error loading first week state", e)
         }
     }
 
@@ -546,10 +546,10 @@ class HomeViewModel @Inject constructor(
             }
 
             if (memory != null) {
-                android.util.Log.d(TAG, "Surfaced memory: ${memory.surfaceReason} - ${memory.memory.preview.take(50)}...")
+                com.prody.prashant.util.AppLogger.d(TAG, "Surfaced memory: ${memory.surfaceReason} - ${memory.memory.preview.take(50)}...")
             }
         } catch (e: Exception) {
-            android.util.Log.e(TAG, "Error loading surfaced memory", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error loading surfaced memory", e)
         }
     }
 
@@ -565,10 +565,10 @@ class HomeViewModel @Inject constructor(
             }
 
             if (anniversaries.isNotEmpty()) {
-                android.util.Log.d(TAG, "Found ${anniversaries.size} anniversary memories for today")
+                com.prody.prashant.util.AppLogger.d(TAG, "Found ${anniversaries.size} anniversary memories for today")
             }
         } catch (e: Exception) {
-            android.util.Log.e(TAG, "Error loading anniversary memories", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error loading anniversary memories", e)
         }
     }
 
@@ -582,12 +582,12 @@ class HomeViewModel @Inject constructor(
 
                 // Track the interaction in Soul Layer
                 // This helps the system learn what memories resonate
-                android.util.Log.d(TAG, "Memory interaction: $interactionType for entry ${memory.memory.id}")
+                com.prody.prashant.util.AppLogger.d(TAG, "Memory interaction: $interactionType for entry ${memory.memory.id}")
 
                 // Mark memory as interacted
                 // The repository will handle persistence
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error handling memory interaction", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error handling memory interaction", e)
             }
         }
     }
@@ -630,10 +630,10 @@ class HomeViewModel @Inject constructor(
                 // Refresh first week state
                 loadFirstWeekState()
 
-                android.util.Log.d(TAG, "First week milestone completed: $milestone")
+                com.prody.prashant.util.AppLogger.d(TAG, "First week milestone completed: $milestone")
 
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error handling first week milestone", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error handling first week milestone", e)
             }
         }
     }
@@ -658,7 +658,7 @@ class HomeViewModel @Inject constructor(
                 // Reload all Soul Layer content
                 loadSoulLayerContent()
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error refreshing Soul Layer content", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error refreshing Soul Layer content", e)
             }
         }
     }
@@ -732,7 +732,7 @@ class HomeViewModel @Inject constructor(
                     }
                 }
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error marking word as learned", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error marking word as learned", e)
             }
         }
     }
@@ -807,7 +807,7 @@ class HomeViewModel @Inject constructor(
                                 )
                             )
                         }
-                        android.util.Log.d(TAG, "Buddha wisdom loaded (AI: ${result.data.isAiGenerated})")
+                        com.prody.prashant.util.AppLogger.d(TAG, "Buddha wisdom loaded (AI: ${result.data.isAiGenerated})")
                     }
                     is BuddhaAiResult.Fallback -> {
                         _uiState.update { state ->
@@ -825,7 +825,7 @@ class HomeViewModel @Inject constructor(
                                 )
                             )
                         }
-                        android.util.Log.d(TAG, "Buddha wisdom loaded (fallback, AI configured: $isAiConfigured)")
+                        com.prody.prashant.util.AppLogger.d(TAG, "Buddha wisdom loaded (fallback, AI configured: $isAiConfigured)")
                     }
                     is BuddhaAiResult.Error -> {
                         // Fall back to local wisdom
@@ -844,14 +844,14 @@ class HomeViewModel @Inject constructor(
                                 )
                             )
                         }
-                        android.util.Log.e(TAG, "Buddha wisdom error: ${result.message}")
+                        com.prody.prashant.util.AppLogger.e(TAG, "Buddha wisdom error: ${result.message}")
                     }
                 }
 
                 lastBuddhaRefreshTime = System.currentTimeMillis()
 
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error loading Buddha wisdom", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error loading Buddha wisdom", e)
                 _uiState.update { state ->
                     state.copy(
                         buddhaThought = BuddhaWisdom.getDailyReflectionPrompt(),

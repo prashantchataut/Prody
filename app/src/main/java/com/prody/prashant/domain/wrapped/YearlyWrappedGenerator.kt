@@ -41,7 +41,7 @@ class YearlyWrappedGenerator @Inject constructor(
         year: Int,
         config: WrappedGenerationConfig = WrappedGenerationConfig(year)
     ): Result<YearlyWrappedEntity> = try {
-        Log.d(TAG, "Starting wrapped generation for year $year")
+        com.prody.prashant.util.AppLogger.d(TAG, "Starting wrapped generation for year $year")
 
         // Define year boundaries
         val yearStart = LocalDate.of(year, 1, 1)
@@ -59,7 +59,7 @@ class YearlyWrappedGenerator @Inject constructor(
         val journalEntries: List<com.prody.prashant.data.local.entity.JournalEntryEntity> = try {
             journalDao.getEntriesByDateRange(yearStart, yearEnd).first()
         } catch (e: Exception) {
-            Log.e("YearlyWrappedGenerator", "Error collecting journal entries", e)
+            com.prody.prashant.util.AppLogger.e("YearlyWrappedGenerator", "Error collecting journal entries", e)
             emptyList()
         }
 
@@ -169,10 +169,10 @@ class YearlyWrappedGenerator @Inject constructor(
             shareableCardsJson = gson.toJson(shareableCards)
         )
 
-        Log.d(TAG, "Wrapped generation completed successfully for year $year")
+        com.prody.prashant.util.AppLogger.d(TAG, "Wrapped generation completed successfully for year $year")
         Result.success(entity)
     } catch (e: Exception) {
-        Log.e(TAG, "Failed to generate wrapped for year $year", e)
+        com.prody.prashant.util.AppLogger.e(TAG, "Failed to generate wrapped for year $year", e)
         Result.failure(e)
     }
 

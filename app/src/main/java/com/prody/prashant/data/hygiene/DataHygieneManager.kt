@@ -53,7 +53,7 @@ class DataHygieneManager @Inject constructor(
      * @return CleanupResult with details of what was cleaned
      */
     suspend fun performFullCleanup(): CleanupResult = withContext(Dispatchers.IO) {
-        Log.d(TAG, "Starting full data hygiene cleanup")
+        com.prody.prashant.util.AppLogger.d(TAG, "Starting full data hygiene cleanup")
 
         val results = mutableListOf<CleanupAction>()
         var totalBytesFreed = 0L
@@ -64,7 +64,7 @@ class DataHygieneManager @Inject constructor(
             results.add(cacheResult)
             totalBytesFreed += cacheResult.bytesFreed
         } catch (e: Exception) {
-            Log.e(TAG, "AI cache cleanup failed", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "AI cache cleanup failed", e)
             results.add(CleanupAction("AI Cache", 0, false, e.message))
         }
 
@@ -74,7 +74,7 @@ class DataHygieneManager @Inject constructor(
             results.add(tempResult)
             totalBytesFreed += tempResult.bytesFreed
         } catch (e: Exception) {
-            Log.e(TAG, "Temp files cleanup failed", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Temp files cleanup failed", e)
             results.add(CleanupAction("Temp Files", 0, false, e.message))
         }
 
@@ -84,7 +84,7 @@ class DataHygieneManager @Inject constructor(
             results.add(backupResult)
             totalBytesFreed += backupResult.bytesFreed
         } catch (e: Exception) {
-            Log.e(TAG, "Backup cache cleanup failed", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Backup cache cleanup failed", e)
             results.add(CleanupAction("Backup Cache", 0, false, e.message))
         }
 
@@ -93,7 +93,7 @@ class DataHygieneManager @Inject constructor(
             val streakResult = cleanupOldStreakHistory()
             results.add(streakResult)
         } catch (e: Exception) {
-            Log.e(TAG, "Streak history cleanup failed", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Streak history cleanup failed", e)
             results.add(CleanupAction("Streak History", 0, false, e.message))
         }
 
@@ -103,7 +103,7 @@ class DataHygieneManager @Inject constructor(
             results.add(imageCacheResult)
             totalBytesFreed += imageCacheResult.bytesFreed
         } catch (e: Exception) {
-            Log.e(TAG, "Image cache cleanup failed", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Image cache cleanup failed", e)
             results.add(CleanupAction("Image Cache", 0, false, e.message))
         }
 
@@ -113,11 +113,11 @@ class DataHygieneManager @Inject constructor(
             results.add(dbResult)
             totalBytesFreed += dbResult.bytesFreed
         } catch (e: Exception) {
-            Log.e(TAG, "Database optimization failed", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Database optimization failed", e)
             results.add(CleanupAction("Database", 0, false, e.message))
         }
 
-        Log.d(TAG, "Full cleanup completed. Total bytes freed: $totalBytesFreed")
+        com.prody.prashant.util.AppLogger.d(TAG, "Full cleanup completed. Total bytes freed: $totalBytesFreed")
 
         CleanupResult(
             actions = results,
@@ -270,7 +270,7 @@ class DataHygieneManager @Inject constructor(
      */
     suspend fun clearAllUserData(): Boolean = withContext(Dispatchers.IO) {
         try {
-            Log.w(TAG, "Clearing all user data - IRREVERSIBLE OPERATION")
+            com.prody.prashant.util.AppLogger.w(TAG, "Clearing all user data - IRREVERSIBLE OPERATION")
 
             // Clear journal entries
             journalDao.deleteAllEntries()
@@ -299,10 +299,10 @@ class DataHygieneManager @Inject constructor(
             context.cacheDir.deleteRecursively()
             context.externalCacheDir?.deleteRecursively()
 
-            Log.d(TAG, "All user data cleared successfully")
+            com.prody.prashant.util.AppLogger.d(TAG, "All user data cleared successfully")
             true
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to clear all user data", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Failed to clear all user data", e)
             false
         }
     }
@@ -361,7 +361,7 @@ class DataHygieneManager @Inject constructor(
         // Purge soft-deleted future messages
         count += futureMessageDao.purgeSoftDeleted()
 
-        Log.d(TAG, "Purged $count soft-deleted items")
+        com.prody.prashant.util.AppLogger.d(TAG, "Purged $count soft-deleted items")
         count
     }
 
@@ -373,7 +373,7 @@ class DataHygieneManager @Inject constructor(
 
         // Trigger cleanup if cache exceeds limit
         if (stats.totalCacheSize > MAX_CACHE_SIZE_MB * 1024 * 1024) {
-            Log.d(TAG, "Cache size exceeded limit, triggering auto-cleanup")
+            com.prody.prashant.util.AppLogger.d(TAG, "Cache size exceeded limit, triggering auto-cleanup")
             performFullCleanup()
             return@withContext true
         }

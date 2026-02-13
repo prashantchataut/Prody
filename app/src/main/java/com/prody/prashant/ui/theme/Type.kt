@@ -50,7 +50,7 @@ private fun safeFont(
             loadingStrategy = FontLoadingStrategy.Async
         )
     } catch (e: Exception) {
-        Log.w(TAG, "Failed to load font resource $resId with weight $weight", e)
+        com.prody.prashant.util.AppLogger.w(TAG, "Failed to load font resource $resId with weight $weight", e)
         null
     }
 }
@@ -75,16 +75,16 @@ val PoppinsFamily: FontFamily = try {
     )
 
     if (fonts.isEmpty()) {
-        Log.e(TAG, "All Poppins fonts failed to load, falling back to system sans-serif")
+        com.prody.prashant.util.AppLogger.e(TAG, "All Poppins fonts failed to load, falling back to system sans-serif")
         FontFamily.SansSerif
     } else {
         if (fonts.size < 9) {
-            Log.w(TAG, "Only ${fonts.size}/9 Poppins fonts loaded successfully")
+            com.prody.prashant.util.AppLogger.w(TAG, "Only ${fonts.size}/9 Poppins fonts loaded successfully")
         }
         FontFamily(fonts)
     }
 } catch (e: Exception) {
-    Log.e(TAG, "Failed to initialize Poppins font family", e)
+    com.prody.prashant.util.AppLogger.e(TAG, "Failed to initialize Poppins font family", e)
     FontFamily.SansSerif
 }
 

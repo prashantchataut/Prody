@@ -71,7 +71,7 @@ class CircleDetailViewModel @Inject constructor(
         viewModelScope.launch {
             socialRepository.observeCircleMembers(circleId)
                 .catch { e ->
-                    android.util.Log.w("CircleDetailViewModel", "Failed to load members: ${e.message}")
+                    com.prody.prashant.util.AppLogger.w("CircleDetailViewModel", "Failed to load members: ${e.message}")
                     _uiState.update { it.copy(members = emptyList()) }
                 }
                 .collect { members ->
@@ -82,7 +82,7 @@ class CircleDetailViewModel @Inject constructor(
         viewModelScope.launch {
             socialRepository.observeCircleUpdates(circleId, limit = 50)
                 .catch { e ->
-                    android.util.Log.w("CircleDetailViewModel", "Failed to load updates: ${e.message}")
+                    com.prody.prashant.util.AppLogger.w("CircleDetailViewModel", "Failed to load updates: ${e.message}")
                     _uiState.update { it.copy(updates = emptyList()) }
                 }
                 .collect { updates ->
@@ -93,7 +93,7 @@ class CircleDetailViewModel @Inject constructor(
         viewModelScope.launch {
             socialRepository.observeActiveChallenges(circleId)
                 .catch { e ->
-                    android.util.Log.w("CircleDetailViewModel", "Failed to load challenges: ${e.message}")
+                    com.prody.prashant.util.AppLogger.w("CircleDetailViewModel", "Failed to load challenges: ${e.message}")
                     _uiState.update { it.copy(activeChallenges = emptyList()) }
                 }
                 .collect { challenges ->

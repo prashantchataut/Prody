@@ -92,7 +92,7 @@ class TimeCapsuleRevealViewModel @Inject constructor(
                 }
 
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error loading message: $messageId", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error loading message: $messageId", e)
                 _uiState.update {
                     it.copy(
                         isLoading = false,
@@ -123,7 +123,7 @@ class TimeCapsuleRevealViewModel @Inject constructor(
                 _uiState.update { it.copy(isFavorite = newFavoriteState) }
 
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error toggling favorite", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error toggling favorite", e)
             }
         }
     }
@@ -138,7 +138,7 @@ class TimeCapsuleRevealViewModel @Inject constructor(
                 futureMessageDao.setFavorite(message.id, true)
                 _uiState.update { it.copy(isFavorite = true) }
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error saving to favorites", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error saving to favorites", e)
             }
         }
     }
@@ -179,7 +179,7 @@ class TimeCapsuleRevealViewModel @Inject constructor(
 
             journalId
         } catch (e: Exception) {
-            android.util.Log.e(TAG, "Error creating reply", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error creating reply", e)
             _uiState.update { it.copy(isSavingReply = false) }
             null
         }

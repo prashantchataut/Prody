@@ -71,7 +71,7 @@ class AchievementsCollectionViewModel @Inject constructor(
                     }
                 }
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error loading achievements", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error loading achievements", e)
                 _uiState.update {
                     it.copy(
                         isLoading = false,

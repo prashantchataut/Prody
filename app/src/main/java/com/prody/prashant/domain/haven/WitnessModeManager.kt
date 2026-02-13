@@ -55,16 +55,16 @@ class WitnessModeManager @Inject constructor(
      */
     suspend fun checkForPendingFollowUps(userId: String = "local") = withContext(Dispatchers.IO) {
         try {
-            Log.d(TAG, "Checking for pending memory follow-ups...")
+            com.prody.prashant.util.AppLogger.d(TAG, "Checking for pending memory follow-ups...")
 
             val pendingMemories = havenMemoryDao.getPendingMemoriesForFollowUp(userId)
 
             if (pendingMemories.isEmpty()) {
-                Log.d(TAG, "No pending memories to follow up on")
+                com.prody.prashant.util.AppLogger.d(TAG, "No pending memories to follow up on")
                 return@withContext
             }
 
-            Log.d(TAG, "Found ${pendingMemories.size} memories ready for follow-up")
+            com.prody.prashant.util.AppLogger.d(TAG, "Found ${pendingMemories.size} memories ready for follow-up")
 
             // Process top N memories to avoid notification spam
             val memoriesToProcess = pendingMemories.take(MAX_NOTIFICATIONS_PER_CHECK)
@@ -76,9 +76,9 @@ class WitnessModeManager @Inject constructor(
                     // Mark as followed up to prevent re-sending
                     havenMemoryDao.markAsFollowedUp(memory.id)
 
-                    Log.d(TAG, "Sent follow-up notification for memory: ${memory.fact.take(50)}...")
+                    com.prody.prashant.util.AppLogger.d(TAG, "Sent follow-up notification for memory: ${memory.fact.take(50)}...")
                 } catch (e: Exception) {
-                    Log.e(TAG, "Failed to send notification for memory ${memory.id}", e)
+                    com.prody.prashant.util.AppLogger.e(TAG, "Failed to send notification for memory ${memory.id}", e)
                 }
             }
 
@@ -86,7 +86,7 @@ class WitnessModeManager @Inject constructor(
             havenMemoryDao.expireOldMemories()
 
         } catch (e: Exception) {
-            Log.e(TAG, "Error checking for pending follow-ups", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error checking for pending follow-ups", e)
         }
     }
 
@@ -96,7 +96,7 @@ class WitnessModeManager @Inject constructor(
     private fun sendWitnessNotification(memory: HavenMemoryEntity, notificationId: Int) {
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
         if (notificationManager == null) {
-            Log.w(TAG, "NotificationManager not available")
+            com.prody.prashant.util.AppLogger.w(TAG, "NotificationManager not available")
             return
         }
 
@@ -209,9 +209,9 @@ class WitnessModeManager @Inject constructor(
     ) = withContext(Dispatchers.IO) {
         try {
             havenMemoryDao.recordOutcome(memoryId, outcome, response)
-            Log.d(TAG, "Recorded outcome for memory $memoryId: $outcome")
+            com.prody.prashant.util.AppLogger.d(TAG, "Recorded outcome for memory $memoryId: $outcome")
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to record outcome for memory $memoryId", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Failed to record outcome for memory $memoryId", e)
         }
     }
 
@@ -221,9 +221,9 @@ class WitnessModeManager @Inject constructor(
     suspend fun dismissMemory(memoryId: Long) = withContext(Dispatchers.IO) {
         try {
             havenMemoryDao.dismissMemory(memoryId)
-            Log.d(TAG, "Dismissed memory $memoryId")
+            com.prody.prashant.util.AppLogger.d(TAG, "Dismissed memory $memoryId")
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to dismiss memory $memoryId", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Failed to dismiss memory $memoryId", e)
         }
     }
 
@@ -242,7 +242,7 @@ class WitnessModeManager @Inject constructor(
                 successRate = successRate
             )
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to get witness stats", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Failed to get witness stats", e)
             WitnessModeStats()
         }
     }

@@ -92,7 +92,7 @@ class DualStreakManager @Inject constructor(
                 message = getWisdomStreakMessage(newStreak.wisdomStreakCurrent, isNewLongest)
             )
         } catch (e: Exception) {
-            android.util.Log.e(TAG, "Error maintaining wisdom streak", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error maintaining wisdom streak", e)
             StreakResult.Error(
                 streakType = StreakType.WISDOM,
                 message = e.message ?: "Unknown error"
@@ -130,7 +130,7 @@ class DualStreakManager @Inject constructor(
                 daysUntilGraceReset = daysUntilReset
             )
         } catch (e: Exception) {
-            android.util.Log.e(TAG, "Error applying wisdom grace", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error applying wisdom grace", e)
             StreakResult.Error(
                 streakType = StreakType.WISDOM,
                 message = e.message ?: "Unknown error"
@@ -184,7 +184,7 @@ class DualStreakManager @Inject constructor(
                 message = getReflectionStreakMessage(newStreak.reflectionStreakCurrent, isNewLongest)
             )
         } catch (e: Exception) {
-            android.util.Log.e(TAG, "Error maintaining reflection streak", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error maintaining reflection streak", e)
             StreakResult.Error(
                 streakType = StreakType.REFLECTION,
                 message = e.message ?: "Unknown error"
@@ -222,7 +222,7 @@ class DualStreakManager @Inject constructor(
                 daysUntilGraceReset = daysUntilReset
             )
         } catch (e: Exception) {
-            android.util.Log.e(TAG, "Error applying reflection grace", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error applying reflection grace", e)
             StreakResult.Error(
                 streakType = StreakType.REFLECTION,
                 message = e.message ?: "Unknown error"

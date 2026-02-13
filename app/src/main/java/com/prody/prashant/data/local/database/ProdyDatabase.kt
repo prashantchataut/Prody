@@ -1735,7 +1735,7 @@ abstract class ProdyDatabase : RoomDatabase() {
                     .addCallback(SecureDatabaseCallback(context, secureDbManager))
                     .build()
             } catch (e: Exception) {
-                Log.e(TAG, "Failed to create secure database, falling back to unencrypted", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Failed to create secure database, falling back to unencrypted", e)
                 // Fallback to unencrypted database for development
                 Room.databaseBuilder(
                     context.applicationContext,
@@ -1760,21 +1760,21 @@ abstract class ProdyDatabase : RoomDatabase() {
         private class DatabaseCallback(private val context: Context) : Callback() {
             override fun onCreate(db: SupportSQLiteDatabase) {
                 super.onCreate(db)
-                Log.d(TAG, "Database created successfully - initiating data seeding")
+                com.prody.prashant.util.AppLogger.d(TAG, "Database created successfully - initiating data seeding")
                 // Seed the database with initial content
                 // Safety: Use INSTANCE directly if available to avoid recursion
                 INSTANCE?.let { DatabaseSeeder.seedDatabase(it) }
-                    ?: Log.e(TAG, "Failed to seed database: INSTANCE is null")
+                    ?: com.prody.prashant.util.AppLogger.e(TAG, "Failed to seed database: INSTANCE is null")
             }
 
             override fun onOpen(db: SupportSQLiteDatabase) {
                 super.onOpen(db)
-                Log.d(TAG, "Database opened")
+                com.prody.prashant.util.AppLogger.d(TAG, "Database opened")
             }
 
             override fun onDestructiveMigration(db: SupportSQLiteDatabase) {
                 super.onDestructiveMigration(db)
-                Log.w(TAG, "Destructive migration performed - re-seeding database")
+                com.prody.prashant.util.AppLogger.w(TAG, "Destructive migration performed - re-seeding database")
                 // Re-seed the database after destructive migration
                 INSTANCE?.let { DatabaseSeeder.seedDatabase(it) }
             }
@@ -1789,16 +1789,16 @@ abstract class ProdyDatabase : RoomDatabase() {
         ) : Callback() {
             override fun onCreate(db: SupportSQLiteDatabase) {
                 super.onCreate(db)
-                Log.d(TAG, "Secure database created successfully - initiating data seeding")
+                com.prody.prashant.util.AppLogger.d(TAG, "Secure database created successfully - initiating data seeding")
                 // Seed the database with initial content
                 // Safety: Use INSTANCE directly if available to avoid recursion
                 INSTANCE?.let { DatabaseSeeder.seedDatabase(it) }
-                    ?: Log.e(TAG, "Failed to seed secure database: INSTANCE is null")
+                    ?: com.prody.prashant.util.AppLogger.e(TAG, "Failed to seed secure database: INSTANCE is null")
             }
 
             override fun onOpen(db: SupportSQLiteDatabase) {
                 super.onOpen(db)
-                Log.d(TAG, "Secure database opened")
+                com.prody.prashant.util.AppLogger.d(TAG, "Secure database opened")
                 
                 // Verify database integrity
                 runBlocking {
@@ -1806,7 +1806,7 @@ abstract class ProdyDatabase : RoomDatabase() {
                     val isIntegrityValid = secureDbManager.verifyDatabaseIntegrity(databaseFile)
                     
                     if (!isIntegrityValid) {
-                        Log.e(TAG, "Database integrity check failed!")
+                        com.prody.prashant.util.AppLogger.e(TAG, "Database integrity check failed!")
                         // Handle integrity failure appropriately
                     }
                 }
@@ -1814,7 +1814,7 @@ abstract class ProdyDatabase : RoomDatabase() {
 
             override fun onDestructiveMigration(db: SupportSQLiteDatabase) {
                 super.onDestructiveMigration(db)
-                Log.w(TAG, "Secure database destructive migration performed - data was cleared and re-seeding")
+                com.prody.prashant.util.AppLogger.w(TAG, "Secure database destructive migration performed - data was cleared and re-seeding")
                 
                 // Clear encryption data after destructive migration
                 runBlocking {

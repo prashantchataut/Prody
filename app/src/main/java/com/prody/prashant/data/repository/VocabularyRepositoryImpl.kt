@@ -229,7 +229,7 @@ class VocabularyRepositoryImpl @Inject constructor(
                 // Get recent words to exclude from AI generation
                 val recentWords = getRecentlyShownWords(recentWordsLimit)
                 
-                Log.d(TAG, "Fetching AI-generated word. Excluding ${recentWords.size} recent words.")
+                com.prody.prashant.util.AppLogger.d(TAG, "Fetching AI-generated word. Excluding ${recentWords.size} recent words.")
                 
                 // Request AI-generated word
                 val aiResult = geminiService.generateVocabularyWord(recentWords)
@@ -241,7 +241,7 @@ class VocabularyRepositoryImpl @Inject constructor(
                             // Check if word already exists in database
                             val existingWord = vocabularyDao.getWordByName(wordEntity.word)
                             if (existingWord != null) {
-                                Log.d(TAG, "AI word already exists: ${wordEntity.word}, using existing")
+                                com.prody.prashant.util.AppLogger.d(TAG, "AI word already exists: ${wordEntity.word}, using existing")
                                 // Mark as shown and return existing
                                 vocabularyDao.markAsShownDaily(existingWord.id)
                                 return@runSuspendCatching existingWord
@@ -251,24 +251,24 @@ class VocabularyRepositoryImpl @Inject constructor(
                             val newId = vocabularyDao.insertWord(wordEntity)
                             vocabularyDao.markAsShownDaily(newId)
                             
-                            Log.d(TAG, "AI generated new word: ${wordEntity.word}")
+                            com.prody.prashant.util.AppLogger.d(TAG, "AI generated new word: ${wordEntity.word}")
                             return@runSuspendCatching wordEntity.copy(id = newId, shownAsDaily = true)
                         } else {
-                            Log.w(TAG, "Failed to parse AI response, falling back to local")
+                            com.prody.prashant.util.AppLogger.w(TAG, "Failed to parse AI response, falling back to local")
                         }
                     }
                     is GeminiResult.Error -> {
-                        Log.w(TAG, "AI generation failed: ${aiResult.message}, falling back to local")
+                        com.prody.prashant.util.AppLogger.w(TAG, "AI generation failed: ${aiResult.message}, falling back to local")
                     }
                     is GeminiResult.ApiKeyNotSet -> {
-                        Log.d(TAG, "AI not configured, using local vocabulary")
+                        com.prody.prashant.util.AppLogger.d(TAG, "AI not configured, using local vocabulary")
                     }
                     is GeminiResult.Loading -> {
                         // Shouldn't happen for non-streaming calls
                     }
                 }
             } else {
-                Log.d(TAG, "Offline or AI not configured, using local vocabulary")
+                com.prody.prashant.util.AppLogger.d(TAG, "Offline or AI not configured, using local vocabulary")
             }
             
             // Fallback: Use local database
@@ -294,7 +294,7 @@ class VocabularyRepositoryImpl @Inject constructor(
                 .take(limit)
                 .map { it.word }
         } catch (e: Exception) {
-            Log.e(TAG, "Error getting recent words", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Error getting recent words", e)
             emptyList()
         }
     }
@@ -331,7 +331,7 @@ class VocabularyRepositoryImpl @Inject constructor(
                 shownAt = System.currentTimeMillis()
             )
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to parse AI vocabulary response: $jsonString", e)
+            com.prody.prashant.util.AppLogger.e(TAG, "Failed to parse AI vocabulary response: $jsonString", e)
             null
         }
     }

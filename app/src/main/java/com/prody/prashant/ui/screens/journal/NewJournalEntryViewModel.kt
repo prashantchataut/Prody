@@ -186,7 +186,7 @@ class NewJournalEntryViewModel @Inject constructor(
                     }
                 }
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error loading AI settings", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error loading AI settings", e)
             }
         }
     }
@@ -253,7 +253,7 @@ class NewJournalEntryViewModel @Inject constructor(
 
             // Guard against double-taps - prevent duplicate saves
             if (state.isSaving || state.isSaved) {
-                android.util.Log.d(TAG, "Save already in progress or completed, ignoring duplicate save request")
+                com.prody.prashant.util.AppLogger.d(TAG, "Save already in progress or completed, ignoring duplicate save request")
                 return@launch
             }
 
@@ -316,7 +316,7 @@ class NewJournalEntryViewModel @Inject constructor(
                     content = state.content,
                     mood = state.selectedMood.name
                 )
-                android.util.Log.d(TAG, "Journal entry saved, session result: ${sessionResult.rewards.totalXp} XP")
+                com.prody.prashant.util.AppLogger.d(TAG, "Journal entry saved, session result: ${sessionResult.rewards.totalXp} XP")
 
                 _uiState.update {
                     it.copy(
@@ -362,14 +362,14 @@ class NewJournalEntryViewModel @Inject constructor(
 
             when (geminiResult) {
                 is GeminiResult.Success -> {
-                    android.util.Log.d(TAG, "Buddha response generated via Gemini")
+                    com.prody.prashant.util.AppLogger.d(TAG, "Buddha response generated via Gemini")
                     return geminiResult.data
                 }
                 is GeminiResult.Error -> {
-                    android.util.Log.w(TAG, "Gemini failed: ${geminiResult.message}, trying OpenRouter fallback")
+                    com.prody.prashant.util.AppLogger.w(TAG, "Gemini failed: ${geminiResult.message}, trying OpenRouter fallback")
                 }
                 is GeminiResult.ApiKeyNotSet -> {
-                    android.util.Log.d(TAG, "Gemini API key not set, trying OpenRouter fallback")
+                    com.prody.prashant.util.AppLogger.d(TAG, "Gemini API key not set, trying OpenRouter fallback")
                 }
                 is GeminiResult.Loading -> {
                     // Shouldn't happen for non-streaming calls, but handle gracefully
@@ -387,15 +387,15 @@ class NewJournalEntryViewModel @Inject constructor(
             )
 
             openRouterResult.onSuccess { response ->
-                android.util.Log.d(TAG, "Buddha response generated via OpenRouter fallback")
+                com.prody.prashant.util.AppLogger.d(TAG, "Buddha response generated via OpenRouter fallback")
                 return response
             }.onFailure { e ->
-                android.util.Log.w(TAG, "OpenRouter fallback failed: ${e.message}, using local wisdom")
+                com.prody.prashant.util.AppLogger.w(TAG, "OpenRouter fallback failed: ${e.message}, using local wisdom")
             }
         }
 
         // Tier 3: Local BuddhaWisdom - always available, guaranteed response
-        android.util.Log.d(TAG, "Using local BuddhaWisdom for response")
+        com.prody.prashant.util.AppLogger.d(TAG, "Using local BuddhaWisdom for response")
         return BuddhaWisdom.generateResponse(
             content = state.content,
             mood = state.selectedMood,
@@ -446,7 +446,7 @@ class NewJournalEntryViewModel @Inject constructor(
                             )
                         }
                     } catch (e: Exception) {
-                        android.util.Log.w(TAG, "Failed to persist insight to DB", e)
+                        com.prody.prashant.util.AppLogger.w(TAG, "Failed to persist insight to DB", e)
                     }
 
                     _uiState.update {
@@ -456,12 +456,12 @@ class NewJournalEntryViewModel @Inject constructor(
                             showInsightCard = !insight.isInsufficientContext || insight.question != null
                         )
                     }
-                    android.util.Log.d(TAG, "Journal insight generated: ${insight.emotionLabel}, snippet: ${insight.snippet}")
+                    com.prody.prashant.util.AppLogger.d(TAG, "Journal insight generated: ${insight.emotionLabel}, snippet: ${com.prody.prashant.util.AppLogger.redactJournalText(insight.snippet)}")
                 } else {
                     _uiState.update { it.copy(isGeneratingInsight = false) }
                 }
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error generating journal insight", e)
+                com.prody.prashant.util.AppLogger.e(TAG, "Error generating journal insight", e)
                 _uiState.update { it.copy(isGeneratingInsight = false) }
             }
         }
@@ -586,12 +586,12 @@ class NewJournalEntryViewModel @Inject constructor(
                 // Queue for later sync (handled by SyncManager)
                 uri?.let {
                     // Logic to be implemented in SyncManager or a dedicated TranscriptionWorker
-                    android.util.Log.d(TAG, "Queued recording for later transcription: $it")
+                    com.prody.prashant.util.AppLogger.d(TAG, "Queued recording for later transcription: $it")
                 }
             }
             TranscriptionChoice.NEVER -> {
                 // Do nothing
-                android.util.Log.d(TAG, "User chose not to transcribe recording")
+                com.prody.prashant.util.AppLogger.d(TAG, "User chose not to transcribe recording")
             }
         }
     }
@@ -612,7 +612,7 @@ class NewJournalEntryViewModel @Inject constructor(
             try {
                 audioRecorderManager.deleteRecording(android.net.Uri.parse(uri))
             } catch (e: Exception) {
-                android.util.Log.w(TAG, "Failed to delete recording file", e)
+                com.prody.prashant.util.AppLogger.w(TAG, "Failed to delete recording file", e)
             }
         }
         audioRecorderManager.stopPlayback()
@@ -668,7 +668,7 @@ class NewJournalEntryViewModel @Inject constructor(
         }
 
         if (_uiState.value.isTranscribing) {
-            android.util.Log.w(TAG, "Transcription already in progress")
+            com.prody.prashant.util.AppLogger.w(TAG, "Transcription already in progress")
             return
         }
 
@@ -685,10 +685,10 @@ class NewJournalEntryViewModel @Inject constructor(
                 .collect { result ->
                     when (result) {
                         is TranscriptionResult.Ready -> {
-                            android.util.Log.d(TAG, "Transcription ready")
+                            com.prody.prashant.util.AppLogger.d(TAG, "Transcription ready")
                         }
                         is TranscriptionResult.Started -> {
-                            android.util.Log.d(TAG, "Transcription started")
+                            com.prody.prashant.util.AppLogger.d(TAG, "Transcription started")
                         }
                         is TranscriptionResult.Partial -> {
                             _uiState.update { it.copy(transcriptionPartial = result.text) }
@@ -708,13 +708,13 @@ class NewJournalEntryViewModel @Inject constructor(
                                     transcriptionPartial = ""
                                 )
                             }
-                            android.util.Log.d(TAG, "Transcription complete: ${result.text}")
+                            com.prody.prashant.util.AppLogger.d(TAG, "Transcription complete: ${com.prody.prashant.util.AppLogger.redactJournalText(result.text)}")
                         }
                         is TranscriptionResult.SoundLevel -> {
                             _uiState.update { it.copy(transcriptionSoundLevel = result.level) }
                         }
                         is TranscriptionResult.Ended -> {
-                            android.util.Log.d(TAG, "Speech ended, processing...")
+                            com.prody.prashant.util.AppLogger.d(TAG, "Speech ended, processing...")
                         }
                         is TranscriptionResult.Error -> {
                             _uiState.update {
@@ -723,7 +723,7 @@ class NewJournalEntryViewModel @Inject constructor(
                                     error = result.error.message
                                 )
                             }
-                            android.util.Log.e(TAG, "Transcription error: ${result.error.message}")
+                            com.prody.prashant.util.AppLogger.e(TAG, "Transcription error: ${result.error.message}")
                         }
                     }
                 }

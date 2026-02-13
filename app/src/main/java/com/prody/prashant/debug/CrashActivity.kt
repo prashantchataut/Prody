@@ -74,7 +74,7 @@ class CrashActivity : ComponentActivity() {
                 }
             }
         } catch (e: Exception) {
-            android.util.Log.e("CrashActivity", "Failed to set Compose content", e)
+            com.prody.prashant.util.AppLogger.e("CrashActivity", "Failed to set Compose content", e)
         }
     }
 
@@ -90,7 +90,7 @@ class CrashActivity : ComponentActivity() {
             rootCauseType = intent.getStringExtra(CrashHandler.EXTRA_ROOT_CAUSE_TYPE) ?: ""
             rootCauseMsg = intent.getStringExtra(CrashHandler.EXTRA_ROOT_CAUSE_MSG) ?: ""
         } catch (e: Exception) {
-            android.util.Log.e("CrashActivity", "Error extracting crash info", e)
+            com.prody.prashant.util.AppLogger.e("CrashActivity", "Error extracting crash info", e)
         }
     }
 
@@ -102,7 +102,7 @@ class CrashActivity : ComponentActivity() {
             clipboard.setPrimaryClip(clip)
             Toast.makeText(this, "Crash report copied", Toast.LENGTH_SHORT).show()
         } catch (e: Exception) {
-            android.util.Log.e("CrashActivity", "Failed to copy", e)
+            com.prody.prashant.util.AppLogger.e("CrashActivity", "Failed to copy", e)
         }
     }
 
@@ -116,7 +116,7 @@ class CrashActivity : ComponentActivity() {
             finish()
             android.os.Process.killProcess(android.os.Process.myPid())
         } catch (e: Exception) {
-            android.util.Log.e("CrashActivity", "Failed to restart", e)
+            com.prody.prashant.util.AppLogger.e("CrashActivity", "Failed to restart", e)
         }
     }
 }
