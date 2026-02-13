@@ -39,9 +39,6 @@ class VocabularyReviewViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(VocabularyReviewUiState())
     val uiState: StateFlow<VocabularyReviewUiState> = _uiState.asStateFlow()
 
-    // Get current user ID from authentication service
-    private val userId = preferencesManager.getCurrentUserId() ?: "local"
-
     init {
         loadVocabularyReview()
     }
@@ -61,6 +58,8 @@ class VocabularyReviewViewModel @Inject constructor(
                 // Load all learned words
                 val allLearnedWords = vocabularyDao.getLearnedWords().first()
 
+                val userId = preferencesManager.getCurrentUserId() ?: "local"
+
                 // Load words used in context
                 val usedWordIds = wordUsageDao.getUsedWordIds(userId)
                 val wordsUsedInContext = allLearnedWords.filter { it.id in usedWordIds }
@@ -71,7 +70,7 @@ class VocabularyReviewViewModel @Inject constructor(
                     .mapNotNull { id -> allLearnedWords.find { it.id == id } }
 
                 // Calculate vocabulary growth over time
-                val growthData = calculateGrowthData(allLearnedWords)
+                val growthData = calculateGrowthData(allLearnedWords, userId)
 
                 // Get words needing practice
                 val wordsNeedingPractice = suggestionEngine.getWordsNeedingPractice(userId, 5)
@@ -110,7 +109,7 @@ class VocabularyReviewViewModel @Inject constructor(
     /**
      * Calculate vocabulary growth data for the chart.
      */
-    private suspend fun calculateGrowthData(learnedWords: List<VocabularyEntity>): List<VocabularyGrowthPoint> {
+    private suspend fun calculateGrowthData(learnedWords: List<VocabularyEntity>, userId: String): List<VocabularyGrowthPoint> {
         if (learnedWords.isEmpty()) return emptyList()
 
         // Group words by week

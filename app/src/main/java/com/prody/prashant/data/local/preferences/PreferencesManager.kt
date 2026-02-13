@@ -2,6 +2,7 @@ package com.prody.prashant.data.local.preferences
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.os.Trace
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
@@ -21,13 +22,14 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
 
-private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "prody_preferences")
+private val Context.highFrequencyDataStore: DataStore<Preferences> by preferencesDataStore(name = "prody_hot_preferences")
+private val Context.archivalDataStore: DataStore<Preferences> by preferencesDataStore(name = "prody_archive_preferences")
+private val Context.legacyDataStore: DataStore<Preferences> by preferencesDataStore(name = "prody_preferences")
 
 @Singleton
 class PreferencesManager @Inject constructor(
@@ -35,7 +37,10 @@ class PreferencesManager @Inject constructor(
     @Named("UnencryptedSharedPreferences") private val sharedPreferences: SharedPreferences,
     @Named("EncryptedSharedPreferences") private val encryptedSharedPreferences: SharedPreferences
 ) {
-    private val dataStore = context.dataStore
+    // Strict rule: never do UI-frame synchronous preference computation.
+    private val dataStore = context.archivalDataStore
+    private val highFrequencyStore = context.highFrequencyDataStore
+    private val legacyStore = context.legacyDataStore
     private val coroutineScope = CoroutineScope(Dispatchers.IO)
 
     private val _geminiApiKey = MutableStateFlow("")
@@ -43,6 +48,12 @@ class PreferencesManager @Inject constructor(
 
     private val _therapistApiKey = MutableStateFlow("")
     val therapistApiKey: Flow<String> = _therapistApiKey.asStateFlow()
+
+    private val _onboardingCompletedCache = MutableStateFlow(false)
+    private val _themeModeCache = MutableStateFlow("system")
+    private val _notificationsEnabledCache = MutableStateFlow(true)
+    private val _wisdomNotificationsEnabledCache = MutableStateFlow(true)
+    private val _journalRemindersEnabledCache = MutableStateFlow(true)
 
     init {
         coroutineScope.launch {
@@ -54,6 +65,41 @@ class PreferencesManager @Inject constructor(
             migrateSensitiveString(PreferencesKeys.THERAPIST_API_KEY, PreferencesKeys.THERAPIST_API_KEY.name) {
                 _therapistApiKey.value = it
             }
+        }
+        coroutineScope.launch {
+            hydrateHighFrequencyCache()
+        }
+    }
+
+    private suspend fun hydrateHighFrequencyCache() {
+        Trace.beginSection("Prefs.hydrateHighFrequencyCache")
+        try {
+            val hotPreferences = highFrequencyStore.data.first()
+            val archivePreferences = dataStore.data.first()
+            val legacyPreferences = legacyStore.data.first()
+
+            _onboardingCompletedCache.value = hotPreferences[PreferencesKeys.ONBOARDING_COMPLETED]
+                ?: archivePreferences[PreferencesKeys.ONBOARDING_COMPLETED]
+                ?: legacyPreferences[PreferencesKeys.ONBOARDING_COMPLETED]
+                ?: false
+            _themeModeCache.value = hotPreferences[PreferencesKeys.THEME_MODE]
+                ?: archivePreferences[PreferencesKeys.THEME_MODE]
+                ?: legacyPreferences[PreferencesKeys.THEME_MODE]
+                ?: "system"
+            _notificationsEnabledCache.value = hotPreferences[PreferencesKeys.NOTIFICATIONS_ENABLED]
+                ?: archivePreferences[PreferencesKeys.NOTIFICATIONS_ENABLED]
+                ?: legacyPreferences[PreferencesKeys.NOTIFICATIONS_ENABLED]
+                ?: true
+            _wisdomNotificationsEnabledCache.value = hotPreferences[PreferencesKeys.WISDOM_NOTIFICATION_ENABLED]
+                ?: archivePreferences[PreferencesKeys.WISDOM_NOTIFICATION_ENABLED]
+                ?: legacyPreferences[PreferencesKeys.WISDOM_NOTIFICATION_ENABLED]
+                ?: true
+            _journalRemindersEnabledCache.value = hotPreferences[PreferencesKeys.JOURNAL_REMINDER_ENABLED]
+                ?: archivePreferences[PreferencesKeys.JOURNAL_REMINDER_ENABLED]
+                ?: legacyPreferences[PreferencesKeys.JOURNAL_REMINDER_ENABLED]
+                ?: true
+        } finally {
+            Trace.endSection()
         }
     }
 
@@ -218,39 +264,44 @@ class PreferencesManager @Inject constructor(
         val LAST_TEMPORAL_PROMPT_DATE = longPreferencesKey("last_temporal_prompt_date")
     }
 
-    // Onboarding - Critical path, requires synchronous access
-    val onboardingCompleted: Flow<Boolean> = dataStore.data
-        .catch { exception ->
-            if (exception is IOException) emit(emptyPreferences())
-            else throw exception
-        }
-        .map { preferences ->
-            preferences[PreferencesKeys.ONBOARDING_COMPLETED] ?: false
-        }
+    // Onboarding - critical path, served from read-through in-memory cache
+    val onboardingCompleted: Flow<Boolean> = _onboardingCompletedCache.asStateFlow()
 
     suspend fun setOnboardingCompleted(completed: Boolean) {
-        dataStore.edit { preferences ->
+        highFrequencyStore.edit { preferences ->
             preferences[PreferencesKeys.ONBOARDING_COMPLETED] = completed
         }
+        _onboardingCompletedCache.value = completed
     }
 
     // Theme
-    val themeMode: Flow<String> = dataStore.data
-        .catch { exception ->
-            if (exception is IOException) emit(emptyPreferences())
-            else throw exception
-        }
-        .map { preferences ->
-            preferences[PreferencesKeys.THEME_MODE] ?: "system"
-        }
+    val themeMode: Flow<String> = _themeModeCache.asStateFlow()
 
     suspend fun setThemeMode(mode: String) {
-        dataStore.edit { preferences ->
+        highFrequencyStore.edit { preferences ->
             preferences[PreferencesKeys.THEME_MODE] = mode
         }
+        _themeModeCache.value = mode
     }
 
-    val dynamicColors: Flow<Boolean> = dataStore.data
+    data class AppearancePreferencesBatch(
+        val themeMode: String? = null,
+        val dynamicColorsEnabled: Boolean? = null,
+        val hapticFeedbackEnabled: Boolean? = null,
+        val compactCardView: Boolean? = null
+    )
+
+    suspend fun updateAppearancePreferences(batch: AppearancePreferencesBatch) {
+        highFrequencyStore.edit { preferences ->
+            batch.themeMode?.let { preferences[PreferencesKeys.THEME_MODE] = it }
+            batch.dynamicColorsEnabled?.let { preferences[PreferencesKeys.DYNAMIC_COLORS] = it }
+            batch.hapticFeedbackEnabled?.let { preferences[PreferencesKeys.HAPTIC_FEEDBACK_ENABLED] = it }
+            batch.compactCardView?.let { preferences[PreferencesKeys.COMPACT_CARD_VIEW] = it }
+        }
+        batch.themeMode?.let { _themeModeCache.value = it }
+    }
+
+    val dynamicColors: Flow<Boolean> = highFrequencyStore.data
         .catch { exception ->
             if (exception is IOException) emit(emptyPreferences())
             else throw exception
@@ -260,28 +311,44 @@ class PreferencesManager @Inject constructor(
         }
 
     suspend fun setDynamicColors(enabled: Boolean) {
-        dataStore.edit { preferences ->
-            preferences[PreferencesKeys.DYNAMIC_COLORS] = enabled
-        }
+        updateAppearancePreferences(AppearancePreferencesBatch(dynamicColorsEnabled = enabled))
     }
 
     // Notifications
-    val notificationsEnabled: Flow<Boolean> = dataStore.data
-        .catch { exception ->
-            if (exception is IOException) emit(emptyPreferences())
-            else throw exception
-        }
-        .map { preferences ->
-            preferences[PreferencesKeys.NOTIFICATIONS_ENABLED] ?: true
-        }
+    val notificationsEnabled: Flow<Boolean> = _notificationsEnabledCache.asStateFlow()
 
     suspend fun setNotificationsEnabled(enabled: Boolean) {
-        dataStore.edit { preferences ->
-            preferences[PreferencesKeys.NOTIFICATIONS_ENABLED] = enabled
-        }
+        updateNotificationPreferences(NotificationPreferencesBatch(notificationsEnabled = enabled))
     }
 
-    val dailyReminderHour: Flow<Int> = dataStore.data
+
+    data class NotificationPreferencesBatch(
+        val notificationsEnabled: Boolean? = null,
+        val wisdomNotificationsEnabled: Boolean? = null,
+        val journalRemindersEnabled: Boolean? = null,
+        val dailyReminderHour: Int? = null,
+        val dailyReminderMinute: Int? = null,
+        val eveningReminderHour: Int? = null,
+        val eveningReminderMinute: Int? = null
+    )
+
+    suspend fun updateNotificationPreferences(batch: NotificationPreferencesBatch) {
+        highFrequencyStore.edit { preferences ->
+            batch.notificationsEnabled?.let { preferences[PreferencesKeys.NOTIFICATIONS_ENABLED] = it }
+            batch.wisdomNotificationsEnabled?.let { preferences[PreferencesKeys.WISDOM_NOTIFICATION_ENABLED] = it }
+            batch.journalRemindersEnabled?.let { preferences[PreferencesKeys.JOURNAL_REMINDER_ENABLED] = it }
+            batch.dailyReminderHour?.let { preferences[PreferencesKeys.DAILY_REMINDER_HOUR] = it }
+            batch.dailyReminderMinute?.let { preferences[PreferencesKeys.DAILY_REMINDER_MINUTE] = it }
+            batch.eveningReminderHour?.let { preferences[PreferencesKeys.EVENING_REMINDER_HOUR] = it }
+            batch.eveningReminderMinute?.let { preferences[PreferencesKeys.EVENING_REMINDER_MINUTE] = it }
+        }
+
+        batch.notificationsEnabled?.let { _notificationsEnabledCache.value = it }
+        batch.wisdomNotificationsEnabled?.let { _wisdomNotificationsEnabledCache.value = it }
+        batch.journalRemindersEnabled?.let { _journalRemindersEnabledCache.value = it }
+    }
+
+    val dailyReminderHour: Flow<Int> = highFrequencyStore.data
         .catch { exception ->
             if (exception is IOException) emit(emptyPreferences())
             else throw exception
@@ -290,7 +357,7 @@ class PreferencesManager @Inject constructor(
             preferences[PreferencesKeys.DAILY_REMINDER_HOUR] ?: 9
         }
 
-    val dailyReminderMinute: Flow<Int> = dataStore.data
+    val dailyReminderMinute: Flow<Int> = highFrequencyStore.data
         .catch { exception ->
             if (exception is IOException) emit(emptyPreferences())
             else throw exception
@@ -300,43 +367,27 @@ class PreferencesManager @Inject constructor(
         }
 
     suspend fun setDailyReminderTime(hour: Int, minute: Int) {
-        dataStore.edit { preferences ->
-            preferences[PreferencesKeys.DAILY_REMINDER_HOUR] = hour
-            preferences[PreferencesKeys.DAILY_REMINDER_MINUTE] = minute
-        }
+        updateNotificationPreferences(
+            NotificationPreferencesBatch(
+                dailyReminderHour = hour,
+                dailyReminderMinute = minute
+            )
+        )
     }
 
-    val wisdomNotificationEnabled: Flow<Boolean> = dataStore.data
-        .catch { exception ->
-            if (exception is IOException) emit(emptyPreferences())
-            else throw exception
-        }
-        .map { preferences ->
-            preferences[PreferencesKeys.WISDOM_NOTIFICATION_ENABLED] ?: true
-        }
+    val wisdomNotificationEnabled: Flow<Boolean> = _wisdomNotificationsEnabledCache.asStateFlow()
 
     suspend fun setWisdomNotificationEnabled(enabled: Boolean) {
-        dataStore.edit { preferences ->
-            preferences[PreferencesKeys.WISDOM_NOTIFICATION_ENABLED] = enabled
-        }
+        updateNotificationPreferences(NotificationPreferencesBatch(wisdomNotificationsEnabled = enabled))
     }
 
-    val journalReminderEnabled: Flow<Boolean> = dataStore.data
-        .catch { exception ->
-            if (exception is IOException) emit(emptyPreferences())
-            else throw exception
-        }
-        .map { preferences ->
-            preferences[PreferencesKeys.JOURNAL_REMINDER_ENABLED] ?: true
-        }
+    val journalReminderEnabled: Flow<Boolean> = _journalRemindersEnabledCache.asStateFlow()
 
     suspend fun setJournalReminderEnabled(enabled: Boolean) {
-        dataStore.edit { preferences ->
-            preferences[PreferencesKeys.JOURNAL_REMINDER_ENABLED] = enabled
-        }
+        updateNotificationPreferences(NotificationPreferencesBatch(journalRemindersEnabled = enabled))
     }
 
-    val eveningReminderHour: Flow<Int> = dataStore.data
+    val eveningReminderHour: Flow<Int> = highFrequencyStore.data
         .catch { exception ->
             if (exception is IOException) emit(emptyPreferences())
             else throw exception
@@ -345,7 +396,7 @@ class PreferencesManager @Inject constructor(
             preferences[PreferencesKeys.EVENING_REMINDER_HOUR] ?: 20
         }
 
-    val eveningReminderMinute: Flow<Int> = dataStore.data
+    val eveningReminderMinute: Flow<Int> = highFrequencyStore.data
         .catch { exception ->
             if (exception is IOException) emit(emptyPreferences())
             else throw exception
@@ -355,10 +406,12 @@ class PreferencesManager @Inject constructor(
         }
 
     suspend fun setEveningReminderTime(hour: Int, minute: Int) {
-        dataStore.edit { preferences ->
-            preferences[PreferencesKeys.EVENING_REMINDER_HOUR] = hour
-            preferences[PreferencesKeys.EVENING_REMINDER_MINUTE] = minute
-        }
+        updateNotificationPreferences(
+            NotificationPreferencesBatch(
+                eveningReminderHour = hour,
+                eveningReminderMinute = minute
+            )
+        )
     }
 
     // Streak
@@ -459,7 +512,7 @@ class PreferencesManager @Inject constructor(
     }
 
     // UI Preferences
-    val compactCardView: Flow<Boolean> = dataStore.data
+    val compactCardView: Flow<Boolean> = highFrequencyStore.data
         .catch { exception ->
             if (exception is IOException) emit(emptyPreferences())
             else throw exception
@@ -469,12 +522,10 @@ class PreferencesManager @Inject constructor(
         }
 
     suspend fun setCompactCardView(compact: Boolean) {
-        dataStore.edit { preferences ->
-            preferences[PreferencesKeys.COMPACT_CARD_VIEW] = compact
-        }
+        updateAppearancePreferences(AppearancePreferencesBatch(compactCardView = compact))
     }
 
-    val hapticFeedbackEnabled: Flow<Boolean> = dataStore.data
+    val hapticFeedbackEnabled: Flow<Boolean> = highFrequencyStore.data
         .catch { exception ->
             if (exception is IOException) emit(emptyPreferences())
             else throw exception
@@ -484,9 +535,7 @@ class PreferencesManager @Inject constructor(
         }
 
     suspend fun setHapticFeedbackEnabled(enabled: Boolean) {
-        dataStore.edit { preferences ->
-            preferences[PreferencesKeys.HAPTIC_FEEDBACK_ENABLED] = enabled
-        }
+        updateAppearancePreferences(AppearancePreferencesBatch(hapticFeedbackEnabled = enabled))
     }
 
     // User Info
@@ -522,11 +571,8 @@ class PreferencesManager @Inject constructor(
         }
     }
 
-    /**
-     * Synchronous access to current user ID (using runBlocking for simplicity in this legacy call)
-     */
-    fun getCurrentUserId(): String? = runBlocking {
-        dataStore.data.map { it[PreferencesKeys.USER_ID] }.first()
+    suspend fun getCurrentUserId(): String? {
+        return dataStore.data.map { it[PreferencesKeys.USER_ID] }.first()
     }
 
     // Gamification Initialized Flag
