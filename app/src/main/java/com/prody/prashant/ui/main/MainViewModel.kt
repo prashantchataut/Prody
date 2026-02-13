@@ -1,5 +1,6 @@
 package com.prody.prashant.ui.main
 
+import android.os.Trace
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.prody.prashant.data.local.preferences.PreferencesManager
@@ -29,12 +30,17 @@ class MainViewModel @Inject constructor(
         // --- CRITICAL PATH ---
         // Immediately determine the start destination to unblock the UI.
         viewModelScope.launch {
-            val onboardingCompleted = preferencesManager.onboardingCompleted
+            Trace.beginSection("MainViewModel.startDestinationPreferenceRead")
+            val onboardingCompleted = try {
+                preferencesManager.onboardingCompleted
                 .catch {
                     // In case of error, default to showing onboarding
                     emit(false)
                 }
                 .first() // We only need the initial value
+            } finally {
+                Trace.endSection()
+            }
 
             val startDestination = if (onboardingCompleted) {
                 Screen.Home.route
@@ -54,25 +60,30 @@ class MainViewModel @Inject constructor(
         // --- NON-CRITICAL PATH ---
         // Asynchronously load user preferences and apply them.
         viewModelScope.launch {
-            combine(
-                preferencesManager.themeMode.catch { emit("system") },
-                preferencesManager.hapticFeedbackEnabled.catch { emit(true) }
-            ) { themeModeString, hapticEnabled ->
-                val themeMode = when (themeModeString.lowercase()) {
-                    "light" -> ThemeMode.LIGHT
-                    "dark" -> ThemeMode.DARK
-                    else -> ThemeMode.SYSTEM
+            Trace.beginSection("MainViewModel.nonCriticalPreferenceCollection")
+            try {
+                combine(
+                    preferencesManager.themeMode.catch { emit("system") },
+                    preferencesManager.hapticFeedbackEnabled.catch { emit(true) }
+                ) { themeModeString, hapticEnabled ->
+                    val themeMode = when (themeModeString.lowercase()) {
+                        "light" -> ThemeMode.LIGHT
+                        "dark" -> ThemeMode.DARK
+                        else -> ThemeMode.SYSTEM
+                    }
+                    // Return a pair of the loaded preferences
+                    themeMode to hapticEnabled
+                }.collectLatest { (themeMode, hapticEnabled) ->
+                    // Use atomic update to apply non-critical preferences
+                    _uiState.update {
+                        it.copy(
+                            themeMode = themeMode,
+                            hapticFeedbackEnabled = hapticEnabled
+                        )
+                    }
                 }
-                // Return a pair of the loaded preferences
-                themeMode to hapticEnabled
-            }.collectLatest { (themeMode, hapticEnabled) ->
-                // Use atomic update to apply non-critical preferences
-                _uiState.update {
-                    it.copy(
-                        themeMode = themeMode,
-                        hapticFeedbackEnabled = hapticEnabled
-                    )
-                }
+            } finally {
+                Trace.endSection()
             }
         }
     }

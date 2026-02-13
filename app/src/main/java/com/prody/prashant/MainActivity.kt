@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.os.Trace
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -176,6 +177,7 @@ class MainActivity : ComponentActivity() {
         }
 
         lifecycleScope.launch(Dispatchers.IO) {
+            Trace.beginSection("Startup.scheduleNotifications.preferenceFlow")
             try {
                 if (::notificationScheduler.isInitialized) {
                     notificationScheduler.rescheduleAllNotifications()
@@ -184,6 +186,8 @@ class MainActivity : ComponentActivity() {
                 }
             } catch (e: Exception) {
                 android.util.Log.e("MainActivity", "Failed to schedule notifications", e)
+            } finally {
+                Trace.endSection()
             }
         }
     }
