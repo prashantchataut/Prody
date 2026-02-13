@@ -127,17 +127,17 @@ val MoodEnergetic = Color(0xFFFFB74D)
 val MoodInspired = Color(0xFF7986CB)
 val MoodNostalgic = Color(0xFFA1887F)
 
-// Haven
-val HavenBackgroundLight = ProdyBackgroundLight
-val HavenBubbleLight = Color(0xFFE8F5E9)
-val HavenUserBubbleLight = ProdySurfaceLight
-val HavenTextLight = ProdyTextPrimaryLight
-val HavenBackgroundDark = ProdyBackgroundDark
-val HavenBubbleDark = Color(0xFF1B3320)
-val HavenUserBubbleDark = ProdySurfaceDark
-val HavenTextDark = ProdyTextPrimaryDark
-val HavenAccentRose = Color(0xFFE91E63)
-val HavenAccentGold = ProdyWarmAmber
+// Haven — Warm Reddish-Cream Palette
+val HavenBackgroundLight = Color(0xFFFFF8F5)          // Warm cream
+val HavenBubbleLight = Color(0xFFF5DDD0)              // Soft blush/rose
+val HavenUserBubbleLight = Color(0xFFFFF0EB)           // Lighter cream user
+val HavenTextLight = Color(0xFF2D2424)                 // Warm dark text
+val HavenBackgroundDark = Color(0xFF1A1214)            // Deep warm dark
+val HavenBubbleDark = Color(0xFF3D2A2A)                // Dark rose bubble
+val HavenUserBubbleDark = Color(0xFF2A1E1E)            // Dark user bubble
+val HavenTextDark = Color(0xFFF0EAE2)                  // Warm light text
+val HavenAccentRose = Color(0xFFD4736B)                // Muted dusty rose
+val HavenAccentGold = Color(0xFFD4A574)                // Warm caramel gold
 
 // Scrim
 val Scrim = Color(0x52000000)

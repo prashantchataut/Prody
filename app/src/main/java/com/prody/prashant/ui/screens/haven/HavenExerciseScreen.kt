@@ -1,6 +1,11 @@
 package com.prody.prashant.ui.screens.haven
 import com.prody.prashant.ui.icons.ProdyIcons
 
+import android.content.Context
+import android.os.Build
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.os.VibratorManager
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -20,6 +25,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -31,6 +37,37 @@ import com.prody.prashant.R
 import com.prody.prashant.domain.haven.ExerciseType
 import com.prody.prashant.ui.theme.*
 import kotlinx.coroutines.delay
+
+/** Utility: get system Vibrator across API levels */
+private fun getVibrator(context: Context): Vibrator {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        val manager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
+        manager.defaultVibrator
+    } else {
+        @Suppress("DEPRECATION")
+        context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+    }
+}
+
+/** Haptic tick — gentle pulse for phase transitions */
+private fun hapticTick(vibrator: Vibrator) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        vibrator.vibrate(VibrationEffect.createOneShot(40, VibrationEffect.DEFAULT_AMPLITUDE))
+    } else {
+        @Suppress("DEPRECATION")
+        vibrator.vibrate(40)
+    }
+}
+
+/** Haptic buzz — stronger pulse for completion */
+private fun hapticBuzz(vibrator: Vibrator) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        vibrator.vibrate(VibrationEffect.createOneShot(100, VibrationEffect.DEFAULT_AMPLITUDE))
+    } else {
+        @Suppress("DEPRECATION")
+        vibrator.vibrate(100)
+    }
+}
 
 /**
  * Haven Exercise Screen - Guided therapeutic exercises
@@ -186,6 +223,9 @@ private fun BreathingExerciseContent(
     instruction: String,
     onComplete: () -> Unit
 ) {
+    val context = LocalContext.current
+    val vibrator = remember { getVibrator(context) }
+
     // Breathing pattern based on exercise type
     val (inhale, hold1, exhale, hold2) = when (exerciseType) {
         ExerciseType.BOX_BREATHING -> listOf(4000, 4000, 4000, 4000)
@@ -221,6 +261,11 @@ private fun BreathingExerciseContent(
         else -> "Hold" to ((breathProgress - exhaleEnd) / (1f - exhaleEnd))
     }
 
+    // Haptic feedback on each breathing phase change
+    LaunchedEffect(phase) {
+        hapticTick(vibrator)
+    }
+
     // Circle scale based on phase
     val circleScale = when (phase) {
         "Breathe In" -> 0.6f + (phaseProgress * 0.4f)
@@ -233,6 +278,7 @@ private fun BreathingExerciseContent(
         while (cyclesCompleted.intValue < targetCycles) {
             delay(totalCycleDuration.toLong())
             cyclesCompleted.intValue++
+            hapticBuzz(vibrator) // pulse at cycle boundary
         }
         onComplete()
     }
@@ -764,6 +810,15 @@ private fun ExerciseCompletionScreen(
     totalDuration: Long,
     onDone: () -> Unit
 ) {
+    // Haptic celebration on completion
+    val context = LocalContext.current
+    val vibrator = remember { getVibrator(context) }
+    LaunchedEffect(Unit) {
+        hapticBuzz(vibrator)
+        delay(200)
+        hapticBuzz(vibrator)
+    }
+
     val durationMinutes = (totalDuration / 60000).toInt()
     val durationSeconds = ((totalDuration % 60000) / 1000).toInt()
 

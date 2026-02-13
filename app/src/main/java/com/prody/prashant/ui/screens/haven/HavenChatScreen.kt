@@ -228,6 +228,15 @@ fun HavenChatScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            havenBackground,
+                            if (isDark) Color(0xFF1F1518) else Color(0xFFFFF2ED),
+                            havenBackground
+                        )
+                    )
+                )
         ) {
             if (uiState.isLoading && uiState.messages.isEmpty()) {
                 Box(

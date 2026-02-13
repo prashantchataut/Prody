@@ -280,7 +280,7 @@ fun NewJournalEntryScreen(
                 JournalTopBar(
                     onBackClick = handleBack,
                     onSaveClick = { viewModel.saveEntry() },
-                    isSaveEnabled = uiState.content.isNotBlank() && !uiState.isSaving,
+                    isSaveEnabled = uiState.content.isNotBlank() && !uiState.isSaving && !uiState.isSaved && !uiState.isGeneratingAiResponse,
                     isSaving = uiState.isSaving,
                     isGeneratingAi = uiState.isGeneratingAiResponse,
                     colors = colors
