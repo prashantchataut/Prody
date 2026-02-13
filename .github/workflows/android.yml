@@ -20,40 +20,25 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
     - name: Set up JDK 17
-      uses: actions/setup-java@v4
+      uses: actions/setup-java@3a4f6d1af2337a0bc9e9914f605751996f896541 # v4.7.0
       with:
         java-version: '17'
         distribution: 'temurin'
 
+    - name: Validate Gradle Wrapper
+      uses: gradle/actions/wrapper-validation@0bd663587b120c909670737a28892410a7674261 # v4.1.0
+
     - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@v4
+      uses: gradle/actions/setup-gradle@0bd663587b120c909670737a28892410a7674261 # v4.1.0
       with:
         gradle-home-cache-cleanup: false
         cache-read-only: false
 
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
-
-    - name: Verify Gradle wrapper
-      run: |
-        echo "Checking gradle wrapper files..."
-        ls -la gradle/wrapper/
-        file gradle/wrapper/gradle-wrapper.jar
-        echo "Wrapper jar size: $(stat -c%s gradle/wrapper/gradle-wrapper.jar) bytes"
-        # Verify SHA256 checksum matches official Gradle 8.9 wrapper
-        EXPECTED_SHA="498495120a03b9a6ab5d155f5de3c8f0d986a449153702fb80fc80e134484f17"
-        ACTUAL_SHA=$(sha256sum gradle/wrapper/gradle-wrapper.jar | awk '{print $1}')
-        echo "Expected SHA256: $EXPECTED_SHA"
-        echo "Actual SHA256: $ACTUAL_SHA"
-        if [ "$EXPECTED_SHA" != "$ACTUAL_SHA" ]; then
-          echo "ERROR: Wrapper jar checksum mismatch! Re-downloading..."
-          curl -sL -o gradle/wrapper/gradle-wrapper.jar "https://raw.githubusercontent.com/gradle/gradle/v8.9.0/gradle/wrapper/gradle-wrapper.jar"
-        else
-          echo "Wrapper jar checksum verified successfully"
-        fi
 
     - name: Decode Keystore
       env:
@@ -124,7 +109,7 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
     - name: Download Release APK
       uses: actions/download-artifact@v4
@@ -161,40 +146,25 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
     - name: Set up JDK 17
-      uses: actions/setup-java@v4
+      uses: actions/setup-java@3a4f6d1af2337a0bc9e9914f605751996f896541 # v4.7.0
       with:
         java-version: '17'
         distribution: 'temurin'
 
+    - name: Validate Gradle Wrapper
+      uses: gradle/actions/wrapper-validation@0bd663587b120c909670737a28892410a7674261 # v4.1.0
+
     - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@v4
+      uses: gradle/actions/setup-gradle@0bd663587b120c909670737a28892410a7674261 # v4.1.0
       with:
         gradle-home-cache-cleanup: false
         cache-read-only: false
 
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
-
-    - name: Verify Gradle wrapper
-      run: |
-        echo "Checking gradle wrapper files..."
-        ls -la gradle/wrapper/
-        file gradle/wrapper/gradle-wrapper.jar
-        echo "Wrapper jar size: $(stat -c%s gradle/wrapper/gradle-wrapper.jar) bytes"
-        # Verify SHA256 checksum matches official Gradle 8.9 wrapper
-        EXPECTED_SHA="498495120a03b9a6ab5d155f5de3c8f0d986a449153702fb80fc80e134484f17"
-        ACTUAL_SHA=$(sha256sum gradle/wrapper/gradle-wrapper.jar | awk '{print $1}')
-        echo "Expected SHA256: $EXPECTED_SHA"
-        echo "Actual SHA256: $ACTUAL_SHA"
-        if [ "$EXPECTED_SHA" != "$ACTUAL_SHA" ]; then
-          echo "ERROR: Wrapper jar checksum mismatch! Re-downloading..."
-          curl -sL -o gradle/wrapper/gradle-wrapper.jar "https://raw.githubusercontent.com/gradle/gradle/v8.9.0/gradle/wrapper/gradle-wrapper.jar"
-        else
-          echo "Wrapper jar checksum verified successfully"
-        fi
 
     - name: Run Lint
       run: ./gradlew lintDebug --stacktrace --no-configuration-cache
@@ -215,40 +185,25 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
     - name: Set up JDK 17
-      uses: actions/setup-java@v4
+      uses: actions/setup-java@3a4f6d1af2337a0bc9e9914f605751996f896541 # v4.7.0
       with:
         java-version: '17'
         distribution: 'temurin'
 
+    - name: Validate Gradle Wrapper
+      uses: gradle/actions/wrapper-validation@0bd663587b120c909670737a28892410a7674261 # v4.1.0
+
     - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@v4
+      uses: gradle/actions/setup-gradle@0bd663587b120c909670737a28892410a7674261 # v4.1.0
       with:
         gradle-home-cache-cleanup: false
         cache-read-only: false
 
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
-
-    - name: Verify Gradle wrapper
-      run: |
-        echo "Checking gradle wrapper files..."
-        ls -la gradle/wrapper/
-        file gradle/wrapper/gradle-wrapper.jar
-        echo "Wrapper jar size: $(stat -c%s gradle/wrapper/gradle-wrapper.jar) bytes"
-        # Verify SHA256 checksum matches official Gradle 8.9 wrapper
-        EXPECTED_SHA="498495120a03b9a6ab5d155f5de3c8f0d986a449153702fb80fc80e134484f17"
-        ACTUAL_SHA=$(sha256sum gradle/wrapper/gradle-wrapper.jar | awk '{print $1}')
-        echo "Expected SHA256: $EXPECTED_SHA"
-        echo "Actual SHA256: $ACTUAL_SHA"
-        if [ "$EXPECTED_SHA" != "$ACTUAL_SHA" ]; then
-          echo "ERROR: Wrapper jar checksum mismatch! Re-downloading..."
-          curl -sL -o gradle/wrapper/gradle-wrapper.jar "https://raw.githubusercontent.com/gradle/gradle/v8.9.0/gradle/wrapper/gradle-wrapper.jar"
-        else
-          echo "Wrapper jar checksum verified successfully"
-        fi
 
     - name: Run Unit Tests
       run: ./gradlew testDebugUnitTest --stacktrace --no-configuration-cache

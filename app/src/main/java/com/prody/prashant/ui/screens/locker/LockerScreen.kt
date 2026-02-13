@@ -79,6 +79,7 @@ import com.prody.prashant.data.local.entity.EvidenceRarity
 import com.prody.prashant.data.local.entity.EvidenceType
 import com.prody.prashant.ui.theme.ProdyAccentGreen
 import com.prody.prashant.ui.theme.isDarkTheme
+import com.prody.prashant.util.SecureScreen
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -112,6 +113,9 @@ fun LockerScreen(
     viewModel: LockerViewModel = hiltViewModel(),
     onNavigateBack: () -> Unit = {}
 ) {
+    // Security: Prevent screenshots of growth evidence
+    SecureScreen()
+
     val evidence by viewModel.evidence.collectAsStateWithLifecycle()
     val selectedFilter by viewModel.selectedFilter.collectAsStateWithLifecycle()
     val selectedEvidence by viewModel.selectedEvidence.collectAsStateWithLifecycle()

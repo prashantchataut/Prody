@@ -1,8 +1,6 @@
 package com.prody.prashant.ui.screens.journal
 import com.prody.prashant.ui.icons.ProdyIcons
 
-import android.app.Activity
-import android.view.WindowManager
 import android.media.MediaPlayer
 import android.net.Uri
 import androidx.compose.animation.animateColorAsState
@@ -17,9 +15,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -50,6 +45,7 @@ import java.util.*
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import com.prody.prashant.util.AccessibilityUtils
+import com.prody.prashant.util.SecureScreen
 
 @Composable
 fun JournalDetailScreen(
@@ -58,16 +54,9 @@ fun JournalDetailScreen(
     viewModel: JournalDetailViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val context = LocalContext.current
 
     // Security: Prevent screenshots and screen recordings of private journal content
-    DisposableEffect(Unit) {
-        val window = (context as? Activity)?.window
-        window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
-        onDispose {
-            window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
-        }
-    }
+    SecureScreen()
 
     LaunchedEffect(entryId) {
         viewModel.loadEntry(entryId)
