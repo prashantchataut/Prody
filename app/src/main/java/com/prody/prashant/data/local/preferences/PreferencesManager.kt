@@ -37,12 +37,42 @@ class PreferencesManager @Inject constructor(
 ) {
     private val dataStore = context.dataStore
     private val coroutineScope = CoroutineScope(Dispatchers.IO)
+    private val facadeSupport = PreferenceFacadeSupport(dataStore)
 
     private val _geminiApiKey = MutableStateFlow("")
     val geminiApiKey: Flow<String> = _geminiApiKey.asStateFlow()
 
     private val _therapistApiKey = MutableStateFlow("")
     val therapistApiKey: Flow<String> = _therapistApiKey.asStateFlow()
+
+    private val notificationPreferences = NotificationPreferences(
+        support = facadeSupport,
+        notificationsEnabledKey = PreferencesKeys.NOTIFICATIONS_ENABLED,
+        dailyReminderHourKey = PreferencesKeys.DAILY_REMINDER_HOUR,
+        dailyReminderMinuteKey = PreferencesKeys.DAILY_REMINDER_MINUTE,
+        wisdomNotificationEnabledKey = PreferencesKeys.WISDOM_NOTIFICATION_ENABLED,
+        journalReminderEnabledKey = PreferencesKeys.JOURNAL_REMINDER_ENABLED,
+        eveningReminderHourKey = PreferencesKeys.EVENING_REMINDER_HOUR,
+        eveningReminderMinuteKey = PreferencesKeys.EVENING_REMINDER_MINUTE
+    )
+
+    private val privacyPreferences = PrivacyPreferences(
+        support = facadeSupport,
+        privacyLockJournalKey = PreferencesKeys.PRIVACY_LOCK_JOURNAL,
+        privacyLockFutureMessagesKey = PreferencesKeys.PRIVACY_LOCK_FUTURE_MESSAGES,
+        privacyLockOnBackgroundKey = PreferencesKeys.PRIVACY_LOCK_ON_BACKGROUND,
+        privacyLastUnlockedAtKey = PreferencesKeys.PRIVACY_LAST_UNLOCKED_AT
+    )
+
+    private val ritualPreferences = RitualPreferences(
+        support = facadeSupport,
+        morningRitualEnabledKey = PreferencesKeys.MORNING_RITUAL_ENABLED,
+        eveningRitualEnabledKey = PreferencesKeys.EVENING_RITUAL_ENABLED,
+        morningRitualStartHourKey = PreferencesKeys.MORNING_RITUAL_START_HOUR,
+        morningRitualEndHourKey = PreferencesKeys.MORNING_RITUAL_END_HOUR,
+        eveningRitualStartHourKey = PreferencesKeys.EVENING_RITUAL_START_HOUR,
+        ritualReminderEnabledKey = PreferencesKeys.RITUAL_REMINDER_ENABLED
+    )
 
     init {
         coroutineScope.launch {
@@ -266,100 +296,18 @@ class PreferencesManager @Inject constructor(
     }
 
     // Notifications
-    val notificationsEnabled: Flow<Boolean> = dataStore.data
-        .catch { exception ->
-            if (exception is IOException) emit(emptyPreferences())
-            else throw exception
-        }
-        .map { preferences ->
-            preferences[PreferencesKeys.NOTIFICATIONS_ENABLED] ?: true
-        }
-
-    suspend fun setNotificationsEnabled(enabled: Boolean) {
-        dataStore.edit { preferences ->
-            preferences[PreferencesKeys.NOTIFICATIONS_ENABLED] = enabled
-        }
-    }
-
-    val dailyReminderHour: Flow<Int> = dataStore.data
-        .catch { exception ->
-            if (exception is IOException) emit(emptyPreferences())
-            else throw exception
-        }
-        .map { preferences ->
-            preferences[PreferencesKeys.DAILY_REMINDER_HOUR] ?: 9
-        }
-
-    val dailyReminderMinute: Flow<Int> = dataStore.data
-        .catch { exception ->
-            if (exception is IOException) emit(emptyPreferences())
-            else throw exception
-        }
-        .map { preferences ->
-            preferences[PreferencesKeys.DAILY_REMINDER_MINUTE] ?: 0
-        }
-
-    suspend fun setDailyReminderTime(hour: Int, minute: Int) {
-        dataStore.edit { preferences ->
-            preferences[PreferencesKeys.DAILY_REMINDER_HOUR] = hour
-            preferences[PreferencesKeys.DAILY_REMINDER_MINUTE] = minute
-        }
-    }
-
-    val wisdomNotificationEnabled: Flow<Boolean> = dataStore.data
-        .catch { exception ->
-            if (exception is IOException) emit(emptyPreferences())
-            else throw exception
-        }
-        .map { preferences ->
-            preferences[PreferencesKeys.WISDOM_NOTIFICATION_ENABLED] ?: true
-        }
-
-    suspend fun setWisdomNotificationEnabled(enabled: Boolean) {
-        dataStore.edit { preferences ->
-            preferences[PreferencesKeys.WISDOM_NOTIFICATION_ENABLED] = enabled
-        }
-    }
-
-    val journalReminderEnabled: Flow<Boolean> = dataStore.data
-        .catch { exception ->
-            if (exception is IOException) emit(emptyPreferences())
-            else throw exception
-        }
-        .map { preferences ->
-            preferences[PreferencesKeys.JOURNAL_REMINDER_ENABLED] ?: true
-        }
-
-    suspend fun setJournalReminderEnabled(enabled: Boolean) {
-        dataStore.edit { preferences ->
-            preferences[PreferencesKeys.JOURNAL_REMINDER_ENABLED] = enabled
-        }
-    }
-
-    val eveningReminderHour: Flow<Int> = dataStore.data
-        .catch { exception ->
-            if (exception is IOException) emit(emptyPreferences())
-            else throw exception
-        }
-        .map { preferences ->
-            preferences[PreferencesKeys.EVENING_REMINDER_HOUR] ?: 20
-        }
-
-    val eveningReminderMinute: Flow<Int> = dataStore.data
-        .catch { exception ->
-            if (exception is IOException) emit(emptyPreferences())
-            else throw exception
-        }
-        .map { preferences ->
-            preferences[PreferencesKeys.EVENING_REMINDER_MINUTE] ?: 0
-        }
-
-    suspend fun setEveningReminderTime(hour: Int, minute: Int) {
-        dataStore.edit { preferences ->
-            preferences[PreferencesKeys.EVENING_REMINDER_HOUR] = hour
-            preferences[PreferencesKeys.EVENING_REMINDER_MINUTE] = minute
-        }
-    }
+    val notificationsEnabled: Flow<Boolean> = notificationPreferences.notificationsEnabled
+    suspend fun setNotificationsEnabled(enabled: Boolean) = notificationPreferences.setNotificationsEnabled(enabled)
+    val dailyReminderHour: Flow<Int> = notificationPreferences.dailyReminderHour
+    val dailyReminderMinute: Flow<Int> = notificationPreferences.dailyReminderMinute
+    suspend fun setDailyReminderTime(hour: Int, minute: Int) = notificationPreferences.setDailyReminderTime(hour, minute)
+    val wisdomNotificationEnabled: Flow<Boolean> = notificationPreferences.wisdomNotificationEnabled
+    suspend fun setWisdomNotificationEnabled(enabled: Boolean) = notificationPreferences.setWisdomNotificationEnabled(enabled)
+    val journalReminderEnabled: Flow<Boolean> = notificationPreferences.journalReminderEnabled
+    suspend fun setJournalReminderEnabled(enabled: Boolean) = notificationPreferences.setJournalReminderEnabled(enabled)
+    val eveningReminderHour: Flow<Int> = notificationPreferences.eveningReminderHour
+    val eveningReminderMinute: Flow<Int> = notificationPreferences.eveningReminderMinute
+    suspend fun setEveningReminderTime(hour: Int, minute: Int) = notificationPreferences.setEveningReminderTime(hour, minute)
 
     // Streak
     val currentStreak: Flow<Int> = dataStore.data
@@ -745,65 +693,14 @@ class PreferencesManager @Inject constructor(
 
     // ===== PRIVACY MODE SETTINGS =====
 
-    val privacyLockJournal: Flow<Boolean> = dataStore.data
-        .catch { exception ->
-            if (exception is IOException) emit(emptyPreferences())
-            else throw exception
-        }
-        .map { preferences ->
-            preferences[PreferencesKeys.PRIVACY_LOCK_JOURNAL] ?: false
-        }
-
-    suspend fun setPrivacyLockJournal(enabled: Boolean) {
-        dataStore.edit { preferences ->
-            preferences[PreferencesKeys.PRIVACY_LOCK_JOURNAL] = enabled
-        }
-    }
-
-    val privacyLockFutureMessages: Flow<Boolean> = dataStore.data
-        .catch { exception ->
-            if (exception is IOException) emit(emptyPreferences())
-            else throw exception
-        }
-        .map { preferences ->
-            preferences[PreferencesKeys.PRIVACY_LOCK_FUTURE_MESSAGES] ?: false
-        }
-
-    suspend fun setPrivacyLockFutureMessages(enabled: Boolean) {
-        dataStore.edit { preferences ->
-            preferences[PreferencesKeys.PRIVACY_LOCK_FUTURE_MESSAGES] = enabled
-        }
-    }
-
-    val privacyLockOnBackground: Flow<Boolean> = dataStore.data
-        .catch { exception ->
-            if (exception is IOException) emit(emptyPreferences())
-            else throw exception
-        }
-        .map { preferences ->
-            preferences[PreferencesKeys.PRIVACY_LOCK_ON_BACKGROUND] ?: true
-        }
-
-    suspend fun setPrivacyLockOnBackground(enabled: Boolean) {
-        dataStore.edit { preferences ->
-            preferences[PreferencesKeys.PRIVACY_LOCK_ON_BACKGROUND] = enabled
-        }
-    }
-
-    val privacyLastUnlockedAt: Flow<Long> = dataStore.data
-        .catch { exception ->
-            if (exception is IOException) emit(emptyPreferences())
-            else throw exception
-        }
-        .map { preferences ->
-            preferences[PreferencesKeys.PRIVACY_LAST_UNLOCKED_AT] ?: 0L
-        }
-
-    suspend fun setPrivacyLastUnlockedAt(timestamp: Long) {
-        dataStore.edit { preferences ->
-            preferences[PreferencesKeys.PRIVACY_LAST_UNLOCKED_AT] = timestamp
-        }
-    }
+    val privacyLockJournal: Flow<Boolean> = privacyPreferences.privacyLockJournal
+    suspend fun setPrivacyLockJournal(enabled: Boolean) = privacyPreferences.setPrivacyLockJournal(enabled)
+    val privacyLockFutureMessages: Flow<Boolean> = privacyPreferences.privacyLockFutureMessages
+    suspend fun setPrivacyLockFutureMessages(enabled: Boolean) = privacyPreferences.setPrivacyLockFutureMessages(enabled)
+    val privacyLockOnBackground: Flow<Boolean> = privacyPreferences.privacyLockOnBackground
+    suspend fun setPrivacyLockOnBackground(enabled: Boolean) = privacyPreferences.setPrivacyLockOnBackground(enabled)
+    val privacyLastUnlockedAt: Flow<Long> = privacyPreferences.privacyLastUnlockedAt
+    suspend fun setPrivacyLastUnlockedAt(timestamp: Long) = privacyPreferences.updatePrivacyLastUnlockedAt(timestamp)
 
     // ===== WEEKLY SUMMARY SETTINGS =====
 
@@ -869,95 +766,18 @@ class PreferencesManager @Inject constructor(
 
     // ===== DAILY RITUAL SETTINGS =====
 
-    val morningRitualEnabled: Flow<Boolean> = dataStore.data
-        .catch { exception ->
-            if (exception is IOException) emit(emptyPreferences())
-            else throw exception
-        }
-        .map { preferences ->
-            preferences[PreferencesKeys.MORNING_RITUAL_ENABLED] ?: true
-        }
-
-    suspend fun setMorningRitualEnabled(enabled: Boolean) {
-        dataStore.edit { preferences ->
-            preferences[PreferencesKeys.MORNING_RITUAL_ENABLED] = enabled
-        }
-    }
-
-    val eveningRitualEnabled: Flow<Boolean> = dataStore.data
-        .catch { exception ->
-            if (exception is IOException) emit(emptyPreferences())
-            else throw exception
-        }
-        .map { preferences ->
-            preferences[PreferencesKeys.EVENING_RITUAL_ENABLED] ?: true
-        }
-
-    suspend fun setEveningRitualEnabled(enabled: Boolean) {
-        dataStore.edit { preferences ->
-            preferences[PreferencesKeys.EVENING_RITUAL_ENABLED] = enabled
-        }
-    }
-
-    val morningRitualStartHour: Flow<Int> = dataStore.data
-        .catch { exception ->
-            if (exception is IOException) emit(emptyPreferences())
-            else throw exception
-        }
-        .map { preferences ->
-            preferences[PreferencesKeys.MORNING_RITUAL_START_HOUR] ?: 5
-        }
-
-    suspend fun setMorningRitualStartHour(hour: Int) {
-        dataStore.edit { preferences ->
-            preferences[PreferencesKeys.MORNING_RITUAL_START_HOUR] = hour
-        }
-    }
-
-    val morningRitualEndHour: Flow<Int> = dataStore.data
-        .catch { exception ->
-            if (exception is IOException) emit(emptyPreferences())
-            else throw exception
-        }
-        .map { preferences ->
-            preferences[PreferencesKeys.MORNING_RITUAL_END_HOUR] ?: 12
-        }
-
-    suspend fun setMorningRitualEndHour(hour: Int) {
-        dataStore.edit { preferences ->
-            preferences[PreferencesKeys.MORNING_RITUAL_END_HOUR] = hour
-        }
-    }
-
-    val eveningRitualStartHour: Flow<Int> = dataStore.data
-        .catch { exception ->
-            if (exception is IOException) emit(emptyPreferences())
-            else throw exception
-        }
-        .map { preferences ->
-            preferences[PreferencesKeys.EVENING_RITUAL_START_HOUR] ?: 18
-        }
-
-    suspend fun setEveningRitualStartHour(hour: Int) {
-        dataStore.edit { preferences ->
-            preferences[PreferencesKeys.EVENING_RITUAL_START_HOUR] = hour
-        }
-    }
-
-    val ritualReminderEnabled: Flow<Boolean> = dataStore.data
-        .catch { exception ->
-            if (exception is IOException) emit(emptyPreferences())
-            else throw exception
-        }
-        .map { preferences ->
-            preferences[PreferencesKeys.RITUAL_REMINDER_ENABLED] ?: true
-        }
-
-    suspend fun setRitualReminderEnabled(enabled: Boolean) {
-        dataStore.edit { preferences ->
-            preferences[PreferencesKeys.RITUAL_REMINDER_ENABLED] = enabled
-        }
-    }
+    val morningRitualEnabled: Flow<Boolean> = ritualPreferences.morningRitualEnabled
+    suspend fun setMorningRitualEnabled(enabled: Boolean) = ritualPreferences.setMorningRitualEnabled(enabled)
+    val eveningRitualEnabled: Flow<Boolean> = ritualPreferences.eveningRitualEnabled
+    suspend fun setEveningRitualEnabled(enabled: Boolean) = ritualPreferences.setEveningRitualEnabled(enabled)
+    val morningRitualStartHour: Flow<Int> = ritualPreferences.morningRitualStartHour
+    suspend fun setMorningRitualStartHour(hour: Int) = ritualPreferences.setMorningRitualStartHour(hour)
+    val morningRitualEndHour: Flow<Int> = ritualPreferences.morningRitualEndHour
+    suspend fun setMorningRitualEndHour(hour: Int) = ritualPreferences.setMorningRitualEndHour(hour)
+    val eveningRitualStartHour: Flow<Int> = ritualPreferences.eveningRitualStartHour
+    suspend fun setEveningRitualStartHour(hour: Int) = ritualPreferences.setEveningRitualStartHour(hour)
+    val ritualReminderEnabled: Flow<Boolean> = ritualPreferences.ritualReminderEnabled
+    suspend fun setRitualReminderEnabled(enabled: Boolean) = ritualPreferences.setRitualReminderEnabled(enabled)
 
     // ===== QUIET MODE SETTINGS =====
 

@@ -110,6 +110,7 @@ fun SettingsScreen(
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val screenState = rememberSettingsScreenState(uiState)
     val isDark = isDarkTheme()
 
     // Entry animations
@@ -557,7 +558,7 @@ private fun SettingsTopBar(
 // =============================================================================
 
 @Composable
-private fun SettingsSection(
+internal fun SettingsSection(
     title: String,
     isDark: Boolean,
     showLeafIcon: Boolean = false,
@@ -613,7 +614,7 @@ private fun SettingsSection(
 // =============================================================================
 
 @Composable
-private fun SettingsRowWithToggle(
+internal fun SettingsRowWithToggle(
     icon: ImageVector,
     title: String,
     checked: Boolean,
@@ -750,7 +751,7 @@ private fun CustomToggleSwitch(
 // =============================================================================
 
 @Composable
-private fun SettingsRowWithDropdown(
+internal fun SettingsRowWithDropdown(
     icon: ImageVector,
     title: String,
     currentValue: String,
@@ -876,7 +877,7 @@ private fun SettingsRowWithDropdown(
 // =============================================================================
 
 @Composable
-private fun SettingsDivider(isDark: Boolean) {
+internal fun SettingsDivider(isDark: Boolean) {
     val dividerColor = if (isDark) DarkIconBackground.copy(alpha = 0.5f)
                        else LightIconBackground.copy(alpha = 0.5f)
     HorizontalDivider(
