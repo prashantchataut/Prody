@@ -24,15 +24,15 @@ internal class NotificationPreferences(
     suspend fun setNotificationsEnabled(enabled: Boolean) = support.setBoolean(notificationsEnabledKey, enabled)
 
     suspend fun setDailyReminderTime(hour: Int, minute: Int) = support.setInts(
-        dailyReminderHourKey to hour,
-        dailyReminderMinuteKey to minute
+        kotlin.Pair(dailyReminderHourKey, hour),
+        kotlin.Pair(dailyReminderMinuteKey, minute)
     )
 
     suspend fun setWisdomNotificationEnabled(enabled: Boolean) = support.setBoolean(wisdomNotificationEnabledKey, enabled)
     suspend fun setJournalReminderEnabled(enabled: Boolean) = support.setBoolean(journalReminderEnabledKey, enabled)
 
     suspend fun setEveningReminderTime(hour: Int, minute: Int) = support.setInts(
-        eveningReminderHourKey to hour,
-        eveningReminderMinuteKey to minute
+        kotlin.Pair(eveningReminderHourKey, hour),
+        kotlin.Pair(eveningReminderMinuteKey, minute)
     )
 }
