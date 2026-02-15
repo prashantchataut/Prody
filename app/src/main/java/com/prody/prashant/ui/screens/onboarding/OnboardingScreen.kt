@@ -61,10 +61,14 @@ fun OnboardingScreen(
     // We will use the ProdyTheme colors.
     
     // Gradient Background: White to #F5F5F5 for light mode
-    val gradientColors = if (!isSystemInDarkTheme()) {
-        listOf(Color.White, Color(0xFFF5F5F5))
-    } else {
-        listOf(ProdyBackgroundDark, ProdyBackgroundDark) // Keep dark mode simple
+    // Performance Optimization: Wrap in remember to avoid list allocation on every recomposition
+    val isDark = isSystemInDarkTheme()
+    val gradientColors = remember(isDark) {
+        if (!isDark) {
+            listOf(Color.White, Color(0xFFF5F5F5))
+        } else {
+            listOf(ProdyBackgroundDark, ProdyBackgroundDark) // Keep dark mode simple
+        }
     }
 
     Box(
@@ -419,18 +423,15 @@ private fun StandardFeatureCard(
     content: @Composable ColumnScope.() -> Unit
 ) {
     // Card Design: 12dp corner radius, 8dp elevation with proper shadow
+    // Performance Optimization: Use Surface shadowElevation instead of Modifier.shadow
+    // for more efficient platform-level shadow rendering.
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .aspectRatio(0.8f)
-            .shadow(
-                elevation = 8.dp,
-                shape = RoundedCornerShape(12.dp),
-                spotColor = Color(0x1A000000), // Soft shadow
-                ambientColor = Color(0x1A000000)
-            ),
+            .aspectRatio(0.8f),
         shape = RoundedCornerShape(12.dp),
-        color = Color.White
+        color = Color.White,
+        shadowElevation = 8.dp
     ) {
         Column(
             modifier = Modifier
@@ -733,6 +734,11 @@ fun ProdyLogo(modifier: Modifier = Modifier) {
     }
 }
 
+/**
+ * Optimized Progress Indicator for Onboarding.
+ *
+ * Performance Optimization: Isolate animation and use graphicsLayer where possible.
+ */
 @Composable
 fun ProdyProgressIndicator(
     currentPage: Int,
@@ -744,17 +750,29 @@ fun ProdyProgressIndicator(
         horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         repeat(totalPages) { index ->
-            val isActive = index == currentPage
-            val width by animateDpAsState(if (isActive) 24.dp else 8.dp, label = "width")
-            val color = if (isActive) ProdyForestGreen else ProdyOutlineLight
-            
-            Box(
-                modifier = Modifier
-                    .height(4.dp)
-                    .width(width)
-                    .clip(CircleShape)
-                    .background(color)
+            ProgressIndicatorBar(
+                isActive = index == currentPage
             )
         }
     }
+}
+
+@Composable
+private fun ProgressIndicatorBar(
+    isActive: Boolean
+) {
+    val width by animateDpAsState(
+        targetValue = if (isActive) 24.dp else 8.dp,
+        animationSpec = spring(stiffness = Spring.StiffnessLow),
+        label = "width"
+    )
+    val color = if (isActive) ProdyForestGreen else ProdyOutlineLight
+
+    Box(
+        modifier = Modifier
+            .height(4.dp)
+            .width(width)
+            .clip(CircleShape)
+            .background(color)
+    )
 }
