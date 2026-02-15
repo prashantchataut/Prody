@@ -135,8 +135,15 @@ class AudioRecorderManager @Inject constructor(
             // Start timer for duration tracking
             startRecordingTimer()
 
-            val uri = getUriForFile(currentRecordingFile!!)
-            Log.d(TAG, "Recording started: ${currentRecordingFile?.absolutePath}")
+            val file = currentRecordingFile
+            if (file == null) {
+                Log.e(TAG, "Recording file is null after start")
+                cleanupRecording()
+                return null
+            }
+
+            val uri = getUriForFile(file)
+            Log.d(TAG, "Recording started: ${file.absolutePath}")
             return uri
 
         } catch (e: IOException) {
