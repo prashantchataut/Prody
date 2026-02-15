@@ -23,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.*
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
@@ -733,28 +734,65 @@ fun ProdyLogo(modifier: Modifier = Modifier) {
     }
 }
 
+/**
+ * Optimized Progress Indicator for Onboarding.
+ *
+ * Performance Optimization:
+ * Uses a single Canvas to draw all indicator dots instead of multiple Box composables.
+ * This eliminates the overhead of creating multiple layouts and reduces recomposition/layout
+ * passes. All animations are handled efficiently in the draw phase.
+ */
 @Composable
 fun ProdyProgressIndicator(
     currentPage: Int,
     totalPages: Int,
     modifier: Modifier = Modifier
 ) {
-    Row(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    val inactiveWidth = 8.dp
+    val activeWidth = 24.dp
+    val height = 4.dp
+    val spacing = 4.dp
+
+    // Animate the "current page" as a float to allow smooth width/color interpolation
+    val animatedPage by animateFloatAsState(
+        targetValue = currentPage.toFloat(),
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioLowBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
+        label = "indicator_page"
+    )
+
+    val inactiveColor = ProdyOutlineLight
+    val activeColor = ProdyForestGreen
+
+    Canvas(
+        modifier = modifier
+            .height(height)
+            .width(activeWidth + (inactiveWidth * (totalPages - 1)) + (spacing * (totalPages - 1)))
     ) {
-        repeat(totalPages) { index ->
-            val isActive = index == currentPage
-            val width by animateDpAsState(if (isActive) 24.dp else 8.dp, label = "width")
-            val color = if (isActive) ProdyForestGreen else ProdyOutlineLight
+        val inactiveWidthPx = inactiveWidth.toPx()
+        val activeWidthPx = activeWidth.toPx()
+        val spacingPx = spacing.toPx()
+        val heightPx = height.toPx()
+        val cornerRadius = CornerRadius(heightPx / 2, heightPx / 2)
+
+        var currentX = 0f
+        for (i in 0 until totalPages) {
+            // Calculate how "active" this dot is based on its proximity to the animated page index
+            val distance = kotlin.math.abs(i - animatedPage)
+            val activeFraction = (1f - distance).coerceIn(0f, 1f)
             
-            Box(
-                modifier = Modifier
-                    .height(4.dp)
-                    .width(width)
-                    .clip(CircleShape)
-                    .background(color)
+            val dotWidth = inactiveWidthPx + (activeWidthPx - inactiveWidthPx) * activeFraction
+            val dotColor = androidx.compose.ui.graphics.lerp(inactiveColor, activeColor, activeFraction)
+
+            drawRoundRect(
+                color = dotColor,
+                topLeft = Offset(currentX, 0f),
+                size = Size(dotWidth, heightPx),
+                cornerRadius = cornerRadius
             )
+            currentX += dotWidth + spacingPx
         }
     }
 }
