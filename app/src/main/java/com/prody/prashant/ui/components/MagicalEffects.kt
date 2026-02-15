@@ -267,9 +267,12 @@ fun MoodBreathingHalo(
         // Outer glow halo
         Box(
             modifier = Modifier
-                .size(size * haloScale)
-                .scale(haloScale)
-                .alpha(haloAlpha)
+                .size(size)
+                .graphicsLayer {
+                    scaleX = haloScale
+                    scaleY = haloScale
+                    alpha = haloAlpha
+                }
                 .blur(12.dp)
                 .background(haloColor, CircleShape)
         )
@@ -278,7 +281,9 @@ fun MoodBreathingHalo(
         Box(
             modifier = Modifier
                 .size(size * 0.9f)
-                .alpha(haloAlpha * 0.5f)
+                .graphicsLayer {
+                    alpha = haloAlpha * 0.5f
+                }
                 .blur(6.dp)
                 .background(haloColor.copy(alpha = 0.3f), CircleShape)
         )
@@ -1053,8 +1058,11 @@ fun NavigationBreathingGlow(
             Box(
                 modifier = Modifier
                     .size(48.dp)
-                    .scale(glowScale)
-                    .alpha(glowAlpha * activeAlpha)
+                    .graphicsLayer {
+                        scaleX = glowScale
+                        scaleY = glowScale
+                        alpha = glowAlpha * activeAlpha
+                    }
                     .blur(12.dp)
                     .background(color, CircleShape)
             )

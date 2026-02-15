@@ -11,3 +11,13 @@ This journal contains CRITICAL performance learnings specific to the Prody codeb
 **Context:** `HomeScreen.kt` vs `HomeViewModel.kt`.
 **Learning:** Prody had a significant "feature gap" where sophisticated logic was implemented in ViewModels but the UI was stuck with hardcoded placeholders. This gave the impression of broken functionality ("Only 1% works").
 **Action:** Always verify that UI components are correctly bound to the corresponding state fields in `UiState`. Explicitly mapping previously ignored fields like `dualStreakStatus`, `nextAction`, and `dailySeed` drastically improves the functional surface area of the app.
+
+## 2024-05-20 - Canvas for Repeated Indicators
+**Context:** `ProdyProgressIndicator` in onboarding.
+**Learning:** Using multiple `Box` composables with `animateDpAsState` for a simple progress indicator creates unnecessary layout overhead and multiple recompositions. If there are 8+ dots, it triggers 8+ layout passes every frame of animation.
+**Action:** Use a single `Canvas` for repeated indicators. Animate a single state (like the current page index) and interpolate dot properties (width, color) directly in the `DrawScope`. This keeps the entire animation in the drawing phase with zero layout cost.
+
+## 2024-05-20 - GraphicsLayer vs Modifier ambiguity
+**Context:** `MainActivity.kt` and `MagicalEffects.kt`.
+**Learning:** When both `androidx.compose.ui.draw.alpha` (extension function) and `graphicsLayer` are used, assigning to `alpha` inside the `graphicsLayer` block can be ambiguous or fail if not handled correctly.
+**Action:** Use `this@graphicsLayer.alpha` or ensure `this` is correctly scoped to `GraphicsLayerScope` when setting properties that share names with `Modifier.alpha`. This ensures the property is set on the layer rather than creating a new `Modifier`.
