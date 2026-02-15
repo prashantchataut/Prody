@@ -13,6 +13,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
@@ -90,6 +91,7 @@ import com.prody.prashant.domain.validation.ContentValidation
 import com.prody.prashant.domain.validation.ContentValidator
 import com.prody.prashant.ui.components.AmbientBackground
 import com.prody.prashant.ui.components.MoodSuggestionHint
+import com.prody.prashant.ui.components.ProdyIconButton
 import com.prody.prashant.ui.components.SessionResultCard
 import com.prody.prashant.ui.components.rememberMoodSuggestionState
 import com.prody.prashant.ui.components.getCurrentTimeOfDay
@@ -556,18 +558,67 @@ private fun TitleInputField(title: String, onTitleChanged: (String) -> Unit, onN
 
 @Composable
 private fun JournalInputField(content: String, wordCount: Int, onContentChanged: (String) -> Unit, onMediaClick: () -> Unit, onVoiceClick: () -> Unit, onListClick: () -> Unit, isRecording: Boolean, recordingTimeElapsed: Long, contentValidation: ContentValidation, completionProgress: Float, colors: JournalThemeColors, focusRequester: FocusRequester) {
+    val animatedProgress by animateFloatAsState(
+        targetValue = completionProgress,
+        animationSpec = tween(durationMillis = 500, easing = FastOutSlowInEasing),
+        label = "completion_progress"
+    )
+
     Column(modifier = Modifier.padding(horizontal = 16.dp)) {
         Box(modifier = Modifier.fillMaxWidth().heightIn(min = 200.dp).clip(RoundedCornerShape(16.dp)).background(colors.surface).padding(16.dp)) {
             Column {
                 BasicTextField(value = content, onValueChange = onContentChanged, modifier = Modifier.fillMaxWidth().heightIn(min = 120.dp).focusRequester(focusRequester), textStyle = TextStyle(fontFamily = PoppinsFamily, fontSize = 16.sp, color = colors.primaryText), cursorBrush = SolidColor(colors.accent), decorationBox = { inner -> Box { if (content.isEmpty()) Text("What's on your mind?", style = TextStyle(fontFamily = PoppinsFamily, fontSize = 16.sp, color = colors.placeholderText)) ; inner() } })
-                Spacer(modifier = Modifier.height(16.dp))
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Writing progress indicator
+                LinearProgressIndicator(
+                    progress = { animatedProgress },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(4.dp)
+                        .clip(RoundedCornerShape(2.dp)),
+                    color = if (completionProgress >= 1f) colors.accent else colors.accent.copy(alpha = 0.6f),
+                    trackColor = colors.sliderInactive.copy(alpha = 0.3f)
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                        IconButton(onClick = onMediaClick) { Icon(imageVector = ProdyIcons.Image, contentDescription = null, tint = colors.primaryText) }
-                        IconButton(onClick = onVoiceClick) { Icon(imageVector = if (isRecording) ProdyIcons.Stop else ProdyIcons.Mic, contentDescription = null, tint = if (isRecording) colors.accent else colors.primaryText) }
-                        IconButton(onClick = onListClick) { Icon(imageVector = Icons.Filled.Menu, contentDescription = null, tint = colors.primaryText) }
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        ProdyIconButton(
+                            icon = ProdyIcons.Image,
+                            onClick = onMediaClick,
+                            tint = colors.primaryText,
+                            contentDescription = "Attach media"
+                        )
+                        ProdyIconButton(
+                            icon = if (isRecording) ProdyIcons.Stop else ProdyIcons.Mic,
+                            onClick = onVoiceClick,
+                            tint = if (isRecording) colors.accent else colors.primaryText,
+                            contentDescription = if (isRecording) "Stop recording" else "Record voice"
+                        )
+                        ProdyIconButton(
+                            icon = Icons.Filled.Menu,
+                            onClick = onListClick,
+                            tint = colors.primaryText,
+                            contentDescription = "Add list bullet"
+                        )
                     }
-                    Text(text = "$wordCount WORDS", style = MaterialTheme.typography.labelSmall, color = colors.secondaryText)
+
+                    val wordCountColor = when (contentValidation) {
+                        is ContentValidation.TooShort, is ContentValidation.TooVague -> ProdyWarning
+                        is ContentValidation.Valid -> colors.accent
+                        else -> colors.secondaryText
+                    }
+
+                    Text(
+                        text = "$wordCount WORDS",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = if (contentValidation is ContentValidation.Valid) FontWeight.Bold else FontWeight.Normal
+                        ),
+                        color = wordCountColor
+                    )
                 }
             }
         }
@@ -592,17 +643,41 @@ private fun AttachedMediaSection(photos: List<String>, videos: List<String>, onR
 @Composable
 private fun MediaThumbnail(uri: String, isVideo: Boolean, onRemove: () -> Unit, colors: JournalThemeColors) {
     Box(modifier = Modifier.size(72.dp).clip(RoundedCornerShape(12.dp))) {
-        AsyncImage(model = uri, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
-        IconButton(onClick = onRemove, modifier = Modifier.align(Alignment.TopEnd).size(24.dp)) { Icon(imageVector = ProdyIcons.Close, contentDescription = null, tint = Color.White) }
+        AsyncImage(model = uri, contentDescription = if (isVideo) "Video thumbnail" else "Photo thumbnail", contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
+        IconButton(
+            onClick = onRemove,
+            modifier = Modifier.align(Alignment.TopEnd).size(24.dp)
+        ) {
+            Icon(
+                imageVector = ProdyIcons.Close,
+                contentDescription = "Remove media",
+                tint = Color.White
+            )
+        }
     }
 }
 
 @Composable
 private fun VoiceRecordingPreview(duration: Long, isPlaying: Boolean, onPlayToggle: () -> Unit, onRemove: () -> Unit, colors: JournalThemeColors) {
     Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).clip(RoundedCornerShape(12.dp)).background(colors.surface).padding(12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        IconButton(onClick = onPlayToggle, modifier = Modifier.size(40.dp).clip(CircleShape).background(colors.accent)) { Icon(imageVector = if (isPlaying) ProdyIcons.Pause else ProdyIcons.PlayArrow, contentDescription = null, tint = Color.White) }
+        IconButton(
+            onClick = onPlayToggle,
+            modifier = Modifier.size(40.dp).clip(CircleShape).background(colors.accent)
+        ) {
+            Icon(
+                imageVector = if (isPlaying) ProdyIcons.Pause else ProdyIcons.PlayArrow,
+                contentDescription = if (isPlaying) "Pause playback" else "Play recording",
+                tint = Color.White
+            )
+        }
         Text(text = formatDuration(duration), modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodySmall, color = colors.secondaryText)
-        IconButton(onClick = onRemove) { Icon(imageVector = ProdyIcons.Delete, contentDescription = null, tint = Color.Red) }
+        IconButton(onClick = onRemove) {
+            Icon(
+                imageVector = ProdyIcons.Delete,
+                contentDescription = "Remove recording",
+                tint = Color.Red
+            )
+        }
     }
 }
 
