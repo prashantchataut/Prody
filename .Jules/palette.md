@@ -5,3 +5,7 @@
 ## 2025-01-26 - Dynamic Form Validation Feedback
 **Learning:** Providing real-time, visual feedback as users approach form constraints (like character limits) significantly reduces friction and errors. Semantic color shifts (warning at 80%, error at 100%) are more intuitive than simple counters.
 **Action:** Implement dynamic character counters in all high-priority input forms. Use `ProdyDesignTokens.SemanticColors.warning` for the cautionary state to provide a consistent cross-app language for constraints.
+
+## 2025-01-26 - Mobile-Optimized Tooltip Patterns
+**Learning:** Tooltips on mobile must be carefully implemented to avoid interfering with touch interactions. Using `isPersistent = false` in `rememberTooltipState` ensures tooltips dismiss automatically, providing "just-in-time" information without requiring a manual dismissal.
+**Action:** Always use non-persistent tooltips for icon-only components. Ensure the tooltip text uses the design system's `PoppinsFamily` and `labelMedium` style for visual consistency with the broader typography system.
