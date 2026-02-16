@@ -11,3 +11,13 @@ This journal contains CRITICAL performance learnings specific to the Prody codeb
 **Context:** `HomeScreen.kt` vs `HomeViewModel.kt`.
 **Learning:** Prody had a significant "feature gap" where sophisticated logic was implemented in ViewModels but the UI was stuck with hardcoded placeholders. This gave the impression of broken functionality ("Only 1% works").
 **Action:** Always verify that UI components are correctly bound to the corresponding state fields in `UiState`. Explicitly mapping previously ignored fields like `dualStreakStatus`, `nextAction`, and `dailySeed` drastically improves the functional surface area of the app.
+
+## 2026-02-16 - GraphicsLayer and Canvas Optimizations
+**Context:** Navigation animations, onboarding progress indicator, and home screen dashboard.
+**Learning:** Using `.graphicsLayer { ... }` for `scale` and `alpha` animations prevents invalidating the layout/composition phases, keeping work on the render thread. For repeated UI elements like progress dots, refactoring from multiple Composables (`Row` + `Box`es) to a single `Canvas` significantly reduces overhead by eliminating layout passes during animations.
+**Action:** Prefer `graphicsLayer` for frequently changing properties and `Canvas` for group animations to maintain 60fps.
+
+## 2026-02-16 - Bridging the Feature Gap
+**Context:** `HomeScreen.kt` and `HomeViewModel.kt`.
+**Learning:** sophistication in the ViewModel layer (e.g., Soul Layer intelligence, mood mapping, dual streaks) remains hidden if the UI relies on hardcoded placeholders. Explicitly binding every dashboard metric to the `UiState` is the most effective way to improve perceived application completeness.
+**Action:** Always verify that every field in `UiState` is being utilized by the corresponding Composable.

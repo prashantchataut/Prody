@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.prody.prashant.ui.theme.*
 import kotlinx.coroutines.launch
+import kotlin.math.abs
 
 // =============================================================================
 // PRODY ONBOARDING - REVAMPED 2026
@@ -733,28 +734,62 @@ fun ProdyLogo(modifier: Modifier = Modifier) {
     }
 }
 
+/**
+ * High-performance progress indicator using a single Canvas.
+ * Performance Optimization: Refactored from a Row of Boxes to a single Canvas to
+ * eliminate layout passes and recompositions during page transitions.
+ */
 @Composable
 fun ProdyProgressIndicator(
     currentPage: Int,
     totalPages: Int,
     modifier: Modifier = Modifier
 ) {
-    Row(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    val activeIndex by animateFloatAsState(
+        targetValue = currentPage.toFloat(),
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioNoBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
+        label = "activeIndex"
+    )
+
+    val dotHeight = 4.dp
+    val inactiveWidth = 8.dp
+    val activeWidth = 24.dp
+    val spacing = 4.dp
+
+    // Total width is constant: (n-1) * inactive + 1 * active + (n-1) * spacing
+    val totalWidth = (inactiveWidth + spacing) * (totalPages - 1) + activeWidth
+
+    Canvas(
+        modifier = modifier
+            .width(totalWidth)
+            .height(dotHeight)
     ) {
+        val dotHeightPx = dotHeight.toPx()
+        val inactiveWidthPx = inactiveWidth.toPx()
+        val activeWidthPx = activeWidth.toPx()
+        val spacingPx = spacing.toPx()
+
+        var currentX = 0f
+
         repeat(totalPages) { index ->
-            val isActive = index == currentPage
-            val width by animateDpAsState(if (isActive) 24.dp else 8.dp, label = "width")
-            val color = if (isActive) ProdyForestGreen else ProdyOutlineLight
+            // Calculate how "active" this dot is based on its distance from the animated activeIndex
+            val distance = abs(index - activeIndex)
+            val activeProgress = (1f - distance).coerceIn(0f, 1f)
             
-            Box(
-                modifier = Modifier
-                    .height(4.dp)
-                    .width(width)
-                    .clip(CircleShape)
-                    .background(color)
+            val currentDotWidth = inactiveWidthPx + (activeWidthPx - inactiveWidthPx) * activeProgress
+            val dotColor = lerp(ProdyOutlineLight, ProdyForestGreen, activeProgress)
+
+            drawRoundRect(
+                color = dotColor,
+                topLeft = Offset(currentX, 0f),
+                size = Size(currentDotWidth, dotHeightPx),
+                cornerRadius = androidx.compose.ui.geometry.CornerRadius(dotHeightPx / 2)
             )
+
+            currentX += currentDotWidth + spacingPx
         }
     }
 }

@@ -265,11 +265,15 @@ fun MoodBreathingHalo(
         contentAlignment = Alignment.Center
     ) {
         // Outer glow halo
+        // Performance Optimization: Use graphicsLayer for animations
         Box(
             modifier = Modifier
                 .size(size * haloScale)
-                .scale(haloScale)
-                .alpha(haloAlpha)
+                .graphicsLayer {
+                    scaleX = haloScale
+                    scaleY = haloScale
+                    this.alpha = haloAlpha
+                }
                 .blur(12.dp)
                 .background(haloColor, CircleShape)
         )
@@ -278,7 +282,9 @@ fun MoodBreathingHalo(
         Box(
             modifier = Modifier
                 .size(size * 0.9f)
-                .alpha(haloAlpha * 0.5f)
+                .graphicsLayer {
+                    this.alpha = haloAlpha * 0.5f
+                }
                 .blur(6.dp)
                 .background(haloColor.copy(alpha = 0.3f), CircleShape)
         )
@@ -1049,12 +1055,17 @@ fun NavigationBreathingGlow(
         contentAlignment = Alignment.Center
     ) {
         // Breathing glow behind active item
-        if (isActive) {
+        // Performance Optimization: Use graphicsLayer to apply animations.
+        // This keeps the animation on the render thread and prevents parent recomposition.
+        if (isActive || activeAlpha > 0f) {
             Box(
                 modifier = Modifier
                     .size(48.dp)
-                    .scale(glowScale)
-                    .alpha(glowAlpha * activeAlpha)
+                    .graphicsLayer {
+                        scaleX = glowScale
+                        scaleY = glowScale
+                        alpha = glowAlpha * activeAlpha
+                    }
                     .blur(12.dp)
                     .background(color, CircleShape)
             )

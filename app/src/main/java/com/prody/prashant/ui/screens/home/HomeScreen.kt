@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.ui.theme.*
 
 // =============================================================================
@@ -51,10 +52,8 @@ fun HomeScreen(
     onNavigateToIdiomDetail: (Long) -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
-    // We assume ViewModel provides necessary state. For this UI revamp, 
-    // we'll focus on the UI structure and use placeholder data where ViewModel might not strictly align yet.
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     
-    val surfaceColor = MaterialTheme.colorScheme.surface
     val backgroundColor = MaterialTheme.colorScheme.background
 
     LazyColumn(
@@ -66,7 +65,8 @@ fun HomeScreen(
         // Header with Greeting and Notification
         item {
             DashboardHeader(
-                userName = "Prashant", // Replace with real name
+                userName = uiState.userName,
+                greeting = uiState.intelligentGreeting.ifEmpty { "Good Morning," },
                 onProfileClick = {}, // TODO: Profile Nav
                 onNotificationClick = {}
             )
@@ -75,7 +75,7 @@ fun HomeScreen(
         // Overview Section (Streak & Badges)
         item {
             OverviewSection(
-                streakDays = 7,
+                streakDays = uiState.currentStreak,
                 badges = listOf(
                     BadgeData(ProdyIcons.EmojiEvents, 0.75f, ProdyWarmAmber),
                     BadgeData(ProdyIcons.Edit, 0.5f, ProdyForestGreen),
@@ -87,16 +87,16 @@ fun HomeScreen(
         // Mood Trend Chart
         item {
             MoodTrendSection(
-                moodData = listOf(3f, 4f, 2f, 5f, 4f, 5f, 4f) // 1-5 Scale
+                moodData = uiState.moodHistory.ifEmpty { listOf(3f, 3f, 3f, 3f, 3f, 3f, 3f) }
             )
         }
 
         // Weekly Summary
         item {
             WeeklySummarySection(
-                journalEntries = 5,
-                wordsLearned = 12,
-                mindfulMinutes = 45
+                journalEntries = uiState.journalEntriesThisWeek,
+                wordsLearned = uiState.wordsLearnedThisWeek,
+                mindfulMinutes = uiState.mindfulMinutes
             )
         }
         
@@ -112,7 +112,7 @@ fun HomeScreen(
         
         // Recent / Suggestions
         item {
-            RecentActivitySection()
+            RecentActivitySection(journaledToday = uiState.journaledToday)
         }
     }
 }
@@ -124,6 +124,7 @@ fun HomeScreen(
 @Composable
 fun DashboardHeader(
     userName: String,
+    greeting: String,
     onProfileClick: () -> Unit,
     onNotificationClick: () -> Unit
 ) {
@@ -137,7 +138,7 @@ fun DashboardHeader(
     ) {
         Column {
             Text(
-                text = "Good Morning,",
+                text = greeting,
                 style = TextStyle(
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Normal,
@@ -554,7 +555,7 @@ fun QuickActionTile(title: String, icon: androidx.compose.ui.graphics.vector.Ima
 }
 
 @Composable
-fun RecentActivitySection() {
+fun RecentActivitySection(journaledToday: Boolean) {
     // Placeholder for Recent Activity
     Column(modifier = Modifier.padding(horizontal = 24.dp)) {
         Text(
@@ -579,15 +580,31 @@ fun RecentActivitySection() {
                     modifier = Modifier
                         .size(40.dp)
                         .clip(CircleShape)
-                        .background(ProdyForestGreen.copy(alpha = 0.1f)),
+                        .background(
+                            if (journaledToday) ProdyForestGreen.copy(alpha = 0.1f)
+                            else ProdyWarmAmber.copy(alpha = 0.1f)
+                        ),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(ProdyIcons.Check, null, tint = ProdyForestGreen)
+                    Icon(
+                        if (journaledToday) ProdyIcons.Check else ProdyIcons.Edit,
+                        null,
+                        tint = if (journaledToday) ProdyForestGreen else ProdyWarmAmber
+                    )
                 }
                 Spacer(modifier = Modifier.width(16.dp))
                 Column {
-                    Text("Daily Journal", fontWeight = FontWeight.SemiBold, fontFamily = PoppinsFamily)
-                    Text("Completed today", fontSize = 12.sp, color = ProdyTextSecondaryLight, fontFamily = PoppinsFamily)
+                    Text(
+                        if (journaledToday) "Daily Journal" else "Daily reflection",
+                        fontWeight = FontWeight.SemiBold,
+                        fontFamily = PoppinsFamily
+                    )
+                    Text(
+                        if (journaledToday) "Completed today" else "Not started yet",
+                        fontSize = 12.sp,
+                        color = ProdyTextSecondaryLight,
+                        fontFamily = PoppinsFamily
+                    )
                 }
             }
         }

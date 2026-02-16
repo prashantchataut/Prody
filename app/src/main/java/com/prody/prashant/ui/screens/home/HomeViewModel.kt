@@ -131,7 +131,10 @@ data class HomeUiState(
     val userArchetype: UserArchetype = UserArchetype.EXPLORER,
     val trustLevel: TrustLevel = TrustLevel.NEW,
     val isUserStruggling: Boolean = false,
-    val isUserThriving: Boolean = false
+    val isUserThriving: Boolean = false,
+    // Mood history for trend chart (1-5 scale)
+    val moodHistory: List<Float> = emptyList(),
+    val mindfulMinutes: Int = 0
 )
 
 private data class DailyContent(
@@ -232,6 +235,12 @@ class HomeViewModel @Inject constructor(
                 // Calculate weekly active days.
                 val daysActiveThisWeek = streakHistory.count { it.date >= weekStart }
 
+                // Calculate mood history for trend chart (last 7 entries)
+                val moodHistory = weeklyJournalEntries
+                    .sortedBy { it.createdAt }
+                    .takeLast(7)
+                    .map { mapMoodToFloat(it.mood) }
+
                 // Determine today's journaling status.
                 val (journaledToday, todayMood, todayPreview) = if (todayJournalEntries.isNotEmpty()) {
                     val latestEntry = todayJournalEntries.maxByOrNull { it.createdAt }
@@ -265,6 +274,8 @@ class HomeViewModel @Inject constructor(
                     todayEntryMood = todayMood,
                     todayEntryPreview = todayPreview,
                     dualStreakStatus = dualStreak,
+                    moodHistory = moodHistory,
+                    mindfulMinutes = ((profile?.totalReflectionTime ?: 0L) / 60L).toInt(),
                     buddhaWisdomProofInfo = _uiState.value.buddhaWisdomProofInfo.copy(isEnabled = aiProofMode),
                     isLoading = false // <-- Critical: Signal that loading is complete.
                 )
@@ -289,6 +300,17 @@ class HomeViewModel @Inject constructor(
             launch { loadDailySeed() }
             launch { checkAiConfiguration() }
             launch { loadSoulLayerContent() }
+        }
+    }
+
+    private fun mapMoodToFloat(mood: String): Float {
+        return when (mood.lowercase()) {
+            "blessed", "happy", "joyful", "excited", "awesome" -> 5f
+            "good", "satisfied", "content" -> 4f
+            "neutral", "okay", "fine" -> 3f
+            "meh", "bored", "tired", "sad" -> 2f
+            "bad", "terrible", "angry", "stressed" -> 1f
+            else -> 3f // Default to neutral
         }
     }
 
