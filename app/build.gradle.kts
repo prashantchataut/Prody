@@ -138,6 +138,11 @@ android {
         // buildConfig is enabled via gradle.properties: android.defaults.buildfeatures.buildconfig=true
     }
 
+    composeCompiler {
+        reportsDestination = layout.buildDirectory.dir("compose-compiler")
+        metricsDestination = layout.buildDirectory.dir("compose-compiler")
+    }
+
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -171,6 +176,7 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended")
     implementation(libs.material)
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.profileinstaller)
 
     // Room
     implementation(libs.androidx.room.runtime)
