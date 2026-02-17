@@ -32,6 +32,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.R
 import com.prody.prashant.domain.deepdive.*
+import com.prody.prashant.util.SecureScreen
 import com.prody.prashant.ui.theme.*
 
 /**
@@ -55,6 +56,9 @@ fun DeepDiveSessionScreen(
     viewModel: DeepDiveViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.sessionState.collectAsStateWithLifecycle()
+
+    // Security: Prevent screenshots of deep reflection sessions
+    SecureScreen()
 
     // Load session on start
     LaunchedEffect(deepDiveId) {

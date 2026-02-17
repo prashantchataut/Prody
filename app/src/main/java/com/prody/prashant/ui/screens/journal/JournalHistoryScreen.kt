@@ -42,6 +42,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.data.local.entity.JournalEntryEntity
 import com.prody.prashant.domain.model.Mood
+import com.prody.prashant.util.SecureScreen
 import com.prody.prashant.ui.theme.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -77,6 +78,9 @@ fun JournalHistoryScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isDark = isDarkTheme()
+
+    // Security: Prevent screenshots of journal history
+    SecureScreen()
 
     // Premium theme-aware colors using MaterialTheme
     val backgroundColor = MaterialTheme.colorScheme.background
