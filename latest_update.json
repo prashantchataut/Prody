@@ -21,5 +21,9 @@
     },
     "assets": {
         "feature_image": "haven_onboarding_showcase.webp"
-    }
+    },
+    "pinning_enabled": true,
+    "fallback_transport_mode": "SYSTEM_CA_ONLY",
+    "allow_automatic_fallback_on_pin_failure": true,
+    "reason": "default_strict_pinning_with_fail_open_on_expiry_event"
 }

@@ -12,6 +12,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicLong
+import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -130,6 +132,8 @@ class PerformanceMonitor @Inject constructor(
         private const val TAG = "PerformanceMonitor"
         private const val MAX_METRICS_PER_TYPE = 100
         private const val MAX_ERRORS = 50
+        private const val TLS_PIN_FAILURE_WINDOW_MS = 5 * 60 * 1000L
+        private const val TLS_PIN_FAILURE_ALERT_THRESHOLD = 5
     }
 
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
@@ -137,6 +141,8 @@ class PerformanceMonitor @Inject constructor(
     // Metrics storage - in-memory only, cleared on app restart
     private val metricsStore = ConcurrentHashMap<MetricType, MutableList<PerformanceMetric>>()
     private val errorStore = mutableListOf<ErrorReport>()
+    private val tlsPinFailureCount = AtomicInteger(0)
+    private val tlsPinWindowStart = AtomicLong(System.currentTimeMillis())
 
     private val _currentReport = MutableStateFlow(PerformanceReport())
     val currentReport: StateFlow<PerformanceReport> = _currentReport.asStateFlow()
@@ -245,6 +251,30 @@ class PerformanceMonitor @Inject constructor(
 
         updateReport()
         Log.e(TAG, "Error recorded: $sanitizedMessage")
+    }
+
+
+    fun recordTlsPinMismatch(host: String, throwable: Throwable?) {
+        val now = System.currentTimeMillis()
+        val windowStart = tlsPinWindowStart.get()
+        if (now - windowStart > TLS_PIN_FAILURE_WINDOW_MS) {
+            tlsPinWindowStart.set(now)
+            tlsPinFailureCount.set(0)
+        }
+
+        val count = tlsPinFailureCount.incrementAndGet()
+        recordError(
+            message = "TLS pin mismatch for host $host",
+            exception = throwable,
+            context = "tls_pinning"
+        )
+
+        if (count >= TLS_PIN_FAILURE_ALERT_THRESHOLD) {
+            Log.w(
+                TAG,
+                "ALERT: TLS pin mismatch spike detected (count=$count in ${TLS_PIN_FAILURE_WINDOW_MS / 60000}m)"
+            )
+        }
     }
 
     /**
