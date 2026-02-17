@@ -74,6 +74,7 @@ import coil.request.ImageRequest
 import com.prody.prashant.R
 import com.prody.prashant.ui.components.TimeCapsuleSealAnimation
 import com.prody.prashant.ui.components.rememberTimeCapsuleSealState
+import com.prody.prashant.util.SecureScreen
 import com.prody.prashant.ui.theme.*
 import kotlinx.coroutines.delay
 
@@ -161,6 +162,9 @@ fun WriteMessageScreen(
 
     // Magical sealing animation state
     val sealState = rememberTimeCapsuleSealState()
+
+    // Security: Prevent screenshots of future messages being written
+    SecureScreen()
 
     // Theme-aware colors
     val backgroundColor = if (isDark) TimeCapsuleBackgroundDark else TimeCapsuleBackgroundLight

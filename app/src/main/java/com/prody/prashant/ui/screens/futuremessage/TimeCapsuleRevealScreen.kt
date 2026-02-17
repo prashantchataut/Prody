@@ -1,5 +1,6 @@
 package com.prody.prashant.ui.screens.futuremessage
 import com.prody.prashant.ui.icons.ProdyIcons
+import com.prody.prashant.util.SecureScreen
 
 import android.view.HapticFeedbackConstants
 import androidx.compose.animation.core.*
@@ -52,6 +53,9 @@ fun TimeCapsuleRevealScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val view = LocalView.current
+
+    // Security: Prevent screenshots of revealed time capsules
+    SecureScreen()
     val scrollState = rememberScrollState()
     val coroutineScope = androidx.compose.runtime.rememberCoroutineScope()
 
