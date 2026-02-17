@@ -41,9 +41,8 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import com.prody.prashant.ui.animation.premiumShimmer
-import com.prody.prashant.ui.theme.ProdyTokens
+import com.prody.prashant.ui.theme.ProdyDesignTokens
 import com.prody.prashant.util.rememberProdyHaptic
 
 /**
@@ -80,19 +79,22 @@ enum class ProdyButtonSize {
 }
 
 private object ProdyButtonDefaults {
-    val SmallHeight = 36.dp
-    val MediumHeight = 48.dp
-    val LargeHeight = 56.dp
+    val SmallHeight = ProdyDesignTokens.TouchTarget.small
+    val MediumHeight = ProdyDesignTokens.TouchTarget.minimum
+    val LargeHeight = ProdyDesignTokens.TouchTarget.comfortable
 
-    val SmallHorizontalPadding = 12.dp
-    val MediumHorizontalPadding = 16.dp
-    val LargeHorizontalPadding = 24.dp
+    val SmallHorizontalPadding = ProdyDesignTokens.Spacing.small
+    val MediumHorizontalPadding = ProdyDesignTokens.Spacing.medium
+    val LargeHorizontalPadding = ProdyDesignTokens.Spacing.large
 
-    val IconSize = 20.dp
-    val LoadingIndicatorSize = 20.dp
-    val IconTextGap = 8.dp
+    val IconSize = ProdyDesignTokens.IconSize.small
+    val LoadingIndicatorSize = ProdyDesignTokens.IconSize.small
+    val IconTextGap = ProdyDesignTokens.Spacing.small
 
-val CornerRadius = ProdyTokens.Radius.sm
+    val CornerRadius = ProdyDesignTokens.Radius.button
+    val BorderWidth = ProdyDesignTokens.Elevation.low
+    val ContentPaddingVertical = ProdyDesignTokens.Spacing.none
+    val LoadingStrokeWidth = ProdyDesignTokens.Elevation.low
 }
 
 // =============================================================================
@@ -168,7 +170,7 @@ fun ProdyPrimaryButton(
             },
         enabled = enabled && !loading,
         shape = RoundedCornerShape(ProdyButtonDefaults.CornerRadius),
-        contentPadding = PaddingValues(horizontal = horizontalPadding, vertical = 0.dp),
+        contentPadding = PaddingValues(horizontal = horizontalPadding, vertical = ProdyButtonDefaults.ContentPaddingVertical),
         interactionSource = interactionSource,
         colors = androidx.compose.material3.ButtonDefaults.buttonColors(
             containerColor = MaterialTheme.colorScheme.primary,
@@ -250,7 +252,7 @@ fun ProdySecondaryButton(
             },
         enabled = enabled && !loading,
         shape = RoundedCornerShape(ProdyButtonDefaults.CornerRadius),
-        contentPadding = PaddingValues(horizontal = horizontalPadding, vertical = 0.dp),
+        contentPadding = PaddingValues(horizontal = horizontalPadding, vertical = ProdyButtonDefaults.ContentPaddingVertical),
         interactionSource = interactionSource,
         colors = androidx.compose.material3.ButtonDefaults.buttonColors(
             containerColor = MaterialTheme.colorScheme.secondaryContainer,
@@ -333,10 +335,10 @@ fun ProdyOutlinedButton(
             },
         enabled = enabled && !loading,
         shape = RoundedCornerShape(ProdyButtonDefaults.CornerRadius),
-        contentPadding = PaddingValues(horizontal = horizontalPadding, vertical = 0.dp),
+        contentPadding = PaddingValues(horizontal = horizontalPadding, vertical = ProdyButtonDefaults.ContentPaddingVertical),
         interactionSource = interactionSource,
         border = BorderStroke(
-            width = 1.dp,
+            width = ProdyButtonDefaults.BorderWidth,
             color = if (enabled) borderColor else borderColor.copy(alpha = 0.38f)
         ),
         colors = androidx.compose.material3.ButtonDefaults.outlinedButtonColors(
@@ -418,7 +420,7 @@ fun ProdyGhostButton(
             },
         enabled = enabled && !loading,
         shape = RoundedCornerShape(ProdyButtonDefaults.CornerRadius),
-        contentPadding = PaddingValues(horizontal = horizontalPadding, vertical = 0.dp),
+        contentPadding = PaddingValues(horizontal = horizontalPadding, vertical = ProdyButtonDefaults.ContentPaddingVertical),
         interactionSource = interactionSource,
         colors = androidx.compose.material3.ButtonDefaults.textButtonColors(
             contentColor = contentColor,
@@ -463,7 +465,7 @@ private fun ButtonContent(
             CircularProgressIndicator(
                 modifier = Modifier.size(ProdyButtonDefaults.LoadingIndicatorSize),
                 color = contentColor,
-                strokeWidth = 2.dp
+                strokeWidth = ProdyButtonDefaults.LoadingStrokeWidth
             )
             Spacer(modifier = Modifier.width(ProdyButtonDefaults.IconTextGap))
         } else if (leadingIcon != null) {
@@ -510,7 +512,7 @@ fun ProdyIconButton(
     enabled: Boolean = true,
     contentDescription: String? = null,
     tint: Color = MaterialTheme.colorScheme.onSurface,
-    size: Dp = ProdyTokens.Touch.minimum
+    size: Dp = ProdyDesignTokens.TouchTarget.minimum
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val haptic = rememberProdyHaptic()
@@ -540,7 +542,7 @@ fun ProdyIconButton(
                 }
             },
         enabled = enabled,
-        shape = RoundedCornerShape(50),
+        shape = RoundedCornerShape(ProdyDesignTokens.Radius.full),
         color = Color.Transparent,
         contentColor = tint,
         interactionSource = interactionSource
@@ -549,8 +551,8 @@ fun ProdyIconButton(
             imageVector = icon,
             contentDescription = contentDescription,
             modifier = Modifier
-                .padding(12.dp)
-                .size(24.dp),
+                .padding(ProdyDesignTokens.Spacing.small)
+                .size(ProdyDesignTokens.IconSize.medium),
             tint = if (enabled) tint else tint.copy(alpha = 0.38f)
         )
     }
