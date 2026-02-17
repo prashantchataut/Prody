@@ -252,3 +252,39 @@ dependencies {
     // Gson
     implementation(libs.gson)
 }
+
+
+tasks.register("checkNoPrintStackTrace") {
+    group = "verification"
+    description = "Fails build when direct printStackTrace calls are used"
+
+    doLast {
+        val forbiddenPattern = Regex("\\bprintStackTrace\\s*\\(")
+        val sourceFiles = fileTree("src") {
+            include("**/*.kt", "**/*.java")
+        }
+
+        val violations = mutableListOf<String>()
+        sourceFiles.forEach { file ->
+            file.readLines().forEachIndexed { index, line ->
+                if (forbiddenPattern.containsMatchIn(line)) {
+                    violations += "${file.path}:${index + 1} -> ${line.trim()}"
+                }
+            }
+        }
+
+        if (violations.isNotEmpty()) {
+            throw GradleException(
+                buildString {
+                    appendLine("Direct printStackTrace() usage is forbidden. Use AppLogger instead.")
+                    appendLine("Violations:")
+                    violations.forEach { appendLine(it) }
+                }
+            )
+        }
+    }
+}
+
+tasks.named("check") {
+    dependsOn("checkNoPrintStackTrace")
+}
