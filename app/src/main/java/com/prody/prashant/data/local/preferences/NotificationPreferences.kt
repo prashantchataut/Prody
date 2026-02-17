@@ -1,17 +1,17 @@
 package com.prody.prashant.data.local.preferences
 
-import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.Preferences.Key
 import kotlinx.coroutines.flow.Flow
 
 internal class NotificationPreferences(
     private val support: PreferenceFacadeSupport,
-    private val notificationsEnabledKey: Preferences.Key<Boolean>,
-    private val dailyReminderHourKey: Preferences.Key<Int>,
-    private val dailyReminderMinuteKey: Preferences.Key<Int>,
-    private val wisdomNotificationEnabledKey: Preferences.Key<Boolean>,
-    private val journalReminderEnabledKey: Preferences.Key<Boolean>,
-    private val eveningReminderHourKey: Preferences.Key<Int>,
-    private val eveningReminderMinuteKey: Preferences.Key<Int>
+    private val notificationsEnabledKey: Key<Boolean>,
+    private val dailyReminderHourKey: Key<Int>,
+    private val dailyReminderMinuteKey: Key<Int>,
+    private val wisdomNotificationEnabledKey: Key<Boolean>,
+    private val journalReminderEnabledKey: Key<Boolean>,
+    private val eveningReminderHourKey: Key<Int>,
+    private val eveningReminderMinuteKey: Key<Int>
 ) {
     val notificationsEnabled: Flow<Boolean> = support.booleanFlow(notificationsEnabledKey, true)
     val dailyReminderHour: Flow<Int> = support.intFlow(dailyReminderHourKey, 9)
@@ -24,15 +24,15 @@ internal class NotificationPreferences(
     suspend fun setNotificationsEnabled(enabled: Boolean) = support.setBoolean(notificationsEnabledKey, enabled)
 
     suspend fun setDailyReminderTime(hour: Int, minute: Int) = support.setInts(
-        dailyReminderHourKey to hour,
-        dailyReminderMinuteKey to minute
+        kotlin.Pair(dailyReminderHourKey, hour),
+        kotlin.Pair(dailyReminderMinuteKey, minute)
     )
 
     suspend fun setWisdomNotificationEnabled(enabled: Boolean) = support.setBoolean(wisdomNotificationEnabledKey, enabled)
     suspend fun setJournalReminderEnabled(enabled: Boolean) = support.setBoolean(journalReminderEnabledKey, enabled)
 
     suspend fun setEveningReminderTime(hour: Int, minute: Int) = support.setInts(
-        eveningReminderHourKey to hour,
-        eveningReminderMinuteKey to minute
+        kotlin.Pair(eveningReminderHourKey, hour),
+        kotlin.Pair(eveningReminderMinuteKey, minute)
     )
 }
