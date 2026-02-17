@@ -739,22 +739,53 @@ fun ProdyProgressIndicator(
     totalPages: Int,
     modifier: Modifier = Modifier
 ) {
-    Row(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    val animatedPage by animateFloatAsState(
+        targetValue = currentPage.toFloat(),
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioNoBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
+        label = "animatedPage"
+    )
+
+    val dotColor = ProdyForestGreen
+    val inactiveColor = ProdyOutlineLight
+    val spacing = 4.dp
+    val dotHeight = 4.dp
+    val inactiveWidth = 8.dp
+    val activeWidth = 24.dp
+
+    // Calculate fixed total width to prevent layout shifts
+    val totalWidth = (inactiveWidth * (totalPages - 1)) + activeWidth + (spacing * (totalPages - 1))
+
+    Canvas(
+        modifier = modifier
+            .size(width = totalWidth, height = dotHeight)
     ) {
+        val spacingPx = spacing.toPx()
+        val dotHeightPx = dotHeight.toPx()
+        val inactiveWidthPx = inactiveWidth.toPx()
+        val activeWidthPx = activeWidth.toPx()
+
+        var currentX = 0f
+
         repeat(totalPages) { index ->
-            val isActive = index == currentPage
-            val width by animateDpAsState(if (isActive) 24.dp else 8.dp, label = "width")
-            val color = if (isActive) ProdyForestGreen else ProdyOutlineLight
+            // Calculate selection factor based on distance from animated page
+            val distance = kotlin.math.abs(index - animatedPage)
+            val selectionFactor = (1f - distance).coerceIn(0f, 1f)
             
-            Box(
-                modifier = Modifier
-                    .height(4.dp)
-                    .width(width)
-                    .clip(CircleShape)
-                    .background(color)
+            // Interpolate width and color
+            val width = inactiveWidthPx + (activeWidthPx - inactiveWidthPx) * selectionFactor
+            val color = lerp(inactiveColor, dotColor, selectionFactor)
+
+            drawRoundRect(
+                color = color,
+                topLeft = Offset(currentX, 0f),
+                size = Size(width, dotHeightPx),
+                cornerRadius = androidx.compose.ui.geometry.CornerRadius(dotHeightPx / 2)
             )
+
+            currentX += width + spacingPx
         }
     }
 }

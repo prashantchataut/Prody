@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -51,10 +52,8 @@ fun HomeScreen(
     onNavigateToIdiomDetail: (Long) -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
-    // We assume ViewModel provides necessary state. For this UI revamp, 
-    // we'll focus on the UI structure and use placeholder data where ViewModel might not strictly align yet.
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     
-    val surfaceColor = MaterialTheme.colorScheme.surface
     val backgroundColor = MaterialTheme.colorScheme.background
 
     LazyColumn(
@@ -66,7 +65,8 @@ fun HomeScreen(
         // Header with Greeting and Notification
         item {
             DashboardHeader(
-                userName = "Prashant", // Replace with real name
+                greeting = uiState.intelligentGreeting.ifEmpty { "Good Morning," },
+                userName = uiState.userName,
                 onProfileClick = {}, // TODO: Profile Nav
                 onNotificationClick = {}
             )
@@ -75,28 +75,24 @@ fun HomeScreen(
         // Overview Section (Streak & Badges)
         item {
             OverviewSection(
-                streakDays = 7,
-                badges = listOf(
-                    BadgeData(ProdyIcons.EmojiEvents, 0.75f, ProdyWarmAmber),
-                    BadgeData(ProdyIcons.Edit, 0.5f, ProdyForestGreen),
-                    BadgeData(ProdyIcons.Psychology, 0.3f, ProdyInfo)
-                )
+                streakDays = uiState.currentStreak,
+                dualStreakStatus = uiState.dualStreakStatus
             )
         }
 
         // Mood Trend Chart
         item {
             MoodTrendSection(
-                moodData = listOf(3f, 4f, 2f, 5f, 4f, 5f, 4f) // 1-5 Scale
+                moodData = uiState.moodHistory.ifEmpty { listOf(3f, 3f, 3f, 3f, 3f, 3f, 3f) }
             )
         }
 
         // Weekly Summary
         item {
             WeeklySummarySection(
-                journalEntries = 5,
-                wordsLearned = 12,
-                mindfulMinutes = 45
+                journalEntries = uiState.journalEntriesThisWeek,
+                wordsLearned = uiState.wordsLearnedThisWeek,
+                mindfulMinutes = uiState.journalEntriesThisWeek * 10 // Heuristic from memory
             )
         }
         
@@ -123,6 +119,7 @@ fun HomeScreen(
 
 @Composable
 fun DashboardHeader(
+    greeting: String,
     userName: String,
     onProfileClick: () -> Unit,
     onNotificationClick: () -> Unit
@@ -137,7 +134,7 @@ fun DashboardHeader(
     ) {
         Column {
             Text(
-                text = "Good Morning,",
+                text = greeting,
                 style = TextStyle(
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Normal,
@@ -186,7 +183,7 @@ fun DashboardHeader(
 @Composable
 fun OverviewSection(
     streakDays: Int,
-    badges: List<BadgeData>
+    dualStreakStatus: com.prody.prashant.domain.streak.DualStreakStatus
 ) {
     Row(
         modifier = Modifier
@@ -226,7 +223,7 @@ fun OverviewSection(
             }
         }
 
-        // Badges Card
+        // Dual Streak Card (Bridging the gap)
         Surface(
             modifier = Modifier.weight(1f),
             shape = RoundedCornerShape(16.dp),
@@ -240,13 +237,22 @@ fun OverviewSection(
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    badges.forEach { badge ->
-                        BadgeItem(badge)
-                    }
+                    // Wisdom Streak
+                    BadgeItem(BadgeData(
+                        ProdyIcons.Lightbulb,
+                        (dualStreakStatus.wisdomStreak.current % 7) / 7f,
+                        ProdyWarmAmber
+                    ))
+                    // Reflection Streak
+                    BadgeItem(BadgeData(
+                        ProdyIcons.Edit,
+                        (dualStreakStatus.reflectionStreak.current % 7) / 7f,
+                        ProdyForestGreen
+                    ))
                 }
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    text = "Achievements",
+                    text = "Dual Streaks",
                     style = TextStyle(
                         fontFamily = PoppinsFamily,
                         fontWeight = FontWeight.Medium,

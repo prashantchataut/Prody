@@ -127,6 +127,8 @@ data class HomeUiState(
     val showMemoryCard: Boolean = false,
     // Anniversary memories for today
     val anniversaryMemories: List<AnniversaryMemory> = emptyList(),
+    // Mood trend for chart (1-5 scale)
+    val moodHistory: List<Float> = emptyList(),
     // User context for personalization
     val userArchetype: UserArchetype = UserArchetype.EXPLORER,
     val trustLevel: TrustLevel = TrustLevel.NEW,
@@ -232,6 +234,21 @@ class HomeViewModel @Inject constructor(
                 // Calculate weekly active days.
                 val daysActiveThisWeek = streakHistory.count { it.date >= weekStart }
 
+                // Calculate mood history for chart (last 7 entries)
+                val moodHistory = weeklyJournalEntries
+                    .sortedBy { it.createdAt }
+                    .takeLast(7)
+                    .map { entry ->
+                        when (entry.mood.lowercase()) {
+                            "blessed", "happy" -> 5f
+                            "good" -> 4f
+                            "neutral" -> 3f
+                            "meh" -> 2f
+                            "bad" -> 1f
+                            else -> 3f
+                        }
+                    }
+
                 // Determine today's journaling status.
                 val (journaledToday, todayMood, todayPreview) = if (todayJournalEntries.isNotEmpty()) {
                     val latestEntry = todayJournalEntries.maxByOrNull { it.createdAt }
@@ -265,6 +282,7 @@ class HomeViewModel @Inject constructor(
                     todayEntryMood = todayMood,
                     todayEntryPreview = todayPreview,
                     dualStreakStatus = dualStreak,
+                    moodHistory = moodHistory,
                     buddhaWisdomProofInfo = _uiState.value.buddhaWisdomProofInfo.copy(isEnabled = aiProofMode),
                     isLoading = false // <-- Critical: Signal that loading is complete.
                 )
