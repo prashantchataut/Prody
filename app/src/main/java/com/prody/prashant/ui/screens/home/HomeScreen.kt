@@ -26,8 +26,13 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import android.content.Intent
+import android.os.Build
+import android.provider.Settings
 
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.prody.prashant.ui.theme.*
@@ -49,15 +54,74 @@ fun HomeScreen(
     onNavigateToChallenges: () -> Unit = {},
     onNavigateToSearch: () -> Unit = {},
     onNavigateToIdiomDetail: (Long) -> Unit = {},
+    onNavigateToProfile: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
-    // We assume ViewModel provides necessary state. For this UI revamp, 
-    // we'll focus on the UI structure and use placeholder data where ViewModel might not strictly align yet.
+    val context = LocalContext.current
+    val uiState by viewModel.uiState.collectAsState()
+
+    HomeScreenContent(
+        uiState = uiState,
+        onNavigateToJournal = onNavigateToJournal,
+        onNavigateToQuotes = onNavigateToQuotes,
+        onNavigateToFutureMessage = onNavigateToFutureMessage,
+        onNavigateToHaven = onNavigateToHaven,
+        onNavigateToProfile = onNavigateToProfile,
+        onOpenNotificationSettings = {
+            val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                    putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+                }
+            } else {
+                Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+            }
+            context.startActivity(intent)
+        },
+        onRetry = viewModel::retryLoad
+    )
+}
+
+@Composable
+fun HomeScreenContent(
+    uiState: HomeUiState,
+    onNavigateToJournal: () -> Unit,
+    onNavigateToQuotes: () -> Unit,
+    onNavigateToFutureMessage: () -> Unit,
+    onNavigateToHaven: () -> Unit,
+    onNavigateToProfile: () -> Unit,
+    onOpenNotificationSettings: () -> Unit,
+    onRetry: () -> Unit
+) {
+    val homeAggregate = uiState.aggregateState
     
     val surfaceColor = MaterialTheme.colorScheme.surface
     val backgroundColor = MaterialTheme.colorScheme.background
 
-    LazyColumn(
+    when {
+        uiState.isLoading -> {
+            Box(modifier = Modifier.fillMaxSize().testTag("home_loading"), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+        }
+        uiState.hasLoadError -> {
+            HomeStatusState(
+                title = "You're offline right now",
+                message = uiState.error ?: "Unable to load home data. Check your connection and try again.",
+                actionLabel = "Retry",
+                onAction = onRetry,
+                tag = "home_error"
+            )
+        }
+        !homeAggregate.hasData -> {
+            HomeStatusState(
+                title = "No home data yet",
+                message = "Start with a journal entry or open daily wisdom to personalize this space.",
+                actionLabel = "Write Journal",
+                onAction = onNavigateToJournal,
+                tag = "home_empty"
+            )
+        }
+        else -> LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .background(backgroundColor),
@@ -66,21 +130,17 @@ fun HomeScreen(
         // Header with Greeting and Notification
         item {
             DashboardHeader(
-                userName = "Prashant", // Replace with real name
-                onProfileClick = {}, // TODO: Profile Nav
-                onNotificationClick = {}
+                userName = uiState.userName,
+                onProfileClick = onNavigateToProfile,
+                onNotificationClick = onOpenNotificationSettings
             )
         }
 
         // Overview Section (Streak & Badges)
         item {
             OverviewSection(
-                streakDays = 7,
-                badges = listOf(
-                    BadgeData(ProdyIcons.EmojiEvents, 0.75f, ProdyWarmAmber),
-                    BadgeData(ProdyIcons.Edit, 0.5f, ProdyForestGreen),
-                    BadgeData(ProdyIcons.Psychology, 0.3f, ProdyInfo)
-                )
+                streakDays = homeAggregate.streakDays,
+                badges = toBadgeData(homeAggregate.badges)
             )
         }
 
@@ -94,8 +154,8 @@ fun HomeScreen(
         // Weekly Summary
         item {
             WeeklySummarySection(
-                journalEntries = 5,
-                wordsLearned = 12,
+                journalEntries = uiState.journalEntriesThisWeek,
+                wordsLearned = uiState.wordsLearnedThisWeek,
                 mindfulMinutes = 45
             )
         }
@@ -112,7 +172,35 @@ fun HomeScreen(
         
         // Recent / Suggestions
         item {
-            RecentActivitySection()
+            RecentActivitySection(homeAggregate.recommendations)
+        }
+    }
+    }
+}
+
+private fun toBadgeData(badges: List<HomeBadgeProgress>): List<BadgeData> = badges.map {
+    when (it.id) {
+        "streak" -> BadgeData(ProdyIcons.EmojiEvents, it.progress, ProdyWarmAmber)
+        "journal" -> BadgeData(ProdyIcons.Edit, it.progress, ProdyForestGreen)
+        else -> BadgeData(ProdyIcons.Psychology, it.progress, ProdyInfo)
+    }
+}
+
+@Composable
+private fun HomeStatusState(
+    title: String,
+    message: String,
+    actionLabel: String,
+    onAction: () -> Unit,
+    tag: String
+) {
+    Box(modifier = Modifier.fillMaxSize().padding(24.dp).testTag(tag), contentAlignment = Alignment.Center) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(message, style = MaterialTheme.typography.bodyMedium, color = ProdyTextSecondaryLight)
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(onClick = onAction) { Text(actionLabel) }
         }
     }
 }
@@ -554,11 +642,10 @@ fun QuickActionTile(title: String, icon: androidx.compose.ui.graphics.vector.Ima
 }
 
 @Composable
-fun RecentActivitySection() {
-    // Placeholder for Recent Activity
+fun RecentActivitySection(recommendations: List<String>) {
     Column(modifier = Modifier.padding(horizontal = 24.dp)) {
         Text(
-            text = "Recent",
+            text = "Recommended",
             style = TextStyle(
                 fontFamily = PoppinsFamily,
                 fontWeight = FontWeight.SemiBold,
@@ -568,26 +655,27 @@ fun RecentActivitySection() {
         )
         Spacer(modifier = Modifier.height(16.dp))
         
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp),
-            color = ProdySurfaceLight,
-            shadowElevation = 2.dp
-        ) {
-            Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(ProdyForestGreen.copy(alpha = 0.1f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(ProdyIcons.Check, null, tint = ProdyForestGreen)
-                }
-                Spacer(modifier = Modifier.width(16.dp))
-                Column {
-                    Text("Daily Journal", fontWeight = FontWeight.SemiBold, fontFamily = PoppinsFamily)
-                    Text("Completed today", fontSize = 12.sp, color = ProdyTextSecondaryLight, fontFamily = PoppinsFamily)
+        recommendations.forEach { recommendation ->
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp),
+                shape = RoundedCornerShape(12.dp),
+                color = ProdySurfaceLight,
+                shadowElevation = 2.dp
+            ) {
+                Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(ProdyForestGreen.copy(alpha = 0.1f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(ProdyIcons.Check, null, tint = ProdyForestGreen)
+                    }
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Text(recommendation, fontWeight = FontWeight.Medium, fontFamily = PoppinsFamily)
                 }
             }
         }
