@@ -15,6 +15,10 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.prody.prashant.ui.components.ProdyFullScreenLoading
+import com.prody.prashant.ui.components.WisdomTextReveal
+import com.prody.prashant.ui.components.BuddhaContemplatingAnimation
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -51,52 +55,63 @@ fun HomeScreen(
     onNavigateToIdiomDetail: (Long) -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
-    // We assume ViewModel provides necessary state. For this UI revamp, 
-    // we'll focus on the UI structure and use placeholder data where ViewModel might not strictly align yet.
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     
-    val surfaceColor = MaterialTheme.colorScheme.surface
+    if (uiState.isLoading) {
+        ProdyFullScreenLoading(message = "Gathering your wisdom...")
+        return
+    }
+
     val backgroundColor = MaterialTheme.colorScheme.background
 
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .background(backgroundColor),
-        contentPadding = PaddingValues(bottom = 80.dp) // Space for bottom nav
+        contentPadding = PaddingValues(bottom = 80.dp)
     ) {
-        // Header with Greeting and Notification
+        // Intelligent Greeting
         item {
             DashboardHeader(
-                userName = "Prashant", // Replace with real name
-                onProfileClick = {}, // TODO: Profile Nav
+                greeting = uiState.intelligentGreeting.ifEmpty { "Good Morning," },
+                userName = uiState.userName,
+                onProfileClick = {},
                 onNotificationClick = {}
             )
         }
 
-        // Overview Section (Streak & Badges)
+        // Buddha's Daily Wisdom Section
+        item {
+            BuddhaWisdomSection(
+                wisdom = uiState.buddhaThought,
+                isLoading = uiState.isBuddhaThoughtLoading,
+                onRefresh = { viewModel.refreshBuddhaThought() }
+            )
+        }
+
+        // Overview Section (Streak & Stats)
         item {
             OverviewSection(
-                streakDays = 7,
-                badges = listOf(
-                    BadgeData(ProdyIcons.EmojiEvents, 0.75f, ProdyWarmAmber),
-                    BadgeData(ProdyIcons.Edit, 0.5f, ProdyForestGreen),
-                    BadgeData(ProdyIcons.Psychology, 0.3f, ProdyInfo)
-                )
+                streakDays = uiState.currentStreak,
+                totalPoints = uiState.totalPoints
             )
         }
 
         // Mood Trend Chart
-        item {
-            MoodTrendSection(
-                moodData = listOf(3f, 4f, 2f, 5f, 4f, 5f, 4f) // 1-5 Scale
-            )
+        if (uiState.moodHistory.isNotEmpty()) {
+            item {
+                MoodTrendSection(
+                    moodData = uiState.moodHistory
+                )
+            }
         }
 
         // Weekly Summary
         item {
             WeeklySummarySection(
-                journalEntries = 5,
-                wordsLearned = 12,
-                mindfulMinutes = 45
+                journalEntries = uiState.journalEntriesThisWeek,
+                wordsLearned = uiState.wordsLearnedThisWeek,
+                mindfulMinutes = uiState.mindfulMinutes
             )
         }
         
@@ -112,7 +127,10 @@ fun HomeScreen(
         
         // Recent / Suggestions
         item {
-            RecentActivitySection()
+            RecentActivitySection(
+                journaledToday = uiState.journaledToday,
+                todayMood = uiState.todayEntryMood
+            )
         }
     }
 }
@@ -123,6 +141,7 @@ fun HomeScreen(
 
 @Composable
 fun DashboardHeader(
+    greeting: String,
     userName: String,
     onProfileClick: () -> Unit,
     onNotificationClick: () -> Unit
@@ -137,7 +156,7 @@ fun DashboardHeader(
     ) {
         Column {
             Text(
-                text = "Good Morning,",
+                text = greeting,
                 style = TextStyle(
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Normal,
@@ -186,7 +205,7 @@ fun DashboardHeader(
 @Composable
 fun OverviewSection(
     streakDays: Int,
-    badges: List<BadgeData>
+    totalPoints: Int
 ) {
     Row(
         modifier = Modifier
@@ -226,7 +245,7 @@ fun OverviewSection(
             }
         }
 
-        // Badges Card
+        // XP Points Card
         Surface(
             modifier = Modifier.weight(1f),
             shape = RoundedCornerShape(16.dp),
@@ -237,16 +256,17 @@ fun OverviewSection(
                 modifier = Modifier.padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    badges.forEach { badge ->
-                        BadgeItem(badge)
-                    }
-                }
-                Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    text = "Achievements",
+                    text = totalPoints.toString(),
+                    style = TextStyle(
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 48.sp,
+                        color = ProdyWarmAmber
+                    )
+                )
+                Text(
+                    text = "Total XP",
                     style = TextStyle(
                         fontFamily = PoppinsFamily,
                         fontWeight = FontWeight.Medium,
@@ -409,6 +429,84 @@ fun WeeklySummarySection(journalEntries: Int, wordsLearned: Int, mindfulMinutes:
 }
 
 @Composable
+fun BuddhaWisdomSection(
+    wisdom: String,
+    isLoading: Boolean,
+    onRefresh: () -> Unit
+) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(24.dp),
+        shape = RoundedCornerShape(24.dp),
+        color = ProdySurfaceLight,
+        shadowElevation = 4.dp
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(24.dp)
+                .clickable { onRefresh() },
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.AutoAwesome,
+                        contentDescription = null,
+                        tint = GoldTier,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Buddha's Insight",
+                        style = TextStyle(
+                            fontFamily = PoppinsFamily,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 14.sp,
+                            color = GoldTier
+                        )
+                    )
+                }
+
+                if (isLoading) {
+                    BuddhaContemplatingAnimation(modifier = Modifier.size(20.dp), showText = false)
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.Refresh,
+                        contentDescription = "Refresh",
+                        tint = ProdyTextTertiaryLight,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            WisdomTextReveal(
+                text = wisdom,
+                isVisible = !isLoading,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = "Tap to refresh reflection",
+                style = TextStyle(
+                    fontFamily = PoppinsFamily,
+                    fontSize = 11.sp,
+                    color = ProdyTextTertiaryLight
+                )
+            )
+        }
+    }
+}
+
+@Composable
 fun SummaryCard(label: String, value: String, icon: androidx.compose.ui.graphics.vector.ImageVector, color: Color, modifier: Modifier) {
     Surface(
         modifier = modifier,
@@ -554,11 +652,13 @@ fun QuickActionTile(title: String, icon: androidx.compose.ui.graphics.vector.Ima
 }
 
 @Composable
-fun RecentActivitySection() {
-    // Placeholder for Recent Activity
+fun RecentActivitySection(
+    journaledToday: Boolean,
+    todayMood: String
+) {
     Column(modifier = Modifier.padding(horizontal = 24.dp)) {
         Text(
-            text = "Recent",
+            text = "Daily Status",
             style = TextStyle(
                 fontFamily = PoppinsFamily,
                 fontWeight = FontWeight.SemiBold,
@@ -579,15 +679,32 @@ fun RecentActivitySection() {
                     modifier = Modifier
                         .size(40.dp)
                         .clip(CircleShape)
-                        .background(ProdyForestGreen.copy(alpha = 0.1f)),
+                        .background(
+                            if (journaledToday) ProdyForestGreen.copy(alpha = 0.1f)
+                            else ProdyOutlineLight.copy(alpha = 0.1f)
+                        ),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(ProdyIcons.Check, null, tint = ProdyForestGreen)
+                    Icon(
+                        imageVector = if (journaledToday) ProdyIcons.Check else ProdyIcons.Edit,
+                        contentDescription = null,
+                        tint = if (journaledToday) ProdyForestGreen else ProdyTextTertiaryLight
+                    )
                 }
                 Spacer(modifier = Modifier.width(16.dp))
                 Column {
-                    Text("Daily Journal", fontWeight = FontWeight.SemiBold, fontFamily = PoppinsFamily)
-                    Text("Completed today", fontSize = 12.sp, color = ProdyTextSecondaryLight, fontFamily = PoppinsFamily)
+                    Text(
+                        text = "Daily Journal",
+                        fontWeight = FontWeight.SemiBold,
+                        fontFamily = PoppinsFamily,
+                        color = ProdyTextPrimaryLight
+                    )
+                    Text(
+                        text = if (journaledToday) "Completed with '$todayMood' mood" else "Not completed yet",
+                        fontSize = 12.sp,
+                        color = ProdyTextSecondaryLight,
+                        fontFamily = PoppinsFamily
+                    )
                 }
             }
         }
