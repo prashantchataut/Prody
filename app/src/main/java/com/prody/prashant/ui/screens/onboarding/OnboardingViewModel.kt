@@ -2,8 +2,10 @@ package com.prody.prashant.ui.screens.onboarding
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.room.withTransaction
 import com.prody.prashant.data.InitialContentData
 import com.prody.prashant.data.local.dao.*
+import com.prody.prashant.data.local.database.ProdyDatabase
 import com.prody.prashant.data.local.entity.AchievementEntity
 import com.prody.prashant.data.local.entity.UserProfileEntity
 import com.prody.prashant.data.local.entity.UserStatsEntity
@@ -17,6 +19,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class OnboardingViewModel @Inject constructor(
+    private val database: ProdyDatabase,
     private val preferencesManager: PreferencesManager,
     private val vocabularyDao: VocabularyDao,
     private val quoteDao: QuoteDao,
@@ -90,40 +93,30 @@ class OnboardingViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Populates the database with initial content.
+     * Performance: Wrapped in a single transaction to minimize disk I/O.
+     */
     private suspend fun populateInitialContent() {
         try {
-            // Insert vocabulary
-            vocabularyDao.insertWords(InitialContentData.vocabularyWords)
-        } catch (e: Exception) {
-            android.util.Log.e(TAG, "Error inserting vocabulary", e)
-        }
+            database.withTransaction {
+                // Insert vocabulary
+                vocabularyDao.insertWords(InitialContentData.vocabularyWords)
 
-        try {
-            // Insert quotes
-            quoteDao.insertQuotes(InitialContentData.quotes)
-        } catch (e: Exception) {
-            android.util.Log.e(TAG, "Error inserting quotes", e)
-        }
+                // Insert quotes
+                quoteDao.insertQuotes(InitialContentData.quotes)
 
-        try {
-            // Insert proverbs
-            proverbDao.insertProverbs(InitialContentData.proverbs)
-        } catch (e: Exception) {
-            android.util.Log.e(TAG, "Error inserting proverbs", e)
-        }
+                // Insert proverbs
+                proverbDao.insertProverbs(InitialContentData.proverbs)
 
-        try {
-            // Insert idioms
-            idiomDao.insertIdioms(InitialContentData.idioms)
-        } catch (e: Exception) {
-            android.util.Log.e(TAG, "Error inserting idioms", e)
-        }
+                // Insert idioms
+                idiomDao.insertIdioms(InitialContentData.idioms)
 
-        try {
-            // Insert phrases
-            phraseDao.insertPhrases(InitialContentData.phrases)
+                // Insert phrases
+                phraseDao.insertPhrases(InitialContentData.phrases)
+            }
         } catch (e: Exception) {
-            android.util.Log.e(TAG, "Error inserting phrases", e)
+            android.util.Log.e(TAG, "Error populating initial content in transaction", e)
         }
     }
 }
