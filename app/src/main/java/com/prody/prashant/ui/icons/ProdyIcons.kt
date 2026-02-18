@@ -354,17 +354,6 @@ object ProdyIcons {
     val LocalOffer: ImageVector = Star
     val LockOpen: ImageVector = Lock // Fallback
 
-    object Common {
-        val Add = ProdyIcons.Add
-        val Check = ProdyIcons.Check
-        val Close = ProdyIcons.Close
-        val Home = ProdyIcons.Home
-        val Menu = ProdyIcons.Menu
-        val Person = ProdyIcons.Person
-        val Search = ProdyIcons.Search
-        val Settings = ProdyIcons.Settings
-        val Star = ProdyIcons.Star
-    }
 
     object Gamification {
         val Trophy: ImageVector = Icons.Filled.EmojiEvents
