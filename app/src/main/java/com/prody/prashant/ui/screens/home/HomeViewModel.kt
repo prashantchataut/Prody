@@ -81,6 +81,8 @@ data class HomeUiState(
     val canRefreshBuddhaThought: Boolean = true,
     val journalEntriesThisWeek: Int = 0,
     val wordsLearnedThisWeek: Int = 0,
+    val mindfulMinutes: Int = 0,
+    val moodTrend: List<Float> = emptyList(),
     val daysActiveThisWeek: Int = 0,
     val isLoading: Boolean = true,
     val hasLoadError: Boolean = false,
@@ -232,6 +234,21 @@ class HomeViewModel @Inject constructor(
                 // Calculate weekly active days.
                 val daysActiveThisWeek = streakHistory.count { it.date >= weekStart }
 
+                // Calculate mindful minutes from reflection time (stored in seconds)
+                val mindfulMinutes = (profile?.totalReflectionTime ?: 0L) / 60
+
+                // Map mood strings to numerical scale (1-5) for the chart
+                val moodTrend = weeklyJournalEntries.map { entry ->
+                    when (entry.mood.lowercase()) {
+                        "blessed", "happy", "joyful" -> 5f
+                        "good", "pleasant" -> 4f
+                        "neutral", "okay" -> 3f
+                        "meh", "tired" -> 2f
+                        "bad", "sad", "angry" -> 1f
+                        else -> 3f
+                    }
+                }.reversed().take(7) // Last 7 entries
+
                 // Determine today's journaling status.
                 val (journaledToday, todayMood, todayPreview) = if (todayJournalEntries.isNotEmpty()) {
                     val latestEntry = todayJournalEntries.maxByOrNull { it.createdAt }
@@ -260,6 +277,8 @@ class HomeViewModel @Inject constructor(
                     idiomId = dailyContent.idiom?.id ?: _uiState.value.idiomId,
                     journalEntriesThisWeek = weeklyJournalEntries.size,
                     wordsLearnedThisWeek = weeklyLearnedWords,
+                    mindfulMinutes = mindfulMinutes.toInt(),
+                    moodTrend = if (moodTrend.isNotEmpty()) moodTrend else listOf(3f, 4f, 3f, 4f, 3f, 4f, 3f),
                     daysActiveThisWeek = daysActiveThisWeek,
                     journaledToday = journaledToday,
                     todayEntryMood = todayMood,

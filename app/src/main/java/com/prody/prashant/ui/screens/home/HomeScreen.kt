@@ -28,6 +28,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.prody.prashant.ui.theme.*
@@ -51,10 +52,7 @@ fun HomeScreen(
     onNavigateToIdiomDetail: (Long) -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
-    // We assume ViewModel provides necessary state. For this UI revamp, 
-    // we'll focus on the UI structure and use placeholder data where ViewModel might not strictly align yet.
-    
-    val surfaceColor = MaterialTheme.colorScheme.surface
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val backgroundColor = MaterialTheme.colorScheme.background
 
     LazyColumn(
@@ -66,37 +64,48 @@ fun HomeScreen(
         // Header with Greeting and Notification
         item {
             DashboardHeader(
-                userName = "Prashant", // Replace with real name
-                onProfileClick = {}, // TODO: Profile Nav
-                onNotificationClick = {}
+                greeting = uiState.intelligentGreeting,
+                userName = uiState.userName,
+                onProfileClick = { /* Handled via Bottom Nav or Settings */ },
+                onNotificationClick = { /* Future: Notifications Screen */ }
             )
         }
 
         // Overview Section (Streak & Badges)
         item {
             OverviewSection(
-                streakDays = 7,
+                streakDays = uiState.currentStreak,
                 badges = listOf(
-                    BadgeData(ProdyIcons.EmojiEvents, 0.75f, ProdyWarmAmber),
-                    BadgeData(ProdyIcons.Edit, 0.5f, ProdyForestGreen),
-                    BadgeData(ProdyIcons.Psychology, 0.3f, ProdyInfo)
+                    BadgeData(
+                        ProdyIcons.EmojiEvents,
+                        if (uiState.todayProgress.wordsLearned > 0) 1f else 0.5f,
+                        ProdyWarmAmber
+                    ),
+                    BadgeData(
+                        ProdyIcons.Edit,
+                        if (uiState.journaledToday) 1f else 0.2f,
+                        ProdyForestGreen
+                    ),
+                    BadgeData(
+                        ProdyIcons.Psychology,
+                        (uiState.totalPoints % 100) / 100f,
+                        ProdyInfo
+                    )
                 )
             )
         }
 
         // Mood Trend Chart
         item {
-            MoodTrendSection(
-                moodData = listOf(3f, 4f, 2f, 5f, 4f, 5f, 4f) // 1-5 Scale
-            )
+            MoodTrendSection(moodData = uiState.moodTrend)
         }
 
         // Weekly Summary
         item {
             WeeklySummarySection(
-                journalEntries = 5,
-                wordsLearned = 12,
-                mindfulMinutes = 45
+                journalEntries = uiState.journalEntriesThisWeek,
+                wordsLearned = uiState.wordsLearnedThisWeek,
+                mindfulMinutes = uiState.mindfulMinutes
             )
         }
         
@@ -123,6 +132,7 @@ fun HomeScreen(
 
 @Composable
 fun DashboardHeader(
+    greeting: String,
     userName: String,
     onProfileClick: () -> Unit,
     onNotificationClick: () -> Unit
@@ -137,7 +147,7 @@ fun DashboardHeader(
     ) {
         Column {
             Text(
-                text = "Good Morning,",
+                text = if (greeting.isNotEmpty()) greeting else "Welcome back,",
                 style = TextStyle(
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Normal,
