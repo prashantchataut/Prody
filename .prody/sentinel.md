@@ -7,3 +7,8 @@
 **Vulnerability:** Leaking API keys in Logcat via OkHttp interceptors and debug logs, and missing UI protection for therapeutic chats.
 **Learning:** Prody's `OpenRouterService` used `HttpLoggingInterceptor.Level.BODY` in debug mode without redacting the `Authorization` header, exposing API keys to anybody with ADB access. Additionally, Haven't therapeutic screens lacked `FLAG_SECURE`, risking user privacy.
 **Prevention:** Always use `redactHeader("Authorization")` in network interceptors. Remove logs that print partial secrets. Enforce `FLAG_SECURE` on all therapeutic and reflection screens by default.
+
+## 2026-05-20 - Fail-Secure Database Policy and Information Leakage Prevention
+**Vulnerability:** Insecure fallback to unencrypted database and weak passphrases in DatabaseFactory and SecureDatabaseManager, and technical crash details exposed in production.
+**Learning:** The database initialization had a 'Fail Open' design where any encryption failure resulted in falling back to plain-text storage or weak ANDROID_ID derived keys. This completely bypassed the intended security for sensitive journal data. Additionally, CrashActivity leaked stack traces and internal messages in production builds.
+**Prevention:** Enforce a 'Fail Secure' policy by throwing SecurityException if encryption initialization fails. Always wrap technical debug info and 'Copy Report' actions in BuildConfig.DEBUG checks. Sanitize logs to avoid printing metadata like key lengths.

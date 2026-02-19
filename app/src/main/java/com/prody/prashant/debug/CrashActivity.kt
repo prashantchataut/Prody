@@ -190,17 +190,27 @@ private fun CrashScreen(
                 )
             }
             Spacer(modifier = Modifier.height(20.dp))
-            Text(text = "App Crashed", style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.onBackground)
-            Text(text = "$timestamp • $threadName", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Spacer(modifier = Modifier.height(20.dp))
+            Text(text = "Something went wrong", style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.onBackground)
+            Text(
+                text = "The app encountered an unexpected error and needs to restart. Your data is safe.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center
+            )
             
-            // Simplified for brevity and compilation safety
-            Text(text = exceptionType, color = Color(0xFFE65C5C), fontWeight = FontWeight.Bold)
-            Text(text = exceptionMessage, color = MaterialTheme.colorScheme.onSurface)
-            
-            Spacer(modifier = Modifier.height(20.dp))
-            
-            Button(onClick = onCopyClick) { Text("Copy Report") }
+            if (com.prody.prashant.BuildConfig.DEBUG) {
+                Spacer(modifier = Modifier.height(20.dp))
+                Text(text = "Debug Info:", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+                Text(text = "$timestamp • $threadName", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Spacer(modifier = Modifier.height(10.dp))
+
+                Text(text = exceptionType, color = Color(0xFFE65C5C), fontWeight = FontWeight.Bold)
+                Text(text = exceptionMessage, color = MaterialTheme.colorScheme.onSurface)
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                Button(onClick = onCopyClick) { Text("Copy Report") }
+            }
             Spacer(modifier = Modifier.height(10.dp))
             Button(onClick = onRestartClick) { Text("Restart App") }
         }

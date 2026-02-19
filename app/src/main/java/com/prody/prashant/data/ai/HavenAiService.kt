@@ -202,10 +202,11 @@ I am here to listen, but I cannot provide the emergency care you might need. Ple
         initializationAttempts++
         try {
             // Log key presence for debugging (never log actual keys!)
-            val therapistKeyPresent = BuildConfig.THERAPIST_API_KEY.isNotBlank()
-            val aiKeyPresent = BuildConfig.AI_API_KEY.isNotBlank()
-
-            Log.d(TAG, "API Key Check (attempt $initializationAttempts) - THERAPIST_API_KEY present: $therapistKeyPresent, AI_API_KEY present: $aiKeyPresent")
+            if (BuildConfig.DEBUG) {
+                val therapistKeyPresent = BuildConfig.THERAPIST_API_KEY.isNotBlank()
+                val aiKeyPresent = BuildConfig.AI_API_KEY.isNotBlank()
+                Log.d(TAG, "API Key Check (attempt $initializationAttempts) - THERAPIST_API_KEY present: $therapistKeyPresent, AI_API_KEY present: $aiKeyPresent")
+            }
 
             // Try THERAPIST_API_KEY first, then fall back to AI_API_KEY (Gemini)
             val apiKey = BuildConfig.THERAPIST_API_KEY.takeIf { it.isNotBlank() }
@@ -220,7 +221,9 @@ I am here to listen, but I cannot provide the emergency care you might need. Ple
             }
 
             val keySource = if (BuildConfig.THERAPIST_API_KEY.isNotBlank()) "THERAPIST_API_KEY" else "AI_API_KEY"
-            Log.d(TAG, "Initializing Haven with $keySource (length: ${apiKey.length})")
+            if (BuildConfig.DEBUG) {
+                Log.d(TAG, "Initializing Haven with $keySource")
+            }
 
             // Safety settings - less restrictive for mental health content
             val safetySettings = listOf(
@@ -261,10 +264,8 @@ I am here to listen, but I cannot provide the emergency care you might need. Ple
      * Returns detailed configuration status for debugging.
      */
     fun getConfigurationStatus(): String {
-        val therapistKeyStatus = if (BuildConfig.THERAPIST_API_KEY.isNotBlank()) 
-            "present (${BuildConfig.THERAPIST_API_KEY.length} chars)" else "missing"
-        val aiKeyStatus = if (BuildConfig.AI_API_KEY.isNotBlank()) 
-            "present (${BuildConfig.AI_API_KEY.length} chars)" else "missing"
+        val therapistKeyStatus = if (BuildConfig.THERAPIST_API_KEY.isNotBlank()) "present" else "missing"
+        val aiKeyStatus = if (BuildConfig.AI_API_KEY.isNotBlank()) "present" else "missing"
             
         return when {
             isOfflineMode -> buildString {
