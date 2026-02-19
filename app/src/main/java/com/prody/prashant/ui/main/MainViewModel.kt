@@ -29,12 +29,16 @@ class MainViewModel @Inject constructor(
         // --- CRITICAL PATH ---
         // Immediately determine the start destination to unblock the UI.
         viewModelScope.launch {
-            val onboardingCompleted = preferencesManager.onboardingCompleted
-                .catch {
-                    // In case of error, default to showing onboarding
-                    emit(false)
-                }
-                .first() // We only need the initial value
+            // Performance Optimization: Explicitly offload initial DataStore read
+            // to Dispatchers.IO to prevent splash screen stalling.
+            val onboardingCompleted = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                preferencesManager.onboardingCompleted
+                    .catch {
+                        // In case of error, default to showing onboarding
+                        emit(false)
+                    }
+                    .first() // We only need the initial value
+            }
 
             val startDestination = if (onboardingCompleted) {
                 Screen.Home.route

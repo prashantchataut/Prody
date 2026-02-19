@@ -23,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.*
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
@@ -739,22 +740,53 @@ fun ProdyProgressIndicator(
     totalPages: Int,
     modifier: Modifier = Modifier
 ) {
-    Row(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    // Performance Optimization: Animate the active index as a float and draw all dots
+    // in a single Canvas. This prevents recomposing multiple Box elements every frame
+    // during page transitions.
+    val animatedIndex by animateFloatAsState(
+        targetValue = currentPage.toFloat(),
+        animationSpec = spring(stiffness = Spring.StiffnessLow),
+        label = "progress_index"
+    )
+
+    val dotHeight = 4.dp
+    val inactiveWidth = 8.dp
+    val activeWidth = 24.dp
+    val spacing = 4.dp
+
+    // Calculate fixed width to prevent layout shifts
+    val totalWidth = (inactiveWidth * (totalPages - 1)) + activeWidth + (spacing * (totalPages - 1))
+
+    Canvas(
+        modifier = modifier
+            .size(width = totalWidth, height = dotHeight)
     ) {
+        var currentX = 0f
+        val dotHeightPx = dotHeight.toPx()
+        val spacingPx = spacing.toPx()
+        val inactiveWidthPx = inactiveWidth.toPx()
+        val activeWidthPx = activeWidth.toPx()
+
         repeat(totalPages) { index ->
-            val isActive = index == currentPage
-            val width by animateDpAsState(if (isActive) 24.dp else 8.dp, label = "width")
-            val color = if (isActive) ProdyForestGreen else ProdyOutlineLight
-            
-            Box(
-                modifier = Modifier
-                    .height(4.dp)
-                    .width(width)
-                    .clip(CircleShape)
-                    .background(color)
+            // Determine width based on proximity to the animated index
+            val distance = kotlin.math.abs(index - animatedIndex)
+            val widthPx = if (distance < 1f) {
+                // Interpolate between active and inactive width
+                inactiveWidthPx + (activeWidthPx - inactiveWidthPx) * (1f - distance)
+            } else {
+                inactiveWidthPx
+            }
+
+            val color = if (index == currentPage) ProdyForestGreen else ProdyOutlineLight
+
+            drawRoundRect(
+                color = color,
+                topLeft = Offset(currentX, 0f),
+                size = Size(widthPx, dotHeightPx),
+                cornerRadius = CornerRadius(dotHeightPx / 2)
             )
+
+            currentX += widthPx + spacingPx
         }
     }
 }

@@ -267,9 +267,15 @@ fun MoodBreathingHalo(
         // Outer glow halo
         Box(
             modifier = Modifier
-                .size(size * haloScale)
-                .scale(haloScale)
-                .alpha(haloAlpha)
+                .size(size)
+                // Performance Optimization: Use graphicsLayer for frequently changing
+                // alpha and scale to defer updates to the drawing phase.
+                // Using fixed size prevents expensive layout passes every frame.
+                .graphicsLayer {
+                    scaleX = haloScale
+                    scaleY = haloScale
+                    alpha = haloAlpha
+                }
                 .blur(12.dp)
                 .background(haloColor, CircleShape)
         )
@@ -1053,8 +1059,13 @@ fun NavigationBreathingGlow(
             Box(
                 modifier = Modifier
                     .size(48.dp)
-                    .scale(glowScale)
-                    .alpha(glowAlpha * activeAlpha)
+                    // Performance Optimization: Use graphicsLayer to prevent parent
+                    // recomposition during frequent breathing animations.
+                    .graphicsLayer {
+                        scaleX = glowScale
+                        scaleY = glowScale
+                        alpha = glowAlpha * activeAlpha
+                    }
                     .blur(12.dp)
                     .background(color, CircleShape)
             )

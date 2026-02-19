@@ -95,6 +95,8 @@ data class HomeUiState(
     val journaledToday: Boolean = false,
     val todayEntryMood: String = "",
     val todayEntryPreview: String = "",
+    val moodHistory: List<Float> = emptyList(),
+    val mindfulMinutes: Int = 0,
     // ============== ACTIVE PROGRESS LAYER ==============
     // Next Action - contextual suggestion based on user behavior
     val nextAction: NextAction? = null,
@@ -240,6 +242,25 @@ class HomeViewModel @Inject constructor(
                     Triple(false, "", "")
                 }
 
+                // Map mood history for the trend chart.
+                // Take up to 7 most recent entries.
+                val moodHistory = weeklyJournalEntries
+                    .sortedBy { it.createdAt }
+                    .takeLast(7)
+                    .map { entry ->
+                        when (entry.mood.lowercase()) {
+                            "amazing" -> 5.0f
+                            "happy", "good" -> 4.0f
+                            "neutral", "okay" -> 3.0f
+                            "sad", "bad" -> 2.0f
+                            "very sad", "awful" -> 1.0f
+                            else -> 3.0f
+                        }
+                    }
+
+                // Calculate mindful minutes (heuristic: 10 mins per journal entry).
+                val mindfulMinutes = weeklyJournalEntries.size * 10
+
                 // 3. Atomically update the UI state with all the loaded data.
                 _uiState.value.copy(
                     userName = profile?.displayName ?: "Growth Seeker",
@@ -264,6 +285,8 @@ class HomeViewModel @Inject constructor(
                     journaledToday = journaledToday,
                     todayEntryMood = todayMood,
                     todayEntryPreview = todayPreview,
+                    moodHistory = moodHistory,
+                    mindfulMinutes = mindfulMinutes,
                     dualStreakStatus = dualStreak,
                     buddhaWisdomProofInfo = _uiState.value.buddhaWisdomProofInfo.copy(isEnabled = aiProofMode),
                     isLoading = false // <-- Critical: Signal that loading is complete.
