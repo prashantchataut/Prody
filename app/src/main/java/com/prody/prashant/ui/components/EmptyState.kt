@@ -376,7 +376,8 @@ fun ProdyWelcomeEmptyState(
     message: String,
     getStartedLabel: String,
     onGetStartedClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    iconContentDescription: String? = null
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "welcome_state")
 
@@ -399,7 +400,7 @@ fun ProdyWelcomeEmptyState(
     ) {
         Icon(
             imageVector = icon,
-            contentDescription = "Welcome",
+            contentDescription = iconContentDescription,
             modifier = Modifier
                 .size(96.dp)
                 .alpha(0.9f),
