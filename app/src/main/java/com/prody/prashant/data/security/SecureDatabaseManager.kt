@@ -87,7 +87,7 @@ class SecureDatabaseManager @Inject constructor(
             newKey
         } catch (e: Exception) {
             Log.e(TAG, "Error getting database passphrase synchronously", e)
-            generateFallbackPassphrase()
+            throw SecurityException("Could not securely retrieve or generate database passphrase", e)
         }
     }
 
@@ -124,43 +124,14 @@ class SecureDatabaseManager @Inject constructor(
     }
 
     /**
-     * Generate a secure database key
+     * Generate a secure database key using high-entropy random bytes.
      */
     private fun generateSecureDatabaseKey(): String {
         val random = java.security.SecureRandom()
         val bytes = ByteArray(32) // 256-bit key
         random.nextBytes(bytes)
         
-        // Combine with app-specific data for additional security
-        val appSignature = context.packageName + BuildConfig.VERSION_CODE
-        val signatureBytes = appSignature.toByteArray()
-        
-        val combinedBytes = ByteArray(bytes.size + signatureBytes.size)
-        System.arraycopy(bytes, 0, combinedBytes, 0, bytes.size)
-        System.arraycopy(signatureBytes, 0, combinedBytes, bytes.size, signatureBytes.size)
-        
-        return android.util.Base64.encodeToString(combinedBytes, android.util.Base64.NO_WRAP)
-    }
-
-    /**
-     * Generate a deterministic fallback passphrase in case of errors.
-     */
-    private fun generateFallbackPassphrase(): String {
-        try {
-            val deviceId = android.provider.Settings.Secure.getString(
-                context.contentResolver,
-                android.provider.Settings.Secure.ANDROID_ID
-            ) ?: "unknown_device"
-
-            val appData = "${context.packageName}_${BuildConfig.VERSION_CODE}"
-            val combined = "${deviceId}_${appData}_prody_secure_fallback"
-
-            val digest = java.security.MessageDigest.getInstance("SHA-256")
-            val hash = digest.digest(combined.toByteArray(Charsets.UTF_8))
-            return android.util.Base64.encodeToString(hash, android.util.Base64.NO_WRAP)
-        } catch (e: Exception) {
-            return "prody_ultimate_fallback_${BuildConfig.VERSION_CODE}"
-        }
+        return android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP)
     }
 
     /**
