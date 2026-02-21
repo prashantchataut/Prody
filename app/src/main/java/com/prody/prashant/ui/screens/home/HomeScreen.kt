@@ -28,6 +28,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.prody.prashant.ui.theme.*
@@ -51,8 +52,7 @@ fun HomeScreen(
     onNavigateToIdiomDetail: (Long) -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
-    // We assume ViewModel provides necessary state. For this UI revamp, 
-    // we'll focus on the UI structure and use placeholder data where ViewModel might not strictly align yet.
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     
     val surfaceColor = MaterialTheme.colorScheme.surface
     val backgroundColor = MaterialTheme.colorScheme.background
@@ -66,7 +66,8 @@ fun HomeScreen(
         // Header with Greeting and Notification
         item {
             DashboardHeader(
-                userName = "Prashant", // Replace with real name
+                greeting = uiState.intelligentGreeting.ifEmpty { "Welcome back," },
+                userName = uiState.userName,
                 onProfileClick = {}, // TODO: Profile Nav
                 onNotificationClick = {}
             )
@@ -75,7 +76,7 @@ fun HomeScreen(
         // Overview Section (Streak & Badges)
         item {
             OverviewSection(
-                streakDays = 7,
+                streakDays = uiState.currentStreak,
                 badges = listOf(
                     BadgeData(ProdyIcons.EmojiEvents, 0.75f, ProdyWarmAmber),
                     BadgeData(ProdyIcons.Edit, 0.5f, ProdyForestGreen),
@@ -94,9 +95,9 @@ fun HomeScreen(
         // Weekly Summary
         item {
             WeeklySummarySection(
-                journalEntries = 5,
-                wordsLearned = 12,
-                mindfulMinutes = 45
+                journalEntries = uiState.journalEntriesThisWeek,
+                wordsLearned = uiState.wordsLearnedThisWeek,
+                mindfulMinutes = uiState.todayProgress.pointsEarned / 10 // Approximation
             )
         }
         
@@ -123,6 +124,7 @@ fun HomeScreen(
 
 @Composable
 fun DashboardHeader(
+    greeting: String,
     userName: String,
     onProfileClick: () -> Unit,
     onNotificationClick: () -> Unit
@@ -135,15 +137,16 @@ fun DashboardHeader(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Column {
+        Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = "Good Morning,",
+                text = greeting,
                 style = TextStyle(
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Normal,
                     fontSize = 16.sp
                 ),
-                color = ProdyTextSecondaryLight
+                color = ProdyTextSecondaryLight,
+                maxLines = 1
             )
             Text(
                 text = userName,
@@ -152,7 +155,8 @@ fun DashboardHeader(
                     fontWeight = FontWeight.Bold,
                     fontSize = 24.sp
                 ),
-                color = ProdyTextPrimaryLight
+                color = ProdyTextPrimaryLight,
+                maxLines = 1
             )
         }
         
