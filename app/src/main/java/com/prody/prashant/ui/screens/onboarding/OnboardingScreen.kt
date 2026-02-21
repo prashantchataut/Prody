@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.prody.prashant.ui.theme.*
 import kotlinx.coroutines.launch
+import kotlin.math.abs
 
 // =============================================================================
 // PRODY ONBOARDING - REVAMPED 2026
@@ -733,28 +734,66 @@ fun ProdyLogo(modifier: Modifier = Modifier) {
     }
 }
 
+/**
+ * High-performance progress indicator using Canvas for smooth transitions.
+ *
+ * Performance Optimization:
+ * 1. Uses a single Canvas instead of multiple Row/Box components to reduce layout overhead.
+ * 2. Uses animateFloatAsState for the active index to enable sub-pixel smooth transitions.
+ * 3. Keeps all calculation logic within the DrawScope to prevent unnecessary recompositions.
+ * 4. Uses fixed width based on totalPages to prevent layout shifts during animation.
+ */
 @Composable
 fun ProdyProgressIndicator(
     currentPage: Int,
     totalPages: Int,
     modifier: Modifier = Modifier
 ) {
-    Row(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    val animatedIndex by animateFloatAsState(
+        targetValue = currentPage.toFloat(),
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioLowBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
+        label = "progressIndex"
+    )
+
+    val inactiveWidth = 8.dp
+    val activeWidth = 24.dp
+    val spacing = 4.dp
+    val height = 4.dp
+
+    // Calculate total width to prevent layout jumps
+    val totalWidth = (activeWidth + (inactiveWidth * (totalPages - 1)) + (spacing * (totalPages - 1)))
+
+    Canvas(
+        modifier = modifier
+            .size(width = totalWidth, height = height)
     ) {
-        repeat(totalPages) { index ->
-            val isActive = index == currentPage
-            val width by animateDpAsState(if (isActive) 24.dp else 8.dp, label = "width")
-            val color = if (isActive) ProdyForestGreen else ProdyOutlineLight
+        val inactiveWidthPx = inactiveWidth.toPx()
+        val activeWidthPx = activeWidth.toPx()
+        val spacingPx = spacing.toPx()
+        val heightPx = height.toPx()
+        val cornerRadius = heightPx / 2
+
+        var currentX = 0f
+
+        for (i in 0 until totalPages) {
+            // Calculate distance from animated index for smooth size/color interpolation
+            val distance = abs(i - animatedIndex)
+            val selectionProgress = (1f - distance).coerceIn(0f, 1f)
             
-            Box(
-                modifier = Modifier
-                    .height(4.dp)
-                    .width(width)
-                    .clip(CircleShape)
-                    .background(color)
+            val itemWidth = inactiveWidthPx + (activeWidthPx - inactiveWidthPx) * selectionProgress
+            val color = lerp(ProdyOutlineLight, ProdyForestGreen, selectionProgress)
+
+            drawRoundRect(
+                color = color,
+                topLeft = Offset(currentX, 0f),
+                size = Size(itemWidth, heightPx),
+                cornerRadius = androidx.compose.ui.geometry.CornerRadius(cornerRadius, cornerRadius)
             )
+
+            currentX += itemWidth + spacingPx
         }
     }
 }

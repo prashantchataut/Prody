@@ -6,6 +6,7 @@ import com.prody.prashant.data.local.preferences.PreferencesManager
 import com.prody.prashant.ui.navigation.Screen
 import com.prody.prashant.ui.theme.ThemeMode
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -15,6 +16,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -29,12 +31,16 @@ class MainViewModel @Inject constructor(
         // --- CRITICAL PATH ---
         // Immediately determine the start destination to unblock the UI.
         viewModelScope.launch {
-            val onboardingCompleted = preferencesManager.onboardingCompleted
-                .catch {
-                    // In case of error, default to showing onboarding
-                    emit(false)
-                }
-                .first() // We only need the initial value
+            // Performance Optimization: Explicitly offload initial DataStore reads to Dispatchers.IO
+            // to prevent the splash screen from stalling due to potential I/O bottlenecks.
+            val onboardingCompleted = withContext(Dispatchers.IO) {
+                preferencesManager.onboardingCompleted
+                    .catch {
+                        // In case of error, default to showing onboarding
+                        emit(false)
+                    }
+                    .first() // We only need the initial value
+            }
 
             val startDestination = if (onboardingCompleted) {
                 Screen.Home.route
