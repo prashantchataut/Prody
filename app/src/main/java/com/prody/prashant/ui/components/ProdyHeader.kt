@@ -20,9 +20,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Icon
 import com.prody.prashant.ui.icons.ProdyIcons
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -223,18 +221,7 @@ private fun MinimalHeader(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.weight(1f)
                 ) {
-                    if (navigationIcon != null && onNavigationClick != null) {
-                        IconButton(
-                            onClick = onNavigationClick,
-                            modifier = Modifier.padding(end = ProdyTokens.Spacing.xs)
-                        ) {
-                            Icon(
-                                imageVector = navigationIcon,
-                                contentDescription = "Navigate back",
-                                tint = contentColor
-                            )
-                        }
-                    }
+                    HeaderNavigationIcon(navigationIcon, onNavigationClick, contentColor)
 
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
@@ -320,18 +307,7 @@ private fun ContextualHeader(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.weight(1f)
                 ) {
-                    if (navigationIcon != null && onNavigationClick != null) {
-                        IconButton(
-                            onClick = onNavigationClick,
-                            modifier = Modifier.padding(end = ProdyTokens.Spacing.xs)
-                        ) {
-                            Icon(
-                                imageVector = navigationIcon,
-                                contentDescription = "Navigate back",
-                                tint = contentColor
-                            )
-                        }
-                    }
+                    HeaderNavigationIcon(navigationIcon, onNavigationClick, contentColor)
 
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
@@ -436,18 +412,7 @@ private fun ScrollAwareHeader(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.weight(1f)
                 ) {
-                    if (navigationIcon != null && onNavigationClick != null) {
-                        IconButton(
-                            onClick = onNavigationClick,
-                            modifier = Modifier.padding(end = ProdyTokens.Spacing.xs)
-                        ) {
-                            Icon(
-                                imageVector = navigationIcon,
-                                contentDescription = "Navigate back",
-                                tint = contentColor
-                            )
-                        }
-                    }
+                    HeaderNavigationIcon(navigationIcon, onNavigationClick, contentColor)
 
                     Column(
                         modifier = Modifier
@@ -507,6 +472,27 @@ private fun ScrollAwareHeader(
 // =============================================================================
 // CONVENIENCE COMPOSABLES
 // =============================================================================
+
+/**
+ * Shared navigation icon for all header styles.
+ */
+@Composable
+private fun HeaderNavigationIcon(
+    icon: ImageVector?,
+    onClick: (() -> Unit)?,
+    contentColor: Color
+) {
+    if (icon != null && onClick != null) {
+        ProdyIconButton(
+            icon = icon,
+            onClick = onClick,
+            modifier = Modifier.padding(end = ProdyTokens.Spacing.xs),
+            contentDescription = AccessibilityHelper.ContentDescriptions.BACK,
+            tooltip = AccessibilityHelper.ContentDescriptions.BACK,
+            tint = contentColor
+        )
+    }
+}
 
 /**
  * Convenience header with back navigation.
