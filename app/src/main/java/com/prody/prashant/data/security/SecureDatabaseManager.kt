@@ -58,7 +58,7 @@ class SecureDatabaseManager @Inject constructor(
      * Required for Room initialization to avoid blocking the main thread with runBlocking.
      */
     fun getDatabasePassphraseSync(): String {
-        return try {
+        try {
             // 1. Try to get from EncryptedSharedPreferences (Fast path)
             val existingKey = encryptedPrefs.getString(DB_PASSPHRASE_KEY, null)
             if (existingKey != null) {
@@ -84,10 +84,10 @@ class SecureDatabaseManager @Inject constructor(
             // 3. No key exists, generate a new one
             val newKey = generateSecureDatabaseKey()
             encryptedPrefs.edit().putString(DB_PASSPHRASE_KEY, newKey).apply()
-            newKey
+            return newKey
         } catch (e: Exception) {
-            Log.e(TAG, "Error getting database passphrase synchronously", e)
-            generateFallbackPassphrase()
+            Log.e(TAG, "CRITICAL: Error getting database passphrase synchronously", e)
+            throw SecurityException("Failed to retrieve or generate secure database passphrase. Fail-secure triggered.", e)
         }
     }
 
@@ -124,43 +124,16 @@ class SecureDatabaseManager @Inject constructor(
     }
 
     /**
-     * Generate a secure database key
+     * Generate a secure database key.
+     *
+     * Uses exactly 32 bytes of high-entropy data from SecureRandom.
      */
     private fun generateSecureDatabaseKey(): String {
         val random = java.security.SecureRandom()
-        val bytes = ByteArray(32) // 256-bit key
+        val bytes = ByteArray(32) // 256-bit high-entropy key
         random.nextBytes(bytes)
         
-        // Combine with app-specific data for additional security
-        val appSignature = context.packageName + BuildConfig.VERSION_CODE
-        val signatureBytes = appSignature.toByteArray()
-        
-        val combinedBytes = ByteArray(bytes.size + signatureBytes.size)
-        System.arraycopy(bytes, 0, combinedBytes, 0, bytes.size)
-        System.arraycopy(signatureBytes, 0, combinedBytes, bytes.size, signatureBytes.size)
-        
-        return android.util.Base64.encodeToString(combinedBytes, android.util.Base64.NO_WRAP)
-    }
-
-    /**
-     * Generate a deterministic fallback passphrase in case of errors.
-     */
-    private fun generateFallbackPassphrase(): String {
-        try {
-            val deviceId = android.provider.Settings.Secure.getString(
-                context.contentResolver,
-                android.provider.Settings.Secure.ANDROID_ID
-            ) ?: "unknown_device"
-
-            val appData = "${context.packageName}_${BuildConfig.VERSION_CODE}"
-            val combined = "${deviceId}_${appData}_prody_secure_fallback"
-
-            val digest = java.security.MessageDigest.getInstance("SHA-256")
-            val hash = digest.digest(combined.toByteArray(Charsets.UTF_8))
-            return android.util.Base64.encodeToString(hash, android.util.Base64.NO_WRAP)
-        } catch (e: Exception) {
-            return "prody_ultimate_fallback_${BuildConfig.VERSION_CODE}"
-        }
+        return android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP)
     }
 
     /**

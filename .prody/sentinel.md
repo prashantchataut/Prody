@@ -7,3 +7,8 @@
 **Vulnerability:** Leaking API keys in Logcat via OkHttp interceptors and debug logs, and missing UI protection for therapeutic chats.
 **Learning:** Prody's `OpenRouterService` used `HttpLoggingInterceptor.Level.BODY` in debug mode without redacting the `Authorization` header, exposing API keys to anybody with ADB access. Additionally, Haven't therapeutic screens lacked `FLAG_SECURE`, risking user privacy.
 **Prevention:** Always use `redactHeader("Authorization")` in network interceptors. Remove logs that print partial secrets. Enforce `FLAG_SECURE` on all therapeutic and reflection screens by default.
+
+## 2026-06-05 - Harden Database Encryption and UI Privacy
+**Vulnerability:** Deterministic fallback passphrases for database encryption, fallback to unencrypted database if SQLCipher fails, and missing `FLAG_SECURE` on multiple screens showing personal data.
+**Learning:** Prody had a dangerous fallback in `DatabaseFactory.kt` that allowed cleartext storage if encryption failed. Additionally, `SecureDatabaseManager` used semi-deterministic data (package name, version) for key generation. Several high-privacy screens (Journal, Locker, Future Messages) were also missing screenshot protection.
+**Prevention:** Enforce a strict "Fail Secure" policy: throw `SecurityException` instead of falling back to unencrypted storage. Use pure `SecureRandom` high-entropy bytes for keys. Apply `FLAG_SECURE` to all screens displaying user-generated content or personal stats.

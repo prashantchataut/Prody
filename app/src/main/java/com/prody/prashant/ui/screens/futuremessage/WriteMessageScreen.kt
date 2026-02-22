@@ -43,9 +43,12 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
+import android.app.Activity
+import android.view.WindowManager
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
@@ -98,6 +101,15 @@ fun WriteMessageScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isDark = isDarkTheme()
     val context = LocalContext.current
+
+    // Security: Prevent screenshots and screen recordings while writing a future message
+    DisposableEffect(Unit) {
+        val window = (context as? Activity)?.window
+        window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        onDispose {
+            window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        }
+    }
 
     // Media picker launcher
     val mediaPickerLauncher = rememberLauncherForActivityResult(
