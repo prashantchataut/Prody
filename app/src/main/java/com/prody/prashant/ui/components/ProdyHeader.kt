@@ -224,16 +224,14 @@ private fun MinimalHeader(
                     modifier = Modifier.weight(1f)
                 ) {
                     if (navigationIcon != null && onNavigationClick != null) {
-                        IconButton(
+                        ProdyIconButton(
+                            icon = navigationIcon,
                             onClick = onNavigationClick,
-                            modifier = Modifier.padding(end = ProdyTokens.Spacing.xs)
-                        ) {
-                            Icon(
-                                imageVector = navigationIcon,
-                                contentDescription = "Navigate back",
-                                tint = contentColor
-                            )
-                        }
+                            modifier = Modifier.padding(end = ProdyTokens.Spacing.xs),
+                            contentDescription = AccessibilityHelper.ContentDescriptions.BACK,
+                            tooltip = AccessibilityHelper.ContentDescriptions.BACK,
+                            tint = contentColor
+                        )
                     }
 
                     Column(modifier = Modifier.weight(1f)) {
