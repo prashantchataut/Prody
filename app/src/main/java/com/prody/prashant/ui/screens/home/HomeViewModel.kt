@@ -82,6 +82,8 @@ data class HomeUiState(
     val journalEntriesThisWeek: Int = 0,
     val wordsLearnedThisWeek: Int = 0,
     val daysActiveThisWeek: Int = 0,
+    val mindfulMinutes: Int = 0,
+    val moodHistory: List<Float> = emptyList(),
     val isLoading: Boolean = true,
     val hasLoadError: Boolean = false,
     val error: String? = null,
@@ -240,6 +242,24 @@ class HomeViewModel @Inject constructor(
                     Triple(false, "", "")
                 }
 
+                // Map moods to numerical values for trend visualization (1-5 scale)
+                val moodHistory = weeklyJournalEntries
+                    .sortedBy { it.createdAt }
+                    .takeLast(7)
+                    .map { entry ->
+                        when (entry.mood.lowercase()) {
+                            "amazing" -> 5.0f
+                            "happy", "good" -> 4.0f
+                            "neutral", "okay" -> 3.0f
+                            "sad", "bad" -> 2.0f
+                            "very sad", "awful" -> 1.0f
+                            else -> 3.0f
+                        }
+                    }
+
+                // Calculate mindful minutes: entries this week * 10 (avg reflection time)
+                val mindfulMinutes = weeklyJournalEntries.size * 10
+
                 // 3. Atomically update the UI state with all the loaded data.
                 _uiState.value.copy(
                     userName = profile?.displayName ?: "Growth Seeker",
@@ -261,6 +281,8 @@ class HomeViewModel @Inject constructor(
                     journalEntriesThisWeek = weeklyJournalEntries.size,
                     wordsLearnedThisWeek = weeklyLearnedWords,
                     daysActiveThisWeek = daysActiveThisWeek,
+                    mindfulMinutes = mindfulMinutes,
+                    moodHistory = moodHistory,
                     journaledToday = journaledToday,
                     todayEntryMood = todayMood,
                     todayEntryPreview = todayPreview,

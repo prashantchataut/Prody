@@ -10,11 +10,14 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -28,13 +31,16 @@ class MainViewModel @Inject constructor(
     init {
         // --- CRITICAL PATH ---
         // Immediately determine the start destination to unblock the UI.
+        // Optimization: Use Dispatchers.IO for the initial DataStore read to prevent splash screen stalls.
         viewModelScope.launch {
-            val onboardingCompleted = preferencesManager.onboardingCompleted
-                .catch {
-                    // In case of error, default to showing onboarding
-                    emit(false)
-                }
-                .first() // We only need the initial value
+            val onboardingCompleted = withContext(Dispatchers.IO) {
+                preferencesManager.onboardingCompleted
+                    .catch {
+                        // In case of error, default to showing onboarding
+                        emit(false)
+                    }
+                    .first() // We only need the initial value
+            }
 
             val startDestination = if (onboardingCompleted) {
                 Screen.Home.route
@@ -53,6 +59,7 @@ class MainViewModel @Inject constructor(
 
         // --- NON-CRITICAL PATH ---
         // Asynchronously load user preferences and apply them.
+        // Optimization: Explicitly offload DataStore processing to Dispatchers.IO.
         viewModelScope.launch {
             combine(
                 preferencesManager.themeMode.catch { emit("system") },
@@ -65,7 +72,8 @@ class MainViewModel @Inject constructor(
                 }
                 // Return a pair of the loaded preferences
                 themeMode to hapticEnabled
-            }.collectLatest { (themeMode, hapticEnabled) ->
+            }.flowOn(Dispatchers.IO)
+                .collectLatest { (themeMode, hapticEnabled) ->
                 // Use atomic update to apply non-critical preferences
                 _uiState.update {
                     it.copy(
