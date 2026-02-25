@@ -3,6 +3,7 @@ package com.prody.prashant.data.local.preferences
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
+import kotlin.Pair as KPair
 import androidx.datastore.preferences.core.emptyPreferences
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -45,7 +46,7 @@ internal class PreferenceFacadeSupport(
         dataStore.edit { preferences -> preferences[key] = value }
     }
 
-    suspend fun setInts(vararg updates: Pair<Preferences.Key<Int>, Int>) {
+    suspend fun setInts(vararg updates: KPair<Preferences.Key<Int>, Int>) {
         dataStore.edit { preferences -> updates.forEach { (key, value) -> preferences[key] = value } }
     }
 }
