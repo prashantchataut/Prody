@@ -3,7 +3,6 @@ package com.prody.prashant.ui.screens.journal
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.prody.prashant.data.ai.BuddhaAiRepository
-import com.prody.prashant.data.ai.BuddhaAiResult
 import com.prody.prashant.data.ai.GeminiResult
 import com.prody.prashant.data.ai.GeminiService
 import com.prody.prashant.data.ai.JournalInsightResult
@@ -92,7 +91,6 @@ data class NewJournalEntryUiState(
 @HiltViewModel
 class NewJournalEntryViewModel @Inject constructor(
     private val journalDao: JournalDao,
-    private val userDao: UserDao,
     private val geminiService: GeminiService,
     private val openRouterService: OpenRouterService,
     private val preferencesManager: PreferencesManager,
@@ -577,9 +575,7 @@ class NewJournalEntryViewModel @Inject constructor(
         
         when (choice) {
             TranscriptionChoice.NOW -> {
-                // For now, we use the existing startTranscription method 
-                // which uses real-time transcription. 
-                // TODO: Implement file-based transcription if available in VoiceTranscriptionService
+                    // Use real-time transcription for now.
                 startTranscription()
             }
             TranscriptionChoice.LATER -> {

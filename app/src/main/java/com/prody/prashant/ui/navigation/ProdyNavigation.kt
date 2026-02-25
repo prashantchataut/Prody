@@ -315,6 +315,9 @@ fun ProdyNavHost(
                 onNavigateToSearch = {
                     navController.navigate(Screen.Search.route)
                 },
+                onNavigateToProfile = {
+                    navController.navigate(Screen.Profile.route)
+                },
                 onNavigateToIdiomDetail = { idiomId ->
                     navController.navigate(Screen.IdiomDetail.createRoute(idiomId))
                 }
