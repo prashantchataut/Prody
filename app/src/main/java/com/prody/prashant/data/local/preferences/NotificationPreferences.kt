@@ -2,6 +2,7 @@ package com.prody.prashant.data.local.preferences
 
 import androidx.datastore.preferences.core.Preferences
 import kotlinx.coroutines.flow.Flow
+import kotlin.Pair as KPair
 
 internal class NotificationPreferences(
     private val support: PreferenceFacadeSupport,
@@ -24,15 +25,15 @@ internal class NotificationPreferences(
     suspend fun setNotificationsEnabled(enabled: Boolean) = support.setBoolean(notificationsEnabledKey, enabled)
 
     suspend fun setDailyReminderTime(hour: Int, minute: Int) = support.setInts(
-        dailyReminderHourKey to hour,
-        dailyReminderMinuteKey to minute
+        KPair(dailyReminderHourKey, hour),
+        KPair(dailyReminderMinuteKey, minute)
     )
 
     suspend fun setWisdomNotificationEnabled(enabled: Boolean) = support.setBoolean(wisdomNotificationEnabledKey, enabled)
     suspend fun setJournalReminderEnabled(enabled: Boolean) = support.setBoolean(journalReminderEnabledKey, enabled)
 
     suspend fun setEveningReminderTime(hour: Int, minute: Int) = support.setInts(
-        eveningReminderHourKey to hour,
-        eveningReminderMinuteKey to minute
+        KPair(eveningReminderHourKey, hour),
+        KPair(eveningReminderMinuteKey, minute)
     )
 }
