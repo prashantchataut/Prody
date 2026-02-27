@@ -268,8 +268,11 @@ fun MoodBreathingHalo(
         Box(
             modifier = Modifier
                 .size(size * haloScale)
-                .scale(haloScale)
-                .alpha(haloAlpha)
+                .graphicsLayer {
+                    scaleX = haloScale
+                    scaleY = haloScale
+                    this.alpha = haloAlpha
+                }
                 .blur(12.dp)
                 .background(haloColor, CircleShape)
         )
@@ -885,8 +888,9 @@ fun TimeCapsuleSealAnimation(
         Canvas(
             modifier = Modifier
                 .size(100.dp)
-                .scale(foldScale)
                 .graphicsLayer {
+                    scaleX = foldScale
+                    scaleY = foldScale
                     translationY = travelOffsetY
                     translationX = travelOffsetX
                 }
@@ -1053,8 +1057,11 @@ fun NavigationBreathingGlow(
             Box(
                 modifier = Modifier
                     .size(48.dp)
-                    .scale(glowScale)
-                    .alpha(glowAlpha * activeAlpha)
+                    .graphicsLayer {
+                        scaleX = glowScale
+                        scaleY = glowScale
+                        this.alpha = glowAlpha * activeAlpha
+                    }
                     .blur(12.dp)
                     .background(color, CircleShape)
             )

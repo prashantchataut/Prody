@@ -11,10 +11,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -29,12 +31,15 @@ class MainViewModel @Inject constructor(
         // --- CRITICAL PATH ---
         // Immediately determine the start destination to unblock the UI.
         viewModelScope.launch {
-            val onboardingCompleted = preferencesManager.onboardingCompleted
-                .catch {
-                    // In case of error, default to showing onboarding
-                    emit(false)
-                }
-                .first() // We only need the initial value
+            // Offload the initial I/O read to Dispatchers.IO to prevent splash screen stalls
+            val onboardingCompleted = withContext(Dispatchers.IO) {
+                preferencesManager.onboardingCompleted
+                    .catch {
+                        // In case of error, default to showing onboarding
+                        emit(false)
+                    }
+                    .first() // We only need the initial value
+            }
 
             val startDestination = if (onboardingCompleted) {
                 Screen.Home.route

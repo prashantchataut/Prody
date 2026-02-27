@@ -21,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
@@ -66,7 +67,7 @@ fun ProdyEmptyState(
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "empty_state")
 
-    val iconAlpha by infiniteTransition.animateFloat(
+    val animatedAlpha by infiniteTransition.animateFloat(
         initialValue = 0.6f,
         targetValue = 1f,
         animationSpec = infiniteRepeatable(
@@ -88,7 +89,9 @@ fun ProdyEmptyState(
             contentDescription = iconContentDescription,
             modifier = Modifier
                 .size(ProdyTokens.IconSize.hero)
-                .alpha(iconAlpha),
+                .graphicsLayer {
+                    this.alpha = animatedAlpha
+                },
             tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
         )
 
@@ -299,7 +302,7 @@ fun ProdyErrorEmptyState(
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "error_state")
 
-    val iconAlpha by infiniteTransition.animateFloat(
+    val animatedAlpha by infiniteTransition.animateFloat(
         initialValue = 0.5f,
         targetValue = 0.8f,
         animationSpec = infiniteRepeatable(
@@ -321,7 +324,9 @@ fun ProdyErrorEmptyState(
             contentDescription = AccessibilityHelper.ContentDescriptions.ERROR,
             modifier = Modifier
                 .size(ProdyTokens.IconSize.hero)
-                .alpha(iconAlpha),
+                .graphicsLayer {
+                    this.alpha = animatedAlpha
+                },
             tint = MaterialTheme.colorScheme.error.copy(alpha = 0.6f)
         )
 
@@ -380,7 +385,7 @@ fun ProdyWelcomeEmptyState(
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "welcome_state")
 
-    val iconScale by infiniteTransition.animateFloat(
+    val animatedScale by infiniteTransition.animateFloat(
         initialValue = 0.95f,
         targetValue = 1.05f,
         animationSpec = infiniteRepeatable(
@@ -402,7 +407,11 @@ fun ProdyWelcomeEmptyState(
             contentDescription = "Welcome",
             modifier = Modifier
                 .size(96.dp)
-                .alpha(0.9f),
+                .graphicsLayer {
+                    scaleX = animatedScale
+                    scaleY = animatedScale
+                    this.alpha = 0.9f
+                },
             tint = MaterialTheme.colorScheme.primary
         )
 
