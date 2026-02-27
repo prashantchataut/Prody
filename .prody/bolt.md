@@ -11,3 +11,8 @@ This journal contains CRITICAL performance learnings specific to the Prody codeb
 **Context:** `HomeScreen.kt` vs `HomeViewModel.kt`.
 **Learning:** Prody had a significant "feature gap" where sophisticated logic was implemented in ViewModels but the UI was stuck with hardcoded placeholders. This gave the impression of broken functionality ("Only 1% works").
 **Action:** Always verify that UI components are correctly bound to the corresponding state fields in `UiState`. Explicitly mapping previously ignored fields like `dualStreakStatus`, `nextAction`, and `dailySeed` drastically improves the functional surface area of the app.
+
+## 2024-05-21 - Batch Database Operations in Onboarding
+**Context:** `OnboardingViewModel.kt` during first-time setup.
+**Learning:** Performing multiple independent database insertions (profile, stats, achievements, content) during onboarding caused significant disk I/O contention and UI lag.
+**Action:** Wrap all initial database setup operations within a single Room `withTransaction` block. This ensures atomicity and drastically improves performance by reducing the number of disk synchronization points.
