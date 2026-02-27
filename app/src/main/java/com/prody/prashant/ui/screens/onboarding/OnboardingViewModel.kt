@@ -2,8 +2,10 @@ package com.prody.prashant.ui.screens.onboarding
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.room.withTransaction
 import com.prody.prashant.data.InitialContentData
 import com.prody.prashant.data.local.dao.*
+import com.prody.prashant.data.local.database.ProdyDatabase
 import com.prody.prashant.data.local.entity.AchievementEntity
 import com.prody.prashant.data.local.entity.UserProfileEntity
 import com.prody.prashant.data.local.entity.UserStatsEntity
@@ -18,6 +20,7 @@ import javax.inject.Inject
 @HiltViewModel
 class OnboardingViewModel @Inject constructor(
     private val preferencesManager: PreferencesManager,
+    private val prodyDatabase: ProdyDatabase,
     private val vocabularyDao: VocabularyDao,
     private val quoteDao: QuoteDao,
     private val proverbDao: ProverbDao,
@@ -33,7 +36,7 @@ class OnboardingViewModel @Inject constructor(
     fun completeOnboarding() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                // Mark onboarding as completed
+                // Mark onboarding as completed first (outside transaction to avoid blocking)
                 preferencesManager.setOnboardingCompleted(true)
 
                 // Set first launch time
@@ -43,41 +46,44 @@ class OnboardingViewModel @Inject constructor(
                 val userId = UUID.randomUUID().toString()
                 preferencesManager.setUserId(userId)
 
-                // Initialize user profile
-                val userProfile = UserProfileEntity(
-                    id = 1,
-                    displayName = "Growth Seeker",
-                    joinedAt = System.currentTimeMillis()
-                )
-                userDao.insertUserProfile(userProfile)
-
-                // Initialize user stats
-                val userStats = UserStatsEntity(
-                    id = 1,
-                    lastResetDate = System.currentTimeMillis()
-                )
-                userDao.insertUserStats(userStats)
-
-                // Initialize achievements
-                val achievements = Achievements.allAchievements.map { achievement ->
-                    AchievementEntity(
-                        id = achievement.id,
-                        name = achievement.name,
-                        description = achievement.description,
-                        iconId = achievement.id,
-                        category = achievement.category.name.lowercase(),
-                        requirement = achievement.getRequirementTarget(),
-                        currentProgress = 0,
-                        isUnlocked = false,
-                        rewardType = "points",
-                        rewardValue = achievement.xpReward.toString(),
-                        rarity = achievement.rarity.name.lowercase()
+                // Perform all database operations in a single transaction for efficiency
+                prodyDatabase.withTransaction {
+                    // Initialize user profile
+                    val userProfile = UserProfileEntity(
+                        id = 1,
+                        displayName = "Growth Seeker",
+                        joinedAt = System.currentTimeMillis()
                     )
-                }
-                userDao.insertAchievements(achievements)
+                    userDao.insertUserProfile(userProfile)
 
-                // Populate initial content
-                populateInitialContent()
+                    // Initialize user stats
+                    val userStats = UserStatsEntity(
+                        id = 1,
+                        lastResetDate = System.currentTimeMillis()
+                    )
+                    userDao.insertUserStats(userStats)
+
+                    // Initialize achievements
+                    val achievements = Achievements.allAchievements.map { achievement ->
+                        AchievementEntity(
+                            id = achievement.id,
+                            name = achievement.name,
+                            description = achievement.description,
+                            iconId = achievement.id,
+                            category = achievement.category.name.lowercase(),
+                            requirement = achievement.getRequirementTarget(),
+                            currentProgress = 0,
+                            isUnlocked = false,
+                            rewardType = "points",
+                            rewardValue = achievement.xpReward.toString(),
+                            rarity = achievement.rarity.name.lowercase()
+                        )
+                    }
+                    userDao.insertAchievements(achievements)
+
+                    // Populate initial content
+                    populateInitialContent()
+                }
             } catch (e: Exception) {
                 android.util.Log.e(TAG, "Error during onboarding completion", e)
                 // Still mark onboarding as completed to prevent being stuck in a loop
