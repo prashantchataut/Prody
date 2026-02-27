@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import java.io.IOException
+import kotlin.Pair as KPair
 
 internal class PreferenceFacadeSupport(
     private val dataStore: DataStore<Preferences>
@@ -45,7 +46,7 @@ internal class PreferenceFacadeSupport(
         dataStore.edit { preferences -> preferences[key] = value }
     }
 
-    suspend fun setInts(vararg updates: Pair<Preferences.Key<Int>, Int>) {
+    suspend fun setInts(vararg updates: KPair<Preferences.Key<Int>, Int>) {
         dataStore.edit { preferences -> updates.forEach { (key, value) -> preferences[key] = value } }
     }
 }
