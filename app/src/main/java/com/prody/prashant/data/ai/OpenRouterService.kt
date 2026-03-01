@@ -1,6 +1,7 @@
 package com.prody.prashant.data.ai
 
 import com.prody.prashant.BuildConfig
+import com.prody.prashant.data.security.SecureApiKeyManager
 import com.prody.prashant.domain.model.Mood
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import kotlinx.serialization.SerialName
@@ -125,7 +126,9 @@ Be specific to what they wrote - reference details from their entry."""
  * Supports multiple AI models through OpenRouter's unified API.
  */
 @Singleton
-class OpenRouterService @Inject constructor() {
+class OpenRouterService @Inject constructor(
+    private val secureApiKeyManager: SecureApiKeyManager
+) {
 
     companion object {
         // Cost-effective models that work well for Buddha responses
@@ -160,8 +163,12 @@ class OpenRouterService @Inject constructor() {
                     .build()
             )
             .addInterceptor { chain ->
+                val apiKey = kotlinx.coroutines.runBlocking {
+                    secureApiKeyManager.getOpenRouterApiKey().takeIf { it.isNotBlank() }
+                        ?: BuildConfig.OPENROUTER_API_KEY
+                }
                 val request = chain.request().newBuilder()
-                    .addHeader("Authorization", "Bearer ${BuildConfig.OPENROUTER_API_KEY}")
+                    .addHeader("Authorization", "Bearer $apiKey")
                     .addHeader("HTTP-Referer", "https://prody.app")
                     .addHeader("X-Title", "Prody - Self Improvement Companion")
                     .build()
@@ -192,7 +199,10 @@ class OpenRouterService @Inject constructor() {
      * Checks if the service is properly configured with an API key.
      */
     fun isConfigured(): Boolean {
-        return BuildConfig.OPENROUTER_API_KEY.isNotBlank()
+        val apiKey = kotlinx.coroutines.runBlocking {
+            secureApiKeyManager.getOpenRouterApiKey()
+        }
+        return apiKey.isNotBlank() || BuildConfig.OPENROUTER_API_KEY.isNotBlank()
     }
 
     /**

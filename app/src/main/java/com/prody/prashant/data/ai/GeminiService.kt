@@ -9,11 +9,14 @@ import com.google.ai.client.generativeai.type.SafetySetting
 import com.google.ai.client.generativeai.type.content
 import com.google.ai.client.generativeai.type.generationConfig
 import com.prody.prashant.BuildConfig
+import com.prody.prashant.data.security.SecureApiKeyManager
 import com.prody.prashant.domain.model.Mood
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -433,7 +436,9 @@ data class PastEntryContext(
  * The service auto-initializes from BuildConfig API key on first use if not manually initialized.
  */
 @Singleton
-class GeminiService @Inject constructor() {
+class GeminiService @Inject constructor(
+    private val secureApiKeyManager: SecureApiKeyManager
+) {
 
     private var generativeModel: GenerativeModel? = null
     private var currentApiKey: String? = null
@@ -466,20 +471,24 @@ class GeminiService @Inject constructor() {
     }
 
     init {
-        // Auto-initialize from BuildConfig if API key is available
-        autoInitializeFromBuildConfig()
+        // Auto-initialize from secure storage if API key is available
+        autoInitializeFromSecureStorage()
     }
 
     /**
-     * Automatically initializes the service from BuildConfig API key.
+     * Automatically initializes the service from secure storage.
      * This is called during construction and can be called again to reinitialize.
      */
-    private fun autoInitializeFromBuildConfig() {
+    private fun autoInitializeFromSecureStorage() {
         if (!isAutoInitialized) {
-            val apiKey = getApiKeyFromBuildConfig()
-            if (apiKey != null) {
-                initialize(apiKey, GeminiModel.GEMINI_1_5_FLASH)
-                isAutoInitialized = true
+            MainScope().launch {
+                val apiKey = secureApiKeyManager.getGeminiApiKey().takeIf { it.isNotBlank() }
+                    ?: getApiKeyFromBuildConfig()
+
+                if (apiKey != null) {
+                    initialize(apiKey, GeminiModel.GEMINI_1_5_FLASH)
+                    isAutoInitialized = true
+                }
             }
         }
     }
@@ -533,12 +542,12 @@ class GeminiService @Inject constructor() {
 
     /**
      * Checks if the service is properly configured with an API key.
-     * Attempts auto-initialization from BuildConfig if not already configured.
+     * Attempts auto-initialization from secure storage if not already configured.
      */
     fun isConfigured(): Boolean {
         // Try auto-initialization if not yet configured
         if (generativeModel == null && !isAutoInitialized) {
-            autoInitializeFromBuildConfig()
+            autoInitializeFromSecureStorage()
         }
 
         val configured = generativeModel != null && !currentApiKey.isNullOrBlank()
@@ -554,7 +563,7 @@ class GeminiService @Inject constructor() {
     fun getConfigStatus(): AiConfigStatus {
         if (currentApiKey.isNullOrBlank()) return AiConfigStatus.MISSING_API_KEY
         if (generativeModel == null) {
-            autoInitializeFromBuildConfig()
+            autoInitializeFromSecureStorage()
             if (generativeModel == null) return AiConfigStatus.ERROR
         }
         return AiConfigStatus.READY

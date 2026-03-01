@@ -281,14 +281,18 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideGeminiService(): GeminiService {
-        return GeminiService()
+    fun provideGeminiService(
+        secureApiKeyManager: com.prody.prashant.data.security.SecureApiKeyManager
+    ): GeminiService {
+        return GeminiService(secureApiKeyManager)
     }
 
     @Provides
     @Singleton
-    fun provideOpenRouterService(): OpenRouterService {
-        return OpenRouterService()
+    fun provideOpenRouterService(
+        secureApiKeyManager: com.prody.prashant.data.security.SecureApiKeyManager
+    ): OpenRouterService {
+        return OpenRouterService(secureApiKeyManager)
     }
 
     @Provides
@@ -370,6 +374,14 @@ object AppModule {
         @ApplicationContext context: Context
     ): SecurityPreferences {
         return SecurityPreferences(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideSecureApiKeyManager(
+        @ApplicationContext context: Context
+    ): com.prody.prashant.data.security.SecureApiKeyManager {
+        return com.prody.prashant.data.security.SecureApiKeyManager(context)
     }
 
     // ============================================================================

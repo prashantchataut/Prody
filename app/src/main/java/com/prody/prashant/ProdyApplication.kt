@@ -32,6 +32,9 @@ class ProdyApplication : Application(), Configuration.Provider {
     @Inject
     lateinit var witnessModeManager: WitnessModeManager
 
+    @Inject
+    lateinit var secureApiKeyManager: com.prody.prashant.data.security.SecureApiKeyManager
+
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     override val workManagerConfiguration: Configuration
@@ -155,6 +158,23 @@ class ProdyApplication : Application(), Configuration.Provider {
     }
 
     private fun initializeApp() {
+        // Securely initialize API keys from BuildConfig on first run
+        applicationScope.launch {
+            try {
+                if (::secureApiKeyManager.isInitialized) {
+                    secureApiKeyManager.initializeApiKeys(
+                        geminiKey = BuildConfig.AI_API_KEY,
+                        openrouterKey = BuildConfig.OPENROUTER_API_KEY,
+                        therapistKey = BuildConfig.THERAPIST_API_KEY,
+                        ttsKey = BuildConfig.TTS_API_KEY
+                    )
+                    Log.d(TAG, "API Keys migrated to secure storage")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to initialize secure API keys", e)
+            }
+        }
+
         // Launch on a background thread to avoid blocking startup
         applicationScope.launch {
             try {
