@@ -45,7 +45,7 @@ internal class PreferenceFacadeSupport(
         dataStore.edit { preferences -> preferences[key] = value }
     }
 
-    suspend fun setInts(vararg updates: Pair<Preferences.Key<Int>, Int>) {
+    suspend fun setInts(vararg updates: kotlin.Pair<Preferences.Key<Int>, Int>) {
         dataStore.edit { preferences -> updates.forEach { (key, value) -> preferences[key] = value } }
     }
 }
