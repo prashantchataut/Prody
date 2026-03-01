@@ -8,11 +8,14 @@ import com.google.ai.client.generativeai.type.SafetySetting
 import com.google.ai.client.generativeai.type.generationConfig
 import com.prody.prashant.BuildConfig
 import com.prody.prashant.data.security.EncryptionManager
+import com.prody.prashant.data.security.SecureApiKeyManager
 import com.prody.prashant.domain.haven.*
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -30,7 +33,8 @@ import javax.inject.Singleton
  */
 @Singleton
 class HavenAiService @Inject constructor(
-    private val encryptionManager: EncryptionManager
+    private val encryptionManager: EncryptionManager,
+    private val secureApiKeyManager: SecureApiKeyManager
 ) {
     companion object {
         private const val TAG = "HavenAiService"
@@ -200,60 +204,69 @@ I am here to listen, but I cannot provide the emergency care you might need. Ple
      */
     private fun initializeModel() {
         initializationAttempts++
-        try {
-            // Log key presence for debugging (never log actual keys!)
-            val therapistKeyPresent = BuildConfig.THERAPIST_API_KEY.isNotBlank()
-            val aiKeyPresent = BuildConfig.AI_API_KEY.isNotBlank()
 
-            Log.d(TAG, "API Key Check (attempt $initializationAttempts) - THERAPIST_API_KEY present: $therapistKeyPresent, AI_API_KEY present: $aiKeyPresent")
+        MainScope().launch(Dispatchers.IO) {
+            try {
+                // Fetch keys from secure storage
+                val secureTherapistKey = secureApiKeyManager.getTherapistApiKey()
+                val secureAiKey = secureApiKeyManager.getGeminiApiKey()
 
-            // Try THERAPIST_API_KEY first, then fall back to AI_API_KEY (Gemini)
-            val apiKey = BuildConfig.THERAPIST_API_KEY.takeIf { it.isNotBlank() }
-                ?: BuildConfig.AI_API_KEY.takeIf { it.isNotBlank() }
+                // Log key presence for debugging (never log actual keys!)
+                val therapistKeyPresent = secureTherapistKey.isNotBlank() || BuildConfig.THERAPIST_API_KEY.isNotBlank()
+                val aiKeyPresent = secureAiKey.isNotBlank() || BuildConfig.AI_API_KEY.isNotBlank()
 
-            if (apiKey.isNullOrBlank()) {
-                Log.w(TAG, "No API key configured. Entering Offline Mode.")
-                initializationError = "No API key found in BuildConfig. Check local.properties and rebuild."
+                Log.d(TAG, "API Key Check (attempt $initializationAttempts) - THERAPIST_API_KEY present: $therapistKeyPresent, AI_API_KEY present: $aiKeyPresent")
+
+                // Try secure keys first, then fall back to BuildConfig
+                val apiKey = secureTherapistKey.takeIf { it.isNotBlank() }
+                    ?: BuildConfig.THERAPIST_API_KEY.takeIf { it.isNotBlank() }
+                    ?: secureAiKey.takeIf { it.isNotBlank() }
+                    ?: BuildConfig.AI_API_KEY.takeIf { it.isNotBlank() }
+
+                if (apiKey.isNullOrBlank()) {
+                    Log.w(TAG, "No API key configured. Entering Offline Mode.")
+                    initializationError = "No API key found in BuildConfig or Secure storage."
+                    isOfflineMode = true
+                    isInitialized = true // We are initialized in offline mode
+                    return@launch
+                }
+
+                val keySource = if (secureTherapistKey.isNotBlank() || BuildConfig.THERAPIST_API_KEY.isNotBlank()) "THERAPIST_API_KEY" else "AI_API_KEY"
+                Log.d(TAG, "Initializing Haven with $keySource (length: ${apiKey.length})")
+
+                // Safety settings - less restrictive for mental health content
+                val safetySettings = listOf(
+                    SafetySetting(HarmCategory.HARASSMENT, BlockThreshold.ONLY_HIGH),
+                    SafetySetting(HarmCategory.HATE_SPEECH, BlockThreshold.ONLY_HIGH),
+                    SafetySetting(HarmCategory.SEXUALLY_EXPLICIT, BlockThreshold.MEDIUM_AND_ABOVE),
+                    SafetySetting(HarmCategory.DANGEROUS_CONTENT, BlockThreshold.ONLY_HIGH)
+                )
+
+                val config = generationConfig {
+                    temperature = 0.7f // Lower temperature for more consistent/professional responses
+                    topK = 40
+                    topP = 0.95f
+                    maxOutputTokens = 256 // Shorter responses
+                }
+
+                generativeModel = GenerativeModel(
+                    modelName = MODEL_NAME,
+                    apiKey = apiKey,
+                    generationConfig = config,
+                    safetySettings = safetySettings
+                )
+
+                isInitialized = true
+                isOfflineMode = false
+                initializationError = null
+                Log.d(TAG, "Haven AI Service initialized successfully with $keySource")
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to initialize Haven AI Service", e)
+                initializationError = "Initialization error: ${e.message}"
+                // Fallback to offline mode on error
                 isOfflineMode = true
-                isInitialized = true // We are initialized in offline mode
-                return
+                isInitialized = true
             }
-
-            val keySource = if (BuildConfig.THERAPIST_API_KEY.isNotBlank()) "THERAPIST_API_KEY" else "AI_API_KEY"
-            Log.d(TAG, "Initializing Haven with $keySource (length: ${apiKey.length})")
-
-            // Safety settings - less restrictive for mental health content
-            val safetySettings = listOf(
-                SafetySetting(HarmCategory.HARASSMENT, BlockThreshold.ONLY_HIGH),
-                SafetySetting(HarmCategory.HATE_SPEECH, BlockThreshold.ONLY_HIGH),
-                SafetySetting(HarmCategory.SEXUALLY_EXPLICIT, BlockThreshold.MEDIUM_AND_ABOVE),
-                SafetySetting(HarmCategory.DANGEROUS_CONTENT, BlockThreshold.ONLY_HIGH)
-            )
-
-            val config = generationConfig {
-                temperature = 0.7f // Lower temperature for more consistent/professional responses
-                topK = 40
-                topP = 0.95f
-                maxOutputTokens = 256 // Shorter responses
-            }
-
-            generativeModel = GenerativeModel(
-                modelName = MODEL_NAME,
-                apiKey = apiKey,
-                generationConfig = config,
-                safetySettings = safetySettings
-            )
-
-            isInitialized = true
-            isOfflineMode = false
-            initializationError = null
-            Log.d(TAG, "Haven AI Service initialized successfully with $keySource")
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to initialize Haven AI Service", e)
-            initializationError = "Initialization error: ${e.message}"
-            // Fallback to offline mode on error
-            isOfflineMode = true
-            isInitialized = true
         }
     }
     
