@@ -129,7 +129,7 @@ fun MagicalHeader(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.alpha(1f - collapseProgress)
+                    modifier = Modifier.graphicsLayer { alpha = 1f - collapseProgress }
                 )
             }
         }
@@ -141,8 +141,11 @@ fun MagicalHeader(
                 modifier = Modifier
                     .align(Alignment.CenterEnd)
                     .padding(end = 16.dp)
-                    .alpha(scrollToTopAlpha)
-                    .scale(scrollToTopScale)
+                    .graphicsLayer {
+                        alpha = scrollToTopAlpha
+                        scaleX = scrollToTopScale
+                        scaleY = scrollToTopScale
+                    }
             )
         }
     }
@@ -178,6 +181,8 @@ private fun ScrollToTopButton(
         label = "bounce_offset"
     )
 
+    val density = LocalDensity.current
+
     Box(
         modifier = modifier
             .size(40.dp)
@@ -192,7 +197,7 @@ private fun ScrollToTopButton(
         Box(
             modifier = Modifier
                 .size(36.dp)
-                .alpha(glowAlpha)
+                .graphicsLayer { alpha = glowAlpha }
                 .blur(8.dp)
                 .background(ProdyPrimary, CircleShape)
         )
@@ -201,7 +206,7 @@ private fun ScrollToTopButton(
         Box(
             modifier = Modifier
                 .size(32.dp)
-                .offset(y = bounceOffset.dp)
+                .graphicsLayer { translationY = bounceOffset * density.density }
                 .clip(CircleShape)
                 .background(ProdyPrimary),
             contentAlignment = Alignment.Center
