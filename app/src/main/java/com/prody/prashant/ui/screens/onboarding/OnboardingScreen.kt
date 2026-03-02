@@ -42,6 +42,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.prody.prashant.ui.components.ProdyProgressIndicator
 import com.prody.prashant.ui.theme.*
 import kotlinx.coroutines.launch
 
@@ -730,31 +731,5 @@ fun ProdyLogo(modifier: Modifier = Modifier) {
             tint = ProdyForestGreen,
             modifier = Modifier.fillMaxSize(0.6f)
         )
-    }
-}
-
-@Composable
-fun ProdyProgressIndicator(
-    currentPage: Int,
-    totalPages: Int,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-        repeat(totalPages) { index ->
-            val isActive = index == currentPage
-            val width by animateDpAsState(if (isActive) 24.dp else 8.dp, label = "width")
-            val color = if (isActive) ProdyForestGreen else ProdyOutlineLight
-            
-            Box(
-                modifier = Modifier
-                    .height(4.dp)
-                    .width(width)
-                    .clip(CircleShape)
-                    .background(color)
-            )
-        }
     }
 }
