@@ -59,6 +59,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.R
+import com.prody.prashant.ui.components.AccessibilityHelper
 import com.prody.prashant.ui.components.ProdyIconButton
 import com.prody.prashant.ui.theme.*
 import com.prody.prashant.ui.theme.ProdyDesignTokens
@@ -282,18 +283,13 @@ private fun EditProfileHeader(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        IconButton(
+        ProdyIconButton(
+            icon = ProdyIcons.ArrowBack,
             onClick = onBackClick,
-            modifier = Modifier.size(48.dp)
-        ) {
-            Icon(
-                imageVector = ProdyIcons.ArrowBack,
-                contentDescription = stringResource(R.string.back),
-                tint = if (isDarkMode) EditProfileColors.TextPrimaryDark
-                       else EditProfileColors.TextPrimaryLight,
-                modifier = Modifier.size(24.dp)
-            )
-        }
+            tooltip = AccessibilityHelper.ContentDescriptions.BACK,
+            tint = if (isDarkMode) EditProfileColors.TextPrimaryDark
+                   else EditProfileColors.TextPrimaryLight
+        )
 
         Text(
             text = "Edit Profile",
