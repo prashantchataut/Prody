@@ -11,3 +11,13 @@ This journal contains CRITICAL performance learnings specific to the Prody codeb
 **Context:** `HomeScreen.kt` vs `HomeViewModel.kt`.
 **Learning:** Prody had a significant "feature gap" where sophisticated logic was implemented in ViewModels but the UI was stuck with hardcoded placeholders. This gave the impression of broken functionality ("Only 1% works").
 **Action:** Always verify that UI components are correctly bound to the corresponding state fields in `UiState`. Explicitly mapping previously ignored fields like `dualStreakStatus`, `nextAction`, and `dailySeed` drastically improves the functional surface area of the app.
+
+## 2024-05-24 - Bulk Initialization Performance
+**Context:** Initial data seeding in `OnboardingViewModel.kt`.
+**Learning:** Sequential suspend calls to Room DAOs (inserting vocabulary, quotes, proverbs, etc.) during onboarding caused multiple disk synchronization events. This resulted in a noticeable "stutter" during the transition from the final onboarding screen to the Home dashboard.
+**Action:** Wrap all initial setup operations (User Profile, Stats, Achievements, and Initial Content) within a single `database.withTransaction` block. This consolidates disk I/O into a single atomic operation, drastically improving "Time to Home" for new users. Ensure DataStore updates remain outside the transaction to prevent unnecessary blocking.
+
+## 2024-05-24 - Recomposition in Common UI Components
+**Context:** Breathing animations in `EmptyState.kt`, `MagicalEffects.kt`, and `EnhancedAnimations.kt`.
+**Learning:** Using `Modifier.alpha()` or `Modifier.scale()` with high-frequency animation states (e.g., infinite transitions) causes the entire Composable function to recompose on every frame. In complex screens, this leads to significant frame drops.
+**Action:** Always migrate high-frequency animations to `Modifier.graphicsLayer { ... }`. This defers state reads to the drawing phase, keeping the main thread free for critical UI tasks.
