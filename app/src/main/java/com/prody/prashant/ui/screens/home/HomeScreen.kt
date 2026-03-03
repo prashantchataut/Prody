@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.prody.prashant.ui.components.ProdyIconButton
 import com.prody.prashant.ui.theme.*
 
 // =============================================================================
@@ -157,13 +158,13 @@ fun DashboardHeader(
         }
         
         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            IconButton(onClick = onNotificationClick) {
-                Icon(
-                    imageVector = Icons.Outlined.Notifications,
-                    contentDescription = "Notifications",
-                    tint = ProdyTextPrimaryLight
-                )
-            }
+            ProdyIconButton(
+                icon = ProdyIcons.Outlined.Notifications,
+                onClick = onNotificationClick,
+                contentDescription = "Notifications",
+                tooltip = "Notifications",
+                tint = ProdyTextPrimaryLight
+            )
             // Avatar / Profile
             Box(
                 modifier = Modifier
