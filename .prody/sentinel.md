@@ -7,3 +7,8 @@
 **Vulnerability:** Leaking API keys in Logcat via OkHttp interceptors and debug logs, and missing UI protection for therapeutic chats.
 **Learning:** Prody's `OpenRouterService` used `HttpLoggingInterceptor.Level.BODY` in debug mode without redacting the `Authorization` header, exposing API keys to anybody with ADB access. Additionally, Haven't therapeutic screens lacked `FLAG_SECURE`, risking user privacy.
 **Prevention:** Always use `redactHeader("Authorization")` in network interceptors. Remove logs that print partial secrets. Enforce `FLAG_SECURE` on all therapeutic and reflection screens by default.
+
+## 2026-02-05 - Enforce Fail-Secure Database Policy and Harden Privacy
+**Vulnerability:** Insecure fallback to unencrypted storage and use of deterministic (predictable) encryption keys in the database layer. Exposure of growth evidence to screenshots in the Locker screen.
+**Learning:** Prody's "Fail-Open" pattern in `DatabaseFactory` compromised security for availability. Deterministic passphrases based on `ANDROID_ID` are reconstructible and offer no real protection. Sensitive growth insights in 'The Locker' are as private as journal entries and require UI-level protection.
+**Prevention:** Strictly enforce a "Fail-Secure" policy: throw `SecurityException` if secure storage cannot be initialized. Use 32 bytes of pure `SecureRandom` entropy for keys. Apply `FLAG_SECURE` to all screens displaying personal reflections or derived insights.
