@@ -131,7 +131,8 @@ data class HomeUiState(
     val userArchetype: UserArchetype = UserArchetype.EXPLORER,
     val trustLevel: TrustLevel = TrustLevel.NEW,
     val isUserStruggling: Boolean = false,
-    val isUserThriving: Boolean = false
+    val isUserThriving: Boolean = false,
+    val moodHistory: List<Float> = emptyList()
 )
 
 private data class DailyContent(
@@ -229,6 +230,21 @@ class HomeViewModel @Inject constructor(
                 val dualStreak = args.getOrNull(5) as? DualStreakStatus ?: DualStreakStatus.empty()
                 val aiProofMode = args.getOrNull(6) as? Boolean ?: false
 
+                // Map emotional states to numerical values for trend visualization
+                val moodHistory = weeklyJournalEntries
+                    .sortedBy { it.createdAt }
+                    .takeLast(7)
+                    .map { entry ->
+                        when (entry.mood.lowercase()) {
+                            "happy", "good", "excited", "motivated" -> 4.0f
+                            "amazing", "grateful" -> 5.0f
+                            "neutral", "okay", "calm", "nostalgic" -> 3.0f
+                            "sad", "bad", "confused", "anxious" -> 2.0f
+                            "very sad", "awful" -> 1.0f
+                            else -> 3.0f
+                        }
+                    }
+
                 // Calculate weekly active days.
                 val daysActiveThisWeek = streakHistory.count { it.date >= weekStart }
 
@@ -266,6 +282,7 @@ class HomeViewModel @Inject constructor(
                     todayEntryPreview = todayPreview,
                     dualStreakStatus = dualStreak,
                     buddhaWisdomProofInfo = _uiState.value.buddhaWisdomProofInfo.copy(isEnabled = aiProofMode),
+                    moodHistory = moodHistory,
                     isLoading = false // <-- Critical: Signal that loading is complete.
                 )
             }.catch { e ->
