@@ -1,8 +1,6 @@
 package com.prody.prashant.ui.components
 
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -12,12 +10,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
@@ -148,6 +141,85 @@ fun ProdyCircularProgress(
         }
 
         content()
+    }
+}
+
+// =============================================================================
+// PRODY PROGRESS INDICATOR - CANVAS OPTIMIZED
+// =============================================================================
+
+/**
+ * High-performance, Canvas-based progress indicator for pagers.
+ *
+ * Performance features:
+ * - Uses animateFloatAsState for smooth index transitions
+ * - Draws directly on Canvas to avoid recomposition of multiple dots
+ * - Optimized for 60fps+ animations during page swipes
+ *
+ * @param currentPage Current active page index
+ * @param totalPages Total number of pages
+ * @param modifier Modifier for the indicator
+ * @param activeColor Color for the active dot
+ * @param inactiveColor Color for inactive dots
+ * @param dotHeight Height of the dots
+ * @param spacing Spacing between dots
+ */
+@Composable
+fun ProdyProgressIndicator(
+    currentPage: Int,
+    totalPages: Int,
+    modifier: Modifier = Modifier,
+    activeColor: Color = com.prody.prashant.ui.theme.ProdyForestGreen,
+    inactiveColor: Color = com.prody.prashant.ui.theme.ProdyOutlineLight,
+    dotHeight: Dp = 4.dp,
+    spacing: Dp = 4.dp
+) {
+    val animatedIndex by animateFloatAsState(
+        targetValue = currentPage.toFloat(),
+        animationSpec = spring(stiffness = Spring.StiffnessLow),
+        label = "progress_indicator_index"
+    )
+
+    val dotHeightPx = with(androidx.compose.ui.platform.LocalDensity.current) { dotHeight.toPx() }
+    val spacingPx = with(androidx.compose.ui.platform.LocalDensity.current) { spacing.toPx() }
+
+    // Calculate total width based on dots (1 active dot is wider)
+    // Inactive dots: 8dp, Active dot: 24dp
+    val inactiveDotWidth = 8.dp
+    val activeDotWidth = 24.dp
+
+    val inactiveDotWidthPx = with(androidx.compose.ui.platform.LocalDensity.current) { inactiveDotWidth.toPx() }
+    val activeDotWidthPx = with(androidx.compose.ui.platform.LocalDensity.current) { activeDotWidth.toPx() }
+
+    Canvas(
+        modifier = modifier
+            .height(dotHeight)
+            .fillMaxWidth()
+    ) {
+        val yOffset = size.height / 2
+
+        // Total width calculation for centering if needed
+        // For now we follow the original Row behavior (left-aligned or parent controlled)
+
+        var currentX = 0f
+
+        for (i in 0 until totalPages) {
+            // Calculate distance from animated index to determine width and color
+            val distance = kotlin.math.abs(i - animatedIndex)
+            val selectionProgress = (1f - distance).coerceIn(0f, 1f)
+
+            val dotWidth = inactiveDotWidthPx + (activeDotWidthPx - inactiveDotWidthPx) * selectionProgress
+            val dotColor = androidx.compose.ui.graphics.lerp(inactiveColor, activeColor, selectionProgress)
+
+            drawRoundRect(
+                color = dotColor,
+                topLeft = Offset(currentX, yOffset - dotHeightPx / 2),
+                size = Size(dotWidth, dotHeightPx),
+                cornerRadius = CornerRadius(dotHeightPx / 2, dotHeightPx / 2)
+            )
+
+            currentX += dotWidth + spacingPx
+        }
     }
 }
 

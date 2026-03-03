@@ -3,7 +3,9 @@ package com.prody.prashant.ui.screens.onboarding
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.prody.prashant.data.InitialContentData
+import androidx.room.withTransaction
 import com.prody.prashant.data.local.dao.*
+import com.prody.prashant.data.local.database.ProdyDatabase
 import com.prody.prashant.data.local.entity.AchievementEntity
 import com.prody.prashant.data.local.entity.UserProfileEntity
 import com.prody.prashant.data.local.entity.UserStatsEntity
@@ -23,7 +25,8 @@ class OnboardingViewModel @Inject constructor(
     private val proverbDao: ProverbDao,
     private val idiomDao: IdiomDao,
     private val phraseDao: PhraseDao,
-    private val userDao: UserDao
+    private val userDao: UserDao,
+    private val database: ProdyDatabase
 ) : ViewModel() {
 
     companion object {
@@ -33,51 +36,52 @@ class OnboardingViewModel @Inject constructor(
     fun completeOnboarding() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                // Mark onboarding as completed
+                // 1. DataStore updates - executed OUTSIDE Room transaction as per best practices.
+                // Room transactions should only contain Room operations.
                 preferencesManager.setOnboardingCompleted(true)
-
-                // Set first launch time
                 preferencesManager.setFirstLaunchTime(System.currentTimeMillis())
-
-                // Generate unique user ID
                 val userId = UUID.randomUUID().toString()
                 preferencesManager.setUserId(userId)
 
-                // Initialize user profile
-                val userProfile = UserProfileEntity(
-                    id = 1,
-                    displayName = "Growth Seeker",
-                    joinedAt = System.currentTimeMillis()
-                )
-                userDao.insertUserProfile(userProfile)
-
-                // Initialize user stats
-                val userStats = UserStatsEntity(
-                    id = 1,
-                    lastResetDate = System.currentTimeMillis()
-                )
-                userDao.insertUserStats(userStats)
-
-                // Initialize achievements
-                val achievements = Achievements.allAchievements.map { achievement ->
-                    AchievementEntity(
-                        id = achievement.id,
-                        name = achievement.name,
-                        description = achievement.description,
-                        iconId = achievement.id,
-                        category = achievement.category.name.lowercase(),
-                        requirement = achievement.getRequirementTarget(),
-                        currentProgress = 0,
-                        isUnlocked = false,
-                        rewardType = "points",
-                        rewardValue = achievement.xpReward.toString(),
-                        rarity = achievement.rarity.name.lowercase()
+                // 2. Room database operations - wrapped in a single transaction for performance.
+                // This drastically reduces disk sync overhead from multiple individual inserts.
+                database.withTransaction {
+                    // Initialize user profile
+                    val userProfile = UserProfileEntity(
+                        id = 1,
+                        displayName = "Growth Seeker",
+                        joinedAt = System.currentTimeMillis()
                     )
-                }
-                userDao.insertAchievements(achievements)
+                    userDao.insertUserProfile(userProfile)
 
-                // Populate initial content
-                populateInitialContent()
+                    // Initialize user stats
+                    val userStats = UserStatsEntity(
+                        id = 1,
+                        lastResetDate = System.currentTimeMillis()
+                    )
+                    userDao.insertUserStats(userStats)
+
+                    // Initialize achievements
+                    val achievements = Achievements.allAchievements.map { achievement ->
+                        AchievementEntity(
+                            id = achievement.id,
+                            name = achievement.name,
+                            description = achievement.description,
+                            iconId = achievement.id,
+                            category = achievement.category.name.lowercase(),
+                            requirement = achievement.getRequirementTarget(),
+                            currentProgress = 0,
+                            isUnlocked = false,
+                            rewardType = "points",
+                            rewardValue = achievement.xpReward.toString(),
+                            rarity = achievement.rarity.name.lowercase()
+                        )
+                    }
+                    userDao.insertAchievements(achievements)
+
+                    // Populate initial content within the same transaction
+                    performInitialContentPopulation()
+                }
             } catch (e: Exception) {
                 android.util.Log.e(TAG, "Error during onboarding completion", e)
                 // Still mark onboarding as completed to prevent being stuck in a loop
@@ -90,40 +94,17 @@ class OnboardingViewModel @Inject constructor(
         }
     }
 
-    private suspend fun populateInitialContent() {
-        try {
-            // Insert vocabulary
-            vocabularyDao.insertWords(InitialContentData.vocabularyWords)
-        } catch (e: Exception) {
-            android.util.Log.e(TAG, "Error inserting vocabulary", e)
-        }
-
-        try {
-            // Insert quotes
-            quoteDao.insertQuotes(InitialContentData.quotes)
-        } catch (e: Exception) {
-            android.util.Log.e(TAG, "Error inserting quotes", e)
-        }
-
-        try {
-            // Insert proverbs
-            proverbDao.insertProverbs(InitialContentData.proverbs)
-        } catch (e: Exception) {
-            android.util.Log.e(TAG, "Error inserting proverbs", e)
-        }
-
-        try {
-            // Insert idioms
-            idiomDao.insertIdioms(InitialContentData.idioms)
-        } catch (e: Exception) {
-            android.util.Log.e(TAG, "Error inserting idioms", e)
-        }
-
-        try {
-            // Insert phrases
-            phraseDao.insertPhrases(InitialContentData.phrases)
-        } catch (e: Exception) {
-            android.util.Log.e(TAG, "Error inserting phrases", e)
-        }
+    /**
+     * Internal helper to populate all initial content entities.
+     * Should be called within a transaction for optimal performance.
+     */
+    private suspend fun performInitialContentPopulation() {
+        // We use individual inserts/batches but no internal try-catches here
+        // to allow the parent transaction to handle atomicity and avoid disk sync overhead.
+        vocabularyDao.insertWords(InitialContentData.vocabularyWords)
+        quoteDao.insertQuotes(InitialContentData.quotes)
+        proverbDao.insertProverbs(InitialContentData.proverbs)
+        idiomDao.insertIdioms(InitialContentData.idioms)
+        phraseDao.insertPhrases(InitialContentData.phrases)
     }
 }

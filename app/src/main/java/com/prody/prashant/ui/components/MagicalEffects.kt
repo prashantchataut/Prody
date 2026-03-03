@@ -1053,8 +1053,11 @@ fun NavigationBreathingGlow(
             Box(
                 modifier = Modifier
                     .size(48.dp)
-                    .scale(glowScale)
-                    .alpha(glowAlpha * activeAlpha)
+                    .graphicsLayer {
+                        scaleX = glowScale
+                        scaleY = glowScale
+                        alpha = glowAlpha * activeAlpha
+                    }
                     .blur(12.dp)
                     .background(color, CircleShape)
             )
