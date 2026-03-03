@@ -28,7 +28,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.prody.prashant.ui.theme.*
 
@@ -51,10 +51,7 @@ fun HomeScreen(
     onNavigateToIdiomDetail: (Long) -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
-    // We assume ViewModel provides necessary state. For this UI revamp, 
-    // we'll focus on the UI structure and use placeholder data where ViewModel might not strictly align yet.
-    
-    val surfaceColor = MaterialTheme.colorScheme.surface
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val backgroundColor = MaterialTheme.colorScheme.background
 
     LazyColumn(
@@ -63,40 +60,56 @@ fun HomeScreen(
             .background(backgroundColor),
         contentPadding = PaddingValues(bottom = 80.dp) // Space for bottom nav
     ) {
+        // AI Configuration Warning Banner
+        if (uiState.aiConfigurationStatus == AiConfigurationStatus.MISSING) {
+            item {
+                AiConfigWarningBanner()
+            }
+        }
+
         // Header with Greeting and Notification
         item {
             DashboardHeader(
-                userName = "Prashant", // Replace with real name
-                onProfileClick = {}, // TODO: Profile Nav
+                userName = uiState.userName,
+                greeting = uiState.intelligentGreeting,
+                subtitle = uiState.greetingSubtext,
+                onProfileClick = {}, // Handled by host activity/fragment usually
                 onNotificationClick = {}
             )
+        }
+
+        // Surfaced Memory Card
+        if (uiState.showMemoryCard && uiState.surfacedMemory != null) {
+            item {
+                SurfacedMemoryCard(
+                    memory = uiState.surfacedMemory!!,
+                    onDismiss = { viewModel.dismissMemoryCard() },
+                    onClick = { viewModel.expandMemoryCard() }
+                )
+            }
         }
 
         // Overview Section (Streak & Badges)
         item {
             OverviewSection(
-                streakDays = 7,
-                badges = listOf(
-                    BadgeData(ProdyIcons.EmojiEvents, 0.75f, ProdyWarmAmber),
-                    BadgeData(ProdyIcons.Edit, 0.5f, ProdyForestGreen),
-                    BadgeData(ProdyIcons.Psychology, 0.3f, ProdyInfo)
-                )
+                streakDays = uiState.currentStreak,
+                dualStreakStatus = uiState.dualStreakStatus
             )
         }
 
         // Mood Trend Chart
         item {
             MoodTrendSection(
-                moodData = listOf(3f, 4f, 2f, 5f, 4f, 5f, 4f) // 1-5 Scale
+                moodData = uiState.moodHistory.ifEmpty { listOf(3f, 3f, 3f, 3f, 3f, 3f, 3f) }
             )
         }
 
         // Weekly Summary
         item {
             WeeklySummarySection(
-                journalEntries = 5,
-                wordsLearned = 12,
-                mindfulMinutes = 45
+                journalEntries = uiState.journalEntriesThisWeek,
+                wordsLearned = uiState.wordsLearnedThisWeek,
+                mindfulMinutes = uiState.todayProgress.wordsWritten / 10 // Approximation
             )
         }
         
@@ -124,6 +137,8 @@ fun HomeScreen(
 @Composable
 fun DashboardHeader(
     userName: String,
+    greeting: String,
+    subtitle: String,
     onProfileClick: () -> Unit,
     onNotificationClick: () -> Unit
 ) {
@@ -135,9 +150,9 @@ fun DashboardHeader(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Column {
+        Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = "Good Morning,",
+                text = greeting.ifEmpty { "Good Morning," },
                 style = TextStyle(
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Normal,
@@ -154,16 +169,25 @@ fun DashboardHeader(
                 ),
                 color = ProdyTextPrimaryLight
             )
-        }
-        
-        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            IconButton(onClick = onNotificationClick) {
-                Icon(
-                    imageVector = Icons.Outlined.Notifications,
-                    contentDescription = "Notifications",
-                    tint = ProdyTextPrimaryLight
+            if (subtitle.isNotEmpty()) {
+                Text(
+                    text = subtitle,
+                    style = TextStyle(
+                        fontFamily = PoppinsFamily,
+                        fontSize = 12.sp,
+                        color = ProdyTextSecondaryLight.copy(alpha = 0.8f)
+                    )
                 )
             }
+        }
+
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            com.prody.prashant.ui.components.ProdyIconButton(
+                icon = Icons.Outlined.Notifications,
+                contentDescription = "Notifications",
+                onClick = onNotificationClick,
+                tint = ProdyTextPrimaryLight
+            )
             // Avatar / Profile
             Box(
                 modifier = Modifier
@@ -186,7 +210,7 @@ fun DashboardHeader(
 @Composable
 fun OverviewSection(
     streakDays: Int,
-    badges: List<BadgeData>
+    dualStreakStatus: com.prody.prashant.domain.streak.DualStreakStatus
 ) {
     Row(
         modifier = Modifier
@@ -226,7 +250,7 @@ fun OverviewSection(
             }
         }
 
-        // Badges Card
+        // Dual Streak / Badges Card
         Surface(
             modifier = Modifier.weight(1f),
             shape = RoundedCornerShape(16.dp),
@@ -240,13 +264,26 @@ fun OverviewSection(
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    badges.forEach { badge ->
-                        BadgeItem(badge)
-                    }
+                    // Wisdom Streak
+                    BadgeItem(
+                        BadgeData(
+                            ProdyIcons.Lightbulb,
+                            if (dualStreakStatus.wisdomStreak.maintainedToday) 1f else 0.3f,
+                            ProdyWarmAmber
+                        )
+                    )
+                    // Reflection Streak
+                    BadgeItem(
+                        BadgeData(
+                            ProdyIcons.Edit,
+                            if (dualStreakStatus.reflectionStreak.maintainedToday) 1f else 0.3f,
+                            ProdyForestGreen
+                        )
+                    )
                 }
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    text = "Achievements",
+                    text = "Dual Streaks",
                     style = TextStyle(
                         fontFamily = PoppinsFamily,
                         fontWeight = FontWeight.Medium,
@@ -547,6 +584,132 @@ fun QuickActionTile(title: String, icon: androidx.compose.ui.graphics.vector.Ima
                     fontWeight = FontWeight.Medium,
                     fontSize = 14.sp,
                     color = color
+                )
+            )
+        }
+    }
+}
+
+@Composable
+fun AiConfigWarningBanner() {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        shape = RoundedCornerShape(12.dp),
+        color = MaterialTheme.colorScheme.errorContainer,
+        tonalElevation = 2.dp
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Warning,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onErrorContainer
+            )
+            Column {
+                Text(
+                    text = "AI Features Disabled",
+                    style = TextStyle(
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onErrorContainer
+                    )
+                )
+                Text(
+                    text = "Configure API key in settings to enable Buddha's AI wisdom.",
+                    style = TextStyle(
+                        fontFamily = PoppinsFamily,
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.8f)
+                    )
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun SurfacedMemoryCard(
+    memory: com.prody.prashant.domain.intelligence.SurfacedMemory,
+    onDismiss: () -> Unit,
+    onClick: () -> Unit
+) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp, vertical = 8.dp)
+            .clickable { onClick() },
+        shape = RoundedCornerShape(20.dp),
+        color = ProdySurfaceLight,
+        shadowElevation = 6.dp,
+        border = androidx.compose.foundation.BorderStroke(1.dp, ProdyForestGreen.copy(alpha = 0.1f))
+    ) {
+        Column(modifier = Modifier.padding(20.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = ProdyIcons.AutoAwesome,
+                        contentDescription = null,
+                        tint = ProdyForestGreen,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Magic Moment",
+                        style = TextStyle(
+                            fontFamily = PoppinsFamily,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp,
+                            color = ProdyForestGreen
+                        )
+                    )
+                }
+
+                IconButton(
+                    onClick = onDismiss,
+                    modifier = Modifier.size(24.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Dismiss",
+                        tint = ProdyTextSecondaryLight,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Text(
+                text = memory.memory.preview,
+                style = TextStyle(
+                    fontFamily = PoppinsFamily,
+                    fontSize = 15.sp,
+                    color = ProdyTextPrimaryLight,
+                    lineHeight = 22.sp
+                ),
+                maxLines = 3,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = memory.surfaceReason,
+                style = TextStyle(
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 12.sp,
+                    color = ProdyTextSecondaryLight
                 )
             )
         }
