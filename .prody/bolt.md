@@ -21,3 +21,13 @@ This journal contains CRITICAL performance learnings specific to the Prody codeb
 **Context:** `ProgressIndicators.kt` and `OnboardingScreen.kt`.
 **Learning:** Using a `Row` of multiple `Box` composables for page indicators creates unnecessary layout nodes and triggers expensive layout passes during page swipes as dot widths animate. A single `Canvas` drawing all dots based on an animated float index is significantly more performant and smoother.
 **Action:** Prefer `Canvas`-based drawing for multi-state UI indicators like page dots or segmented progress bars to maintain 60fps during complex interactions.
+
+## 2024-05-24 - Thread-Safe Concurrent DAO Access
+**Context:** `HomeViewModel.kt`'s `fetchDailyContentConcurrently`.
+**Learning:** While `async` launches coroutines concurrently, executing multiple Room DAO calls within a `coroutineScope` on the default `ViewModel` dispatcher (Main) still risks blocking the main thread if the database connection pool is saturated or if the operations are not explicitly offloaded. Explicitly wrapping these parallel calls in `withContext(Dispatchers.IO)` is essential for ensuring they remain off the main thread.
+**Action:** Always wrap parallel database operations (using `async`) in `withContext(Dispatchers.IO)` to guarantee main-thread safety and optimize disk I/O performance.
+
+## 2024-05-24 - State Invalidation in Complex Lists
+**Context:** `HomeScreen.kt` dashboard.
+**Learning:** Large `LazyColumn` layouts with many heterogeneous items (Header, Overview, Charts, Summary) can suffer from unnecessary item recompositions during state updates if items don't have stable identities. Assigning explicit `key`s to `item` and `items` blocks significantly improves scroll performance and reduces rendering overhead by helping Compose identify which components truly need updating.
+**Action:** Always provide stable, unique `key`s for items in `LazyColumn` and `LazyRow`, especially when those items are bound to complex, frequently updating reactive state.
