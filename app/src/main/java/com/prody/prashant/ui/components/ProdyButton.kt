@@ -23,9 +23,13 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
+import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -500,7 +504,16 @@ private fun ButtonContent(
 // =============================================================================
 
 /**
- * Circular icon button with proper touch target.
+ * Circular icon button with proper touch target and optional tooltip.
+ *
+ * @param icon The icon to display
+ * @param onClick Callback when clicked
+ * @param modifier Modifier for the button
+ * @param enabled Whether the button is interactive
+ * @param tooltip Optional tooltip text shown on long press
+ * @param contentDescription Accessibility description
+ * @param tint Icon tint color
+ * @param size Minimum touch target size
  */
 @Composable
 fun ProdyIconButton(
@@ -508,6 +521,7 @@ fun ProdyIconButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    tooltip: String? = null,
     contentDescription: String? = null,
     tint: Color = MaterialTheme.colorScheme.onSurface,
     size: Dp = ProdyTokens.Touch.minimum
@@ -525,33 +539,61 @@ fun ProdyIconButton(
         label = "icon_button_scale"
     )
 
-    Surface(
-        onClick = {
-            haptic.click()
-            onClick()
-        },
-        modifier = modifier
-            .scale(scale)
-            .size(size)
-            .semantics {
-                role = Role.Button
-                if (contentDescription != null) {
-                    this.contentDescription = contentDescription
+    val effectiveDescription = contentDescription ?: tooltip
+
+    val buttonContent = @Composable {
+        Surface(
+            onClick = {
+                haptic.click()
+                onClick()
+            },
+            modifier = (if (tooltip == null) modifier else Modifier)
+                .scale(scale)
+                .size(size)
+                .semantics {
+                    role = Role.Button
+                    if (effectiveDescription != null) {
+                        this.contentDescription = effectiveDescription
+                    }
+                },
+            enabled = enabled,
+            shape = RoundedCornerShape(50),
+            color = Color.Transparent,
+            contentColor = tint,
+            interactionSource = interactionSource
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null, // Semantics handled by parent Surface or TooltipBox
+                modifier = Modifier
+                    .padding(12.dp)
+                    .size(24.dp),
+                tint = if (enabled) tint else tint.copy(alpha = 0.38f)
+            )
+        }
+    }
+
+    if (tooltip != null) {
+        TooltipBox(
+            positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+            tooltip = {
+                PlainTooltip(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    shape = RoundedCornerShape(ProdyTokens.Radius.sm)
+                ) {
+                    Text(
+                        text = tooltip,
+                        style = MaterialTheme.typography.labelMedium
+                    )
                 }
             },
-        enabled = enabled,
-        shape = RoundedCornerShape(50),
-        color = Color.Transparent,
-        contentColor = tint,
-        interactionSource = interactionSource
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = contentDescription,
-            modifier = Modifier
-                .padding(12.dp)
-                .size(24.dp),
-            tint = if (enabled) tint else tint.copy(alpha = 0.38f)
-        )
+            state = rememberTooltipState(),
+            modifier = modifier
+        ) {
+            buttonContent()
+        }
+    } else {
+        buttonContent()
     }
 }
