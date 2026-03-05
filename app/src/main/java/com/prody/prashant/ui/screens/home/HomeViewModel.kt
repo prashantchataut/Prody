@@ -28,10 +28,8 @@ import com.prody.prashant.domain.streak.DualStreakManager
 import com.prody.prashant.domain.streak.DualStreakStatus
 import com.prody.prashant.util.BuddhaWisdom
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
 import java.util.Calendar
 import javax.inject.Inject
 
@@ -292,13 +290,15 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private suspend fun fetchDailyContentConcurrently(): DailyContent = coroutineScope {
-        val quoteDeferred = async { try { quoteDao.getQuoteOfTheDay() } catch (e: Exception) { android.util.Log.e(TAG, "Failed to load quote", e); null } }
-        val wordDeferred = async { try { vocabularyDao.getWordOfTheDay() } catch (e: Exception) { android.util.Log.e(TAG, "Failed to load word", e); null } }
-        val proverbDeferred = async { try { proverbDao.getProverbOfTheDay() } catch (e: Exception) { android.util.Log.e(TAG, "Failed to load proverb", e); null } }
-        val idiomDeferred = async { try { idiomDao.getIdiomOfTheDay() } catch (e: Exception) { android.util.Log.e(TAG, "Failed to load idiom", e); null } }
+    private suspend fun fetchDailyContentConcurrently(): DailyContent = withContext(Dispatchers.IO) {
+        coroutineScope {
+            val quoteDeferred = async { try { quoteDao.getQuoteOfTheDay() } catch (e: Exception) { android.util.Log.e(TAG, "Failed to load quote", e); null } }
+            val wordDeferred = async { try { vocabularyDao.getWordOfTheDay() } catch (e: Exception) { android.util.Log.e(TAG, "Failed to load word", e); null } }
+            val proverbDeferred = async { try { proverbDao.getProverbOfTheDay() } catch (e: Exception) { android.util.Log.e(TAG, "Failed to load proverb", e); null } }
+            val idiomDeferred = async { try { idiomDao.getIdiomOfTheDay() } catch (e: Exception) { android.util.Log.e(TAG, "Failed to load idiom", e); null } }
 
-        DailyContent(quoteDeferred.await(), wordDeferred.await(), proverbDeferred.await(), idiomDeferred.await())
+            DailyContent(quoteDeferred.await(), wordDeferred.await(), proverbDeferred.await(), idiomDeferred.await())
+        }
     }
 
 

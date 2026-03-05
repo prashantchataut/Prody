@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -51,10 +52,8 @@ fun HomeScreen(
     onNavigateToIdiomDetail: (Long) -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
-    // We assume ViewModel provides necessary state. For this UI revamp, 
-    // we'll focus on the UI structure and use placeholder data where ViewModel might not strictly align yet.
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     
-    val surfaceColor = MaterialTheme.colorScheme.surface
     val backgroundColor = MaterialTheme.colorScheme.background
 
     LazyColumn(
@@ -64,18 +63,20 @@ fun HomeScreen(
         contentPadding = PaddingValues(bottom = 80.dp) // Space for bottom nav
     ) {
         // Header with Greeting and Notification
-        item {
+        item(key = "header") {
             DashboardHeader(
-                userName = "Prashant", // Replace with real name
+                userName = uiState.userName,
+                greeting = uiState.intelligentGreeting,
+                subtitle = uiState.greetingSubtext,
                 onProfileClick = {}, // TODO: Profile Nav
                 onNotificationClick = {}
             )
         }
 
         // Overview Section (Streak & Badges)
-        item {
+        item(key = "overview") {
             OverviewSection(
-                streakDays = 7,
+                streakDays = uiState.currentStreak,
                 badges = listOf(
                     BadgeData(ProdyIcons.EmojiEvents, 0.75f, ProdyWarmAmber),
                     BadgeData(ProdyIcons.Edit, 0.5f, ProdyForestGreen),
@@ -85,23 +86,23 @@ fun HomeScreen(
         }
 
         // Mood Trend Chart
-        item {
+        item(key = "mood_trend") {
             MoodTrendSection(
                 moodData = listOf(3f, 4f, 2f, 5f, 4f, 5f, 4f) // 1-5 Scale
             )
         }
 
         // Weekly Summary
-        item {
+        item(key = "summary") {
             WeeklySummarySection(
-                journalEntries = 5,
-                wordsLearned = 12,
-                mindfulMinutes = 45
+                journalEntries = uiState.journalEntriesThisWeek,
+                wordsLearned = uiState.wordsLearnedThisWeek,
+                mindfulMinutes = 45 // Placeholder for now
             )
         }
         
         // Quick Actions (Navigation)
-        item {
+        item(key = "quick_actions") {
             QuickActionsGrid(
                 onJournalClick = onNavigateToJournal,
                 onHavenClick = onNavigateToHaven,
@@ -111,7 +112,7 @@ fun HomeScreen(
         }
         
         // Recent / Suggestions
-        item {
+        item(key = "recent") {
             RecentActivitySection()
         }
     }
@@ -124,6 +125,8 @@ fun HomeScreen(
 @Composable
 fun DashboardHeader(
     userName: String,
+    greeting: String,
+    subtitle: String,
     onProfileClick: () -> Unit,
     onNotificationClick: () -> Unit
 ) {
@@ -135,9 +138,9 @@ fun DashboardHeader(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Column {
+        Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = "Good Morning,",
+                text = if (greeting.isNotEmpty()) greeting else "Good Morning,",
                 style = TextStyle(
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Normal,
@@ -146,7 +149,7 @@ fun DashboardHeader(
                 color = ProdyTextSecondaryLight
             )
             Text(
-                text = userName,
+                text = if (greeting.isNotEmpty()) subtitle else userName,
                 style = TextStyle(
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Bold,
