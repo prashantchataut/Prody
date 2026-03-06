@@ -36,10 +36,12 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.prody.prashant.R
 import com.prody.prashant.ui.theme.ProdyTokens
 
 /**
@@ -224,16 +226,13 @@ private fun MinimalHeader(
                     modifier = Modifier.weight(1f)
                 ) {
                     if (navigationIcon != null && onNavigationClick != null) {
-                        IconButton(
+                        ProdyIconButton(
+                            icon = navigationIcon,
                             onClick = onNavigationClick,
+                            tooltip = stringResource(R.string.cd_back_button),
+                            tint = contentColor,
                             modifier = Modifier.padding(end = ProdyTokens.Spacing.xs)
-                        ) {
-                            Icon(
-                                imageVector = navigationIcon,
-                                contentDescription = "Navigate back",
-                                tint = contentColor
-                            )
-                        }
+                        )
                     }
 
                     Column(modifier = Modifier.weight(1f)) {
@@ -321,16 +320,13 @@ private fun ContextualHeader(
                     modifier = Modifier.weight(1f)
                 ) {
                     if (navigationIcon != null && onNavigationClick != null) {
-                        IconButton(
+                        ProdyIconButton(
+                            icon = navigationIcon,
                             onClick = onNavigationClick,
+                            tooltip = stringResource(R.string.cd_back_button),
+                            tint = contentColor,
                             modifier = Modifier.padding(end = ProdyTokens.Spacing.xs)
-                        ) {
-                            Icon(
-                                imageVector = navigationIcon,
-                                contentDescription = "Navigate back",
-                                tint = contentColor
-                            )
-                        }
+                        )
                     }
 
                     Column(modifier = Modifier.weight(1f)) {
@@ -437,16 +433,13 @@ private fun ScrollAwareHeader(
                     modifier = Modifier.weight(1f)
                 ) {
                     if (navigationIcon != null && onNavigationClick != null) {
-                        IconButton(
+                        ProdyIconButton(
+                            icon = navigationIcon,
                             onClick = onNavigationClick,
+                            tooltip = stringResource(R.string.cd_back_button),
+                            tint = contentColor,
                             modifier = Modifier.padding(end = ProdyTokens.Spacing.xs)
-                        ) {
-                            Icon(
-                                imageVector = navigationIcon,
-                                contentDescription = "Navigate back",
-                                tint = contentColor
-                            )
-                        }
+                        )
                     }
 
                     Column(
