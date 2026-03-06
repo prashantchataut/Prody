@@ -1,41 +1,35 @@
 package com.prody.prashant.ui.screens.home
 
-import com.prody.prashant.ui.icons.ProdyIcons
-import androidx.compose.foundation.Canvas
+import androidx.compose.animation.*
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.prody.prashant.ui.components.*
+import com.prody.prashant.ui.icons.ProdyIcons
 import com.prody.prashant.ui.theme.*
 
-// =============================================================================
-// PERSONALIZATION DASHBOARD - REVAMPED 2026
-// =============================================================================
-
+/**
+ * ================================================================================================
+ * PRODY HOME SCREEN (Phase 2 Redesign)
+ * ================================================================================================
+ *
+ * The central hub of the Prody experience. It intelligently surfaced content based on
+ * the user's journey, emotional state, and progress.
+ */
 @Composable
 fun HomeScreen(
     onNavigateToVocabulary: () -> Unit,
@@ -51,400 +45,284 @@ fun HomeScreen(
     onNavigateToIdiomDetail: (Long) -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
-    // We assume ViewModel provides necessary state. For this UI revamp, 
-    // we'll focus on the UI structure and use placeholder data where ViewModel might not strictly align yet.
-    
-    val surfaceColor = MaterialTheme.colorScheme.surface
-    val backgroundColor = MaterialTheme.colorScheme.background
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(backgroundColor),
-        contentPadding = PaddingValues(bottom = 80.dp) // Space for bottom nav
-    ) {
-        // Header with Greeting and Notification
-        item {
-            DashboardHeader(
-                userName = "Prashant", // Replace with real name
-                onProfileClick = {}, // TODO: Profile Nav
-                onNotificationClick = {}
-            )
-        }
-
-        // Overview Section (Streak & Badges)
-        item {
-            OverviewSection(
-                streakDays = 7,
-                badges = listOf(
-                    BadgeData(ProdyIcons.EmojiEvents, 0.75f, ProdyWarmAmber),
-                    BadgeData(ProdyIcons.Edit, 0.5f, ProdyForestGreen),
-                    BadgeData(ProdyIcons.Psychology, 0.3f, ProdyInfo)
-                )
-            )
-        }
-
-        // Mood Trend Chart
-        item {
-            MoodTrendSection(
-                moodData = listOf(3f, 4f, 2f, 5f, 4f, 5f, 4f) // 1-5 Scale
-            )
-        }
-
-        // Weekly Summary
-        item {
-            WeeklySummarySection(
-                journalEntries = 5,
-                wordsLearned = 12,
-                mindfulMinutes = 45
-            )
-        }
-        
-        // Quick Actions (Navigation)
-        item {
-            QuickActionsGrid(
-                onJournalClick = onNavigateToJournal,
-                onHavenClick = onNavigateToHaven,
-                onWisdomClick = onNavigateToQuotes,
-                onFutureClick = onNavigateToFutureMessage
-            )
-        }
-        
-        // Recent / Suggestions
-        item {
-            RecentActivitySection()
-        }
-    }
-}
-
-// =============================================================================
-// DASHBOARD COMPONENTS
-// =============================================================================
-
-@Composable
-fun DashboardHeader(
-    userName: String,
-    onProfileClick: () -> Unit,
-    onNotificationClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 24.dp)
-            .statusBarsPadding(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column {
-            Text(
-                text = "Good Morning,",
-                style = TextStyle(
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Normal,
-                    fontSize = 16.sp
-                ),
-                color = ProdyTextSecondaryLight
-            )
-            Text(
-                text = userName,
-                style = TextStyle(
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 24.sp
-                ),
-                color = ProdyTextPrimaryLight
-            )
-        }
-        
-        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            IconButton(onClick = onNotificationClick) {
-                Icon(
-                    imageVector = Icons.Outlined.Notifications,
-                    contentDescription = "Notifications",
-                    tint = ProdyTextPrimaryLight
-                )
-            }
-            // Avatar / Profile
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .background(ProdyForestGreen)
-                    .clickable { onProfileClick() },
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = userName.firstOrNull()?.toString() ?: "P",
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun OverviewSection(
-    streakDays: Int,
-    badges: List<BadgeData>
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        // Streak Card
-        Surface(
-            modifier = Modifier.weight(1f),
-            shape = RoundedCornerShape(16.dp),
-            color = ProdySurfaceLight,
-            shadowElevation = 4.dp
+    ContentLoadingState(
+        data = if (uiState.isLoading) null else uiState,
+        isLoading = uiState.isLoading,
+        error = uiState.error,
+        onRetry = { viewModel.retry() }
+    ) { state ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
         ) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(bottom = 32.dp)
             ) {
-                Text(
-                    text = streakDays.toString(),
-                    style = TextStyle(
-                        fontFamily = PoppinsFamily,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 48.sp,
-                        color = ProdyForestGreen
+                // 1. Intelligent Greeting Header
+                item(key = "greeting") {
+                    IntelligentGreetingHeader(
+                        greeting = state.intelligentGreeting,
+                        subtext = state.greetingSubtext,
+                        userName = state.userName,
+                        isStruggling = state.isUserStruggling,
+                        isThriving = state.isUserThriving,
+                        modifier = Modifier.padding(top = 24.dp, bottom = 16.dp)
                     )
-                )
-                Text(
-                    text = "Day Streak",
-                    style = TextStyle(
-                        fontFamily = PoppinsFamily,
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 14.sp,
-                        color = ProdyTextSecondaryLight
-                    )
-                )
-            }
-        }
+                }
 
-        // Badges Card
-        Surface(
-            modifier = Modifier.weight(1f),
-            shape = RoundedCornerShape(16.dp),
-            color = ProdySurfaceLight,
-            shadowElevation = 4.dp
-        ) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    badges.forEach { badge ->
-                        BadgeItem(badge)
+                // 2. AI Configuration Warning
+                if (state.aiConfigurationStatus == AiConfigurationStatus.MISSING) {
+                    item(key = "ai_warning") {
+                        AiConfigWarningBanner(
+                            modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
+                        )
                     }
                 }
-                Spacer(modifier = Modifier.height(12.dp))
-                Text(
-                    text = "Achievements",
-                    style = TextStyle(
-                        fontFamily = PoppinsFamily,
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 14.sp,
-                        color = ProdyTextSecondaryLight
+
+                // 3. First Week Journey Card
+                if (state.isInFirstWeek) {
+                    item(key = "first_week") {
+                        FirstWeekProgressCard(
+                            dayNumber = state.firstWeekDayNumber,
+                            progress = state.firstWeekProgress,
+                            dayContent = state.firstWeekDayContent,
+                            onContinue = { /* Navigation handled in UI */ },
+                            modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
+                        )
+                    }
+                }
+
+                // 4. Dual Streak Card
+                item(key = "streaks") {
+                    DualStreakCard(
+                        dualStreakStatus = state.dualStreakStatus,
+                        onTapForDetails = { /* Show details */ },
+                        modifier = Modifier.padding(vertical = 8.dp)
                     )
+                }
+
+                // 5. Surfaced Memory
+                if (state.showMemoryCard && state.surfacedMemory != null) {
+                    item(key = "memory") {
+                        SurfacedMemoryCard(
+                            memory = state.surfacedMemory,
+                            onExpand = { viewModel.expandMemoryCard() },
+                            onDismiss = { viewModel.dismissMemoryCard() },
+                            modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
+                        )
+                    }
+                }
+
+                // 6. Anniversary Memories
+                if (state.anniversaryMemories.isNotEmpty()) {
+                    items(state.anniversaryMemories, key = { "anniversary_${it.memory.id}" }) { memory ->
+                        AnniversaryMemoryCard(
+                            anniversary = memory,
+                            onView = { /* View */ },
+                            onDismiss = { /* Dismiss */ },
+                            modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
+                        )
+                    }
+                }
+
+                // 7. Buddha's Thought
+                item(key = "buddha_thought") {
+                    BuddhaThoughtCard(
+                        thought = state.buddhaThought,
+                        explanation = state.buddhaThoughtExplanation,
+                        isAiGenerated = state.isBuddhaThoughtAiGenerated,
+                        isLoading = state.isBuddhaThoughtLoading,
+                        canRefresh = state.canRefreshBuddhaThought,
+                        onRefresh = { viewModel.refreshBuddhaThought() },
+                        proofInfo = if (state.buddhaWisdomProofInfo.isEnabled) state.buddhaWisdomProofInfo else null,
+                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp)
+                    )
+                }
+
+                // 8. Next Action
+                item(key = "next_action") {
+                    state.nextAction?.let { action ->
+                        NextActionCard(
+                            action = action,
+                            onActionClick = { /* Action */ },
+                            modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
+                        )
+                    }
+                }
+
+                // 9. Daily Wisdom Section
+                item(key = "daily_wisdom") {
+                    DailyWisdomRow(
+                        quote = state.dailyQuote,
+                        quoteAuthor = state.dailyQuoteAuthor,
+                        word = state.wordOfTheDay,
+                        wordDef = state.wordDefinition,
+                        onQuoteClick = onNavigateToQuotes,
+                        onWordClick = onNavigateToVocabulary,
+                        modifier = Modifier.padding(vertical = 16.dp)
+                    )
+                }
+
+                // 10. Weekly Summary Stats
+                item(key = "summary") {
+                    WeeklySummarySection(
+                        journalEntries = state.journalEntriesThisWeek,
+                        wordsLearned = state.wordsLearnedThisWeek,
+                        daysActive = state.daysActiveThisWeek,
+                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp)
+                    )
+                }
+
+                // 11. Quick Actions Grid
+                item(key = "quick_actions") {
+                    QuickActionsGrid(
+                        onJournalClick = onNavigateToJournal,
+                        onHavenClick = onNavigateToHaven,
+                        onWisdomClick = onNavigateToQuotes,
+                        onFutureClick = onNavigateToFutureMessage,
+                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp)
+                    )
+                }
+            }
+
+            // Buddha Guide
+            if (state.showBuddhaGuide) {
+                BuddhaGuideIntro(
+                    cards = state.buddhaGuideCards,
+                    onComplete = { viewModel.onBuddhaGuideComplete() },
+                    onDontShowAgain = { viewModel.onBuddhaGuideDontShowAgain() }
                 )
             }
-        }
-    }
-}
 
-data class BadgeData(val icon: androidx.compose.ui.graphics.vector.ImageVector, val progress: Float, val color: Color)
-
-@Composable
-fun BadgeItem(badge: BadgeData) {
-    Box(contentAlignment = Alignment.Center, modifier = Modifier.size(32.dp)) {
-        CircularProgressIndicator(
-            progress = { badge.progress },
-            modifier = Modifier.fillMaxSize(),
-            color = badge.color,
-            trackColor = badge.color.copy(alpha = 0.2f),
-            strokeWidth = 3.dp,
-        )
-        Icon(
-            imageVector = badge.icon,
-            contentDescription = null,
-            tint = badge.color,
-            modifier = Modifier.size(16.dp)
-        )
-    }
-}
-
-@Composable
-fun MoodTrendSection(moodData: List<Float>) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(24.dp)
-    ) {
-        Text(
-            text = "Mood Trend",
-            style = TextStyle(
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 18.sp,
-                color = ProdyTextPrimaryLight
-            )
-        )
-        
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Chart Card
-        Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp),
-            shape = RoundedCornerShape(16.dp),
-            color = ProdySurfaceLight,
-            shadowElevation = 4.dp
-        ) {
-            MoodChart(data = moodData, modifier = Modifier.padding(24.dp))
-        }
-    }
-}
-
-@Composable
-fun MoodChart(data: List<Float>, modifier: Modifier = Modifier) {
-    Canvas(modifier = modifier.fillMaxSize()) {
-        if (data.isEmpty()) return@Canvas
-
-        val width = size.width
-        val height = size.height
-        val stepX = width / (data.size - 1)
-        
-        // Normalize data to height (1-5 scale)
-        val points = data.mapIndexed { index, value ->
-            val x = index * stepX
-            val y = height - ((value - 1) / 4f) * height
-            Offset(x, y)
-        }
-
-        // Draw Line
-        val path = Path().apply {
-            moveTo(points.first().x, points.first().y)
-            for (i in 1 until points.size) {
-                // Bezier curve for smoothness
-                val p0 = points[i - 1]
-                val p1 = points[i]
-                val controlPoint1 = Offset(p0.x + (p1.x - p0.x) / 2, p0.y)
-                val controlPoint2 = Offset(p0.x + (p1.x - p0.x) / 2, p1.y)
-                cubicTo(controlPoint1.x, controlPoint1.y, controlPoint2.x, controlPoint2.y, p1.x, p1.y)
+            // Contextual AI Hint
+            if (state.showDailyWisdomHint) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = 16.dp)
+                ) {
+                    ContextualAiHint(
+                        hint = viewModel.getDailyWisdomHint(),
+                        onDismiss = { viewModel.onDailyWisdomHintDismiss() }
+                    )
+                }
             }
         }
+    }
+}
 
-        drawPath(
-            path = path,
-            color = ProdyForestGreen,
-            style = Stroke(width = 4.dp.toPx(), cap = StrokeCap.Round)
+@Composable
+fun AiConfigWarningBanner(modifier: Modifier = Modifier) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+            contentColor = MaterialTheme.colorScheme.onSecondaryContainer
         )
-
-        // Draw Points
-        points.forEach { point ->
-            drawCircle(
-                color = Color.White,
-                radius = 6.dp.toPx(),
-                center = point
-            )
-            drawCircle(
-                color = ProdyForestGreen,
-                radius = 4.dp.toPx(),
-                center = point
-            )
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(ProdyIcons.Warning, contentDescription = null, modifier = Modifier.size(24.dp))
+            Column {
+                Text("AI features are limited", fontWeight = FontWeight.Bold)
+                Text("Configure your Gemini API key to enable Buddha's full intelligence.", style = MaterialTheme.typography.bodySmall)
+            }
         }
     }
 }
 
 @Composable
-fun WeeklySummarySection(journalEntries: Int, wordsLearned: Int, mindfulMinutes: Int) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp)
-    ) {
+fun WeeklySummarySection(
+    journalEntries: Int,
+    wordsLearned: Int,
+    daysActive: Int,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier) {
         Text(
-            text = "This Week",
-            style = TextStyle(
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 18.sp,
-                color = ProdyTextPrimaryLight
-            )
+            text = "Your Progress This Week",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold
         )
         Spacer(modifier = Modifier.height(16.dp))
-        
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            SummaryCard(
-                label = "Entries",
-                value = journalEntries.toString(),
-                icon = ProdyIcons.Edit,
-                color = ProdyForestGreen,
-                modifier = Modifier.weight(1f)
-            )
-            SummaryCard(
-                label = "Words",
-                value = wordsLearned.toString(),
-                icon = ProdyIcons.School,
-                color = ProdyWarmAmber,
-                modifier = Modifier.weight(1f)
-            )
-            SummaryCard(
-                label = "Minutes",
-                value = mindfulMinutes.toString(),
-                icon = ProdyIcons.SelfImprovement,
-                color = ProdyInfo,
-                modifier = Modifier.weight(1f)
-            )
+            SummaryStatCard("Entries", journalEntries.toString(), ProdyIcons.Edit, ProdyForestGreen, Modifier.weight(1f))
+            SummaryStatCard("Words", wordsLearned.toString(), ProdyIcons.School, ProdyWarmAmber, Modifier.weight(1f))
+            SummaryStatCard("Active", "$daysActive d", ProdyIcons.CalendarToday, ProdyInfo, Modifier.weight(1f))
         }
     }
 }
 
 @Composable
-fun SummaryCard(label: String, value: String, icon: androidx.compose.ui.graphics.vector.ImageVector, color: Color, modifier: Modifier) {
+fun SummaryStatCard(label: String, value: String, icon: ImageVector, color: Color, modifier: Modifier) {
     Surface(
         modifier = modifier,
-        shape = RoundedCornerShape(12.dp),
-        color = ProdySurfaceLight,
-        shadowElevation = 2.dp
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
     ) {
         Column(
-            modifier = Modifier.padding(12.dp),
+            modifier = Modifier.padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = color,
-                modifier = Modifier.size(24.dp)
-            )
+            Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(24.dp))
             Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = value,
-                style = TextStyle(
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp,
-                    color = ProdyTextPrimaryLight
-                )
-            )
-            Text(
-                text = label,
-                style = TextStyle(
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 12.sp,
-                    color = ProdyTextSecondaryLight
-                )
-            )
+            Text(value, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+            Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}
+
+@Composable
+fun DailyWisdomRow(
+    quote: String,
+    quoteAuthor: String,
+    word: String,
+    wordDef: String,
+    onQuoteClick: () -> Unit,
+    onWordClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    LazyRow(
+        modifier = modifier.fillMaxWidth(),
+        contentPadding = PaddingValues(horizontal = 24.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        item {
+            WisdomFeatureCard("Quote of the Day", "\"$quote\"", quoteAuthor, ProdyIcons.FormatQuote, ProdyForestGreen, onQuoteClick, Modifier.width(280.dp))
+        }
+        item {
+            WisdomFeatureCard("Word of the Day", word, wordDef, ProdyIcons.School, ProdyWarmAmber, onWordClick, Modifier.width(280.dp))
+        }
+    }
+}
+
+@Composable
+fun WisdomFeatureCard(title: String, content: String, author: String, icon: ImageVector, color: Color, onClick: () -> Unit, modifier: Modifier) {
+    Surface(
+        onClick = onClick,
+        modifier = modifier.height(180.dp),
+        shape = RoundedCornerShape(20.dp),
+        color = color.copy(alpha = 0.08f),
+        border = androidx.compose.foundation.BorderStroke(1.dp, color.copy(alpha = 0.15f))
+    ) {
+        Column(modifier = Modifier.padding(20.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(20.dp))
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(title, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = color)
+            }
+            Spacer(modifier = Modifier.weight(1f))
+            Text(content, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, maxLines = 3, overflow = TextOverflow.Ellipsis)
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(author, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
     }
 }
@@ -454,142 +332,41 @@ fun QuickActionsGrid(
     onJournalClick: () -> Unit,
     onHavenClick: () -> Unit,
     onWisdomClick: () -> Unit,
-    onFutureClick: () -> Unit
+    onFutureClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(24.dp)
-    ) {
-        Text(
-            text = "Quick Actions",
-            style = TextStyle(
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 18.sp,
-                color = ProdyTextPrimaryLight
-            )
-        )
+    Column(modifier = modifier) {
+        Text("Explore Prody", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
         Spacer(modifier = Modifier.height(16.dp))
-        
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            // Journal
-            QuickActionTile(
-                title = "Journal",
-                icon = ProdyIcons.Book,
-                color = ProdyForestGreen,
-                onClick = onJournalClick,
-                modifier = Modifier.weight(1f)
-            )
-            // Haven
-            QuickActionTile(
-                title = "Haven",
-                icon = ProdyIcons.Psychology,
-                color = ProdyInfo,
-                onClick = onHavenClick,
-                modifier = Modifier.weight(1f)
-            )
+        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            QuickActionTile("Journal", ProdyIcons.Book, ProdyForestGreen, onJournalClick, Modifier.weight(1f))
+            QuickActionTile("Haven", ProdyIcons.Psychology, ProdyInfo, onHavenClick, Modifier.weight(1f))
         }
         Spacer(modifier = Modifier.height(16.dp))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            // Wisdom
-            QuickActionTile(
-                title = "Wisdom",
-                icon = ProdyIcons.Lightbulb,
-                color = ProdyWarmAmber,
-                onClick = onWisdomClick,
-                modifier = Modifier.weight(1f)
-            )
-            // Future
-            QuickActionTile(
-                title = "Future",
-                icon = ProdyIcons.Send,
-                color = Color(0xFF9C27B0),
-                onClick = onFutureClick,
-                modifier = Modifier.weight(1f)
-            )
+        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            QuickActionTile("Wisdom", ProdyIcons.Lightbulb, ProdyWarmAmber, onWisdomClick, Modifier.weight(1f))
+            QuickActionTile("Future Self", ProdyIcons.Send, Color(0xFF9C27B0), onFutureClick, Modifier.weight(1f))
         }
     }
 }
 
 @Composable
-fun QuickActionTile(title: String, icon: androidx.compose.ui.graphics.vector.ImageVector, color: Color, onClick: () -> Unit, modifier: Modifier) {
+fun QuickActionTile(title: String, icon: ImageVector, color: Color, onClick: () -> Unit, modifier: Modifier) {
     Surface(
-        modifier = modifier
-            .height(100.dp)
-            .clickable(onClick = onClick),
+        onClick = onClick,
+        modifier = modifier.height(100.dp),
         shape = RoundedCornerShape(16.dp),
-        color = color.copy(alpha = 0.1f),
-        border = androidx.compose.foundation.BorderStroke(1.dp, color.copy(alpha = 0.2f))
+        color = MaterialTheme.colorScheme.surface,
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = color,
-                modifier = Modifier.size(32.dp)
-            )
+            Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(32.dp))
             Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = title,
-                style = TextStyle(
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 14.sp,
-                    color = color
-                )
-            )
-        }
-    }
-}
-
-@Composable
-fun RecentActivitySection() {
-    // Placeholder for Recent Activity
-    Column(modifier = Modifier.padding(horizontal = 24.dp)) {
-        Text(
-            text = "Recent",
-            style = TextStyle(
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 18.sp,
-                color = ProdyTextPrimaryLight
-            )
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp),
-            color = ProdySurfaceLight,
-            shadowElevation = 2.dp
-        ) {
-            Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(ProdyForestGreen.copy(alpha = 0.1f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(ProdyIcons.Check, null, tint = ProdyForestGreen)
-                }
-                Spacer(modifier = Modifier.width(16.dp))
-                Column {
-                    Text("Daily Journal", fontWeight = FontWeight.SemiBold, fontFamily = PoppinsFamily)
-                    Text("Completed today", fontSize = 12.sp, color = ProdyTextSecondaryLight, fontFamily = PoppinsFamily)
-                }
-            }
+            Text(title, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Medium)
         }
     }
 }
