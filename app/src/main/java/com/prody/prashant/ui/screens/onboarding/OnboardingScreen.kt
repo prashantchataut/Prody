@@ -77,7 +77,8 @@ fun OnboardingScreen(
         HorizontalPager(
             state = pagerState,
             modifier = Modifier.fillMaxSize(),
-            userScrollEnabled = false // Force navigation via buttons
+            userScrollEnabled = false, // Force navigation via buttons
+            key = { it } // Assign stable keys to pager items
         ) { page ->
             when (page) {
                 0 -> WelcomeScreen(
