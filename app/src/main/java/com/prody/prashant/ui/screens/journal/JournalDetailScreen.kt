@@ -42,6 +42,7 @@ import com.prody.prashant.R
 import com.prody.prashant.domain.model.Mood
 import com.prody.prashant.ui.components.ContextualAiHint
 import com.prody.prashant.ui.components.ProdyCard
+import com.prody.prashant.ui.components.ProdyIconButton
 import com.prody.prashant.ui.theme.*
 import kotlinx.coroutines.delay
 import org.json.JSONArray
@@ -78,36 +79,27 @@ fun JournalDetailScreen(
             TopAppBar(
                 title = { Text("Journal Entry") },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(
-                            imageVector = ProdyIcons.ArrowBack,
-                            contentDescription = stringResource(R.string.back)
-                        )
-                    }
+                    ProdyIconButton(
+                        icon = ProdyIcons.ArrowBack,
+                        onClick = onNavigateBack,
+                        tooltip = stringResource(R.string.cd_back_button)
+                    )
                 },
                 actions = {
-                    IconButton(
+                    ProdyIconButton(
+                        icon = if (uiState.entry?.isBookmarked == true) ProdyIcons.Bookmark
+                               else ProdyIcons.BookmarkBorder,
                         onClick = { viewModel.toggleBookmark() },
-                        modifier = Modifier.size(48.dp) // Minimum touch target for accessibility
-                    ) {
-                        Icon(
-                            imageVector = if (uiState.entry?.isBookmarked == true) ProdyIcons.Bookmark
-                            else ProdyIcons.BookmarkBorder,
-                            contentDescription = AccessibilityUtils.bookmarkDescription(uiState.entry?.isBookmarked == true),
-                            tint = if (uiState.entry?.isBookmarked == true) MaterialTheme.colorScheme.primary
-                            else MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                    IconButton(
+                        tooltip = AccessibilityUtils.bookmarkDescription(uiState.entry?.isBookmarked == true),
+                        tint = if (uiState.entry?.isBookmarked == true) MaterialTheme.colorScheme.primary
+                               else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    ProdyIconButton(
+                        icon = ProdyIcons.Delete,
                         onClick = { viewModel.showDeleteDialog() },
-                        modifier = Modifier.size(48.dp) // Minimum touch target for accessibility
-                    ) {
-                        Icon(
-                            imageVector = ProdyIcons.Delete,
-                            contentDescription = AccessibilityUtils.deleteDescription("journal entry"),
-                            tint = MaterialTheme.colorScheme.error
-                        )
-                    }
+                        tooltip = AccessibilityUtils.deleteDescription("journal entry"),
+                        tint = MaterialTheme.colorScheme.error
+                    )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.background
