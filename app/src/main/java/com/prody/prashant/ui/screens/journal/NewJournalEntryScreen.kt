@@ -89,6 +89,7 @@ import com.prody.prashant.domain.model.Mood
 import com.prody.prashant.domain.validation.ContentValidation
 import com.prody.prashant.domain.validation.ContentValidator
 import com.prody.prashant.ui.components.AmbientBackground
+import com.prody.prashant.ui.components.ProdyIconButton
 import com.prody.prashant.ui.components.MoodSuggestionHint
 import com.prody.prashant.ui.components.SessionResultCard
 import com.prody.prashant.ui.components.rememberMoodSuggestionState
@@ -482,7 +483,14 @@ private fun Color.luminance(): Float = 0.2126f * red + 0.7152f * green + 0.0722f
 private fun JournalTopBar(onBackClick: () -> Unit, onSaveClick: () -> Unit, isSaveEnabled: Boolean, isSaving: Boolean, isGeneratingAi: Boolean, colors: JournalThemeColors) {
     CenterAlignedTopAppBar(
         title = { Text(text = stringResource(R.string.new_entry), style = MaterialTheme.typography.titleMedium.copy(fontFamily = PoppinsFamily, fontWeight = FontWeight.SemiBold), color = colors.primaryText) },
-        navigationIcon = { IconButton(onClick = onBackClick) { Icon(imageVector = ProdyIcons.ArrowBack, contentDescription = stringResource(R.string.back), tint = colors.primaryText) } },
+        navigationIcon = {
+            ProdyIconButton(
+                icon = ProdyIcons.ArrowBack,
+                onClick = onBackClick,
+                tooltip = stringResource(R.string.cd_back_button),
+                tint = colors.primaryText
+            )
+        },
         actions = {
             Box(modifier = Modifier.padding(end = 8.dp).clip(RoundedCornerShape(20.dp)).background(colors.saveButtonBg).clickable(enabled = isSaveEnabled) { onSaveClick() }.padding(horizontal = 16.dp, vertical = 8.dp), contentAlignment = Alignment.Center) {
                 if (isSaving) {

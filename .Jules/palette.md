@@ -5,3 +5,7 @@
 ## 2025-01-26 - Dynamic Form Validation Feedback
 **Learning:** Providing real-time, visual feedback as users approach form constraints (like character limits) significantly reduces friction and errors. Semantic color shifts (warning at 80%, error at 100%) are more intuitive than simple counters.
 **Action:** Implement dynamic character counters in all high-priority input forms. Use `ProdyDesignTokens.SemanticColors.warning` for the cautionary state to provide a consistent cross-app language for constraints.
+
+## 2025-01-26 - Accessible Icon-Only Buttons with Tooltips
+**Learning:** Icon-only buttons without tooltips are a major accessibility hurdle for sighted users and can be ambiguous for screen readers. Standardizing icon buttons with Material 3's `TooltipBox` while refining `semantics` on the parent container (and setting `contentDescription = null` on the icon itself) creates a robust, accessible interaction pattern.
+**Action:** Use `ProdyIconButton` for all icon-only actions and always provide a localized `tooltip` string. This ensures consistent haptics, visual hints on long-press, and clear accessibility announcements without redundancy.
