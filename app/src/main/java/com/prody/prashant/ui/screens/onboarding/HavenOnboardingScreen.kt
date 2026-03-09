@@ -5,7 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,18 +30,20 @@ fun HavenOnboardingScreen(
         verticalArrangement = Arrangement.Center
     ) {
         // Icon / Hero Image
+        val backgroundBrush = remember {
+            Brush.linearGradient(
+                colors = listOf(
+                    ProdyAccentGreen.copy(alpha = 0.2f),
+                    ProdyAccentGreen.copy(alpha = 0.05f)
+                )
+            )
+        }
+
         Box(
             modifier = Modifier
                 .size(120.dp)
                 .clip(CircleShape)
-                .background(
-                    Brush.linearGradient(
-                        colors = listOf(
-                            ProdyAccentGreen.copy(alpha = 0.2f),
-                            ProdyAccentGreen.copy(alpha = 0.05f)
-                        )
-                    )
-                ),
+                .background(backgroundBrush),
             contentAlignment = Alignment.Center
         ) {
             Icon(

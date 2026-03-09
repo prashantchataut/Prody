@@ -42,7 +42,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.prody.prashant.ui.components.ProdyProgressIndicator
+import com.prody.prashant.ui.components.*
 import com.prody.prashant.ui.theme.*
 import kotlinx.coroutines.launch
 
@@ -62,22 +62,27 @@ fun OnboardingScreen(
     // We will use the ProdyTheme colors.
     
     // Gradient Background: White to #F5F5F5 for light mode
-    val gradientColors = if (!isSystemInDarkTheme()) {
-        listOf(Color.White, Color(0xFFF5F5F5))
-    } else {
-        listOf(ProdyBackgroundDark, ProdyBackgroundDark) // Keep dark mode simple
+    val isDark = isSystemInDarkTheme()
+    val backgroundBrush = remember(isDark) {
+        val colors = if (!isDark) {
+            listOf(Color.White, Color(0xFFF5F5F5))
+        } else {
+            listOf(ProdyBackgroundDark, ProdyBackgroundDark) // Keep dark mode simple
+        }
+        Brush.verticalGradient(colors)
     }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Brush.verticalGradient(gradientColors))
+            .background(backgroundBrush)
             .systemBarsPadding()
     ) {
         HorizontalPager(
             state = pagerState,
             modifier = Modifier.fillMaxSize(),
-            userScrollEnabled = false // Force navigation via buttons
+            userScrollEnabled = false, // Force navigation via buttons
+            key = { it }
         ) { page ->
             when (page) {
                 0 -> WelcomeScreen(
@@ -179,10 +184,11 @@ private fun WelcomeScreen(
         Spacer(modifier = Modifier.height(48.dp))
 
         // Primary CTA Button: 56dp height, 16dp corner radius
-        PrimaryButton(
+        ProdyPrimaryButton(
             text = "Get Started",
             onClick = onNext,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            size = ProdyButtonSize.LARGE
         )
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -340,15 +346,11 @@ private fun FeatureScreenLayout(
                 .padding(top = 16.dp),
             horizontalArrangement = Arrangement.End
         ) {
-            Text(
+            ProdyGhostButton(
                 text = "Skip",
-                style = TextStyle(
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 14.sp
-                ),
-                color = ProdyTextSecondaryLight,
-                modifier = Modifier.clickable { onSkip() }
+                onClick = onSkip,
+                size = ProdyButtonSize.SMALL,
+                contentColor = ProdyTextSecondaryLight
             )
         }
 
@@ -532,10 +534,11 @@ private fun LoginSignupScreen(
         Spacer(modifier = Modifier.height(32.dp))
 
         // Login Button
-        PrimaryButton(
+        ProdyPrimaryButton(
             text = "Log In",
             onClick = onLogin,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            size = ProdyButtonSize.LARGE
         )
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -631,37 +634,6 @@ private fun LoginSignupScreen(
 // =============================================================================
 
 @Composable
-fun PrimaryButton(
-    text: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Button(
-        onClick = onClick,
-        modifier = modifier.height(56.dp),
-        shape = RoundedCornerShape(16.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = ProdyForestGreen,
-            contentColor = Color.White
-        ),
-        elevation = ButtonDefaults.buttonElevation(
-            defaultElevation = 0.dp,
-            pressedElevation = 0.dp
-        )
-    ) {
-        Text(
-            text = text,
-            style = TextStyle(
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 16.sp,
-                letterSpacing = 0.5.sp
-            )
-        )
-    }
-}
-
-@Composable
 fun ProdyInputField(
     value: String,
     onValueChange: (String) -> Unit,
@@ -682,13 +654,15 @@ fun ProdyInputField(
             modifier = Modifier.padding(bottom = 8.dp)
         )
 
+        val shape = remember { RoundedCornerShape(8.dp) }
+
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
-            shape = RoundedCornerShape(8.dp),
+            shape = shape,
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = ProdyForestGreen,
                 unfocusedBorderColor = ProdyOutlineLight,
@@ -718,11 +692,12 @@ fun ProdyInputField(
 
 @Composable
 fun ProdyLogo(modifier: Modifier = Modifier) {
+    val shape = remember { RoundedCornerShape(24.dp) }
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(24.dp))
+            .clip(shape)
             .background(Color.White)
-            .border(1.dp, ProdyOutlineLight, RoundedCornerShape(24.dp)),
+            .border(1.dp, ProdyOutlineLight, shape),
         contentAlignment = Alignment.Center
     ) {
         Icon(
