@@ -24,7 +24,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.R
 import com.prody.prashant.data.local.entity.JournalEntryEntity
 import com.prody.prashant.domain.model.Mood
-import com.prody.prashant.ui.components.ProdyCard
+import com.prody.prashant.ui.components.*
 import com.prody.prashant.ui.theme.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -72,22 +72,20 @@ fun JournalListScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = onNavigateToHistory) {
-                        Icon(
-                            imageVector = ProdyIcons.History,
-                            contentDescription = "View journal history",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                    IconButton(onClick = { viewModel.toggleBookmarkFilter() }) {
-                        Icon(
-                            imageVector = if (uiState.showBookmarkedOnly) ProdyIcons.Bookmark
-                            else ProdyIcons.BookmarkBorder,
-                            contentDescription = "Filter bookmarks",
-                            tint = if (uiState.showBookmarkedOnly) MaterialTheme.colorScheme.primary
-                            else MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
+                    ProdyIconButton(
+                        icon = ProdyIcons.History,
+                        onClick = onNavigateToHistory,
+                        contentDescription = "View journal history",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    ProdyIconButton(
+                        icon = if (uiState.showBookmarkedOnly) ProdyIcons.Bookmark
+                        else ProdyIcons.BookmarkBorder,
+                        onClick = { viewModel.toggleBookmarkFilter() },
+                        contentDescription = "Filter bookmarks",
+                        tint = if (uiState.showBookmarkedOnly) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.background
@@ -179,7 +177,10 @@ private fun JournalEntryCard(
     ProdyCard(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
+            .clickable(
+                onClickLabel = "View journal entry",
+                onClick = onClick
+            )
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
@@ -219,19 +220,14 @@ private fun JournalEntryCard(
                     }
                 }
 
-                IconButton(
+                ProdyIconButton(
+                    icon = if (entry.isBookmarked) ProdyIcons.Bookmark
+                    else ProdyIcons.BookmarkBorder,
                     onClick = onBookmarkClick,
-                    modifier = Modifier.size(48.dp)  // Minimum 48dp touch target for accessibility
-                ) {
-                    Icon(
-                        imageVector = if (entry.isBookmarked) ProdyIcons.Bookmark
-                        else ProdyIcons.BookmarkBorder,
-                        contentDescription = if (entry.isBookmarked) "Remove bookmark" else "Add bookmark",
-                        tint = if (entry.isBookmarked) MaterialTheme.colorScheme.primary
-                        else MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
+                    contentDescription = if (entry.isBookmarked) "Remove bookmark" else "Add bookmark",
+                    tint = if (entry.isBookmarked) MaterialTheme.colorScheme.primary
+                    else MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
 
             Spacer(modifier = Modifier.height(12.dp))
