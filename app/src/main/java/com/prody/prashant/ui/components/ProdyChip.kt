@@ -45,7 +45,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.prody.prashant.util.rememberProdyHaptic
-import com.prody.prashant.ui.theme.ProdyTokens
+import com.prody.prashant.ui.theme.ProdyDesignTokens
 
 /**
  * Prody Premium Chip System (Phase 2 Redesign)
@@ -70,11 +70,12 @@ import com.prody.prashant.ui.theme.ProdyTokens
 // =============================================================================
 
 private object ChipDefaults {
-    val Height = 32.dp
-    val HorizontalPadding = 12.dp
-    val IconSize = 18.dp
-    val IconTextGap = 6.dp
-    val CornerRadius = ProdyTokens.Radius.full
+    val Height = ProdyDesignTokens.TouchTarget.small
+    val HorizontalPadding = ProdyDesignTokens.Spacing.medium
+    val IconSize = ProdyDesignTokens.IconSize.small
+    val IconTextGap = ProdyDesignTokens.Spacing.extraSmall
+    val CornerRadius = ProdyDesignTokens.Radius.chip
+    val BorderWidth = ProdyDesignTokens.Elevation.low
     const val AnimationDuration = 200
 }
 
@@ -166,7 +167,7 @@ fun ProdyFilterChip(
         shape = RoundedCornerShape(ChipDefaults.CornerRadius),
         color = backgroundColor,
         contentColor = contentColor,
-        border = BorderStroke(1.dp, borderColor),
+        border = BorderStroke(ChipDefaults.BorderWidth, borderColor),
         interactionSource = interactionSource
     ) {
         Row(
