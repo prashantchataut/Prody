@@ -58,7 +58,8 @@ fun HavenHomeScreen(
 
     // Security: Prevent screenshots and screen recordings while in Haven (Therapeutic Support)
     DisposableEffect(Unit) {
-        val window = (context as? android.app.Activity)?.window
+        val activity = context.findActivity()
+        val window = activity?.window
         window?.addFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)
         onDispose {
             window?.clearFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)
@@ -849,6 +850,18 @@ private fun sessionTypeIcon(sessionType: SessionType): androidx.compose.ui.graph
         SessionType.GENERAL -> ProdyIcons.Chat            // Chat bubble for general
         SessionType.CRISIS_SUPPORT -> ProdyIcons.HealthAndSafety // Safety for crisis
     }
+}
+
+/**
+ * Helper function to find the Activity from a Context
+ */
+private fun android.content.Context.findActivity(): android.app.Activity? {
+    var context = this
+    while (context is android.content.ContextWrapper) {
+        if (context is android.app.Activity) return context
+        context = context.baseContext
+    }
+    return null
 }
 
 /**

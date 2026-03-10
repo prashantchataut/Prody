@@ -1702,7 +1702,7 @@ abstract class ProdyDatabase : RoomDatabase() {
          */
         val MIGRATION_20_21: Migration = object : Migration(20, 21) {
             override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL("CREATE INDEX IF NOT EXISTS idx_haven_memories_follow_up_date ON haven_memories(followUpDate)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_haven_memories_followUpDate ON haven_memories(followUpDate)")
             }
         }
 
