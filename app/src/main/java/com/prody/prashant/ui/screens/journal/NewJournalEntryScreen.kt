@@ -75,6 +75,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import com.prody.prashant.util.AccessibilityUtils
+import com.prody.prashant.util.rememberProdyHaptic
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -85,6 +86,7 @@ import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
 import com.prody.prashant.R
+import com.prody.prashant.ui.components.ProdyIconButton
 import com.prody.prashant.domain.model.Mood
 import com.prody.prashant.domain.validation.ContentValidation
 import com.prody.prashant.domain.validation.ContentValidator
@@ -541,7 +543,11 @@ private fun MoodSelectionSection(selectedMood: Mood, onMoodSelected: (Mood) -> U
 
 @Composable
 private fun MoodButton(mood: Mood, isSelected: Boolean, onClick: () -> Unit, colors: JournalThemeColors) {
-    Box(modifier = Modifier.height(48.dp).clip(RoundedCornerShape(24.dp)).background(if (isSelected) colors.accent else colors.surface).clickable(onClick = onClick).padding(horizontal = 16.dp), contentAlignment = Alignment.Center) {
+    val haptic = rememberProdyHaptic()
+    Box(modifier = Modifier.height(48.dp).clip(RoundedCornerShape(24.dp)).background(if (isSelected) colors.accent else colors.surface).clickable(onClick = {
+        haptic.selection()
+        onClick()
+    }).padding(horizontal = 16.dp), contentAlignment = Alignment.Center) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Icon(imageVector = mood.icon, contentDescription = null, tint = if (isSelected) Color.White else colors.primaryText, modifier = Modifier.size(20.dp))
             Text(text = mood.displayName, style = MaterialTheme.typography.labelLarge.copy(fontFamily = PoppinsFamily, fontWeight = FontWeight.Bold), color = if (isSelected) Color.White else colors.primaryText)
@@ -563,9 +569,27 @@ private fun JournalInputField(content: String, wordCount: Int, onContentChanged:
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                     Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                        IconButton(onClick = onMediaClick) { Icon(imageVector = ProdyIcons.Image, contentDescription = null, tint = colors.primaryText) }
-                        IconButton(onClick = onVoiceClick) { Icon(imageVector = if (isRecording) ProdyIcons.Stop else ProdyIcons.Mic, contentDescription = null, tint = if (isRecording) colors.accent else colors.primaryText) }
-                        IconButton(onClick = onListClick) { Icon(imageVector = Icons.Filled.Menu, contentDescription = null, tint = colors.primaryText) }
+                        ProdyIconButton(
+                            icon = ProdyIcons.Image,
+                            onClick = onMediaClick,
+                            contentDescription = "Attach media",
+                            tint = colors.primaryText,
+                            size = 40.dp
+                        )
+                        ProdyIconButton(
+                            icon = if (isRecording) ProdyIcons.Stop else ProdyIcons.Mic,
+                            onClick = onVoiceClick,
+                            contentDescription = if (isRecording) "Stop recording" else "Record voice note",
+                            tint = if (isRecording) colors.accent else colors.primaryText,
+                            size = 40.dp
+                        )
+                        ProdyIconButton(
+                            icon = ProdyIcons.List,
+                            onClick = onListClick,
+                            contentDescription = "Add bullet list",
+                            tint = colors.primaryText,
+                            size = 40.dp
+                        )
                     }
                     Text(text = "$wordCount WORDS", style = MaterialTheme.typography.labelSmall, color = colors.secondaryText)
                 }
