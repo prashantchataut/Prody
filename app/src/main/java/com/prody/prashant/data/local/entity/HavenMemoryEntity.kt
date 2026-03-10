@@ -27,6 +27,7 @@ import androidx.room.PrimaryKey
         Index(value = ["userId"]),
         Index(value = ["status"]),
         Index(value = ["factDate"]),
+        Index(value = ["followUpDate"]),
         Index(value = ["createdAt"]),
         Index(value = ["userId", "status"]),
         Index(value = ["category"])

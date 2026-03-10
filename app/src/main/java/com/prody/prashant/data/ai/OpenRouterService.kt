@@ -173,8 +173,10 @@ class OpenRouterService @Inject constructor() {
                 } else {
                     HttpLoggingInterceptor.Level.NONE
                 }
-                // Security: Redact Authorization header to prevent API key leak in logs
+                // Security: Redact sensitive headers to prevent API key leak in logs
                 redactHeader("Authorization")
+                redactHeader("X-Api-Key")
+                redactHeader("api-key")
             })
             .build()
     }

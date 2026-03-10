@@ -25,6 +25,7 @@
 ### Journaling
 - Daily journaling with AI-powered prompts
 - Emotional insights from Buddha (AI assistant)
+- **Soul Layer Intelligence**: Context-aware greetings and surfaced memories
 - Pattern detection over time
 - Templates for different reflection types
 - Mood tracking with thoughtful reflections
@@ -49,6 +50,12 @@
 - Content analysis for contextual responses
 - Weekly summaries of your growth journey
 - Mood-appropriate wisdom delivery
+
+### Haven - Therapeutic Support (NEW)
+- **Therapeutic AI Companion**: Powered by Gemini 1.5 Flash for real-time support
+- **Guided Exercises**: Box breathing, grounding techniques, and thought records
+- **Witness Mode**: Haven remembers important facts and commitments for follow-up
+- **Crisis Detection**: Integrated safety protocols and crisis resources
 
 ### Future Self Messaging
 - Write letters to your future self
@@ -80,16 +87,16 @@
 
 | Component | Technology |
 |-----------|------------|
-| **Language** | Kotlin 2.0 |
-| **UI** | Jetpack Compose with Material 3 |
+| **Language** | Kotlin 2.0.21 |
+| **UI** | Jetpack Compose (BOM 2024.11.00) with Material 3 |
 | **Architecture** | MVVM + Clean Architecture |
-| **DI** | Hilt |
-| **AI** | Gemini API (Buddha) |
-| **Database** | Room with Flow |
-| **Preferences** | DataStore |
-| **Async** | Kotlin Coroutines |
-| **Navigation** | Compose Navigation with animations |
-| **Background Work** | WorkManager |
+| **DI** | Hilt 2.52 |
+| **AI** | Gemini API (Buddha & Haven) + OpenRouter Fallback |
+| **Database** | Room 2.6.1 with SQLCipher Encryption |
+| **Preferences** | DataStore 1.1.1 |
+| **Async** | Kotlin Coroutines 1.9.0 |
+| **Navigation** | Compose Navigation 2.8.4 |
+| **Background Work** | WorkManager 2.10.0 |
 | **Fonts** | Poppins + Playfair Display |
 
 ## Design System

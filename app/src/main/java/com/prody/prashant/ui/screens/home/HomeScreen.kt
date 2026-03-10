@@ -49,12 +49,11 @@ fun HomeScreen(
     onNavigateToChallenges: () -> Unit = {},
     onNavigateToSearch: () -> Unit = {},
     onNavigateToIdiomDetail: (Long) -> Unit = {},
+    onNavigateToSettings: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     // We assume ViewModel provides necessary state. For this UI revamp, 
     // we'll focus on the UI structure and use placeholder data where ViewModel might not strictly align yet.
-    
-    val surfaceColor = MaterialTheme.colorScheme.surface
     val backgroundColor = MaterialTheme.colorScheme.background
 
     LazyColumn(
@@ -67,7 +66,7 @@ fun HomeScreen(
         item {
             DashboardHeader(
                 userName = "Prashant", // Replace with real name
-                onProfileClick = {}, // TODO: Profile Nav
+                onProfileClick = onNavigateToSettings, // Profile Nav (Settings as Profile Entry)
                 onNotificationClick = {}
             )
         }

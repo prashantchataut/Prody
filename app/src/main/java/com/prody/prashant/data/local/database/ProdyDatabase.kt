@@ -132,6 +132,8 @@ import net.sqlcipher.database.SupportFactory
  * - Version 20: Mirror Evolution - Sealed Pods (Future Message Prophecy)
  *              Added prediction, predictionVerified, predictionVerifiedAt to FutureMessageEntity
  *              Enables "Prophecy" evidence drops when predictions are verified
+ * - Version 21: Database Maintenance for Haven
+ *              Added missing index on followUpDate in HavenMemoryEntity
  */
 @Database(
     entities = [
@@ -223,7 +225,7 @@ import net.sqlcipher.database.SupportFactory
         // Mirror Evolution: Evidence Locker
         EvidenceEntity::class
     ],
-    version = 20,
+    version = 21,
     exportSchema = true // Enable for migration verification
 )
 abstract class ProdyDatabase : RoomDatabase() {
@@ -1689,6 +1691,18 @@ abstract class ProdyDatabase : RoomDatabase() {
                 db.execSQL("ALTER TABLE future_messages ADD COLUMN prediction TEXT")
                 db.execSQL("ALTER TABLE future_messages ADD COLUMN predictionVerified INTEGER")
                 db.execSQL("ALTER TABLE future_messages ADD COLUMN predictionVerifiedAt INTEGER")
+            }
+        }
+
+        /**
+         * Migration 20 -> 21: Database Maintenance for Haven
+         *
+         * Changes:
+         * - Added missing index on followUpDate in HavenMemoryEntity
+         */
+        val MIGRATION_20_21: Migration = object : Migration(20, 21) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_haven_memories_followUpDate ON haven_memories(followUpDate)")
             }
         }
 

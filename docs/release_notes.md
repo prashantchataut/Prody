@@ -46,3 +46,25 @@ Download link: https://knowprashant.vercel.app/prody-1.0.0
 ---
 
 *This release has been verified to pass all build checks (debug, release, lint).*
+
+# Prody Maintenance - May 2024
+
+## Maintenance Summary
+Performed a comprehensive codebase cleanup, error resolution, and security hardening.
+
+## Key Changes
+
+### Bug Fixes & Improvements
+- Resolved deprecated Material Icon usage across the codebase, particularly with `AutoMirrored` variants.
+- Connected missing profile navigation on the Home screen.
+- Added missing database indexes to `HavenMemoryEntity` to optimize "Vault" feature queries.
+- Cleaned up unused imports and variables in `MainActivity`, `HomeScreen`, and `HavenViewModel`.
+
+### Security & Privacy
+- Hardened GitHub Actions CI/CD workflows by pinning all actions to specific commit SHAs.
+- Verified `FLAG_SECURE` implementation on sensitive screens (Journal, Haven Chat) to prevent unauthorized screenshots.
+- Redacted sensitive headers in network logs (OpenRouter).
+
+### Documentation
+- Updated `README.md` to reflect new Haven therapeutic features and Soul Layer intelligence.
+- Updated tech stack documentation with specific dependency versions.
