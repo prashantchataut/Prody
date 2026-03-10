@@ -87,6 +87,7 @@ class BuddhaAiRepository @Inject constructor(
     // Rate limiting
     private val callTimestamps = mutableListOf<Long>()
     private val rateLimitMutex = Mutex()
+    private val fallbackOrchestrator = AiFallbackOrchestrator(geminiService, openRouterService, TAG)
 
     init {
         // Load cache from disk on initialization
@@ -709,75 +710,9 @@ class BuddhaAiRepository @Inject constructor(
      * @return The validated AI response, or null if all attempts fail
      */
     private suspend fun tryGenerateWithFallback(prompt: String, maxRetries: Int = 2): String? {
-        var attempts = 0
-        var lastResponse: String? = null
-
-        while (attempts < maxRetries) {
-            attempts++
-
-            // Build prompt with persona reinforcement based on retry count
-            val enhancedPrompt = if (attempts > 1) {
-                buildRetryPrompt(prompt, attempts)
-            } else {
-                "$BUDDHA_SYSTEM_PROMPT\n\n$prompt"
-            }
-
-            // Try Gemini first
-            if (geminiService.isConfigured()) {
-                try {
-                    val result = geminiService.generateContent(enhancedPrompt)
-                    if (result is GeminiResult.Success && result.data.isNotBlank()) {
-                        lastResponse = result.data
-
-                        // Validate response doesn't contain generic AI language
-                        if (!containsGenericAiLanguage(lastResponse)) {
-                            Log.d(TAG, "Gemini response passed persona validation on attempt $attempts")
-                            return lastResponse
-                        } else {
-                            Log.w(TAG, "Gemini response contained generic AI language, retrying... (attempt $attempts)")
-                        }
-                    }
-                } catch (e: Exception) {
-                    Log.w(TAG, "Gemini failed on attempt $attempts", e)
-                }
-            }
-
-            // Fallback to OpenRouter
-            if (openRouterService.isConfigured()) {
-                try {
-                    val result = openRouterService.generateResponse(
-                        prompt = enhancedPrompt,
-                        systemPrompt = BUDDHA_SYSTEM_PROMPT
-                    )
-                    result.onSuccess { response ->
-                        lastResponse = response
-
-                        // Validate response doesn't contain generic AI language
-                        if (!containsGenericAiLanguage(response)) {
-                            Log.d(TAG, "OpenRouter response passed persona validation on attempt $attempts")
-                            return response
-                        } else {
-                            Log.w(TAG, "OpenRouter response contained generic AI language, retrying... (attempt $attempts)")
-                        }
-                    }
-                } catch (e: Exception) {
-                    Log.w(TAG, "OpenRouter failed on attempt $attempts", e)
-                }
-            }
-        }
-
-        // If we have a response but it failed validation, try to clean it up
-        lastResponse?.let { response ->
-            val cleanedResponse = sanitizeGenericAiLanguage(response)
-            if (cleanedResponse.isNotBlank()) {
-                Log.d(TAG, "Returning sanitized response after $attempts attempts")
-                return cleanedResponse
-            }
-        }
-
-        Log.w(TAG, "All AI attempts failed after $attempts tries")
-        return null
+        return fallbackOrchestrator.generate(prompt = prompt, maxRetries = maxRetries)
     }
+
 
     /**
      * Builds an enhanced prompt for retry attempts with stricter persona reinforcement.

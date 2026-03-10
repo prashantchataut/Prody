@@ -232,6 +232,7 @@ dependencies {
     testImplementation(libs.mockk)
     testImplementation(libs.turbine)
     testImplementation(libs.androidx.arch.core.testing)
+    testImplementation(libs.mockwebserver)
 
     // Android UI Testing
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
