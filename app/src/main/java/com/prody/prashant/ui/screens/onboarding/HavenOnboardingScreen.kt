@@ -5,7 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,18 +30,21 @@ fun HavenOnboardingScreen(
         verticalArrangement = Arrangement.Center
     ) {
         // Icon / Hero Image
+        // Performance Optimization: Cache gradient and shape to avoid allocation on every recomposition
+        val heroGradient = remember {
+            Brush.linearGradient(
+                colors = listOf(
+                    ProdyAccentGreen.copy(alpha = 0.2f),
+                    ProdyAccentGreen.copy(alpha = 0.05f)
+                )
+            )
+        }
+
         Box(
             modifier = Modifier
                 .size(120.dp)
                 .clip(CircleShape)
-                .background(
-                    Brush.linearGradient(
-                        colors = listOf(
-                            ProdyAccentGreen.copy(alpha = 0.2f),
-                            ProdyAccentGreen.copy(alpha = 0.05f)
-                        )
-                    )
-                ),
+                .background(heroGradient),
             contentAlignment = Alignment.Center
         ) {
             Icon(
@@ -105,12 +108,15 @@ fun HavenOnboardingScreen(
         
         Spacer(modifier = Modifier.weight(1f)) // Push button to bottom
         
+        // Performance Optimization: Cache static shape to avoid allocation
+        val buttonShape = remember { RoundedCornerShape(28.dp) }
+
         Button(
             onClick = onNext,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
-            shape = RoundedCornerShape(28.dp),
+            shape = buttonShape,
             colors = ButtonDefaults.buttonColors(
                 containerColor = ProdyAccentGreen,
                 contentColor = Color.White
@@ -132,6 +138,9 @@ private fun OnboardingFeatureItem(
     title: String,
     description: String
 ) {
+    // Performance Optimization: Cache static shape to avoid allocation
+    val iconBoxShape = remember { RoundedCornerShape(12.dp) }
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.fillMaxWidth()
@@ -139,7 +148,7 @@ private fun OnboardingFeatureItem(
         Box(
             modifier = Modifier
                 .size(48.dp)
-                .clip(RoundedCornerShape(12.dp))
+                .clip(iconBoxShape)
                 .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
             contentAlignment = Alignment.Center
         ) {

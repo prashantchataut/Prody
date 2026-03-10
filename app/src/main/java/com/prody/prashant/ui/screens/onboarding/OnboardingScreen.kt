@@ -61,23 +61,28 @@ fun OnboardingScreen(
     // Determine theme for background only if needed, but we mostly use specific colors
     // We will use the ProdyTheme colors.
     
-    // Gradient Background: White to #F5F5F5 for light mode
-    val gradientColors = if (!isSystemInDarkTheme()) {
-        listOf(Color.White, Color(0xFFF5F5F5))
-    } else {
-        listOf(ProdyBackgroundDark, ProdyBackgroundDark) // Keep dark mode simple
+    // Performance Optimization: Cache gradient colors and brush to avoid allocations on every recomposition
+    val isDark = isSystemInDarkTheme()
+    val gradientBrush = remember(isDark) {
+        val colors = if (!isDark) {
+            listOf(Color.White, Color(0xFFF5F5F5))
+        } else {
+            listOf(ProdyBackgroundDark, ProdyBackgroundDark) // Keep dark mode simple
+        }
+        Brush.verticalGradient(colors)
     }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Brush.verticalGradient(gradientColors))
+            .background(gradientBrush)
             .systemBarsPadding()
     ) {
         HorizontalPager(
             state = pagerState,
             modifier = Modifier.fillMaxSize(),
-            userScrollEnabled = false // Force navigation via buttons
+            userScrollEnabled = false, // Force navigation via buttons
+            key = { it } // Performance Optimization: Use stable keys for pager items
         ) { page ->
             when (page) {
                 0 -> WelcomeScreen(
@@ -419,6 +424,9 @@ private fun FeatureScreenLayout(
 private fun StandardFeatureCard(
     content: @Composable ColumnScope.() -> Unit
 ) {
+    // Performance Optimization: Cache static shape to avoid allocation
+    val cardShape = remember { RoundedCornerShape(12.dp) }
+
     // Card Design: 12dp corner radius, 8dp elevation with proper shadow
     Surface(
         modifier = Modifier
@@ -426,11 +434,11 @@ private fun StandardFeatureCard(
             .aspectRatio(0.8f)
             .shadow(
                 elevation = 8.dp,
-                shape = RoundedCornerShape(12.dp),
+                shape = cardShape,
                 spotColor = Color(0x1A000000), // Soft shadow
                 ambientColor = Color(0x1A000000)
             ),
-        shape = RoundedCornerShape(12.dp),
+        shape = cardShape,
         color = Color.White
     ) {
         Column(
