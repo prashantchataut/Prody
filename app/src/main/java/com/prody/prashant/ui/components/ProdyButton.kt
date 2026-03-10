@@ -20,12 +20,17 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
+import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -500,8 +505,9 @@ private fun ButtonContent(
 // =============================================================================
 
 /**
- * Circular icon button with proper touch target.
+ * Circular icon button with proper touch target, premium interactions, and tooltip support.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProdyIconButton(
     icon: ImageVector,
@@ -509,6 +515,7 @@ fun ProdyIconButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     contentDescription: String? = null,
+    tooltip: String? = null,
     tint: Color = MaterialTheme.colorScheme.onSurface,
     size: Dp = ProdyTokens.Touch.minimum
 ) {
@@ -525,33 +532,53 @@ fun ProdyIconButton(
         label = "icon_button_scale"
     )
 
-    Surface(
-        onClick = {
-            haptic.click()
-            onClick()
-        },
-        modifier = modifier
-            .scale(scale)
-            .size(size)
-            .semantics {
-                role = Role.Button
-                if (contentDescription != null) {
-                    this.contentDescription = contentDescription
+    val buttonContent = @Composable { contentModifier: Modifier ->
+        Surface(
+            onClick = {
+                haptic.click()
+                onClick()
+            },
+            modifier = contentModifier
+                .scale(scale)
+                .size(size)
+                .semantics {
+                    role = Role.Button
+                    val finalDescription = contentDescription ?: tooltip
+                    if (finalDescription != null) {
+                        this.contentDescription = finalDescription
+                    }
+                },
+            enabled = enabled,
+            shape = RoundedCornerShape(50),
+            color = Color.Transparent,
+            contentColor = tint,
+            interactionSource = interactionSource
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null, // Accessibility handled by Surface
+                modifier = Modifier
+                    .padding(12.dp)
+                    .size(24.dp),
+                tint = if (enabled) tint else tint.copy(alpha = 0.38f)
+            )
+        }
+    }
+
+    if (tooltip != null) {
+        TooltipBox(
+            positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+            tooltip = {
+                PlainTooltip {
+                    Text(text = tooltip)
                 }
             },
-        enabled = enabled,
-        shape = RoundedCornerShape(50),
-        color = Color.Transparent,
-        contentColor = tint,
-        interactionSource = interactionSource
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = contentDescription,
-            modifier = Modifier
-                .padding(12.dp)
-                .size(24.dp),
-            tint = if (enabled) tint else tint.copy(alpha = 0.38f)
-        )
+            state = rememberTooltipState(),
+            modifier = modifier
+        ) {
+            buttonContent(Modifier)
+        }
+    } else {
+        buttonContent(modifier)
     }
 }
