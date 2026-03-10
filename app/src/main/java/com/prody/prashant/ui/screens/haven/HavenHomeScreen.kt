@@ -54,6 +54,16 @@ fun HavenHomeScreen(
     viewModel: HavenViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.homeState.collectAsStateWithLifecycle()
+    val context = androidx.compose.ui.platform.LocalContext.current
+
+    // Security: Prevent screenshots and screen recordings while in Haven (Therapeutic Support)
+    DisposableEffect(Unit) {
+        val window = (context as? android.app.Activity)?.window
+        window?.addFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)
+        onDispose {
+            window?.clearFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)
+        }
+    }
 
     Scaffold(
         topBar = {
