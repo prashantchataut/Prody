@@ -6,6 +6,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,18 +31,19 @@ fun HavenOnboardingScreen(
         verticalArrangement = Arrangement.Center
     ) {
         // Icon / Hero Image
+        val iconBackgroundBrush = remember {
+            Brush.linearGradient(
+                colors = listOf(
+                    ProdyAccentGreen.copy(alpha = 0.2f),
+                    ProdyAccentGreen.copy(alpha = 0.05f)
+                )
+            )
+        }
         Box(
             modifier = Modifier
                 .size(120.dp)
                 .clip(CircleShape)
-                .background(
-                    Brush.linearGradient(
-                        colors = listOf(
-                            ProdyAccentGreen.copy(alpha = 0.2f),
-                            ProdyAccentGreen.copy(alpha = 0.05f)
-                        )
-                    )
-                ),
+                .background(iconBackgroundBrush),
             contentAlignment = Alignment.Center
         ) {
             Icon(
@@ -105,12 +107,13 @@ fun HavenOnboardingScreen(
         
         Spacer(modifier = Modifier.weight(1f)) // Push button to bottom
         
+        val buttonShape = remember { RoundedCornerShape(28.dp) }
         Button(
             onClick = onNext,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
-            shape = RoundedCornerShape(28.dp),
+            shape = buttonShape,
             colors = ButtonDefaults.buttonColors(
                 containerColor = ProdyAccentGreen,
                 contentColor = Color.White

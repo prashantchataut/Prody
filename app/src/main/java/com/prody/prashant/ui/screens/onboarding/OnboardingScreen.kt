@@ -61,23 +61,31 @@ fun OnboardingScreen(
     // Determine theme for background only if needed, but we mostly use specific colors
     // We will use the ProdyTheme colors.
     
+    val isDark = isSystemInDarkTheme()
     // Gradient Background: White to #F5F5F5 for light mode
-    val gradientColors = if (!isSystemInDarkTheme()) {
-        listOf(Color.White, Color(0xFFF5F5F5))
-    } else {
-        listOf(ProdyBackgroundDark, ProdyBackgroundDark) // Keep dark mode simple
+    val gradientColors = remember(isDark) {
+        if (!isDark) {
+            listOf(Color.White, Color(0xFFF5F5F5))
+        } else {
+            listOf(ProdyBackgroundDark, ProdyBackgroundDark) // Keep dark mode simple
+        }
+    }
+
+    val backgroundBrush = remember(gradientColors) {
+        Brush.verticalGradient(gradientColors)
     }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Brush.verticalGradient(gradientColors))
+            .background(backgroundBrush)
             .systemBarsPadding()
     ) {
         HorizontalPager(
             state = pagerState,
             modifier = Modifier.fillMaxSize(),
-            userScrollEnabled = false // Force navigation via buttons
+            userScrollEnabled = false, // Force navigation via buttons
+            key = { it }
         ) { page ->
             when (page) {
                 0 -> WelcomeScreen(

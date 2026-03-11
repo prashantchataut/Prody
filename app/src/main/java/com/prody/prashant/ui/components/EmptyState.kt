@@ -22,6 +22,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -88,7 +89,9 @@ fun ProdyEmptyState(
             contentDescription = iconContentDescription,
             modifier = Modifier
                 .size(ProdyTokens.IconSize.hero)
-                .alpha(iconAlpha),
+                .graphicsLayer {
+                    this.alpha = iconAlpha
+                },
             tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
         )
 
@@ -321,7 +324,9 @@ fun ProdyErrorEmptyState(
             contentDescription = AccessibilityHelper.ContentDescriptions.ERROR,
             modifier = Modifier
                 .size(ProdyTokens.IconSize.hero)
-                .alpha(iconAlpha),
+                .graphicsLayer {
+                    this.alpha = iconAlpha
+                },
             tint = MaterialTheme.colorScheme.error.copy(alpha = 0.6f)
         )
 
@@ -402,7 +407,11 @@ fun ProdyWelcomeEmptyState(
             contentDescription = "Welcome",
             modifier = Modifier
                 .size(96.dp)
-                .alpha(0.9f),
+                .graphicsLayer {
+                    this.scaleX = iconScale
+                    this.scaleY = iconScale
+                    this.alpha = 0.9f
+                },
             tint = MaterialTheme.colorScheme.primary
         )
 

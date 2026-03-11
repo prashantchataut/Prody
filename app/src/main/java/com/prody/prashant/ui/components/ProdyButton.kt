@@ -31,7 +31,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -157,7 +157,7 @@ fun ProdyPrimaryButton(
             }
         },
         modifier = modifier
-            .scale(scale)
+            .graphicsLayer { this.scaleX = scale; this.scaleY = scale }
             .defaultMinSize(minHeight = height)
             .premiumShimmer(isVisible = enabled && !loading)
             .semantics {
@@ -240,7 +240,7 @@ fun ProdySecondaryButton(
             }
         },
         modifier = modifier
-            .scale(scale)
+            .graphicsLayer { this.scaleX = scale; this.scaleY = scale }
             .defaultMinSize(minHeight = height)
             .semantics {
                 role = Role.Button
@@ -323,7 +323,7 @@ fun ProdyOutlinedButton(
             }
         },
         modifier = modifier
-            .scale(scale)
+            .graphicsLayer { this.scaleX = scale; this.scaleY = scale }
             .defaultMinSize(minHeight = height)
             .semantics {
                 role = Role.Button
@@ -408,7 +408,7 @@ fun ProdyGhostButton(
             }
         },
         modifier = modifier
-            .scale(scale)
+            .graphicsLayer { this.scaleX = scale; this.scaleY = scale }
             .defaultMinSize(minHeight = height)
             .semantics {
                 role = Role.Button
@@ -531,7 +531,7 @@ fun ProdyIconButton(
             onClick()
         },
         modifier = modifier
-            .scale(scale)
+            .graphicsLayer { this.scaleX = scale; this.scaleY = scale }
             .size(size)
             .semantics {
                 role = Role.Button
