@@ -456,7 +456,7 @@ class NewJournalEntryViewModel @Inject constructor(
                             showInsightCard = !insight.isInsufficientContext || insight.question != null
                         )
                     }
-                    android.util.Log.d(TAG, "Journal insight generated: ${insight.emotionLabel}, snippet: ${insight.snippet}")
+                    android.util.Log.d(TAG, "Journal insight generated: ${insight.emotionLabel}")
                 } else {
                     _uiState.update { it.copy(isGeneratingInsight = false) }
                 }
@@ -708,7 +708,7 @@ class NewJournalEntryViewModel @Inject constructor(
                                     transcriptionPartial = ""
                                 )
                             }
-                            android.util.Log.d(TAG, "Transcription complete: ${result.text}")
+                            android.util.Log.d(TAG, "Transcription complete")
                         }
                         is TranscriptionResult.SoundLevel -> {
                             _uiState.update { it.copy(transcriptionSoundLevel = result.level) }
