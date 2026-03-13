@@ -10,10 +10,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
@@ -268,8 +266,11 @@ fun MoodBreathingHalo(
         Box(
             modifier = Modifier
                 .size(size * haloScale)
-                .scale(haloScale)
-                .alpha(haloAlpha)
+                .graphicsLayer {
+                    scaleX = haloScale
+                    scaleY = haloScale
+                    this.alpha = haloAlpha
+                }
                 .blur(12.dp)
                 .background(haloColor, CircleShape)
         )
@@ -278,7 +279,9 @@ fun MoodBreathingHalo(
         Box(
             modifier = Modifier
                 .size(size * 0.9f)
-                .alpha(haloAlpha * 0.5f)
+                .graphicsLayer {
+                    this.alpha = haloAlpha * 0.5f
+                }
                 .blur(6.dp)
                 .background(haloColor.copy(alpha = 0.3f), CircleShape)
         )
@@ -710,7 +713,10 @@ fun AchievementRevealCelebration(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black.copy(alpha = overlayAlpha)),
+            .graphicsLayer {
+                this.alpha = overlayAlpha
+            }
+            .background(Color.Black),
         contentAlignment = Alignment.Center
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
@@ -885,8 +891,9 @@ fun TimeCapsuleSealAnimation(
         Canvas(
             modifier = Modifier
                 .size(100.dp)
-                .scale(foldScale)
                 .graphicsLayer {
+                    scaleX = foldScale
+                    scaleY = foldScale
                     translationY = travelOffsetY
                     translationX = travelOffsetX
                 }
@@ -966,7 +973,9 @@ fun TimeCapsuleUnsealAnimation(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(200.dp)
-                    .alpha(glowAlpha)
+                    .graphicsLayer {
+                        this.alpha = glowAlpha
+                    }
                     .blur(20.dp)
                     .background(
                         brush = Brush.radialGradient(
@@ -1056,7 +1065,8 @@ fun NavigationBreathingGlow(
                     .graphicsLayer {
                         scaleX = glowScale
                         scaleY = glowScale
-                        alpha = glowAlpha * activeAlpha
+                        // Explicitly use 'this.alpha' to resolve conflict with Modifier.alpha
+                        this.alpha = glowAlpha * activeAlpha
                     }
                     .blur(12.dp)
                     .background(color, CircleShape)
@@ -1116,7 +1126,9 @@ fun WisdomTextReveal(
             Box(
                 modifier = Modifier
                     .matchParentSize()
-                    .alpha(ambientGlow * revealProgress)
+                    .graphicsLayer {
+                        this.alpha = ambientGlow * revealProgress
+                    }
                     .blur(30.dp)
                     .background(
                         brush = Brush.radialGradient(
@@ -1134,10 +1146,10 @@ fun WisdomTextReveal(
         androidx.compose.material3.Text(
             text = text,
             modifier = Modifier
-                .alpha(revealProgress)
                 .graphicsLayer {
                     // Subtle vertical unfolding effect
                     scaleY = 0.9f + (revealProgress * 0.1f)
+                    this.alpha = revealProgress
                     transformOrigin = TransformOrigin(0.5f, 0f)
                 },
             style = MaterialTheme.typography.bodyLarge.copy(
