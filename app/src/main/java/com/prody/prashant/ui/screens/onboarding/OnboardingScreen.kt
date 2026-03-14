@@ -1,6 +1,7 @@
 package com.prody.prashant.ui.screens.onboarding
 
 import com.prody.prashant.ui.icons.ProdyIcons
+import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -8,29 +9,18 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.*
-import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -38,7 +28,6 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -58,14 +47,15 @@ fun OnboardingScreen(
 ) {
     val pagerState = rememberPagerState(pageCount = { 8 })
     val coroutineScope = rememberCoroutineScope()
-    // Determine theme for background only if needed, but we mostly use specific colors
-    // We will use the ProdyTheme colors.
+    val isDark = isSystemInDarkTheme()
     
-    // Gradient Background: White to #F5F5F5 for light mode
-    val gradientColors = if (!isSystemInDarkTheme()) {
-        listOf(Color.White, Color(0xFFF5F5F5))
-    } else {
-        listOf(ProdyBackgroundDark, ProdyBackgroundDark) // Keep dark mode simple
+    // Performance Optimization: Wrap gradient colors in remember to prevent redundant allocations
+    val gradientColors = remember(isDark) {
+        if (!isDark) {
+            listOf(Color.White, Color(0xFFF5F5F5))
+        } else {
+            listOf(ProdyBackgroundDark, ProdyBackgroundDark)
+        }
     }
 
     Box(
@@ -79,47 +69,55 @@ fun OnboardingScreen(
             modifier = Modifier.fillMaxSize(),
             userScrollEnabled = false // Force navigation via buttons
         ) { page ->
-            when (page) {
-                0 -> WelcomeScreen(
-                    onNext = { coroutineScope.launch { pagerState.animateScrollToPage(1) } },
-                    onLogin = { coroutineScope.launch { pagerState.animateScrollToPage(7) } }
-                )
-                1 -> HavenOnboardingScreen(
-                    onNext = { coroutineScope.launch { pagerState.animateScrollToPage(2) } }
-                )
-                2 -> JournalingScreen(
-                    onNext = { coroutineScope.launch { pagerState.animateScrollToPage(3) } },
-                    onSkip = { coroutineScope.launch { pagerState.animateScrollToPage(7) } }
-                )
-                3 -> GamificationLeaderboardScreen(
-                    onNext = { coroutineScope.launch { pagerState.animateScrollToPage(4) } },
-                    onSkip = { coroutineScope.launch { pagerState.animateScrollToPage(7) } }
-                )
-                4 -> GamificationXpScreen(
-                    onNext = { coroutineScope.launch { pagerState.animateScrollToPage(5) } }
-                )
-                5 -> DailyWisdomScreen(
-                    onNext = { coroutineScope.launch { pagerState.animateScrollToPage(6) } },
-                    onSkip = { coroutineScope.launch { pagerState.animateScrollToPage(7) } }
-                )
-                6 -> InsightsScreen(
-                    onNext = { coroutineScope.launch { pagerState.animateScrollToPage(7) } },
-                    onSkip = { coroutineScope.launch { pagerState.animateScrollToPage(7) } }
-                )
-                7 -> LoginSignupScreen(
-                    onLogin = {
-                        viewModel.completeOnboarding()
-                        onComplete()
-                    },
-                    onCreateAccount = {
-                        viewModel.completeOnboarding()
-                        onComplete()
-                    },
-                    onGoogleLogin = {
-                        viewModel.completeOnboarding()
-                        onComplete()
-                    }
-                )
+            // Performance Optimization: Staggered entry animation for premium feel
+            AnimatedVisibility(
+                visible = pagerState.currentPage == page,
+                enter = fadeIn(animationSpec = tween(600)) +
+                        slideInVertically(initialOffsetY = { 40 }, animationSpec = tween(600)),
+                exit = fadeOut(animationSpec = tween(300))
+            ) {
+                when (page) {
+                    0 -> WelcomeScreen(
+                        onNext = { coroutineScope.launch { pagerState.animateScrollToPage(1) } },
+                        onLogin = { coroutineScope.launch { pagerState.animateScrollToPage(7) } }
+                    )
+                    1 -> HavenOnboardingScreen(
+                        onNext = { coroutineScope.launch { pagerState.animateScrollToPage(2) } }
+                    )
+                    2 -> JournalingScreen(
+                        onNext = { coroutineScope.launch { pagerState.animateScrollToPage(3) } },
+                        onSkip = { coroutineScope.launch { pagerState.animateScrollToPage(7) } }
+                    )
+                    3 -> GamificationLeaderboardScreen(
+                        onNext = { coroutineScope.launch { pagerState.animateScrollToPage(4) } },
+                        onSkip = { coroutineScope.launch { pagerState.animateScrollToPage(7) } }
+                    )
+                    4 -> GamificationXpScreen(
+                        onNext = { coroutineScope.launch { pagerState.animateScrollToPage(5) } }
+                    )
+                    5 -> DailyWisdomScreen(
+                        onNext = { coroutineScope.launch { pagerState.animateScrollToPage(6) } },
+                        onSkip = { coroutineScope.launch { pagerState.animateScrollToPage(7) } }
+                    )
+                    6 -> InsightsScreen(
+                        onNext = { coroutineScope.launch { pagerState.animateScrollToPage(7) } },
+                        onSkip = { coroutineScope.launch { pagerState.animateScrollToPage(7) } }
+                    )
+                    7 -> LoginSignupScreen(
+                        onLogin = {
+                            viewModel.completeOnboarding()
+                            onComplete()
+                        },
+                        onCreateAccount = {
+                            viewModel.completeOnboarding()
+                            onComplete()
+                        },
+                        onGoogleLogin = {
+                            viewModel.completeOnboarding()
+                            onComplete()
+                        }
+                    )
+                }
             }
         }
     }
@@ -155,7 +153,7 @@ private fun WelcomeScreen(
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 32.sp
             ),
-            color = ProdyTextPrimaryLight // Always dark for contrast on light gradient
+            color = ProdyTextPrimaryLight
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -178,7 +176,7 @@ private fun WelcomeScreen(
 
         Spacer(modifier = Modifier.height(48.dp))
 
-        // Primary CTA Button: 56dp height, 16dp corner radius
+        // Primary CTA Button
         PrimaryButton(
             text = "Get Started",
             onClick = onNext,
@@ -267,7 +265,7 @@ private fun GamificationXpScreen(onNext: () -> Unit) {
         currentPage = 4,
         totalPages = 8,
         onNext = onNext,
-        onSkip = onNext // Skip acts as next here
+        onSkip = onNext
     ) {
         StandardFeatureCard {
             Icon(Icons.Outlined.Star, contentDescription = null, tint = ProdyWarmAmber, modifier = Modifier.size(64.dp))
@@ -370,7 +368,7 @@ private fun FeatureScreenLayout(
             style = TextStyle(
                 fontFamily = PoppinsFamily,
                 fontWeight = FontWeight.SemiBold,
-                fontSize = 24.sp // Header text 24-32sp
+                fontSize = 24.sp
             ),
             color = ProdyTextPrimaryLight,
             textAlign = TextAlign.Center
@@ -384,7 +382,7 @@ private fun FeatureScreenLayout(
                 fontFamily = PoppinsFamily,
                 fontWeight = FontWeight.Normal,
                 fontSize = 14.sp,
-                lineHeight = 21.sp // 1.5 line height
+                lineHeight = 21.sp
             ),
             color = ProdyTextSecondaryLight,
             textAlign = TextAlign.Center
@@ -419,18 +417,20 @@ private fun FeatureScreenLayout(
 private fun StandardFeatureCard(
     content: @Composable ColumnScope.() -> Unit
 ) {
-    // Card Design: 12dp corner radius, 8dp elevation with proper shadow
+    // Performance Optimization: Wrap RoundedCornerShape in remember
+    val cardShape = remember { RoundedCornerShape(12.dp) }
+
     Surface(
         modifier = Modifier
             .fillMaxWidth()
             .aspectRatio(0.8f)
             .shadow(
                 elevation = 8.dp,
-                shape = RoundedCornerShape(12.dp),
-                spotColor = Color(0x1A000000), // Soft shadow
+                shape = cardShape,
+                spotColor = Color(0x1A000000),
                 ambientColor = Color(0x1A000000)
             ),
-        shape = RoundedCornerShape(12.dp),
+        shape = cardShape,
         color = Color.White
     ) {
         Column(
@@ -472,7 +472,7 @@ private fun LoginSignupScreen(
         modifier = Modifier
             .fillMaxSize()
             .padding(horizontal = 24.dp)
-            .imePadding() // Add IME padding to handle keyboard
+            .imePadding()
             .verticalScroll(scrollState),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -559,7 +559,6 @@ private fun LoginSignupScreen(
         Spacer(modifier = Modifier.height(24.dp))
 
         // Social Login - Google Button
-        // White background with black text, 24dp logo, 1dp border
         OutlinedButton(
             onClick = onGoogleLogin,
             modifier = Modifier
@@ -576,10 +575,7 @@ private fun LoginSignupScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {
-                // Google Logo Placeholder (Colored 'G' or similar)
-                // Using a simple Canvas for G logo rep
                 Canvas(modifier = Modifier.size(24.dp)) {
-                     // Simple representation of Google colors
                      drawCircle(Color(0xFF4285F4), radius = 10.dp.toPx(), center = center)
                      drawCircle(Color.White, radius = 6.dp.toPx(), center = center)
                 }
@@ -726,7 +722,7 @@ fun ProdyLogo(modifier: Modifier = Modifier) {
         contentAlignment = Alignment.Center
     ) {
         Icon(
-            imageVector = ProdyIcons.Spa, // Using Spa icon as leaf/seedling
+            imageVector = ProdyIcons.Spa,
             contentDescription = null,
             tint = ProdyForestGreen,
             modifier = Modifier.fillMaxSize(0.6f)

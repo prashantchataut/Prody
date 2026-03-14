@@ -43,10 +43,7 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -89,33 +86,25 @@ class MainActivity : ComponentActivity() {
     lateinit var notificationScheduler: NotificationScheduler
 
     private val viewModel: MainViewModel by viewModels()
-
-    // Flag to track if Hilt injection is complete
     private var isInjectionComplete = false
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
         if (isGranted && isInjectionComplete) {
-            // Permission granted, schedule notifications safely
             scheduleNotificationsSafely()
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        // Install splash screen BEFORE calling super.onCreate()
         val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
-
-        // Mark injection as complete after super.onCreate() for Hilt activities
         isInjectionComplete = true
 
-        // Keep splash screen visible until the data is loaded by the ViewModel
         splashScreen.setKeepOnScreenCondition {
             viewModel.uiState.value.isLoading
         }
 
-        // Check and request notification permission for Android 13+ safely
         try {
             requestNotificationPermission()
         } catch (e: Exception) {
@@ -152,7 +141,6 @@ class MainActivity : ComponentActivity() {
                     this,
                     Manifest.permission.POST_NOTIFICATIONS
                 ) == PackageManager.PERMISSION_GRANTED -> {
-                    // Permission already granted, schedule notifications safely
                     scheduleNotificationsSafely()
                 }
                 else -> {
@@ -160,28 +148,17 @@ class MainActivity : ComponentActivity() {
                 }
             }
         } else {
-            // For older versions (API < 33), schedule notifications directly
             scheduleNotificationsSafely()
         }
     }
 
-    /**
-     * Safely schedules notifications with proper error handling.
-     * This method ensures we don't crash if the notification scheduler
-     * has issues during initialization or scheduling.
-     */
     private fun scheduleNotificationsSafely() {
-        if (!isInjectionComplete) {
-            android.util.Log.w("MainActivity", "Injection not complete, skipping notification scheduling")
-            return
-        }
+        if (!isInjectionComplete) return
 
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 if (::notificationScheduler.isInitialized) {
                     notificationScheduler.rescheduleAllNotifications()
-                } else {
-                    android.util.Log.w("MainActivity", "NotificationScheduler not initialized")
                 }
             } catch (e: Exception) {
                 android.util.Log.e("MainActivity", "Failed to schedule notifications", e)
@@ -198,7 +175,6 @@ fun ProdyApp(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
-    // Bottom navigation items
     val bottomNavItems = listOf(
         BottomNavItem.Home,
         BottomNavItem.Journal,
@@ -207,7 +183,6 @@ fun ProdyApp(
         BottomNavItem.Profile
     )
 
-    // Determine if bottom nav should be shown (only on main tabs)
     val showBottomBar = currentDestination?.route in listOf(
         Screen.Home.route,
         Screen.JournalList.route,
@@ -220,17 +195,8 @@ fun ProdyApp(
         bottomBar = {
             AnimatedVisibility(
                 visible = showBottomBar,
-                enter = slideInVertically(
-                    initialOffsetY = { it },
-                    animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioMediumBouncy,
-                        stiffness = Spring.StiffnessMedium
-                    )
-                ),
-                exit = slideOutVertically(
-                    targetOffsetY = { it },
-                    animationSpec = tween(200)
-                )
+                enter = slideInVertically(initialOffsetY = { it }),
+                exit = slideOutVertically(targetOffsetY = { it })
             ) {
                 NavigationBar {
                     bottomNavItems.forEach { item ->
@@ -239,7 +205,6 @@ fun ProdyApp(
                         } == true
 
                         if (item == BottomNavItem.Haven) {
-                            // Special Haven FAB Item
                             NavigationBarItem(
                                 selected = selected,
                                 onClick = {
@@ -251,65 +216,15 @@ fun ProdyApp(
                                         restoreState = true
                                     }
                                 },
-                                icon = {
-                                    // Breathing Pulse Animation
-                                    val infiniteTransition = rememberInfiniteTransition(label = "HavenPulse")
-                                    val animatedAlpha by infiniteTransition.animateFloat(
-                                        initialValue = 0.6f,
-                                        targetValue = 1f,
-                                        animationSpec = infiniteRepeatable(
-                                            animation = tween(2000, easing = LinearEasing),
-                                            repeatMode = RepeatMode.Reverse
-                                        ),
-                                        label = "HavenAlpha"
-                                    )
-                                    val scale by infiniteTransition.animateFloat(
-                                        initialValue = 0.95f,
-                                        targetValue = 1.05f,
-                                        animationSpec = infiniteRepeatable(
-                                            animation = tween(2000, easing = LinearEasing),
-                                            repeatMode = RepeatMode.Reverse
-                                        ),
-                                        label = "HavenScale"
-                                    )
-
-                                    Box(
-                                        modifier = Modifier
-                                            .size(56.dp) // Larger than standard icon
-                                            .graphicsLayer {
-                                                scaleX = scale
-                                                scaleY = scale
-                                                alpha = if (selected) 1f else animatedAlpha
-                                            }
-                                            .clip(CircleShape)
-                                            .background(
-                                                androidx.compose.ui.graphics.Brush.verticalGradient(
-                                                    colors = listOf(
-                                                        com.prody.prashant.ui.theme.HavenBubbleLight,
-                                                        com.prody.prashant.ui.theme.HavenBubbleLight.copy(alpha = 0.8f)
-                                                    )
-                                                )
-                                            ),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Icon(
-                                            imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
-                                            contentDescription = null,
-                                            tint = com.prody.prashant.ui.theme.HavenTextLight,
-                                            modifier = Modifier.size(28.dp)
-                                        )
-                                    }
-                                },
-                                label = { /* No label for FAB look */ },
+                                icon = { HavenPulseFAB(selected = selected, item = item) },
+                                label = { },
                                 colors = NavigationBarItemDefaults.colors(
-                                    indicatorColor = Color.Transparent // Disable standard indicator
+                                    indicatorColor = Color.Transparent
                                 )
                             )
                         } else {
-                            // Standard Navigation Item
                             NavigationBarItem(
                                 icon = {
-                                    // Wrap icon with magical breathing glow effect
                                     NavigationBreathingGlow(
                                         isActive = selected,
                                         color = ProdyPrimary
@@ -338,7 +253,6 @@ fun ProdyApp(
             }
         }
     ) { innerPadding ->
-        // Use the complete ProdyNavHost with all routes properly configured
         ProdyNavHost(
             navController = navController,
             startDestination = startDestination,
@@ -347,122 +261,61 @@ fun ProdyApp(
     }
 }
 
-// =============================================================================
-// CUSTOM BOTTOM NAVIGATION BAR - Flat Design
-// =============================================================================
-
 /**
- * Premium flat-design bottom navigation bar.
+ * Performance Optimization: Isolated high-frequency animation to a dedicated child @Composable.
+ * This prevents the parent layout (NavigationBar) from recomposing every frame.
  *
- * Design features:
- * - NO shadows - pure flat design
- * - Clean surface with subtle top border
- * - Animated selection indicator with accent color
- * - Minimal, focused visual hierarchy
+ * Uses graphicsLayer to defer state reads to the drawing phase.
  */
 @Composable
-private fun ProdyBottomNavBar(
-    items: List<BottomNavItem>,
-    currentRoute: String?,
-    onNavigate: (String) -> Unit
-) {
-    // Flat design - no elevation, clean surface with subtle top border
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        color = MaterialTheme.colorScheme.surface,
-        tonalElevation = 0.dp // Flat - no elevation
-    ) {
-        Column {
-            // Subtle top border for visual separation (flat design)
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(1.dp)
-                    .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
-            )
+private fun HavenPulseFAB(selected: Boolean, item: BottomNavItem) {
+    val infiniteTransition = rememberInfiniteTransition(label = "HavenPulse")
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(80.dp)
-                    .padding(horizontal = 8.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                items.forEach { item ->
-                    val isSelected = currentRoute == item.route
-
-                    ProdyNavItem(
-                        item = item,
-                        isSelected = isSelected,
-                        onClick = { onNavigate(item.route) },
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-            }
-        }
-    }
-}
-
-/**
- * Individual navigation item with animated selection state.
- */
-@Composable
-private fun ProdyNavItem(
-    item: BottomNavItem,
-    isSelected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val accentColor = ProdyPrimary
-    val accentBackground = ProdyPrimary.copy(alpha = 0.15f)
-    val inactiveColor = MaterialTheme.colorScheme.onSurfaceVariant
-
-    val scale by animateFloatAsState(
-        targetValue = if (isSelected) 1.05f else 1f,
-        animationSpec = tween(durationMillis = 200),
-        label = "scale"
+    val animatedAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.6f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2000, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "HavenAlpha"
     )
 
-    Column(
-        modifier = modifier
-            .clip(RoundedCornerShape(16.dp))
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-                onClick = onClick
-            )
-            .padding(horizontal = 16.dp, vertical = 4.dp)
-            .scale(scale),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+    val scale by infiniteTransition.animateFloat(
+        initialValue = 0.95f,
+        targetValue = 1.05f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2000, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "HavenScale"
+    )
+
+    Box(
+        modifier = Modifier
+            .size(56.dp)
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+                // Explicitly use this.alpha to ensure deferred state read
+                this.alpha = if (selected) 1f else animatedAlpha
+            }
+            .clip(CircleShape)
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        com.prody.prashant.ui.theme.HavenBubbleLight,
+                        com.prody.prashant.ui.theme.HavenBubbleLight.copy(alpha = 0.8f)
+                    )
+                )
+            ),
+        contentAlignment = Alignment.Center
     ) {
-        Box(
-            modifier = Modifier
-                .size(40.dp)
-                .clip(CircleShape)
-                .background(
-                    if (isSelected) accentBackground else Color.Transparent
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = if (isSelected) item.selectedIcon else item.unselectedIcon,
-                contentDescription = stringResource(item.contentDescriptionResId),
-                modifier = Modifier.size(24.dp),
-                tint = if (isSelected) accentColor else inactiveColor
-            )
-        }
-
-        Spacer(modifier = Modifier.height(4.dp))
-
-        Text(
-            text = stringResource(item.labelResId),
-            fontFamily = PoppinsFamily,
-            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-            fontSize = 11.sp,
-            color = if (isSelected) accentColor else inactiveColor,
-            letterSpacing = 0.2.sp
+        Icon(
+            imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
+            contentDescription = null,
+            tint = com.prody.prashant.ui.theme.HavenTextLight,
+            modifier = Modifier.size(28.dp)
         )
     }
 }

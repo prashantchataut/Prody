@@ -16,16 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -92,7 +83,7 @@ private object ProdyButtonDefaults {
     val LoadingIndicatorSize = 20.dp
     val IconTextGap = 8.dp
 
-val CornerRadius = ProdyTokens.Radius.sm
+    val CornerRadius = ProdyTokens.Radius.sm
 }
 
 // =============================================================================
@@ -101,16 +92,6 @@ val CornerRadius = ProdyTokens.Radius.sm
 
 /**
  * Primary button for main call-to-action.
- *
- * @param text Button label
- * @param onClick Click callback
- * @param modifier Modifier for the button
- * @param enabled Whether the button is enabled
- * @param loading Whether to show loading state
- * @param size Button size variant
- * @param leadingIcon Optional icon before text
- * @param trailingIcon Optional icon after text
- * @param contentDescription Accessibility description
  */
 @Composable
 fun ProdyPrimaryButton(
@@ -170,7 +151,7 @@ fun ProdyPrimaryButton(
         shape = RoundedCornerShape(ProdyButtonDefaults.CornerRadius),
         contentPadding = PaddingValues(horizontal = horizontalPadding, vertical = 0.dp),
         interactionSource = interactionSource,
-        colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+        colors = ButtonDefaults.buttonColors(
             containerColor = MaterialTheme.colorScheme.primary,
             contentColor = MaterialTheme.colorScheme.onPrimary,
             disabledContainerColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
@@ -252,7 +233,7 @@ fun ProdySecondaryButton(
         shape = RoundedCornerShape(ProdyButtonDefaults.CornerRadius),
         contentPadding = PaddingValues(horizontal = horizontalPadding, vertical = 0.dp),
         interactionSource = interactionSource,
-        colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+        colors = ButtonDefaults.buttonColors(
             containerColor = MaterialTheme.colorScheme.secondaryContainer,
             contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
             disabledContainerColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
@@ -339,7 +320,7 @@ fun ProdyOutlinedButton(
             width = 1.dp,
             color = if (enabled) borderColor else borderColor.copy(alpha = 0.38f)
         ),
-        colors = androidx.compose.material3.ButtonDefaults.outlinedButtonColors(
+        colors = ButtonDefaults.outlinedButtonColors(
             contentColor = MaterialTheme.colorScheme.primary,
             disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
         )
@@ -420,7 +401,7 @@ fun ProdyGhostButton(
         shape = RoundedCornerShape(ProdyButtonDefaults.CornerRadius),
         contentPadding = PaddingValues(horizontal = horizontalPadding, vertical = 0.dp),
         interactionSource = interactionSource,
-        colors = androidx.compose.material3.ButtonDefaults.textButtonColors(
+        colors = ButtonDefaults.textButtonColors(
             contentColor = contentColor,
             disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
         )
@@ -500,8 +481,19 @@ private fun ButtonContent(
 // =============================================================================
 
 /**
- * Circular icon button with proper touch target.
+ * Circular icon button with proper touch target, optional tooltip, and background color.
+ *
+ * @param icon The icon to display
+ * @param onClick Callback when button is clicked
+ * @param modifier Modifier for the button
+ * @param enabled Whether the button is interactive
+ * @param contentDescription Accessibility label
+ * @param tooltip Optional tooltip text shown on long-press
+ * @param containerColor Background color for the button
+ * @param tint Icon tint color
+ * @param size Minimum touch target size
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProdyIconButton(
     icon: ImageVector,
@@ -509,6 +501,8 @@ fun ProdyIconButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     contentDescription: String? = null,
+    tooltip: String? = null,
+    containerColor: Color = Color.Transparent,
     tint: Color = MaterialTheme.colorScheme.onSurface,
     size: Dp = ProdyTokens.Touch.minimum
 ) {
@@ -525,33 +519,54 @@ fun ProdyIconButton(
         label = "icon_button_scale"
     )
 
-    Surface(
-        onClick = {
-            haptic.click()
-            onClick()
-        },
-        modifier = modifier
-            .scale(scale)
-            .size(size)
-            .semantics {
-                role = Role.Button
-                if (contentDescription != null) {
-                    this.contentDescription = contentDescription
+    // UX Pattern: Parent Surface handles semantics and interaction
+    val semanticsDescription = contentDescription ?: tooltip
+
+    val buttonContent = @Composable {
+        Surface(
+            onClick = {
+                haptic.click()
+                onClick()
+            },
+            modifier = modifier
+                .scale(scale)
+                .size(size)
+                .semantics {
+                    role = Role.Button
+                    if (semanticsDescription != null) {
+                        this.contentDescription = semanticsDescription
+                    }
+                },
+            enabled = enabled,
+            shape = RoundedCornerShape(50),
+            color = containerColor,
+            contentColor = tint,
+            interactionSource = interactionSource
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null, // Set to null as parent surface handles semantics
+                modifier = Modifier
+                    .padding(12.dp)
+                    .size(24.dp),
+                tint = if (enabled) tint else tint.copy(alpha = ProdyTokens.Opacity.disabled)
+            )
+        }
+    }
+
+    if (tooltip != null) {
+        TooltipBox(
+            positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+            tooltip = {
+                PlainTooltip {
+                    Text(text = tooltip)
                 }
             },
-        enabled = enabled,
-        shape = RoundedCornerShape(50),
-        color = Color.Transparent,
-        contentColor = tint,
-        interactionSource = interactionSource
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = contentDescription,
-            modifier = Modifier
-                .padding(12.dp)
-                .size(24.dp),
-            tint = if (enabled) tint else tint.copy(alpha = 0.38f)
-        )
+            state = rememberTooltipState()
+        ) {
+            buttonContent()
+        }
+    } else {
+        buttonContent()
     }
 }
