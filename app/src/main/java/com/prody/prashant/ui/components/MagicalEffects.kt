@@ -268,8 +268,11 @@ fun MoodBreathingHalo(
         Box(
             modifier = Modifier
                 .size(size * haloScale)
-                .scale(haloScale)
-                .alpha(haloAlpha)
+                .graphicsLayer {
+                    scaleX = haloScale
+                    scaleY = haloScale
+                    this.alpha = haloAlpha
+                }
                 .blur(12.dp)
                 .background(haloColor, CircleShape)
         )
@@ -278,7 +281,9 @@ fun MoodBreathingHalo(
         Box(
             modifier = Modifier
                 .size(size * 0.9f)
-                .alpha(haloAlpha * 0.5f)
+                .graphicsLayer {
+                    this.alpha = haloAlpha * 0.5f
+                }
                 .blur(6.dp)
                 .background(haloColor.copy(alpha = 0.3f), CircleShape)
         )
@@ -885,8 +890,9 @@ fun TimeCapsuleSealAnimation(
         Canvas(
             modifier = Modifier
                 .size(100.dp)
-                .scale(foldScale)
                 .graphicsLayer {
+                    scaleX = foldScale
+                    scaleY = foldScale
                     translationY = travelOffsetY
                     translationX = travelOffsetX
                 }
@@ -966,7 +972,9 @@ fun TimeCapsuleUnsealAnimation(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(200.dp)
-                    .alpha(glowAlpha)
+                    .graphicsLayer {
+                        this.alpha = glowAlpha
+                    }
                     .blur(20.dp)
                     .background(
                         brush = Brush.radialGradient(
@@ -987,7 +995,7 @@ fun TimeCapsuleUnsealAnimation(
                 .fillMaxWidth()
                 .graphicsLayer {
                     scaleY = revealProgress
-                    alpha = revealProgress
+                    this.alpha = revealProgress
                     transformOrigin = TransformOrigin(0.5f, 0f)
                 }
         ) {
@@ -1056,7 +1064,8 @@ fun NavigationBreathingGlow(
                     .graphicsLayer {
                         scaleX = glowScale
                         scaleY = glowScale
-                        alpha = glowAlpha * activeAlpha
+                        // Performance Optimization: Use this.alpha for deferred state read
+                        this.alpha = glowAlpha * activeAlpha
                     }
                     .blur(12.dp)
                     .background(color, CircleShape)
@@ -1116,7 +1125,9 @@ fun WisdomTextReveal(
             Box(
                 modifier = Modifier
                     .matchParentSize()
-                    .alpha(ambientGlow * revealProgress)
+                    .graphicsLayer {
+                        this.alpha = ambientGlow * revealProgress
+                    }
                     .blur(30.dp)
                     .background(
                         brush = Brush.radialGradient(
@@ -1134,8 +1145,8 @@ fun WisdomTextReveal(
         androidx.compose.material3.Text(
             text = text,
             modifier = Modifier
-                .alpha(revealProgress)
                 .graphicsLayer {
+                    this.alpha = revealProgress
                     // Subtle vertical unfolding effect
                     scaleY = 0.9f + (revealProgress * 0.1f)
                     transformOrigin = TransformOrigin(0.5f, 0f)
