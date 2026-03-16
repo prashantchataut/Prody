@@ -21,3 +21,8 @@ This journal contains CRITICAL performance learnings specific to the Prody codeb
 **Context:** `ProgressIndicators.kt` and `OnboardingScreen.kt`.
 **Learning:** Using a `Row` of multiple `Box` composables for page indicators creates unnecessary layout nodes and triggers expensive layout passes during page swipes as dot widths animate. A single `Canvas` drawing all dots based on an animated float index is significantly more performant and smoother.
 **Action:** Prefer `Canvas`-based drawing for multi-state UI indicators like page dots or segmented progress bars to maintain 60fps during complex interactions.
+
+## 2024-05-25 - Isolated Animation Recompositions
+**Context:** Haven FAB breathing pulse in `MainActivity.kt`.
+**Learning:** High-frequency animations inside a `NavigationBar` can trigger recompositions of the entire navigation bar if not isolated. Moving the animation logic into a dedicated `@Composable` and using `Modifier.graphicsLayer` ensures that only the drawing layer is updated, preserving 60fps.
+**Action:** Isolate high-frequency animations into specialized components and use `graphicsLayer` to defer state reads.
