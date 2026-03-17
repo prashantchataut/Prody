@@ -49,6 +49,7 @@ import com.prody.prashant.data.local.entity.FutureMessageEntity
 import com.prody.prashant.ui.components.DeliveryCountdownAura
 import com.prody.prashant.ui.components.PodGrid
 import com.prody.prashant.ui.theme.*
+import com.prody.prashant.util.PreventScreenshots
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -73,6 +74,9 @@ fun FutureMessageListScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var selectedTab by remember { mutableIntStateOf(0) }
     var showFilterDialog by remember { mutableStateOf(false) }
+
+    // Security: Prevent screenshots of future messages to self
+    PreventScreenshots()
     val isDark = isDarkTheme()
 
     // Theme-aware colors
