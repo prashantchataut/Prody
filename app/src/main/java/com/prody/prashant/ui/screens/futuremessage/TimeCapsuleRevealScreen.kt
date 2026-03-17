@@ -24,6 +24,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.prody.prashant.util.PreventScreenshots
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -54,6 +55,9 @@ fun TimeCapsuleRevealScreen(
     val view = LocalView.current
     val scrollState = rememberScrollState()
     val coroutineScope = androidx.compose.runtime.rememberCoroutineScope()
+
+    // Security: Prevent screenshots of future messages during reveal
+    PreventScreenshots()
 
     // Load message on first composition
     LaunchedEffect(messageId) {
