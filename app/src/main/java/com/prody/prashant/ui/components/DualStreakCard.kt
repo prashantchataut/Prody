@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -195,6 +196,12 @@ private fun StreakColumn(
         Box(
             modifier = Modifier
                 .size(56.dp)
+                .graphicsLayer {
+                    if (streakInfo.maintainedToday) {
+                        scaleX = flameScale
+                        scaleY = flameScale
+                    }
+                }
                 .clip(CircleShape)
                 .background(iconColor.copy(alpha = 0.15f)),
             contentAlignment = Alignment.Center
