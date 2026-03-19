@@ -1,25 +1,18 @@
 package com.prody.prashant.ui.screens.home
 
-import com.prody.prashant.ui.icons.ProdyIcons
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
@@ -28,8 +21,10 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.prody.prashant.ui.components.*
+import com.prody.prashant.ui.icons.ProdyIcons
 import com.prody.prashant.ui.theme.*
 
 // =============================================================================
@@ -45,16 +40,14 @@ fun HomeScreen(
     onNavigateToJournal: () -> Unit,
     onNavigateToFutureMessage: () -> Unit,
     onNavigateToHaven: () -> Unit = {},
+    onNavigateToSettings: () -> Unit = {},
     onNavigateToMeditation: () -> Unit = {},
     onNavigateToChallenges: () -> Unit = {},
     onNavigateToSearch: () -> Unit = {},
     onNavigateToIdiomDetail: (Long) -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
-    // We assume ViewModel provides necessary state. For this UI revamp, 
-    // we'll focus on the UI structure and use placeholder data where ViewModel might not strictly align yet.
-    
-    val surfaceColor = MaterialTheme.colorScheme.surface
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val backgroundColor = MaterialTheme.colorScheme.background
 
     LazyColumn(
@@ -66,40 +59,83 @@ fun HomeScreen(
         // Header with Greeting and Notification
         item {
             DashboardHeader(
-                userName = "Prashant", // Replace with real name
-                onProfileClick = {}, // TODO: Profile Nav
-                onNotificationClick = {}
+                userName = uiState.userName,
+                intelligentGreeting = uiState.intelligentGreeting,
+                greetingSubtext = uiState.greetingSubtext,
+                onProfileClick = onNavigateToSettings,
+                onNotificationClick = { /* Handled via Settings usually */ }
             )
         }
 
-        // Overview Section (Streak & Badges)
+        // Overview Section (Streak Cards)
         item {
-            OverviewSection(
-                streakDays = 7,
-                badges = listOf(
-                    BadgeData(ProdyIcons.EmojiEvents, 0.75f, ProdyWarmAmber),
-                    BadgeData(ProdyIcons.Edit, 0.5f, ProdyForestGreen),
-                    BadgeData(ProdyIcons.Psychology, 0.3f, ProdyInfo)
+            DualStreakCard(
+                dualStreakStatus = uiState.dualStreakStatus,
+                onTapForDetails = { /* Can show dialog if needed */ }
+            )
+        }
+
+        // AI Configuration Warning
+        item {
+            AiConfigWarningBanner(
+                status = uiState.aiConfigurationStatus,
+                onConfigureClick = onNavigateToSettings
+            )
+        }
+
+        // Next Action Suggestion
+        item {
+            uiState.nextAction?.let { action ->
+                NextActionCard(
+                    nextAction = action,
+                    onClick = {
+                        // Handle action navigation based on type
+                        when (action.type.name) {
+                            "START_JOURNAL" -> onNavigateToJournal()
+                            "LEARN_WORD" -> onNavigateToVocabulary()
+                            "WRITE_FUTURE_MESSAGE" -> onNavigateToFutureMessage()
+                            else -> onNavigateToJournal()
+                        }
+                    }
                 )
+            }
+        }
+
+        // Buddha's Wisdom
+        item {
+            BuddhaThoughtCard(
+                thought = uiState.buddhaThought,
+                explanation = uiState.buddhaThoughtExplanation,
+                isLoading = uiState.isBuddhaThoughtLoading,
+                isAiGenerated = uiState.isBuddhaThoughtAiGenerated,
+                proofInfo = uiState.buddhaWisdomProofInfo,
+                onRefresh = { viewModel.refreshBuddhaThought() }
             )
         }
 
-        // Mood Trend Chart
+        // Surfaced Memory (If any)
         item {
-            MoodTrendSection(
-                moodData = listOf(3f, 4f, 2f, 5f, 4f, 5f, 4f) // 1-5 Scale
-            )
+            if (uiState.showMemoryCard) {
+                uiState.surfacedMemory?.let { memory ->
+                    SurfacedMemoryCard(
+                        memory = memory,
+                        onExpand = { viewModel.expandMemoryCard() },
+                        onDismiss = { viewModel.dismissMemoryCard() },
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
+                }
+            }
         }
 
         // Weekly Summary
         item {
             WeeklySummarySection(
-                journalEntries = 5,
-                wordsLearned = 12,
-                mindfulMinutes = 45
+                journalEntries = uiState.journalEntriesThisWeek,
+                wordsLearned = uiState.wordsLearnedThisWeek,
+                mindfulMinutes = uiState.daysActiveThisWeek * 10 // Approximation
             )
         }
-        
+
         // Quick Actions (Navigation)
         item {
             QuickActionsGrid(
@@ -108,11 +144,6 @@ fun HomeScreen(
                 onWisdomClick = onNavigateToQuotes,
                 onFutureClick = onNavigateToFutureMessage
             )
-        }
-        
-        // Recent / Suggestions
-        item {
-            RecentActivitySection()
         }
     }
 }
@@ -124,6 +155,8 @@ fun HomeScreen(
 @Composable
 fun DashboardHeader(
     userName: String,
+    intelligentGreeting: String,
+    greetingSubtext: String,
     onProfileClick: () -> Unit,
     onNotificationClick: () -> Unit
 ) {
@@ -135,9 +168,9 @@ fun DashboardHeader(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Column {
+        Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = "Good Morning,",
+                text = if (intelligentGreeting.isNotEmpty()) intelligentGreeting else "Welcome back,",
                 style = TextStyle(
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Normal,
@@ -146,7 +179,7 @@ fun DashboardHeader(
                 color = ProdyTextSecondaryLight
             )
             Text(
-                text = userName,
+                text = if (userName.isNotEmpty()) userName else "Growth Seeker",
                 style = TextStyle(
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Bold,
@@ -154,12 +187,23 @@ fun DashboardHeader(
                 ),
                 color = ProdyTextPrimaryLight
             )
+            if (greetingSubtext.isNotEmpty()) {
+                Text(
+                    text = greetingSubtext,
+                    style = TextStyle(
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.Normal,
+                        fontSize = 12.sp
+                    ),
+                    color = ProdyTextSecondaryLight
+                )
+            }
         }
         
         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             IconButton(onClick = onNotificationClick) {
                 Icon(
-                    imageVector = Icons.Outlined.Notifications,
+                    imageVector = ProdyIcons.Notifications,
                     contentDescription = "Notifications",
                     tint = ProdyTextPrimaryLight
                 )
@@ -179,187 +223,6 @@ fun DashboardHeader(
                     fontWeight = FontWeight.Bold
                 )
             }
-        }
-    }
-}
-
-@Composable
-fun OverviewSection(
-    streakDays: Int,
-    badges: List<BadgeData>
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        // Streak Card
-        Surface(
-            modifier = Modifier.weight(1f),
-            shape = RoundedCornerShape(16.dp),
-            color = ProdySurfaceLight,
-            shadowElevation = 4.dp
-        ) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = streakDays.toString(),
-                    style = TextStyle(
-                        fontFamily = PoppinsFamily,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 48.sp,
-                        color = ProdyForestGreen
-                    )
-                )
-                Text(
-                    text = "Day Streak",
-                    style = TextStyle(
-                        fontFamily = PoppinsFamily,
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 14.sp,
-                        color = ProdyTextSecondaryLight
-                    )
-                )
-            }
-        }
-
-        // Badges Card
-        Surface(
-            modifier = Modifier.weight(1f),
-            shape = RoundedCornerShape(16.dp),
-            color = ProdySurfaceLight,
-            shadowElevation = 4.dp
-        ) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    badges.forEach { badge ->
-                        BadgeItem(badge)
-                    }
-                }
-                Spacer(modifier = Modifier.height(12.dp))
-                Text(
-                    text = "Achievements",
-                    style = TextStyle(
-                        fontFamily = PoppinsFamily,
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 14.sp,
-                        color = ProdyTextSecondaryLight
-                    )
-                )
-            }
-        }
-    }
-}
-
-data class BadgeData(val icon: androidx.compose.ui.graphics.vector.ImageVector, val progress: Float, val color: Color)
-
-@Composable
-fun BadgeItem(badge: BadgeData) {
-    Box(contentAlignment = Alignment.Center, modifier = Modifier.size(32.dp)) {
-        CircularProgressIndicator(
-            progress = { badge.progress },
-            modifier = Modifier.fillMaxSize(),
-            color = badge.color,
-            trackColor = badge.color.copy(alpha = 0.2f),
-            strokeWidth = 3.dp,
-        )
-        Icon(
-            imageVector = badge.icon,
-            contentDescription = null,
-            tint = badge.color,
-            modifier = Modifier.size(16.dp)
-        )
-    }
-}
-
-@Composable
-fun MoodTrendSection(moodData: List<Float>) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(24.dp)
-    ) {
-        Text(
-            text = "Mood Trend",
-            style = TextStyle(
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 18.sp,
-                color = ProdyTextPrimaryLight
-            )
-        )
-        
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Chart Card
-        Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp),
-            shape = RoundedCornerShape(16.dp),
-            color = ProdySurfaceLight,
-            shadowElevation = 4.dp
-        ) {
-            MoodChart(data = moodData, modifier = Modifier.padding(24.dp))
-        }
-    }
-}
-
-@Composable
-fun MoodChart(data: List<Float>, modifier: Modifier = Modifier) {
-    Canvas(modifier = modifier.fillMaxSize()) {
-        if (data.isEmpty()) return@Canvas
-
-        val width = size.width
-        val height = size.height
-        val stepX = width / (data.size - 1)
-        
-        // Normalize data to height (1-5 scale)
-        val points = data.mapIndexed { index, value ->
-            val x = index * stepX
-            val y = height - ((value - 1) / 4f) * height
-            Offset(x, y)
-        }
-
-        // Draw Line
-        val path = Path().apply {
-            moveTo(points.first().x, points.first().y)
-            for (i in 1 until points.size) {
-                // Bezier curve for smoothness
-                val p0 = points[i - 1]
-                val p1 = points[i]
-                val controlPoint1 = Offset(p0.x + (p1.x - p0.x) / 2, p0.y)
-                val controlPoint2 = Offset(p0.x + (p1.x - p0.x) / 2, p1.y)
-                cubicTo(controlPoint1.x, controlPoint1.y, controlPoint2.x, controlPoint2.y, p1.x, p1.y)
-            }
-        }
-
-        drawPath(
-            path = path,
-            color = ProdyForestGreen,
-            style = Stroke(width = 4.dp.toPx(), cap = StrokeCap.Round)
-        )
-
-        // Draw Points
-        points.forEach { point ->
-            drawCircle(
-                color = Color.White,
-                radius = 6.dp.toPx(),
-                center = point
-            )
-            drawCircle(
-                color = ProdyForestGreen,
-                radius = 4.dp.toPx(),
-                center = point
-            )
         }
     }
 }
@@ -549,47 +412,6 @@ fun QuickActionTile(title: String, icon: androidx.compose.ui.graphics.vector.Ima
                     color = color
                 )
             )
-        }
-    }
-}
-
-@Composable
-fun RecentActivitySection() {
-    // Placeholder for Recent Activity
-    Column(modifier = Modifier.padding(horizontal = 24.dp)) {
-        Text(
-            text = "Recent",
-            style = TextStyle(
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 18.sp,
-                color = ProdyTextPrimaryLight
-            )
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp),
-            color = ProdySurfaceLight,
-            shadowElevation = 2.dp
-        ) {
-            Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(ProdyForestGreen.copy(alpha = 0.1f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(ProdyIcons.Check, null, tint = ProdyForestGreen)
-                }
-                Spacer(modifier = Modifier.width(16.dp))
-                Column {
-                    Text("Daily Journal", fontWeight = FontWeight.SemiBold, fontFamily = PoppinsFamily)
-                    Text("Completed today", fontSize = 12.sp, color = ProdyTextSecondaryLight, fontFamily = PoppinsFamily)
-                }
-            }
         }
     }
 }
