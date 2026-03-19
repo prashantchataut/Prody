@@ -1,5 +1,6 @@
 package com.prody.prashant.ui.screens.futuremessage
 import com.prody.prashant.ui.icons.ProdyIcons
+import com.prody.prashant.util.PreventScreenshots
 
 import android.view.HapticFeedbackConstants
 import androidx.compose.animation.core.*
@@ -54,6 +55,9 @@ fun TimeCapsuleRevealScreen(
     val view = LocalView.current
     val scrollState = rememberScrollState()
     val coroutineScope = androidx.compose.runtime.rememberCoroutineScope()
+
+    // Security: Prevent screenshots of private messages from the past
+    PreventScreenshots()
 
     // Load message on first composition
     LaunchedEffect(messageId) {

@@ -87,6 +87,7 @@ import com.google.accompanist.permissions.shouldShowRationale
 import com.prody.prashant.R
 import com.prody.prashant.domain.model.Mood
 import com.prody.prashant.domain.validation.ContentValidation
+import com.prody.prashant.util.PreventScreenshots
 import com.prody.prashant.domain.validation.ContentValidator
 import com.prody.prashant.ui.components.AmbientBackground
 import com.prody.prashant.ui.components.MoodSuggestionHint
@@ -111,13 +112,7 @@ fun NewJournalEntryScreen(
     val context = LocalContext.current
 
     // Security: Prevent screenshots and screen recordings while writing a private journal entry
-    DisposableEffect(Unit) {
-        val window = (context as? Activity)?.window
-        window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
-        onDispose {
-            window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
-        }
-    }
+    PreventScreenshots()
 
     // Photo/Video picker launcher
     val mediaPickerLauncher = rememberLauncherForActivityResult(
