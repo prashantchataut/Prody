@@ -33,6 +33,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.R
 import com.prody.prashant.domain.deepdive.*
 import com.prody.prashant.ui.theme.*
+import com.prody.prashant.util.PreventScreenshots
 
 /**
  * Deep Dive Session Screen - Guided deep reflection experience.
@@ -55,6 +56,9 @@ fun DeepDiveSessionScreen(
     viewModel: DeepDiveViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.sessionState.collectAsStateWithLifecycle()
+
+    // Security: Prevent screenshots during deep reflection sessions
+    PreventScreenshots()
 
     // Load session on start
     LaunchedEffect(deepDiveId) {
