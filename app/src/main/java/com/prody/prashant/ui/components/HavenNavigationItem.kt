@@ -3,6 +3,7 @@ package com.prody.prashant.ui.components
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
@@ -30,7 +31,7 @@ import com.prody.prashant.ui.theme.HavenTextLight
  * NavigationBar from recomposing on every animation frame (60fps).
  */
 @Composable
-fun HavenNavigationItem(
+fun RowScope.HavenNavigationItem(
     selected: Boolean,
     onClick: () -> Unit,
     selectedIcon: ImageVector,

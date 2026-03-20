@@ -111,11 +111,13 @@ fun HavenOnboardingScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier.fillMaxWidth()
         ) {
-            val features = listOf(
-                Triple(ProdyIcons.Lock, "Private & Secure", "Your conversations are encrypted and private."),
-                Triple(ProdyIcons.Favorite, "Always Here", "Available 24/7 whenever you need a listening ear."),
-                Triple(ProdyIcons.SelfImprovement, "Growth Focused", "Tools and exercises to help you thrive.")
-            )
+            val features = remember {
+                listOf(
+                    Triple(ProdyIcons.Lock, "Private & Secure", "Your conversations are encrypted and private."),
+                    Triple(ProdyIcons.Favorite, "Always Here", "Available 24/7 whenever you need a listening ear."),
+                    Triple(ProdyIcons.SelfImprovement, "Growth Focused", "Tools and exercises to help you thrive.")
+                )
+            }
 
             features.forEachIndexed { index, feature ->
                 AnimatedVisibility(

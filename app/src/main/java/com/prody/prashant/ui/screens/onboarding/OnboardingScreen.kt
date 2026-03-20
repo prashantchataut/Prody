@@ -1,6 +1,7 @@
 package com.prody.prashant.ui.screens.onboarding
 
 import com.prody.prashant.ui.icons.ProdyIcons
+import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -402,7 +403,7 @@ private fun FeatureScreenLayout(
             modifier = Modifier.weight(1f),
             contentAlignment = Alignment.Center
         ) {
-            AnimatedVisibility(
+            this@Column.AnimatedVisibility(
                 visible = visible,
                 enter = slideInVertically(initialOffsetY = { it / 4 }) + fadeIn(tween(600, delayMillis = 100))
             ) {
