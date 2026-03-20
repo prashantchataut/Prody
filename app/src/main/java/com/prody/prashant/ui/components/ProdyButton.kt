@@ -39,7 +39,9 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.prody.prashant.ui.animation.premiumShimmer
@@ -165,6 +167,11 @@ fun ProdyPrimaryButton(
                 if (contentDescription != null) {
                     this.contentDescription = contentDescription
                 }
+                stateDescription = when {
+                    loading -> "Loading"
+                    enabled -> "Enabled"
+                    else -> "Disabled"
+                }
             },
         enabled = enabled && !loading,
         shape = RoundedCornerShape(ProdyButtonDefaults.CornerRadius),
@@ -246,6 +253,11 @@ fun ProdySecondaryButton(
                 role = Role.Button
                 if (contentDescription != null) {
                     this.contentDescription = contentDescription
+                }
+                stateDescription = when {
+                    loading -> "Loading"
+                    enabled -> "Enabled"
+                    else -> "Disabled"
                 }
             },
         enabled = enabled && !loading,
@@ -329,6 +341,11 @@ fun ProdyOutlinedButton(
                 role = Role.Button
                 if (contentDescription != null) {
                     this.contentDescription = contentDescription
+                }
+                stateDescription = when {
+                    loading -> "Loading"
+                    enabled -> "Enabled"
+                    else -> "Disabled"
                 }
             },
         enabled = enabled && !loading,
@@ -415,6 +432,11 @@ fun ProdyGhostButton(
                 if (contentDescription != null) {
                     this.contentDescription = contentDescription
                 }
+                stateDescription = when {
+                    loading -> "Loading"
+                    enabled -> "Enabled"
+                    else -> "Disabled"
+                }
             },
         enabled = enabled && !loading,
         shape = RoundedCornerShape(ProdyButtonDefaults.CornerRadius),
@@ -480,7 +502,9 @@ private fun ButtonContent(
             text = text,
             style = textStyle,
             fontWeight = FontWeight.SemiBold,
-            color = contentColor
+            color = contentColor,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis
         )
 
         if (trailingIcon != null && !loading) {

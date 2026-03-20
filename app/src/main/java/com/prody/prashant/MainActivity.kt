@@ -56,6 +56,11 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.semantics.traversalIndex
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -233,7 +238,7 @@ fun ProdyApp(
                 )
             ) {
                 NavigationBar {
-                    bottomNavItems.forEach { item ->
+                    bottomNavItems.forEachIndexed { index, item ->
                         val selected = currentDestination?.hierarchy?.any {
                             it.route == item.route
                         } == true
@@ -241,6 +246,12 @@ fun ProdyApp(
                         if (item == BottomNavItem.Haven) {
                             // Special Haven FAB Item
                             NavigationBarItem(
+                                modifier = Modifier.semantics {
+                                    role = Role.Tab
+                                    traversalIndex = index.toFloat()
+                                    contentDescription = stringResource(item.contentDescriptionResId)
+                                    stateDescription = if (selected) "Selected" else "Not selected"
+                                },
                                 selected = selected,
                                 onClick = {
                                     navController.navigate(item.route) {
@@ -308,6 +319,12 @@ fun ProdyApp(
                         } else {
                             // Standard Navigation Item
                             NavigationBarItem(
+                                modifier = Modifier.semantics {
+                                    role = Role.Tab
+                                    traversalIndex = index.toFloat()
+                                    contentDescription = stringResource(item.contentDescriptionResId)
+                                    stateDescription = if (selected) "Selected" else "Not selected"
+                                },
                                 icon = {
                                     // Wrap icon with magical breathing glow effect
                                     NavigationBreathingGlow(

@@ -237,6 +237,7 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.test.espresso.core)
+    androidTestImplementation("androidx.test.espresso:espresso-accessibility:3.6.1")
     androidTestImplementation(libs.mockk.android)
 
     // Debug
