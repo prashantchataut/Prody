@@ -1,6 +1,7 @@
 package com.prody.prashant.ui.screens.onboarding
 
 import com.prody.prashant.ui.icons.ProdyIcons
+import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -62,16 +63,23 @@ fun OnboardingScreen(
     // We will use the ProdyTheme colors.
     
     // Gradient Background: White to #F5F5F5 for light mode
-    val gradientColors = if (!isSystemInDarkTheme()) {
-        listOf(Color.White, Color(0xFFF5F5F5))
-    } else {
-        listOf(ProdyBackgroundDark, ProdyBackgroundDark) // Keep dark mode simple
+    val isDark = isSystemInDarkTheme()
+    val gradientColors = remember(isDark) {
+        if (!isDark) {
+            listOf(Color.White, Color(0xFFF5F5F5))
+        } else {
+            listOf(ProdyBackgroundDark, ProdyBackgroundDark) // Keep dark mode simple
+        }
+    }
+
+    val backgroundBrush = remember(gradientColors) {
+        Brush.verticalGradient(gradientColors)
     }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Brush.verticalGradient(gradientColors))
+            .background(backgroundBrush)
             .systemBarsPadding()
     ) {
         HorizontalPager(
@@ -134,6 +142,9 @@ private fun WelcomeScreen(
     onNext: () -> Unit,
     onLogin: () -> Unit
 ) {
+    var visible by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) { visible = true }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -143,74 +154,104 @@ private fun WelcomeScreen(
         // Logo positioned at 25% from top
         Spacer(modifier = Modifier.fillMaxHeight(0.25f))
 
-        ProdyLogo(modifier = Modifier.size(100.dp))
+        AnimatedVisibility(
+            visible = visible,
+            enter = slideInVertically(initialOffsetY = { it / 2 }) + fadeIn(tween(600, delayMillis = 100))
+        ) {
+            ProdyLogo(modifier = Modifier.size(100.dp))
+        }
 
         Spacer(modifier = Modifier.height(32.dp))
 
         // Brand name "Prody" - Poppins SemiBold 32sp
-        Text(
-            text = "Prody",
-            style = TextStyle(
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 32.sp
-            ),
-            color = ProdyTextPrimaryLight // Always dark for contrast on light gradient
-        )
+        AnimatedVisibility(
+            visible = visible,
+            enter = slideInVertically(initialOffsetY = { it / 2 }) + fadeIn(tween(600, delayMillis = 200))
+        ) {
+            Text(
+                text = "Prody",
+                style = TextStyle(
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 32.sp
+                ),
+                color = ProdyTextPrimaryLight // Always dark for contrast on light gradient
+            )
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
         // Tagline "Your mindful companion" - Poppins Regular 16sp
-        Text(
-            text = "Your mindful companion",
-            style = TextStyle(
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.Normal,
-                fontSize = 16.sp
-            ),
-            color = ProdyTextSecondaryLight
-        )
+        AnimatedVisibility(
+            visible = visible,
+            enter = slideInVertically(initialOffsetY = { it / 2 }) + fadeIn(tween(600, delayMillis = 300))
+        ) {
+            Text(
+                text = "Your mindful companion",
+                style = TextStyle(
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Normal,
+                    fontSize = 16.sp
+                ),
+                color = ProdyTextSecondaryLight
+            )
+        }
 
         Spacer(modifier = Modifier.weight(1f))
 
         // Progress Indicator
-        ProdyProgressIndicator(currentPage = 0, totalPages = 8)
+        AnimatedVisibility(
+            visible = visible,
+            enter = fadeIn(tween(600, delayMillis = 400))
+        ) {
+            ProdyProgressIndicator(currentPage = 0, totalPages = 8)
+        }
 
         Spacer(modifier = Modifier.height(48.dp))
 
         // Primary CTA Button: 56dp height, 16dp corner radius
-        PrimaryButton(
-            text = "Get Started",
-            onClick = onNext,
-            modifier = Modifier.fillMaxWidth()
-        )
+        AnimatedVisibility(
+            visible = visible,
+            enter = slideInVertically(initialOffsetY = { it / 2 }) + fadeIn(tween(600, delayMillis = 500))
+        ) {
+            PrimaryButton(
+                text = "Get Started",
+                onClick = onNext,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
 
         Spacer(modifier = Modifier.height(24.dp))
 
         // Secondary link
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.clickable { onLogin() }
+        AnimatedVisibility(
+            visible = visible,
+            enter = fadeIn(tween(600, delayMillis = 600))
         ) {
-            Text(
-                text = "Already have an account? ",
-                style = TextStyle(
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Normal,
-                    fontSize = 14.sp
-                ),
-                color = ProdyTextSecondaryLight
-            )
-            Text(
-                text = "Log In",
-                style = TextStyle(
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 14.sp,
-                    textDecoration = TextDecoration.Underline
-                ),
-                color = ProdyForestGreen
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.clickable { onLogin() }
+            ) {
+                Text(
+                    text = "Already have an account? ",
+                    style = TextStyle(
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.Normal,
+                        fontSize = 14.sp
+                    ),
+                    color = ProdyTextSecondaryLight
+                )
+                Text(
+                    text = "Log In",
+                    style = TextStyle(
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 14.sp,
+                        textDecoration = TextDecoration.Underline
+                    ),
+                    color = ProdyForestGreen
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(48.dp))
@@ -327,6 +368,9 @@ private fun FeatureScreenLayout(
     onSkip: () -> Unit,
     content: @Composable () -> Unit
 ) {
+    var visible by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) { visible = true }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -359,36 +403,51 @@ private fun FeatureScreenLayout(
             modifier = Modifier.weight(1f),
             contentAlignment = Alignment.Center
         ) {
-            content()
+            this@Column.AnimatedVisibility(
+                visible = visible,
+                enter = slideInVertically(initialOffsetY = { it / 4 }) + fadeIn(tween(600, delayMillis = 100))
+            ) {
+                content()
+            }
         }
 
         Spacer(modifier = Modifier.height(40.dp))
 
         // Text Content
-        Text(
-            text = title,
-            style = TextStyle(
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 24.sp // Header text 24-32sp
-            ),
-            color = ProdyTextPrimaryLight,
-            textAlign = TextAlign.Center
-        )
+        AnimatedVisibility(
+            visible = visible,
+            enter = slideInVertically(initialOffsetY = { it / 2 }) + fadeIn(tween(600, delayMillis = 300))
+        ) {
+            Text(
+                text = title,
+                style = TextStyle(
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 24.sp // Header text 24-32sp
+                ),
+                color = ProdyTextPrimaryLight,
+                textAlign = TextAlign.Center
+            )
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text(
-            text = description,
-            style = TextStyle(
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.Normal,
-                fontSize = 14.sp,
-                lineHeight = 21.sp // 1.5 line height
-            ),
-            color = ProdyTextSecondaryLight,
-            textAlign = TextAlign.Center
-        )
+        AnimatedVisibility(
+            visible = visible,
+            enter = slideInVertically(initialOffsetY = { it / 2 }) + fadeIn(tween(600, delayMillis = 400))
+        ) {
+            Text(
+                text = description,
+                style = TextStyle(
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Normal,
+                    fontSize = 14.sp,
+                    lineHeight = 21.sp // 1.5 line height
+                ),
+                color = ProdyTextSecondaryLight,
+                textAlign = TextAlign.Center
+            )
+        }
 
         Spacer(modifier = Modifier.height(48.dp))
 
@@ -419,6 +478,7 @@ private fun FeatureScreenLayout(
 private fun StandardFeatureCard(
     content: @Composable ColumnScope.() -> Unit
 ) {
+    val cardShape = remember { RoundedCornerShape(12.dp) }
     // Card Design: 12dp corner radius, 8dp elevation with proper shadow
     Surface(
         modifier = Modifier
@@ -426,11 +486,11 @@ private fun StandardFeatureCard(
             .aspectRatio(0.8f)
             .shadow(
                 elevation = 8.dp,
-                shape = RoundedCornerShape(12.dp),
+                shape = cardShape,
                 spotColor = Color(0x1A000000), // Soft shadow
                 ambientColor = Color(0x1A000000)
             ),
-        shape = RoundedCornerShape(12.dp),
+        shape = cardShape,
         color = Color.White
     ) {
         Column(
@@ -636,10 +696,11 @@ fun PrimaryButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val buttonShape = remember { RoundedCornerShape(16.dp) }
     Button(
         onClick = onClick,
         modifier = modifier.height(56.dp),
-        shape = RoundedCornerShape(16.dp),
+        shape = buttonShape,
         colors = ButtonDefaults.buttonColors(
             containerColor = ProdyForestGreen,
             contentColor = Color.White
@@ -670,6 +731,7 @@ fun ProdyInputField(
     isPassword: Boolean = false,
     modifier: Modifier = Modifier
 ) {
+    val fieldShape = remember { RoundedCornerShape(8.dp) }
     Column(modifier = modifier) {
         Text(
             text = label,
@@ -688,7 +750,7 @@ fun ProdyInputField(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
-            shape = RoundedCornerShape(8.dp),
+            shape = fieldShape,
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = ProdyForestGreen,
                 unfocusedBorderColor = ProdyOutlineLight,
@@ -718,11 +780,12 @@ fun ProdyInputField(
 
 @Composable
 fun ProdyLogo(modifier: Modifier = Modifier) {
+    val logoShape = remember { RoundedCornerShape(24.dp) }
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(24.dp))
+            .clip(logoShape)
             .background(Color.White)
-            .border(1.dp, ProdyOutlineLight, RoundedCornerShape(24.dp)),
+            .border(1.dp, ProdyOutlineLight, logoShape),
         contentAlignment = Alignment.Center
     ) {
         Icon(

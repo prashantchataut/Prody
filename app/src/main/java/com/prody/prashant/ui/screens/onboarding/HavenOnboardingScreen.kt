@@ -1,11 +1,13 @@
 package com.prody.prashant.ui.screens.onboarding
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -22,6 +24,9 @@ import com.prody.prashant.ui.theme.ProdyAccentGreen
 fun HavenOnboardingScreen(
     onNext: () -> Unit
 ) {
+    var visible by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) { visible = true }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -30,54 +35,74 @@ fun HavenOnboardingScreen(
         verticalArrangement = Arrangement.Center
     ) {
         // Icon / Hero Image
-        Box(
-            modifier = Modifier
-                .size(120.dp)
-                .clip(CircleShape)
-                .background(
-                    Brush.linearGradient(
-                        colors = listOf(
-                            ProdyAccentGreen.copy(alpha = 0.2f),
-                            ProdyAccentGreen.copy(alpha = 0.05f)
-                        )
-                    )
-                ),
-            contentAlignment = Alignment.Center
+        AnimatedVisibility(
+            visible = visible,
+            enter = slideInVertically(initialOffsetY = { it / 2 }) + fadeIn(tween(600, delayMillis = 100))
         ) {
-            Icon(
-                imageVector = ProdyIcons.Psychology, // Or a similar relevant icon
-                contentDescription = null,
-                modifier = Modifier.size(64.dp),
-                tint = ProdyAccentGreen
-            )
+            Box(
+                modifier = Modifier
+                    .size(120.dp)
+                    .clip(CircleShape)
+                    .background(
+                        Brush.linearGradient(
+                            colors = listOf(
+                                ProdyAccentGreen.copy(alpha = 0.2f),
+                                ProdyAccentGreen.copy(alpha = 0.05f)
+                            )
+                        )
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = ProdyIcons.Psychology, // Or a similar relevant icon
+                    contentDescription = null,
+                    modifier = Modifier.size(64.dp),
+                    tint = ProdyAccentGreen
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        Text(
-            text = "Meet Haven",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onBackground
-        )
+        AnimatedVisibility(
+            visible = visible,
+            enter = slideInVertically(initialOffsetY = { it / 2 }) + fadeIn(tween(600, delayMillis = 200))
+        ) {
+            Text(
+                text = "Meet Haven",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text(
-            text = "Your private, safe space for reflection and support.",
-            style = MaterialTheme.typography.titleMedium,
-            textAlign = TextAlign.Center,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
+        AnimatedVisibility(
+            visible = visible,
+            enter = slideInVertically(initialOffsetY = { it / 2 }) + fadeIn(tween(600, delayMillis = 300))
+        ) {
+            Text(
+                text = "Your private, safe space for reflection and support.",
+                style = MaterialTheme.typography.titleMedium,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        Text(
-            text = "Haven is here to listen, support, and help you navigate life's challenges—without judgment.",
-            style = MaterialTheme.typography.bodyMedium,
-            textAlign = TextAlign.Center,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
+        AnimatedVisibility(
+            visible = visible,
+            enter = slideInVertically(initialOffsetY = { it / 2 }) + fadeIn(tween(600, delayMillis = 400))
+        ) {
+            Text(
+                text = "Haven is here to listen, support, and help you navigate life's challenges—without judgment.",
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
         
         Spacer(modifier = Modifier.height(32.dp))
 
@@ -86,41 +111,51 @@ fun HavenOnboardingScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier.fillMaxWidth()
         ) {
-            OnboardingFeatureItem(
-                icon = ProdyIcons.Lock,
-                title = "Private & Secure",
-                description = "Your conversations are encrypted and private."
-            )
-            OnboardingFeatureItem(
-                icon = ProdyIcons.Favorite,
-                title = "Always Here",
-                description = "Available 24/7 whenever you need a listening ear."
-            )
-            OnboardingFeatureItem(
-                icon = ProdyIcons.SelfImprovement, // Or similar
-                title = "Growth Focused",
-                description = "Tools and exercises to help you thrive."
-            )
+            val features = remember {
+                listOf(
+                    Triple(ProdyIcons.Lock, "Private & Secure", "Your conversations are encrypted and private."),
+                    Triple(ProdyIcons.Favorite, "Always Here", "Available 24/7 whenever you need a listening ear."),
+                    Triple(ProdyIcons.SelfImprovement, "Growth Focused", "Tools and exercises to help you thrive.")
+                )
+            }
+
+            features.forEachIndexed { index, feature ->
+                AnimatedVisibility(
+                    visible = visible,
+                    enter = slideInVertically(initialOffsetY = { it }) + fadeIn(tween(600, delayMillis = 500 + (index * 100)))
+                ) {
+                    OnboardingFeatureItem(
+                        icon = feature.first,
+                        title = feature.second,
+                        description = feature.third
+                    )
+                }
+            }
         }
         
         Spacer(modifier = Modifier.weight(1f)) // Push button to bottom
         
-        Button(
-            onClick = onNext,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp),
-            shape = RoundedCornerShape(28.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = ProdyAccentGreen,
-                contentColor = Color.White
-            )
+        AnimatedVisibility(
+            visible = visible,
+            enter = slideInVertically(initialOffsetY = { it / 2 }) + fadeIn(tween(600, delayMillis = 900))
         ) {
-            Text(
-                text = "Continue",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold
-            )
+            Button(
+                onClick = onNext,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                shape = RoundedCornerShape(28.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = ProdyAccentGreen,
+                    contentColor = Color.White
+                )
+            ) {
+                Text(
+                    text = "Continue",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
         }
         Spacer(modifier = Modifier.height(32.dp))
     }
