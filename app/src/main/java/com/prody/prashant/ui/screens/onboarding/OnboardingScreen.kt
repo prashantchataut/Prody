@@ -1,6 +1,7 @@
 package com.prody.prashant.ui.screens.onboarding
 
 import com.prody.prashant.ui.icons.ProdyIcons
+import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -61,17 +62,22 @@ fun OnboardingScreen(
     // Determine theme for background only if needed, but we mostly use specific colors
     // We will use the ProdyTheme colors.
     
-    // Gradient Background: White to #F5F5F5 for light mode
-    val gradientColors = if (!isSystemInDarkTheme()) {
-        listOf(Color.White, Color(0xFFF5F5F5))
-    } else {
-        listOf(ProdyBackgroundDark, ProdyBackgroundDark) // Keep dark mode simple
+    val isDark = isSystemInDarkTheme()
+
+    // Performance Optimization: Memoize the background brush to avoid allocation on recomposition
+    val backgroundBrush = remember(isDark) {
+        val colors = if (!isDark) {
+            listOf(Color.White, Color(0xFFF5F5F5))
+        } else {
+            listOf(ProdyBackgroundDark, ProdyBackgroundDark)
+        }
+        Brush.verticalGradient(colors)
     }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Brush.verticalGradient(gradientColors))
+            .background(backgroundBrush)
             .systemBarsPadding()
     ) {
         HorizontalPager(
@@ -134,6 +140,10 @@ private fun WelcomeScreen(
     onNext: () -> Unit,
     onLogin: () -> Unit
 ) {
+    // Performance Optimization: Use AnimatedVisibility for staggered entry
+    var visible by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) { visible = true }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -143,33 +153,48 @@ private fun WelcomeScreen(
         // Logo positioned at 25% from top
         Spacer(modifier = Modifier.fillMaxHeight(0.25f))
 
-        ProdyLogo(modifier = Modifier.size(100.dp))
+        AnimatedVisibility(
+            visible = visible,
+            enter = fadeIn(tween(1000)) + slideInVertically(initialOffsetY = { fullHeight -> fullHeight / 2 })
+        ) {
+            ProdyLogo(modifier = Modifier.size(100.dp))
+        }
 
         Spacer(modifier = Modifier.height(32.dp))
 
         // Brand name "Prody" - Poppins SemiBold 32sp
-        Text(
-            text = "Prody",
-            style = TextStyle(
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 32.sp
-            ),
-            color = ProdyTextPrimaryLight // Always dark for contrast on light gradient
-        )
+        AnimatedVisibility(
+            visible = visible,
+            enter = fadeIn(tween(1000, 200)) + slideInVertically(initialOffsetY = { fullHeight -> fullHeight / 2 })
+        ) {
+            Text(
+                text = "Prody",
+                style = TextStyle(
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 32.sp
+                ),
+                color = ProdyTextPrimaryLight // Always dark for contrast on light gradient
+            )
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
         // Tagline "Your mindful companion" - Poppins Regular 16sp
-        Text(
-            text = "Your mindful companion",
-            style = TextStyle(
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.Normal,
-                fontSize = 16.sp
-            ),
-            color = ProdyTextSecondaryLight
-        )
+        AnimatedVisibility(
+            visible = visible,
+            enter = fadeIn(tween(1000, 400)) + slideInVertically(initialOffsetY = { fullHeight -> fullHeight / 2 })
+        ) {
+            Text(
+                text = "Your mindful companion",
+                style = TextStyle(
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Normal,
+                    fontSize = 16.sp
+                ),
+                color = ProdyTextSecondaryLight
+            )
+        }
 
         Spacer(modifier = Modifier.weight(1f))
 
@@ -419,6 +444,9 @@ private fun FeatureScreenLayout(
 private fun StandardFeatureCard(
     content: @Composable ColumnScope.() -> Unit
 ) {
+    // Performance Optimization: Memoize the shape
+    val cardShape = remember { RoundedCornerShape(12.dp) }
+
     // Card Design: 12dp corner radius, 8dp elevation with proper shadow
     Surface(
         modifier = Modifier
@@ -426,11 +454,11 @@ private fun StandardFeatureCard(
             .aspectRatio(0.8f)
             .shadow(
                 elevation = 8.dp,
-                shape = RoundedCornerShape(12.dp),
+                shape = cardShape,
                 spotColor = Color(0x1A000000), // Soft shadow
                 ambientColor = Color(0x1A000000)
             ),
-        shape = RoundedCornerShape(12.dp),
+        shape = cardShape,
         color = Color.White
     ) {
         Column(
@@ -718,11 +746,14 @@ fun ProdyInputField(
 
 @Composable
 fun ProdyLogo(modifier: Modifier = Modifier) {
+    // Performance Optimization: Memoize the shape
+    val logoShape = remember { RoundedCornerShape(24.dp) }
+
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(24.dp))
+            .clip(logoShape)
             .background(Color.White)
-            .border(1.dp, ProdyOutlineLight, RoundedCornerShape(24.dp)),
+            .border(1.dp, ProdyOutlineLight, logoShape),
         contentAlignment = Alignment.Center
     ) {
         Icon(

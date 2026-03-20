@@ -1,11 +1,13 @@
 package com.prody.prashant.ui.screens.onboarding
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -22,6 +24,20 @@ import com.prody.prashant.ui.theme.ProdyAccentGreen
 fun HavenOnboardingScreen(
     onNext: () -> Unit
 ) {
+    // Performance Optimization: Use AnimatedVisibility for staggered entry
+    var visible by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) { visible = true }
+
+    // Performance Optimization: Memoize gradients
+    val heroGradient = remember {
+        Brush.linearGradient(
+            colors = listOf(
+                ProdyAccentGreen.copy(alpha = 0.2f),
+                ProdyAccentGreen.copy(alpha = 0.05f)
+            )
+        )
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -30,26 +46,24 @@ fun HavenOnboardingScreen(
         verticalArrangement = Arrangement.Center
     ) {
         // Icon / Hero Image
-        Box(
-            modifier = Modifier
-                .size(120.dp)
-                .clip(CircleShape)
-                .background(
-                    Brush.linearGradient(
-                        colors = listOf(
-                            ProdyAccentGreen.copy(alpha = 0.2f),
-                            ProdyAccentGreen.copy(alpha = 0.05f)
-                        )
-                    )
-                ),
-            contentAlignment = Alignment.Center
+        AnimatedVisibility(
+            visible = visible,
+            enter = fadeIn(tween(1000)) + scaleIn(initialScale = 0.8f)
         ) {
-            Icon(
-                imageVector = ProdyIcons.Psychology, // Or a similar relevant icon
-                contentDescription = null,
-                modifier = Modifier.size(64.dp),
-                tint = ProdyAccentGreen
-            )
+            Box(
+                modifier = Modifier
+                    .size(120.dp)
+                    .clip(CircleShape)
+                    .background(heroGradient),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = ProdyIcons.Psychology, // Or a similar relevant icon
+                    contentDescription = null,
+                    modifier = Modifier.size(64.dp),
+                    tint = ProdyAccentGreen
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(32.dp))
@@ -132,6 +146,9 @@ private fun OnboardingFeatureItem(
     title: String,
     description: String
 ) {
+    // Performance Optimization: Memoize the shape
+    val itemShape = remember { RoundedCornerShape(12.dp) }
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.fillMaxWidth()
@@ -139,7 +156,7 @@ private fun OnboardingFeatureItem(
         Box(
             modifier = Modifier
                 .size(48.dp)
-                .clip(RoundedCornerShape(12.dp))
+                .clip(itemShape)
                 .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
             contentAlignment = Alignment.Center
         ) {
