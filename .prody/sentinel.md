@@ -7,3 +7,8 @@
 **Vulnerability:** Leaking API keys in Logcat via OkHttp interceptors and debug logs, and missing UI protection for therapeutic chats.
 **Learning:** Prody's `OpenRouterService` used `HttpLoggingInterceptor.Level.BODY` in debug mode without redacting the `Authorization` header, exposing API keys to anybody with ADB access. Additionally, Haven't therapeutic screens lacked `FLAG_SECURE`, risking user privacy.
 **Prevention:** Always use `redactHeader("Authorization")` in network interceptors. Remove logs that print partial secrets. Enforce `FLAG_SECURE` on all therapeutic and reflection screens by default.
+
+## 2026-03-20 - Robust Centralized Screen Protection
+**Vulnerability:** Inconsistent and brittle ad-hoc screenshot protection (using direct Activity casts) and missing protection on several sensitive screens (Locker, Monthly Letter, Time Capsule).
+**Learning:** Manually casting `LocalContext.current` to `Activity` is brittle and fails if the context is wrapped (e.g., by Hilt or UI wrappers). Centralizing this logic into a `PreventScreenshots()` composable with a robust `findActivity()` context traverser ensures all sensitive screens (Journals, Letters, Capsules, Locker, and Haven sessions) are consistently protected with production-grade reliability.
+**Prevention:** Use a centralized `PreventScreenshots()` utility for all sensitive UI components. Always use a robust context traverser (`findActivity()`) to retrieve the hosting Activity to handle `ContextWrapper` nesting.
