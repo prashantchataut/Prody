@@ -77,6 +77,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.data.local.entity.EvidenceEntity
 import com.prody.prashant.data.local.entity.EvidenceRarity
 import com.prody.prashant.data.local.entity.EvidenceType
+import com.prody.prashant.util.PreventScreenshots
 import com.prody.prashant.ui.theme.ProdyAccentGreen
 import com.prody.prashant.ui.theme.isDarkTheme
 import kotlinx.coroutines.launch
@@ -123,6 +124,9 @@ fun LockerScreen(
     val isDark = isDarkTheme()
     val scope = rememberCoroutineScope()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    // Security: Prevent screenshots and screen recordings of private growth evidence
+    PreventScreenshots()
 
     val backgroundColor = if (isDark) Color(0xFF0D1B19) else Color(0xFFF5F9F8)
     val cardColor = if (isDark) Color(0xFF1A2E2A) else Color(0xFFFFFFFF)

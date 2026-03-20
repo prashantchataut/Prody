@@ -46,6 +46,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.R
 import com.prody.prashant.data.local.entity.FutureMessageEntity
+import com.prody.prashant.util.PreventScreenshots
 import com.prody.prashant.ui.components.DeliveryCountdownAura
 import com.prody.prashant.ui.components.PodGrid
 import com.prody.prashant.ui.theme.*
@@ -74,6 +75,9 @@ fun FutureMessageListScreen(
     var selectedTab by remember { mutableIntStateOf(0) }
     var showFilterDialog by remember { mutableStateOf(false) }
     val isDark = isDarkTheme()
+
+    // Security: Prevent screenshots of delivered private messages
+    PreventScreenshots()
 
     // Theme-aware colors
     val backgroundColor = if (isDark) TimeCapsuleBackgroundDark else TimeCapsuleBackgroundLight
