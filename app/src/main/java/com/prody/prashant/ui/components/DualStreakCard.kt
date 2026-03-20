@@ -96,7 +96,7 @@ fun DualStreakCard(
                 // Wisdom Streak (Left)
                 StreakColumn(
                     streakInfo = dualStreakStatus.wisdomStreak,
-                    icon = ProdyIcons.Outlined.LocalFireDepartment,
+                    icon = ProdyIcons.LocalFireDepartment,
                     iconColor = StreakFire,
                     title = "Wisdom",
                     subtitle = "Daily learning",
@@ -117,7 +117,7 @@ fun DualStreakCard(
                 // Reflection Streak (Right)
                 StreakColumn(
                     streakInfo = dualStreakStatus.reflectionStreak,
-                    icon = ProdyIcons.Outlined.Edit,
+                    icon = ProdyIcons.Edit,
                     iconColor = ProdyAccent,
                     title = "Reflection",
                     subtitle = "Deep work",
@@ -270,7 +270,7 @@ private fun StreakStatusIndicator(
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Icon(
-                    imageVector = ProdyIcons.Outlined.CheckCircle,
+                    imageVector = ProdyIcons.CheckCircle,
                     contentDescription = null,
                     tint = accentColor,
                     modifier = Modifier.size(14.dp)
@@ -291,7 +291,7 @@ private fun StreakStatusIndicator(
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Icon(
-                    imageVector = ProdyIcons.Outlined.Shield,
+                    imageVector = ProdyIcons.Shield,
                     contentDescription = null,
                     tint = LeaderboardGold,
                     modifier = Modifier.size(14.dp)
@@ -312,7 +312,7 @@ private fun StreakStatusIndicator(
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Icon(
-                    imageVector = ProdyIcons.Outlined.Warning,
+                    imageVector = ProdyIcons.Warning,
                     contentDescription = null,
                     tint = ProdyError,
                     modifier = Modifier.size(14.dp)
@@ -377,7 +377,7 @@ private fun GracePeriodIndicator(
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     Icon(
-                        imageVector = ProdyIcons.Outlined.Shield,
+                        imageVector = ProdyIcons.Shield,
                         contentDescription = null,
                         tint = LeaderboardGold,
                         modifier = Modifier.size(16.dp)
@@ -473,7 +473,7 @@ fun DualStreakDetailDialog(
                 // Wisdom Streak Details
                 StreakDetailSection(
                     streakInfo = dualStreakStatus.wisdomStreak,
-                    icon = ProdyIcons.Outlined.LocalFireDepartment,
+                    icon = ProdyIcons.LocalFireDepartment,
                     iconColor = StreakFire,
                     title = "Wisdom Streak"
                 )
@@ -483,7 +483,7 @@ fun DualStreakDetailDialog(
                 // Reflection Streak Details
                 StreakDetailSection(
                     streakInfo = dualStreakStatus.reflectionStreak,
-                    icon = ProdyIcons.Outlined.Edit,
+                    icon = ProdyIcons.Edit,
                     iconColor = ProdyAccent,
                     title = "Reflection Streak"
                 )
@@ -501,7 +501,7 @@ fun DualStreakDetailDialog(
                             horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             Icon(
-                                imageVector = ProdyIcons.Outlined.Shield,
+                                imageVector = ProdyIcons.Shield,
                                 contentDescription = null,
                                 tint = LeaderboardGold,
                                 modifier = Modifier.size(18.dp)

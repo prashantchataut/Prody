@@ -21,3 +21,13 @@ This journal contains CRITICAL performance learnings specific to the Prody codeb
 **Context:** `ProgressIndicators.kt` and `OnboardingScreen.kt`.
 **Learning:** Using a `Row` of multiple `Box` composables for page indicators creates unnecessary layout nodes and triggers expensive layout passes during page swipes as dot widths animate. A single `Canvas` drawing all dots based on an animated float index is significantly more performant and smoother.
 **Action:** Prefer `Canvas`-based drawing for multi-state UI indicators like page dots or segmented progress bars to maintain 60fps during complex interactions.
+
+## 2024-05-30 - Deferred State Reads via graphicsLayer
+**Context:** `HavenPulseFAB.kt` and onboarding entry animations.
+**Learning:** Frequent UI property updates (like alpha or scale in animations) trigger full recompositions of the parent scope if the state is read directly in the Composable. Using the `Modifier.graphicsLayer { ... }` lambda block defers these state reads to the drawing phase, which is significantly more efficient and prevents parent layout invalidation.
+**Action:** Always use `Modifier.graphicsLayer` for high-frequency animations to maintain 60fps and reduce CPU overhead.
+
+## 2024-05-30 - Memoization of Brushes and Shapes
+**Context:** `OnboardingScreen.kt` and `HavenOnboardingScreen.kt`.
+**Learning:** Allocating complex objects like `Brush.verticalGradient` or `RoundedCornerShape` directly within the Composable body causes them to be recreated on every recomposition. This leads to increased GC pressure and potential frame drops during transitions.
+**Action:** Memoize non-primitive UI definitions using `remember` (and appropriate keys like `isSystemInDarkTheme`) to ensure stability and performance.
