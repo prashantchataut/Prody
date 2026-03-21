@@ -6,6 +6,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -22,6 +27,20 @@ import com.prody.prashant.ui.theme.ProdyAccentGreen
 fun HavenOnboardingScreen(
     onNext: () -> Unit
 ) {
+    // Performance Optimization: Memoize the gradient background
+    val iconBackgroundBrush = remember {
+        Brush.linearGradient(
+            colors = listOf(
+                ProdyAccentGreen.copy(alpha = 0.2f),
+                ProdyAccentGreen.copy(alpha = 0.05f)
+            )
+        )
+    }
+
+    // UX Optimization: Staggered entrance animation
+    var visible by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) { visible = true }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -34,14 +53,7 @@ fun HavenOnboardingScreen(
             modifier = Modifier
                 .size(120.dp)
                 .clip(CircleShape)
-                .background(
-                    Brush.linearGradient(
-                        colors = listOf(
-                            ProdyAccentGreen.copy(alpha = 0.2f),
-                            ProdyAccentGreen.copy(alpha = 0.05f)
-                        )
-                    )
-                ),
+                .background(iconBackgroundBrush),
             contentAlignment = Alignment.Center
         ) {
             Icon(
@@ -54,30 +66,38 @@ fun HavenOnboardingScreen(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        Text(
-            text = "Meet Haven",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onBackground
-        )
+        androidx.compose.animation.AnimatedVisibility(
+            visible = visible,
+            enter = androidx.compose.animation.fadeIn(androidx.compose.animation.core.tween(600)) +
+                   androidx.compose.animation.slideInVertically(androidx.compose.animation.core.tween(600)) { it / 4 }
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = "Meet Haven",
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
 
-        Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-        Text(
-            text = "Your private, safe space for reflection and support.",
-            style = MaterialTheme.typography.titleMedium,
-            textAlign = TextAlign.Center,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
+                Text(
+                    text = "Your private, safe space for reflection and support.",
+                    style = MaterialTheme.typography.titleMedium,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
 
-        Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
-        Text(
-            text = "Haven is here to listen, support, and help you navigate life's challenges—without judgment.",
-            style = MaterialTheme.typography.bodyMedium,
-            textAlign = TextAlign.Center,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
+                Text(
+                    text = "Haven is here to listen, support, and help you navigate life's challenges—without judgment.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
         
         Spacer(modifier = Modifier.height(32.dp))
 

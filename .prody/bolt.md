@@ -20,4 +20,9 @@ This journal contains CRITICAL performance learnings specific to the Prody codeb
 ## 2024-05-24 - Canvas-Based UI Indicators
 **Context:** `ProgressIndicators.kt` and `OnboardingScreen.kt`.
 **Learning:** Using a `Row` of multiple `Box` composables for page indicators creates unnecessary layout nodes and triggers expensive layout passes during page swipes as dot widths animate. A single `Canvas` drawing all dots based on an animated float index is significantly more performant and smoother.
-**Action:** Prefer `Canvas`-based drawing for multi-state UI indicators like page dots or segmented progress bars to maintain 60fps during complex interactions.
+**Action:** Prefer `Canvas`-based drawing for multi-state UI indicators like page dots or segmented progress bars to maintain 60fps during community interactions.
+
+## 2024-05-28 - Reactive GraphicsLayer Animations
+**Context:** `OnboardingScreen.kt` and high-frequency animations.
+**Learning:** Animations implemented within a `graphicsLayer { ... }` block MUST read from a Compose `State` (like `animateFloatAsState` or `rememberInfiniteTransition`) to trigger redrawing of the layer. Using non-reactive values like `System.currentTimeMillis()` inside the lambda will not cause the drawing phase to refresh because Compose does not detect a state dependency change.
+**Action:** Always drive high-frequency animations using standard Compose animation states, even when applying the results inside a `graphicsLayer` block to ensure consistent and correct redrawing.

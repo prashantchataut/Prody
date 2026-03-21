@@ -1,7 +1,10 @@
 package com.prody.prashant.ui.screens.onboarding
 
 import com.prody.prashant.ui.icons.ProdyIcons
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.*
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
@@ -61,17 +64,21 @@ fun OnboardingScreen(
     // Determine theme for background only if needed, but we mostly use specific colors
     // We will use the ProdyTheme colors.
     
-    // Gradient Background: White to #F5F5F5 for light mode
-    val gradientColors = if (!isSystemInDarkTheme()) {
-        listOf(Color.White, Color(0xFFF5F5F5))
-    } else {
-        listOf(ProdyBackgroundDark, ProdyBackgroundDark) // Keep dark mode simple
+    // Performance Optimization: Memoize gradient background to prevent redundant allocations during pager swipes
+    val isDark = isSystemInDarkTheme()
+    val backgroundBrush = remember(isDark) {
+        val colors = if (!isDark) {
+            listOf(Color.White, Color(0xFFF5F5F5))
+        } else {
+            listOf(ProdyBackgroundDark, ProdyBackgroundDark)
+        }
+        Brush.verticalGradient(colors)
     }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Brush.verticalGradient(gradientColors))
+            .background(backgroundBrush)
             .systemBarsPadding()
     ) {
         HorizontalPager(
@@ -134,6 +141,9 @@ private fun WelcomeScreen(
     onNext: () -> Unit,
     onLogin: () -> Unit
 ) {
+    var visible by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) { visible = true }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -143,33 +153,40 @@ private fun WelcomeScreen(
         // Logo positioned at 25% from top
         Spacer(modifier = Modifier.fillMaxHeight(0.25f))
 
-        ProdyLogo(modifier = Modifier.size(100.dp))
+        AnimatedVisibility(
+            visible = visible,
+            enter = fadeIn(tween(1000)) + slideInVertically(tween(1000)) { fullHeight -> fullHeight / 2 }
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                ProdyLogo(modifier = Modifier.size(100.dp))
 
-        Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(32.dp))
 
-        // Brand name "Prody" - Poppins SemiBold 32sp
-        Text(
-            text = "Prody",
-            style = TextStyle(
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 32.sp
-            ),
-            color = ProdyTextPrimaryLight // Always dark for contrast on light gradient
-        )
+                // Brand name "Prody" - Poppins SemiBold 32sp
+                Text(
+                    text = "Prody",
+                    style = TextStyle(
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 32.sp
+                    ),
+                    color = ProdyTextPrimaryLight // Always dark for contrast on light gradient
+                )
 
-        Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-        // Tagline "Your mindful companion" - Poppins Regular 16sp
-        Text(
-            text = "Your mindful companion",
-            style = TextStyle(
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.Normal,
-                fontSize = 16.sp
-            ),
-            color = ProdyTextSecondaryLight
-        )
+                // Tagline "Your mindful companion" - Poppins Regular 16sp
+                Text(
+                    text = "Your mindful companion",
+                    style = TextStyle(
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.Normal,
+                        fontSize = 16.sp
+                    ),
+                    color = ProdyTextSecondaryLight
+                )
+            }
+        }
 
         Spacer(modifier = Modifier.weight(1f))
 
@@ -400,12 +417,29 @@ private fun FeatureScreenLayout(
         ) {
             ProdyProgressIndicator(currentPage = currentPage, totalPages = totalPages)
 
+            val infiniteTransition = rememberInfiniteTransition(label = "FabBreathing")
+            val fabScale by infiniteTransition.animateFloat(
+                initialValue = 1f,
+                targetValue = 1.05f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(1000, easing = LinearEasing),
+                    repeatMode = RepeatMode.Reverse
+                ),
+                label = "FabScale"
+            )
+
             FloatingActionButton(
                 onClick = onNext,
                 containerColor = ProdyForestGreen,
                 contentColor = Color.White,
                 shape = CircleShape,
-                modifier = Modifier.size(56.dp)
+                modifier = Modifier
+                    .size(56.dp)
+                    .graphicsLayer {
+                        // Subtle breathing effect on FAB (Optimized with state read in graphicsLayer)
+                        scaleX = fabScale
+                        scaleY = fabScale
+                    }
             ) {
                 Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Next")
             }
