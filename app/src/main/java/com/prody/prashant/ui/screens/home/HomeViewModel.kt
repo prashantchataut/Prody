@@ -777,7 +777,7 @@ class HomeViewModel @Inject constructor(
             try {
                 _uiState.update { it.copy(isBuddhaThoughtLoading = true) }
 
-                // Check if AI is configured (API key present)
+                // Check if AI runtime token is available
                 val isAiConfigured = buddhaAiRepository.isAiConfigured()
 
                 // Get stats before the call to determine cache status
@@ -820,7 +820,7 @@ class HomeViewModel @Inject constructor(
                                     provider = "Fallback",
                                     cacheStatus = if (wasCacheHit) "HIT" else "MISS",
                                     timestamp = System.currentTimeMillis(),
-                                    lastError = if (!isAiConfigured) "API key not configured" else statsAfter.lastError,
+                                    lastError = if (!isAiConfigured) "AI session unavailable" else statsAfter.lastError,
                                     isAiConfigured = isAiConfigured
                                 )
                             )

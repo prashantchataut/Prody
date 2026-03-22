@@ -110,17 +110,14 @@ Prody features a comprehensive design system:
 - Android SDK 35
 
 ### AI Features (Optional)
-To enable Buddha AI features:
+Prody now provisions AI access at runtime instead of bundling provider secrets in builds.
 
-1. Get a Gemini API key from [Google AI Studio](https://makersuite.google.com/app/apikey)
-2. Create/edit `local.properties` in project root:
-   ```
-   AI_API_KEY=your_api_key_here
-   OPENROUTER_API_KEY=optional_openrouter_key
-   ```
-3. Rebuild the project
+Runtime credential flow:
+1. Fetch endpoint/policy from remote config.
+2. Perform device attestation.
+3. Exchange attestation for short-lived AI session tokens.
 
-*Note: Without an API key, the app works with static content from the wisdom library. A warning banner will appear on the home screen indicating AI features are disabled.*
+If a token is unavailable, AI surfaces gracefully fall back to offline/static experiences.
 
 ### Notification Settings
 - Notifications can be configured in Settings > Notifications
