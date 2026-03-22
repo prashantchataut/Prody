@@ -11,8 +11,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -44,6 +43,7 @@ fun HomeScreen(
     onNavigateToProverbs: () -> Unit = onNavigateToQuotes,
     onNavigateToJournal: () -> Unit,
     onNavigateToFutureMessage: () -> Unit,
+    onNavigateToProfile: () -> Unit = {},
     onNavigateToHaven: () -> Unit = {},
     onNavigateToMeditation: () -> Unit = {},
     onNavigateToChallenges: () -> Unit = {},
@@ -67,7 +67,7 @@ fun HomeScreen(
         item {
             DashboardHeader(
                 userName = "Prashant", // Replace with real name
-                onProfileClick = {}, // TODO: Profile Nav
+                onProfileClick = onNavigateToProfile,
                 onNotificationClick = {}
             )
         }

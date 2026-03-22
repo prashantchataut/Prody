@@ -303,6 +303,9 @@ fun ProdyNavHost(
                 onNavigateToFutureMessage = {
                     navController.navigate(Screen.FutureMessageList.route)
                 },
+                onNavigateToProfile = {
+                    navController.navigate(Screen.Profile.route)
+                },
                 onNavigateToHaven = {
                     navController.navigate(Screen.HavenHome.route)
                 },
