@@ -6,42 +6,44 @@
             <certificates src="system" />
         </trust-anchors>
     </base-config>
-    
+
+    <!--
+      Pinning rotation policy:
+      - Keep at least 3 pins per domain (active leaf/intermediate + next/backup CA).
+      - Always overlap old and new pins for >= 1 full release cycle before removal.
+      - Expiration dates are guardrails; real rotation schedule is documented in docs/security/pin_rotation.md.
+    -->
+
     <!-- Google AI API with certificate pinning -->
     <domain-config>
         <domain includeSubdomains="true">generativelanguage.googleapis.com</domain>
         <trust-anchors>
             <certificates src="system" />
-            <!-- Certificate pinning for Google AI API -->
         </trust-anchors>
-        <!-- Pin the certificate to prevent MITM attacks -->
-        <pin-set>
-            <!-- Leaf Certificate -->
+        <pin-set expiration="2027-06-30">
+            <!-- Active chain pins -->
             <pin digest="SHA-256">ePd8DjIPDZVBxKmWbWHXy+wZjO75a6PEiRzXE7mbzZ0=</pin>
-            <!-- Intermediate CA (Google Trust Services) -->
             <pin digest="SHA-256">YPtHaftLw6/0vnc2BnNKGF54xiCA28WFcccjkA4ypCM=</pin>
-            <!-- Backup Intermediate/Root CA -->
+            <!-- Overlap/backup pin kept during rotation window -->
             <pin digest="SHA-256">hxqRlPTu1bMS/0DITB1SSu0vd4u/8l8TjPgfaAp63Gc=</pin>
         </pin-set>
     </domain-config>
-    
+
     <!-- OpenRouter API with certificate pinning -->
     <domain-config>
         <domain includeSubdomains="true">openrouter.ai</domain>
         <trust-anchors>
             <certificates src="system" />
         </trust-anchors>
-        <!-- Pin the certificate to prevent MITM attacks -->
-        <pin-set>
-            <!-- Leaf Certificate (Cloudflare) -->
+        <pin-set expiration="2027-06-30">
+            <!-- Active chain pins -->
             <pin digest="SHA-256">2ETytvFJ0SYiiaUyT3xMrJ3Yuen/K58SNiB87YChuRg=</pin>
-            <!-- Intermediate CA (Cloudflare Inc) -->
             <pin digest="SHA-256">kIdp6NNEd8wsugYyyIYFsi1ylMCED3hZbSR8ZFsa/A4=</pin>
-            <!-- Backup Intermediate/Root CA -->
+            <!-- Overlap/backup pin kept during rotation window -->
             <pin digest="SHA-256">mEflZT5enoR1FuXLgYYGqnVEoZvmf9c2bVBpiOjYQ0c=</pin>
         </pin-set>
     </domain-config>
-    
+
     <!-- Debug configuration for testing (only in debug builds) -->
     <debug-overrides>
         <trust-anchors>
