@@ -3,15 +3,22 @@ package com.prody.prashant.data.ai
 import android.content.Context
 import android.util.Log
 import com.prody.prashant.data.local.preferences.PreferencesManager
+import com.prody.prashant.data.monitoring.MetricType
+import com.prody.prashant.data.monitoring.PerformanceMonitor
 import com.prody.prashant.domain.model.Mood
 import com.prody.prashant.util.BuddhaWisdom
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
@@ -44,7 +51,8 @@ class BuddhaAiRepository @Inject constructor(
     @ApplicationContext private val context: Context,
     private val geminiService: GeminiService,
     private val openRouterService: OpenRouterService,
-    private val preferencesManager: PreferencesManager
+    private val preferencesManager: PreferencesManager,
+    private val performanceMonitor: PerformanceMonitor
 ) {
     companion object {
         private const val TAG = "BuddhaAiRepository"
@@ -87,6 +95,18 @@ class BuddhaAiRepository @Inject constructor(
     // Rate limiting
     private val callTimestamps = mutableListOf<Long>()
     private val rateLimitMutex = Mutex()
+    private val aiScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    private val inFlightRequests = ConcurrentHashMap<String, Deferred<BuddhaAiResult<*>>>()
+    private val circuitBreaker = ConcurrentHashMap<String, CircuitState>()
+
+    private val featureTimeoutsMs = mapOf(
+        "daily_wisdom" to TimeUnit.SECONDS.toMillis(8),
+        "quote_explanation" to TimeUnit.SECONDS.toMillis(10),
+        "journal_insight" to TimeUnit.SECONDS.toMillis(12),
+        "weekly_pattern" to TimeUnit.SECONDS.toMillis(10),
+        "vocabulary_context" to TimeUnit.SECONDS.toMillis(9),
+        "message_helper" to TimeUnit.SECONDS.toMillis(9)
+    )
 
     init {
         // Load cache from disk on initialization
@@ -101,7 +121,9 @@ class BuddhaAiRepository @Inject constructor(
      * Uses AI if enabled, falls back to curated wisdom.
      */
     suspend fun getDailyWisdom(forceRefresh: Boolean = false): BuddhaAiResult<DailyWisdomResult> {
-        val cacheKey = "daily_wisdom_${getTodayDateString()}"
+        val feature = "daily_wisdom"
+        val promptFingerprint = buildPromptFingerprint(feature, getTodayDateString())
+        val cacheKey = buildCacheKey(feature, promptFingerprint)
 
         // Check feature toggle
         if (!preferencesManager.buddhaAiEnabled.first()) {
@@ -136,7 +158,7 @@ class BuddhaAiRepository @Inject constructor(
 
         // Try AI generation
         recordCacheMiss()
-        return generateDailyWisdomWithAi(cacheKey)
+        return coalesce(feature, cacheKey) { generateDailyWisdomWithAi(cacheKey) }
     }
 
     /**
@@ -147,7 +169,9 @@ class BuddhaAiRepository @Inject constructor(
         quote: String,
         author: String
     ): BuddhaAiResult<QuoteExplanationResult> {
-        val cacheKey = "quote_${hashString("$quote|$author")}"
+        val feature = "quote_explanation"
+        val promptFingerprint = buildPromptFingerprint(feature, quote, author)
+        val cacheKey = buildCacheKey(feature, promptFingerprint)
 
         if (!preferencesManager.buddhaAiEnabled.first()) {
             return BuddhaAiResult.Fallback(getStaticQuoteExplanation(quote, author))
@@ -164,7 +188,7 @@ class BuddhaAiRepository @Inject constructor(
         }
 
         recordCacheMiss()
-        return generateQuoteExplanationWithAi(quote, author, cacheKey)
+        return coalesce(feature, cacheKey) { generateQuoteExplanationWithAi(quote, author, cacheKey) }
     }
 
     /**
@@ -178,7 +202,9 @@ class BuddhaAiRepository @Inject constructor(
         moodIntensity: Int,
         wordCount: Int
     ): BuddhaAiResult<JournalInsightResult> {
-        val cacheKey = "journal_${hashString(content)}"
+        val feature = "journal_insight"
+        val promptFingerprint = buildPromptFingerprint(feature, content, mood.name, moodIntensity.toString(), wordCount.toString())
+        val cacheKey = buildCacheKey(feature, promptFingerprint)
 
         // Check global AI toggle
         if (!preferencesManager.buddhaAiEnabled.first()) {
@@ -201,7 +227,7 @@ class BuddhaAiRepository @Inject constructor(
         }
 
         recordCacheMiss()
-        return generateJournalInsightWithAi(content, mood, moodIntensity, wordCount, cacheKey)
+        return coalesce(feature, cacheKey) { generateJournalInsightWithAi(content, mood, moodIntensity, wordCount, cacheKey) }
     }
 
     /**
@@ -215,7 +241,18 @@ class BuddhaAiRepository @Inject constructor(
         activeTimeOfDay: String,
         streakDays: Int
     ): BuddhaAiResult<WeeklyPatternResult> {
-        val cacheKey = "weekly_${getTodayDateString()}_${journalCount}"
+        val feature = "weekly_pattern"
+        val promptFingerprint = buildPromptFingerprint(
+            feature,
+            getTodayDateString(),
+            journalCount.toString(),
+            dominantMood?.name ?: "none",
+            themes.joinToString(","),
+            moodTrend,
+            activeTimeOfDay,
+            streakDays.toString()
+        )
+        val cacheKey = buildCacheKey(feature, promptFingerprint)
 
         if (!preferencesManager.buddhaAiEnabled.first()) {
             return BuddhaAiResult.Fallback(getStaticWeeklyPattern(journalCount, dominantMood, streakDays))
@@ -232,7 +269,9 @@ class BuddhaAiRepository @Inject constructor(
         }
 
         recordCacheMiss()
-        return generateWeeklyPatternWithAi(journalCount, dominantMood, themes, moodTrend, activeTimeOfDay, streakDays, cacheKey)
+        return coalesce(feature, cacheKey) {
+            generateWeeklyPatternWithAi(journalCount, dominantMood, themes, moodTrend, activeTimeOfDay, streakDays, cacheKey)
+        }
     }
 
     /**
@@ -244,7 +283,9 @@ class BuddhaAiRepository @Inject constructor(
         definition: String,
         partOfSpeech: String
     ): BuddhaAiResult<VocabularyContextResult> {
-        val cacheKey = "vocab_${hashString(word)}"
+        val feature = "vocabulary_context"
+        val promptFingerprint = buildPromptFingerprint(feature, word, definition, partOfSpeech)
+        val cacheKey = buildCacheKey(feature, promptFingerprint)
 
         if (!preferencesManager.buddhaAiEnabled.first()) {
             return BuddhaAiResult.Fallback(getStaticVocabularyContext(word, definition))
@@ -261,7 +302,7 @@ class BuddhaAiRepository @Inject constructor(
         }
 
         recordCacheMiss()
-        return generateVocabularyContextWithAi(word, definition, partOfSpeech, cacheKey)
+        return coalesce(feature, cacheKey) { generateVocabularyContextWithAi(word, definition, partOfSpeech, cacheKey) }
     }
 
     /**
@@ -272,7 +313,9 @@ class BuddhaAiRepository @Inject constructor(
         currentDraft: String,
         deliveryDate: String
     ): BuddhaAiResult<MessageHelperResult> {
-        val cacheKey = "msg_helper_${hashString(currentDraft)}"
+        val feature = "message_helper"
+        val promptFingerprint = buildPromptFingerprint(feature, currentDraft, deliveryDate)
+        val cacheKey = buildCacheKey(feature, promptFingerprint)
 
         if (!preferencesManager.buddhaAiEnabled.first()) {
             return BuddhaAiResult.Fallback(getStaticMessageHelper())
@@ -289,7 +332,7 @@ class BuddhaAiRepository @Inject constructor(
         }
 
         recordCacheMiss()
-        return generateMessageHelperWithAi(currentDraft, deliveryDate, cacheKey)
+        return coalesce(feature, cacheKey) { generateMessageHelperWithAi(currentDraft, deliveryDate, cacheKey) }
     }
 
     /**
@@ -402,7 +445,7 @@ class BuddhaAiRepository @Inject constructor(
                     TRY TODAY: [One specific, practical thing they can actually do today - be concrete, not vague]
                 """.trimIndent()
 
-                val response = tryGenerateWithFallback(prompt)
+                val response = tryGenerateWithFallback(prompt, "quote_explanation")
 
                 if (response != null) {
                     val parsed = parseQuoteExplanation(response, quote, author)
@@ -469,7 +512,7 @@ class BuddhaAiRepository @Inject constructor(
                     SUGGESTION: [One practical action based on their entry, max one sentence]
                 """.trimIndent()
 
-                val response = tryGenerateWithFallback(prompt)
+                val response = tryGenerateWithFallback(prompt, "journal_insight")
 
                 if (response != null) {
                     val parsed = parseJournalInsight(response, content, mood, wordCount)
@@ -509,7 +552,6 @@ class BuddhaAiRepository @Inject constructor(
                 Log.e(TAG, "Error generating journal insight", e)
                 recordApiCall(0, "error", "journal_insight", e.message)
                 BuddhaAiResult.Fallback(getStaticJournalInsight(content, mood, wordCount))
-            }
         }
     }
 
@@ -581,7 +623,7 @@ class BuddhaAiRepository @Inject constructor(
                     SUGGESTION: [One actionable suggestion for next week]
                 """.trimIndent()
 
-                val response = tryGenerateWithFallback(prompt)
+                val response = tryGenerateWithFallback(prompt, "weekly_pattern")
 
                 if (response != null) {
                     val parsed = parseWeeklyPattern(response, journalCount, dominantMood, streakDays)
@@ -621,7 +663,7 @@ class BuddhaAiRepository @Inject constructor(
                     RELATED: [One related word with brief definition]
                 """.trimIndent()
 
-                val response = tryGenerateWithFallback(prompt)
+                val response = tryGenerateWithFallback(prompt, "vocabulary_context")
 
                 if (response != null) {
                     val parsed = parseVocabularyContext(response, word, definition)
@@ -675,7 +717,7 @@ class BuddhaAiRepository @Inject constructor(
                     """.trimIndent()
                 }
 
-                val response = tryGenerateWithFallback(prompt)
+                val response = tryGenerateWithFallback(prompt, "message_helper")
 
                 if (response != null) {
                     val parsed = parseMessageHelper(response, hasDraft)
@@ -708,75 +750,102 @@ class BuddhaAiRepository @Inject constructor(
      * @param maxRetries Maximum retry attempts for filtering generic responses (default: 2)
      * @return The validated AI response, or null if all attempts fail
      */
-    private suspend fun tryGenerateWithFallback(prompt: String, maxRetries: Int = 2): String? {
+    private suspend fun tryGenerateWithFallback(
+        prompt: String,
+        feature: String = "generic_prompt",
+        maxRetries: Int = 2
+    ): String? {
+        val providerSequence = listOf("gemini", "openrouter", "local_wisdom")
         var attempts = 0
         var lastResponse: String? = null
 
         while (attempts < maxRetries) {
             attempts++
-
-            // Build prompt with persona reinforcement based on retry count
             val enhancedPrompt = if (attempts > 1) {
                 buildRetryPrompt(prompt, attempts)
             } else {
                 "$BUDDHA_SYSTEM_PROMPT\n\n$prompt"
             }
 
-            // Try Gemini first
-            if (geminiService.isConfigured()) {
-                try {
-                    val result = geminiService.generateContent(enhancedPrompt)
-                    if (result is GeminiResult.Success && result.data.isNotBlank()) {
-                        lastResponse = result.data
+            for (provider in providerSequence) {
+                if (!isProviderAvailable(provider) || isCircuitOpen(provider)) continue
 
-                        // Validate response doesn't contain generic AI language
-                        if (!containsGenericAiLanguage(lastResponse)) {
-                            Log.d(TAG, "Gemini response passed persona validation on attempt $attempts")
-                            return lastResponse
-                        } else {
-                            Log.w(TAG, "Gemini response contained generic AI language, retrying... (attempt $attempts)")
-                        }
-                    }
-                } catch (e: Exception) {
-                    Log.w(TAG, "Gemini failed on attempt $attempts", e)
+                val start = System.currentTimeMillis()
+                val response = withTimeoutOrNull(featureTimeoutsMs[feature] ?: TimeUnit.SECONDS.toMillis(8)) {
+                    runProvider(provider, enhancedPrompt)
                 }
-            }
 
-            // Fallback to OpenRouter
-            if (openRouterService.isConfigured()) {
-                try {
-                    val result = openRouterService.generateResponse(
-                        prompt = enhancedPrompt,
-                        systemPrompt = BUDDHA_SYSTEM_PROMPT
+                if (response == null) {
+                    recordProviderFailure(provider)
+                    recordProviderMetric(
+                        provider = provider,
+                        promptType = feature,
+                        latencyMs = System.currentTimeMillis() - start,
+                        response = null,
+                        error = "timeout_or_empty"
                     )
-                    result.onSuccess { response ->
-                        lastResponse = response
-
-                        // Validate response doesn't contain generic AI language
-                        if (!containsGenericAiLanguage(response)) {
-                            Log.d(TAG, "OpenRouter response passed persona validation on attempt $attempts")
-                            return response
-                        } else {
-                            Log.w(TAG, "OpenRouter response contained generic AI language, retrying... (attempt $attempts)")
-                        }
-                    }
-                } catch (e: Exception) {
-                    Log.w(TAG, "OpenRouter failed on attempt $attempts", e)
+                    continue
                 }
+
+                lastResponse = response
+                if (!containsGenericAiLanguage(response) || provider == "local_wisdom") {
+                    recordProviderSuccess(provider)
+                    recordProviderMetric(
+                        provider = provider,
+                        promptType = feature,
+                        latencyMs = System.currentTimeMillis() - start,
+                        response = response,
+                        error = null
+                    )
+                    return response
+                }
+
+                recordProviderFailure(provider)
+                recordProviderMetric(
+                    provider = provider,
+                    promptType = feature,
+                    latencyMs = System.currentTimeMillis() - start,
+                    response = response,
+                    error = "persona_validation_failed"
+                )
             }
         }
 
-        // If we have a response but it failed validation, try to clean it up
         lastResponse?.let { response ->
             val cleanedResponse = sanitizeGenericAiLanguage(response)
             if (cleanedResponse.isNotBlank()) {
-                Log.d(TAG, "Returning sanitized response after $attempts attempts")
                 return cleanedResponse
             }
         }
 
-        Log.w(TAG, "All AI attempts failed after $attempts tries")
         return null
+    }
+
+    private suspend fun runProvider(provider: String, prompt: String): String? {
+        return when (provider) {
+            "gemini" -> {
+                val result = geminiService.generateContent(prompt)
+                if (result is GeminiResult.Success && result.data.isNotBlank()) result.data else null
+            }
+
+            "openrouter" -> {
+                openRouterService.generateResponse(prompt = prompt, systemPrompt = BUDDHA_SYSTEM_PROMPT)
+                    .getOrNull()
+                    ?.takeIf { it.isNotBlank() }
+            }
+
+            "local_wisdom" -> BuddhaWisdom.getDailyReflectionPrompt().takeIf { it.isNotBlank() }
+            else -> null
+        }
+    }
+
+    private fun isProviderAvailable(provider: String): Boolean {
+        return when (provider) {
+            "gemini" -> geminiService.isConfigured()
+            "openrouter" -> openRouterService.isConfigured()
+            "local_wisdom" -> true
+            else -> false
+        }
     }
 
     /**
@@ -983,7 +1052,6 @@ class BuddhaAiRepository @Inject constructor(
             val idx = text.indexOf(label, startIndex, ignoreCase = true)
             if (idx != -1 && (minIndex == -1 || idx < minIndex)) {
                 minIndex = idx
-            }
         }
         return minIndex
     }
@@ -1081,7 +1149,131 @@ class BuddhaAiRepository @Inject constructor(
         "I'm writing this to remind you of something important..."
     )
 
-    // ==================== CACHING ====================
+    
+    private suspend fun <T : Any> coalesce(
+        feature: String,
+        cacheKey: String,
+        block: suspend () -> BuddhaAiResult<T>
+    ): BuddhaAiResult<T> {
+        val requestKey = "$feature::$cacheKey"
+        val existing = inFlightRequests[requestKey] as? Deferred<BuddhaAiResult<T>>
+        if (existing != null) {
+            recordCoalescedRequest()
+            return existing.await()
+        }
+
+        val deferred = aiScope.async(start = CoroutineStart.LAZY) {
+                val tracker = performanceMonitor.startTracking(
+                    MetricType.AI_RESPONSE,
+                    mapOf("feature" to feature, "coalesced" to "false")
+                )
+                try {
+                    val result = withTimeoutOrNull(featureTimeoutsMs[feature] ?: TimeUnit.SECONDS.toMillis(8)) {
+                        block()
+                    } ?: BuddhaAiResult.Fallback(getFeatureFallback(feature) as T)
+
+                    tracker.stop()
+                    result
+                } catch (cancelled: CancellationException) {
+                    tracker.fail(cancelled)
+                    throw cancelled
+                } catch (e: Exception) {
+                    tracker.fail(e)
+                    throw e
+                }
+        }
+
+        val prior = inFlightRequests.putIfAbsent(requestKey, deferred)
+        val active = (prior as? Deferred<BuddhaAiResult<T>>) ?: deferred
+        if (prior != null) {
+            deferred.cancel()
+        }
+
+        return try {
+            active.await()
+        } finally {
+            if (active === deferred) {
+                inFlightRequests.remove(requestKey)
+            }
+        }
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun <T : Any> getFeatureFallback(feature: String): T {
+        return when (feature) {
+            "daily_wisdom" -> DailyWisdomResult(
+                wisdom = BuddhaWisdom.getDailyReflectionPrompt(),
+                explanation = "Wisdom from the archives",
+                isAiGenerated = false
+            )
+            "quote_explanation" -> getStaticQuoteExplanation("", "")
+            "journal_insight" -> getStaticJournalInsight("", Mood.CALM, 0)
+            "weekly_pattern" -> getStaticWeeklyPattern(0, null, 0)
+            "vocabulary_context" -> getStaticVocabularyContext("growth", "ongoing self-improvement")
+            "message_helper" -> getStaticMessageHelper()
+            else -> MessageHelperResult(
+                starterLines = listOf("Breathe. Begin where you are."),
+                toneTip = "Keep it honest and kind.",
+                preview = null,
+                isAiGenerated = false
+            )
+        } as T
+    }
+
+    private fun buildPromptFingerprint(feature: String, vararg components: String): String {
+        return hashString((listOf(feature) + components.toList()).joinToString("|"))
+    }
+
+    private fun buildCacheKey(feature: String, promptFingerprint: String): String {
+        return "$feature::$promptFingerprint::v${buildContextVersion()}"
+    }
+
+    private fun buildContextVersion(): Int {
+        return 2 + (if (openRouterService.isConfigured()) 1 else 0) + (if (geminiService.isConfigured()) 1 else 0)
+    }
+
+    private fun isCircuitOpen(provider: String): Boolean {
+        val state = circuitBreaker[provider] ?: return false
+        if (state.openUntilMs <= System.currentTimeMillis()) {
+            circuitBreaker.remove(provider)
+            return false
+        }
+        return state.consecutiveFailures >= 3
+    }
+
+    private fun recordProviderFailure(provider: String) {
+        val current = circuitBreaker[provider] ?: CircuitState()
+        val failures = current.consecutiveFailures + 1
+        val openUntil = if (failures >= 3) System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(2) else 0L
+        circuitBreaker[provider] = current.copy(consecutiveFailures = failures, openUntilMs = openUntil)
+    }
+
+    private fun recordProviderSuccess(provider: String) {
+        circuitBreaker.remove(provider)
+    }
+
+    private suspend fun recordProviderMetric(
+        provider: String,
+        promptType: String,
+        latencyMs: Long,
+        response: String?,
+        error: String?
+    ) {
+        recordApiCall(
+            latencyMs = latencyMs,
+            provider = provider,
+            promptType = promptType,
+            error = error,
+            tokenEstimate = estimateTokens(response ?: "")
+        )
+    }
+
+    private fun estimateTokens(text: String): Int {
+        if (text.isBlank()) return 0
+        return (text.length / 4.0).toInt().coerceAtLeast(1)
+    }
+
+// ==================== CACHING ====================
 
     private inline fun <reified T> getCachedResult(key: String, ttlMillis: Long): T? {
         val entry = memoryCache[key] ?: return null
@@ -1186,14 +1378,47 @@ class BuddhaAiRepository @Inject constructor(
         saveStatsToDisk()
     }
 
-    private suspend fun recordApiCall(latencyMs: Long, provider: String, promptType: String, error: String?) = statsMutex.withLock {
+    private suspend fun recordCoalescedRequest() = statsMutex.withLock {
+        stats = stats.copy(coalescedRequests = stats.coalescedRequests + 1)
+        saveStatsToDisk()
+    }
+
+    private suspend fun recordApiCall(
+        latencyMs: Long,
+        provider: String,
+        promptType: String,
+        error: String?,
+        tokenEstimate: Int = 0
+    ) = statsMutex.withLock {
+        val totalLatency = stats.totalLatencyMs + latencyMs
+        val totalTokens = stats.totalTokens + tokenEstimate
+        val totalErrors = stats.totalErrors + if (error != null) 1 else 0
+
         stats = stats.copy(
             totalApiCalls = stats.totalApiCalls + 1,
             lastLatencyMs = latencyMs,
+            totalLatencyMs = totalLatency,
+            avgLatencyMs = totalLatency / (stats.totalApiCalls + 1).coerceAtLeast(1),
             lastProvider = provider,
             lastPromptType = promptType,
             lastError = error,
-            lastCallTimestamp = System.currentTimeMillis()
+            lastCallTimestamp = System.currentTimeMillis(),
+            totalTokens = totalTokens,
+            avgTokensPerCall = totalTokens / (stats.totalApiCalls + 1).coerceAtLeast(1),
+            totalErrors = totalErrors
+        )
+        performanceMonitor.recordMetric(
+            com.prody.prashant.data.monitoring.PerformanceMetric(
+                type = MetricType.AI_RESPONSE,
+                durationMs = latencyMs,
+                success = error == null,
+                metadata = mapOf(
+                    "provider" to provider,
+                    "prompt_type" to promptType,
+                    "tokens" to tokenEstimate.toString(),
+                    "error" to (error ?: "none")
+                )
+            )
         )
         saveStatsToDisk()
     }
@@ -1250,7 +1475,6 @@ class BuddhaAiRepository @Inject constructor(
                 generateJournalResponse(fullPrompt, Mood.CALM, 5, 50)
             } catch (e: Exception) {
                 GeminiResult.Error(e, e.message ?: "Unknown error")
-            }
         }
     }
 }
@@ -1287,6 +1511,12 @@ data class AiStats(
     val rateLimitHits: Int = 0,
     val totalApiCalls: Int = 0,
     val lastLatencyMs: Long = 0,
+    val totalLatencyMs: Long = 0,
+    val avgLatencyMs: Long = 0,
+    val totalTokens: Int = 0,
+    val avgTokensPerCall: Int = 0,
+    val totalErrors: Int = 0,
+    val coalescedRequests: Int = 0,
     val lastProvider: String = "",
     val lastPromptType: String = "",
     val lastError: String? = null,
@@ -1299,6 +1529,12 @@ data class AiStats(
         }
 }
 
+
+
+private data class CircuitState(
+    val consecutiveFailures: Int = 0,
+    val openUntilMs: Long = 0
+)
 @Serializable
 data class DailyWisdomResult(
     val wisdom: String,
