@@ -220,7 +220,7 @@ I am here to listen, but I cannot provide the emergency care you might need. Ple
             }
 
             val keySource = if (BuildConfig.THERAPIST_API_KEY.isNotBlank()) "THERAPIST_API_KEY" else "AI_API_KEY"
-            Log.d(TAG, "Initializing Haven with $keySource (length: ${apiKey.length})")
+            Log.d(TAG, "Initializing Haven with $keySource")
 
             // Safety settings - less restrictive for mental health content
             val safetySettings = listOf(
@@ -262,9 +262,9 @@ I am here to listen, but I cannot provide the emergency care you might need. Ple
      */
     fun getConfigurationStatus(): String {
         val therapistKeyStatus = if (BuildConfig.THERAPIST_API_KEY.isNotBlank()) 
-            "present (${BuildConfig.THERAPIST_API_KEY.length} chars)" else "missing"
+            "present" else "missing"
         val aiKeyStatus = if (BuildConfig.AI_API_KEY.isNotBlank()) 
-            "present (${BuildConfig.AI_API_KEY.length} chars)" else "missing"
+            "present" else "missing"
             
         return when {
             isOfflineMode -> buildString {

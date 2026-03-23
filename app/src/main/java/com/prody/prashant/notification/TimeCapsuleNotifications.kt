@@ -3,7 +3,8 @@ package com.prody.prashant.notification
 import com.prody.prashant.data.local.entity.FutureMessageEntity
 import com.prody.prashant.data.local.entity.MessageAnniversaryEntity
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 import kotlin.math.abs
 
 /**
