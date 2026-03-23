@@ -291,12 +291,6 @@ fun ProdyNavHost(
                 onNavigateToQuotes = {
                     navController.navigate(Screen.Quotes.createRoute("quotes"))
                 },
-                onNavigateToIdioms = {
-                    navController.navigate(Screen.Quotes.createRoute("idioms"))
-                },
-                onNavigateToProverbs = {
-                    navController.navigate(Screen.Quotes.createRoute("proverbs"))
-                },
                 onNavigateToJournal = {
                     navController.navigate(Screen.JournalList.route)
                 },
@@ -306,17 +300,8 @@ fun ProdyNavHost(
                 onNavigateToHaven = {
                     navController.navigate(Screen.HavenHome.route)
                 },
-                onNavigateToMeditation = {
-                    navController.navigate(Screen.Meditation.route)
-                },
-                onNavigateToChallenges = {
-                    navController.navigate(Screen.Challenges.route)
-                },
                 onNavigateToSearch = {
                     navController.navigate(Screen.Search.route)
-                },
-                onNavigateToIdiomDetail = { idiomId ->
-                    navController.navigate(Screen.IdiomDetail.createRoute(idiomId))
                 }
             )
         }
