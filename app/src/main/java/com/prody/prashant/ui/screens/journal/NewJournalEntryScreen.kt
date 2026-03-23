@@ -90,6 +90,7 @@ import com.prody.prashant.domain.validation.ContentValidation
 import com.prody.prashant.domain.validation.ContentValidator
 import com.prody.prashant.ui.components.AmbientBackground
 import com.prody.prashant.ui.components.MoodSuggestionHint
+import com.prody.prashant.ui.components.ProdyIconButton
 import com.prody.prashant.ui.components.SessionResultCard
 import com.prody.prashant.ui.components.rememberMoodSuggestionState
 import com.prody.prashant.ui.components.getCurrentTimeOfDay
@@ -562,10 +563,28 @@ private fun JournalInputField(content: String, wordCount: Int, onContentChanged:
                 BasicTextField(value = content, onValueChange = onContentChanged, modifier = Modifier.fillMaxWidth().heightIn(min = 120.dp).focusRequester(focusRequester), textStyle = TextStyle(fontFamily = PoppinsFamily, fontSize = 16.sp, color = colors.primaryText), cursorBrush = SolidColor(colors.accent), decorationBox = { inner -> Box { if (content.isEmpty()) Text("What's on your mind?", style = TextStyle(fontFamily = PoppinsFamily, fontSize = 16.sp, color = colors.placeholderText)) ; inner() } })
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                        IconButton(onClick = onMediaClick) { Icon(imageVector = ProdyIcons.Image, contentDescription = null, tint = colors.primaryText) }
-                        IconButton(onClick = onVoiceClick) { Icon(imageVector = if (isRecording) ProdyIcons.Stop else ProdyIcons.Mic, contentDescription = null, tint = if (isRecording) colors.accent else colors.primaryText) }
-                        IconButton(onClick = onListClick) { Icon(imageVector = Icons.Filled.Menu, contentDescription = null, tint = colors.primaryText) }
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        ProdyIconButton(
+                            icon = ProdyIcons.Image,
+                            onClick = onMediaClick,
+                            contentDescription = stringResource(R.string.cd_attach_media),
+                            tooltip = "Attach Photos",
+                            tint = colors.primaryText
+                        )
+                        ProdyIconButton(
+                            icon = if (isRecording) ProdyIcons.Stop else ProdyIcons.Mic,
+                            onClick = onVoiceClick,
+                            contentDescription = stringResource(if (isRecording) R.string.action_stop_recording else R.string.action_record_voice),
+                            tooltip = if (isRecording) "Stop Recording" else "Voice Note",
+                            tint = if (isRecording) colors.accent else colors.primaryText
+                        )
+                        ProdyIconButton(
+                            icon = Icons.Filled.Menu,
+                            onClick = onListClick,
+                            contentDescription = stringResource(R.string.cd_bullet_list),
+                            tooltip = "Bullet List",
+                            tint = colors.primaryText
+                        )
                     }
                     Text(text = "$wordCount WORDS", style = MaterialTheme.typography.labelSmall, color = colors.secondaryText)
                 }

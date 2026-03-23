@@ -558,7 +558,8 @@ private fun DisplayNameSection(
                         ProdyIconButton(
                             icon = ProdyIcons.Clear,
                             onClick = { onDisplayNameChange("") },
-                            contentDescription = "Clear name",
+                            contentDescription = stringResource(R.string.action_clear_name),
+                            tooltip = "Clear Name",
                             size = 32.dp,
                             tint = if (isDarkMode) EditProfileColors.AccentGreen
                                    else EditProfileColors.AccentGreenLight

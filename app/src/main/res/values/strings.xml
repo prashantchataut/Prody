@@ -501,6 +501,12 @@
     <string name="cd_mood_selector">Select your mood</string>
     <string name="cd_play_audio">Play pronunciation</string>
     <string name="cd_navigation_item">Navigate to %s</string>
+    <string name="cd_attach_media">Attach photos or videos</string>
+    <string name="cd_voice_note">Voice note</string>
+    <string name="cd_bullet_list">Bullet list</string>
+    <string name="action_stop_recording">Stop recording</string>
+    <string name="action_record_voice">Record voice</string>
+    <string name="action_clear_name">Clear name</string>
 
     <!-- ==================== -->
     <!-- ONBOARDING -->
