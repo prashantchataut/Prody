@@ -37,6 +37,13 @@
     <string name="action_refresh">Refresh</string>
     <string name="action_view_all">View All</string>
     <string name="action_learn_more">Learn More</string>
+    <string name="action_clear_name">Clear name</string>
+    <string name="action_stop_recording">Stop recording</string>
+    <string name="action_add_list_item">Add list item</string>
+    <string name="action_remove">Remove</string>
+    <string name="action_play">Play</string>
+    <string name="action_pause">Pause</string>
+    <string name="action_record_voice">Record voice</string>
 
     <!-- Legacy aliases for compatibility -->
     <string name="get_started">Get Started</string>
@@ -501,6 +508,9 @@
     <string name="cd_mood_selector">Select your mood</string>
     <string name="cd_play_audio">Play pronunciation</string>
     <string name="cd_navigation_item">Navigate to %s</string>
+    <string name="cd_attach_media">Attach media</string>
+    <string name="cd_voice_note">Voice note</string>
+    <string name="cd_bullet_list">Bullet list</string>
 
     <!-- ==================== -->
     <!-- ONBOARDING -->
