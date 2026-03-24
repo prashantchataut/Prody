@@ -32,6 +32,7 @@ import androidx.core.content.ContextCompat
 import android.content.Intent
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.prody.prashant.ui.components.PreventScreenshots
 import com.prody.prashant.data.local.entity.WeeklyDigestEntity
 import com.prody.prashant.domain.model.Mood
 import com.prody.prashant.ui.components.ProdyCard
@@ -49,6 +50,9 @@ fun WeeklyDigestScreen(
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+
+    // Security: Prevent screenshots and screen recordings of weekly digest
+    PreventScreenshots()
 
     /**
      * Share weekly digest content
