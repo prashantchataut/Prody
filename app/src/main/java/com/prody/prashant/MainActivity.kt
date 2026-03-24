@@ -277,9 +277,9 @@ fun ProdyApp(
                                         modifier = Modifier
                                             .size(56.dp) // Larger than standard icon
                                             .graphicsLayer {
-                                                scaleX = scale
-                                                scaleY = scale
-                                                alpha = if (selected) 1f else animatedAlpha
+                                                this.scaleX = scale
+                                                this.scaleY = scale
+                                                this.alpha = if (selected) 1f else animatedAlpha
                                             }
                                             .clip(CircleShape)
                                             .background(
