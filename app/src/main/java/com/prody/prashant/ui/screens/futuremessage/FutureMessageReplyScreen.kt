@@ -29,6 +29,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.prody.prashant.ui.components.PreventScreenshots
 import com.prody.prashant.data.local.entity.FutureMessageEntity
 import com.prody.prashant.domain.model.Mood
 import com.prody.prashant.ui.components.ProdyCard
@@ -42,6 +43,9 @@ fun FutureMessageReplyScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+
+    // Security: Prevent screenshots and screen recordings of private replies
+    PreventScreenshots()
 
     // Handle navigation
     LaunchedEffect(uiState.shouldNavigateToJournal) {

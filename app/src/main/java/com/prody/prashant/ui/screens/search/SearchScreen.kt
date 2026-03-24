@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.prody.prashant.ui.components.PreventScreenshots
 import com.prody.prashant.data.repository.SearchCategory
 import com.prody.prashant.data.repository.SearchResult
 import com.prody.prashant.ui.theme.PoppinsFamily
@@ -73,6 +74,9 @@ fun SearchScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isDark = isDarkTheme()
+
+    // Security: Prevent screenshots and screen recordings of search results
+    PreventScreenshots()
     val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
 
