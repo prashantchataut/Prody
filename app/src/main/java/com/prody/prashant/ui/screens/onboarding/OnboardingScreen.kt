@@ -1,6 +1,7 @@
 package com.prody.prashant.ui.screens.onboarding
 
 import com.prody.prashant.ui.icons.ProdyIcons
+import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -47,6 +48,13 @@ import com.prody.prashant.ui.theme.*
 import kotlinx.coroutines.launch
 
 // =============================================================================
+// ANIMATION CONFIGURATION
+// =============================================================================
+
+// Custom easing for smooth, natural-feeling transitions
+private val EaseOutQuart = CubicBezierEasing(0.25f, 1f, 0.5f, 1f)
+
+// =============================================================================
 // PRODY ONBOARDING - REVAMPED 2026
 // =============================================================================
 
@@ -58,20 +66,21 @@ fun OnboardingScreen(
 ) {
     val pagerState = rememberPagerState(pageCount = { 8 })
     val coroutineScope = rememberCoroutineScope()
-    // Determine theme for background only if needed, but we mostly use specific colors
-    // We will use the ProdyTheme colors.
     
-    // Gradient Background: White to #F5F5F5 for light mode
-    val gradientColors = if (!isSystemInDarkTheme()) {
-        listOf(Color.White, Color(0xFFF5F5F5))
-    } else {
-        listOf(ProdyBackgroundDark, ProdyBackgroundDark) // Keep dark mode simple
+    val isDark = isSystemInDarkTheme()
+    val backgroundBrush = remember(isDark) {
+        val gradientColors = if (!isDark) {
+            listOf(Color.White, Color(0xFFF5F5F5))
+        } else {
+            listOf(ProdyBackgroundDark, ProdyBackgroundDark)
+        }
+        Brush.verticalGradient(gradientColors)
     }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Brush.verticalGradient(gradientColors))
+            .background(backgroundBrush)
             .systemBarsPadding()
     ) {
         HorizontalPager(
@@ -134,6 +143,10 @@ private fun WelcomeScreen(
     onNext: () -> Unit,
     onLogin: () -> Unit
 ) {
+    // Staggered entrance animation state
+    val visible = remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) { visible.value = true }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -143,33 +156,48 @@ private fun WelcomeScreen(
         // Logo positioned at 25% from top
         Spacer(modifier = Modifier.fillMaxHeight(0.25f))
 
-        ProdyLogo(modifier = Modifier.size(100.dp))
+        AnimatedVisibility(
+            visible = visible.value,
+            enter = fadeIn(tween(600)) + scaleIn(tween(600, easing = EaseOutQuart), initialScale = 0.8f)
+        ) {
+            ProdyLogo(modifier = Modifier.size(100.dp))
+        }
 
         Spacer(modifier = Modifier.height(32.dp))
 
         // Brand name "Prody" - Poppins SemiBold 32sp
-        Text(
-            text = "Prody",
-            style = TextStyle(
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 32.sp
-            ),
-            color = ProdyTextPrimaryLight // Always dark for contrast on light gradient
-        )
+        AnimatedVisibility(
+            visible = visible.value,
+            enter = fadeIn(tween(600, delayMillis = 200)) + slideInVertically(tween(600, delayMillis = 200)) { it / 2 }
+        ) {
+            Text(
+                text = "Prody",
+                style = TextStyle(
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 32.sp
+                ),
+                color = ProdyTextPrimaryLight // Always dark for contrast on light gradient
+            )
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
         // Tagline "Your mindful companion" - Poppins Regular 16sp
-        Text(
-            text = "Your mindful companion",
-            style = TextStyle(
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.Normal,
-                fontSize = 16.sp
-            ),
-            color = ProdyTextSecondaryLight
-        )
+        AnimatedVisibility(
+            visible = visible.value,
+            enter = fadeIn(tween(600, delayMillis = 400)) + slideInVertically(tween(600, delayMillis = 400)) { it / 2 }
+        ) {
+            Text(
+                text = "Your mindful companion",
+                style = TextStyle(
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Normal,
+                    fontSize = 16.sp
+                ),
+                color = ProdyTextSecondaryLight
+            )
+        }
 
         Spacer(modifier = Modifier.weight(1f))
 
@@ -327,6 +355,10 @@ private fun FeatureScreenLayout(
     onSkip: () -> Unit,
     content: @Composable () -> Unit
 ) {
+    // Staggered entrance animation state
+    val visible = remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) { visible.value = true }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -359,36 +391,51 @@ private fun FeatureScreenLayout(
             modifier = Modifier.weight(1f),
             contentAlignment = Alignment.Center
         ) {
-            content()
+            this@Column.AnimatedVisibility(
+                visible = visible.value,
+                enter = fadeIn(tween(600)) + scaleIn(tween(600, easing = EaseOutQuart), initialScale = 0.9f)
+            ) {
+                content()
+            }
         }
 
         Spacer(modifier = Modifier.height(40.dp))
 
         // Text Content
-        Text(
-            text = title,
-            style = TextStyle(
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 24.sp // Header text 24-32sp
-            ),
-            color = ProdyTextPrimaryLight,
-            textAlign = TextAlign.Center
-        )
+        AnimatedVisibility(
+            visible = visible.value,
+            enter = fadeIn(tween(600, delayMillis = 200)) + slideInVertically(tween(600, delayMillis = 200)) { it / 2 }
+        ) {
+            Text(
+                text = title,
+                style = TextStyle(
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 24.sp // Header text 24-32sp
+                ),
+                color = ProdyTextPrimaryLight,
+                textAlign = TextAlign.Center
+            )
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text(
-            text = description,
-            style = TextStyle(
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.Normal,
-                fontSize = 14.sp,
-                lineHeight = 21.sp // 1.5 line height
-            ),
-            color = ProdyTextSecondaryLight,
-            textAlign = TextAlign.Center
-        )
+        AnimatedVisibility(
+            visible = visible.value,
+            enter = fadeIn(tween(600, delayMillis = 400)) + slideInVertically(tween(600, delayMillis = 400)) { it / 2 }
+        ) {
+            Text(
+                text = description,
+                style = TextStyle(
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Normal,
+                    fontSize = 14.sp,
+                    lineHeight = 21.sp // 1.5 line height
+                ),
+                color = ProdyTextSecondaryLight,
+                textAlign = TextAlign.Center
+            )
+        }
 
         Spacer(modifier = Modifier.height(48.dp))
 
@@ -419,6 +466,7 @@ private fun FeatureScreenLayout(
 private fun StandardFeatureCard(
     content: @Composable ColumnScope.() -> Unit
 ) {
+    val cardShape = remember { RoundedCornerShape(12.dp) }
     // Card Design: 12dp corner radius, 8dp elevation with proper shadow
     Surface(
         modifier = Modifier
@@ -426,11 +474,11 @@ private fun StandardFeatureCard(
             .aspectRatio(0.8f)
             .shadow(
                 elevation = 8.dp,
-                shape = RoundedCornerShape(12.dp),
+                shape = cardShape,
                 spotColor = Color(0x1A000000), // Soft shadow
                 ambientColor = Color(0x1A000000)
             ),
-        shape = RoundedCornerShape(12.dp),
+        shape = cardShape,
         color = Color.White
     ) {
         Column(

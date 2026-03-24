@@ -1,25 +1,20 @@
 package com.prody.prashant.ui.screens.home
 
-import com.prody.prashant.ui.icons.ProdyIcons
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
@@ -28,8 +23,10 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.prody.prashant.domain.progress.NextActionType
+import com.prody.prashant.ui.icons.ProdyIcons
 import com.prody.prashant.ui.theme.*
 
 // =============================================================================
@@ -49,33 +46,81 @@ fun HomeScreen(
     onNavigateToChallenges: () -> Unit = {},
     onNavigateToSearch: () -> Unit = {},
     onNavigateToIdiomDetail: (Long) -> Unit = {},
+    onNavigateToSettings: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
-    // We assume ViewModel provides necessary state. For this UI revamp, 
-    // we'll focus on the UI structure and use placeholder data where ViewModel might not strictly align yet.
-    
-    val surfaceColor = MaterialTheme.colorScheme.surface
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val backgroundColor = MaterialTheme.colorScheme.background
 
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .background(backgroundColor),
-        contentPadding = PaddingValues(bottom = 80.dp) // Space for bottom nav
+        contentPadding = PaddingValues(bottom = 80.dp), // Space for bottom nav
+        verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
-        // Header with Greeting and Notification
+        // 1. AI Configuration Warning (If missing)
+        if (uiState.aiConfigurationStatus == AiConfigurationStatus.MISSING) {
+            item {
+                AiConfigWarningBanner(
+                    onConfigureClick = onNavigateToSettings,
+                    modifier = Modifier.padding(horizontal = 24.dp).padding(top = 16.dp)
+                )
+            }
+        }
+
+        // 2. Header with Greeting
         item {
             DashboardHeader(
-                userName = "Prashant", // Replace with real name
-                onProfileClick = {}, // TODO: Profile Nav
+                userName = uiState.userName,
+                onProfileClick = {}, // Handled by Bottom Nav usually
                 onNotificationClick = {}
             )
         }
 
-        // Overview Section (Streak & Badges)
+        // 3. Next Action Card (Contextual Suggestion)
+        uiState.nextAction?.let { action ->
+            item {
+                NextActionCard(
+                    nextAction = action,
+                    onClick = {
+                        when (action.type) {
+                            NextActionType.START_JOURNAL, NextActionType.FOLLOW_UP_JOURNAL -> onNavigateToJournal()
+                            NextActionType.REVIEW_WORDS, NextActionType.LEARN_WORD -> onNavigateToVocabulary()
+                            NextActionType.WRITE_FUTURE_MESSAGE -> onNavigateToFutureMessage()
+                            NextActionType.REFLECT_ON_QUOTE -> onNavigateToQuotes()
+                            NextActionType.COMPLETE_CHALLENGE -> onNavigateToChallenges()
+                        }
+                    },
+                    modifier = Modifier.padding(horizontal = 24.dp)
+                )
+            }
+        }
+
+        // 4. Buddha's AI Wisdom Card
+        item {
+            BuddhaThoughtCard(
+                thought = uiState.buddhaThought,
+                explanation = uiState.buddhaThoughtExplanation,
+                isLoading = uiState.isBuddhaThoughtLoading,
+                isAiGenerated = uiState.isBuddhaThoughtAiGenerated,
+                onRefresh = { viewModel.refreshBuddhaThought() },
+                canRefresh = uiState.canRefreshBuddhaThought,
+                modifier = Modifier.padding(horizontal = 24.dp)
+            )
+        }
+
+        // 5. Mood Trend Chart
+        item {
+            MoodTrendSection(
+                moodData = listOf(3f, 4f, 2f, 5f, 4f, 5f, 4f) // 1-5 Scale
+            )
+        }
+
+        // 6. Overview Section (Streak & Stats)
         item {
             OverviewSection(
-                streakDays = 7,
+                streakDays = uiState.currentStreak,
                 badges = listOf(
                     BadgeData(ProdyIcons.EmojiEvents, 0.75f, ProdyWarmAmber),
                     BadgeData(ProdyIcons.Edit, 0.5f, ProdyForestGreen),
@@ -84,23 +129,16 @@ fun HomeScreen(
             )
         }
 
-        // Mood Trend Chart
-        item {
-            MoodTrendSection(
-                moodData = listOf(3f, 4f, 2f, 5f, 4f, 5f, 4f) // 1-5 Scale
-            )
-        }
-
-        // Weekly Summary
+        // 7. Weekly Summary (Real stats from uiState)
         item {
             WeeklySummarySection(
-                journalEntries = 5,
-                wordsLearned = 12,
-                mindfulMinutes = 45
+                journalEntries = uiState.journalEntriesThisWeek,
+                wordsLearned = uiState.wordsLearnedThisWeek,
+                mindfulMinutes = uiState.todayProgress.pointsEarned / 10 // Approximation
             )
         }
         
-        // Quick Actions (Navigation)
+        // 8. Quick Actions Grid
         item {
             QuickActionsGrid(
                 onJournalClick = onNavigateToJournal,
@@ -110,9 +148,11 @@ fun HomeScreen(
             )
         }
         
-        // Recent / Suggestions
+        // 9. Recent Activity (Indicative of today's status)
         item {
-            RecentActivitySection()
+            RecentActivitySection(
+                journaledToday = uiState.journaledToday
+            )
         }
     }
 }
@@ -554,11 +594,10 @@ fun QuickActionTile(title: String, icon: androidx.compose.ui.graphics.vector.Ima
 }
 
 @Composable
-fun RecentActivitySection() {
-    // Placeholder for Recent Activity
+fun RecentActivitySection(journaledToday: Boolean) {
     Column(modifier = Modifier.padding(horizontal = 24.dp)) {
         Text(
-            text = "Recent",
+            text = "Today's Status",
             style = TextStyle(
                 fontFamily = PoppinsFamily,
                 fontWeight = FontWeight.SemiBold,
@@ -571,7 +610,7 @@ fun RecentActivitySection() {
         Surface(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
-            color = ProdySurfaceLight,
+            color = if (journaledToday) ProdySuccessContainer else ProdySurfaceLight,
             shadowElevation = 2.dp
         ) {
             Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -579,15 +618,29 @@ fun RecentActivitySection() {
                     modifier = Modifier
                         .size(40.dp)
                         .clip(CircleShape)
-                        .background(ProdyForestGreen.copy(alpha = 0.1f)),
+                        .background(if (journaledToday) ProdySuccess.copy(alpha = 0.1f) else ProdyForestGreen.copy(alpha = 0.1f)),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(ProdyIcons.Check, null, tint = ProdyForestGreen)
+                    Icon(
+                        imageVector = if (journaledToday) ProdyIcons.CheckCircle else ProdyIcons.Edit,
+                        contentDescription = null,
+                        tint = if (journaledToday) ProdySuccess else ProdyForestGreen
+                    )
                 }
                 Spacer(modifier = Modifier.width(16.dp))
                 Column {
-                    Text("Daily Journal", fontWeight = FontWeight.SemiBold, fontFamily = PoppinsFamily)
-                    Text("Completed today", fontSize = 12.sp, color = ProdyTextSecondaryLight, fontFamily = PoppinsFamily)
+                    Text(
+                        text = if (journaledToday) "Journal Entry Saved" else "Daily Journal",
+                        fontWeight = FontWeight.SemiBold,
+                        fontFamily = PoppinsFamily,
+                        color = if (journaledToday) ProdySuccess else ProdyTextPrimaryLight
+                    )
+                    Text(
+                        text = if (journaledToday) "You've captured your thoughts for today." else "You haven't journaled yet today.",
+                        fontSize = 12.sp,
+                        color = ProdyTextSecondaryLight,
+                        fontFamily = PoppinsFamily
+                    )
                 }
             }
         }
