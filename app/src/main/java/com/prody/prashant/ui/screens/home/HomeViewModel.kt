@@ -131,7 +131,9 @@ data class HomeUiState(
     val userArchetype: UserArchetype = UserArchetype.EXPLORER,
     val trustLevel: TrustLevel = TrustLevel.NEW,
     val isUserStruggling: Boolean = false,
-    val isUserThriving: Boolean = false
+    val isUserThriving: Boolean = false,
+    // Weekly mood trend data (1-5 scale)
+    val moodTrend: List<Float> = emptyList()
 )
 
 private data class DailyContent(
@@ -240,9 +242,22 @@ class HomeViewModel @Inject constructor(
                     Triple(false, "", "")
                 }
 
+                // Map moods to float values (1-5)
+                val moodTrend = weeklyJournalEntries.sortedBy { it.createdAt }.map { entry ->
+                    when (entry.mood.lowercase()) {
+                        "terrible" -> 1f
+                        "bad" -> 2f
+                        "neutral" -> 3f
+                        "good" -> 4f
+                        "great" -> 5f
+                        else -> 3f
+                    }
+                }
+
                 // 3. Atomically update the UI state with all the loaded data.
                 _uiState.value.copy(
                     userName = profile?.displayName ?: "Growth Seeker",
+                    moodTrend = moodTrend,
                     currentStreak = profile?.currentStreak ?: 0,
                     totalPoints = profile?.totalPoints ?: 0,
                     dailyQuote = dailyContent.quote?.content ?: _uiState.value.dailyQuote,

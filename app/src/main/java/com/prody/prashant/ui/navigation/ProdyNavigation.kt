@@ -209,7 +209,7 @@ fun ProdyNavHost(
                     easing = EaseOutQuart
                 )
             ) + slideInHorizontally(
-                initialOffsetX = { (it * SLIDE_OFFSET_FRACTION).toInt() },
+                initialOffsetX = { width -> (width * SLIDE_OFFSET_FRACTION).toInt() },
                 animationSpec = tween(
                     durationMillis = TRANSITION_DURATION,
                     easing = EaseOutQuart
@@ -224,7 +224,7 @@ fun ProdyNavHost(
                     easing = EaseInQuart
                 )
             ) + slideOutHorizontally(
-                targetOffsetX = { -(it * SLIDE_OFFSET_FRACTION * 0.3f).toInt() },
+                targetOffsetX = { width -> -(width * SLIDE_OFFSET_FRACTION * 0.3f).toInt() },
                 animationSpec = tween(
                     durationMillis = TRANSITION_DURATION,
                     easing = EaseInQuart
@@ -239,7 +239,7 @@ fun ProdyNavHost(
                     easing = EaseOutQuart
                 )
             ) + slideInHorizontally(
-                initialOffsetX = { -(it * SLIDE_OFFSET_FRACTION * 0.3f).toInt() },
+                initialOffsetX = { width -> -(width * SLIDE_OFFSET_FRACTION * 0.3f).toInt() },
                 animationSpec = tween(
                     durationMillis = TRANSITION_DURATION,
                     easing = EaseOutQuart
@@ -254,7 +254,7 @@ fun ProdyNavHost(
                     easing = EaseInQuart
                 )
             ) + slideOutHorizontally(
-                targetOffsetX = { (it * SLIDE_OFFSET_FRACTION).toInt() },
+                targetOffsetX = { width -> (width * SLIDE_OFFSET_FRACTION).toInt() },
                 animationSpec = tween(
                     durationMillis = TRANSITION_DURATION,
                     easing = EaseInQuart
@@ -352,7 +352,7 @@ fun ProdyNavHost(
             // Slide up transition for creation screens
             enterTransition = {
                 fadeIn(tween(FADE_DURATION)) + slideInVertically(
-                    initialOffsetY = { it / 4 },
+                    initialOffsetY = { height -> height / 4 },
                     animationSpec = tween(TRANSITION_DURATION, easing = EaseOutQuart)
                 )
             },
@@ -361,7 +361,7 @@ fun ProdyNavHost(
             },
             popExitTransition = {
                 fadeOut(tween(FADE_DURATION)) + slideOutVertically(
-                    targetOffsetY = { it / 4 },
+                    targetOffsetY = { height -> height / 4 },
                     animationSpec = tween(TRANSITION_DURATION, easing = EaseInQuart)
                 )
             }
@@ -400,13 +400,13 @@ fun ProdyNavHost(
             // Slide up for creation screens
             enterTransition = {
                 fadeIn(tween(FADE_DURATION)) + slideInVertically(
-                    initialOffsetY = { it / 4 },
+                    initialOffsetY = { height -> height / 4 },
                     animationSpec = tween(TRANSITION_DURATION, easing = EaseOutQuart)
                 )
             },
             popExitTransition = {
                 fadeOut(tween(FADE_DURATION)) + slideOutVertically(
-                    targetOffsetY = { it / 4 },
+                    targetOffsetY = { height -> height / 4 },
                     animationSpec = tween(TRANSITION_DURATION, easing = EaseInQuart)
                 )
             }
@@ -446,13 +446,13 @@ fun ProdyNavHost(
             // Slide up for edit screens
             enterTransition = {
                 fadeIn(tween(FADE_DURATION)) + slideInVertically(
-                    initialOffsetY = { it / 4 },
+                    initialOffsetY = { height -> height / 4 },
                     animationSpec = tween(TRANSITION_DURATION, easing = EaseOutQuart)
                 )
             },
             popExitTransition = {
                 fadeOut(tween(FADE_DURATION)) + slideOutVertically(
-                    targetOffsetY = { it / 4 },
+                    targetOffsetY = { height -> height / 4 },
                     animationSpec = tween(TRANSITION_DURATION, easing = EaseInQuart)
                 )
             }
@@ -683,13 +683,13 @@ fun ProdyNavHost(
             // Slide up for reply screen
             enterTransition = {
                 fadeIn(tween(FADE_DURATION)) + slideInVertically(
-                    initialOffsetY = { it / 4 },
+                    initialOffsetY = { height -> height / 4 },
                     animationSpec = tween(TRANSITION_DURATION, easing = EaseOutQuart)
                 )
             },
             popExitTransition = {
                 fadeOut(tween(FADE_DURATION)) + slideOutVertically(
-                    targetOffsetY = { it / 4 },
+                    targetOffsetY = { height -> height / 4 },
                     animationSpec = tween(TRANSITION_DURATION, easing = EaseInQuart)
                 )
             }
@@ -782,13 +782,13 @@ fun ProdyNavHost(
             // Slide up for chat
             enterTransition = {
                 fadeIn(tween(FADE_DURATION)) + slideInVertically(
-                    initialOffsetY = { it / 4 },
+                    initialOffsetY = { height -> height / 4 },
                     animationSpec = tween(TRANSITION_DURATION, easing = EaseOutQuart)
                 )
             },
             popExitTransition = {
                 fadeOut(tween(FADE_DURATION)) + slideOutVertically(
-                    targetOffsetY = { it / 4 },
+                    targetOffsetY = { height -> height / 4 },
                     animationSpec = tween(TRANSITION_DURATION, easing = EaseInQuart)
                 )
             }
@@ -888,13 +888,13 @@ fun ProdyNavHost(
             // Slide up transition for lesson content
             enterTransition = {
                 fadeIn(tween(FADE_DURATION)) + slideInVertically(
-                    initialOffsetY = { it / 4 },
+                    initialOffsetY = { height -> height / 4 },
                     animationSpec = tween(TRANSITION_DURATION, easing = EaseOutQuart)
                 )
             },
             popExitTransition = {
                 fadeOut(tween(FADE_DURATION)) + slideOutVertically(
-                    targetOffsetY = { it / 4 },
+                    targetOffsetY = { height -> height / 4 },
                     animationSpec = tween(TRANSITION_DURATION, easing = EaseInQuart)
                 )
             }
@@ -1042,13 +1042,13 @@ fun ProdyNavHost(
             ),
             enterTransition = {
                 fadeIn(tween(300)) + slideInVertically(
-                    initialOffsetY = { it / 4 },
+                    initialOffsetY = { height -> height / 4 },
                     animationSpec = tween(300, easing = EaseOutQuart)
                 )
             },
             popExitTransition = {
                 fadeOut(tween(250)) + slideOutVertically(
-                    targetOffsetY = { it / 4 },
+                    targetOffsetY = { height -> height / 4 },
                     animationSpec = tween(250, easing = EaseInQuart)
                 )
             }
