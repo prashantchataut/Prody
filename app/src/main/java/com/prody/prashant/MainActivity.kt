@@ -10,13 +10,8 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
@@ -39,7 +34,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -49,12 +43,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -68,6 +59,7 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.prody.prashant.notification.NotificationScheduler
+import com.prody.prashant.ui.components.HavenNavigationItem
 import com.prody.prashant.ui.components.NavigationBreathingGlow
 import com.prody.prashant.ui.main.MainViewModel
 import com.prody.prashant.ui.navigation.BottomNavItem
@@ -221,14 +213,14 @@ fun ProdyApp(
             AnimatedVisibility(
                 visible = showBottomBar,
                 enter = slideInVertically(
-                    initialOffsetY = { it },
+                    initialOffsetY = { h: Int -> h },
                     animationSpec = spring(
                         dampingRatio = Spring.DampingRatioMediumBouncy,
                         stiffness = Spring.StiffnessMedium
                     )
                 ),
                 exit = slideOutVertically(
-                    targetOffsetY = { it },
+                    targetOffsetY = { h: Int -> h },
                     animationSpec = tween(200)
                 )
             ) {
@@ -239,8 +231,9 @@ fun ProdyApp(
                         } == true
 
                         if (item == BottomNavItem.Haven) {
-                            // Special Haven FAB Item
-                            NavigationBarItem(
+                            // Special Haven FAB Item - Performance Optimized Component
+                            HavenNavigationItem(
+                                item = item,
                                 selected = selected,
                                 onClick = {
                                     navController.navigate(item.route) {
@@ -250,60 +243,7 @@ fun ProdyApp(
                                         launchSingleTop = true
                                         restoreState = true
                                     }
-                                },
-                                icon = {
-                                    // Breathing Pulse Animation
-                                    val infiniteTransition = rememberInfiniteTransition(label = "HavenPulse")
-                                    val animatedAlpha by infiniteTransition.animateFloat(
-                                        initialValue = 0.6f,
-                                        targetValue = 1f,
-                                        animationSpec = infiniteRepeatable(
-                                            animation = tween(2000, easing = LinearEasing),
-                                            repeatMode = RepeatMode.Reverse
-                                        ),
-                                        label = "HavenAlpha"
-                                    )
-                                    val scale by infiniteTransition.animateFloat(
-                                        initialValue = 0.95f,
-                                        targetValue = 1.05f,
-                                        animationSpec = infiniteRepeatable(
-                                            animation = tween(2000, easing = LinearEasing),
-                                            repeatMode = RepeatMode.Reverse
-                                        ),
-                                        label = "HavenScale"
-                                    )
-
-                                    Box(
-                                        modifier = Modifier
-                                            .size(56.dp) // Larger than standard icon
-                                            .graphicsLayer {
-                                                scaleX = scale
-                                                scaleY = scale
-                                                alpha = if (selected) 1f else animatedAlpha
-                                            }
-                                            .clip(CircleShape)
-                                            .background(
-                                                androidx.compose.ui.graphics.Brush.verticalGradient(
-                                                    colors = listOf(
-                                                        com.prody.prashant.ui.theme.HavenBubbleLight,
-                                                        com.prody.prashant.ui.theme.HavenBubbleLight.copy(alpha = 0.8f)
-                                                    )
-                                                )
-                                            ),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Icon(
-                                            imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
-                                            contentDescription = null,
-                                            tint = com.prody.prashant.ui.theme.HavenTextLight,
-                                            modifier = Modifier.size(28.dp)
-                                        )
-                                    }
-                                },
-                                label = { /* No label for FAB look */ },
-                                colors = NavigationBarItemDefaults.colors(
-                                    indicatorColor = Color.Transparent // Disable standard indicator
-                                )
+                                }
                             )
                         } else {
                             // Standard Navigation Item
@@ -357,7 +297,6 @@ fun ProdyApp(
  * Design features:
  * - NO shadows - pure flat design
  * - Clean surface with subtle top border
- * - Animated selection indicator with accent color
  * - Minimal, focused visual hierarchy
  */
 @Composable
@@ -418,7 +357,9 @@ private fun ProdyNavItem(
     val accentBackground = ProdyPrimary.copy(alpha = 0.15f)
     val inactiveColor = MaterialTheme.colorScheme.onSurfaceVariant
 
-    val scale by animateFloatAsState(
+    // PERFORMANCE: Identify state reads in graphicsLayer lambdas where possible.
+    // Reading .value inside the graphicsLayer lambda block defers the read to the drawing phase.
+    val scaleState = animateFloatAsState(
         targetValue = if (isSelected) 1.05f else 1f,
         animationSpec = tween(durationMillis = 200),
         label = "scale"
@@ -433,7 +374,12 @@ private fun ProdyNavItem(
                 onClick = onClick
             )
             .padding(horizontal = 16.dp, vertical = 4.dp)
-            .scale(scale),
+            // PERFORMANCE: Apply scale via graphicsLayer for better performance.
+            // Using scaleState.value here defers the state read to the drawing phase.
+            .graphicsLayer {
+                scaleX = scaleState.value
+                scaleY = scaleState.value
+            },
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
