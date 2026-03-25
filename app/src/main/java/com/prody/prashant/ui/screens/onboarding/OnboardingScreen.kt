@@ -1,36 +1,78 @@
 package com.prody.prashant.ui.screens.onboarding
 
 import com.prody.prashant.ui.icons.ProdyIcons
-import androidx.compose.animation.core.*
-import androidx.compose.foundation.*
-import androidx.compose.foundation.layout.*
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.EaseOutBack
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.outlined.AutoAwesome
+import androidx.compose.material.icons.outlined.Book
+import androidx.compose.material.icons.outlined.Leaderboard
+import androidx.compose.material.icons.outlined.Lightbulb
+import androidx.compose.material.icons.outlined.Star
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.*
-import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.*
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -38,18 +80,31 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.prody.prashant.ui.components.ProdyProgressIndicator
-import com.prody.prashant.ui.theme.*
+import com.prody.prashant.ui.theme.PoppinsFamily
+import com.prody.prashant.ui.theme.ProdyBackgroundDark
+import com.prody.prashant.ui.theme.ProdyForestGreen
+import com.prody.prashant.ui.theme.ProdyOutlineLight
+import com.prody.prashant.ui.theme.ProdyTextPrimaryLight
+import com.prody.prashant.ui.theme.ProdyTextSecondaryLight
+import com.prody.prashant.ui.theme.ProdyTextTertiaryLight
+import com.prody.prashant.ui.theme.ProdyWarmAmber
 import kotlinx.coroutines.launch
 
 // =============================================================================
 // PRODY ONBOARDING - REVAMPED 2026
 // =============================================================================
 
+/**
+ * Onboarding Screen - Optimized for performance and smooth transitions.
+ *
+ * Performance:
+ * - Memoized Brush gradients for the background.
+ * - Used rememberPagerState for handling pager state.
+ */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun OnboardingScreen(
@@ -58,20 +113,22 @@ fun OnboardingScreen(
 ) {
     val pagerState = rememberPagerState(pageCount = { 8 })
     val coroutineScope = rememberCoroutineScope()
-    // Determine theme for background only if needed, but we mostly use specific colors
-    // We will use the ProdyTheme colors.
     
-    // Gradient Background: White to #F5F5F5 for light mode
-    val gradientColors = if (!isSystemInDarkTheme()) {
-        listOf(Color.White, Color(0xFFF5F5F5))
-    } else {
-        listOf(ProdyBackgroundDark, ProdyBackgroundDark) // Keep dark mode simple
+    val isDark = isSystemInDarkTheme()
+
+    // Memoized background gradient to prevent object allocation during recomposition
+    val backgroundGradient = remember(isDark) {
+        if (!isDark) {
+            Brush.verticalGradient(listOf(Color.White, Color(0xFFF5F5F5)))
+        } else {
+            Brush.verticalGradient(listOf(ProdyBackgroundDark, ProdyBackgroundDark))
+        }
     }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Brush.verticalGradient(gradientColors))
+            .background(backgroundGradient)
             .systemBarsPadding()
     ) {
         HorizontalPager(
@@ -129,11 +186,20 @@ fun OnboardingScreen(
 // SCREEN 1: WELCOME SCREEN
 // =============================================================================
 
+/**
+ * Welcome Screen with entrance animations for better UX.
+ */
 @Composable
 private fun WelcomeScreen(
     onNext: () -> Unit,
     onLogin: () -> Unit
 ) {
+    var visible by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        visible = true
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -143,74 +209,105 @@ private fun WelcomeScreen(
         // Logo positioned at 25% from top
         Spacer(modifier = Modifier.fillMaxHeight(0.25f))
 
-        ProdyLogo(modifier = Modifier.size(100.dp))
+        // Logo with scale and fade animation
+        this@Column.AnimatedVisibility(
+            visible = visible,
+            enter = fadeIn(tween(600)) + scaleIn(tween(600, easing = EaseOutBack), initialScale = 0.8f)
+        ) {
+            ProdyLogo(modifier = Modifier.size(100.dp))
+        }
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Brand name "Prody" - Poppins SemiBold 32sp
-        Text(
-            text = "Prody",
-            style = TextStyle(
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 32.sp
-            ),
-            color = ProdyTextPrimaryLight // Always dark for contrast on light gradient
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Tagline "Your mindful companion" - Poppins Regular 16sp
-        Text(
-            text = "Your mindful companion",
-            style = TextStyle(
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.Normal,
-                fontSize = 16.sp
-            ),
-            color = ProdyTextSecondaryLight
-        )
-
-        Spacer(modifier = Modifier.weight(1f))
-
-        // Progress Indicator
-        ProdyProgressIndicator(currentPage = 0, totalPages = 8)
-
-        Spacer(modifier = Modifier.height(48.dp))
-
-        // Primary CTA Button: 56dp height, 16dp corner radius
-        PrimaryButton(
-            text = "Get Started",
-            onClick = onNext,
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Secondary link
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.clickable { onLogin() }
+        // Brand name with staggered animation
+        this@Column.AnimatedVisibility(
+            visible = visible,
+            enter = fadeIn(tween(600, delayMillis = 200)) + slideInVertically(tween(600, delayMillis = 200)) { h: Int -> h / 2 }
         ) {
             Text(
-                text = "Already have an account? ",
-                style = TextStyle(
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Normal,
-                    fontSize = 14.sp
-                ),
-                color = ProdyTextSecondaryLight
-            )
-            Text(
-                text = "Log In",
+                text = "Prody",
                 style = TextStyle(
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.SemiBold,
-                    fontSize = 14.sp,
-                    textDecoration = TextDecoration.Underline
+                    fontSize = 32.sp
                 ),
-                color = ProdyForestGreen
+                color = ProdyTextPrimaryLight // Always dark for contrast on light gradient
             )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Tagline with staggered animation
+        this@Column.AnimatedVisibility(
+            visible = visible,
+            enter = fadeIn(tween(600, delayMillis = 400)) + slideInVertically(tween(600, delayMillis = 400)) { h: Int -> h / 2 }
+        ) {
+            Text(
+                text = "Your mindful companion",
+                style = TextStyle(
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Normal,
+                    fontSize = 16.sp
+                ),
+                color = ProdyTextSecondaryLight
+            )
+        }
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        // Progress Indicator with staggered animation
+        this@Column.AnimatedVisibility(
+            visible = visible,
+            enter = fadeIn(tween(600, delayMillis = 600))
+        ) {
+            ProdyProgressIndicator(currentPage = 0, totalPages = 8)
+        }
+
+        Spacer(modifier = Modifier.height(48.dp))
+
+        // Primary CTA Button with staggered animation
+        this@Column.AnimatedVisibility(
+            visible = visible,
+            enter = fadeIn(tween(600, delayMillis = 800)) + slideInVertically(tween(600, delayMillis = 800)) { h: Int -> h / 2 }
+        ) {
+            PrimaryButton(
+                text = "Get Started",
+                onClick = onNext,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Secondary link with staggered animation
+        this@Column.AnimatedVisibility(
+            visible = visible,
+            enter = fadeIn(tween(600, delayMillis = 1000))
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.clickable { onLogin() }
+            ) {
+                Text(
+                    text = "Already have an account? ",
+                    style = TextStyle(
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.Normal,
+                        fontSize = 14.sp
+                    ),
+                    color = ProdyTextSecondaryLight
+                )
+                Text(
+                    text = "Log In",
+                    style = TextStyle(
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 14.sp,
+                        textDecoration = TextDecoration.Underline
+                    ),
+                    color = ProdyForestGreen
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(48.dp))
@@ -327,6 +424,12 @@ private fun FeatureScreenLayout(
     onSkip: () -> Unit,
     content: @Composable () -> Unit
 ) {
+    var visible by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        visible = true
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -354,60 +457,77 @@ private fun FeatureScreenLayout(
 
         Spacer(modifier = Modifier.height(40.dp))
 
-        // Main Content (Card)
+        // Main Content (Card) with scale/fade animation
         Box(
             modifier = Modifier.weight(1f),
             contentAlignment = Alignment.Center
         ) {
-            content()
+            this@Column.AnimatedVisibility(
+                visible = visible,
+                enter = fadeIn(tween(600)) + scaleIn(tween(600), initialScale = 0.9f)
+            ) {
+                content()
+            }
         }
 
         Spacer(modifier = Modifier.height(40.dp))
 
-        // Text Content
-        Text(
-            text = title,
-            style = TextStyle(
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 24.sp // Header text 24-32sp
-            ),
-            color = ProdyTextPrimaryLight,
-            textAlign = TextAlign.Center
-        )
+        // Text Content with staggered animation
+        this@Column.AnimatedVisibility(
+            visible = visible,
+            enter = fadeIn(tween(600, delayMillis = 200)) + slideInVertically(tween(600, delayMillis = 200)) { h: Int -> h / 2 }
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = title,
+                    style = TextStyle(
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 24.sp
+                    ),
+                    color = ProdyTextPrimaryLight,
+                    textAlign = TextAlign.Center
+                )
 
-        Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-        Text(
-            text = description,
-            style = TextStyle(
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.Normal,
-                fontSize = 14.sp,
-                lineHeight = 21.sp // 1.5 line height
-            ),
-            color = ProdyTextSecondaryLight,
-            textAlign = TextAlign.Center
-        )
+                Text(
+                    text = description,
+                    style = TextStyle(
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.Normal,
+                        fontSize = 14.sp,
+                        lineHeight = 21.sp
+                    ),
+                    color = ProdyTextSecondaryLight,
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
 
         Spacer(modifier = Modifier.height(48.dp))
 
-        // Navigation
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+        // Navigation with staggered animation
+        this@Column.AnimatedVisibility(
+            visible = visible,
+            enter = fadeIn(tween(600, delayMillis = 400))
         ) {
-            ProdyProgressIndicator(currentPage = currentPage, totalPages = totalPages)
-
-            FloatingActionButton(
-                onClick = onNext,
-                containerColor = ProdyForestGreen,
-                contentColor = Color.White,
-                shape = CircleShape,
-                modifier = Modifier.size(56.dp)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Next")
+                ProdyProgressIndicator(currentPage = currentPage, totalPages = totalPages)
+
+                FloatingActionButton(
+                    onClick = onNext,
+                    containerColor = ProdyForestGreen,
+                    contentColor = Color.White,
+                    shape = CircleShape,
+                    modifier = Modifier.size(56.dp)
+                ) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Next")
+                }
             }
         }
 
@@ -419,18 +539,20 @@ private fun FeatureScreenLayout(
 private fun StandardFeatureCard(
     content: @Composable ColumnScope.() -> Unit
 ) {
-    // Card Design: 12dp corner radius, 8dp elevation with proper shadow
+    val cardShape = remember { RoundedCornerShape(12.dp) }
+    val shadowColor = remember { Color(0x1A000000) }
+
     Surface(
         modifier = Modifier
             .fillMaxWidth()
             .aspectRatio(0.8f)
             .shadow(
                 elevation = 8.dp,
-                shape = RoundedCornerShape(12.dp),
-                spotColor = Color(0x1A000000), // Soft shadow
-                ambientColor = Color(0x1A000000)
+                shape = cardShape,
+                spotColor = shadowColor,
+                ambientColor = shadowColor
             ),
-        shape = RoundedCornerShape(12.dp),
+        shape = cardShape,
         color = Color.White
     ) {
         Column(
@@ -580,8 +702,8 @@ private fun LoginSignupScreen(
                 // Using a simple Canvas for G logo rep
                 Canvas(modifier = Modifier.size(24.dp)) {
                      // Simple representation of Google colors
-                     drawCircle(Color(0xFF4285F4), radius = 10.dp.toPx(), center = center)
-                     drawCircle(Color.White, radius = 6.dp.toPx(), center = center)
+                     drawCircle(Color(0xFF4285F4), radius = 10.dp.toPx())
+                     drawCircle(Color.White, radius = 6.dp.toPx())
                 }
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
@@ -636,10 +758,12 @@ fun PrimaryButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val buttonShape = remember { RoundedCornerShape(16.dp) }
+
     Button(
         onClick = onClick,
         modifier = modifier.height(56.dp),
-        shape = RoundedCornerShape(16.dp),
+        shape = buttonShape,
         colors = ButtonDefaults.buttonColors(
             containerColor = ProdyForestGreen,
             contentColor = Color.White
@@ -670,6 +794,8 @@ fun ProdyInputField(
     isPassword: Boolean = false,
     modifier: Modifier = Modifier
 ) {
+    val inputShape = remember { RoundedCornerShape(8.dp) }
+
     Column(modifier = modifier) {
         Text(
             text = label,
@@ -688,7 +814,7 @@ fun ProdyInputField(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
-            shape = RoundedCornerShape(8.dp),
+            shape = inputShape,
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = ProdyForestGreen,
                 unfocusedBorderColor = ProdyOutlineLight,
@@ -718,11 +844,13 @@ fun ProdyInputField(
 
 @Composable
 fun ProdyLogo(modifier: Modifier = Modifier) {
+    val logoShape = remember { RoundedCornerShape(24.dp) }
+
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(24.dp))
+            .clip(logoShape)
             .background(Color.White)
-            .border(1.dp, ProdyOutlineLight, RoundedCornerShape(24.dp)),
+            .border(1.dp, ProdyOutlineLight, logoShape),
         contentAlignment = Alignment.Center
     ) {
         Icon(
