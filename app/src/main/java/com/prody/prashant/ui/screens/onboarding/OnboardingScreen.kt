@@ -143,7 +143,26 @@ private fun WelcomeScreen(
         // Logo positioned at 25% from top
         Spacer(modifier = Modifier.fillMaxHeight(0.25f))
 
-        ProdyLogo(modifier = Modifier.size(100.dp))
+        // Performance: Scale animation driven by infinite transition
+        val infiniteTransition = rememberInfiniteTransition(label = "logo_pulse")
+        val logoScale by infiniteTransition.animateFloat(
+            initialValue = 1f,
+            targetValue = 1.05f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(2000, easing = LinearEasing),
+                repeatMode = RepeatMode.Reverse
+            ),
+            label = "scale"
+        )
+
+        ProdyLogo(
+            modifier = Modifier
+                .size(100.dp)
+                .graphicsLayer {
+                    scaleX = logoScale
+                    scaleY = logoScale
+                }
+        )
 
         Spacer(modifier = Modifier.height(32.dp))
 
@@ -398,7 +417,11 @@ private fun FeatureScreenLayout(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            ProdyProgressIndicator(currentPage = currentPage, totalPages = totalPages)
+            ProdyProgressIndicator(
+                currentPage = currentPage,
+                totalPages = totalPages,
+                modifier = Modifier.weight(1f).padding(end = 32.dp)
+            )
 
             FloatingActionButton(
                 onClick = onNext,
