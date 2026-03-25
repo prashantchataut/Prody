@@ -3,8 +3,10 @@ package com.prody.prashant.ui.screens.haven
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.prody.prashant.data.local.entity.HavenSessionEntity
+import com.prody.prashant.data.local.preferences.PreferencesManager
 import com.prody.prashant.data.repository.HavenRepository
 import com.prody.prashant.domain.haven.*
+import com.prody.prashant.util.BiometricAuthenticator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -38,7 +40,8 @@ data class HavenChatUiState(
     val suggestedExercise: ExerciseType? = null,
     val summary: SessionSummary? = null,
     val isCompleted: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val isPrivacyLockEnabled: Boolean = false
 )
 
 /**
@@ -60,7 +63,9 @@ data class HavenExerciseUiState(
  */
 @HiltViewModel
 class HavenViewModel @Inject constructor(
-    private val havenRepository: HavenRepository
+    private val havenRepository: HavenRepository,
+    private val preferencesManager: PreferencesManager,
+    val biometricAuthenticator: BiometricAuthenticator
 ) : ViewModel() {
 
     // Home state
@@ -77,6 +82,15 @@ class HavenViewModel @Inject constructor(
 
     init {
         loadHomeData()
+        observePrivacySettings()
+    }
+
+    private fun observePrivacySettings() {
+        viewModelScope.launch {
+            preferencesManager.privacyLockJournal.collect { enabled ->
+                _chatState.update { it.copy(isPrivacyLockEnabled = enabled) }
+            }
+        }
     }
 
     // ==================== HOME SCREEN ====================

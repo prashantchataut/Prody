@@ -4,9 +4,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.prody.prashant.data.local.dao.JournalDao
 import com.prody.prashant.data.local.entity.JournalEntryEntity
+import com.prody.prashant.data.local.preferences.PreferencesManager
 import com.prody.prashant.data.onboarding.AiHint
 import com.prody.prashant.data.onboarding.AiHintType
 import com.prody.prashant.data.onboarding.AiOnboardingManager
+import com.prody.prashant.util.BiometricAuthenticator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -17,13 +19,16 @@ data class JournalDetailUiState(
     val isLoading: Boolean = true,
     val showDeleteDialog: Boolean = false,
     val error: String? = null,
-    val showJournalInsightHint: Boolean = false
+    val showJournalInsightHint: Boolean = false,
+    val isPrivacyLockEnabled: Boolean = false
 )
 
 @HiltViewModel
 class JournalDetailViewModel @Inject constructor(
     private val journalDao: JournalDao,
-    private val aiOnboardingManager: AiOnboardingManager
+    private val aiOnboardingManager: AiOnboardingManager,
+    private val preferencesManager: PreferencesManager,
+    val biometricAuthenticator: BiometricAuthenticator
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(JournalDetailUiState())
@@ -31,6 +36,15 @@ class JournalDetailViewModel @Inject constructor(
 
     init {
         checkOnboarding()
+        observePrivacySettings()
+    }
+
+    private fun observePrivacySettings() {
+        viewModelScope.launch {
+            preferencesManager.privacyLockJournal.collect { enabled ->
+                _uiState.update { it.copy(isPrivacyLockEnabled = enabled) }
+            }
+        }
     }
 
     private fun checkOnboarding() {

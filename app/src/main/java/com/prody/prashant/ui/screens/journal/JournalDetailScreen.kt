@@ -42,6 +42,8 @@ import com.prody.prashant.R
 import com.prody.prashant.domain.model.Mood
 import com.prody.prashant.ui.components.ContextualAiHint
 import com.prody.prashant.ui.components.ProdyCard
+import com.prody.prashant.ui.components.PreventScreenshots
+import com.prody.prashant.ui.components.RequireBiometricAuth
 import com.prody.prashant.ui.theme.*
 import kotlinx.coroutines.delay
 import org.json.JSONArray
@@ -61,18 +63,18 @@ fun JournalDetailScreen(
     val context = LocalContext.current
 
     // Security: Prevent screenshots and screen recordings of private journal content
-    DisposableEffect(Unit) {
-        val window = (context as? Activity)?.window
-        window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
-        onDispose {
-            window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
-        }
-    }
+    PreventScreenshots()
 
     LaunchedEffect(entryId) {
         viewModel.loadEntry(entryId)
     }
 
+    RequireBiometricAuth(
+        lockEnabled = uiState.isPrivacyLockEnabled,
+        biometricAuthenticator = viewModel.biometricAuthenticator,
+        title = "Journal Locked",
+        subtitle = "Please authenticate to view this entry"
+    ) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -450,6 +452,7 @@ fun JournalDetailScreen(
                 }
             )
         }
+    }
     }
 }
 
