@@ -33,6 +33,7 @@ jobs:
       with:
         gradle-home-cache-cleanup: false
         cache-read-only: false
+        add-job-summary-as-pr-comment: true
 
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
@@ -174,6 +175,7 @@ jobs:
       with:
         gradle-home-cache-cleanup: false
         cache-read-only: false
+        add-job-summary-as-pr-comment: true
 
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
@@ -228,6 +230,7 @@ jobs:
       with:
         gradle-home-cache-cleanup: false
         cache-read-only: false
+        add-job-summary-as-pr-comment: true
 
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew

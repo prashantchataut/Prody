@@ -49,7 +49,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.graphicsLayer
@@ -283,7 +282,7 @@ fun ProdyApp(
                                             }
                                             .clip(CircleShape)
                                             .background(
-                                                androidx.compose.ui.graphics.Brush.verticalGradient(
+                                                Brush.verticalGradient(
                                                     colors = listOf(
                                                         com.prody.prashant.ui.theme.HavenBubbleLight,
                                                         com.prody.prashant.ui.theme.HavenBubbleLight.copy(alpha = 0.8f)
