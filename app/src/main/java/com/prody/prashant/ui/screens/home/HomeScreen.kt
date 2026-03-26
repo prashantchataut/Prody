@@ -28,8 +28,11 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.prody.prashant.domain.progress.NextActionType
+import com.prody.prashant.ui.components.*
 import com.prody.prashant.ui.theme.*
 
 // =============================================================================
@@ -51,10 +54,7 @@ fun HomeScreen(
     onNavigateToIdiomDetail: (Long) -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
-    // We assume ViewModel provides necessary state. For this UI revamp, 
-    // we'll focus on the UI structure and use placeholder data where ViewModel might not strictly align yet.
-    
-    val surfaceColor = MaterialTheme.colorScheme.surface
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val backgroundColor = MaterialTheme.colorScheme.background
 
     LazyColumn(
@@ -63,43 +63,113 @@ fun HomeScreen(
             .background(backgroundColor),
         contentPadding = PaddingValues(bottom = 80.dp) // Space for bottom nav
     ) {
-        // Header with Greeting and Notification
+        // Intelligent Greeting Header
         item {
-            DashboardHeader(
-                userName = "Prashant", // Replace with real name
-                onProfileClick = {}, // TODO: Profile Nav
-                onNotificationClick = {}
+            IntelligentGreetingHeader(
+                greeting = uiState.intelligentGreeting,
+                subtext = uiState.greetingSubtext,
+                userName = uiState.userName,
+                isStruggling = uiState.isUserStruggling,
+                isThriving = uiState.isUserThriving,
+                modifier = Modifier.padding(top = 24.dp)
             )
         }
 
-        // Overview Section (Streak & Badges)
+        // First Week Journey (Soul Layer)
         item {
-            OverviewSection(
-                streakDays = 7,
-                badges = listOf(
-                    BadgeData(ProdyIcons.EmojiEvents, 0.75f, ProdyWarmAmber),
-                    BadgeData(ProdyIcons.Edit, 0.5f, ProdyForestGreen),
-                    BadgeData(ProdyIcons.Psychology, 0.3f, ProdyInfo)
+            if (uiState.isInFirstWeek) {
+                Spacer(modifier = Modifier.height(24.dp))
+                FirstWeekProgressCard(
+                    dayNumber = uiState.firstWeekDayNumber,
+                    progress = uiState.firstWeekProgress,
+                    dayContent = uiState.firstWeekDayContent,
+                    onContinue = {
+                        // Action depends on the day's primary milestone
+                        onNavigateToJournal()
+                    }
                 )
-            )
+            }
         }
 
-        // Mood Trend Chart
+        // Surfaced Memory (Soul Layer)
         item {
-            MoodTrendSection(
-                moodData = listOf(3f, 4f, 2f, 5f, 4f, 5f, 4f) // 1-5 Scale
+            if (uiState.showMemoryCard) {
+                uiState.surfacedMemory?.let { memory ->
+                    Spacer(modifier = Modifier.height(24.dp))
+                    SurfacedMemoryCard(
+                        memory = memory,
+                        onExpand = { viewModel.expandMemoryCard() },
+                        onDismiss = { viewModel.dismissMemoryCard() }
+                    )
+                }
+            }
+        }
+
+        // Active Progress Layer - Next Action
+        item {
+            uiState.nextAction?.let { action ->
+                Spacer(modifier = Modifier.height(24.dp))
+                NextActionCard(
+                    nextAction = action,
+                    onClick = {
+                        // Intelligent navigation based on action type
+                        when (action.type) {
+                            NextActionType.START_JOURNAL, NextActionType.FOLLOW_UP_JOURNAL -> onNavigateToJournal()
+                            NextActionType.REVIEW_WORDS, NextActionType.LEARN_WORD -> onNavigateToVocabulary()
+                            NextActionType.WRITE_FUTURE_MESSAGE -> onNavigateToFutureMessage()
+                            NextActionType.REFLECT_ON_QUOTE -> onNavigateToQuotes()
+                            NextActionType.COMPLETE_CHALLENGE -> onNavigateToChallenges()
+                        }
+                    }
+                )
+            }
+        }
+
+        // Today's Momentum Card
+        item {
+            Spacer(modifier = Modifier.height(24.dp))
+            TodayProgressCard(progress = uiState.todayProgress)
+        }
+
+        // Dual Streak Card
+        item {
+            Spacer(modifier = Modifier.height(24.dp))
+            DualStreakCard(
+                dualStreakStatus = uiState.dualStreakStatus,
+                onTapForDetails = { /* Show details dialog if needed */ }
             )
         }
 
-        // Weekly Summary
+        // Mood Trend Section
+        item {
+            if (uiState.moodTrend.isNotEmpty()) {
+                MoodTrendSection(
+                    moodData = uiState.moodTrend
+                )
+            }
+        }
+
+        // Weekly Summary (Simplified in favor of Progress Cards, but keeping for now)
         item {
             WeeklySummarySection(
-                journalEntries = 5,
-                wordsLearned = 12,
-                mindfulMinutes = 45
+                journalEntries = uiState.journalEntriesThisWeek,
+                wordsLearned = uiState.wordsLearnedThisWeek,
+                mindfulMinutes = uiState.mindfulMinutesThisWeek
             )
         }
         
+        // First Week Celebration Dialog
+        item {
+            if (uiState.showFirstWeekCelebration) {
+                uiState.firstWeekCelebration?.let { celebration ->
+                    CelebrationDialog(
+                        celebration = celebration,
+                        onDismiss = { viewModel.dismissFirstWeekCelebration() }
+                    )
+                }
+            }
+        }
+
         // Quick Actions (Navigation)
         item {
             QuickActionsGrid(
@@ -120,165 +190,6 @@ fun HomeScreen(
 // =============================================================================
 // DASHBOARD COMPONENTS
 // =============================================================================
-
-@Composable
-fun DashboardHeader(
-    userName: String,
-    onProfileClick: () -> Unit,
-    onNotificationClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 24.dp)
-            .statusBarsPadding(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column {
-            Text(
-                text = "Good Morning,",
-                style = TextStyle(
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Normal,
-                    fontSize = 16.sp
-                ),
-                color = ProdyTextSecondaryLight
-            )
-            Text(
-                text = userName,
-                style = TextStyle(
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 24.sp
-                ),
-                color = ProdyTextPrimaryLight
-            )
-        }
-        
-        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            IconButton(onClick = onNotificationClick) {
-                Icon(
-                    imageVector = Icons.Outlined.Notifications,
-                    contentDescription = "Notifications",
-                    tint = ProdyTextPrimaryLight
-                )
-            }
-            // Avatar / Profile
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .background(ProdyForestGreen)
-                    .clickable { onProfileClick() },
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = userName.firstOrNull()?.toString() ?: "P",
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun OverviewSection(
-    streakDays: Int,
-    badges: List<BadgeData>
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        // Streak Card
-        Surface(
-            modifier = Modifier.weight(1f),
-            shape = RoundedCornerShape(16.dp),
-            color = ProdySurfaceLight,
-            shadowElevation = 4.dp
-        ) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = streakDays.toString(),
-                    style = TextStyle(
-                        fontFamily = PoppinsFamily,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 48.sp,
-                        color = ProdyForestGreen
-                    )
-                )
-                Text(
-                    text = "Day Streak",
-                    style = TextStyle(
-                        fontFamily = PoppinsFamily,
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 14.sp,
-                        color = ProdyTextSecondaryLight
-                    )
-                )
-            }
-        }
-
-        // Badges Card
-        Surface(
-            modifier = Modifier.weight(1f),
-            shape = RoundedCornerShape(16.dp),
-            color = ProdySurfaceLight,
-            shadowElevation = 4.dp
-        ) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    badges.forEach { badge ->
-                        BadgeItem(badge)
-                    }
-                }
-                Spacer(modifier = Modifier.height(12.dp))
-                Text(
-                    text = "Achievements",
-                    style = TextStyle(
-                        fontFamily = PoppinsFamily,
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 14.sp,
-                        color = ProdyTextSecondaryLight
-                    )
-                )
-            }
-        }
-    }
-}
-
-data class BadgeData(val icon: androidx.compose.ui.graphics.vector.ImageVector, val progress: Float, val color: Color)
-
-@Composable
-fun BadgeItem(badge: BadgeData) {
-    Box(contentAlignment = Alignment.Center, modifier = Modifier.size(32.dp)) {
-        CircularProgressIndicator(
-            progress = { badge.progress },
-            modifier = Modifier.fillMaxSize(),
-            color = badge.color,
-            trackColor = badge.color.copy(alpha = 0.2f),
-            strokeWidth = 3.dp,
-        )
-        Icon(
-            imageVector = badge.icon,
-            contentDescription = null,
-            tint = badge.color,
-            modifier = Modifier.size(16.dp)
-        )
-    }
-}
 
 @Composable
 fun MoodTrendSection(moodData: List<Float>) {
@@ -320,7 +231,9 @@ fun MoodChart(data: List<Float>, modifier: Modifier = Modifier) {
 
         val width = size.width
         val height = size.height
-        val stepX = width / (data.size - 1)
+
+        // Handle single data point or multiple
+        val stepX = if (data.size > 1) width / (data.size - 1) else 0f
         
         // Normalize data to height (1-5 scale)
         val points = data.mapIndexed { index, value ->

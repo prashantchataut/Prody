@@ -81,6 +81,7 @@ data class HomeUiState(
     val canRefreshBuddhaThought: Boolean = true,
     val journalEntriesThisWeek: Int = 0,
     val wordsLearnedThisWeek: Int = 0,
+    val mindfulMinutesThisWeek: Int = 0,
     val daysActiveThisWeek: Int = 0,
     val isLoading: Boolean = true,
     val hasLoadError: Boolean = false,
@@ -95,6 +96,7 @@ data class HomeUiState(
     val journaledToday: Boolean = false,
     val todayEntryMood: String = "",
     val todayEntryPreview: String = "",
+    val moodTrend: List<Float> = emptyList(),
     // ============== ACTIVE PROGRESS LAYER ==============
     // Next Action - contextual suggestion based on user behavior
     val nextAction: NextAction? = null,
@@ -240,7 +242,21 @@ class HomeViewModel @Inject constructor(
                     Triple(false, "", "")
                 }
 
-                // 3. Atomically update the UI state with all the loaded data.
+                // 3. Calculate mood trend from weekly entries
+                val moodTrend = weeklyJournalEntries
+                    .sortedBy { it.createdAt }
+                    .map { entry ->
+                        when (entry.mood.uppercase()) {
+                            "HAPPY", "EXCITED", "MOTIVATED" -> 5f
+                            "CALM", "GRATEFUL" -> 4f
+                            "NEUTRAL", "NOSTALGIC", "CONFUSED" -> 3f
+                            "SAD" -> 2f
+                            "ANXIOUS" -> 1f
+                            else -> 3f
+                        }
+                    }
+
+                // 4. Atomically update the UI state with all the loaded data.
                 _uiState.value.copy(
                     userName = profile?.displayName ?: "Growth Seeker",
                     currentStreak = profile?.currentStreak ?: 0,
@@ -260,10 +276,12 @@ class HomeViewModel @Inject constructor(
                     idiomId = dailyContent.idiom?.id ?: _uiState.value.idiomId,
                     journalEntriesThisWeek = weeklyJournalEntries.size,
                     wordsLearnedThisWeek = weeklyLearnedWords,
+                    mindfulMinutesThisWeek = profile?.totalReflectionTime?.toInt()?.div(60) ?: 0,
                     daysActiveThisWeek = daysActiveThisWeek,
                     journaledToday = journaledToday,
                     todayEntryMood = todayMood,
                     todayEntryPreview = todayPreview,
+                    moodTrend = moodTrend,
                     dualStreakStatus = dualStreak,
                     buddhaWisdomProofInfo = _uiState.value.buddhaWisdomProofInfo.copy(isEnabled = aiProofMode),
                     isLoading = false // <-- Critical: Signal that loading is complete.

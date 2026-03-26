@@ -1009,6 +1009,14 @@ fun TimeCapsuleUnsealAnimation(
  * @param color The accent color for the glow
  * @param content The navigation item content
  */
+/**
+ * Optimized Bottom Navigation Breathing Glow.
+ *
+ * Performance features:
+ * - Deferred state reads via graphicsLayer
+ * - No property delegation for animation states
+ * - Minimized recomposition of parent navigation scope
+ */
 @Composable
 fun NavigationBreathingGlow(
     modifier: Modifier = Modifier,
@@ -1018,7 +1026,7 @@ fun NavigationBreathingGlow(
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "nav_breathing")
 
-    val glowAlpha by infiniteTransition.animateFloat(
+    val alphaState = infiniteTransition.animateFloat(
         initialValue = 0.2f,
         targetValue = 0.5f,
         animationSpec = infiniteRepeatable(
@@ -1028,7 +1036,7 @@ fun NavigationBreathingGlow(
         label = "nav_glow_alpha"
     )
 
-    val glowScale by infiniteTransition.animateFloat(
+    val scaleState = infiniteTransition.animateFloat(
         initialValue = 1f,
         targetValue = 1.2f,
         animationSpec = infiniteRepeatable(
@@ -1038,7 +1046,7 @@ fun NavigationBreathingGlow(
         label = "nav_glow_scale"
     )
 
-    val activeAlpha by animateFloatAsState(
+    val activeAlphaState = animateFloatAsState(
         targetValue = if (isActive) 1f else 0f,
         animationSpec = tween(300),
         label = "active_alpha"
@@ -1049,14 +1057,16 @@ fun NavigationBreathingGlow(
         contentAlignment = Alignment.Center
     ) {
         // Breathing glow behind active item
+        // Note: Using a fixed conditional check here is acceptable,
+        // but graphicsLayer ensures frame updates are performant.
         if (isActive) {
             Box(
                 modifier = Modifier
                     .size(48.dp)
                     .graphicsLayer {
-                        scaleX = glowScale
-                        scaleY = glowScale
-                        alpha = glowAlpha * activeAlpha
+                        scaleX = scaleState.value
+                        scaleY = scaleState.value
+                        alpha = alphaState.value * activeAlphaState.value
                     }
                     .blur(12.dp)
                     .background(color, CircleShape)
