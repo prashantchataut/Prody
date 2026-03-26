@@ -111,6 +111,7 @@ data class HomeUiState(
     // ============== DUAL STREAK SYSTEM ==============
     // Two independent streaks: Wisdom and Reflection
     val dualStreakStatus: DualStreakStatus = DualStreakStatus.empty(),
+    val moodTrend: List<Float> = emptyList(),
     // ============== SOUL LAYER INTELLIGENCE ==============
     // Context-aware greeting from Soul Layer
     val intelligentGreeting: String = "",
@@ -229,6 +230,21 @@ class HomeViewModel @Inject constructor(
                 val dualStreak = args.getOrNull(5) as? DualStreakStatus ?: DualStreakStatus.empty()
                 val aiProofMode = args.getOrNull(6) as? Boolean ?: false
 
+                // Calculate weekly mood trend.
+                // Map moods to 1-5 scale: radiant -> 5.0, happy -> 4.0, calm -> 3.0, stressed/confused -> 2.0, sad/gloomy -> 1.0
+                val moodTrend = weeklyJournalEntries
+                    .sortedBy { it.createdAt }
+                    .map { entry ->
+                        when (entry.mood.lowercase()) {
+                            "radiant", "excited", "motivated" -> 5.0f
+                            "happy", "joyful", "grateful" -> 4.0f
+                            "calm", "peaceful", "serene", "nostalgic" -> 3.0f
+                            "confused", "anxious", "stressed" -> 2.0f
+                            "sad", "gloomy", "depressed" -> 1.0f
+                            else -> 3.0f // Neutral
+                        }
+                    }
+
                 // Calculate weekly active days.
                 val daysActiveThisWeek = streakHistory.count { it.date >= weekStart }
 
@@ -265,6 +281,7 @@ class HomeViewModel @Inject constructor(
                     todayEntryMood = todayMood,
                     todayEntryPreview = todayPreview,
                     dualStreakStatus = dualStreak,
+                    moodTrend = moodTrend,
                     buddhaWisdomProofInfo = _uiState.value.buddhaWisdomProofInfo.copy(isEnabled = aiProofMode),
                     isLoading = false // <-- Critical: Signal that loading is complete.
                 )

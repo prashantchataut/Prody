@@ -254,7 +254,7 @@ fun ProdyApp(
                                 icon = {
                                     // Breathing Pulse Animation
                                     val infiniteTransition = rememberInfiniteTransition(label = "HavenPulse")
-                                    val animatedAlpha by infiniteTransition.animateFloat(
+                                    val alphaState = infiniteTransition.animateFloat(
                                         initialValue = 0.6f,
                                         targetValue = 1f,
                                         animationSpec = infiniteRepeatable(
@@ -263,7 +263,7 @@ fun ProdyApp(
                                         ),
                                         label = "HavenAlpha"
                                     )
-                                    val scale by infiniteTransition.animateFloat(
+                                    val scaleState = infiniteTransition.animateFloat(
                                         initialValue = 0.95f,
                                         targetValue = 1.05f,
                                         animationSpec = infiniteRepeatable(
@@ -277,9 +277,9 @@ fun ProdyApp(
                                         modifier = Modifier
                                             .size(56.dp) // Larger than standard icon
                                             .graphicsLayer {
-                                                scaleX = scale
-                                                scaleY = scale
-                                                alpha = if (selected) 1f else animatedAlpha
+                                                scaleX = scaleState.value
+                                                scaleY = scaleState.value
+                                                alpha = if (selected) 1f else alphaState.value
                                             }
                                             .clip(CircleShape)
                                             .background(
@@ -418,7 +418,7 @@ private fun ProdyNavItem(
     val accentBackground = ProdyPrimary.copy(alpha = 0.15f)
     val inactiveColor = MaterialTheme.colorScheme.onSurfaceVariant
 
-    val scale by animateFloatAsState(
+    val scaleState = animateFloatAsState(
         targetValue = if (isSelected) 1.05f else 1f,
         animationSpec = tween(durationMillis = 200),
         label = "scale"
@@ -433,7 +433,10 @@ private fun ProdyNavItem(
                 onClick = onClick
             )
             .padding(horizontal = 16.dp, vertical = 4.dp)
-            .scale(scale),
+            .graphicsLayer {
+                scaleX = scaleState.value
+                scaleY = scaleState.value
+            },
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {

@@ -306,17 +306,14 @@ fun ProdyNavHost(
                 onNavigateToHaven = {
                     navController.navigate(Screen.HavenHome.route)
                 },
-                onNavigateToMeditation = {
-                    navController.navigate(Screen.Meditation.route)
-                },
-                onNavigateToChallenges = {
-                    navController.navigate(Screen.Challenges.route)
-                },
                 onNavigateToSearch = {
                     navController.navigate(Screen.Search.route)
                 },
-                onNavigateToIdiomDetail = { idiomId ->
-                    navController.navigate(Screen.IdiomDetail.createRoute(idiomId))
+                onNavigateToProfile = {
+                    navController.navigate(Screen.Profile.route)
+                },
+                onNavigateToJournalDetail = { entryId ->
+                    navController.navigate(Screen.JournalDetail.createRoute(entryId))
                 }
             )
         }

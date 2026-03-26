@@ -21,3 +21,8 @@ This journal contains CRITICAL performance learnings specific to the Prody codeb
 **Context:** `ProgressIndicators.kt` and `OnboardingScreen.kt`.
 **Learning:** Using a `Row` of multiple `Box` composables for page indicators creates unnecessary layout nodes and triggers expensive layout passes during page swipes as dot widths animate. A single `Canvas` drawing all dots based on an animated float index is significantly more performant and smoother.
 **Action:** Prefer `Canvas`-based drawing for multi-state UI indicators like page dots or segmented progress bars to maintain 60fps during complex interactions.
+
+## 2024-05-25 - Deferring State Reads for Animations
+**Context:** `MainActivity.kt` (Haven icon and bottom nav items).
+**Learning:** Using property delegation (`by animate*AsState`) for animation values and reading them in the composable body causes the entire component to recompose on every frame.
+**Action:** Capture the `State<T>` object directly (without `by`) and access its `.value` only inside the `graphicsLayer { ... }` block. This defers the read to the drawing phase, keeping recomposition counts at zero during the animation.
