@@ -49,6 +49,8 @@ fun HomeScreen(
     onNavigateToChallenges: () -> Unit = {},
     onNavigateToSearch: () -> Unit = {},
     onNavigateToIdiomDetail: (Long) -> Unit = {},
+    onNavigateToProfile: () -> Unit = {},
+    onNavigateToSettings: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     // We assume ViewModel provides necessary state. For this UI revamp, 
@@ -67,7 +69,7 @@ fun HomeScreen(
         item {
             DashboardHeader(
                 userName = "Prashant", // Replace with real name
-                onProfileClick = {}, // TODO: Profile Nav
+                onProfileClick = onNavigateToProfile,
                 onNotificationClick = {}
             )
         }
