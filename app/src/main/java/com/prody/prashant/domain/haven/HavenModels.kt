@@ -1,6 +1,8 @@
 package com.prody.prashant.domain.haven
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.*
+import androidx.compose.material.icons.automirrored.outlined.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -62,7 +64,7 @@ enum class SessionType(
             STRESS -> Icons.Outlined.Terrain
             SADNESS -> Icons.Outlined.Favorite
             ANGER -> Icons.Outlined.LocalFireDepartment
-            GENERAL -> Icons.Outlined.Chat
+            GENERAL -> Icons.AutoMirrored.Outlined.Chat
             CRISIS_SUPPORT -> Icons.Outlined.Handshake
         }
 

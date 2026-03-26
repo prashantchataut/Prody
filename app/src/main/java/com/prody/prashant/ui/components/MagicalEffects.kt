@@ -1018,7 +1018,7 @@ fun NavigationBreathingGlow(
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "nav_breathing")
 
-    val glowAlpha by infiniteTransition.animateFloat(
+    val glowAlphaState = infiniteTransition.animateFloat(
         initialValue = 0.2f,
         targetValue = 0.5f,
         animationSpec = infiniteRepeatable(
@@ -1028,7 +1028,7 @@ fun NavigationBreathingGlow(
         label = "nav_glow_alpha"
     )
 
-    val glowScale by infiniteTransition.animateFloat(
+    val glowScaleState = infiniteTransition.animateFloat(
         initialValue = 1f,
         targetValue = 1.2f,
         animationSpec = infiniteRepeatable(
@@ -1038,7 +1038,7 @@ fun NavigationBreathingGlow(
         label = "nav_glow_scale"
     )
 
-    val activeAlpha by animateFloatAsState(
+    val activeAlphaState = animateFloatAsState(
         targetValue = if (isActive) 1f else 0f,
         animationSpec = tween(300),
         label = "active_alpha"
@@ -1054,9 +1054,9 @@ fun NavigationBreathingGlow(
                 modifier = Modifier
                     .size(48.dp)
                     .graphicsLayer {
-                        scaleX = glowScale
-                        scaleY = glowScale
-                        alpha = glowAlpha * activeAlpha
+                        scaleX = glowScaleState.value
+                        scaleY = glowScaleState.value
+                        alpha = glowAlphaState.value * activeAlphaState.value
                     }
                     .blur(12.dp)
                     .background(color, CircleShape)
