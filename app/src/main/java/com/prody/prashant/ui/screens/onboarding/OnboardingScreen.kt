@@ -61,11 +61,16 @@ fun OnboardingScreen(
     // Determine theme for background only if needed, but we mostly use specific colors
     // We will use the ProdyTheme colors.
     
+    // Optimization: Capture theme state outside remember to prevent redundant calculations
+    val isDark = isSystemInDarkTheme()
+
     // Gradient Background: White to #F5F5F5 for light mode
-    val gradientColors = if (!isSystemInDarkTheme()) {
-        listOf(Color.White, Color(0xFFF5F5F5))
-    } else {
-        listOf(ProdyBackgroundDark, ProdyBackgroundDark) // Keep dark mode simple
+    val gradientColors = remember(isDark) {
+        if (!isDark) {
+            listOf(Color.White, Color(0xFFF5F5F5))
+        } else {
+            listOf(ProdyBackgroundDark, ProdyBackgroundDark) // Keep dark mode simple
+        }
     }
 
     Box(
