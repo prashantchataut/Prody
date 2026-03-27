@@ -254,7 +254,7 @@ fun ProdyApp(
                                 icon = {
                                     // Breathing Pulse Animation
                                     val infiniteTransition = rememberInfiniteTransition(label = "HavenPulse")
-                                    val animatedAlpha by infiniteTransition.animateFloat(
+                                    val animatedAlpha = infiniteTransition.animateFloat(
                                         initialValue = 0.6f,
                                         targetValue = 1f,
                                         animationSpec = infiniteRepeatable(
@@ -263,7 +263,7 @@ fun ProdyApp(
                                         ),
                                         label = "HavenAlpha"
                                     )
-                                    val scale by infiniteTransition.animateFloat(
+                                    val animatedScale = infiniteTransition.animateFloat(
                                         initialValue = 0.95f,
                                         targetValue = 1.05f,
                                         animationSpec = infiniteRepeatable(
@@ -277,9 +277,9 @@ fun ProdyApp(
                                         modifier = Modifier
                                             .size(56.dp) // Larger than standard icon
                                             .graphicsLayer {
-                                                scaleX = scale
-                                                scaleY = scale
-                                                alpha = if (selected) 1f else animatedAlpha
+                                                scaleX = animatedScale.value
+                                                scaleY = animatedScale.value
+                                                alpha = if (selected) 1f else animatedAlpha.value
                                             }
                                             .clip(CircleShape)
                                             .background(

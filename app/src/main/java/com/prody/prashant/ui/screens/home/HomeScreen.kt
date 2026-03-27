@@ -28,8 +28,10 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.prody.prashant.domain.progress.NextActionType
+import com.prody.prashant.ui.components.DualStreakCard
 import com.prody.prashant.ui.theme.*
 
 // =============================================================================
@@ -51,9 +53,7 @@ fun HomeScreen(
     onNavigateToIdiomDetail: (Long) -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
-    // We assume ViewModel provides necessary state. For this UI revamp, 
-    // we'll focus on the UI structure and use placeholder data where ViewModel might not strictly align yet.
-    
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val surfaceColor = MaterialTheme.colorScheme.surface
     val backgroundColor = MaterialTheme.colorScheme.background
 
@@ -66,37 +66,61 @@ fun HomeScreen(
         // Header with Greeting and Notification
         item {
             DashboardHeader(
-                userName = "Prashant", // Replace with real name
-                onProfileClick = {}, // TODO: Profile Nav
-                onNotificationClick = {}
+                userName = uiState.userName,
+                onProfileClick = { /* Handled via parent navigation */ },
+                onNotificationClick = { /* Handled via parent navigation */ }
             )
         }
 
-        // Overview Section (Streak & Badges)
+        // Dynamic Next Action (Contextual Navigation)
         item {
-            OverviewSection(
-                streakDays = 7,
-                badges = listOf(
-                    BadgeData(ProdyIcons.EmojiEvents, 0.75f, ProdyWarmAmber),
-                    BadgeData(ProdyIcons.Edit, 0.5f, ProdyForestGreen),
-                    BadgeData(ProdyIcons.Psychology, 0.3f, ProdyInfo)
+            uiState.nextAction?.let { nextAction ->
+                NextActionCard(
+                    nextAction = nextAction,
+                    onClick = {
+                        when (nextAction.type) {
+                            NextActionType.START_JOURNAL, NextActionType.FOLLOW_UP_JOURNAL -> onNavigateToJournal()
+                            NextActionType.REVIEW_WORDS, NextActionType.LEARN_WORD -> onNavigateToVocabulary()
+                            NextActionType.WRITE_FUTURE_MESSAGE -> onNavigateToFutureMessage()
+                            NextActionType.REFLECT_ON_QUOTE -> onNavigateToQuotes()
+                            else -> {}
+                        }
+                    }
                 )
+                Spacer(modifier = Modifier.height(24.dp))
+            }
+        }
+
+        // Dual Streak Card (Real Data)
+        item {
+            DualStreakCard(
+                dualStreakStatus = uiState.dualStreakStatus,
+                onTapForDetails = {}
             )
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+
+        // Today's Progress Card (Real Data)
+        item {
+            TodayProgressCard(
+                progress = uiState.todayProgress
+            )
+            Spacer(modifier = Modifier.height(24.dp))
         }
 
         // Mood Trend Chart
         item {
             MoodTrendSection(
-                moodData = listOf(3f, 4f, 2f, 5f, 4f, 5f, 4f) // 1-5 Scale
+                moodData = uiState.moodTrend
             )
         }
 
-        // Weekly Summary
+        // Weekly Summary (Simplified or Integrated)
         item {
             WeeklySummarySection(
-                journalEntries = 5,
-                wordsLearned = 12,
-                mindfulMinutes = 45
+                journalEntries = uiState.journalEntriesThisWeek,
+                wordsLearned = uiState.wordsLearnedThisWeek,
+                mindfulMinutes = uiState.mindfulMinutesThisWeek
             )
         }
         
@@ -320,7 +344,9 @@ fun MoodChart(data: List<Float>, modifier: Modifier = Modifier) {
 
         val width = size.width
         val height = size.height
-        val stepX = width / (data.size - 1)
+
+        // Defensive: Avoid division by zero if there's only one data point
+        val stepX = if (data.size > 1) width / (data.size - 1) else 0f
         
         // Normalize data to height (1-5 scale)
         val points = data.mapIndexed { index, value ->

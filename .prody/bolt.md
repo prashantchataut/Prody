@@ -21,3 +21,18 @@ This journal contains CRITICAL performance learnings specific to the Prody codeb
 **Context:** `ProgressIndicators.kt` and `OnboardingScreen.kt`.
 **Learning:** Using a `Row` of multiple `Box` composables for page indicators creates unnecessary layout nodes and triggers expensive layout passes during page swipes as dot widths animate. A single `Canvas` drawing all dots based on an animated float index is significantly more performant and smoother.
 **Action:** Prefer `Canvas`-based drawing for multi-state UI indicators like page dots or segmented progress bars to maintain 60fps during complex interactions.
+
+## 2026-03-27 - Compose Animation State Read Deferral
+**Context:** Bottom navigation animations in `MainActivity.kt`.
+**Learning:** Using property delegation (`by`) for animation states inside a Composable causes the scope where the delegation is defined to recompose whenever the state changes. For high-frequency animations (like breathing pulses), this can cause severe lag.
+**Action:** Access the animation state directly via `.value` inside a `graphicsLayer` lambda (e.g., `graphicsLayer { alpha = alphaState.value }`). This guarantees the state read is deferred to the drawing phase, bypassing recomposition entirely for that component's parents.
+
+## 2026-03-27 - Defensive Layout Calculations
+**Context:** `MoodChart` in `HomeScreen.kt`.
+**Learning:** Layout calculations that depend on list sizes (like `stepX = width / (data.size - 1)`) are prone to division-by-zero crashes if the data is empty or contains a single item.
+**Action:** Always implement defensive checks for list-dependent layout math. For charts, use `if (data.size > 1) ... else 0f` to ensure stability even with minimal user data.
+
+## 2026-03-27 - Reactive UI Binding Gap
+**Context:** `HomeScreen.kt` and `HomeViewModel.kt`.
+**Learning:** Sophisticated features like "Active Progress Layer" or "Dual Streak System" appear broken if the UI isn't explicitly bound to the corresponding state fields.
+**Action:** Rigorously map ViewModel `UiState` fields to production-grade components (like `NextActionCard` and `TodayProgressCard`) instead of using hardcoded placeholders, ensuring the UI reflects the full intelligence of the domain layer.
