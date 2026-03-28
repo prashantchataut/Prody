@@ -734,4 +734,15 @@
     <!-- ==================== -->
     <!-- Note: All text is RTL-compatible. Icons should use autoMirrored variants. -->
     <!-- For formats with numbers, use xliff:g for proper RTL handling -->
+
+    <!-- Accessibility Content Descriptions (Added by Palette) -->
+    <string name="cd_attach_media">Attach photos or videos</string>
+    <string name="cd_record_voice">Record voice note</string>
+    <string name="cd_stop_recording">Stop recording</string>
+    <string name="cd_add_list">Add bullet list</string>
+    <string name="cd_remove_media">Remove media</string>
+    <string name="cd_play_voice">Play voice note</string>
+    <string name="cd_pause_voice">Pause voice note</string>
+    <string name="cd_delete_voice">Delete voice recording</string>
+    <string name="cd_clear_input">Clear input</string>
 </resources>
