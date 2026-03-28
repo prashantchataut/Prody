@@ -131,7 +131,9 @@ data class HomeUiState(
     val userArchetype: UserArchetype = UserArchetype.EXPLORER,
     val trustLevel: TrustLevel = TrustLevel.NEW,
     val isUserStruggling: Boolean = false,
-    val isUserThriving: Boolean = false
+    val isUserThriving: Boolean = false,
+    val moodTrend: List<Float> = emptyList(),
+    val mindfulMinutesThisWeek: Int = 0
 )
 
 private data class DailyContent(
@@ -232,6 +234,26 @@ class HomeViewModel @Inject constructor(
                 // Calculate weekly active days.
                 val daysActiveThisWeek = streakHistory.count { it.date >= weekStart }
 
+                // Map mood trend from weekly journal entries.
+                val moodTrend = weeklyJournalEntries
+                    .sortedBy { it.createdAt }
+                    .map { entry ->
+                        when (entry.mood) {
+                            "Radiant" -> 5.0f
+                            "Vibrant" -> 4.5f
+                            "Happy", "Stable" -> 4.0f
+                            "Content" -> 3.5f
+                            "Neutral" -> 3.0f
+                            "Thoughtful" -> 2.5f
+                            "Gloomy", "Sad" -> 2.0f
+                            "Struggling" -> 1.0f
+                            else -> 3.0f
+                        }
+                    }
+
+                // Map mindful minutes this week from total reflection time.
+                val mindfulMinutesThisWeek = (profile?.totalReflectionTime ?: 0L) / 60
+
                 // Determine today's journaling status.
                 val (journaledToday, todayMood, todayPreview) = if (todayJournalEntries.isNotEmpty()) {
                     val latestEntry = todayJournalEntries.maxByOrNull { it.createdAt }
@@ -265,6 +287,8 @@ class HomeViewModel @Inject constructor(
                     todayEntryMood = todayMood,
                     todayEntryPreview = todayPreview,
                     dualStreakStatus = dualStreak,
+                    moodTrend = moodTrend,
+                    mindfulMinutesThisWeek = mindfulMinutesThisWeek.toInt(),
                     buddhaWisdomProofInfo = _uiState.value.buddhaWisdomProofInfo.copy(isEnabled = aiProofMode),
                     isLoading = false // <-- Critical: Signal that loading is complete.
                 )
