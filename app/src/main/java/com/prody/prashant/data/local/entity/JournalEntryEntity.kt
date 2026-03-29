@@ -9,7 +9,10 @@ import java.time.LocalDateTime
     indices = [
         androidx.room.Index(value = ["userId"]),
         androidx.room.Index(value = ["createdAt"]),
-        androidx.room.Index(value = ["userId", "createdAt"])
+        androidx.room.Index(value = ["userId", "createdAt"]),
+        androidx.room.Index(value = ["mood"]),
+        androidx.room.Index(value = ["isBookmarked"]),
+        androidx.room.Index(value = ["syncStatus"])
     ]
 )
 data class JournalEntryEntity(

@@ -76,6 +76,12 @@
 - Secure API key storage infrastructure
 - Fallback to curated content when AI unavailable
 
+## Security & Privacy (ENHANCED)
+- **Privacy Lock**: Biometric gating for sensitive therapeutic screens.
+- **Content Protection**: Screen capture prevention (`FLAG_SECURE`) on all private reflection and chat surfaces.
+- **Secure Networking**: Certificate pinning and enforced HTTPS for AI API communication.
+- **Zero-Cloud Storage**: All personal data is encrypted and stored locally via SQLCipher.
+
 ## Tech Stack
 
 | Component | Technology |

@@ -253,14 +253,16 @@ fun NewJournalEntryScreen(
         }
 
         // Session Result Card
-        if (uiState.showSessionResult && uiState.sessionResult != null) {
-            SessionResultCard(
-                sessionResult = uiState.sessionResult!!,
-                onDismiss = {
-                    viewModel.dismissSessionResult()
-                    onEntrySaved()
-                }
-            )
+        uiState.sessionResult?.let { result ->
+            if (uiState.showSessionResult) {
+                SessionResultCard(
+                    sessionResult = result,
+                    onDismiss = {
+                        viewModel.dismissSessionResult()
+                        onEntrySaved()
+                    }
+                )
+            }
         }
 
         // Transcription Choice Dialog
