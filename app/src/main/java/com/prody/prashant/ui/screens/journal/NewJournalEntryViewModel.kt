@@ -577,9 +577,10 @@ class NewJournalEntryViewModel @Inject constructor(
         
         when (choice) {
             TranscriptionChoice.NOW -> {
-                // For now, we use the existing startTranscription method 
-                // which uses real-time transcription. 
-                // TODO: Implement file-based transcription if available in VoiceTranscriptionService
+                // File-based transcription is not yet supported by Android's SpeechRecognizer.
+                // We fallback to real-time transcription to capture any immediate additional thoughts.
+                // Future improvement: Integrate with a cloud-based or specialized on-device library for audio file transcription.
+                android.util.Log.i(TAG, "User selected 'Transcribe Now' - starting real-time transcription session as fallback for audio file transcription.")
                 startTranscription()
             }
             TranscriptionChoice.LATER -> {
