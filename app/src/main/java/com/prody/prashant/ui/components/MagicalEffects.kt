@@ -1009,6 +1009,18 @@ fun TimeCapsuleUnsealAnimation(
  * @param color The accent color for the glow
  * @param content The navigation item content
  */
+/**
+ * Breathing glow effect for bottom navigation active item.
+ * Creates a subtle, alive feeling for the focused navigation element.
+ *
+ * Performance Optimized: Animation state reads are deferred to the drawing phase
+ * using graphicsLayer to prevent unnecessary recompositions of the parent scope.
+ *
+ * @param modifier Modifier for the glow wrapper
+ * @param isActive Whether this nav item is currently active
+ * @param color The accent color for the glow
+ * @param content The navigation item content
+ */
 @Composable
 fun NavigationBreathingGlow(
     modifier: Modifier = Modifier,
@@ -1018,7 +1030,7 @@ fun NavigationBreathingGlow(
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "nav_breathing")
 
-    val glowAlpha by infiniteTransition.animateFloat(
+    val alphaState = infiniteTransition.animateFloat(
         initialValue = 0.2f,
         targetValue = 0.5f,
         animationSpec = infiniteRepeatable(
@@ -1028,7 +1040,7 @@ fun NavigationBreathingGlow(
         label = "nav_glow_alpha"
     )
 
-    val glowScale by infiniteTransition.animateFloat(
+    val scaleState = infiniteTransition.animateFloat(
         initialValue = 1f,
         targetValue = 1.2f,
         animationSpec = infiniteRepeatable(
@@ -1038,7 +1050,7 @@ fun NavigationBreathingGlow(
         label = "nav_glow_scale"
     )
 
-    val activeAlpha by animateFloatAsState(
+    val activeAlphaState = animateFloatAsState(
         targetValue = if (isActive) 1f else 0f,
         animationSpec = tween(300),
         label = "active_alpha"
@@ -1054,9 +1066,12 @@ fun NavigationBreathingGlow(
                 modifier = Modifier
                     .size(48.dp)
                     .graphicsLayer {
-                        scaleX = glowScale
-                        scaleY = glowScale
-                        alpha = glowAlpha * activeAlpha
+                        // DEFERRED STATE READS: Accessing .value inside the lambda
+                        // keeps the animation logic in the drawing phase.
+                        val scale = scaleState.value
+                        scaleX = scale
+                        scaleY = scale
+                        alpha = alphaState.value * activeAlphaState.value
                     }
                     .blur(12.dp)
                     .background(color, CircleShape)
