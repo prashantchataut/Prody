@@ -224,19 +224,19 @@ class HomeViewModel @Inject constructor(
                 dualStreakManager.getDualStreakStatusFlow(),
                 preferencesManager.debugAiProofMode.distinctUntilChanged()
             ) { args ->
-                val profile = args.getOrNull(0) as? UserProfileEntity
-                val weeklyJournalEntries = (args.getOrNull(1) as? List<*>)?.filterIsInstance<JournalEntryEntity>() ?: emptyList()
-                val weeklyLearnedWords = args.getOrNull(2) as? Int ?: 0
-                val streakHistory = (args.getOrNull(3) as? List<*>)?.filterIsInstance<StreakHistoryEntity>() ?: emptyList()
-                val todayJournalEntries = (args.getOrNull(4) as? List<*>)?.filterIsInstance<JournalEntryEntity>() ?: emptyList()
-                val dualStreak = args.getOrNull(5) as? DualStreakStatus ?: DualStreakStatus.empty()
-                val aiProofMode = args.getOrNull(6) as? Boolean ?: false
+                val profile = args[0] as? UserProfileEntity
+                val weeklyJournalEntries = (args[1] as? List<*>)?.filterIsInstance<JournalEntryEntity>() ?: emptyList()
+                val weeklyLearnedWords = args[2] as? Int ?: 0
+                val streakHistory = (args[3] as? List<*>)?.filterIsInstance<StreakHistoryEntity>() ?: emptyList()
+                val todayJournalEntries = (args[4] as? List<*>)?.filterIsInstance<JournalEntryEntity>() ?: emptyList()
+                val dualStreak = args[5] as? DualStreakStatus ?: DualStreakStatus.empty()
+                val aiProofMode = args[6] as? Boolean ?: false
 
                 // Calculate weekly active days.
                 val daysActiveThisWeek = streakHistory.count { it.date >= weekStart }
 
                 // Calculate mindful minutes this week (derived from profile for now)
-                val mindfulMinutes = profile?.totalReflectionTime?.let { it / 60 } ?: 0
+                val mindfulMinutes = profile?.totalReflectionTime?.let { (it / 60).toInt() } ?: 0
 
                 // Calculate mood trend for the chart.
                 // Map moods to float values (1-5 scale) and sort by creation date.
