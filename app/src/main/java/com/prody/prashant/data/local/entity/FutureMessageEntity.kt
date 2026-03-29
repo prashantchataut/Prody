@@ -8,7 +8,9 @@ import androidx.room.PrimaryKey
     indices = [
         androidx.room.Index(value = ["userId"]),
         androidx.room.Index(value = ["deliveryDate"]),
-        androidx.room.Index(value = ["userId", "deliveryDate"])
+        androidx.room.Index(value = ["userId", "deliveryDate"]),
+        androidx.room.Index(value = ["isDelivered"]),
+        androidx.room.Index(value = ["category"])
     ]
 )
 data class FutureMessageEntity(

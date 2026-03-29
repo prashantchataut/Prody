@@ -132,6 +132,9 @@ import net.sqlcipher.database.SupportFactory
  * - Version 20: Mirror Evolution - Sealed Pods (Future Message Prophecy)
  *              Added prediction, predictionVerified, predictionVerifiedAt to FutureMessageEntity
  *              Enables "Prophecy" evidence drops when predictions are verified
+ * - Version 21: Performance Indexing Audit
+ *              Added indices to journal_entries (mood, isBookmarked, syncStatus)
+ *              Added indices to future_messages (isDelivered, category)
  */
 @Database(
     entities = [
@@ -223,7 +226,7 @@ import net.sqlcipher.database.SupportFactory
         // Mirror Evolution: Evidence Locker
         EvidenceEntity::class
     ],
-    version = 20,
+    version = 21,
     exportSchema = true // Enable for migration verification
 )
 abstract class ProdyDatabase : RoomDatabase() {
@@ -1689,6 +1692,26 @@ abstract class ProdyDatabase : RoomDatabase() {
                 db.execSQL("ALTER TABLE future_messages ADD COLUMN prediction TEXT")
                 db.execSQL("ALTER TABLE future_messages ADD COLUMN predictionVerified INTEGER")
                 db.execSQL("ALTER TABLE future_messages ADD COLUMN predictionVerifiedAt INTEGER")
+            }
+        }
+
+        /**
+         * Migration 20 -> 21: Performance Indexing Audit
+         *
+         * Changes:
+         * - Add indices to journal_entries for mood, isBookmarked, and syncStatus
+         * - Add indices to future_messages for isDelivered and category
+         */
+        val MIGRATION_20_21: Migration = object : Migration(20, 21) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Indices for journal_entries
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_journal_entries_mood ON journal_entries (mood)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_journal_entries_isBookmarked ON journal_entries (isBookmarked)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_journal_entries_syncStatus ON journal_entries (syncStatus)")
+
+                // Indices for future_messages
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_future_messages_isDelivered ON future_messages (isDelivered)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_future_messages_category ON future_messages (category)")
             }
         }
 

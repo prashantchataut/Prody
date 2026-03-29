@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 20,
-    "identityHash": "8d3886776889095ab274759ca69248a1",
+    "identityHash": "4a0c536fa88e784f663cbdad7a0bb27f",
     "entities": [
       {
         "tableName": "journal_entries",
@@ -223,6 +223,33 @@
             ],
             "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_journal_entries_userId_createdAt` ON `${TABLE_NAME}` (`userId`, `createdAt`)"
+          },
+          {
+            "name": "index_journal_entries_mood",
+            "unique": false,
+            "columnNames": [
+              "mood"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_journal_entries_mood` ON `${TABLE_NAME}` (`mood`)"
+          },
+          {
+            "name": "index_journal_entries_isBookmarked",
+            "unique": false,
+            "columnNames": [
+              "isBookmarked"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_journal_entries_isBookmarked` ON `${TABLE_NAME}` (`isBookmarked`)"
+          },
+          {
+            "name": "index_journal_entries_syncStatus",
+            "unique": false,
+            "columnNames": [
+              "syncStatus"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_journal_entries_syncStatus` ON `${TABLE_NAME}` (`syncStatus`)"
           }
         ],
         "foreignKeys": []
@@ -416,6 +443,24 @@
             ],
             "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_future_messages_userId_deliveryDate` ON `${TABLE_NAME}` (`userId`, `deliveryDate`)"
+          },
+          {
+            "name": "index_future_messages_isDelivered",
+            "unique": false,
+            "columnNames": [
+              "isDelivered"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_future_messages_isDelivered` ON `${TABLE_NAME}` (`isDelivered`)"
+          },
+          {
+            "name": "index_future_messages_category",
+            "unique": false,
+            "columnNames": [
+              "category"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_future_messages_category` ON `${TABLE_NAME}` (`category`)"
           }
         ],
         "foreignKeys": []
@@ -10169,7 +10214,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '8d3886776889095ab274759ca69248a1')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '4a0c536fa88e784f663cbdad7a0bb27f')"
     ]
   }
 }
