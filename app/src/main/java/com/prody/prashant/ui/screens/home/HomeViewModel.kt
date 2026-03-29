@@ -81,6 +81,7 @@ data class HomeUiState(
     val canRefreshBuddhaThought: Boolean = true,
     val journalEntriesThisWeek: Int = 0,
     val wordsLearnedThisWeek: Int = 0,
+    val mindfulMinutesThisWeek: Int = 0,
     val daysActiveThisWeek: Int = 0,
     val isLoading: Boolean = true,
     val hasLoadError: Boolean = false,
@@ -127,6 +128,8 @@ data class HomeUiState(
     val showMemoryCard: Boolean = false,
     // Anniversary memories for today
     val anniversaryMemories: List<AnniversaryMemory> = emptyList(),
+    // Mood trend for the chart
+    val moodTrend: List<Float> = emptyList(),
     // User context for personalization
     val userArchetype: UserArchetype = UserArchetype.EXPLORER,
     val trustLevel: TrustLevel = TrustLevel.NEW,
@@ -232,6 +235,24 @@ class HomeViewModel @Inject constructor(
                 // Calculate weekly active days.
                 val daysActiveThisWeek = streakHistory.count { it.date >= weekStart }
 
+                // Calculate mindful minutes this week (derived from profile for now)
+                val mindfulMinutes = profile?.totalReflectionTime?.let { it / 60 } ?: 0
+
+                // Calculate mood trend for the chart.
+                // Map moods to float values (1-5 scale) and sort by creation date.
+                val moodTrend = weeklyJournalEntries
+                    .sortedBy { it.createdAt }
+                    .map { entry ->
+                        when (entry.mood.lowercase()) {
+                            "radiant", "excellent", "great" -> 5.0f
+                            "good", "positive", "happy" -> 4.0f
+                            "stable", "okay", "calm", "neutral" -> 3.0f
+                            "low", "sad", "gloomy", "tired" -> 2.0f
+                            "terrible", "awful", "depressed" -> 1.0f
+                            else -> 3.0f // Default to stable
+                        }
+                    }
+
                 // Determine today's journaling status.
                 val (journaledToday, todayMood, todayPreview) = if (todayJournalEntries.isNotEmpty()) {
                     val latestEntry = todayJournalEntries.maxByOrNull { it.createdAt }
@@ -260,7 +281,9 @@ class HomeViewModel @Inject constructor(
                     idiomId = dailyContent.idiom?.id ?: _uiState.value.idiomId,
                     journalEntriesThisWeek = weeklyJournalEntries.size,
                     wordsLearnedThisWeek = weeklyLearnedWords,
+                    mindfulMinutesThisWeek = mindfulMinutes,
                     daysActiveThisWeek = daysActiveThisWeek,
+                    moodTrend = moodTrend,
                     journaledToday = journaledToday,
                     todayEntryMood = todayMood,
                     todayEntryPreview = todayPreview,

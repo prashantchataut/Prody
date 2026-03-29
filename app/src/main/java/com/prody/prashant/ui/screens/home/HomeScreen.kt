@@ -30,6 +30,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.prody.prashant.ui.components.DualStreakCard
 import com.prody.prashant.ui.theme.*
 
 // =============================================================================
@@ -48,13 +50,12 @@ fun HomeScreen(
     onNavigateToMeditation: () -> Unit = {},
     onNavigateToChallenges: () -> Unit = {},
     onNavigateToSearch: () -> Unit = {},
+    onNavigateToProfile: () -> Unit = {},
     onNavigateToIdiomDetail: (Long) -> Unit = {},
+    onNavigateToRoute: (String) -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
-    // We assume ViewModel provides necessary state. For this UI revamp, 
-    // we'll focus on the UI structure and use placeholder data where ViewModel might not strictly align yet.
-    
-    val surfaceColor = MaterialTheme.colorScheme.surface
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val backgroundColor = MaterialTheme.colorScheme.background
 
     LazyColumn(
@@ -66,37 +67,50 @@ fun HomeScreen(
         // Header with Greeting and Notification
         item {
             DashboardHeader(
-                userName = "Prashant", // Replace with real name
-                onProfileClick = {}, // TODO: Profile Nav
+                userName = uiState.userName,
+                greeting = uiState.intelligentGreeting.ifEmpty { "Welcome back," },
+                subtext = uiState.greetingSubtext.ifEmpty { uiState.userName },
+                onProfileClick = onNavigateToProfile,
                 onNotificationClick = {}
             )
         }
 
-        // Overview Section (Streak & Badges)
+        // Dual Streak System
         item {
-            OverviewSection(
-                streakDays = 7,
-                badges = listOf(
-                    BadgeData(ProdyIcons.EmojiEvents, 0.75f, ProdyWarmAmber),
-                    BadgeData(ProdyIcons.Edit, 0.5f, ProdyForestGreen),
-                    BadgeData(ProdyIcons.Psychology, 0.3f, ProdyInfo)
-                )
+            DualStreakCard(
+                dualStreakStatus = uiState.dualStreakStatus,
+                modifier = Modifier.padding(vertical = 8.dp)
+            )
+        }
+
+        // Active Progress Layer - Next Action
+        item {
+            NextActionCard(
+                nextAction = uiState.nextAction,
+                onClick = onNavigateToRoute
+            )
+        }
+
+        // Active Progress Layer - Today's Summary
+        item {
+            TodayProgressCard(
+                progress = uiState.todayProgress
             )
         }
 
         // Mood Trend Chart
         item {
             MoodTrendSection(
-                moodData = listOf(3f, 4f, 2f, 5f, 4f, 5f, 4f) // 1-5 Scale
+                moodData = uiState.moodTrend
             )
         }
 
         // Weekly Summary
         item {
             WeeklySummarySection(
-                journalEntries = 5,
-                wordsLearned = 12,
-                mindfulMinutes = 45
+                journalEntries = uiState.journalEntriesThisWeek,
+                wordsLearned = uiState.wordsLearnedThisWeek,
+                mindfulMinutes = uiState.mindfulMinutesThisWeek
             )
         }
         
@@ -121,164 +135,7 @@ fun HomeScreen(
 // DASHBOARD COMPONENTS
 // =============================================================================
 
-@Composable
-fun DashboardHeader(
-    userName: String,
-    onProfileClick: () -> Unit,
-    onNotificationClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 24.dp)
-            .statusBarsPadding(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column {
-            Text(
-                text = "Good Morning,",
-                style = TextStyle(
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Normal,
-                    fontSize = 16.sp
-                ),
-                color = ProdyTextSecondaryLight
-            )
-            Text(
-                text = userName,
-                style = TextStyle(
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 24.sp
-                ),
-                color = ProdyTextPrimaryLight
-            )
-        }
-        
-        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            IconButton(onClick = onNotificationClick) {
-                Icon(
-                    imageVector = Icons.Outlined.Notifications,
-                    contentDescription = "Notifications",
-                    tint = ProdyTextPrimaryLight
-                )
-            }
-            // Avatar / Profile
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .background(ProdyForestGreen)
-                    .clickable { onProfileClick() },
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = userName.firstOrNull()?.toString() ?: "P",
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun OverviewSection(
-    streakDays: Int,
-    badges: List<BadgeData>
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        // Streak Card
-        Surface(
-            modifier = Modifier.weight(1f),
-            shape = RoundedCornerShape(16.dp),
-            color = ProdySurfaceLight,
-            shadowElevation = 4.dp
-        ) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = streakDays.toString(),
-                    style = TextStyle(
-                        fontFamily = PoppinsFamily,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 48.sp,
-                        color = ProdyForestGreen
-                    )
-                )
-                Text(
-                    text = "Day Streak",
-                    style = TextStyle(
-                        fontFamily = PoppinsFamily,
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 14.sp,
-                        color = ProdyTextSecondaryLight
-                    )
-                )
-            }
-        }
-
-        // Badges Card
-        Surface(
-            modifier = Modifier.weight(1f),
-            shape = RoundedCornerShape(16.dp),
-            color = ProdySurfaceLight,
-            shadowElevation = 4.dp
-        ) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    badges.forEach { badge ->
-                        BadgeItem(badge)
-                    }
-                }
-                Spacer(modifier = Modifier.height(12.dp))
-                Text(
-                    text = "Achievements",
-                    style = TextStyle(
-                        fontFamily = PoppinsFamily,
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 14.sp,
-                        color = ProdyTextSecondaryLight
-                    )
-                )
-            }
-        }
-    }
-}
-
-data class BadgeData(val icon: androidx.compose.ui.graphics.vector.ImageVector, val progress: Float, val color: Color)
-
-@Composable
-fun BadgeItem(badge: BadgeData) {
-    Box(contentAlignment = Alignment.Center, modifier = Modifier.size(32.dp)) {
-        CircularProgressIndicator(
-            progress = { badge.progress },
-            modifier = Modifier.fillMaxSize(),
-            color = badge.color,
-            trackColor = badge.color.copy(alpha = 0.2f),
-            strokeWidth = 3.dp,
-        )
-        Icon(
-            imageVector = badge.icon,
-            contentDescription = null,
-            tint = badge.color,
-            modifier = Modifier.size(16.dp)
-        )
-    }
-}
+// Extracted to HomeComponents.kt for maintainability. Unused components removed.
 
 @Composable
 fun MoodTrendSection(moodData: List<Float>) {
@@ -364,90 +221,7 @@ fun MoodChart(data: List<Float>, modifier: Modifier = Modifier) {
     }
 }
 
-@Composable
-fun WeeklySummarySection(journalEntries: Int, wordsLearned: Int, mindfulMinutes: Int) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp)
-    ) {
-        Text(
-            text = "This Week",
-            style = TextStyle(
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 18.sp,
-                color = ProdyTextPrimaryLight
-            )
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            SummaryCard(
-                label = "Entries",
-                value = journalEntries.toString(),
-                icon = ProdyIcons.Edit,
-                color = ProdyForestGreen,
-                modifier = Modifier.weight(1f)
-            )
-            SummaryCard(
-                label = "Words",
-                value = wordsLearned.toString(),
-                icon = ProdyIcons.School,
-                color = ProdyWarmAmber,
-                modifier = Modifier.weight(1f)
-            )
-            SummaryCard(
-                label = "Minutes",
-                value = mindfulMinutes.toString(),
-                icon = ProdyIcons.SelfImprovement,
-                color = ProdyInfo,
-                modifier = Modifier.weight(1f)
-            )
-        }
-    }
-}
-
-@Composable
-fun SummaryCard(label: String, value: String, icon: androidx.compose.ui.graphics.vector.ImageVector, color: Color, modifier: Modifier) {
-    Surface(
-        modifier = modifier,
-        shape = RoundedCornerShape(12.dp),
-        color = ProdySurfaceLight,
-        shadowElevation = 2.dp
-    ) {
-        Column(
-            modifier = Modifier.padding(12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = color,
-                modifier = Modifier.size(24.dp)
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = value,
-                style = TextStyle(
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp,
-                    color = ProdyTextPrimaryLight
-                )
-            )
-            Text(
-                text = label,
-                style = TextStyle(
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 12.sp,
-                    color = ProdyTextSecondaryLight
-                )
-            )
-        }
-    }
-}
+// Extracted to HomeComponents.kt
 
 @Composable
 fun QuickActionsGrid(
