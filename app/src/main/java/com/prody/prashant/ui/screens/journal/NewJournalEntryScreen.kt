@@ -104,11 +104,19 @@ import com.prody.prashant.ui.theme.*
 fun NewJournalEntryScreen(
     onNavigateBack: () -> Unit,
     onEntrySaved: () -> Unit,
+    prefilledContent: String? = null,
     viewModel: NewJournalEntryViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
+
+    // Apply prefilled content if provided (only once on initial composition)
+    LaunchedEffect(prefilledContent) {
+        if (!prefilledContent.isNullOrBlank()) {
+            viewModel.updateContent(prefilledContent)
+        }
+    }
 
     // Security: Prevent screenshots and screen recordings while writing a private journal entry
     DisposableEffect(Unit) {
