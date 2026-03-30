@@ -67,6 +67,7 @@ import com.prody.prashant.ui.navigation.Screen
 import com.prody.prashant.ui.theme.ProdyPrimary
 import com.prody.prashant.ui.theme.ProdyTheme
 import com.prody.prashant.util.LocalHapticEnabled
+import com.prody.prashant.util.rememberProdyHaptic
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -185,6 +186,7 @@ fun ProdyApp(
     startDestination: String
 ) {
     val navController = rememberNavController()
+    val haptic = rememberProdyHaptic()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
@@ -233,6 +235,7 @@ fun ProdyApp(
                             NavigationBarItem(
                                 selected = selected,
                                 onClick = {
+                                    haptic.selection()
                                     navController.navigate(item.route) {
                                         popUpTo(navController.graph.findStartDestination().id) {
                                             saveState = true
@@ -284,7 +287,7 @@ fun ProdyApp(
                                     ) {
                                         Icon(
                                             imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
-                                            contentDescription = null,
+                                            contentDescription = stringResource(item.contentDescriptionResId),
                                             tint = com.prody.prashant.ui.theme.HavenTextLight,
                                             modifier = Modifier.size(28.dp)
                                         )
@@ -313,6 +316,7 @@ fun ProdyApp(
                                 label = { Text(stringResource(item.labelResId)) },
                                 selected = selected,
                                 onClick = {
+                                    haptic.selection()
                                     navController.navigate(item.route) {
                                         popUpTo(navController.graph.findStartDestination().id) {
                                             saveState = true
