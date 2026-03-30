@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.prody.prashant.ui.components.ProdyProgressIndicator
 import com.prody.prashant.ui.theme.*
+import com.prody.prashant.util.rememberProdyHaptic
 import kotlinx.coroutines.launch
 
 // =============================================================================
@@ -58,20 +59,25 @@ fun OnboardingScreen(
 ) {
     val pagerState = rememberPagerState(pageCount = { 8 })
     val coroutineScope = rememberCoroutineScope()
-    // Determine theme for background only if needed, but we mostly use specific colors
-    // We will use the ProdyTheme colors.
-    
-    // Gradient Background: White to #F5F5F5 for light mode
-    val gradientColors = if (!isSystemInDarkTheme()) {
-        listOf(Color.White, Color(0xFFF5F5F5))
-    } else {
-        listOf(ProdyBackgroundDark, ProdyBackgroundDark) // Keep dark mode simple
+    val isDark = isSystemInDarkTheme()
+
+    // Optimization: Wrap object allocations in remember {}
+    val gradientColors = remember(isDark) {
+        if (!isDark) {
+            listOf(Color.White, ProdySurfaceVariantLight)
+        } else {
+            listOf(ProdyBackgroundDark, ProdyBackgroundDark)
+        }
+    }
+
+    val backgroundBrush = remember(gradientColors) {
+        Brush.verticalGradient(gradientColors)
     }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Brush.verticalGradient(gradientColors))
+            .background(backgroundBrush)
             .systemBarsPadding()
     ) {
         HorizontalPager(
@@ -79,6 +85,8 @@ fun OnboardingScreen(
             modifier = Modifier.fillMaxSize(),
             userScrollEnabled = false // Force navigation via buttons
         ) { page ->
+            // Optimization: Pages are extracted to dedicated composables
+            // to isolate recomposition scope.
             when (page) {
                 0 -> WelcomeScreen(
                     onNext = { coroutineScope.launch { pagerState.animateScrollToPage(1) } },
@@ -188,9 +196,13 @@ private fun WelcomeScreen(
         Spacer(modifier = Modifier.height(24.dp))
 
         // Secondary link
+        val haptic = rememberProdyHaptic()
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.clickable { onLogin() }
+            modifier = Modifier.clickable {
+                haptic.selection()
+                onLogin()
+            }
         ) {
             Text(
                 text = "Already have an account? ",
@@ -334,6 +346,7 @@ private fun FeatureScreenLayout(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Header with Skip
+        val haptic = rememberProdyHaptic()
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -348,7 +361,10 @@ private fun FeatureScreenLayout(
                     fontSize = 14.sp
                 ),
                 color = ProdyTextSecondaryLight,
-                modifier = Modifier.clickable { onSkip() }
+                modifier = Modifier.clickable {
+                    haptic.selection()
+                    onSkip()
+                }
             )
         }
 
@@ -400,8 +416,12 @@ private fun FeatureScreenLayout(
         ) {
             ProdyProgressIndicator(currentPage = currentPage, totalPages = totalPages)
 
+            val navHaptic = rememberProdyHaptic()
             FloatingActionButton(
-                onClick = onNext,
+                onClick = {
+                    navHaptic.selection()
+                    onNext()
+                },
                 containerColor = ProdyForestGreen,
                 contentColor = Color.White,
                 shape = CircleShape,
@@ -516,6 +536,7 @@ private fun LoginSignupScreen(
         Spacer(modifier = Modifier.height(8.dp))
 
         // Forgot Password
+        val haptic = rememberProdyHaptic()
         Text(
             text = "Forgot Password?",
             style = TextStyle(
@@ -526,7 +547,7 @@ private fun LoginSignupScreen(
             color = ProdyTextSecondaryLight,
             modifier = Modifier
                 .align(Alignment.End)
-                .clickable { }
+                .clickable { haptic.selection() }
         )
 
         Spacer(modifier = Modifier.height(32.dp))
@@ -561,12 +582,15 @@ private fun LoginSignupScreen(
         // Social Login - Google Button
         // White background with black text, 24dp logo, 1dp border
         OutlinedButton(
-            onClick = onGoogleLogin,
+            onClick = {
+                haptic.selection()
+                onGoogleLogin()
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
             shape = RoundedCornerShape(8.dp),
-            border = BorderStroke(1.dp, Color(0xFFE0E0E0)),
+            border = BorderStroke(1.dp, ProdyOutlineLight),
             colors = ButtonDefaults.outlinedButtonColors(
                 containerColor = Color.White,
                 contentColor = Color.Black
@@ -600,7 +624,10 @@ private fun LoginSignupScreen(
         // Sign Up Link
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.clickable { onCreateAccount() }
+            modifier = Modifier.clickable {
+                haptic.selection()
+                onCreateAccount()
+            }
         ) {
             Text(
                 text = "Don't have an account? ",
@@ -636,8 +663,12 @@ fun PrimaryButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val haptic = rememberProdyHaptic()
     Button(
-        onClick = onClick,
+        onClick = {
+            haptic.selection()
+            onClick()
+        },
         modifier = modifier.height(56.dp),
         shape = RoundedCornerShape(16.dp),
         colors = ButtonDefaults.buttonColors(
