@@ -94,7 +94,15 @@ sealed class Screen(val route: String) {
     data object Home : Screen("home")
     data object JournalList : Screen("journal")
     data object JournalHistory : Screen("journal/history")
-    data object NewJournalEntry : Screen("journal/new")
+    data object NewJournalEntry : Screen("journal/new?prefill={prefill}") {
+        fun createRoute(prefilledContent: String? = null): String {
+            return if (prefilledContent.isNullOrEmpty()) {
+                "journal/new"
+            } else {
+                "journal/new?prefill=${java.net.URLEncoder.encode(prefilledContent, "UTF-8")}"
+            }
+        }
+    }
     data object JournalDetail : Screen("journal/{entryId}") {
         fun createRoute(entryId: Long) = "journal/$entryId"
     }
@@ -317,6 +325,24 @@ fun ProdyNavHost(
                 },
                 onNavigateToIdiomDetail = { idiomId ->
                     navController.navigate(Screen.IdiomDetail.createRoute(idiomId))
+                },
+                onNavigateToLearning = {
+                    navController.navigate(Screen.LearningHome.route)
+                },
+                onNavigateToDeepDive = {
+                    navController.navigate(Screen.DeepDiveHome.route)
+                },
+                onNavigateToMissions = {
+                    navController.navigate(Screen.Missions.route)
+                },
+                onNavigateToMicroJournal = {
+                    navController.navigate(Screen.MicroJournal.route)
+                },
+                onNavigateToDailyRitual = {
+                    navController.navigate(Screen.DailyRitual.route)
+                },
+                onNavigateToWeeklyDigest = {
+                    navController.navigate(Screen.WeeklyDigest.route)
                 }
             )
         }
@@ -327,7 +353,7 @@ fun ProdyNavHost(
         composable(Screen.JournalList.route) {
             JournalListScreen(
                 onNavigateToNewEntry = {
-                    navController.navigate(Screen.NewJournalEntry.route)
+                    navController.navigate(Screen.NewJournalEntry.createRoute())
                 },
                 onNavigateToDetail = { entryId ->
                     navController.navigate(Screen.JournalDetail.createRoute(entryId))
@@ -349,6 +375,11 @@ fun ProdyNavHost(
 
         composable(
             route = Screen.NewJournalEntry.route,
+            arguments = listOf(navArgument("prefill") {
+                type = NavType.StringType
+                nullable = true
+                defaultValue = null
+            }),
             // Slide up transition for creation screens
             enterTransition = {
                 fadeIn(tween(FADE_DURATION)) + slideInVertically(
@@ -365,10 +396,14 @@ fun ProdyNavHost(
                     animationSpec = tween(TRANSITION_DURATION, easing = EaseInQuart)
                 )
             }
-        ) {
+        ) { backStackEntry ->
+            val prefill = backStackEntry.arguments?.getString("prefill")?.let {
+                try { java.net.URLDecoder.decode(it, "UTF-8") } catch (_: Exception) { null }
+            }
             NewJournalEntryScreen(
                 onNavigateBack = { navController.popBackStack() },
-                onEntrySaved = { navController.popBackStack() }
+                onEntrySaved = { navController.popBackStack() },
+                prefilledContent = prefill
             )
         }
 
@@ -633,9 +668,7 @@ fun ProdyNavHost(
             MicroJournalScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToJournalWithContent = { content, microEntryId ->
-                    // Navigate to journal with prefilled content
-                    // The micro entry ID can be used to mark it as expanded after save
-                    navController.navigate(Screen.NewJournalEntry.route)
+                    navController.navigate(Screen.NewJournalEntry.createRoute(content))
                 }
             )
         }
@@ -660,8 +693,7 @@ fun ProdyNavHost(
             DailyRitualScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToJournal = { prefilledContent ->
-                    // Navigate to journal with prefilled content from ritual
-                    navController.navigate(Screen.NewJournalEntry.route)
+                    navController.navigate(Screen.NewJournalEntry.createRoute(prefilledContent))
                 }
             )
         }
@@ -698,7 +730,7 @@ fun ProdyNavHost(
             FutureMessageReplyScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToJournal = { prefilledContent ->
-                    navController.navigate(Screen.NewJournalEntry.route)
+                    navController.navigate(Screen.NewJournalEntry.createRoute(prefilledContent))
                 }
             )
         }
@@ -729,7 +761,7 @@ fun ProdyNavHost(
                 messageId = messageId,
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToJournal = { prefilledContent ->
-                    navController.navigate(Screen.NewJournalEntry.route)
+                    navController.navigate(Screen.NewJournalEntry.createRoute(prefilledContent))
                 }
             )
         }
@@ -975,7 +1007,7 @@ fun ProdyNavHost(
             MissionsScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToJournal = {
-                    navController.navigate(Screen.NewJournalEntry.route)
+                    navController.navigate(Screen.NewJournalEntry.createRoute())
                 },
                 onNavigateToVocabulary = {
                     navController.navigate(Screen.VocabularyList.route)

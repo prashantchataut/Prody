@@ -311,7 +311,7 @@ private fun OfflineModeBanner(
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "To fix this:\n1. Add API key to local.properties\n2. Rebuild the project\n3. Restart the app",
+                            text = "AI features are currently unavailable.\nExercises and journaling remain fully functional.\nTap 'Retry' above to reconnect.",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.7f)
                         )

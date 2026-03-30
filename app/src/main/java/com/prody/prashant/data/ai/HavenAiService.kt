@@ -213,7 +213,7 @@ I am here to listen, but I cannot provide the emergency care you might need. Ple
 
             if (apiKey.isNullOrBlank()) {
                 Log.w(TAG, "No API key configured. Entering Offline Mode.")
-                initializationError = "No API key found in BuildConfig. Check local.properties and rebuild."
+                initializationError = "AI features are not configured. Running in offline mode."
                 isOfflineMode = true
                 isInitialized = true // We are initialized in offline mode
                 return

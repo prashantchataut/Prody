@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.ui.theme.*
 
 // =============================================================================
@@ -49,54 +50,121 @@ fun HomeScreen(
     onNavigateToChallenges: () -> Unit = {},
     onNavigateToSearch: () -> Unit = {},
     onNavigateToIdiomDetail: (Long) -> Unit = {},
+    onNavigateToLearning: () -> Unit = {},
+    onNavigateToDeepDive: () -> Unit = {},
+    onNavigateToMissions: () -> Unit = {},
+    onNavigateToMicroJournal: () -> Unit = {},
+    onNavigateToDailyRitual: () -> Unit = {},
+    onNavigateToWeeklyDigest: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
-    // We assume ViewModel provides necessary state. For this UI revamp, 
-    // we'll focus on the UI structure and use placeholder data where ViewModel might not strictly align yet.
-    
-    val surfaceColor = MaterialTheme.colorScheme.surface
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val backgroundColor = MaterialTheme.colorScheme.background
+
+    if (uiState.isLoading) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(backgroundColor),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(color = ProdyForestGreen)
+        }
+        return
+    }
+
+    if (uiState.hasLoadError) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(backgroundColor)
+                .padding(32.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Icon(
+                    imageVector = Icons.Outlined.Warning,
+                    contentDescription = null,
+                    tint = ProdyWarmAmber,
+                    modifier = Modifier.size(48.dp)
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = uiState.error ?: "Something went wrong",
+                    style = TextStyle(
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 16.sp,
+                        color = ProdyTextPrimaryLight
+                    )
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                androidx.compose.material3.OutlinedButton(onClick = { viewModel.retry() }) {
+                    Text("Retry", fontFamily = PoppinsFamily)
+                }
+            }
+        }
+        return
+    }
+
+    // Determine greeting based on ViewModel state or time-based fallback
+    val greeting = if (uiState.intelligentGreeting.isNotEmpty()) {
+        uiState.intelligentGreeting
+    } else {
+        val hour = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY)
+        when {
+            hour < 12 -> "Good Morning,"
+            hour < 17 -> "Good Afternoon,"
+            else -> "Good Evening,"
+        }
+    }
+
+    // Build badge data from real achievement progress
+    val badges = listOf(
+        BadgeData(ProdyIcons.EmojiEvents, (uiState.totalPoints.coerceAtMost(1000) / 1000f).coerceIn(0f, 1f), ProdyWarmAmber),
+        BadgeData(ProdyIcons.Edit, (uiState.journalEntriesThisWeek.coerceAtMost(7) / 7f).coerceIn(0f, 1f), ProdyForestGreen),
+        BadgeData(ProdyIcons.Psychology, (uiState.daysActiveThisWeek.coerceAtMost(7) / 7f).coerceIn(0f, 1f), ProdyInfo)
+    )
 
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .background(backgroundColor),
-        contentPadding = PaddingValues(bottom = 80.dp) // Space for bottom nav
+        contentPadding = PaddingValues(bottom = 80.dp)
     ) {
-        // Header with Greeting and Notification
+        // Header with Greeting
         item {
             DashboardHeader(
-                userName = "Prashant", // Replace with real name
-                onProfileClick = {}, // TODO: Profile Nav
-                onNotificationClick = {}
+                userName = uiState.userName,
+                greeting = greeting,
+                onProfileClick = {},
+                onNotificationClick = onNavigateToSearch
             )
         }
 
         // Overview Section (Streak & Badges)
         item {
             OverviewSection(
-                streakDays = 7,
-                badges = listOf(
-                    BadgeData(ProdyIcons.EmojiEvents, 0.75f, ProdyWarmAmber),
-                    BadgeData(ProdyIcons.Edit, 0.5f, ProdyForestGreen),
-                    BadgeData(ProdyIcons.Psychology, 0.3f, ProdyInfo)
+                streakDays = uiState.currentStreak,
+                badges = badges
+            )
+        }
+
+        // Mood Trend Chart - only show if there's real data
+        if (uiState.journalEntriesThisWeek > 0) {
+            item {
+                MoodTrendSection(
+                    moodData = emptyList() // Mood trend requires historical mood data not exposed yet
                 )
-            )
+            }
         }
 
-        // Mood Trend Chart
-        item {
-            MoodTrendSection(
-                moodData = listOf(3f, 4f, 2f, 5f, 4f, 5f, 4f) // 1-5 Scale
-            )
-        }
-
-        // Weekly Summary
+        // Weekly Summary from real data
         item {
             WeeklySummarySection(
-                journalEntries = 5,
-                wordsLearned = 12,
-                mindfulMinutes = 45
+                journalEntries = uiState.journalEntriesThisWeek,
+                wordsLearned = uiState.wordsLearnedThisWeek,
+                mindfulMinutes = uiState.daysActiveThisWeek * 15 // Approximate based on active days
             )
         }
         
@@ -109,10 +177,28 @@ fun HomeScreen(
                 onFutureClick = onNavigateToFutureMessage
             )
         }
-        
-        // Recent / Suggestions
+
+        // Explore Section - routes to additional features
         item {
-            RecentActivitySection()
+            ExploreSection(
+                onMeditationClick = onNavigateToMeditation,
+                onChallengesClick = onNavigateToChallenges,
+                onMissionsClick = onNavigateToMissions,
+                onLearningClick = onNavigateToLearning,
+                onDeepDiveClick = onNavigateToDeepDive,
+                onVocabularyClick = onNavigateToVocabulary,
+                onMicroJournalClick = onNavigateToMicroJournal,
+                onDailyRitualClick = onNavigateToDailyRitual
+            )
+        }
+        
+        // Recent Activity - show today's journal status
+        item {
+            RecentActivitySection(
+                journaledToday = uiState.journaledToday,
+                todayMood = uiState.todayEntryMood,
+                todayPreview = uiState.todayEntryPreview
+            )
         }
     }
 }
@@ -124,6 +210,7 @@ fun HomeScreen(
 @Composable
 fun DashboardHeader(
     userName: String,
+    greeting: String = "Good Morning,",
     onProfileClick: () -> Unit,
     onNotificationClick: () -> Unit
 ) {
@@ -137,7 +224,7 @@ fun DashboardHeader(
     ) {
         Column {
             Text(
-                text = "Good Morning,",
+                text = greeting,
                 style = TextStyle(
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Normal,
@@ -554,11 +641,151 @@ fun QuickActionTile(title: String, icon: androidx.compose.ui.graphics.vector.Ima
 }
 
 @Composable
-fun RecentActivitySection() {
-    // Placeholder for Recent Activity
+fun ExploreSection(
+    onMeditationClick: () -> Unit,
+    onChallengesClick: () -> Unit,
+    onMissionsClick: () -> Unit,
+    onLearningClick: () -> Unit,
+    onDeepDiveClick: () -> Unit,
+    onVocabularyClick: () -> Unit,
+    onMicroJournalClick: () -> Unit,
+    onDailyRitualClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp)
+    ) {
+        Text(
+            text = "Explore",
+            style = TextStyle(
+                fontFamily = PoppinsFamily,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 18.sp,
+                color = ProdyTextPrimaryLight
+            )
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            item {
+                ExploreChip(
+                    title = "Meditation",
+                    icon = ProdyIcons.SelfImprovement,
+                    color = ProdyInfo,
+                    onClick = onMeditationClick
+                )
+            }
+            item {
+                ExploreChip(
+                    title = "Challenges",
+                    icon = ProdyIcons.EmojiEvents,
+                    color = ProdyWarmAmber,
+                    onClick = onChallengesClick
+                )
+            }
+            item {
+                ExploreChip(
+                    title = "Missions",
+                    icon = Icons.Filled.Flag,
+                    color = ProdyForestGreen,
+                    onClick = onMissionsClick
+                )
+            }
+            item {
+                ExploreChip(
+                    title = "Learning",
+                    icon = ProdyIcons.School,
+                    color = Color(0xFF2196F3),
+                    onClick = onLearningClick
+                )
+            }
+            item {
+                ExploreChip(
+                    title = "Deep Dive",
+                    icon = ProdyIcons.Psychology,
+                    color = Color(0xFF9C27B0),
+                    onClick = onDeepDiveClick
+                )
+            }
+            item {
+                ExploreChip(
+                    title = "Vocabulary",
+                    icon = ProdyIcons.Book,
+                    color = Color(0xFFFF9800),
+                    onClick = onVocabularyClick
+                )
+            }
+            item {
+                ExploreChip(
+                    title = "Quick Note",
+                    icon = ProdyIcons.Edit,
+                    color = ProdyForestGreen.copy(alpha = 0.8f),
+                    onClick = onMicroJournalClick
+                )
+            }
+            item {
+                ExploreChip(
+                    title = "Daily Ritual",
+                    icon = Icons.Filled.Spa,
+                    color = ProdyInfo.copy(alpha = 0.8f),
+                    onClick = onDailyRitualClick
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+    }
+}
+
+@Composable
+private fun ExploreChip(
+    title: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    color: Color,
+    onClick: () -> Unit
+) {
+    Surface(
+        modifier = Modifier
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(12.dp),
+        color = color.copy(alpha = 0.1f),
+        border = androidx.compose.foundation.BorderStroke(1.dp, color.copy(alpha = 0.15f))
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = color,
+                modifier = Modifier.size(20.dp)
+            )
+            Text(
+                text = title,
+                style = TextStyle(
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 13.sp,
+                    color = color
+                )
+            )
+        }
+    }
+}
+
+@Composable
+fun RecentActivitySection(
+    journaledToday: Boolean = false,
+    todayMood: String = "",
+    todayPreview: String = ""
+) {
     Column(modifier = Modifier.padding(horizontal = 24.dp)) {
         Text(
-            text = "Recent",
+            text = "Today",
             style = TextStyle(
                 fontFamily = PoppinsFamily,
                 fontWeight = FontWeight.SemiBold,
@@ -579,15 +806,46 @@ fun RecentActivitySection() {
                     modifier = Modifier
                         .size(40.dp)
                         .clip(CircleShape)
-                        .background(ProdyForestGreen.copy(alpha = 0.1f)),
+                        .background(
+                            if (journaledToday) ProdyForestGreen.copy(alpha = 0.1f)
+                            else ProdyWarmAmber.copy(alpha = 0.1f)
+                        ),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(ProdyIcons.Check, null, tint = ProdyForestGreen)
+                    Icon(
+                        imageVector = if (journaledToday) ProdyIcons.Check else ProdyIcons.Edit,
+                        contentDescription = null,
+                        tint = if (journaledToday) ProdyForestGreen else ProdyWarmAmber
+                    )
                 }
                 Spacer(modifier = Modifier.width(16.dp))
-                Column {
-                    Text("Daily Journal", fontWeight = FontWeight.SemiBold, fontFamily = PoppinsFamily)
-                    Text("Completed today", fontSize = 12.sp, color = ProdyTextSecondaryLight, fontFamily = PoppinsFamily)
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = if (journaledToday) "Journal Entry" else "Daily Journal",
+                        fontWeight = FontWeight.SemiBold,
+                        fontFamily = PoppinsFamily
+                    )
+                    Text(
+                        text = when {
+                            journaledToday && todayMood.isNotEmpty() -> "Feeling ${todayMood.lowercase().replaceFirstChar { it.uppercase() }}"
+                            journaledToday -> "Completed today"
+                            else -> "Tap to write your thoughts"
+                        },
+                        fontSize = 12.sp,
+                        color = ProdyTextSecondaryLight,
+                        fontFamily = PoppinsFamily,
+                        maxLines = 1
+                    )
+                    if (journaledToday && todayPreview.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = todayPreview,
+                            fontSize = 11.sp,
+                            color = ProdyTextSecondaryLight.copy(alpha = 0.7f),
+                            fontFamily = PoppinsFamily,
+                            maxLines = 2
+                        )
+                    }
                 }
             }
         }
