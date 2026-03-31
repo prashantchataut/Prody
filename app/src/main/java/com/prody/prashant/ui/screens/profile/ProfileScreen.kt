@@ -147,6 +147,9 @@ fun ProfileScreen(
     val accentColor = MaterialTheme.colorScheme.primary
     val dividerColor = MaterialTheme.colorScheme.outlineVariant
 
+    // Soul Layer Context for Identity Card
+    val context = uiState.userContext
+
     // Entry animation
     var isVisible by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
@@ -159,30 +162,42 @@ fun ProfileScreen(
             .fillMaxSize()
             .background(backgroundColor)
     ) {
+<<<<<<< Updated upstream
+=======
+        // Minimal horizontal line at the top of content for structure
+        Divider(
+            modifier = Modifier.align(Alignment.TopCenter).statusBarsPadding().padding(top = 72.dp),
+            color = textPrimary.copy(alpha = 0.05f)
+        )
+
+>>>>>>> Stashed changes
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(bottom = 100.dp)
         ) {
             // Header with title and actions
             item {
-                PremiumProfileHeader(
-                    onSettingsClick = onNavigateToSettings,
-                    onEditClick = onNavigateToEditProfile,
-                    textPrimary = textPrimary,
-                    textSecondary = textSecondary,
-                    accentColor = accentColor
+                PremiumHeader(
+                    title = "Identity",
+                    subtitle = "Soul Layer",
+                    onBackClick = null, // Profile is a main tab or top-level here
+                    actions = {
+                        IconButton(onClick = onNavigateToSettings) {
+                            Icon(
+                                imageVector = Icons.Default.Settings,
+                                contentDescription = "Settings",
+                                tint = accentColor
+                            )
+                        }
+                    }
                 )
             }
 
             item {
-                ProfileOverviewSection(
-                    isVisible = isVisible,
-                    state = screenState,
+                SoulIdentityCard(
+                    context = context,
+                    level = uiState.level,
                     isDarkMode = isDarkMode,
-                    textPrimary = textPrimary,
-                    textTertiary = textTertiary,
-                    accentColor = accentColor,
-                    surfaceColor = surfaceColor,
                     onEditClick = onNavigateToEditProfile
                 )
             }
@@ -256,38 +271,17 @@ fun ProfileScreen(
                 }
             }
 
-            // Trophy Room Section
+            // Achievement Shelf Section
             item {
-                AnimatedVisibility(
-                    visible = isVisible,
-                    enter = fadeIn(tween(400, delayMillis = 300))
-                ) {
-                    PremiumTrophyRoomHeader(
-                        unlockedCount = uiState.unlockedAchievements.size,
-                        totalCount = uiState.unlockedAchievements.size + uiState.lockedAchievements.size,
-                        isDarkMode = isDarkMode,
-                        onClick = onNavigateToAchievements,
-                        textPrimary = textPrimary
-                    )
-                }
+                AchievementShelf(
+                    unlockedCount = uiState.unlockedAchievements.size,
+                    totalCount = uiState.unlockedAchievements.size + uiState.lockedAchievements.size,
+                    achievements = uiState.unlockedAchievements.take(5),
+                    onViewAllClick = onNavigateToAchievements,
+                    isDarkMode = isDarkMode
+                )
             }
 
-            // Featured Achievements
-            if (uiState.unlockedAchievements.isNotEmpty()) {
-                item {
-                    AnimatedVisibility(
-                        visible = isVisible,
-                        enter = fadeIn(tween(400, delayMillis = 350))
-                    ) {
-                        PremiumFeaturedAchievementsRow(
-                            achievements = uiState.unlockedAchievements.take(4),
-                            surfaceElevated = surfaceElevated,
-                            textPrimary = textPrimary,
-                            accentColor = accentColor
-                        )
-                    }
-                }
-            }
 
             // Recent Unlocks Section
             item {
@@ -1613,6 +1607,7 @@ private fun getLevelThreshold(level: Int): Int {
     }
 }
 
+<<<<<<< Updated upstream
 // ============================================================================
 // GROWTH JOURNEY CARD
 // ============================================================================
@@ -1704,11 +1699,155 @@ private fun GrowthJourneyCard(
                 textSecondary = textSecondary,
                 textPrimary = textPrimary
             )
+=======
+@Composable
+fun SoulIdentityCard(
+    context: com.prody.prashant.domain.intelligence.UserContext,
+    level: Int,
+    isDarkMode: Boolean,
+    onEditClick: () -> Unit
+) {
+    val cardBg = if (isDarkMode) IdentityRoomColors.CardBackgroundDark else IdentityRoomColors.CardBackgroundLight
+    val accent = IdentityRoomColors.AccentGreen
+    val textPrimary = if (isDarkMode) IdentityRoomColors.TextPrimaryDark else IdentityRoomColors.TextPrimaryLight
+    val textSecondary = if (isDarkMode) IdentityRoomColors.TextSecondaryDark else IdentityRoomColors.TextSecondaryLight
+
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(24.dp),
+        shape = RoundedCornerShape(32.dp),
+        color = cardBg,
+        border = BorderStroke(1.dp, textPrimary.copy(alpha = 0.05f))
+    ) {
+        Column(
+            modifier = Modifier.padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // Avatar & Level Ring Concept
+            Box(contentAlignment = Alignment.Center) {
+                // Static progress ring (minimalist)
+                Canvas(modifier = Modifier.size(120.dp)) {
+                    drawCircle(
+                        color = textPrimary.copy(alpha = 0.05f),
+                        style = Stroke(width = 2.dp.toPx())
+                    )
+                    drawArc(
+                        color = accent,
+                        startAngle = -90f,
+                        sweepAngle = 280f, // Example progress
+                        useCenter = false,
+                        style = Stroke(width = 4.dp.toPx(), cap = StrokeCap.Round)
+                    )
+                }
+                
+                // Avatar Circle
+                Box(
+                    modifier = Modifier
+                        .size(100.dp)
+                        .clip(CircleShape)
+                        .background(textPrimary.copy(alpha = 0.05f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = null,
+                        modifier = Modifier.size(48.dp),
+                        tint = textSecondary
+                    )
+                }
+                
+                // Level Badge (Floating Neon)
+                Surface(
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .size(32.dp),
+                    shape = CircleShape,
+                    color = accent,
+                    shadowElevation = 8.dp
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text(
+                            text = level.toString(),
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp,
+                            color = Color.Black
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Archetype Name
+            Text(
+                text = context.userArchetype.name,
+                style = TextStyle(
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 12.sp,
+                    letterSpacing = 2.sp,
+                    color = accent
+                )
+            )
+            
+            Text(
+                text = context.displayName,
+                style = TextStyle(
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 28.sp,
+                    color = textPrimary
+                )
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Growth Journey Narrative Card
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                color = textPrimary.copy(alpha = 0.03f)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.AutoAwesome,
+                            contentDescription = null,
+                            tint = accent,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "JOURNEY SUMMARY",
+                            style = TextStyle(
+                                fontFamily = PoppinsFamily,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 10.sp,
+                                letterSpacing = 1.sp,
+                                color = textSecondary
+                            )
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "You've been consistent for ${context.daysWithPrody} days. Your mood has been ${context.recentMoodTrend.name.lowercase()}, showing real resilience.",
+                        style = TextStyle(
+                            fontFamily = PoppinsFamily,
+                            fontSize = 14.sp,
+                            lineHeight = 20.sp,
+                            color = textSecondary
+                        )
+                    )
+                }
+            }
+>>>>>>> Stashed changes
         }
     }
 }
 
 @Composable
+<<<<<<< Updated upstream
 private fun GrowthJourneyRow(
     label: String,
     value: String,
@@ -1879,7 +2018,111 @@ private fun ConsistencyScoreCard(
                         )
                     }
                 }
+=======
+fun AchievementShelf(
+    unlockedCount: Int,
+    totalCount: Int,
+    achievements: List<AchievementEntity>,
+    onViewAllClick: () -> Unit,
+    isDarkMode: Boolean
+) {
+    val textPrimary = if (isDarkMode) IdentityRoomColors.TextPrimaryDark else IdentityRoomColors.TextPrimaryLight
+    val textSecondary = if (isDarkMode) IdentityRoomColors.TextSecondaryDark else IdentityRoomColors.TextSecondaryLight
+
+    Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column {
+                Text(
+                    text = "Trophy Shelf",
+                    style = TextStyle(
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp,
+                        color = textPrimary
+                    )
+                )
+                Text(
+                    text = "$unlockedCount of $totalCount collected",
+                    style = TextStyle(
+                        fontFamily = PoppinsFamily,
+                        fontSize = 13.sp,
+                        color = textSecondary
+                    )
+                )
+            }
+            
+            Text(
+                text = "View All",
+                modifier = Modifier.clickable { onViewAllClick() },
+                style = TextStyle(
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 14.sp,
+                    color = IdentityRoomColors.AccentGreen
+                )
+            )
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(end = 24.dp)
+        ) {
+            items(achievements) { achievement ->
+                AchievementBadge(achievement = achievement, isDarkMode = isDarkMode)
+>>>>>>> Stashed changes
             }
         }
     }
 }
+<<<<<<< Updated upstream
+=======
+
+@Composable
+fun AchievementBadge(
+    achievement: AchievementEntity,
+    isDarkMode: Boolean
+) {
+    val cardBg = if (isDarkMode) IdentityRoomColors.CardBackgroundElevatedDark else IdentityRoomColors.CardBackgroundElevatedLight
+    val textPrimary = if (isDarkMode) IdentityRoomColors.TextPrimaryDark else IdentityRoomColors.TextPrimaryLight
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.width(80.dp)
+    ) {
+        Surface(
+            modifier = Modifier.size(64.dp),
+            shape = RoundedCornerShape(16.dp),
+            color = cardBg,
+            border = BorderStroke(1.dp, textPrimary.copy(alpha = 0.05f))
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Icon(
+                    imageVector = Icons.Default.EmojiEvents,
+                    contentDescription = null,
+                    tint = IdentityRoomColors.AccentGreen,
+                    modifier = Modifier.size(32.dp)
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = achievement.title,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            style = TextStyle(
+                fontFamily = PoppinsFamily,
+                fontWeight = FontWeight.Medium,
+                fontSize = 11.sp,
+                textAlign = TextAlign.Center,
+                color = textPrimary
+            )
+        )
+    }
+}
+>>>>>>> Stashed changes

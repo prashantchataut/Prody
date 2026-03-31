@@ -74,6 +74,7 @@ interface DualStreakDao {
             wisdomLastMaintainedDate = now,
             wisdomGracePeriodUsed = if (graceAvailable) false else streak.wisdomGracePeriodUsed,
             wisdomGracePeriodResetDate = if (graceAvailable) 0 else streak.wisdomGracePeriodResetDate,
+            wisdomActivityMask = streak.wisdomActivityMask or 1, // Set bit 0 (Today)
             updatedAt = now
         )
 
@@ -146,6 +147,7 @@ interface DualStreakDao {
             reflectionLastMaintainedDate = now,
             reflectionGracePeriodUsed = if (graceAvailable) false else streak.reflectionGracePeriodUsed,
             reflectionGracePeriodResetDate = if (graceAvailable) 0 else streak.reflectionGracePeriodResetDate,
+            reflectionActivityMask = streak.reflectionActivityMask or 1, // Set bit 0 (Today)
             updatedAt = now
         )
 

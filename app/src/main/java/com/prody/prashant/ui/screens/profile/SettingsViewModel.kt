@@ -50,7 +50,9 @@ data class SettingsUiState(
     // Debug: AI Proof Mode - Shows AI generation metadata in UI
     val debugAiProofMode: Boolean = false,
     // AI Configuration Status
-    val aiConfigStatus: AiConfigStatus = AiConfigStatus.READY
+    val aiConfigStatus: AiConfigStatus = AiConfigStatus.READY,
+    // Premium Intelligence
+    val premiumIntelligenceEnabled: Boolean = false
 )
 
 @HiltViewModel
@@ -160,9 +162,10 @@ class SettingsViewModel @Inject constructor(
                 val privacySettings = combine(
                     preferencesManager.privacyLockJournal,
                     preferencesManager.privacyLockFutureMessages,
-                    preferencesManager.privacyLockOnBackground
-                ) { lockJournal, lockFutureMessages, lockOnBackground ->
-                    PrivacySettings(lockJournal, lockFutureMessages, lockOnBackground)
+                    preferencesManager.privacyLockOnBackground,
+                    preferencesManager.premiumIntelligenceEnabled
+                ) { lockJournal, lockFutureMessages, lockOnBackground, intelligenceEnabled ->
+                    PrivacySettings(lockJournal, lockFutureMessages, lockOnBackground, intelligenceEnabled)
                 }
 
                 // Combine all groups into final state
@@ -195,7 +198,8 @@ class SettingsViewModel @Inject constructor(
                         debugAiProofMode = buddha2.aiProofMode,
                         privacyLockJournal = privacy.lockJournal,
                         privacyLockFutureMessages = privacy.lockFutureMessages,
-                        privacyLockOnBackground = privacy.lockOnBackground
+                        privacyLockOnBackground = privacy.lockOnBackground,
+                        premiumIntelligenceEnabled = privacy.premiumIntelligenceEnabled
                     )
                 }.collect { state ->
                     _uiState.value = state.copy(
@@ -257,7 +261,8 @@ class SettingsViewModel @Inject constructor(
     private data class PrivacySettings(
         val lockJournal: Boolean,
         val lockFutureMessages: Boolean,
-        val lockOnBackground: Boolean
+        val lockOnBackground: Boolean,
+        val premiumIntelligenceEnabled: Boolean
     )
 
     fun setThemeMode(mode: String) {
@@ -452,6 +457,16 @@ class SettingsViewModel @Inject constructor(
                 preferencesManager.setPrivacyLockOnBackground(enabled)
             } catch (e: Exception) {
                 android.util.Log.e(TAG, "Error setting privacy lock on background", e)
+            }
+        }
+    }
+
+    fun setPremiumIntelligenceEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            try {
+                preferencesManager.setPremiumIntelligenceEnabled(enabled)
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error setting premium intelligence enabled", e)
             }
         }
     }

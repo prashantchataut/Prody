@@ -128,6 +128,7 @@ data class HomeUiState(
     // Anniversary memories for today
     val anniversaryMemories: List<AnniversaryMemory> = emptyList(),
     // User context for personalization
+<<<<<<< Updated upstream
     val userArchetype: UserArchetype = UserArchetype.EXPLORER,
     val trustLevel: TrustLevel = TrustLevel.NEW,
     val isUserStruggling: Boolean = false,
@@ -135,6 +136,12 @@ data class HomeUiState(
     // ============== PERSONALIZED PATTERN (local ML) ==============
     val personalizedPatternText: String = "",
     val personalizedPatternSuggestion: String = ""
+=======
+    val isUserThriving: Boolean = false,
+    // Intelligence Insights
+    val intelligenceInsights: List<IntelligenceInsight> = emptyList(),
+    val isPremiumIntelligenceEnabled: Boolean = false
+>>>>>>> Stashed changes
 )
 
 private data class DailyContent(
@@ -476,6 +483,9 @@ class HomeViewModel @Inject constructor(
                 // Load anniversary memories
                 loadAnniversaryMemories()
 
+                // Load Premium Intelligence Insights (Opt-in)
+                loadIntelligenceInsights(context)
+
                 android.util.Log.d(TAG, "Soul Layer content loaded - Archetype: ${context.userArchetype}, Trust: ${context.trustLevel}")
 
             } catch (e: Exception) {
@@ -574,6 +584,33 @@ class HomeViewModel @Inject constructor(
             }
         } catch (e: Exception) {
             android.util.Log.e(TAG, "Error loading anniversary memories", e)
+        }
+    }
+
+    /**
+     * Load Premium Intelligence Insights if the user has opted in.
+     */
+    private suspend fun loadIntelligenceInsights(context: UserContext) {
+        try {
+            val isEnabled = preferencesManager.premiumIntelligenceEnabled.first()
+            val insights = if (isEnabled) {
+                patternAnalysisEngine.analyzePatterns(context)
+            } else {
+                emptyList()
+            }
+
+            _uiState.update { state ->
+                state.copy(
+                    intelligenceInsights = insights,
+                    isPremiumIntelligenceEnabled = isEnabled
+                )
+            }
+            
+            if (insights.isNotEmpty()) {
+                android.util.Log.d(TAG, "Detected ${insights.size} intelligence insights")
+            }
+        } catch (e: Exception) {
+            android.util.Log.e(TAG, "Error loading intelligence insights", e)
         }
     }
 

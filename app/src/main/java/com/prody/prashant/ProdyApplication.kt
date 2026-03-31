@@ -155,6 +155,20 @@ class ProdyApplication : Application(), Configuration.Provider {
     }
 
     private fun initializeApp() {
+        // Launch MCP Diagnostic Server in debug builds
+        if (BuildConfig.DEBUG) {
+            applicationScope.launch(Dispatchers.IO) {
+                try {
+                    val clazz = Class.forName("com.prody.prashant.debug.mcp.ProdyMcpServer")
+                    val instance = clazz.getField("INSTANCE").get(null)
+                    val method = clazz.getMethod("start", Context::class.java)
+                    method.invoke(instance, this@ProdyApplication)
+                } catch (e: Exception) {
+                    Log.w(TAG, "MCP Server not found or failed to start (expected in release): ${e.message}")
+                }
+            }
+        }
+
         // Launch on a background thread to avoid blocking startup
         applicationScope.launch {
             try {

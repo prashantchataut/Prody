@@ -246,6 +246,9 @@ class PreferencesManager @Inject constructor(
         // Temporal content
         val LAST_TEMPORAL_GREETING_DATE = longPreferencesKey("last_temporal_greeting_date")
         val LAST_TEMPORAL_PROMPT_DATE = longPreferencesKey("last_temporal_prompt_date")
+
+        // Premium Intelligence (Opt-in local analysis)
+        val PREMIUM_INTELLIGENCE_ENABLED = booleanPreferencesKey("premium_intelligence_enabled")
     }
 
     // Onboarding - Critical path, requires synchronous access
@@ -796,6 +799,22 @@ class PreferencesManager @Inject constructor(
             if (enabled) {
                 preferences[PreferencesKeys.QUIET_MODE_ENABLED_AT] = System.currentTimeMillis()
             }
+        }
+    }
+
+    // Premium Intelligence
+    val premiumIntelligenceEnabled: Flow<Boolean> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.PREMIUM_INTELLIGENCE_ENABLED] ?: false
+        }
+
+    suspend fun setPremiumIntelligenceEnabled(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.PREMIUM_INTELLIGENCE_ENABLED] = enabled
         }
     }
 

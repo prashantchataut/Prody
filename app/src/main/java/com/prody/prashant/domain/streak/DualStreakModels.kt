@@ -50,7 +50,8 @@ sealed class StreakResult {
  */
 data class DualStreakStatus(
     val wisdomStreak: StreakInfo,
-    val reflectionStreak: StreakInfo
+    val reflectionStreak: StreakInfo,
+    val overallConsistencyScore: Int = 0 // Rolling 30-day average
 ) {
     companion object {
         fun empty(): DualStreakStatus {
@@ -73,7 +74,8 @@ data class StreakInfo(
     val maintainedToday: Boolean,
     val gracePeriodAvailable: Boolean,
     val daysUntilGracePeriodReset: Int,
-    val isAtRisk: Boolean // True if streak will break tomorrow without action
+    val isAtRisk: Boolean, // True if streak will break tomorrow without action
+    val consistencyScore: Int = 0 // Rolling 30-day average for this specific type
 ) {
     companion object {
         fun empty(type: StreakType): StreakInfo {

@@ -230,6 +230,34 @@ class DualStreakManager @Inject constructor(
         }
     }
 
+    /**
+     * Shifts activity masks based on elapsed days since last update.
+     */
+    private suspend fun refreshActivityMask(entity: DualStreakEntity): DualStreakEntity {
+        val now = System.currentTimeMillis()
+        val lastUpdateDay = java.time.Instant.ofEpochMilli(entity.updatedAt)
+            .atZone(java.time.ZoneId.systemDefault())
+            .toLocalDate()
+        val today = java.time.LocalDate.now()
+        
+        val daysElapsed = java.time.temporal.ChronoUnit.DAYS.between(lastUpdateDay, today).toInt()
+        
+        if (daysElapsed <= 0) return entity
+        
+        // Shift bits: Bit 0 = Today, Bit 1 = Yesterday
+        val shiftedWisdom = (entity.wisdomActivityMask shl daysElapsed)
+        val shiftedReflection = (entity.reflectionActivityMask shl daysElapsed)
+        
+        val updated = entity.copy(
+            wisdomActivityMask = shiftedWisdom,
+            reflectionActivityMask = shiftedReflection,
+            updatedAt = now
+        )
+        
+        dualStreakDao.insertOrUpdate(updated)
+        return updated
+    }
+
     // ============== STATUS QUERIES ==============
 
     /**
@@ -237,7 +265,8 @@ class DualStreakManager @Inject constructor(
      */
     fun getDualStreakStatusFlow(userId: String = "local"): Flow<DualStreakStatus> {
         return dualStreakDao.getDualStreakFlow(userId).map { entity ->
-            entity?.toDualStreakStatus() ?: DualStreakStatus.empty()
+            val refreshed = entity?.let { refreshActivityMask(it) }
+            refreshed?.toDualStreakStatus() ?: DualStreakStatus.empty()
         }
     }
 
@@ -246,7 +275,8 @@ class DualStreakManager @Inject constructor(
      */
     suspend fun getDualStreakStatus(userId: String = "local"): DualStreakStatus {
         val entity = dualStreakDao.getDualStreak(userId)
-        return entity?.toDualStreakStatus() ?: DualStreakStatus.empty()
+        val refreshed = entity?.let { refreshActivityMask(it) }
+        return refreshed?.toDualStreakStatus() ?: DualStreakStatus.empty()
     }
 
     /**
@@ -288,6 +318,10 @@ class DualStreakManager @Inject constructor(
         val wisdomAtRisk = wisdomLastDate?.isBefore(yesterday) ?: (wisdomStreakCurrent > 0)
         val reflectionAtRisk = reflectionLastDate?.isBefore(yesterday) ?: (reflectionStreakCurrent > 0)
 
+        val wisdomScore = calculateConsistencyScore(wisdomActivityMask)
+        val reflectionScore = calculateConsistencyScore(reflectionActivityMask)
+        val overallScore = ((wisdomScore + reflectionScore) / 2)
+
         return DualStreakStatus(
             wisdomStreak = StreakInfo(
                 type = StreakType.WISDOM,
@@ -297,7 +331,8 @@ class DualStreakManager @Inject constructor(
                 maintainedToday = isWisdomMaintainedToday(),
                 gracePeriodAvailable = DualStreakEntity.isWisdomGraceAvailable(this),
                 daysUntilGracePeriodReset = DualStreakEntity.daysUntilWisdomGraceReset(this),
-                isAtRisk = wisdomAtRisk && wisdomStreakCurrent > 0
+                isAtRisk = wisdomAtRisk && wisdomStreakCurrent > 0,
+                consistencyScore = wisdomScore
             ),
             reflectionStreak = StreakInfo(
                 type = StreakType.REFLECTION,
@@ -307,9 +342,16 @@ class DualStreakManager @Inject constructor(
                 maintainedToday = isReflectionMaintainedToday(),
                 gracePeriodAvailable = DualStreakEntity.isReflectionGraceAvailable(this),
                 daysUntilGracePeriodReset = DualStreakEntity.daysUntilReflectionGraceReset(this),
-                isAtRisk = reflectionAtRisk && reflectionStreakCurrent > 0
-            )
+                isAtRisk = reflectionAtRisk && reflectionStreakCurrent > 0,
+                consistencyScore = reflectionScore
+            ),
+            overallConsistencyScore = overallScore
         )
+    }
+
+    private fun calculateConsistencyScore(mask: Int): Int {
+        val activeDays = java.lang.Integer.bitCount(mask)
+        return (activeDays / 30.0 * 100).toInt().coerceAtMost(100)
     }
 
     /**

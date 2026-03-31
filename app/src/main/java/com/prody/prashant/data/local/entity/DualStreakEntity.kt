@@ -67,6 +67,11 @@ data class DualStreakEntity(
     val reflectionGracePeriodUsedDate: Long = 0, // When the grace was used
     val reflectionGracePeriodResetDate: Long = 0, // When grace becomes available again (14 days after use)
 
+    // ============== ACTIVITY MASKS (Rolling 30 days) ==============
+    // Each bit represents a day: Bit 0 = Today, Bit 1 = Yesterday
+    val wisdomActivityMask: Int = 0,
+    val reflectionActivityMask: Int = 0,
+
     // ============== METADATA ==============
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()

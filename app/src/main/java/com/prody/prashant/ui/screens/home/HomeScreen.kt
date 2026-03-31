@@ -156,12 +156,22 @@ fun HomeScreen(
             )
         }
 
+<<<<<<< Updated upstream
         // Personalized Pattern Card (opt-in, only shown when data exists)
         if (uiState.personalizedPatternText.isNotEmpty()) {
             item {
                 PersonalizedPatternCard(
                     patternText = uiState.personalizedPatternText,
                     patternSuggestion = uiState.personalizedPatternSuggestion
+=======
+        // Premium Intelligence Insights (Opt-in)
+        if (uiState.isPremiumIntelligenceEnabled && uiState.intelligenceInsights.isNotEmpty()) {
+            item {
+                Spacer(modifier = Modifier.height(24.dp))
+                IntelligenceInsightCard(
+                    insight = uiState.intelligenceInsights.first(),
+                    onActionClick = {}
+>>>>>>> Stashed changes
                 )
             }
         }
@@ -873,6 +883,7 @@ fun RecentActivitySection(
         }
     }
 }
+<<<<<<< Updated upstream
 
 // =============================================================================
 // PERSONALIZED PATTERN CARD (opt-in, local ML)
@@ -882,10 +893,17 @@ fun RecentActivitySection(
 private fun PersonalizedPatternCard(
     patternText: String,
     patternSuggestion: String
+=======
+@Composable
+fun IntelligenceInsightCard(
+    insight: IntelligenceInsight,
+    onActionClick: () -> Unit
+>>>>>>> Stashed changes
 ) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
+<<<<<<< Updated upstream
             .padding(horizontal = 24.dp, vertical = 8.dp),
         shape = RoundedCornerShape(16.dp),
         color = ProdySurfaceLight,
@@ -935,6 +953,98 @@ private fun PersonalizedPatternCard(
                         lineHeight = 18.sp
                     )
                 )
+=======
+            .padding(horizontal = 24.dp),
+        shape = RoundedCornerShape(24.dp),
+        color = ProdySurfaceLight,
+        shadowElevation = 8.dp
+    ) {
+        Column(
+            modifier = Modifier
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            ProdyForestGreen.copy(alpha = 0.05f),
+                            Color.Transparent
+                        )
+                    )
+                )
+                .padding(24.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(ProdyForestGreen.copy(alpha = 0.1f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.AutoAwesome,
+                        contentDescription = null,
+                        tint = ProdyForestGreen,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+                
+                Column {
+                    Text(
+                        text = "Identity Insight",
+                        style = TextStyle(
+                            fontFamily = PoppinsFamily,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 12.sp,
+                            color = ProdyForestGreen
+                        )
+                    )
+                    Text(
+                        text = insight.title,
+                        style = TextStyle(
+                            fontFamily = PoppinsFamily,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp,
+                            color = ProdyTextPrimaryLight
+                        )
+                    )
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            Text(
+                text = insight.description,
+                style = TextStyle(
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Normal,
+                    fontSize = 15.sp,
+                    lineHeight = 22.sp,
+                    color = ProdyTextSecondaryLight
+                )
+            )
+            
+            if (insight.actionable != null) {
+                Spacer(modifier = Modifier.height(20.dp))
+                
+                androidx.compose.material3.Button(
+                    onClick = onActionClick,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = ProdyForestGreen,
+                        contentColor = Color.White
+                    ),
+                    contentPadding = PaddingValues(vertical = 12.dp)
+                ) {
+                    Text(
+                        text = insight.actionable!!,
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+>>>>>>> Stashed changes
             }
         }
     }

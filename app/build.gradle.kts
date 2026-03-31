@@ -251,4 +251,10 @@ dependencies {
 
     // Gson
     implementation(libs.gson)
+
+    // MCP Diagnostic Server (Debug only)
+    debugImplementation(libs.mcp.kotlin.sdk)
+    debugImplementation(libs.ktor.server.core)
+    debugImplementation(libs.ktor.server.cio)
+    debugImplementation(libs.ktor.server.sse)
 }

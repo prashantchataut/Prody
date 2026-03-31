@@ -189,6 +189,30 @@ fun SettingsScreen(
                 }
             }
 
+            // INTELLIGENCE Section (Opt-in)
+            AnimatedVisibility(
+                visible = isVisible,
+                enter = fadeIn(tween(400, delayMillis = 50)) + slideInVertically(
+                    initialOffsetY = { it / 4 },
+                    animationSpec = tween(400, delayMillis = 50, easing = EaseOutCubic)
+                )
+            ) {
+                SettingsSection(
+                    title = "INTELLIGENCE",
+                    isDark = isDark
+                ) {
+                    // Premium Intelligence Row
+                    SettingsRowWithToggle(
+                        icon = Icons.Default.AutoAwesome,
+                        title = "Premium Intelligence",
+                        subtitle = "Enable local, private analysis of your journaling patterns for deeper insights.",
+                        checked = uiState.premiumIntelligenceEnabled,
+                        onCheckedChange = { viewModel.setPremiumIntelligenceEnabled(it) },
+                        isDark = isDark
+                    )
+                }
+            }
+
             // NOTIFICATIONS Section
             AnimatedVisibility(
                 visible = isVisible,
