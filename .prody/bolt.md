@@ -21,3 +21,13 @@ This journal contains CRITICAL performance learnings specific to the Prody codeb
 **Context:** `ProgressIndicators.kt` and `OnboardingScreen.kt`.
 **Learning:** Using a `Row` of multiple `Box` composables for page indicators creates unnecessary layout nodes and triggers expensive layout passes during page swipes as dot widths animate. A single `Canvas` drawing all dots based on an animated float index is significantly more performant and smoother.
 **Action:** Prefer `Canvas`-based drawing for multi-state UI indicators like page dots or segmented progress bars to maintain 60fps during complex interactions.
+
+## 2024-05-25 - Performance Gains from Lambda-Based State Reads
+**Context:** `MainActivity.kt`, `MagicalEffects.kt`, `HomeScreen.kt`.
+**Learning:** Using `graphicsLayer { alpha = state.value }` instead of `alpha = state.value` directly on the Modifier chain defers state reads to the drawing phase. This is critical for high-frequency animations (like pulsing or breathing effects) because it completely skips the recomposition and layout phases, resulting in significant CPU/GPU savings and smoother frame rates.
+**Action:** Always prefer lambda-based `graphicsLayer` or `drawBehind` for state-driven animations to maintain 60fps and prevent parent recomposition.
+
+## 2024-05-25 - Resolving Placeholder Gaps for User Trust
+**Context:** `HomeScreen.kt` and `HomeViewModel.kt` merge conflicts.
+**Learning:** Stale merge conflicts or "placeholder gaps" where advanced logic exists in ViewModels but is not wired to the UI (e.g., Intelligence Insights) can make an app feel "broken" or "incomplete" to users.
+**Action:** Ensure all UI state fields, especially those related to premium or AI-driven features like `intelligenceInsights` and `personalizedPatternText`, are correctly mapped and rendered in the final UI to maximize the functional surface area.
