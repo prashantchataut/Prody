@@ -126,7 +126,6 @@ private object IdentityRoomColors {
     val RarityLegendary = com.prody.prashant.ui.theme.RarityLegendary
 }
 
-@Composable
 fun ProfileScreen(
     onNavigateToSettings: () -> Unit,
     onNavigateToEditProfile: () -> Unit,
@@ -148,7 +147,7 @@ fun ProfileScreen(
     val dividerColor = MaterialTheme.colorScheme.outlineVariant
 
     // Soul Layer Context for Identity Card
-    val context = uiState.userContext
+
 
     // Entry animation
     var isVisible by remember { mutableStateOf(false) }
@@ -162,7 +161,69 @@ fun ProfileScreen(
             .fillMaxSize()
             .background(backgroundColor)
     ) {
-@Composable
+
+        HorizontalDivider(
+            modifier = Modifier.align(Alignment.TopCenter).statusBarsPadding().padding(top = 72.dp),
+            color = textPrimary.copy(alpha = 0.05f)
+        )
+
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(bottom = 100.dp)
+        ) {
+            item {
+                PremiumHeader(
+                    title = "Identity",
+                    subtitle = "Soul Layer",
+                    onSettingsClick = onNavigateToSettings
+                )
+            }
+        }
+    }
+}
+
+private fun PremiumHeader(
+    title: String,
+    subtitle: String,
+    onSettingsClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .statusBarsPadding()
+            .padding(horizontal = 24.dp, vertical = 16.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column {
+            Text(title, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+            Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        IconButton(onClick = onSettingsClick) {
+            Icon(Icons.Default.Settings, contentDescription = "Settings")
+        }
+    }
+}
+
+fun AchievementShelf(
+    unlockedCount: Int,
+    totalCount: Int,
+    achievements: List<AchievementEntity>,
+    onViewAllClick: () -> Unit,
+    isDarkMode: Boolean
+) {
+    Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp)) {
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(end = 24.dp)
+        ) {
+            items(achievements) { achievement ->
+                AchievementBadge(achievement = achievement, isDarkMode = isDarkMode)
+            }
+        }
+    }
+}
+
 fun AchievementBadge(
     achievement: AchievementEntity,
     isDarkMode: Boolean
@@ -191,7 +252,7 @@ fun AchievementBadge(
         }
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = achievement.title,
+            text = achievement.name,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             style = TextStyle(
@@ -205,96 +266,7 @@ fun AchievementBadge(
     }
 }
 
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(bottom = 100.dp)
-        ) {
-            item {
-                PremiumHeader(
-                    title = "Identity",
-                    subtitle = "Soul Layer",
-                    onBackClick = null,
-                    actions = {}
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun PremiumHeader(
-    title: String,
-    subtitle: String,
-    onBackClick: (() -> Unit)?,
-    actions: @Composable RowScope.() -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .statusBarsPadding()
-            .padding(horizontal = 24.dp, vertical = 16.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column {
-            Text(title, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-            Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
-    }
-}
-
-@Composable
-fun AchievementBadge(
-    achievement: AchievementEntity,
-    isDarkMode: Boolean
-) {
-    val cardBg = if (isDarkMode) IdentityRoomColors.CardBackgroundElevatedDark else IdentityRoomColors.CardBackgroundElevatedLight
-    val textPrimary = if (isDarkMode) IdentityRoomColors.TextPrimaryDark else IdentityRoomColors.TextPrimaryLight
-
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.width(80.dp)
-    ) {
-        Surface(
-            modifier = Modifier.size(64.dp),
-            shape = RoundedCornerShape(16.dp),
-            color = cardBg,
-            border = BorderStroke(1.dp, textPrimary.copy(alpha = 0.05f))
-        ) {
-            Box(contentAlignment = Alignment.Center) {
-                Icon(
-                    imageVector = Icons.Default.EmojiEvents,
-                    contentDescription = null,
-                    tint = IdentityRoomColors.AccentGreen,
-                    modifier = Modifier.size(32.dp)
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun AchievementShelf(
-    unlockedCount: Int,
-    totalCount: Int,
-    achievements: List<AchievementEntity>,
-    onViewAllClick: () -> Unit,
-    isDarkMode: Boolean
-) {
-    Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp)) {
-        LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(end = 24.dp)
-        ) {
-            items(achievements) { achievement ->
-                AchievementBadge(achievement = achievement, isDarkMode = isDarkMode)
-            }
-        }
-    }
-}
-
 data class ProfileScreenState(val uiState: ProfileUiState)
-@Composable
 fun rememberProfileScreenState(uiState: ProfileUiState) = remember(uiState) { ProfileScreenState(uiState) }
 
 private fun formatCompactNumber(number: Int): String = number.toString()
