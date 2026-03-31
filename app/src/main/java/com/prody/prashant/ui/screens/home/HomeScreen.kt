@@ -148,12 +148,22 @@ fun HomeScreen(
             )
         }
 
-        // Overview Section (Streak & Badges)
+        // Overview Section (Consistency & Badges)
         item {
             OverviewSection(
                 streakDays = uiState.currentStreak,
                 badges = badges
             )
+        }
+
+        // Personalized Pattern Card (opt-in, only shown when data exists)
+        if (uiState.personalizedPatternText.isNotEmpty()) {
+            item {
+                PersonalizedPatternCard(
+                    patternText = uiState.personalizedPatternText,
+                    patternSuggestion = uiState.personalizedPatternSuggestion
+                )
+            }
         }
 
         // Mood Trend Chart - only show if there's real data
@@ -173,7 +183,7 @@ fun HomeScreen(
                 mindfulMinutes = uiState.daysActiveThisWeek * 15 // Approximate based on active days
             )
         }
-        
+
         // Quick Actions (Navigation)
         item {
             QuickActionsGrid(
@@ -197,7 +207,7 @@ fun HomeScreen(
                 onDailyRitualClick = onNavigateToDailyRitual
             )
         }
-        
+
         // Recent Activity - show today's journal status
         item {
             RecentActivitySection(
@@ -298,7 +308,7 @@ fun OverviewSection(
             modifier = Modifier.weight(1f),
             shape = RoundedCornerShape(16.dp),
             color = ProdySurfaceLight,
-            shadowElevation = 4.dp
+            shadowElevation = 1.dp
         ) {
             Column(
                 modifier = Modifier.padding(16.dp),
@@ -314,7 +324,7 @@ fun OverviewSection(
                     )
                 )
                 Text(
-                    text = "Day Streak",
+                    text = "Consistency Score",
                     style = TextStyle(
                         fontFamily = PoppinsFamily,
                         fontWeight = FontWeight.Medium,
@@ -330,7 +340,7 @@ fun OverviewSection(
             modifier = Modifier.weight(1f),
             shape = RoundedCornerShape(16.dp),
             color = ProdySurfaceLight,
-            shadowElevation = 4.dp
+            shadowElevation = 1.dp
         ) {
             Column(
                 modifier = Modifier.padding(16.dp),
@@ -345,7 +355,7 @@ fun OverviewSection(
                 }
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    text = "Achievements",
+                    text = "Points to Grow",
                     style = TextStyle(
                         fontFamily = PoppinsFamily,
                         fontWeight = FontWeight.Medium,
@@ -405,7 +415,7 @@ fun MoodTrendSection(moodData: List<Float>) {
                 .height(200.dp),
             shape = RoundedCornerShape(16.dp),
             color = ProdySurfaceLight,
-            shadowElevation = 4.dp
+            shadowElevation = 1.dp
         ) {
             MoodChart(data = moodData, modifier = Modifier.padding(24.dp))
         }
@@ -811,7 +821,7 @@ fun RecentActivitySection(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
             color = ProdySurfaceLight,
-            shadowElevation = 2.dp
+            shadowElevation = 1.dp
         ) {
             Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                 Box(
@@ -859,6 +869,72 @@ fun RecentActivitySection(
                         )
                     }
                 }
+            }
+        }
+    }
+}
+
+// =============================================================================
+// PERSONALIZED PATTERN CARD (opt-in, local ML)
+// =============================================================================
+
+@Composable
+private fun PersonalizedPatternCard(
+    patternText: String,
+    patternSuggestion: String
+) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp, vertical = 8.dp),
+        shape = RoundedCornerShape(16.dp),
+        color = ProdySurfaceLight,
+        shadowElevation = 2.dp
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Icon(
+                    imageVector = ProdyIcons.Lightbulb,
+                    contentDescription = null,
+                    tint = ProdyWarmAmber,
+                    modifier = Modifier.size(20.dp)
+                )
+                Text(
+                    text = "Your Pattern",
+                    style = TextStyle(
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 14.sp,
+                        color = ProdyTextPrimaryLight
+                    )
+                )
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = patternText,
+                style = TextStyle(
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Normal,
+                    fontSize = 14.sp,
+                    color = ProdyTextPrimaryLight,
+                    lineHeight = 20.sp
+                )
+            )
+            if (patternSuggestion.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = patternSuggestion,
+                    style = TextStyle(
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.Normal,
+                        fontSize = 13.sp,
+                        color = ProdyTextSecondaryLight,
+                        lineHeight = 18.sp
+                    )
+                )
             }
         }
     }

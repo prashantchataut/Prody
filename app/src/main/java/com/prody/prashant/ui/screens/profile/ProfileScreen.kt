@@ -159,20 +159,6 @@ fun ProfileScreen(
             .fillMaxSize()
             .background(backgroundColor)
     ) {
-        // Magical ambient background for immersive profile experience
-        AmbientBackground(
-            modifier = Modifier.fillMaxSize(),
-            timeOfDay = getCurrentTimeOfDay(),
-            intensity = 0.1f
-        )
-
-        // Premium floating particles celebrating achievements
-        FloatingParticles(
-            modifier = Modifier.fillMaxSize(),
-            particleCount = 12,
-            particleColor = IdentityRoomColors.AccentGreen.copy(alpha = 0.25f)
-        )
-
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(bottom = 100.dp)
@@ -201,7 +187,7 @@ fun ProfileScreen(
                 )
             }
 
-            // Growth Garden Section (replaces boring bar charts with organic tree visualization)
+            // Growth Journey Card - The heart of the profile
             item {
                 AnimatedVisibility(
                     visible = isVisible,
@@ -210,17 +196,22 @@ fun ProfileScreen(
                         animationSpec = tween(400, delayMillis = 200, easing = EaseOutCubic)
                     )
                 ) {
-                    GrowthGarden(
-                        journalEntries = uiState.journalEntries,
+                    GrowthJourneyCard(
                         currentStreak = uiState.currentStreak,
-                        longestStreak = uiState.longestStreak,
-                        missedDays = 0, // Could be calculated from streak history
-                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
+                        dominantTheme = uiState.weeklyPattern?.keyPattern,
+                        todayLearning = uiState.weeklyPattern?.suggestion,
+                        totalPoints = uiState.totalPoints,
+                        surfaceColor = surfaceColor,
+                        textPrimary = textPrimary,
+                        textSecondary = textSecondary,
+                        textTertiary = textTertiary,
+                        accentColor = accentColor,
+                        isDarkMode = isDarkMode
                     )
                 }
             }
 
-            // Player Skills Section (Gamification 3.0)
+            // Consistency Score Ring
             item {
                 AnimatedVisibility(
                     visible = isVisible,
@@ -229,15 +220,16 @@ fun ProfileScreen(
                         animationSpec = tween(400, delayMillis = 225, easing = EaseOutCubic)
                     )
                 ) {
-                    PlayerSkillsCard(
-                        clarityXp = uiState.clarityXp,
-                        disciplineXp = uiState.disciplineXp,
-                        courageXp = uiState.courageXp,
-                        dailyClarityXp = uiState.dailyClarityXp,
-                        dailyDisciplineXp = uiState.dailyDisciplineXp,
-                        dailyCourageXp = uiState.dailyCourageXp,
-                        showDailyCaps = true,
-                        modifier = Modifier.padding(horizontal = 16.dp)
+                    ConsistencyScoreCard(
+                        currentStreak = uiState.currentStreak,
+                        longestStreak = uiState.longestStreak,
+                        journalEntries = uiState.journalEntries,
+                        daysOnPrody = uiState.daysOnPrody,
+                        surfaceColor = surfaceColor,
+                        textPrimary = textPrimary,
+                        textSecondary = textSecondary,
+                        textTertiary = textTertiary,
+                        accentColor = accentColor
                     )
                 }
             }
@@ -352,7 +344,7 @@ private fun PremiumProfileHeader(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = "Identity Room",
+            text = "Profile",
             fontFamily = PoppinsFamily,
             fontWeight = FontWeight.Bold,
             fontSize = 26.sp,
@@ -734,7 +726,7 @@ internal fun PremiumKeyMetricsRow(
             modifier = Modifier.weight(1f)
         )
         PremiumMetricCard(
-            label = "Streak",
+            label = "Consistency",
             value = streak.toString(),
             icon = ProdyIcons.LocalFireDepartment,
             iconColor = Color(0xFFE65C2C), // Fire orange
@@ -990,7 +982,7 @@ private fun PremiumStoryOfGrowthSection(
                 )
                 PremiumMiniStat(
                     value = longestStreak.toString(),
-                    label = "Best Streak",
+                    label = "Best Consistency",
                     textPrimary = textPrimary,
                     textTertiary = textTertiary
                 )
@@ -1235,7 +1227,7 @@ private fun PremiumTrophyRoomHeader(
                 modifier = Modifier.size(26.dp)
             )
             Text(
-                text = "Trophy Room",
+                text = "Pinned Badges",
                 fontFamily = PoppinsFamily,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 20.sp,
@@ -1618,5 +1610,276 @@ private fun getLevelThreshold(level: Int): Int {
         9 -> 7500
         10 -> 10000
         else -> 15000
+    }
+}
+
+// ============================================================================
+// GROWTH JOURNEY CARD
+// ============================================================================
+
+@Composable
+private fun GrowthJourneyCard(
+    currentStreak: Int,
+    dominantTheme: String?,
+    todayLearning: String?,
+    totalPoints: Int,
+    surfaceColor: Color,
+    textPrimary: Color,
+    textSecondary: Color,
+    textTertiary: Color,
+    accentColor: Color,
+    isDarkMode: Boolean
+) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp, vertical = 8.dp),
+        shape = RoundedCornerShape(16.dp),
+        color = surfaceColor
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Icon(
+                    imageVector = ProdyIcons.TrendingUp,
+                    contentDescription = null,
+                    tint = accentColor,
+                    modifier = Modifier.size(22.dp)
+                )
+                Text(
+                    text = "The Growth Journey",
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 18.sp,
+                    color = textPrimary
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Most Common Theme
+            GrowthJourneyRow(
+                label = "Your focus this week",
+                value = dominantTheme?.replaceFirstChar { it.uppercase() } ?: "Start journaling to discover",
+                textSecondary = textSecondary,
+                textPrimary = textPrimary
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Consistency narrative
+            GrowthJourneyRow(
+                label = "Consistency",
+                value = when {
+                    currentStreak >= 30 -> "$currentStreak days of unwavering commitment"
+                    currentStreak >= 7 -> "$currentStreak days of consistent journaling"
+                    currentStreak >= 3 -> "$currentStreak days and building momentum"
+                    currentStreak == 1 -> "Today is day one. Every journey starts here"
+                    else -> "Ready to begin your streak"
+                },
+                textSecondary = textSecondary,
+                textPrimary = textPrimary
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // What you've learned
+            GrowthJourneyRow(
+                label = "Today's insight",
+                value = todayLearning ?: "Journal today to unlock your insight",
+                textSecondary = textSecondary,
+                textPrimary = textPrimary
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Points to Grow
+            GrowthJourneyRow(
+                label = "Points to Grow",
+                value = formatCompactNumber(totalPoints),
+                textSecondary = textSecondary,
+                textPrimary = textPrimary
+            )
+        }
+    }
+}
+
+@Composable
+private fun GrowthJourneyRow(
+    label: String,
+    value: String,
+    textSecondary: Color,
+    textPrimary: Color
+) {
+    Column {
+        Text(
+            text = label,
+            fontFamily = PoppinsFamily,
+            fontWeight = FontWeight.Medium,
+            fontSize = 12.sp,
+            color = textSecondary
+        )
+        Text(
+            text = value,
+            fontFamily = PoppinsFamily,
+            fontWeight = FontWeight.Normal,
+            fontSize = 14.sp,
+            color = textPrimary,
+            lineHeight = 20.sp
+        )
+    }
+}
+
+// ============================================================================
+// CONSISTENCY SCORE CARD
+// ============================================================================
+
+@Composable
+private fun ConsistencyScoreCard(
+    currentStreak: Int,
+    longestStreak: Int,
+    journalEntries: Int,
+    daysOnPrody: Int,
+    surfaceColor: Color,
+    textPrimary: Color,
+    textSecondary: Color,
+    textTertiary: Color,
+    accentColor: Color
+) {
+    val consistencyRatio = if (daysOnPrody > 0) {
+        (journalEntries.toFloat() / daysOnPrody).coerceIn(0f, 1f)
+    } else 0f
+
+    val streakProgress = if (longestStreak > 0) {
+        (currentStreak.toFloat() / longestStreak).coerceIn(0f, 1f)
+    } else if (currentStreak > 0) 1f else 0f
+
+    val animatedProgress by animateFloatAsState(
+        targetValue = streakProgress,
+        animationSpec = tween(durationMillis = 1000, easing = EaseInOutCubic),
+        label = "consistency_progress"
+    )
+
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp, vertical = 8.dp),
+        shape = RoundedCornerShape(16.dp),
+        color = surfaceColor
+    ) {
+        Row(
+            modifier = Modifier.padding(20.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(20.dp)
+        ) {
+            // Consistency ring
+            Box(
+                modifier = Modifier.size(80.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Canvas(modifier = Modifier.fillMaxSize()) {
+                    val strokeWidth = 8.dp.toPx()
+                    val radius = (size.minDimension - strokeWidth) / 2
+
+                    // Track
+                    drawCircle(
+                        color = accentColor.copy(alpha = 0.15f),
+                        radius = radius,
+                        style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
+                    )
+
+                    // Progress arc
+                    drawArc(
+                        color = accentColor,
+                        startAngle = -90f,
+                        sweepAngle = 360f * animatedProgress,
+                        useCenter = false,
+                        style = Stroke(width = strokeWidth, cap = StrokeCap.Round),
+                        topLeft = Offset(
+                            (size.width - 2 * radius) / 2,
+                            (size.height - 2 * radius) / 2
+                        ),
+                        size = Size(2 * radius, 2 * radius)
+                    )
+                }
+
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = "${(streakProgress * 100).toInt()}%",
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
+                        color = textPrimary
+                    )
+                }
+            }
+
+            // Stats
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = "Consistency Score",
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 16.sp,
+                    color = textPrimary
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = when {
+                        currentStreak >= longestStreak && currentStreak > 0 -> "Personal best! Keep going"
+                        streakProgress >= 0.8f -> "Almost at your best"
+                        streakProgress >= 0.5f -> "Solid progress this period"
+                        currentStreak > 0 -> "Building your rhythm"
+                        else -> "Start today to build your score"
+                    },
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.Normal,
+                    fontSize = 13.sp,
+                    color = textSecondary,
+                    lineHeight = 18.sp
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Column {
+                        Text(
+                            text = "Current",
+                            fontFamily = PoppinsFamily,
+                            fontSize = 11.sp,
+                            color = textTertiary
+                        )
+                        Text(
+                            text = "$currentStreak days",
+                            fontFamily = PoppinsFamily,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 13.sp,
+                            color = textPrimary
+                        )
+                    }
+                    Column {
+                        Text(
+                            text = "Best",
+                            fontFamily = PoppinsFamily,
+                            fontSize = 11.sp,
+                            color = textTertiary
+                        )
+                        Text(
+                            text = "$longestStreak days",
+                            fontFamily = PoppinsFamily,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 13.sp,
+                            color = textPrimary
+                        )
+                    }
+                }
+            }
+        }
     }
 }

@@ -131,7 +131,10 @@ data class HomeUiState(
     val userArchetype: UserArchetype = UserArchetype.EXPLORER,
     val trustLevel: TrustLevel = TrustLevel.NEW,
     val isUserStruggling: Boolean = false,
-    val isUserThriving: Boolean = false
+    val isUserThriving: Boolean = false,
+    // ============== PERSONALIZED PATTERN (local ML) ==============
+    val personalizedPatternText: String = "",
+    val personalizedPatternSuggestion: String = ""
 )
 
 private data class DailyContent(
@@ -155,7 +158,8 @@ class HomeViewModel @Inject constructor(
     private val activeProgressService: ActiveProgressService,
     private val seedBloomService: SeedBloomService,
     private val dualStreakManager: DualStreakManager,
-    private val soulLayerRepository: SoulLayerRepository
+    private val soulLayerRepository: SoulLayerRepository,
+    private val patternAnalysisEngine: PatternAnalysisEngine
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -171,6 +175,7 @@ class HomeViewModel @Inject constructor(
 
     init {
         loadInitialData()
+        loadPersonalizedPattern()
     }
 
     /**
@@ -895,5 +900,28 @@ class HomeViewModel @Inject constructor(
     fun retry() {
         _uiState.update { it.copy(isLoading = true) }
         loadInitialData()
+        loadPersonalizedPattern()
+    }
+
+    /**
+     * Load personalized pattern from the local PatternAnalysisEngine.
+     * Only shows data when the user has opted in via Settings and has enough entries.
+     */
+    private fun loadPersonalizedPattern() {
+        viewModelScope.launch {
+            try {
+                val topPattern = patternAnalysisEngine.getTopPatternForHome()
+                if (topPattern != null) {
+                    _uiState.update {
+                        it.copy(
+                            personalizedPatternText = "You've been writing about '${topPattern.theme}' ${topPattern.occurrenceCount} times ${topPattern.timespan}",
+                            personalizedPatternSuggestion = topPattern.suggestion
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error loading personalized pattern", e)
+            }
+        }
     }
 }

@@ -264,6 +264,7 @@ fun NewJournalEntryScreen(
         if (uiState.showSessionResult && uiState.sessionResult != null) {
             SessionResultCard(
                 sessionResult = uiState.sessionResult!!,
+                patternContext = uiState.patternContext,
                 onDismiss = {
                     viewModel.dismissSessionResult()
                     onEntrySaved()
