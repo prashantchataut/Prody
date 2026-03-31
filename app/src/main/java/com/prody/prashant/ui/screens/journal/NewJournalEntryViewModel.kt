@@ -13,6 +13,7 @@ import com.prody.prashant.data.local.dao.UserDao
 import com.prody.prashant.data.local.entity.JournalEntryEntity
 import com.prody.prashant.data.local.preferences.PreferencesManager
 import com.prody.prashant.domain.gamification.GameSessionManager
+import com.prody.prashant.domain.intelligence.PatternAnalysisEngine
 import com.prody.prashant.domain.gamification.SessionResult
 import com.prody.prashant.domain.model.Mood
 import com.prody.prashant.ui.theme.JournalTemplate
@@ -80,7 +81,9 @@ data class NewJournalEntryUiState(
     val transcriptionAvailable: Boolean = true,
     // Transcription choice UI
     val showTranscriptionChoice: Boolean = false,
-    val pendingTranscriptionUri: String? = null
+    val pendingTranscriptionUri: String? = null,
+    // Personalized pattern context (shown during save if pattern detected)
+    val patternContext: String? = null
 ) {
     // Check if there are any unsaved changes
     val hasContent: Boolean
@@ -99,7 +102,8 @@ class NewJournalEntryViewModel @Inject constructor(
     private val gameSessionManager: GameSessionManager,
     private val buddhaAiRepository: BuddhaAiRepository,
     private val audioRecorderManager: AudioRecorderManager,
-    private val voiceTranscriptionService: VoiceTranscriptionService
+    private val voiceTranscriptionService: VoiceTranscriptionService,
+    private val patternAnalysisEngine: PatternAnalysisEngine
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(NewJournalEntryUiState())
@@ -330,6 +334,18 @@ class NewJournalEntryViewModel @Inject constructor(
 
                 // Trigger non-blocking insight generation after save
                 generateJournalInsight(entryId, state)
+
+                // Show personalized pattern context if available (non-blocking)
+                viewModelScope.launch {
+                    try {
+                        val context = patternAnalysisEngine.getPatternContextForJournal(state.content)
+                        if (context != null) {
+                            _uiState.update { it.copy(patternContext = context) }
+                        }
+                    } catch (e: Exception) {
+                        android.util.Log.e(TAG, "Error loading pattern context", e)
+                    }
+                }
             } catch (e: Exception) {
                 _uiState.update {
                     it.copy(

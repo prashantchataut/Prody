@@ -411,11 +411,11 @@ fun SettingsScreen(
 
                     SettingsDivider(isDark)
 
-                    // Weekly Patterns
+                    // Personalized Patterns (local ML)
                     SettingsRowWithToggle(
                         icon = ProdyIcons.TrendingUp,
-                        title = "Weekly Patterns",
-                        subtitle = "Track mood trends and themes",
+                        title = "Personalized Patterns",
+                        subtitle = "Local analysis of your journal themes and mood trends",
                         checked = uiState.buddhaPatternTrackingEnabled,
                         onCheckedChange = { viewModel.setBuddhaPatternTrackingEnabled(it) },
                         enabled = uiState.buddhaAiEnabled,

@@ -45,6 +45,7 @@ fun SessionResultCard(
     sessionResult: SessionResult,
     onDismiss: () -> Unit,
     onNextAction: ((GameSuggestionType) -> Unit)? = null,
+    patternContext: String? = null,
     modifier: Modifier = Modifier
 ) {
     var isVisible by remember { mutableStateOf(true) }
@@ -109,6 +110,34 @@ fun SessionResultCard(
                         ContextBloomSection(contextBloom)
                         Spacer(modifier = Modifier.height(12.dp))
                     }
+                }
+
+                // Personalized pattern context (if opt-in and detected)
+                if (!patternContext.isNullOrEmpty()) {
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(8.dp),
+                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = ProdyIcons.TrendingUp,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Text(
+                                text = patternContext,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(12.dp))
                 }
 
                 // Divider before next action
