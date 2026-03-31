@@ -4,7 +4,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.prody.prashant.data.ai.BuddhaAiRepository
 import com.prody.prashant.data.ai.BuddhaAiResult
-import com.prody.prashant.data.local.dao.*
+import com.prody.prashant.data.local.dao.IdiomDao
+import com.prody.prashant.data.local.dao.JournalDao
+import com.prody.prashant.data.local.dao.PhraseDao
+import com.prody.prashant.data.local.dao.ProverbDao
+import com.prody.prashant.data.local.dao.QuoteDao
+import com.prody.prashant.data.local.dao.UserDao
+import com.prody.prashant.data.local.dao.VocabularyDao
 import com.prody.prashant.data.local.entity.IdiomEntity
 import com.prody.prashant.data.local.entity.ProverbEntity
 import com.prody.prashant.data.local.entity.QuoteEntity
@@ -18,7 +24,18 @@ import com.prody.prashant.data.onboarding.AiHint
 import com.prody.prashant.data.onboarding.AiHintType
 import com.prody.prashant.data.onboarding.AiOnboardingManager
 import com.prody.prashant.data.onboarding.BuddhaGuideCard
-import com.prody.prashant.domain.intelligence.*
+import com.prody.prashant.domain.intelligence.AnniversaryMemory
+import com.prody.prashant.domain.intelligence.CelebrationContent
+import com.prody.prashant.domain.intelligence.FirstWeekDayContent
+import com.prody.prashant.domain.intelligence.FirstWeekMilestone
+import com.prody.prashant.domain.intelligence.FirstWeekProgress
+import com.prody.prashant.domain.intelligence.IntelligenceInsight
+import com.prody.prashant.domain.intelligence.MemorySurfaceContext
+import com.prody.prashant.domain.intelligence.PatternAnalysisEngine
+import com.prody.prashant.domain.intelligence.SurfacedMemory
+import com.prody.prashant.domain.intelligence.TrustLevel
+import com.prody.prashant.domain.intelligence.UserArchetype
+import com.prody.prashant.domain.intelligence.UserContext
 import com.prody.prashant.domain.progress.ActiveProgressService
 import com.prody.prashant.domain.progress.NextAction
 import com.prody.prashant.domain.progress.SeedBloomService
@@ -30,7 +47,13 @@ import com.prody.prashant.util.BuddhaWisdom
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.Calendar
 import javax.inject.Inject
@@ -128,20 +151,16 @@ data class HomeUiState(
     // Anniversary memories for today
     val anniversaryMemories: List<AnniversaryMemory> = emptyList(),
     // User context for personalization
-<<<<<<< Updated upstream
     val userArchetype: UserArchetype = UserArchetype.EXPLORER,
     val trustLevel: TrustLevel = TrustLevel.NEW,
     val isUserStruggling: Boolean = false,
     val isUserThriving: Boolean = false,
     // ============== PERSONALIZED PATTERN (local ML) ==============
     val personalizedPatternText: String = "",
-    val personalizedPatternSuggestion: String = ""
-=======
-    val isUserThriving: Boolean = false,
+    val personalizedPatternSuggestion: String = "",
     // Intelligence Insights
     val intelligenceInsights: List<IntelligenceInsight> = emptyList(),
     val isPremiumIntelligenceEnabled: Boolean = false
->>>>>>> Stashed changes
 )
 
 private data class DailyContent(

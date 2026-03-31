@@ -181,6 +181,64 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+/**
+ * Isolated Haven FAB Icon with high-frequency breathing animation.
+ * Using graphicsLayer with lambda-based state reads to prevent parent recomposition.
+ */
+@Composable
+private fun HavenFabIcon(
+    selected: Boolean,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    contentDescription: String
+) {
+    val infiniteTransition = rememberInfiniteTransition(label = "HavenPulse")
+    val animatedAlpha = infiniteTransition.animateFloat(
+        initialValue = 0.6f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2000, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "HavenAlpha"
+    )
+    val scale = infiniteTransition.animateFloat(
+        initialValue = 0.95f,
+        targetValue = 1.05f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2000, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "HavenScale"
+    )
+
+    Box(
+        modifier = Modifier
+            .size(56.dp)
+            .graphicsLayer {
+                scaleX = scale.value
+                scaleY = scale.value
+                alpha = if (selected) 1f else animatedAlpha.value
+            }
+            .clip(CircleShape)
+            .background(
+                androidx.compose.ui.graphics.Brush.verticalGradient(
+                    colors = listOf(
+                        com.prody.prashant.ui.theme.HavenBubbleLight,
+                        com.prody.prashant.ui.theme.HavenBubbleLight.copy(alpha = 0.8f)
+                    )
+                )
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = contentDescription,
+            tint = com.prody.prashant.ui.theme.HavenTextLight,
+            modifier = Modifier.size(28.dp)
+        )
+    }
+}
+
 @Composable
 fun ProdyApp(
     startDestination: String
@@ -245,53 +303,11 @@ fun ProdyApp(
                                     }
                                 },
                                 icon = {
-                                    // Breathing Pulse Animation
-                                    val infiniteTransition = rememberInfiniteTransition(label = "HavenPulse")
-                                    val animatedAlpha by infiniteTransition.animateFloat(
-                                        initialValue = 0.6f,
-                                        targetValue = 1f,
-                                        animationSpec = infiniteRepeatable(
-                                            animation = tween(2000, easing = LinearEasing),
-                                            repeatMode = RepeatMode.Reverse
-                                        ),
-                                        label = "HavenAlpha"
+                                    HavenFabIcon(
+                                        selected = selected,
+                                        icon = if (selected) item.selectedIcon else item.unselectedIcon,
+                                        contentDescription = stringResource(item.contentDescriptionResId)
                                     )
-                                    val scale by infiniteTransition.animateFloat(
-                                        initialValue = 0.95f,
-                                        targetValue = 1.05f,
-                                        animationSpec = infiniteRepeatable(
-                                            animation = tween(2000, easing = LinearEasing),
-                                            repeatMode = RepeatMode.Reverse
-                                        ),
-                                        label = "HavenScale"
-                                    )
-
-                                    Box(
-                                        modifier = Modifier
-                                            .size(56.dp) // Larger than standard icon
-                                            .graphicsLayer {
-                                                scaleX = scale
-                                                scaleY = scale
-                                                alpha = if (selected) 1f else animatedAlpha
-                                            }
-                                            .clip(CircleShape)
-                                            .background(
-                                                androidx.compose.ui.graphics.Brush.verticalGradient(
-                                                    colors = listOf(
-                                                        com.prody.prashant.ui.theme.HavenBubbleLight,
-                                                        com.prody.prashant.ui.theme.HavenBubbleLight.copy(alpha = 0.8f)
-                                                    )
-                                                )
-                                            ),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Icon(
-                                            imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
-                                            contentDescription = stringResource(item.contentDescriptionResId),
-                                            tint = com.prody.prashant.ui.theme.HavenTextLight,
-                                            modifier = Modifier.size(28.dp)
-                                        )
-                                    }
                                 },
                                 label = { /* No label for FAB look */ },
                                 colors = NavigationBarItemDefaults.colors(

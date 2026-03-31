@@ -4,17 +4,37 @@ import com.prody.prashant.ui.icons.ProdyIcons
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.Flag
+import androidx.compose.material.icons.filled.Spa
+import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.outlined.Warning
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,7 +57,15 @@ import com.prody.prashant.R
 
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.prody.prashant.ui.theme.*
+import com.prody.prashant.ui.theme.MoodConfused
+import com.prody.prashant.ui.theme.PoppinsFamily
+import com.prody.prashant.ui.theme.ProdyForestGreen
+import com.prody.prashant.ui.theme.ProdyInfo
+import com.prody.prashant.ui.theme.ProdySurfaceLight
+import com.prody.prashant.ui.theme.ProdyTextPrimaryLight
+import com.prody.prashant.ui.theme.ProdyTextSecondaryLight
+import com.prody.prashant.ui.theme.ProdyWarmAmber
+import com.prody.prashant.ui.theme.WisdomPerspective
 
 // =============================================================================
 // PERSONALIZATION DASHBOARD - REVAMPED 2026
@@ -156,14 +184,16 @@ fun HomeScreen(
             )
         }
 
-<<<<<<< Updated upstream
         // Personalized Pattern Card (opt-in, only shown when data exists)
         if (uiState.personalizedPatternText.isNotEmpty()) {
             item {
                 PersonalizedPatternCard(
                     patternText = uiState.personalizedPatternText,
                     patternSuggestion = uiState.personalizedPatternSuggestion
-=======
+                )
+            }
+        }
+
         // Premium Intelligence Insights (Opt-in)
         if (uiState.isPremiumIntelligenceEnabled && uiState.intelligenceInsights.isNotEmpty()) {
             item {
@@ -171,7 +201,6 @@ fun HomeScreen(
                 IntelligenceInsightCard(
                     insight = uiState.intelligenceInsights.first(),
                     onActionClick = {}
->>>>>>> Stashed changes
                 )
             }
         }
@@ -883,8 +912,6 @@ fun RecentActivitySection(
         }
     }
 }
-<<<<<<< Updated upstream
-
 // =============================================================================
 // PERSONALIZED PATTERN CARD (opt-in, local ML)
 // =============================================================================
@@ -893,17 +920,10 @@ fun RecentActivitySection(
 private fun PersonalizedPatternCard(
     patternText: String,
     patternSuggestion: String
-=======
-@Composable
-fun IntelligenceInsightCard(
-    insight: IntelligenceInsight,
-    onActionClick: () -> Unit
->>>>>>> Stashed changes
 ) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-<<<<<<< Updated upstream
             .padding(horizontal = 24.dp, vertical = 8.dp),
         shape = RoundedCornerShape(16.dp),
         color = ProdySurfaceLight,
@@ -953,7 +973,19 @@ fun IntelligenceInsightCard(
                         lineHeight = 18.sp
                     )
                 )
-=======
+            }
+        }
+    }
+}
+
+@Composable
+fun IntelligenceInsightCard(
+    insight: IntelligenceInsight,
+    onActionClick: () -> Unit
+) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
             .padding(horizontal = 24.dp),
         shape = RoundedCornerShape(24.dp),
         color = ProdySurfaceLight,
@@ -1044,7 +1076,6 @@ fun IntelligenceInsightCard(
                         fontWeight = FontWeight.SemiBold
                     )
                 }
->>>>>>> Stashed changes
             }
         }
     }

@@ -1,13 +1,38 @@
 package com.prody.prashant.ui.components
 
-import androidx.compose.animation.core.*
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.AnimationSpec
+import androidx.compose.animation.core.CubicBezierEasing
+import androidx.compose.animation.core.EaseInCubic
+import androidx.compose.animation.core.EaseInOutCubic
+import androidx.compose.animation.core.EaseInOutSine
+import androidx.compose.animation.core.EaseOutCubic
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -16,16 +41,46 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.prody.prashant.ui.theme.*
+import com.prody.prashant.ui.theme.FutureMessageArrived
+import com.prody.prashant.ui.theme.MoodCalm
+import com.prody.prashant.ui.theme.MoodConfused
+import com.prody.prashant.ui.theme.MoodEnergetic
+import com.prody.prashant.ui.theme.MoodGrateful
+import com.prody.prashant.ui.theme.MoodHappy
+import com.prody.prashant.ui.theme.MoodMotivated
+import com.prody.prashant.ui.theme.ProdyPrimary
+import com.prody.prashant.ui.theme.ProdyTertiary
+import com.prody.prashant.ui.theme.RarityCommon
+import com.prody.prashant.ui.theme.RarityEpic
+import com.prody.prashant.ui.theme.RarityLegendary
+import com.prody.prashant.ui.theme.RarityMythic
+import com.prody.prashant.ui.theme.RarityRare
+import com.prody.prashant.ui.theme.RarityUncommon
+import com.prody.prashant.ui.theme.StreakBlazing
+import com.prody.prashant.ui.theme.StreakCold
+import com.prody.prashant.ui.theme.StreakFire
+import com.prody.prashant.ui.theme.StreakHot
+import com.prody.prashant.ui.theme.StreakInferno
+import com.prody.prashant.ui.theme.StreakWarm
+import com.prody.prashant.ui.theme.TimeCapsuleAccent
+import com.prody.prashant.ui.theme.WisdomPerspective
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlin.math.*
+import kotlin.math.PI
+import kotlin.math.cos
+import kotlin.math.pow
+import kotlin.math.sin
+import kotlin.math.sqrt
 import kotlin.random.Random
 
 /**
@@ -1018,7 +1073,7 @@ fun NavigationBreathingGlow(
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "nav_breathing")
 
-    val glowAlpha by infiniteTransition.animateFloat(
+    val glowAlpha = infiniteTransition.animateFloat(
         initialValue = 0.2f,
         targetValue = 0.5f,
         animationSpec = infiniteRepeatable(
@@ -1028,7 +1083,7 @@ fun NavigationBreathingGlow(
         label = "nav_glow_alpha"
     )
 
-    val glowScale by infiniteTransition.animateFloat(
+    val glowScale = infiniteTransition.animateFloat(
         initialValue = 1f,
         targetValue = 1.2f,
         animationSpec = infiniteRepeatable(
@@ -1038,7 +1093,7 @@ fun NavigationBreathingGlow(
         label = "nav_glow_scale"
     )
 
-    val activeAlpha by animateFloatAsState(
+    val activeAlpha = animateFloatAsState(
         targetValue = if (isActive) 1f else 0f,
         animationSpec = tween(300),
         label = "active_alpha"
@@ -1054,9 +1109,9 @@ fun NavigationBreathingGlow(
                 modifier = Modifier
                     .size(48.dp)
                     .graphicsLayer {
-                        scaleX = glowScale
-                        scaleY = glowScale
-                        alpha = glowAlpha * activeAlpha
+                        scaleX = glowScale.value
+                        scaleY = glowScale.value
+                        alpha = glowAlpha.value * activeAlpha.value
                     }
                     .blur(12.dp)
                     .background(color, CircleShape)
@@ -1088,7 +1143,7 @@ fun WisdomTextReveal(
     moodTint: Color? = null,
     onRevealComplete: () -> Unit = {}
 ) {
-    val revealProgress by animateFloatAsState(
+    val revealProgress = animateFloatAsState(
         targetValue = if (isVisible) 1f else 0f,
         animationSpec = tween(1200, easing = EaseOutCubic),
         label = "wisdom_reveal",
@@ -1097,7 +1152,7 @@ fun WisdomTextReveal(
 
     val infiniteTransition = rememberInfiniteTransition(label = "wisdom_ambient")
 
-    val ambientGlow by infiniteTransition.animateFloat(
+    val ambientGlow = infiniteTransition.animateFloat(
         initialValue = 0.1f,
         targetValue = 0.2f,
         animationSpec = infiniteRepeatable(
@@ -1116,7 +1171,9 @@ fun WisdomTextReveal(
             Box(
                 modifier = Modifier
                     .matchParentSize()
-                    .alpha(ambientGlow * revealProgress)
+                    .graphicsLayer {
+                        alpha = ambientGlow.value * revealProgress.value
+                    }
                     .blur(30.dp)
                     .background(
                         brush = Brush.radialGradient(
@@ -1134,10 +1191,10 @@ fun WisdomTextReveal(
         androidx.compose.material3.Text(
             text = text,
             modifier = Modifier
-                .alpha(revealProgress)
                 .graphicsLayer {
+                    alpha = revealProgress.value
                     // Subtle vertical unfolding effect
-                    scaleY = 0.9f + (revealProgress * 0.1f)
+                    scaleY = 0.9f + (revealProgress.value * 0.1f)
                     transformOrigin = TransformOrigin(0.5f, 0f)
                 },
             style = MaterialTheme.typography.bodyLarge.copy(
