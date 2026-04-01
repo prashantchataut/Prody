@@ -6,6 +6,7 @@ import androidx.compose.animation.core.spring
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -20,12 +21,18 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
+import androidx.compose.material3.rememberTooltipState
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -43,6 +50,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.prody.prashant.ui.animation.premiumShimmer
+import com.prody.prashant.ui.theme.PoppinsFamily
 import com.prody.prashant.ui.theme.ProdyTokens
 import com.prody.prashant.util.rememberProdyHaptic
 
@@ -500,16 +508,19 @@ private fun ButtonContent(
 // =============================================================================
 
 /**
- * Circular icon button with proper touch target.
+ * Circular icon button with proper touch target, accessibility, and tooltip support.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProdyIconButton(
     icon: ImageVector,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    tooltip: String? = null,
     contentDescription: String? = null,
     tint: Color = MaterialTheme.colorScheme.onSurface,
+    containerColor: Color = Color.Transparent,
     size: Dp = ProdyTokens.Touch.minimum
 ) {
     val interactionSource = remember { MutableInteractionSource() }
@@ -525,12 +536,73 @@ fun ProdyIconButton(
         label = "icon_button_scale"
     )
 
+    if (tooltip != null) {
+        TooltipBox(
+            positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+            tooltip = {
+                PlainTooltip(
+                    containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(ProdyTokens.Elevation.sm),
+                    contentColor = MaterialTheme.colorScheme.onSurface
+                ) {
+                    Text(
+                        text = tooltip,
+                        style = MaterialTheme.typography.labelSmall.copy(fontFamily = PoppinsFamily)
+                    )
+                }
+            },
+            state = rememberTooltipState(),
+            modifier = modifier
+        ) {
+            ProdyIconButtonContent(
+                onClick = onClick,
+                enabled = enabled,
+                scale = scale,
+                size = size,
+                contentDescription = contentDescription,
+                containerColor = containerColor,
+                tint = tint,
+                interactionSource = interactionSource,
+                haptic = haptic,
+                icon = icon
+            )
+        }
+    } else {
+        Box(modifier = modifier) {
+            ProdyIconButtonContent(
+                onClick = onClick,
+                enabled = enabled,
+                scale = scale,
+                size = size,
+                contentDescription = contentDescription,
+                containerColor = containerColor,
+                tint = tint,
+                interactionSource = interactionSource,
+                haptic = haptic,
+                icon = icon
+            )
+        }
+    }
+}
+
+@Composable
+private fun ProdyIconButtonContent(
+    onClick: () -> Unit,
+    enabled: Boolean,
+    scale: Float,
+    size: Dp,
+    contentDescription: String?,
+    containerColor: Color,
+    tint: Color,
+    interactionSource: MutableInteractionSource,
+    haptic: com.prody.prashant.util.ProdyHapticFeedback,
+    icon: ImageVector
+) {
     Surface(
         onClick = {
             haptic.click()
             onClick()
         },
-        modifier = modifier
+        modifier = Modifier
             .scale(scale)
             .size(size)
             .semantics {
@@ -541,13 +613,13 @@ fun ProdyIconButton(
             },
         enabled = enabled,
         shape = RoundedCornerShape(50),
-        color = Color.Transparent,
+        color = containerColor,
         contentColor = tint,
         interactionSource = interactionSource
     ) {
         Icon(
             imageVector = icon,
-            contentDescription = contentDescription,
+            contentDescription = null, // Handled by outer surface semantics
             modifier = Modifier
                 .padding(12.dp)
                 .size(24.dp),
