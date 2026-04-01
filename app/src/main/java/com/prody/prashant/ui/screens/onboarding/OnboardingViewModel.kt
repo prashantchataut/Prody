@@ -36,14 +36,9 @@ class OnboardingViewModel @Inject constructor(
     fun completeOnboarding() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                // 1. DataStore updates - executed OUTSIDE Room transaction as per best practices.
-                // Room transactions should only contain Room operations.
-                preferencesManager.setOnboardingCompleted(true)
-                preferencesManager.setFirstLaunchTime(System.currentTimeMillis())
                 val userId = UUID.randomUUID().toString()
-                preferencesManager.setUserId(userId)
 
-                // 2. Room database operations - wrapped in a single transaction for performance.
+                // 1. Room database operations - wrapped in a single transaction for performance.
                 // This drastically reduces disk sync overhead from multiple individual inserts.
                 database.withTransaction {
                     // Initialize user profile
@@ -82,14 +77,18 @@ class OnboardingViewModel @Inject constructor(
                     // Populate initial content within the same transaction
                     performInitialContentPopulation()
                 }
+
+                // 2. DataStore updates - executed AFTER successful Room transaction.
+                // This ensures we don't mark as onboarded if DB initialization failed.
+                preferencesManager.setOnboardingCompleted(true)
+                preferencesManager.setFirstLaunchTime(System.currentTimeMillis())
+                preferencesManager.setUserId(userId)
+
+                android.util.Log.d(TAG, "Onboarding completed successfully for user: $userId")
             } catch (e: Exception) {
                 android.util.Log.e(TAG, "Error during onboarding completion", e)
-                // Still mark onboarding as completed to prevent being stuck in a loop
-                try {
-                    preferencesManager.setOnboardingCompleted(true)
-                } catch (prefError: Exception) {
-                    android.util.Log.e(TAG, "Failed to set onboarding completed flag", prefError)
-                }
+                // We DO NOT mark as completed here to allow for retry if DB fails.
+                // Landing on Home screen without a ProfileEntity would cause multiple crashes.
             }
         }
     }

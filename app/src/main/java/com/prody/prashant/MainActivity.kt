@@ -64,8 +64,7 @@ import com.prody.prashant.ui.main.MainViewModel
 import com.prody.prashant.ui.navigation.BottomNavItem
 import com.prody.prashant.ui.navigation.ProdyNavHost
 import com.prody.prashant.ui.navigation.Screen
-import com.prody.prashant.ui.theme.ProdyPrimary
-import com.prody.prashant.ui.theme.ProdyTheme
+import com.prody.prashant.ui.theme.*
 import com.prody.prashant.util.LocalHapticEnabled
 import com.prody.prashant.util.rememberProdyHaptic
 import dagger.hilt.android.AndroidEntryPoint
@@ -181,6 +180,67 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+/**
+ * Specialized Fab Icon for the Haven navigation item.
+ * Extracted to isolate pulse animation recompositions and use graphicsLayer
+ * for better performance.
+ */
+@Composable
+private fun HavenFabIcon(
+    item: BottomNavItem,
+    selected: Boolean
+) {
+    val infiniteTransition = rememberInfiniteTransition(label = "HavenPulse")
+
+    // Optimization: Access state directly in graphicsLayer lambda to defer execution
+    val alphaState = infiniteTransition.animateFloat(
+        initialValue = 0.6f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2000, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "HavenAlpha"
+    )
+
+    val scaleState = infiniteTransition.animateFloat(
+        initialValue = 0.95f,
+        targetValue = 1.05f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2000, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "HavenScale"
+    )
+
+    Box(
+        modifier = Modifier
+            .size(56.dp)
+            .graphicsLayer {
+                scaleX = scaleState.value
+                scaleY = scaleState.value
+                alpha = if (selected) 1f else alphaState.value
+            }
+            .clip(CircleShape)
+            .background(
+                androidx.compose.ui.graphics.Brush.verticalGradient(
+                    colors = listOf(
+                        HavenBubbleLight,
+                        HavenBubbleLight.copy(alpha = 0.8f)
+                    )
+                )
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
+            contentDescription = stringResource(item.contentDescriptionResId),
+            tint = HavenTextLight,
+            modifier = Modifier.size(28.dp)
+        )
+    }
+}
+
 @Composable
 fun ProdyApp(
     startDestination: String
@@ -245,53 +305,10 @@ fun ProdyApp(
                                     }
                                 },
                                 icon = {
-                                    // Breathing Pulse Animation
-                                    val infiniteTransition = rememberInfiniteTransition(label = "HavenPulse")
-                                    val animatedAlpha by infiniteTransition.animateFloat(
-                                        initialValue = 0.6f,
-                                        targetValue = 1f,
-                                        animationSpec = infiniteRepeatable(
-                                            animation = tween(2000, easing = LinearEasing),
-                                            repeatMode = RepeatMode.Reverse
-                                        ),
-                                        label = "HavenAlpha"
+                                    HavenFabIcon(
+                                        item = item,
+                                        selected = selected
                                     )
-                                    val scale by infiniteTransition.animateFloat(
-                                        initialValue = 0.95f,
-                                        targetValue = 1.05f,
-                                        animationSpec = infiniteRepeatable(
-                                            animation = tween(2000, easing = LinearEasing),
-                                            repeatMode = RepeatMode.Reverse
-                                        ),
-                                        label = "HavenScale"
-                                    )
-
-                                    Box(
-                                        modifier = Modifier
-                                            .size(56.dp) // Larger than standard icon
-                                            .graphicsLayer {
-                                                scaleX = scale
-                                                scaleY = scale
-                                                alpha = if (selected) 1f else animatedAlpha
-                                            }
-                                            .clip(CircleShape)
-                                            .background(
-                                                androidx.compose.ui.graphics.Brush.verticalGradient(
-                                                    colors = listOf(
-                                                        com.prody.prashant.ui.theme.HavenBubbleLight,
-                                                        com.prody.prashant.ui.theme.HavenBubbleLight.copy(alpha = 0.8f)
-                                                    )
-                                                )
-                                            ),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Icon(
-                                            imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
-                                            contentDescription = stringResource(item.contentDescriptionResId),
-                                            tint = com.prody.prashant.ui.theme.HavenTextLight,
-                                            modifier = Modifier.size(28.dp)
-                                        )
-                                    }
                                 },
                                 label = { /* No label for FAB look */ },
                                 colors = NavigationBarItemDefaults.colors(
@@ -309,7 +326,7 @@ fun ProdyApp(
                                     ) {
                                         Icon(
                                             imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
-                                            contentDescription = null
+                                            contentDescription = stringResource(item.labelResId)
                                         )
                                     }
                                 },
