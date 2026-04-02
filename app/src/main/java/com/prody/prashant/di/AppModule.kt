@@ -2,17 +2,12 @@ package com.prody.prashant.di
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.util.Log
-import androidx.room.Room
-import androidx.room.RoomDatabase
-import androidx.sqlite.db.SupportSQLiteDatabase
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.prody.prashant.data.ai.BuddhaAiService
 import com.prody.prashant.data.ai.GeminiService
 import com.prody.prashant.data.ai.OpenRouterService
 import com.prody.prashant.data.local.dao.*
-import com.prody.prashant.data.local.database.DatabaseSeeder
 import com.prody.prashant.data.local.database.ProdyDatabase
 import com.prody.prashant.data.local.preferences.PreferencesManager
 import com.prody.prashant.data.backup.BackupManager
@@ -22,7 +17,6 @@ import com.prody.prashant.data.monitoring.PerformanceMonitor
 import com.prody.prashant.data.network.NetworkConnectivityManager
 import com.prody.prashant.data.onboarding.AiOnboardingManager
 import com.prody.prashant.data.security.EncryptionManager
-import com.prody.prashant.data.security.SecurityPreferences
 import com.prody.prashant.data.sync.SyncManager
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
@@ -362,14 +356,6 @@ object AppModule {
         @ApplicationContext context: Context
     ): ContentModerationManager {
         return ContentModerationManager(context)
-    }
-
-    @Provides
-    @Singleton
-    fun provideSecurityPreferences(
-        @ApplicationContext context: Context
-    ): SecurityPreferences {
-        return SecurityPreferences(context)
     }
 
     // ============================================================================
