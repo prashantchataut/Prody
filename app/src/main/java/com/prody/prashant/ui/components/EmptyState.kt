@@ -142,7 +142,8 @@ fun ProdyEmptyStateWithAction(
     actionLabel: String,
     onActionClick: () -> Unit,
     modifier: Modifier = Modifier,
-    iconContentDescription: String? = null
+    iconContentDescription: String? = null,
+    actionIcon: ImageVector? = null
 ) {
     ProdyEmptyState(
         icon = icon,
@@ -154,6 +155,7 @@ fun ProdyEmptyStateWithAction(
             ProdyPrimaryButton(
                 text = actionLabel,
                 onClick = onActionClick,
+                leadingIcon = actionIcon,
                 modifier = Modifier.height(ProdyTokens.Touch.minimum)
             )
         }

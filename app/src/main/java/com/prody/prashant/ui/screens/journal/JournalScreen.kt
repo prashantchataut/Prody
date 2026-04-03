@@ -25,6 +25,7 @@ import com.prody.prashant.R
 import com.prody.prashant.data.local.entity.JournalEntryEntity
 import com.prody.prashant.domain.model.Mood
 import com.prody.prashant.ui.components.ProdyCard
+import com.prody.prashant.ui.components.ProdyEmptyStateWithAction
 import com.prody.prashant.ui.theme.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -298,43 +299,13 @@ private fun EmptyJournalState(
     modifier: Modifier = Modifier,
     onStartWriting: () -> Unit
 ) {
-    Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Icon(
-            imageVector = ProdyIcons.AutoStories,
-            contentDescription = null,
-            modifier = Modifier.size(80.dp),
-            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
-        )
-        Spacer(modifier = Modifier.height(24.dp))
-        Text(
-            text = "Your Journal Awaits",
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.SemiBold
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = "Pour out your thoughts and let Buddha guide your reflection",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Spacer(modifier = Modifier.height(24.dp))
-        Button(
-            onClick = onStartWriting,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primary
-            )
-        ) {
-            Icon(
-                imageVector = ProdyIcons.Edit,
-                contentDescription = null,
-                modifier = Modifier.size(18.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text("Start Writing")
-        }
-    }
+    ProdyEmptyStateWithAction(
+        icon = ProdyIcons.AutoStories,
+        title = stringResource(R.string.journal_empty_title),
+        message = stringResource(R.string.journal_empty_message),
+        actionLabel = stringResource(R.string.new_entry),
+        onActionClick = onStartWriting,
+        actionIcon = ProdyIcons.Edit,
+        modifier = modifier
+    )
 }
