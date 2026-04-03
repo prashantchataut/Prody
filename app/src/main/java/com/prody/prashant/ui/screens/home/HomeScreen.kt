@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import com.prody.prashant.ui.components.ProdyIconButton
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -34,6 +35,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.prody.prashant.R
+import com.prody.prashant.util.rememberProdyHaptic
 
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -272,13 +274,12 @@ fun DashboardHeader(
         val profileContentDescription = stringResource(R.string.cd_profile_picture)
 
         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            IconButton(onClick = onNotificationClick) {
-                Icon(
-                    imageVector = Icons.Outlined.Notifications,
-                    contentDescription = "Notifications",
-                    tint = ProdyTextPrimaryLight
-                )
-            }
+            ProdyIconButton(
+                icon = ProdyIcons.Outlined.Notifications,
+                onClick = onNotificationClick,
+                contentDescription = stringResource(R.string.notifications),
+                tint = ProdyTextPrimaryLight
+            )
             // Avatar / Profile
             Box(
                 modifier = Modifier
@@ -392,7 +393,7 @@ fun BadgeItem(badge: BadgeData) {
         )
         Icon(
             imageVector = badge.icon,
-            contentDescription = null,
+            contentDescription = stringResource(R.string.cd_badge_icon, "Achievement"),
             tint = badge.color,
             modifier = Modifier.size(16.dp)
         )
@@ -639,10 +640,14 @@ fun QuickActionsGrid(
 
 @Composable
 fun QuickActionTile(title: String, icon: androidx.compose.ui.graphics.vector.ImageVector, color: Color, onClick: () -> Unit, modifier: Modifier) {
+    val haptic = rememberProdyHaptic()
     Surface(
         modifier = modifier
             .height(100.dp)
-            .clickable(onClick = onClick),
+            .clickable(onClick = {
+                haptic.click()
+                onClick()
+            }),
         shape = RoundedCornerShape(16.dp),
         color = color.copy(alpha = 0.1f),
         border = androidx.compose.foundation.BorderStroke(1.dp, color.copy(alpha = 0.2f))
@@ -778,9 +783,13 @@ private fun ExploreChip(
     color: Color,
     onClick: () -> Unit
 ) {
+    val haptic = rememberProdyHaptic()
     Surface(
         modifier = Modifier
-            .clickable(onClick = onClick),
+            .clickable(onClick = {
+                haptic.click()
+                onClick()
+            }),
         shape = RoundedCornerShape(12.dp),
         color = color.copy(alpha = 0.1f),
         border = androidx.compose.foundation.BorderStroke(1.dp, color.copy(alpha = 0.15f))
