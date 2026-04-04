@@ -742,3 +742,14 @@ data class CopyVariant(
     val condition: (UserContext) -> Boolean,
     val text: String
 )
+
+/**
+ * High-level intelligence insight about the user's growth.
+ */
+data class IntelligenceInsight(
+    val title: String,
+    val description: String,
+    val importance: Float, // 0.0 to 1.0
+    val actionable: String? = null,
+    val category: String = "growth"
+)

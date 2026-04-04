@@ -31,6 +31,7 @@ data class ProfileUiState(
     val daysOnPrody: Int = 0,
     val unlockedAchievements: List<AchievementEntity> = emptyList(),
     val lockedAchievements: List<AchievementEntity> = emptyList(),
+    val userContext: com.prody.prashant.domain.intelligence.UserContext = com.prody.prashant.domain.intelligence.UserContext.empty(),
     val isLoading: Boolean = true,
     // Weekly AI Pattern Tracking
     val weeklyPattern: WeeklyPatternResult? = null,

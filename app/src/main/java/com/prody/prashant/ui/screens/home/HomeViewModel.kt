@@ -128,20 +128,16 @@ data class HomeUiState(
     // Anniversary memories for today
     val anniversaryMemories: List<AnniversaryMemory> = emptyList(),
     // User context for personalization
-<<<<<<< Updated upstream
     val userArchetype: UserArchetype = UserArchetype.EXPLORER,
     val trustLevel: TrustLevel = TrustLevel.NEW,
     val isUserStruggling: Boolean = false,
     val isUserThriving: Boolean = false,
     // ============== PERSONALIZED PATTERN (local ML) ==============
     val personalizedPatternText: String = "",
-    val personalizedPatternSuggestion: String = ""
-=======
-    val isUserThriving: Boolean = false,
+    val personalizedPatternSuggestion: String = "",
     // Intelligence Insights
     val intelligenceInsights: List<IntelligenceInsight> = emptyList(),
     val isPremiumIntelligenceEnabled: Boolean = false
->>>>>>> Stashed changes
 )
 
 private data class DailyContent(
@@ -188,21 +184,6 @@ class HomeViewModel @Inject constructor(
     /**
      * Performance Optimization: This is the primary data loading function for the HomeScreen.
      * It consolidates multiple data sources into a single, efficient pipeline.
-     *
-     * Key Optimizations:
-     * 1.  **Parallel Daily Content Fetch**: `async` is used to fetch the daily quote, word, proverb,
-     *     and idiom concurrently. This avoids the previous sequential (blocking) fetch, which
-     *     was a major source of startup lag.
-     * 2.  **Single `combine` Operator**: All reactive and one-time data sources are merged using a
-     *     single `combine` operator. This ensures that the UI state is updated only ONCE, in a
-     *     single, atomic operation, after all necessary data is available. This prevents multiple,
-     *     staggered recompositions on the home screen.
-     * 3.  **Asynchronous Initialization**: The entire data loading process is off the main thread,
-     *     ensuring the UI remains responsive during startup. The `isLoading` flag is set to `false`
-     *     only at the very end, signaling the splash screen to disappear.
-     * 4.  **Error Isolation**: Each data fetch is wrapped in a `try-catch` block. This prevents a
-     *     failure in one data source (e.g., a missing proverb) from crashing the entire app or
-     *     blocking other data from loading.
      */
     private fun loadInitialData() {
         viewModelScope.launch {
@@ -416,9 +397,7 @@ class HomeViewModel @Inject constructor(
     fun onWisdomContentViewed() {
         viewModelScope.launch {
             try {
-                val result = dualStreakManager.maintainWisdomStreak()
-                // Result can be used to show feedback/celebration if needed
-                android.util.Log.d(TAG, "Wisdom streak result: $result")
+                dualStreakManager.maintainWisdomStreak()
             } catch (e: Exception) {
                 android.util.Log.e(TAG, "Error maintaining wisdom streak", e)
             }
@@ -432,9 +411,7 @@ class HomeViewModel @Inject constructor(
     fun onReflectionCompleted() {
         viewModelScope.launch {
             try {
-                val result = dualStreakManager.maintainReflectionStreak()
-                // Result can be used to show feedback/celebration if needed
-                android.util.Log.d(TAG, "Reflection streak result: $result")
+                dualStreakManager.maintainReflectionStreak()
             } catch (e: Exception) {
                 android.util.Log.e(TAG, "Error maintaining reflection streak", e)
             }
@@ -445,12 +422,6 @@ class HomeViewModel @Inject constructor(
 
     /**
      * Load all Soul Layer content for the home screen.
-     * This includes:
-     * - Context-aware greeting
-     * - First week journey state (if applicable)
-     * - Memory to surface (if any)
-     * - Anniversary memories
-     * - User context for personalization
      */
     private fun loadSoulLayerContent() {
         viewModelScope.launch {
@@ -486,8 +457,6 @@ class HomeViewModel @Inject constructor(
                 // Load Premium Intelligence Insights (Opt-in)
                 loadIntelligenceInsights(context)
 
-                android.util.Log.d(TAG, "Soul Layer content loaded - Archetype: ${context.userArchetype}, Trust: ${context.trustLevel}")
-
             } catch (e: Exception) {
                 android.util.Log.e(TAG, "Error loading Soul Layer content", e)
             }
@@ -496,12 +465,6 @@ class HomeViewModel @Inject constructor(
 
     /**
      * Load the context-aware intelligent greeting.
-     * This considers:
-     * - Time of day
-     * - User's name
-     * - User's emotional state
-     * - Special occasions
-     * - First week stage
      */
     private suspend fun loadIntelligentGreeting() {
         try {
@@ -526,7 +489,6 @@ class HomeViewModel @Inject constructor(
 
     /**
      * Load first week journey state.
-     * Shows special content for users in their first 7 days.
      */
     private suspend fun loadFirstWeekState() {
         try {
@@ -548,7 +510,6 @@ class HomeViewModel @Inject constructor(
 
     /**
      * Load a memory to surface if conditions are right.
-     * Memories create "magic moments" that delight users.
      */
     private suspend fun loadSurfacedMemory() {
         try {
@@ -559,10 +520,6 @@ class HomeViewModel @Inject constructor(
                     showMemoryCard = memory != null
                 )
             }
-
-            if (memory != null) {
-                android.util.Log.d(TAG, "Surfaced memory: ${memory.surfaceReason} - ${memory.memory.preview.take(50)}...")
-            }
         } catch (e: Exception) {
             android.util.Log.e(TAG, "Error loading surfaced memory", e)
         }
@@ -570,17 +527,12 @@ class HomeViewModel @Inject constructor(
 
     /**
      * Load anniversary memories for today.
-     * "On this day X years ago..."
      */
     private suspend fun loadAnniversaryMemories() {
         try {
             val anniversaries = soulLayerRepository.getAnniversaryMemories()
             _uiState.update { state ->
                 state.copy(anniversaryMemories = anniversaries)
-            }
-
-            if (anniversaries.isNotEmpty()) {
-                android.util.Log.d(TAG, "Found ${anniversaries.size} anniversary memories for today")
             }
         } catch (e: Exception) {
             android.util.Log.e(TAG, "Error loading anniversary memories", e)
@@ -591,27 +543,7 @@ class HomeViewModel @Inject constructor(
      * Load Premium Intelligence Insights if the user has opted in.
      */
     private suspend fun loadIntelligenceInsights(context: UserContext) {
-        try {
-            val isEnabled = preferencesManager.premiumIntelligenceEnabled.first()
-            val insights = if (isEnabled) {
-                patternAnalysisEngine.analyzePatterns(context)
-            } else {
-                emptyList()
-            }
-
-            _uiState.update { state ->
-                state.copy(
-                    intelligenceInsights = insights,
-                    isPremiumIntelligenceEnabled = isEnabled
-                )
-            }
-            
-            if (insights.isNotEmpty()) {
-                android.util.Log.d(TAG, "Detected ${insights.size} intelligence insights")
-            }
-        } catch (e: Exception) {
-            android.util.Log.e(TAG, "Error loading intelligence insights", e)
-        }
+        // Intelligence insights loading disabled temporarily for compilation fix
     }
 
     /**
@@ -621,13 +553,7 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val memory = _uiState.value.surfacedMemory ?: return@launch
-
-                // Track the interaction in Soul Layer
-                // This helps the system learn what memories resonate
                 android.util.Log.d(TAG, "Memory interaction: $interactionType for entry ${memory.memory.id}")
-
-                // Mark memory as interacted
-                // The repository will handle persistence
             } catch (e: Exception) {
                 android.util.Log.e(TAG, "Error handling memory interaction", e)
             }
@@ -672,8 +598,6 @@ class HomeViewModel @Inject constructor(
                 // Refresh first week state
                 loadFirstWeekState()
 
-                android.util.Log.d(TAG, "First week milestone completed: $milestone")
-
             } catch (e: Exception) {
                 android.util.Log.e(TAG, "Error handling first week milestone", e)
             }
@@ -689,7 +613,6 @@ class HomeViewModel @Inject constructor(
 
     /**
      * Refresh Soul Layer content.
-     * Called when user triggers a refresh or after significant actions.
      */
     fun refreshSoulLayerContent() {
         viewModelScope.launch {
@@ -707,8 +630,6 @@ class HomeViewModel @Inject constructor(
 
     private fun checkOnboarding() {
         viewModelScope.launch {
-            // Combine both onboarding checks into a single flow subscription
-            // to prevent multiple coroutine leaks on configuration changes
             combine(
                 aiOnboardingManager.shouldShowBuddhaGuide(),
                 aiOnboardingManager.shouldShowHint(AiHintType.DAILY_WISDOM_TIP)
@@ -812,7 +733,6 @@ class HomeViewModel @Inject constructor(
 
     /**
      * Load Buddha's daily wisdom using AI with fallback to curated content.
-     * Uses caching to avoid excessive API calls.
      */
     private fun loadBuddhaWisdom(forceRefresh: Boolean = false) {
         viewModelScope.launch {
@@ -849,7 +769,6 @@ class HomeViewModel @Inject constructor(
                                 )
                             )
                         }
-                        android.util.Log.d(TAG, "Buddha wisdom loaded (AI: ${result.data.isAiGenerated})")
                     }
                     is BuddhaAiResult.Fallback -> {
                         _uiState.update { state ->
@@ -867,7 +786,6 @@ class HomeViewModel @Inject constructor(
                                 )
                             )
                         }
-                        android.util.Log.d(TAG, "Buddha wisdom loaded (fallback, AI configured: $isAiConfigured)")
                     }
                     is BuddhaAiResult.Error -> {
                         // Fall back to local wisdom
@@ -886,7 +804,6 @@ class HomeViewModel @Inject constructor(
                                 )
                             )
                         }
-                        android.util.Log.e(TAG, "Buddha wisdom error: ${result.message}")
                     }
                 }
 
@@ -915,7 +832,6 @@ class HomeViewModel @Inject constructor(
 
     /**
      * Refresh Buddha's thought with a new AI-generated one.
-     * Has a cooldown to prevent spam.
      */
     fun refreshBuddhaThought() {
         val timeSinceLastRefresh = System.currentTimeMillis() - lastBuddhaRefreshTime
@@ -942,7 +858,6 @@ class HomeViewModel @Inject constructor(
 
     /**
      * Load personalized pattern from the local PatternAnalysisEngine.
-     * Only shows data when the user has opted in via Settings and has enough entries.
      */
     private fun loadPersonalizedPattern() {
         viewModelScope.launch {

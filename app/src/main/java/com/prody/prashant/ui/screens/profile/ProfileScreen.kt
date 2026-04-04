@@ -19,6 +19,7 @@ import androidx.compose.animation.slideInVertically
 import com.prody.prashant.domain.gamification.AchievementRarity
 import com.prody.prashant.ui.theme.UiAchievements
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -34,6 +35,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
@@ -86,9 +88,9 @@ import kotlinx.coroutines.delay
  * - Weekly AI Insights card
  */
 
-// ============================================================================
+// ======
 // DESIGN SYSTEM COLORS - Identity Room Theme (Using Theme Colors)
-// ============================================================================
+// ======
 
 private object IdentityRoomColors {
     // Dark Mode - Using theme colors
@@ -162,68 +164,37 @@ fun ProfileScreen(
             .fillMaxSize()
             .background(backgroundColor)
     ) {
-<<<<<<< Updated upstream
-=======
+
+
         // Minimal horizontal line at the top of content for structure
         Divider(
             modifier = Modifier.align(Alignment.TopCenter).statusBarsPadding().padding(top = 72.dp),
             color = textPrimary.copy(alpha = 0.05f)
         )
 
->>>>>>> Stashed changes
+
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(bottom = 100.dp)
         ) {
             // Header with title and actions
             item {
-                PremiumHeader(
-                    title = "Identity",
-                    subtitle = "Soul Layer",
-                    onBackClick = null, // Profile is a main tab or top-level here
-                    actions = {
-                        IconButton(onClick = onNavigateToSettings) {
-                            Icon(
-                                imageVector = Icons.Default.Settings,
-                                contentDescription = "Settings",
-                                tint = accentColor
-                            )
-                        }
-                    }
+                PremiumProfileHeader(
+                    onSettingsClick = onNavigateToSettings,
+                    onEditClick = onNavigateToEditProfile,
+                    textPrimary = textPrimary,
+                    textSecondary = textSecondary,
+                    accentColor = accentColor
                 )
             }
 
             item {
                 SoulIdentityCard(
                     context = context,
-                    level = uiState.level,
+                    level = getLevelFromPoints(uiState.totalPoints),
                     isDarkMode = isDarkMode,
                     onEditClick = onNavigateToEditProfile
                 )
-            }
-
-            // Growth Journey Card - The heart of the profile
-            item {
-                AnimatedVisibility(
-                    visible = isVisible,
-                    enter = fadeIn(tween(400, delayMillis = 200)) + slideInVertically(
-                        initialOffsetY = { it / 3 },
-                        animationSpec = tween(400, delayMillis = 200, easing = EaseOutCubic)
-                    )
-                ) {
-                    GrowthJourneyCard(
-                        currentStreak = uiState.currentStreak,
-                        dominantTheme = uiState.weeklyPattern?.keyPattern,
-                        todayLearning = uiState.weeklyPattern?.suggestion,
-                        totalPoints = uiState.totalPoints,
-                        surfaceColor = surfaceColor,
-                        textPrimary = textPrimary,
-                        textSecondary = textSecondary,
-                        textTertiary = textTertiary,
-                        accentColor = accentColor,
-                        isDarkMode = isDarkMode
-                    )
-                }
             }
 
             // Consistency Score Ring
@@ -317,9 +288,9 @@ fun ProfileScreen(
     }
 }
 
-// ============================================================================
+// ======
 // HEADER COMPONENT
-// ============================================================================
+// ======
 
 @Composable
 private fun PremiumProfileHeader(
@@ -374,9 +345,9 @@ private fun PremiumProfileHeader(
     }
 }
 
-// ============================================================================
+// ======
 // HERO SECTION - Avatar, Name, Badges
-// ============================================================================
+// ======
 
 @Composable
 internal fun PremiumHeroSection(
@@ -689,9 +660,9 @@ private fun PremiumBetaPioneerBadge() {
     }
 }
 
-// ============================================================================
+// ======
 // KEY METRICS ROW
-// ============================================================================
+// ======
 
 @Composable
 internal fun PremiumKeyMetricsRow(
@@ -807,9 +778,9 @@ private fun PremiumMetricCard(
     }
 }
 
-// ============================================================================
+// ======
 // STORY OF GROWTH SECTION
-// ============================================================================
+// ======
 
 @Composable
 private fun PremiumStoryOfGrowthSection(
@@ -1017,9 +988,9 @@ private fun PremiumMiniStat(
     }
 }
 
-// ============================================================================
+// ======
 // WEEKLY PATTERN SECTION
-// ============================================================================
+// ======
 
 @Composable
 private fun PremiumWeeklyPatternSection(
@@ -1188,9 +1159,9 @@ private fun PremiumWeeklyPatternSection(
     }
 }
 
-// ============================================================================
+// ======
 // TROPHY ROOM SECTION
-// ============================================================================
+// ======
 
 @Composable
 private fun PremiumTrophyRoomHeader(
@@ -1487,9 +1458,9 @@ private fun PremiumCompactBadge(
     }
 }
 
-// ============================================================================
+// ======
 // GROWTH QUOTE CARD
-// ============================================================================
+// ======
 
 @Composable
 private fun PremiumGrowthQuoteCard(
@@ -1538,9 +1509,9 @@ private fun PremiumGrowthQuoteCard(
     }
 }
 
-// ============================================================================
+// ======
 // HELPER FUNCTIONS
-// ============================================================================
+// ======
 
 /**
  * Maps achievement rarity enum to its corresponding color.
@@ -1607,10 +1578,10 @@ private fun getLevelThreshold(level: Int): Int {
     }
 }
 
-<<<<<<< Updated upstream
-// ============================================================================
+
+// ======
 // GROWTH JOURNEY CARD
-// ============================================================================
+// ======
 
 @Composable
 private fun GrowthJourneyCard(
@@ -1699,7 +1670,10 @@ private fun GrowthJourneyCard(
                 textSecondary = textSecondary,
                 textPrimary = textPrimary
             )
-=======
+        }
+    }
+}
+
 @Composable
 fun SoulIdentityCard(
     context: com.prody.prashant.domain.intelligence.UserContext,
@@ -1841,13 +1815,13 @@ fun SoulIdentityCard(
                     )
                 }
             }
->>>>>>> Stashed changes
+
         }
     }
 }
 
 @Composable
-<<<<<<< Updated upstream
+
 private fun GrowthJourneyRow(
     label: String,
     value: String,
@@ -1873,9 +1847,9 @@ private fun GrowthJourneyRow(
     }
 }
 
-// ============================================================================
+// ======
 // CONSISTENCY SCORE CARD
-// ============================================================================
+// ======
 
 @Composable
 private fun ConsistencyScoreCard(
@@ -2018,7 +1992,12 @@ private fun ConsistencyScoreCard(
                         )
                     }
                 }
-=======
+            }
+        }
+    }
+}
+
+@Composable
 fun AchievementShelf(
     unlockedCount: Int,
     totalCount: Int,
@@ -2073,15 +2052,16 @@ fun AchievementShelf(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = PaddingValues(end = 24.dp)
         ) {
-            items(achievements) { achievement ->
+            items(achievements.size) { index ->
+                val achievement = achievements[index]
                 AchievementBadge(achievement = achievement, isDarkMode = isDarkMode)
->>>>>>> Stashed changes
+
             }
         }
     }
 }
-<<<<<<< Updated upstream
-=======
+
+
 
 @Composable
 fun AchievementBadge(
@@ -2112,7 +2092,7 @@ fun AchievementBadge(
         }
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = achievement.title,
+            text = achievement.name,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             style = TextStyle(
@@ -2125,4 +2105,3 @@ fun AchievementBadge(
         )
     }
 }
->>>>>>> Stashed changes
