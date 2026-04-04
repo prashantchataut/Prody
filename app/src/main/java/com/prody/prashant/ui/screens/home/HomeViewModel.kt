@@ -30,7 +30,15 @@ import com.prody.prashant.util.BuddhaWisdom
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.Calendar
 import javax.inject.Inject
@@ -128,20 +136,16 @@ data class HomeUiState(
     // Anniversary memories for today
     val anniversaryMemories: List<AnniversaryMemory> = emptyList(),
     // User context for personalization
-<<<<<<< Updated upstream
     val userArchetype: UserArchetype = UserArchetype.EXPLORER,
     val trustLevel: TrustLevel = TrustLevel.NEW,
     val isUserStruggling: Boolean = false,
     val isUserThriving: Boolean = false,
     // ============== PERSONALIZED PATTERN (local ML) ==============
     val personalizedPatternText: String = "",
-    val personalizedPatternSuggestion: String = ""
-=======
-    val isUserThriving: Boolean = false,
+    val personalizedPatternSuggestion: String = "",
     // Intelligence Insights
     val intelligenceInsights: List<IntelligenceInsight> = emptyList(),
     val isPremiumIntelligenceEnabled: Boolean = false
->>>>>>> Stashed changes
 )
 
 private data class DailyContent(

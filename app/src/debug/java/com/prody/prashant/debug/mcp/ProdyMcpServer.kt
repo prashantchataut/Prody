@@ -15,7 +15,6 @@ import kotlinx.coroutines.launch
 
 /**
  * The diagnostic server instance that runs locally on the device/emulator.
- * Exposed via ADB port forwarding (adb forward tcp:8080 tcp:8080).
  */
 object ProdyMcpServer {
     private const val TAG = "ProdyMcpServer"
@@ -26,7 +25,6 @@ object ProdyMcpServer {
 
     fun start(context: Context) {
         if (engine != null) {
-            Log.d(TAG, "Server already running")
             return
         }
 
@@ -34,15 +32,12 @@ object ProdyMcpServer {
         
         scope.launch {
             try {
-                Log.d(TAG, "Starting MCP diagnostic server on port $PORT...")
                 engine = embeddedServer(CIO, port = PORT) {
                     install(SSE)
                     routing {
-                        // Plug the MCP server instance into the Ktor routing
                         mcp("/mcp", provider.server)
                     }
                 }.start(wait = false)
-                Log.d(TAG, "MCP Diagnostic Server is now live at http://localhost:$PORT/mcp")
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to start MCP server", e)
             }
@@ -52,6 +47,5 @@ object ProdyMcpServer {
     fun stop() {
         engine?.stop(1000, 2000)
         engine = null
-        Log.d(TAG, "MCP Diagnostic Server stopped")
     }
 }

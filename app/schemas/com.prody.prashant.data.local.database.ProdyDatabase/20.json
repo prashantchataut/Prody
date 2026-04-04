@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 20,
-    "identityHash": "8d3886776889095ab274759ca69248a1",
+    "identityHash": "978fd3b56391858049daad754ef1ad8a",
     "entities": [
       {
         "tableName": "journal_entries",
@@ -4724,7 +4724,7 @@
       },
       {
         "tableName": "dual_streaks",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `userId` TEXT NOT NULL, `wisdomStreakCurrent` INTEGER NOT NULL, `wisdomStreakLongest` INTEGER NOT NULL, `wisdomLastMaintainedDate` INTEGER NOT NULL, `wisdomGracePeriodUsed` INTEGER NOT NULL, `wisdomGracePeriodUsedDate` INTEGER NOT NULL, `wisdomGracePeriodResetDate` INTEGER NOT NULL, `reflectionStreakCurrent` INTEGER NOT NULL, `reflectionStreakLongest` INTEGER NOT NULL, `reflectionLastMaintainedDate` INTEGER NOT NULL, `reflectionGracePeriodUsed` INTEGER NOT NULL, `reflectionGracePeriodUsedDate` INTEGER NOT NULL, `reflectionGracePeriodResetDate` INTEGER NOT NULL, `createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `userId` TEXT NOT NULL, `wisdomStreakCurrent` INTEGER NOT NULL, `wisdomStreakLongest` INTEGER NOT NULL, `wisdomLastMaintainedDate` INTEGER NOT NULL, `wisdomGracePeriodUsed` INTEGER NOT NULL, `wisdomGracePeriodUsedDate` INTEGER NOT NULL, `wisdomGracePeriodResetDate` INTEGER NOT NULL, `reflectionStreakCurrent` INTEGER NOT NULL, `reflectionStreakLongest` INTEGER NOT NULL, `reflectionLastMaintainedDate` INTEGER NOT NULL, `reflectionGracePeriodUsed` INTEGER NOT NULL, `reflectionGracePeriodUsedDate` INTEGER NOT NULL, `reflectionGracePeriodResetDate` INTEGER NOT NULL, `wisdomActivityMask` INTEGER NOT NULL, `reflectionActivityMask` INTEGER NOT NULL, `createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL)",
         "fields": [
           {
             "fieldPath": "id",
@@ -4807,6 +4807,18 @@
           {
             "fieldPath": "reflectionGracePeriodResetDate",
             "columnName": "reflectionGracePeriodResetDate",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "wisdomActivityMask",
+            "columnName": "wisdomActivityMask",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reflectionActivityMask",
+            "columnName": "reflectionActivityMask",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -10169,7 +10181,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '8d3886776889095ab274759ca69248a1')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '978fd3b56391858049daad754ef1ad8a')"
     ]
   }
 }
