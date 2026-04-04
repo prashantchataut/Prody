@@ -19,6 +19,7 @@ import androidx.compose.animation.slideInVertically
 import com.prody.prashant.domain.gamification.AchievementRarity
 import com.prody.prashant.ui.theme.UiAchievements
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -34,6 +35,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
@@ -177,26 +179,19 @@ fun ProfileScreen(
         ) {
             // Header with title and actions
             item {
-                PremiumHeader(
-                    title = "Identity",
-                    subtitle = "Soul Layer",
-                    onBackClick = null, // Profile is a main tab or top-level here
-                    actions = {
-                        IconButton(onClick = onNavigateToSettings) {
-                            Icon(
-                                imageVector = Icons.Default.Settings,
-                                contentDescription = "Settings",
-                                tint = accentColor
-                            )
-                        }
-                    }
+                PremiumProfileHeader(
+                    onSettingsClick = onNavigateToSettings,
+                    onEditClick = onNavigateToEditProfile,
+                    textPrimary = textPrimary,
+                    textSecondary = textSecondary,
+                    accentColor = accentColor
                 )
             }
 
             item {
                 SoulIdentityCard(
                     context = context,
-                    level = uiState.level,
+                    level = getLevelFromPoints(uiState.totalPoints),
                     isDarkMode = isDarkMode,
                     onEditClick = onNavigateToEditProfile
                 )
@@ -2057,7 +2052,8 @@ fun AchievementShelf(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = PaddingValues(end = 24.dp)
         ) {
-            items(achievements) { achievement ->
+            items(achievements.size) { index ->
+                val achievement = achievements[index]
                 AchievementBadge(achievement = achievement, isDarkMode = isDarkMode)
 
             }
