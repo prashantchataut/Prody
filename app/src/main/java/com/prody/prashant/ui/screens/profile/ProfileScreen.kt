@@ -162,15 +162,11 @@ fun ProfileScreen(
             .fillMaxSize()
             .background(backgroundColor)
     ) {
-<<<<<<< Updated upstream
-=======
         // Minimal horizontal line at the top of content for structure
-        Divider(
+        HorizontalDivider(
             modifier = Modifier.align(Alignment.TopCenter).statusBarsPadding().padding(top = 72.dp),
             color = textPrimary.copy(alpha = 0.05f)
         )
-
->>>>>>> Stashed changes
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(bottom = 100.dp)
@@ -1607,7 +1603,6 @@ private fun getLevelThreshold(level: Int): Int {
     }
 }
 
-<<<<<<< Updated upstream
 // ============================================================================
 // GROWTH JOURNEY CARD
 // ============================================================================
@@ -1699,7 +1694,10 @@ private fun GrowthJourneyCard(
                 textSecondary = textSecondary,
                 textPrimary = textPrimary
             )
-=======
+        }
+    }
+}
+
 @Composable
 fun SoulIdentityCard(
     context: com.prody.prashant.domain.intelligence.UserContext,
@@ -1841,13 +1839,11 @@ fun SoulIdentityCard(
                     )
                 }
             }
->>>>>>> Stashed changes
         }
     }
 }
 
 @Composable
-<<<<<<< Updated upstream
 private fun GrowthJourneyRow(
     label: String,
     value: String,
@@ -1872,216 +1868,6 @@ private fun GrowthJourneyRow(
         )
     }
 }
-
-// ============================================================================
-// CONSISTENCY SCORE CARD
-// ============================================================================
-
-@Composable
-private fun ConsistencyScoreCard(
-    currentStreak: Int,
-    longestStreak: Int,
-    journalEntries: Int,
-    daysOnPrody: Int,
-    surfaceColor: Color,
-    textPrimary: Color,
-    textSecondary: Color,
-    textTertiary: Color,
-    accentColor: Color
-) {
-    val consistencyRatio = if (daysOnPrody > 0) {
-        (journalEntries.toFloat() / daysOnPrody).coerceIn(0f, 1f)
-    } else 0f
-
-    val streakProgress = if (longestStreak > 0) {
-        (currentStreak.toFloat() / longestStreak).coerceIn(0f, 1f)
-    } else if (currentStreak > 0) 1f else 0f
-
-    val animatedProgress by animateFloatAsState(
-        targetValue = streakProgress,
-        animationSpec = tween(durationMillis = 1000, easing = EaseInOutCubic),
-        label = "consistency_progress"
-    )
-
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 8.dp),
-        shape = RoundedCornerShape(16.dp),
-        color = surfaceColor
-    ) {
-        Row(
-            modifier = Modifier.padding(20.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(20.dp)
-        ) {
-            // Consistency ring
-            Box(
-                modifier = Modifier.size(80.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Canvas(modifier = Modifier.fillMaxSize()) {
-                    val strokeWidth = 8.dp.toPx()
-                    val radius = (size.minDimension - strokeWidth) / 2
-
-                    // Track
-                    drawCircle(
-                        color = accentColor.copy(alpha = 0.15f),
-                        radius = radius,
-                        style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
-                    )
-
-                    // Progress arc
-                    drawArc(
-                        color = accentColor,
-                        startAngle = -90f,
-                        sweepAngle = 360f * animatedProgress,
-                        useCenter = false,
-                        style = Stroke(width = strokeWidth, cap = StrokeCap.Round),
-                        topLeft = Offset(
-                            (size.width - 2 * radius) / 2,
-                            (size.height - 2 * radius) / 2
-                        ),
-                        size = Size(2 * radius, 2 * radius)
-                    )
-                }
-
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = "${(streakProgress * 100).toInt()}%",
-                        fontFamily = PoppinsFamily,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp,
-                        color = textPrimary
-                    )
-                }
-            }
-
-            // Stats
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    text = "Consistency Score",
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 16.sp,
-                    color = textPrimary
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = when {
-                        currentStreak >= longestStreak && currentStreak > 0 -> "Personal best! Keep going"
-                        streakProgress >= 0.8f -> "Almost at your best"
-                        streakProgress >= 0.5f -> "Solid progress this period"
-                        currentStreak > 0 -> "Building your rhythm"
-                        else -> "Start today to build your score"
-                    },
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Normal,
-                    fontSize = 13.sp,
-                    color = textSecondary,
-                    lineHeight = 18.sp
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    Column {
-                        Text(
-                            text = "Current",
-                            fontFamily = PoppinsFamily,
-                            fontSize = 11.sp,
-                            color = textTertiary
-                        )
-                        Text(
-                            text = "$currentStreak days",
-                            fontFamily = PoppinsFamily,
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 13.sp,
-                            color = textPrimary
-                        )
-                    }
-                    Column {
-                        Text(
-                            text = "Best",
-                            fontFamily = PoppinsFamily,
-                            fontSize = 11.sp,
-                            color = textTertiary
-                        )
-                        Text(
-                            text = "$longestStreak days",
-                            fontFamily = PoppinsFamily,
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 13.sp,
-                            color = textPrimary
-                        )
-                    }
-                }
-=======
-fun AchievementShelf(
-    unlockedCount: Int,
-    totalCount: Int,
-    achievements: List<AchievementEntity>,
-    onViewAllClick: () -> Unit,
-    isDarkMode: Boolean
-) {
-    val textPrimary = if (isDarkMode) IdentityRoomColors.TextPrimaryDark else IdentityRoomColors.TextPrimaryLight
-    val textSecondary = if (isDarkMode) IdentityRoomColors.TextSecondaryDark else IdentityRoomColors.TextSecondaryLight
-
-    Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp)) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column {
-                Text(
-                    text = "Trophy Shelf",
-                    style = TextStyle(
-                        fontFamily = PoppinsFamily,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp,
-                        color = textPrimary
-                    )
-                )
-                Text(
-                    text = "$unlockedCount of $totalCount collected",
-                    style = TextStyle(
-                        fontFamily = PoppinsFamily,
-                        fontSize = 13.sp,
-                        color = textSecondary
-                    )
-                )
-            }
-            
-            Text(
-                text = "View All",
-                modifier = Modifier.clickable { onViewAllClick() },
-                style = TextStyle(
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 14.sp,
-                    color = IdentityRoomColors.AccentGreen
-                )
-            )
-        }
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(end = 24.dp)
-        ) {
-            items(achievements) { achievement ->
-                AchievementBadge(achievement = achievement, isDarkMode = isDarkMode)
->>>>>>> Stashed changes
-            }
-        }
-    }
-}
-<<<<<<< Updated upstream
-=======
 
 @Composable
 fun AchievementBadge(
@@ -2112,7 +1898,7 @@ fun AchievementBadge(
         }
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = achievement.title,
+            text = achievement.name,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             style = TextStyle(
@@ -2125,4 +1911,3 @@ fun AchievementBadge(
         )
     }
 }
->>>>>>> Stashed changes
