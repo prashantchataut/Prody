@@ -4,43 +4,18 @@ import com.prody.prashant.ui.icons.ProdyIcons
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Alignment
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AutoAwesome
-import androidx.compose.material.icons.outlined.Notifications
-import androidx.compose.material.icons.outlined.Warning
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment as UIAlignment
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.Role
@@ -65,9 +40,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.ui.theme.*
 import com.prody.prashant.domain.intelligence.IntelligenceInsight
 
-//
+// =============================================================================
 // PERSONALIZATION DASHBOARD - REVAMPED 2026
-//
+// =============================================================================
 
 @Composable
 fun HomeScreen(
@@ -98,7 +73,7 @@ fun HomeScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .background(backgroundColor),
-            contentAlignment = UIAlignment.Center
+            contentAlignment = Alignment.Center
         ) {
             CircularProgressIndicator(color = ProdyForestGreen)
         }
@@ -111,9 +86,9 @@ fun HomeScreen(
                 .fillMaxSize()
                 .background(backgroundColor)
                 .padding(32.dp),
-            contentAlignment = UIAlignment.Center
+            contentAlignment = Alignment.Center
         ) {
-            Column(horizontalAlignment = UIAlignment.CenterHorizontally) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Icon(
                     imageVector = Icons.Outlined.Warning,
                     contentDescription = null,
@@ -256,9 +231,9 @@ fun HomeScreen(
     }
 }
 
-//
+// =============================================================================
 // DASHBOARD COMPONENTS
-//
+// =============================================================================
 
 @Composable
 fun DashboardHeader(
@@ -273,7 +248,7 @@ fun DashboardHeader(
             .padding(horizontal = 24.dp, vertical = 24.dp)
             .statusBarsPadding(),
         horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = UIAlignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Column {
             Text(
@@ -317,7 +292,7 @@ fun DashboardHeader(
                         role = Role.Button
                         contentDescription = profileContentDescription
                     },
-                contentAlignment = UIAlignment.Center
+                contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = userName.firstOrNull()?.toString() ?: "P",
@@ -349,7 +324,7 @@ fun OverviewSection(
         ) {
             Column(
                 modifier = Modifier.padding(16.dp),
-                horizontalAlignment = UIAlignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
                     text = streakDays.toString(),
@@ -381,7 +356,7 @@ fun OverviewSection(
         ) {
             Column(
                 modifier = Modifier.padding(16.dp),
-                horizontalAlignment = UIAlignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -409,7 +384,7 @@ data class BadgeData(val icon: androidx.compose.ui.graphics.vector.ImageVector, 
 
 @Composable
 fun BadgeItem(badge: BadgeData) {
-    Box(contentAlignment = UIAlignment.Center, modifier = Modifier.size(32.dp)) {
+    Box(contentAlignment = Alignment.Center, modifier = Modifier.size(32.dp)) {
         CircularProgressIndicator(
             progress = { badge.progress },
             modifier = Modifier.fillMaxSize(),
@@ -466,7 +441,7 @@ fun MoodChart(data: List<Float>, modifier: Modifier = Modifier) {
 
         val width = size.width
         val height = size.height
-        val stepX = if (data.size > 1) width / (data.size - 1) else 0f
+        val stepX = width / (data.size - 1)
         
         // Normalize data to height (1-5 scale)
         val points = data.mapIndexed { index, value ->
@@ -476,25 +451,23 @@ fun MoodChart(data: List<Float>, modifier: Modifier = Modifier) {
         }
 
         // Draw Line
-        if (points.size > 1) {
-            val path = Path().apply {
-                moveTo(points.first().x, points.first().y)
-                for (i in 1 until points.size) {
-                    // Bezier curve for smoothness
-                    val p0 = points[i - 1]
-                    val p1 = points[i]
-                    val controlPoint1 = Offset(p0.x + (p1.x - p0.x) / 2, p0.y)
-                    val controlPoint2 = Offset(p0.x + (p1.x - p0.x) / 2, p1.y)
-                    cubicTo(controlPoint1.x, controlPoint1.y, controlPoint2.x, controlPoint2.y, p1.x, p1.y)
-                }
+        val path = Path().apply {
+            moveTo(points.first().x, points.first().y)
+            for (i in 1 until points.size) {
+                // Bezier curve for smoothness
+                val p0 = points[i - 1]
+                val p1 = points[i]
+                val controlPoint1 = Offset(p0.x + (p1.x - p0.x) / 2, p0.y)
+                val controlPoint2 = Offset(p0.x + (p1.x - p0.x) / 2, p1.y)
+                cubicTo(controlPoint1.x, controlPoint1.y, controlPoint2.x, controlPoint2.y, p1.x, p1.y)
             }
-
-            drawPath(
-                path = path,
-                color = ProdyForestGreen,
-                style = Stroke(width = 4.dp.toPx(), cap = StrokeCap.Round)
-            )
         }
+
+        drawPath(
+            path = path,
+            color = ProdyForestGreen,
+            style = Stroke(width = 4.dp.toPx(), cap = StrokeCap.Round)
+        )
 
         // Draw Points
         points.forEach { point ->
@@ -566,7 +539,7 @@ fun SummaryCard(label: String, value: String, icon: androidx.compose.ui.graphics
     ) {
         Column(
             modifier = Modifier.padding(12.dp),
-            horizontalAlignment = UIAlignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Icon(
                 imageVector = icon,
@@ -679,7 +652,7 @@ fun QuickActionTile(title: String, icon: androidx.compose.ui.graphics.vector.Ima
         Column(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.Center,
-            horizontalAlignment = UIAlignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Icon(
                 imageVector = icon,
@@ -816,7 +789,7 @@ private fun ExploreChip(
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
-            verticalAlignment = UIAlignment.CenterVertically,
+            verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Icon(
@@ -862,7 +835,7 @@ fun RecentActivitySection(
             color = ProdySurfaceLight,
             shadowElevation = 1.dp
         ) {
-            Row(modifier = Modifier.padding(16.dp), verticalAlignment = UIAlignment.CenterVertically) {
+            Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                 Box(
                     modifier = Modifier
                         .size(40.dp)
@@ -871,7 +844,7 @@ fun RecentActivitySection(
                             if (journaledToday) ProdyForestGreen.copy(alpha = 0.1f)
                             else ProdyWarmAmber.copy(alpha = 0.1f)
                         ),
-                    contentAlignment = UIAlignment.Center
+                    contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = if (journaledToday) ProdyIcons.Check else ProdyIcons.Edit,
@@ -913,9 +886,9 @@ fun RecentActivitySection(
     }
 }
 
-//
+// =============================================================================
 // PERSONALIZED PATTERN CARD (opt-in, local ML)
-//
+// =============================================================================
 
 @Composable
 private fun PersonalizedPatternCard(
@@ -932,7 +905,7 @@ private fun PersonalizedPatternCard(
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
-                verticalAlignment = UIAlignment.CenterVertically,
+                verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Icon(
@@ -1005,7 +978,7 @@ fun IntelligenceInsightCard(
                 .padding(24.dp)
         ) {
             Row(
-                verticalAlignment = UIAlignment.CenterVertically,
+                verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Box(
@@ -1013,7 +986,7 @@ fun IntelligenceInsightCard(
                         .size(40.dp)
                         .clip(CircleShape)
                         .background(ProdyForestGreen.copy(alpha = 0.1f)),
-                    contentAlignment = UIAlignment.Center
+                    contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.AutoAwesome,

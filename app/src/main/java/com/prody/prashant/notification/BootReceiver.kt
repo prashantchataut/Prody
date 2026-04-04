@@ -16,6 +16,13 @@ import kotlinx.coroutines.launch
 
 /**
  * BroadcastReceiver that reschedules notifications after device boot or app update.
+ *
+ * This receiver handles:
+ * - ACTION_BOOT_COMPLETED: Device finished booting
+ * - ACTION_MY_PACKAGE_REPLACED: App was updated
+ *
+ * Notifications scheduled via AlarmManager are cleared on device reboot, so we need
+ * to reschedule them when the device boots up or when the app is updated.
  */
 class BootReceiver : BroadcastReceiver() {
 
@@ -29,21 +36,30 @@ class BootReceiver : BroadcastReceiver() {
         private const val TAG = "BootReceiver"
     }
 
+    // Coroutine exception handler to prevent silent failures
     private val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
         Log.e(TAG, "Coroutine exception during notification rescheduling", throwable)
     }
 
+    // SupervisorJob ensures that if one notification fails, others can still be scheduled
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob() + exceptionHandler)
 
     override fun onReceive(context: Context, intent: Intent) {
+        // Validate intent action
         val action = intent.action
         if (action != Intent.ACTION_BOOT_COMPLETED && action != Intent.ACTION_MY_PACKAGE_REPLACED) {
+            Log.d(TAG, "Ignoring unhandled action: $action")
             return
         }
 
+        Log.d(TAG, "Received action: $action")
+
+        // Use goAsync() to get more time for background work in BroadcastReceiver
         val pendingResult = goAsync()
 
         try {
+            // Get NotificationScheduler from Hilt using EntryPointAccessors
+            // This can throw if Hilt is not initialized or the application context is invalid
             val applicationContext = context.applicationContext
             if (applicationContext == null) {
                 Log.e(TAG, "Application context is null, cannot access Hilt")
@@ -64,16 +80,20 @@ class BootReceiver : BroadcastReceiver() {
 
             val notificationScheduler = entryPoint.notificationScheduler()
 
+            // Reschedule all notifications after boot/update
             scope.launch {
                 try {
                     notificationScheduler.rescheduleAllNotifications()
+                    Log.d(TAG, "Notifications rescheduled successfully after $action")
                 } catch (e: Exception) {
                     Log.e(TAG, "Failed to reschedule notifications", e)
                 } finally {
+                    // Always finish the pending result to avoid ANR
                     pendingResult.finish()
                 }
             }
         } catch (e: Exception) {
+            // Catch-all for any unexpected errors during initialization
             Log.e(TAG, "Unexpected error in BootReceiver", e)
             pendingResult.finish()
         }

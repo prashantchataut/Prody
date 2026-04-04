@@ -20,7 +20,7 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class CollaborativeMessageReceiver : BroadcastReceiver() {
 
-    @Inject
+        @Inject
     lateinit var repository: CollaborativeMessageRepository
 
     @Inject
@@ -39,6 +39,8 @@ class CollaborativeMessageReceiver : BroadcastReceiver() {
     }
 
     override fun onReceive(context: Context, intent: Intent) {
+        Log.d(TAG, "Received broadcast: ${intent.action}")
+
         when (intent.action) {
             CollaborativeMessageScheduler.ACTION_DELIVER_MESSAGE -> {
                 handleMessageDelivery(intent)
@@ -61,6 +63,7 @@ class CollaborativeMessageReceiver : BroadcastReceiver() {
 
         scope.launch {
             try {
+                Log.d(TAG, "Delivering message: $messageId")
                 repository.deliverMessage(messageId)
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to deliver message $messageId", e)
@@ -81,6 +84,9 @@ class CollaborativeMessageReceiver : BroadcastReceiver() {
 
         scope.launch {
             try {
+                Log.d(TAG, "Showing occasion reminder: $occasionName in $daysUntil days")
+
+                // Get contact details
                 val contactResult = repository.getContactById(contactId)
                 if (contactResult is com.prody.prashant.domain.common.Result.Success) {
                     val contact = contactResult.data
@@ -92,6 +98,7 @@ class CollaborativeMessageReceiver : BroadcastReceiver() {
                         contactId = contactId
                     )
 
+                    // Update last notified year
                     val occasionResult = repository.getOccasionById(occasionId)
                     if (occasionResult is com.prody.prashant.domain.common.Result.Success) {
                         val occasion = occasionResult.data
@@ -109,6 +116,7 @@ class CollaborativeMessageReceiver : BroadcastReceiver() {
     private fun handleBootCompleted() {
         scope.launch {
             try {
+                Log.d(TAG, "Rescheduling all pending messages and reminders after boot")
                 scheduler.rescheduleAllPendingMessages()
                 scheduler.rescheduleAllOccasionReminders()
                 scheduler.deliverOverdueMessages()
