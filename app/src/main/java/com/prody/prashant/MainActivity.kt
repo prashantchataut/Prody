@@ -276,7 +276,7 @@ fun ProdyApp(
                                             }
                                             .clip(CircleShape)
                                             .background(
-                                                androidx.compose.ui.graphics.Brush.verticalGradient(
+                                                Brush.verticalGradient(
                                                     colors = listOf(
                                                         com.prody.prashant.ui.theme.HavenBubbleLight,
                                                         com.prody.prashant.ui.theme.HavenBubbleLight.copy(alpha = 0.8f)
