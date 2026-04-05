@@ -1844,6 +1844,71 @@ fun SoulIdentityCard(
 }
 
 @Composable
+fun AchievementShelf(
+    unlockedCount: Int,
+    totalCount: Int,
+    achievements: List<AchievementEntity>,
+    onViewAllClick: () -> Unit,
+    isDarkMode: Boolean
+) {
+    val textPrimary = if (isDarkMode) IdentityRoomColors.TextPrimaryDark else IdentityRoomColors.TextPrimaryLight
+    val textSecondary = if (isDarkMode) IdentityRoomColors.TextSecondaryDark else IdentityRoomColors.TextSecondaryLight
+
+    Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column {
+                Text(
+                    text = "Trophy Shelf",
+                    style = TextStyle(
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp,
+                        color = textPrimary
+                    )
+                )
+                Text(
+                    text = "$unlockedCount of $totalCount collected",
+                    style = TextStyle(
+                        fontFamily = PoppinsFamily,
+                        fontSize = 13.sp,
+                        color = textSecondary
+                    )
+                )
+            }
+
+            Text(
+                text = "View All",
+                modifier = Modifier.clickable { onViewAllClick() },
+                style = TextStyle(
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 14.sp,
+                    color = IdentityRoomColors.AccentGreen
+                )
+            )
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(end = 24.dp)
+        ) {
+            items(
+                items = achievements,
+                key = { it.id }
+            ) { achievement ->
+                AchievementBadge(achievement = achievement, isDarkMode = isDarkMode)
+            }
+        }
+    }
+}
+
+@Composable
 private fun GrowthJourneyRow(
     label: String,
     value: String,
