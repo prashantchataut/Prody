@@ -156,14 +156,16 @@ fun HomeScreen(
             )
         }
 
-<<<<<<< Updated upstream
         // Personalized Pattern Card (opt-in, only shown when data exists)
         if (uiState.personalizedPatternText.isNotEmpty()) {
             item {
                 PersonalizedPatternCard(
                     patternText = uiState.personalizedPatternText,
                     patternSuggestion = uiState.personalizedPatternSuggestion
-=======
+                )
+            }
+        }
+
         // Premium Intelligence Insights (Opt-in)
         if (uiState.isPremiumIntelligenceEnabled && uiState.intelligenceInsights.isNotEmpty()) {
             item {
@@ -171,7 +173,6 @@ fun HomeScreen(
                 IntelligenceInsightCard(
                     insight = uiState.intelligenceInsights.first(),
                     onActionClick = {}
->>>>>>> Stashed changes
                 )
             }
         }
@@ -883,8 +884,6 @@ fun RecentActivitySection(
         }
     }
 }
-<<<<<<< Updated upstream
-
 // =============================================================================
 // PERSONALIZED PATTERN CARD (opt-in, local ML)
 // =============================================================================
@@ -893,17 +892,10 @@ fun RecentActivitySection(
 private fun PersonalizedPatternCard(
     patternText: String,
     patternSuggestion: String
-=======
-@Composable
-fun IntelligenceInsightCard(
-    insight: IntelligenceInsight,
-    onActionClick: () -> Unit
->>>>>>> Stashed changes
 ) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-<<<<<<< Updated upstream
             .padding(horizontal = 24.dp, vertical = 8.dp),
         shape = RoundedCornerShape(16.dp),
         color = ProdySurfaceLight,
@@ -953,7 +945,19 @@ fun IntelligenceInsightCard(
                         lineHeight = 18.sp
                     )
                 )
-=======
+            }
+        }
+    }
+}
+
+@Composable
+fun IntelligenceInsightCard(
+    insight: IntelligenceInsight,
+    onActionClick: () -> Unit
+) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
             .padding(horizontal = 24.dp),
         shape = RoundedCornerShape(24.dp),
         color = ProdySurfaceLight,
@@ -1044,7 +1048,6 @@ fun IntelligenceInsightCard(
                         fontWeight = FontWeight.SemiBold
                     )
                 }
->>>>>>> Stashed changes
             }
         }
     }

@@ -232,7 +232,7 @@ fun MoodBreathingHalo(
         AmbientMood.Grateful -> 2500
     }
 
-    val haloAlpha by infiniteTransition.animateFloat(
+    val haloAlpha = infiniteTransition.animateFloat(
         initialValue = 0.2f,
         targetValue = 0.5f,
         animationSpec = infiniteRepeatable(
@@ -242,7 +242,7 @@ fun MoodBreathingHalo(
         label = "halo_alpha"
     )
 
-    val haloScale by infiniteTransition.animateFloat(
+    val haloScale = infiniteTransition.animateFloat(
         initialValue = 1f,
         targetValue = 1.15f,
         animationSpec = infiniteRepeatable(
@@ -267,9 +267,12 @@ fun MoodBreathingHalo(
         // Outer glow halo
         Box(
             modifier = Modifier
-                .size(size * haloScale)
-                .scale(haloScale)
-                .alpha(haloAlpha)
+                .size(size)
+                .graphicsLayer {
+                    scaleX = haloScale.value
+                    scaleY = haloScale.value
+                    alpha = haloAlpha.value
+                }
                 .blur(12.dp)
                 .background(haloColor, CircleShape)
         )
@@ -278,7 +281,9 @@ fun MoodBreathingHalo(
         Box(
             modifier = Modifier
                 .size(size * 0.9f)
-                .alpha(haloAlpha * 0.5f)
+                .graphicsLayer {
+                    alpha = haloAlpha.value * 0.5f
+                }
                 .blur(6.dp)
                 .background(haloColor.copy(alpha = 0.3f), CircleShape)
         )
@@ -1018,7 +1023,7 @@ fun NavigationBreathingGlow(
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "nav_breathing")
 
-    val glowAlpha by infiniteTransition.animateFloat(
+    val glowAlpha = infiniteTransition.animateFloat(
         initialValue = 0.2f,
         targetValue = 0.5f,
         animationSpec = infiniteRepeatable(
@@ -1028,7 +1033,7 @@ fun NavigationBreathingGlow(
         label = "nav_glow_alpha"
     )
 
-    val glowScale by infiniteTransition.animateFloat(
+    val glowScale = infiniteTransition.animateFloat(
         initialValue = 1f,
         targetValue = 1.2f,
         animationSpec = infiniteRepeatable(
@@ -1038,7 +1043,7 @@ fun NavigationBreathingGlow(
         label = "nav_glow_scale"
     )
 
-    val activeAlpha by animateFloatAsState(
+    val activeAlpha = animateFloatAsState(
         targetValue = if (isActive) 1f else 0f,
         animationSpec = tween(300),
         label = "active_alpha"
@@ -1054,9 +1059,12 @@ fun NavigationBreathingGlow(
                 modifier = Modifier
                     .size(48.dp)
                     .graphicsLayer {
-                        scaleX = glowScale
-                        scaleY = glowScale
-                        alpha = glowAlpha * activeAlpha
+                        // Performance Optimization: Lambda-based state reads
+                        // ensure updates stay in the drawing phase, preventing
+                        // NavigationBar recomposition every frame.
+                        scaleX = glowScale.value
+                        scaleY = glowScale.value
+                        alpha = glowAlpha.value * activeAlpha.value
                     }
                     .blur(12.dp)
                     .background(color, CircleShape)
@@ -1088,7 +1096,7 @@ fun WisdomTextReveal(
     moodTint: Color? = null,
     onRevealComplete: () -> Unit = {}
 ) {
-    val revealProgress by animateFloatAsState(
+    val revealProgress = animateFloatAsState(
         targetValue = if (isVisible) 1f else 0f,
         animationSpec = tween(1200, easing = EaseOutCubic),
         label = "wisdom_reveal",
@@ -1097,7 +1105,7 @@ fun WisdomTextReveal(
 
     val infiniteTransition = rememberInfiniteTransition(label = "wisdom_ambient")
 
-    val ambientGlow by infiniteTransition.animateFloat(
+    val ambientGlow = infiniteTransition.animateFloat(
         initialValue = 0.1f,
         targetValue = 0.2f,
         animationSpec = infiniteRepeatable(
@@ -1116,7 +1124,9 @@ fun WisdomTextReveal(
             Box(
                 modifier = Modifier
                     .matchParentSize()
-                    .alpha(ambientGlow * revealProgress)
+                    .graphicsLayer {
+                        alpha = ambientGlow.value * revealProgress.value
+                    }
                     .blur(30.dp)
                     .background(
                         brush = Brush.radialGradient(
@@ -1134,14 +1144,15 @@ fun WisdomTextReveal(
         androidx.compose.material3.Text(
             text = text,
             modifier = Modifier
-                .alpha(revealProgress)
                 .graphicsLayer {
+                    // Performance Optimization: Lambda-based state reads
+                    alpha = revealProgress.value
                     // Subtle vertical unfolding effect
-                    scaleY = 0.9f + (revealProgress * 0.1f)
+                    scaleY = 0.9f + (revealProgress.value * 0.1f)
                     transformOrigin = TransformOrigin(0.5f, 0f)
                 },
             style = MaterialTheme.typography.bodyLarge.copy(
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = revealProgress)
+                color = MaterialTheme.colorScheme.onSurface
             )
         )
     }
