@@ -31,6 +31,7 @@ class PackageDependencyRulesTest {
             "intelligence/FirstWeekJourneyManager.kt",
             "intelligence/MemoryEngine.kt",
             "intelligence/NotificationIntelligence.kt",
+            "intelligence/PatternAnalysisEngine.kt",
             "intelligence/UserContextEngine.kt",
             "learning/PathContentProvider.kt",
             "learning/PathRecommender.kt",
