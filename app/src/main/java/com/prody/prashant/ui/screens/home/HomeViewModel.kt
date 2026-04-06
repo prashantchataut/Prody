@@ -590,7 +590,14 @@ class HomeViewModel @Inject constructor(
         try {
             val isEnabled = preferencesManager.premiumIntelligenceEnabled.first()
             val insights = if (isEnabled) {
-                patternAnalysisEngine.analyzePatterns(context)
+                // Fixed: analyzePatterns takes an Int lookbackDays, not UserContext
+                patternAnalysisEngine.analyzePatterns(lookbackDays = 7)?.patterns?.map {
+                    IntelligenceInsight(
+                        title = it.theme,
+                        description = it.sampleSnippet,
+                        actionable = it.suggestion
+                    )
+                } ?: emptyList()
             } else {
                 emptyList()
             }
