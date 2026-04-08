@@ -32,6 +32,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.data.local.entity.FutureMessageEntity
 import com.prody.prashant.domain.model.Mood
 import com.prody.prashant.ui.components.ProdyCard
+import com.prody.prashant.util.SecureScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,6 +43,9 @@ fun FutureMessageReplyScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+
+    // Security: Prevent screenshots and screen recordings of private reply content
+    SecureScreen()
 
     // Handle navigation
     LaunchedEffect(uiState.shouldNavigateToJournal) {

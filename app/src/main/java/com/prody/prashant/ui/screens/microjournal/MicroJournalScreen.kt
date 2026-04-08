@@ -33,6 +33,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.data.local.entity.MicroEntryEntity
 import com.prody.prashant.domain.model.Mood
 import com.prody.prashant.ui.components.ProdyCard
+import com.prody.prashant.util.SecureScreen
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -45,6 +46,9 @@ fun MicroJournalScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+
+    // Security: Prevent screenshots and screen recordings of private quick thoughts
+    SecureScreen()
 
     // Handle success/error messages
     LaunchedEffect(uiState.successMessage) {
@@ -707,7 +711,7 @@ private fun formatEntryTime(timestamp: Long, includeDate: Boolean): String {
 
     // Less than 24 hours - show hours
     if (diff < 24 * 60 * 60 * 1000) {
-        val hours = (diff / (60 * 60 * 1000)).toInt()
+        val hours = (diff / (60 * 1000)).toInt()
         return "$hours hour${if (hours > 1) "s" else ""} ago"
     }
 

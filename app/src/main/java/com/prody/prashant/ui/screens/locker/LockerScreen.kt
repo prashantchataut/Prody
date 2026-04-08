@@ -74,11 +74,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.prody.prashant.data.local.dao.EvidenceTypeCount
 import com.prody.prashant.data.local.entity.EvidenceEntity
 import com.prody.prashant.data.local.entity.EvidenceRarity
 import com.prody.prashant.data.local.entity.EvidenceType
 import com.prody.prashant.ui.theme.ProdyAccentGreen
 import com.prody.prashant.ui.theme.isDarkTheme
+import com.prody.prashant.util.SecureScreen
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -113,6 +115,10 @@ fun LockerScreen(
     onNavigateBack: () -> Unit = {}
 ) {
     val evidence by viewModel.evidence.collectAsStateWithLifecycle()
+
+    // Security: Prevent screenshots and screen recordings of growth evidence and journal snippets
+    SecureScreen()
+
     val selectedFilter by viewModel.selectedFilter.collectAsStateWithLifecycle()
     val selectedEvidence by viewModel.selectedEvidence.collectAsStateWithLifecycle()
     val totalCount by viewModel.totalCount.collectAsStateWithLifecycle()
@@ -298,7 +304,7 @@ private fun LockerHeader(
 private fun FilterChipRow(
     selectedFilter: EvidenceFilter,
     onFilterSelected: (EvidenceFilter) -> Unit,
-    typeCounts: List<com.prody.prashant.data.local.dao.EvidenceTypeCount>,
+    typeCounts: List<EvidenceTypeCount>,
     isDark: Boolean
 ) {
     LazyRow(
