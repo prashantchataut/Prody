@@ -35,6 +35,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.data.local.entity.WeeklyDigestEntity
 import com.prody.prashant.domain.model.Mood
 import com.prody.prashant.ui.components.ProdyCard
+import com.prody.prashant.util.SecureScreen
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -46,6 +47,9 @@ fun WeeklyDigestScreen(
     onNavigateToEntry: (Long) -> Unit,
     viewModel: WeeklyDigestViewModel = hiltViewModel()
 ) {
+    // Security: Prevent screenshots of sensitive weekly insights
+    SecureScreen()
+
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }

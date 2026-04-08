@@ -66,7 +66,7 @@ object ProdyIcons {
     val LocalFireDepartment: ImageVector = Icons.Filled.LocalFireDepartment
     val EmojiEvents: ImageVector = Icons.Filled.EmojiEvents
     val Psychology: ImageVector = Icons.Filled.Psychology
-    val Chat: ImageVector = Icons.Filled.Chat
+    val Chat: ImageVector = Icons.AutoMirrored.Filled.Chat
     val Notifications: ImageVector = Icons.Filled.Notifications
     val Inbox: ImageVector = Icons.Filled.Inbox
     val Refresh: ImageVector = Icons.Filled.Refresh
@@ -116,7 +116,7 @@ object ProdyIcons {
     val CalendarMonth: ImageVector = Icons.Filled.DateRange
     val Assignment: ImageVector = Icons.AutoMirrored.Filled.List
     val Token: ImageVector = Icons.Filled.Star
-    val HelpOutline: ImageVector = Icons.AutoMirrored.Filled.Help
+    val HelpOutline: ImageVector = Icons.AutoMirrored.Outlined.Help
     val Loop: ImageVector = Icons.Filled.Refresh
     val Tag: ImageVector = Icons.AutoMirrored.Filled.List
     val Circle: ImageVector = Icons.Filled.Star
@@ -353,18 +353,6 @@ object ProdyIcons {
     val Diamond: ImageVector = Star
     val LocalOffer: ImageVector = Star
     val LockOpen: ImageVector = Lock // Fallback
-
-    object Common {
-        val Add = ProdyIcons.Add
-        val Check = ProdyIcons.Check
-        val Close = ProdyIcons.Close
-        val Home = ProdyIcons.Home
-        val Menu = ProdyIcons.Menu
-        val Person = ProdyIcons.Person
-        val Search = ProdyIcons.Search
-        val Settings = ProdyIcons.Settings
-        val Star = ProdyIcons.Star
-    }
 
     object Gamification {
         val Trophy: ImageVector = Icons.Filled.EmojiEvents
