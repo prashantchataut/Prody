@@ -7,3 +7,8 @@
 **Vulnerability:** Leaking API keys in Logcat via OkHttp interceptors and debug logs, and missing UI protection for therapeutic chats.
 **Learning:** Prody's `OpenRouterService` used `HttpLoggingInterceptor.Level.BODY` in debug mode without redacting the `Authorization` header, exposing API keys to anybody with ADB access. Additionally, Haven't therapeutic screens lacked `FLAG_SECURE`, risking user privacy.
 **Prevention:** Always use `redactHeader("Authorization")` in network interceptors. Remove logs that print partial secrets. Enforce `FLAG_SECURE` on all therapeutic and reflection screens by default.
+
+## 2026-02-10 - Sensitive Data Leakage in System Logs
+**Vulnerability:** Journal snippets and full voice transcriptions logged to Logcat via `android.util.Log.d`.
+**Learning:** Even in debug builds, logging full user content (like transcriptions or AI-extracted snippets) creates a significant PII/SPII leak path through the system's shared log buffer.
+**Prevention:** Audit all log statements for sensitive variables (`content`, `text`, `snippet`). Use metadata (IDs, lengths, labels) for debugging instead of actual user-generated content.
