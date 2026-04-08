@@ -65,6 +65,8 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import android.app.Activity
+import android.view.WindowManager
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -95,9 +97,19 @@ fun WriteMessageScreen(
     onMessageSaved: () -> Unit,
     viewModel: WriteMessageViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
+
+    // Prevent screenshots/screen recordings of sensitive time capsule creation
+    DisposableEffect(Unit) {
+        val window = (context as? Activity)?.window
+        window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        onDispose {
+            window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        }
+    }
+
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isDark = isDarkTheme()
-    val context = LocalContext.current
 
     // Media picker launcher
     val mediaPickerLauncher = rememberLauncherForActivityResult(
