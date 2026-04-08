@@ -1,16 +1,21 @@
 package com.prody.prashant.ui.screens.onboarding
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -18,10 +23,58 @@ import androidx.compose.ui.unit.sp
 import com.prody.prashant.ui.icons.ProdyIcons
 import com.prody.prashant.ui.theme.ProdyAccentGreen
 
+/**
+ * Performance Optimization: Immutable data class ensures Compose compiler
+ * can skip recomposition when parameters haven't changed.
+ */
+@Immutable
+private data class HavenFeature(
+    val icon: ImageVector,
+    val title: String,
+    val description: String
+)
+
 @Composable
 fun HavenOnboardingScreen(
     onNext: () -> Unit
 ) {
+    var visible by remember { mutableStateOf(false) }
+
+    // Micro-UX: Staggered entrance animation
+    LaunchedEffect(Unit) {
+        visible = true
+    }
+
+    // Performance Optimization: Memoize brush and list to prevent allocation during recomposition
+    val heroBrush = remember {
+        Brush.linearGradient(
+            colors = listOf(
+                ProdyAccentGreen.copy(alpha = 0.2f),
+                ProdyAccentGreen.copy(alpha = 0.05f)
+            )
+        )
+    }
+
+    val features = remember {
+        listOf(
+            HavenFeature(
+                icon = ProdyIcons.Lock,
+                title = "Private & Secure",
+                description = "Your conversations are encrypted and private."
+            ),
+            HavenFeature(
+                icon = ProdyIcons.Favorite,
+                title = "Always Here",
+                description = "Available 24/7 whenever you need a listening ear."
+            ),
+            HavenFeature(
+                icon = ProdyIcons.SelfImprovement,
+                title = "Growth Focused",
+                description = "Tools and exercises to help you thrive."
+            )
+        )
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -30,55 +83,65 @@ fun HavenOnboardingScreen(
         verticalArrangement = Arrangement.Center
     ) {
         // Icon / Hero Image
-        Box(
-            modifier = Modifier
-                .size(120.dp)
-                .clip(CircleShape)
-                .background(
-                    Brush.linearGradient(
-                        colors = listOf(
-                            ProdyAccentGreen.copy(alpha = 0.2f),
-                            ProdyAccentGreen.copy(alpha = 0.05f)
-                        )
-                    )
-                ),
-            contentAlignment = Alignment.Center
+        AnimatedVisibility(
+            visible = visible,
+            enter = fadeIn(tween(600)) + slideInVertically(tween(600)) { -40 }
         ) {
-            Icon(
-                imageVector = ProdyIcons.Psychology, // Or a similar relevant icon
-                contentDescription = null,
-                modifier = Modifier.size(64.dp),
-                tint = ProdyAccentGreen
-            )
+            Box(
+                modifier = Modifier
+                    .size(120.dp)
+                    .clip(CircleShape)
+                    .background(heroBrush),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = ProdyIcons.Psychology,
+                    contentDescription = null,
+                    modifier = Modifier.size(64.dp),
+                    tint = ProdyAccentGreen
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        Text(
-            text = "Meet Haven",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onBackground
-        )
+        AnimatedVisibility(
+            visible = visible,
+            enter = fadeIn(tween(600, 100)) + slideInVertically(tween(600, 100)) { 20 }
+        ) {
+            Text(
+                text = "Meet Haven",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text(
-            text = "Your private, safe space for reflection and support.",
-            style = MaterialTheme.typography.titleMedium,
-            textAlign = TextAlign.Center,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
+        AnimatedVisibility(
+            visible = visible,
+            enter = fadeIn(tween(600, 200)) + slideInVertically(tween(600, 200)) { 20 }
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = "Your private, safe space for reflection and support.",
+                    style = MaterialTheme.typography.titleMedium,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
 
-        Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
-        Text(
-            text = "Haven is here to listen, support, and help you navigate life's challenges—without judgment.",
-            style = MaterialTheme.typography.bodyMedium,
-            textAlign = TextAlign.Center,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        
+                Text(
+                    text = "Haven is here to listen, support, and help you navigate life's challenges—without judgment.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+
         Spacer(modifier = Modifier.height(32.dp))
 
         // Feature list
@@ -86,21 +149,19 @@ fun HavenOnboardingScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier.fillMaxWidth()
         ) {
-            OnboardingFeatureItem(
-                icon = ProdyIcons.Lock,
-                title = "Private & Secure",
-                description = "Your conversations are encrypted and private."
-            )
-            OnboardingFeatureItem(
-                icon = ProdyIcons.Favorite,
-                title = "Always Here",
-                description = "Available 24/7 whenever you need a listening ear."
-            )
-            OnboardingFeatureItem(
-                icon = ProdyIcons.SelfImprovement, // Or similar
-                title = "Growth Focused",
-                description = "Tools and exercises to help you thrive."
-            )
+            features.forEachIndexed { index, feature ->
+                AnimatedVisibility(
+                    visible = visible,
+                    enter = fadeIn(tween(600, 400 + (index * 100))) +
+                            slideInVertically(tween(600, 400 + (index * 100))) { 20 }
+                ) {
+                    OnboardingFeatureItem(
+                        icon = feature.icon,
+                        title = feature.title,
+                        description = feature.description
+                    )
+                }
+            }
         }
         
         Spacer(modifier = Modifier.weight(1f)) // Push button to bottom

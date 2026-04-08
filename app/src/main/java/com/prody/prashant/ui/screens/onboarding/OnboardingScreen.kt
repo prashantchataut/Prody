@@ -62,17 +62,22 @@ fun OnboardingScreen(
     // We will use the ProdyTheme colors.
     
     // Gradient Background: White to #F5F5F5 for light mode
-    val gradientColors = if (!isSystemInDarkTheme()) {
-        listOf(Color.White, Color(0xFFF5F5F5))
-    } else {
-        listOf(ProdyBackgroundDark, ProdyBackgroundDark) // Keep dark mode simple
+    // Performance Optimization: Using remember to prevent redundant object allocation during recomposition
+    val isDark = isSystemInDarkTheme()
+    val gradientBrush = remember(isDark) {
+        val colors = if (!isDark) {
+            listOf(Color.White, Color(0xFFF5F5F5))
+        } else {
+            listOf(ProdyBackgroundDark, ProdyBackgroundDark)
+        }
+        Brush.verticalGradient(colors)
     }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Brush.verticalGradient(gradientColors))
             .systemBarsPadding()
+            .background(gradientBrush)
     ) {
         HorizontalPager(
             state = pagerState,
