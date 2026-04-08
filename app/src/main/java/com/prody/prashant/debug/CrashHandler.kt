@@ -5,8 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.util.Log
-import java.io.PrintWriter
-import java.io.StringWriter
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -206,15 +204,12 @@ class CrashHandler private constructor(
     }
 
     private fun buildCrashInfo(thread: Thread, throwable: Throwable): CrashInfo {
-        val stackTraceWriter = StringWriter()
-        throwable.printStackTrace(PrintWriter(stackTraceWriter))
-
         val rootCause = getRootCause(throwable)
 
         return CrashInfo(
             exceptionType = throwable::class.java.simpleName,
             exceptionMessage = throwable.message ?: "No message available",
-            fullStackTrace = stackTraceWriter.toString(),
+            fullStackTrace = throwable.stackTraceToString(),
             rootCauseType = rootCause::class.java.simpleName,
             rootCauseMessage = rootCause.message ?: "No message available",
             threadName = thread.name,
