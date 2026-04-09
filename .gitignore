@@ -1,31 +1,29 @@
-*.iml
-.gradle
-/local.properties
-/.idea/
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
-local.properties
+# Dependencies
+node_modules/
 
-# Android Studio and Gradle
-.gradle/
+# SvelteKit build output
+.svelte-kit/
 build/
-app/build/
-.idea/
-*.iml
+dist/
 
-# Keystore files
-*.jks
-*.keystore
-
-# Google Services
-google-services.json
-
-# Generated files
-build_output.txt
-
-# Kotlin
-.kotlin/
+# Environment files — NEVER commit these
 .env
+.env.local
+.env.*.local
+
+# Test output
+coverage/
+playwright-report/
+test-results/
+
+# Editor
+.DS_Store
+Thumbs.db
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Logs
+*.log
+npm-debug.log*
