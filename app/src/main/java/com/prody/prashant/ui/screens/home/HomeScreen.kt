@@ -184,10 +184,10 @@ fun HomeScreen(
         }
 
         // Mood Trend Chart - only show if there's real data
-        if (uiState.journalEntriesThisWeek > 0) {
+        if (uiState.moodTrend.isNotEmpty()) {
             item {
                 MoodTrendSection(
-                    moodData = emptyList() // Mood trend requires historical mood data not exposed yet
+                    moodData = uiState.moodTrend
                 )
             }
         }
@@ -230,7 +230,8 @@ fun HomeScreen(
             RecentActivitySection(
                 journaledToday = uiState.journaledToday,
                 todayMood = uiState.todayEntryMood,
-                todayPreview = uiState.todayEntryPreview
+                todayPreview = uiState.todayEntryPreview,
+                onClick = onNavigateToJournal
             )
         }
     }
@@ -278,11 +279,13 @@ fun DashboardHeader(
         
         val profileContentDescription = stringResource(R.string.cd_profile_picture)
 
+        val notificationContentDescription = stringResource(R.string.notifications)
+
         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             IconButton(onClick = onNotificationClick) {
                 Icon(
                     imageVector = Icons.Outlined.Notifications,
-                    contentDescription = "Notifications",
+                    contentDescription = notificationContentDescription,
                     tint = ProdyTextPrimaryLight
                 )
             }
@@ -653,10 +656,19 @@ fun QuickActionsGrid(
 
 @Composable
 fun QuickActionTile(title: String, icon: androidx.compose.ui.graphics.vector.ImageVector, color: Color, onClick: () -> Unit, modifier: Modifier) {
+    val haptic = com.prody.prashant.util.rememberProdyHaptic()
     Surface(
         modifier = modifier
             .height(100.dp)
-            .clickable(onClick = onClick),
+            .clickable(
+                onClick = {
+                    haptic.click()
+                    onClick()
+                }
+            )
+            .semantics {
+                role = Role.Button
+            },
         shape = RoundedCornerShape(16.dp),
         color = color.copy(alpha = 0.1f),
         border = androidx.compose.foundation.BorderStroke(1.dp, color.copy(alpha = 0.2f))
@@ -792,9 +804,18 @@ private fun ExploreChip(
     color: Color,
     onClick: () -> Unit
 ) {
+    val haptic = com.prody.prashant.util.rememberProdyHaptic()
     Surface(
         modifier = Modifier
-            .clickable(onClick = onClick),
+            .clickable(
+                onClick = {
+                    haptic.click()
+                    onClick()
+                }
+            )
+            .semantics {
+                role = Role.Button
+            },
         shape = RoundedCornerShape(12.dp),
         color = color.copy(alpha = 0.1f),
         border = androidx.compose.foundation.BorderStroke(1.dp, color.copy(alpha = 0.15f))
@@ -827,8 +848,10 @@ private fun ExploreChip(
 fun RecentActivitySection(
     journaledToday: Boolean = false,
     todayMood: String = "",
-    todayPreview: String = ""
+    todayPreview: String = "",
+    onClick: () -> Unit = {}
 ) {
+    val haptic = com.prody.prashant.util.rememberProdyHaptic()
     Column(modifier = Modifier.padding(horizontal = 24.dp)) {
         Text(
             text = "Today",
@@ -842,7 +865,15 @@ fun RecentActivitySection(
         Spacer(modifier = Modifier.height(16.dp))
         
         Surface(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable {
+                    haptic.click()
+                    onClick()
+                }
+                .semantics {
+                    role = Role.Button
+                },
             shape = RoundedCornerShape(12.dp),
             color = ProdySurfaceLight,
             shadowElevation = 1.dp

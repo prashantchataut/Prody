@@ -137,7 +137,8 @@ data class HomeUiState(
     val personalizedPatternSuggestion: String = "",
     // Intelligence Insights
     val intelligenceInsights: List<IntelligenceInsight> = emptyList(),
-    val isPremiumIntelligenceEnabled: Boolean = false
+    val isPremiumIntelligenceEnabled: Boolean = false,
+    val moodTrend: List<Float> = emptyList()
 )
 
 private data class DailyContent(
@@ -237,6 +238,20 @@ class HomeViewModel @Inject constructor(
                 val dualStreak = args.getOrNull(5) as? DualStreakStatus ?: DualStreakStatus.empty()
                 val aiProofMode = args.getOrNull(6) as? Boolean ?: false
 
+                // Calculate mood trend from weekly entries
+                val moodTrend = weeklyJournalEntries
+                    .sortedBy { it.createdAt }
+                    .mapNotNull { entry ->
+                        when (entry.mood.lowercase()) {
+                            "happy", "excited" -> 5.0f
+                            "motivated", "grateful" -> 4.0f
+                            "calm", "nostalgic" -> 3.0f
+                            "confused" -> 2.0f
+                            "anxious", "sad" -> 1.0f
+                            else -> null
+                        }
+                    }
+
                 // Calculate weekly active days.
                 val daysActiveThisWeek = streakHistory.count { it.date >= weekStart }
 
@@ -273,6 +288,7 @@ class HomeViewModel @Inject constructor(
                     todayEntryMood = todayMood,
                     todayEntryPreview = todayPreview,
                     dualStreakStatus = dualStreak,
+                    moodTrend = moodTrend,
                     buddhaWisdomProofInfo = _uiState.value.buddhaWisdomProofInfo.copy(isEnabled = aiProofMode),
                     isLoading = false // <-- Critical: Signal that loading is complete.
                 )
