@@ -17,6 +17,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -38,6 +39,7 @@ import com.prody.prashant.R
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.ui.theme.*
+import com.prody.prashant.domain.intelligence.IntelligenceInsight
 
 // =============================================================================
 // PERSONALIZATION DASHBOARD - REVAMPED 2026
@@ -114,23 +116,27 @@ fun HomeScreen(
     }
 
     // Determine greeting based on ViewModel state or time-based fallback
-    val greeting = if (uiState.intelligentGreeting.isNotEmpty()) {
-        uiState.intelligentGreeting
-    } else {
-        val hour = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY)
-        when {
-            hour < 12 -> "Good Morning,"
-            hour < 17 -> "Good Afternoon,"
-            else -> "Good Evening,"
+    val greeting = remember(uiState.intelligentGreeting) {
+        if (uiState.intelligentGreeting.isNotEmpty()) {
+            uiState.intelligentGreeting
+        } else {
+            val hour = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY)
+            when {
+                hour < 12 -> "Good Morning,"
+                hour < 17 -> "Good Afternoon,"
+                else -> "Good Evening,"
+            }
         }
     }
 
     // Build badge data from real achievement progress
-    val badges = listOf(
-        BadgeData(ProdyIcons.EmojiEvents, (uiState.totalPoints.coerceAtMost(1000) / 1000f).coerceIn(0f, 1f), ProdyWarmAmber),
-        BadgeData(ProdyIcons.Edit, (uiState.journalEntriesThisWeek.coerceAtMost(7) / 7f).coerceIn(0f, 1f), ProdyForestGreen),
-        BadgeData(ProdyIcons.Psychology, (uiState.daysActiveThisWeek.coerceAtMost(7) / 7f).coerceIn(0f, 1f), ProdyInfo)
-    )
+    val badges = remember(uiState.totalPoints, uiState.journalEntriesThisWeek, uiState.daysActiveThisWeek) {
+        listOf(
+            BadgeData(ProdyIcons.EmojiEvents, (uiState.totalPoints.coerceAtMost(1000) / 1000f).coerceIn(0f, 1f), ProdyWarmAmber),
+            BadgeData(ProdyIcons.Edit, (uiState.journalEntriesThisWeek.coerceAtMost(7) / 7f).coerceIn(0f, 1f), ProdyForestGreen),
+            BadgeData(ProdyIcons.Psychology, (uiState.daysActiveThisWeek.coerceAtMost(7) / 7f).coerceIn(0f, 1f), ProdyInfo)
+        )
+    }
 
     LazyColumn(
         modifier = Modifier
@@ -156,14 +162,16 @@ fun HomeScreen(
             )
         }
 
-<<<<<<< Updated upstream
         // Personalized Pattern Card (opt-in, only shown when data exists)
         if (uiState.personalizedPatternText.isNotEmpty()) {
             item {
                 PersonalizedPatternCard(
                     patternText = uiState.personalizedPatternText,
                     patternSuggestion = uiState.personalizedPatternSuggestion
-=======
+                )
+            }
+        }
+
         // Premium Intelligence Insights (Opt-in)
         if (uiState.isPremiumIntelligenceEnabled && uiState.intelligenceInsights.isNotEmpty()) {
             item {
@@ -171,7 +179,6 @@ fun HomeScreen(
                 IntelligenceInsightCard(
                     insight = uiState.intelligenceInsights.first(),
                     onActionClick = {}
->>>>>>> Stashed changes
                 )
             }
         }
@@ -382,7 +389,14 @@ data class BadgeData(val icon: androidx.compose.ui.graphics.vector.ImageVector, 
 
 @Composable
 fun BadgeItem(badge: BadgeData) {
-    Box(contentAlignment = Alignment.Center, modifier = Modifier.size(32.dp)) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .size(32.dp)
+            .graphicsLayer {
+                // Deferring any potential transformations to drawing layer
+            }
+    ) {
         CircularProgressIndicator(
             progress = { badge.progress },
             modifier = Modifier.fillMaxSize(),
@@ -392,7 +406,7 @@ fun BadgeItem(badge: BadgeData) {
         )
         Icon(
             imageVector = badge.icon,
-            contentDescription = null,
+            contentDescription = stringResource(R.string.cd_badge_icon, badge.icon.name),
             tint = badge.color,
             modifier = Modifier.size(16.dp)
         )
@@ -883,7 +897,6 @@ fun RecentActivitySection(
         }
     }
 }
-<<<<<<< Updated upstream
 
 // =============================================================================
 // PERSONALIZED PATTERN CARD (opt-in, local ML)
@@ -893,17 +906,10 @@ fun RecentActivitySection(
 private fun PersonalizedPatternCard(
     patternText: String,
     patternSuggestion: String
-=======
-@Composable
-fun IntelligenceInsightCard(
-    insight: IntelligenceInsight,
-    onActionClick: () -> Unit
->>>>>>> Stashed changes
 ) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-<<<<<<< Updated upstream
             .padding(horizontal = 24.dp, vertical = 8.dp),
         shape = RoundedCornerShape(16.dp),
         color = ProdySurfaceLight,
@@ -953,7 +959,19 @@ fun IntelligenceInsightCard(
                         lineHeight = 18.sp
                     )
                 )
-=======
+            }
+        }
+    }
+}
+
+@Composable
+fun IntelligenceInsightCard(
+    insight: IntelligenceInsight,
+    onActionClick: () -> Unit
+) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
             .padding(horizontal = 24.dp),
         shape = RoundedCornerShape(24.dp),
         color = ProdySurfaceLight,
@@ -1044,7 +1062,6 @@ fun IntelligenceInsightCard(
                         fontWeight = FontWeight.SemiBold
                     )
                 }
->>>>>>> Stashed changes
             }
         }
     }

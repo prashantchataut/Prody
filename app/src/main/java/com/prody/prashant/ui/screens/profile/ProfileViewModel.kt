@@ -47,6 +47,9 @@ data class ProfileUiState(
     val dailyDisciplineXp: Int = 0,
     val dailyCourageXp: Int = 0,
     val tokens: Int = 0,
+    // Soul Layer Context for Identity Card
+    val userContext: com.prody.prashant.domain.intelligence.UserContext = com.prody.prashant.domain.intelligence.UserContext.empty(),
+    val level: Int = 1,
     // Error state
     val error: String? = null
 )
@@ -56,7 +59,8 @@ class ProfileViewModel @Inject constructor(
     private val userDao: UserDao,
     private val journalDao: JournalDao,
     private val buddhaAiRepository: BuddhaAiRepository,
-    private val preferencesManager: PreferencesManager
+    private val preferencesManager: PreferencesManager,
+    private val soulLayerRepository: com.prody.prashant.domain.repository.SoulLayerRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProfileUiState())
@@ -72,6 +76,18 @@ class ProfileViewModel @Inject constructor(
         loadWeeklyPattern()
         loadBadgePreferences()
         loadPlayerSkills()
+        loadSoulContext()
+    }
+
+    private fun loadSoulContext() {
+        viewModelScope.launch {
+            try {
+                val context = soulLayerRepository.getCurrentContext()
+                _uiState.update { it.copy(userContext = context) }
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error loading soul context", e)
+            }
+        }
     }
 
     private fun loadBadgePreferences() {
@@ -114,6 +130,7 @@ class ProfileViewModel @Inject constructor(
                                 wordsLearned = it.wordsLearned,
                                 journalEntries = it.journalEntriesCount,
                                 daysOnPrody = daysOnPrody,
+                                level = getLevelFromPoints(it.totalPoints),
                                 isLoading = false
                             )
                         }
@@ -172,6 +189,21 @@ class ProfileViewModel @Inject constructor(
             } catch (e: Exception) {
                 android.util.Log.e(TAG, "Error loading player skills", e)
             }
+        }
+    }
+
+    private fun getLevelFromPoints(points: Int): Int {
+        return when {
+            points >= 10000 -> 10
+            points >= 7500 -> 9
+            points >= 5000 -> 8
+            points >= 3500 -> 7
+            points >= 2500 -> 6
+            points >= 1500 -> 5
+            points >= 1000 -> 4
+            points >= 500 -> 3
+            points >= 200 -> 2
+            else -> 1
         }
     }
 

@@ -27,14 +27,17 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
@@ -44,6 +47,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -162,22 +166,19 @@ fun ProfileScreen(
             .fillMaxSize()
             .background(backgroundColor)
     ) {
-<<<<<<< Updated upstream
-=======
         // Minimal horizontal line at the top of content for structure
-        Divider(
+        HorizontalDivider(
             modifier = Modifier.align(Alignment.TopCenter).statusBarsPadding().padding(top = 72.dp),
             color = textPrimary.copy(alpha = 0.05f)
         )
 
->>>>>>> Stashed changes
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(bottom = 100.dp)
         ) {
             // Header with title and actions
             item {
-                PremiumHeader(
+                com.prody.prashant.ui.components.PremiumHeader(
                     title = "Identity",
                     subtitle = "Soul Layer",
                     onBackClick = null, // Profile is a main tab or top-level here
@@ -531,12 +532,12 @@ private fun BioSection(
     onEditClick: () -> Unit
 ) {
     Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onEditClick() },
         color = if (isDarkMode) IdentityRoomColors.CardBackgroundDark.copy(alpha = 0.5f)
                 else IdentityRoomColors.CardBackgroundLight.copy(alpha = 0.8f),
-        shape = RoundedCornerShape(16.dp)
+        shape = RoundedCornerShape(16.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onEditClick() }
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
@@ -575,7 +576,7 @@ private fun NeonProgressRing(
     modifier: Modifier = Modifier,
     accentColor: Color
 ) {
-    val animatedProgress by animateFloatAsState(
+    val animatedProgressState = animateFloatAsState(
         targetValue = progress,
         animationSpec = tween(1500, easing = FastOutSlowInEasing),
         label = "progress_ring"
@@ -618,7 +619,7 @@ private fun NeonProgressRing(
         drawArc(
             color = accentColor,
             startAngle = -90f,
-            sweepAngle = animatedProgress * 360f,
+            sweepAngle = animatedProgressState.value * 360f,
             useCenter = false,
             style = Stroke(width = strokeWidth, cap = StrokeCap.Round),
             topLeft = Offset(strokeWidth / 2, strokeWidth / 2),
@@ -759,7 +760,7 @@ private fun PremiumMetricCard(
         isAnimated = true
     }
 
-    val scale by animateFloatAsState(
+    val scaleState = animateFloatAsState(
         targetValue = if (isAnimated) 1f else 0.9f,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
@@ -770,7 +771,11 @@ private fun PremiumMetricCard(
 
     Surface(
         modifier = modifier
-            .scale(scale)
+            .graphicsLayer {
+                val s = scaleState.value
+                scaleX = s
+                scaleY = s
+            }
             .clip(RoundedCornerShape(20.dp)),
         color = surfaceColor,
         shape = RoundedCornerShape(20.dp),
@@ -1304,7 +1309,7 @@ private fun PremiumFeaturedAchievementCard(
         isVisible = true
     }
 
-    val scale by animateFloatAsState(
+    val scaleState = animateFloatAsState(
         targetValue = if (isVisible) 1f else 0.8f,
         animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
         label = "achievement_scale"
@@ -1313,7 +1318,11 @@ private fun PremiumFeaturedAchievementCard(
     Surface(
         modifier = Modifier
             .width(100.dp)
-            .scale(scale)
+            .graphicsLayer {
+                val s = scaleState.value
+                scaleX = s
+                scaleY = s
+            }
             .clip(RoundedCornerShape(20.dp)),
         color = surfaceElevated,
         shape = RoundedCornerShape(20.dp),
@@ -1607,7 +1616,6 @@ private fun getLevelThreshold(level: Int): Int {
     }
 }
 
-<<<<<<< Updated upstream
 // ============================================================================
 // GROWTH JOURNEY CARD
 // ============================================================================
@@ -1699,7 +1707,10 @@ private fun GrowthJourneyCard(
                 textSecondary = textSecondary,
                 textPrimary = textPrimary
             )
-=======
+        }
+    }
+}
+
 @Composable
 fun SoulIdentityCard(
     context: com.prody.prashant.domain.intelligence.UserContext,
@@ -1841,13 +1852,11 @@ fun SoulIdentityCard(
                     )
                 }
             }
->>>>>>> Stashed changes
         }
     }
 }
 
 @Composable
-<<<<<<< Updated upstream
 private fun GrowthJourneyRow(
     label: String,
     value: String,
@@ -1897,7 +1906,7 @@ private fun ConsistencyScoreCard(
         (currentStreak.toFloat() / longestStreak).coerceIn(0f, 1f)
     } else if (currentStreak > 0) 1f else 0f
 
-    val animatedProgress by animateFloatAsState(
+    val animatedProgressState = animateFloatAsState(
         targetValue = streakProgress,
         animationSpec = tween(durationMillis = 1000, easing = EaseInOutCubic),
         label = "consistency_progress"
@@ -1935,7 +1944,7 @@ private fun ConsistencyScoreCard(
                     drawArc(
                         color = accentColor,
                         startAngle = -90f,
-                        sweepAngle = 360f * animatedProgress,
+                        sweepAngle = 360f * animatedProgressState.value,
                         useCenter = false,
                         style = Stroke(width = strokeWidth, cap = StrokeCap.Round),
                         topLeft = Offset(
@@ -2018,7 +2027,12 @@ private fun ConsistencyScoreCard(
                         )
                     }
                 }
-=======
+            }
+        }
+    }
+}
+
+@Composable
 fun AchievementShelf(
     unlockedCount: Int,
     totalCount: Int,
@@ -2075,13 +2089,10 @@ fun AchievementShelf(
         ) {
             items(achievements) { achievement ->
                 AchievementBadge(achievement = achievement, isDarkMode = isDarkMode)
->>>>>>> Stashed changes
             }
         }
     }
 }
-<<<<<<< Updated upstream
-=======
 
 @Composable
 fun AchievementBadge(
@@ -2112,7 +2123,7 @@ fun AchievementBadge(
         }
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = achievement.title,
+            text = achievement.name,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             style = TextStyle(
@@ -2125,4 +2136,3 @@ fun AchievementBadge(
         )
     }
 }
->>>>>>> Stashed changes

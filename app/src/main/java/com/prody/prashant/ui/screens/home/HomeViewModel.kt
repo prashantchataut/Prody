@@ -128,20 +128,16 @@ data class HomeUiState(
     // Anniversary memories for today
     val anniversaryMemories: List<AnniversaryMemory> = emptyList(),
     // User context for personalization
-<<<<<<< Updated upstream
     val userArchetype: UserArchetype = UserArchetype.EXPLORER,
     val trustLevel: TrustLevel = TrustLevel.NEW,
     val isUserStruggling: Boolean = false,
     val isUserThriving: Boolean = false,
     // ============== PERSONALIZED PATTERN (local ML) ==============
     val personalizedPatternText: String = "",
-    val personalizedPatternSuggestion: String = ""
-=======
-    val isUserThriving: Boolean = false,
+    val personalizedPatternSuggestion: String = "",
     // Intelligence Insights
     val intelligenceInsights: List<IntelligenceInsight> = emptyList(),
     val isPremiumIntelligenceEnabled: Boolean = false
->>>>>>> Stashed changes
 )
 
 private data class DailyContent(
@@ -594,7 +590,14 @@ class HomeViewModel @Inject constructor(
         try {
             val isEnabled = preferencesManager.premiumIntelligenceEnabled.first()
             val insights = if (isEnabled) {
-                patternAnalysisEngine.analyzePatterns(context)
+                // Fixed: analyzePatterns takes an Int lookbackDays, not UserContext
+                patternAnalysisEngine.analyzePatterns(lookbackDays = 7)?.patterns?.map {
+                    IntelligenceInsight(
+                        title = it.theme,
+                        description = it.sampleSnippet,
+                        actionable = it.suggestion
+                    )
+                } ?: emptyList()
             } else {
                 emptyList()
             }
