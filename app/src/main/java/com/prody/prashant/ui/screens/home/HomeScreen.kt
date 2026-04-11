@@ -40,6 +40,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.ui.theme.*
 import com.prody.prashant.domain.intelligence.IntelligenceInsight
+import com.prody.prashant.util.rememberProdyHaptic
+import com.prody.prashant.ui.components.ProdyIconButton
 
 // =============================================================================
 // PERSONALIZATION DASHBOARD - REVAMPED 2026
@@ -278,14 +280,16 @@ fun DashboardHeader(
         
         val profileContentDescription = stringResource(R.string.cd_profile_picture)
 
-        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            IconButton(onClick = onNotificationClick) {
-                Icon(
-                    imageVector = Icons.Outlined.Notifications,
-                    contentDescription = "Notifications",
-                    tint = ProdyTextPrimaryLight
-                )
-            }
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            ProdyIconButton(
+                icon = Icons.Outlined.Notifications,
+                onClick = onNotificationClick,
+                contentDescription = stringResource(R.string.notifications),
+                tint = ProdyTextPrimaryLight
+            )
             // Avatar / Profile
             Box(
                 modifier = Modifier
@@ -653,10 +657,19 @@ fun QuickActionsGrid(
 
 @Composable
 fun QuickActionTile(title: String, icon: androidx.compose.ui.graphics.vector.ImageVector, color: Color, onClick: () -> Unit, modifier: Modifier) {
+    val haptic = rememberProdyHaptic()
     Surface(
         modifier = modifier
             .height(100.dp)
-            .clickable(onClick = onClick),
+            .clickable(
+                onClick = {
+                    haptic.click()
+                    onClick()
+                }
+            )
+            .semantics {
+                role = Role.Button
+            },
         shape = RoundedCornerShape(16.dp),
         color = color.copy(alpha = 0.1f),
         border = androidx.compose.foundation.BorderStroke(1.dp, color.copy(alpha = 0.2f))
@@ -792,9 +805,18 @@ private fun ExploreChip(
     color: Color,
     onClick: () -> Unit
 ) {
+    val haptic = rememberProdyHaptic()
     Surface(
         modifier = Modifier
-            .clickable(onClick = onClick),
+            .clickable(
+                onClick = {
+                    haptic.click()
+                    onClick()
+                }
+            )
+            .semantics {
+                role = Role.Button
+            },
         shape = RoundedCornerShape(12.dp),
         color = color.copy(alpha = 0.1f),
         border = androidx.compose.foundation.BorderStroke(1.dp, color.copy(alpha = 0.15f))
