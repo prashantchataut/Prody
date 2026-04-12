@@ -1,9 +1,12 @@
 package com.prody.prashant.ui.screens.home
 
 import com.prody.prashant.ui.icons.ProdyIcons
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -40,6 +43,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.ui.theme.*
 import com.prody.prashant.domain.intelligence.IntelligenceInsight
+import com.prody.prashant.util.rememberProdyHaptic
 
 // =============================================================================
 // PERSONALIZATION DASHBOARD - REVAMPED 2026
@@ -247,6 +251,8 @@ fun DashboardHeader(
     onProfileClick: () -> Unit,
     onNotificationClick: () -> Unit
 ) {
+    val haptic = rememberProdyHaptic()
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -277,22 +283,48 @@ fun DashboardHeader(
         }
         
         val profileContentDescription = stringResource(R.string.cd_profile_picture)
+        val notificationsLabel = stringResource(R.string.notifications)
 
         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            IconButton(onClick = onNotificationClick) {
+            IconButton(
+                onClick = {
+                    haptic.click()
+                    onNotificationClick()
+                }
+            ) {
                 Icon(
                     imageVector = Icons.Outlined.Notifications,
-                    contentDescription = "Notifications",
+                    contentDescription = notificationsLabel,
                     tint = ProdyTextPrimaryLight
                 )
             }
+
             // Avatar / Profile
+            val interactionSource = remember { MutableInteractionSource() }
+            val isPressed by interactionSource.collectIsPressedAsState()
+            val scale by animateFloatAsState(
+                targetValue = if (isPressed) 0.92f else 1f,
+                animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+                label = "profile_scale"
+            )
+
             Box(
                 modifier = Modifier
                     .size(40.dp)
+                    .graphicsLayer {
+                        scaleX = scale
+                        scaleY = scale
+                    }
                     .clip(CircleShape)
                     .background(ProdyForestGreen)
-                    .clickable { onProfileClick() }
+                    .clickable(
+                        interactionSource = interactionSource,
+                        indication = null,
+                        onClick = {
+                            haptic.click()
+                            onProfileClick()
+                        }
+                    )
                     .semantics {
                         role = Role.Button
                         contentDescription = profileContentDescription
@@ -653,10 +685,32 @@ fun QuickActionsGrid(
 
 @Composable
 fun QuickActionTile(title: String, icon: androidx.compose.ui.graphics.vector.ImageVector, color: Color, onClick: () -> Unit, modifier: Modifier) {
+    val haptic = rememberProdyHaptic()
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.96f else 1f,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+        label = "quick_action_scale"
+    )
+
     Surface(
         modifier = modifier
             .height(100.dp)
-            .clickable(onClick = onClick),
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            }
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = {
+                    haptic.click()
+                    onClick()
+                }
+            )
+            .semantics { role = Role.Button },
         shape = RoundedCornerShape(16.dp),
         color = color.copy(alpha = 0.1f),
         border = androidx.compose.foundation.BorderStroke(1.dp, color.copy(alpha = 0.2f))
@@ -792,9 +846,31 @@ private fun ExploreChip(
     color: Color,
     onClick: () -> Unit
 ) {
+    val haptic = rememberProdyHaptic()
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.95f else 1f,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+        label = "explore_chip_scale"
+    )
+
     Surface(
         modifier = Modifier
-            .clickable(onClick = onClick),
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            }
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = {
+                    haptic.selection()
+                    onClick()
+                }
+            )
+            .semantics { role = Role.Button },
         shape = RoundedCornerShape(12.dp),
         color = color.copy(alpha = 0.1f),
         border = androidx.compose.foundation.BorderStroke(1.dp, color.copy(alpha = 0.15f))
@@ -1044,10 +1120,14 @@ fun IntelligenceInsightCard(
             )
             
             if (insight.actionable != null) {
+                val haptic = rememberProdyHaptic()
                 Spacer(modifier = Modifier.height(20.dp))
                 
                 androidx.compose.material3.Button(
-                    onClick = onActionClick,
+                    onClick = {
+                        haptic.click()
+                        onActionClick()
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(
