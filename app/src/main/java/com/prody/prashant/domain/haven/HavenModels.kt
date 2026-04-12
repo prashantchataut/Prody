@@ -1,8 +1,21 @@
 package com.prody.prashant.domain.haven
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.automirrored.outlined.Chat
+import androidx.compose.material.icons.outlined.Air
+import androidx.compose.material.icons.outlined.EditNote
+import androidx.compose.material.icons.outlined.EmojiEmotions
+import androidx.compose.material.icons.outlined.Favorite
+import androidx.compose.material.icons.outlined.FitnessCenter
+import androidx.compose.material.icons.outlined.Handshake
+import androidx.compose.material.icons.outlined.LocalFireDepartment
+import androidx.compose.material.icons.outlined.Public
+import androidx.compose.material.icons.outlined.SelfImprovement
+import androidx.compose.material.icons.outlined.Square
+import androidx.compose.material.icons.outlined.Terrain
+import androidx.compose.material.icons.outlined.VolunteerActivism
+import androidx.compose.material.icons.outlined.Waves
+import androidx.compose.material.icons.outlined.WavingHand
 import androidx.compose.ui.graphics.vector.ImageVector
 import java.util.UUID
 
@@ -62,7 +75,7 @@ enum class SessionType(
             STRESS -> Icons.Outlined.Terrain
             SADNESS -> Icons.Outlined.Favorite
             ANGER -> Icons.Outlined.LocalFireDepartment
-            GENERAL -> Icons.Outlined.Chat
+            GENERAL -> Icons.AutoMirrored.Outlined.Chat
             CRISIS_SUPPORT -> Icons.Outlined.Handshake
         }
 
