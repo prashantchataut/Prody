@@ -134,9 +134,28 @@ private fun WelcomeScreen(
     onNext: () -> Unit,
     onLogin: () -> Unit
 ) {
+    var visible by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) { visible = true }
+
+    val alphaState = animateFloatAsState(
+        targetValue = if (visible) 1f else 0f,
+        animationSpec = tween(1000, easing = EaseInOutCubic),
+        label = "welcome_alpha"
+    )
+
+    val slideState = animateFloatAsState(
+        targetValue = if (visible) 0f else 40f,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessLow),
+        label = "welcome_slide"
+    )
+
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .graphicsLayer {
+                alpha = alphaState.value
+                translationY = slideState.value
+            }
             .padding(horizontal = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -419,11 +438,31 @@ private fun FeatureScreenLayout(
 private fun StandardFeatureCard(
     content: @Composable ColumnScope.() -> Unit
 ) {
+    var visible by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) { visible = true }
+
+    val alphaState = animateFloatAsState(
+        targetValue = if (visible) 1f else 0f,
+        animationSpec = tween(800, easing = EaseOutBack),
+        label = "card_alpha"
+    )
+
+    val scaleState = animateFloatAsState(
+        targetValue = if (visible) 1f else 0.9f,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
+        label = "card_scale"
+    )
+
     // Card Design: 12dp corner radius, 8dp elevation with proper shadow
     Surface(
         modifier = Modifier
             .fillMaxWidth()
             .aspectRatio(0.8f)
+            .graphicsLayer {
+                alpha = alphaState.value
+                scaleX = scaleState.value
+                scaleY = scaleState.value
+            }
             .shadow(
                 elevation = 8.dp,
                 shape = RoundedCornerShape(12.dp),
