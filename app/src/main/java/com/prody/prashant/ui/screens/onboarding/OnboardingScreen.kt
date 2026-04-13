@@ -44,6 +44,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.prody.prashant.ui.components.ProdyProgressIndicator
 import com.prody.prashant.ui.theme.*
+import androidx.compose.ui.graphics.drawscope.Stroke
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 // =============================================================================
@@ -134,6 +136,36 @@ private fun WelcomeScreen(
     onNext: () -> Unit,
     onLogin: () -> Unit
 ) {
+    // Entrance Animations: Alpha and TranslationY
+    val logoAlpha = remember { Animatable(0f) }
+    val logoTranslationY = remember { Animatable(20f) }
+    val titleAlpha = remember { Animatable(0f) }
+    val titleTranslationY = remember { Animatable(20f) }
+    val taglineAlpha = remember { Animatable(0f) }
+
+    LaunchedEffect(Unit) {
+        // Sequenced entrance
+        launch {
+            logoAlpha.animateTo(1f, tween(800, easing = EaseOutCubic))
+        }
+        launch {
+            logoTranslationY.animateTo(0f, tween(800, easing = EaseOutCubic))
+        }
+
+        delay(300)
+        launch {
+            titleAlpha.animateTo(1f, tween(800, easing = EaseOutCubic))
+        }
+        launch {
+            titleTranslationY.animateTo(0f, tween(800, easing = EaseOutCubic))
+        }
+
+        delay(300)
+        launch {
+            taglineAlpha.animateTo(1f, tween(1000, easing = EaseOutCubic))
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -143,7 +175,14 @@ private fun WelcomeScreen(
         // Logo positioned at 25% from top
         Spacer(modifier = Modifier.fillMaxHeight(0.25f))
 
-        ProdyLogo(modifier = Modifier.size(100.dp))
+        ProdyLogo(
+            modifier = Modifier
+                .size(100.dp)
+                .graphicsLayer {
+                    alpha = logoAlpha.value
+                    translationY = logoTranslationY.value
+                }
+        )
 
         Spacer(modifier = Modifier.height(32.dp))
 
@@ -155,7 +194,11 @@ private fun WelcomeScreen(
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 32.sp
             ),
-            color = ProdyTextPrimaryLight // Always dark for contrast on light gradient
+            color = ProdyTextPrimaryLight, // Always dark for contrast on light gradient
+            modifier = Modifier.graphicsLayer {
+                alpha = titleAlpha.value
+                translationY = titleTranslationY.value
+            }
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -168,7 +211,10 @@ private fun WelcomeScreen(
                 fontWeight = FontWeight.Normal,
                 fontSize = 16.sp
             ),
-            color = ProdyTextSecondaryLight
+            color = ProdyTextSecondaryLight,
+            modifier = Modifier.graphicsLayer {
+                alpha = taglineAlpha.value
+            }
         )
 
         Spacer(modifier = Modifier.weight(1f))
@@ -419,11 +465,29 @@ private fun FeatureScreenLayout(
 private fun StandardFeatureCard(
     content: @Composable ColumnScope.() -> Unit
 ) {
+    // Entrance Animation for Card
+    val cardAlpha = remember { Animatable(0f) }
+    val cardScale = remember { Animatable(0.95f) }
+
+    LaunchedEffect(Unit) {
+        launch {
+            cardAlpha.animateTo(1f, tween(600, easing = EaseOutCubic))
+        }
+        launch {
+            cardScale.animateTo(1f, spring(dampingRatio = 0.8f, stiffness = Spring.StiffnessLow))
+        }
+    }
+
     // Card Design: 12dp corner radius, 8dp elevation with proper shadow
     Surface(
         modifier = Modifier
             .fillMaxWidth()
             .aspectRatio(0.8f)
+            .graphicsLayer {
+                alpha = cardAlpha.value
+                scaleX = cardScale.value
+                scaleY = cardScale.value
+            }
             .shadow(
                 elevation = 8.dp,
                 shape = RoundedCornerShape(12.dp),
@@ -459,13 +523,16 @@ private fun LoginSignupScreen(
     var password by remember { mutableStateOf("") }
     val scrollState = rememberScrollState()
     val density = LocalDensity.current
-    val imeVisible = WindowInsets.ime.getBottom(density) > 0
 
-    // Auto-scroll when keyboard appears
-    LaunchedEffect(imeVisible) {
-        if (imeVisible) {
-            scrollState.animateScrollTo(scrollState.maxValue)
-        }
+    // Performance Optimization: Observe IME visibility via snapshotFlow to prevent redundant recompositions
+    val ime = WindowInsets.ime
+    LaunchedEffect(Unit) {
+        snapshotFlow { ime.getBottom(density) }
+            .collect { bottom ->
+                if (bottom > 0) {
+                    scrollState.animateScrollTo(scrollState.maxValue)
+                }
+            }
     }
 
     Column(
@@ -576,12 +643,53 @@ private fun LoginSignupScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {
-                // Google Logo Placeholder (Colored 'G' or similar)
-                // Using a simple Canvas for G logo rep
-                Canvas(modifier = Modifier.size(24.dp)) {
-                     // Simple representation of Google colors
-                     drawCircle(Color(0xFF4285F4), radius = 10.dp.toPx(), center = center)
-                     drawCircle(Color.White, radius = 6.dp.toPx(), center = center)
+                // Precise production-grade Google 'G' icon
+                Canvas(modifier = Modifier.size(20.dp)) {
+                    val sweepAngle = 360f / 4f
+                    val strokeWidth = 3.dp.toPx()
+                    val radius = (size.minDimension - strokeWidth) / 2
+
+                    // Red (Top-left)
+                    drawArc(
+                        color = Color(0xFFEA4335),
+                        startAngle = 180f,
+                        sweepAngle = sweepAngle,
+                        useCenter = false,
+                        style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
+                    )
+                    // Yellow (Bottom-left)
+                    drawArc(
+                        color = Color(0xFFFBBC05),
+                        startAngle = 90f,
+                        sweepAngle = sweepAngle,
+                        useCenter = false,
+                        style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
+                    )
+                    // Green (Bottom-right)
+                    drawArc(
+                        color = Color(0xFF34A853),
+                        startAngle = 0f,
+                        sweepAngle = sweepAngle,
+                        useCenter = false,
+                        style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
+                    )
+                    // Blue (Top-right)
+                    drawArc(
+                        color = Color(0xFF4285F4),
+                        startAngle = 270f,
+                        sweepAngle = sweepAngle,
+                        useCenter = false,
+                        style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
+                    )
+
+                    // The 'bar' of the G
+                    drawLine(
+                        color = Color(0xFF4285F4),
+                        start = Offset(center.x + radius, center.y),
+                        end = Offset(center.x + radius / 2f, center.y),
+                        strokeWidth = strokeWidth,
+                        cap = StrokeCap.Round
+                    )
                 }
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
