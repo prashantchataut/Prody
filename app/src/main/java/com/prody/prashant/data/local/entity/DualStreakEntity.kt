@@ -38,7 +38,11 @@ import androidx.room.PrimaryKey
  */
 @Entity(
     tableName = "dual_streaks",
-    indices = [Index(value = ["userId"], unique = true)]
+    indices = [
+        Index(value = ["userId"], unique = true),
+        Index(value = ["wisdomLastMaintainedDate"]),
+        Index(value = ["reflectionLastMaintainedDate"])
+    ]
 )
 data class DualStreakEntity(
     @PrimaryKey(autoGenerate = true)

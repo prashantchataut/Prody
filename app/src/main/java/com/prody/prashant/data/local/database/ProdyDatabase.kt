@@ -223,7 +223,7 @@ import net.sqlcipher.database.SupportFactory
         // Mirror Evolution: Evidence Locker
         EvidenceEntity::class
     ],
-    version = 20,
+    version = 21,
     exportSchema = true // Enable for migration verification
 )
 abstract class ProdyDatabase : RoomDatabase() {
@@ -1689,6 +1689,19 @@ abstract class ProdyDatabase : RoomDatabase() {
                 db.execSQL("ALTER TABLE future_messages ADD COLUMN prediction TEXT")
                 db.execSQL("ALTER TABLE future_messages ADD COLUMN predictionVerified INTEGER")
                 db.execSQL("ALTER TABLE future_messages ADD COLUMN predictionVerifiedAt INTEGER")
+            }
+        }
+
+        /**
+         * Migration 20 -> 21: Maintenance & Performance Optimization
+         *
+         * Changes:
+         * - Add indices for wisdomLastMaintainedDate and reflectionLastMaintainedDate to dual_streaks
+         */
+        val MIGRATION_20_21: Migration = object : Migration(20, 21) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_dual_streaks_wisdomLastMaintainedDate ON dual_streaks(wisdomLastMaintainedDate)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_dual_streaks_reflectionLastMaintainedDate ON dual_streaks(reflectionLastMaintainedDate)")
             }
         }
 

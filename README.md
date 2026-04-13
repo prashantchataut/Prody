@@ -80,7 +80,7 @@
 
 | Component | Technology |
 |-----------|------------|
-| **Language** | Kotlin 2.0 |
+| **Language** | Kotlin 2.0.21 |
 | **UI** | Jetpack Compose with Material 3 |
 | **Architecture** | MVVM + Clean Architecture |
 | **DI** | Hilt |
@@ -105,7 +105,7 @@ Prody features a comprehensive design system:
 ## Setup
 
 ### Prerequisites
-- Android Studio Hedgehog (2023.1.1) or newer
+- Android Studio Ladybug (2024.2.1) or newer
 - JDK 17+
 - Android SDK 35
 
