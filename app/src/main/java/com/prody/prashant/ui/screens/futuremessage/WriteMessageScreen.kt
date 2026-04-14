@@ -75,6 +75,7 @@ import com.prody.prashant.R
 import com.prody.prashant.ui.components.TimeCapsuleSealAnimation
 import com.prody.prashant.ui.components.rememberTimeCapsuleSealState
 import com.prody.prashant.ui.theme.*
+import com.prody.prashant.ui.util.SecureScreen
 import kotlinx.coroutines.delay
 
 /**
@@ -98,6 +99,9 @@ fun WriteMessageScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isDark = isDarkTheme()
     val context = LocalContext.current
+
+    // Security: Prevent screenshots of future message composition
+    SecureScreen()
 
     // Media picker launcher
     val mediaPickerLauncher = rememberLauncherForActivityResult(
