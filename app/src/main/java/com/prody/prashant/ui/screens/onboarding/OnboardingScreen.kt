@@ -3,6 +3,8 @@ package com.prody.prashant.ui.screens.onboarding
 import com.prody.prashant.ui.icons.ProdyIcons
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -30,6 +32,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
+import com.prody.prashant.util.rememberProdyHaptic
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -44,6 +47,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.prody.prashant.ui.components.ProdyProgressIndicator
 import com.prody.prashant.ui.theme.*
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 // =============================================================================
@@ -134,6 +138,31 @@ private fun WelcomeScreen(
     onNext: () -> Unit,
     onLogin: () -> Unit
 ) {
+    val haptic = rememberProdyHaptic()
+
+    // Entrance animations
+    val logoAlpha = remember { Animatable(0f) }
+    val logoScale = remember { Animatable(0.8f) }
+    val contentAlpha = remember { Animatable(0f) }
+    val contentTranslation = remember { Animatable(20f) }
+
+    LaunchedEffect(Unit) {
+        launch {
+            logoAlpha.animateTo(1f, tween(800, easing = EaseOutCubic))
+        }
+        launch {
+            logoScale.animateTo(1f, spring(dampingRatio = Spring.DampingRatioMediumBouncy))
+        }
+        launch {
+            delay(400)
+            contentAlpha.animateTo(1f, tween(800))
+        }
+        launch {
+            delay(400)
+            contentTranslation.animateTo(0f, tween(800, easing = EaseOutCubic))
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -143,13 +172,25 @@ private fun WelcomeScreen(
         // Logo positioned at 25% from top
         Spacer(modifier = Modifier.fillMaxHeight(0.25f))
 
-        ProdyLogo(modifier = Modifier.size(100.dp))
+        ProdyLogo(
+            modifier = Modifier
+                .size(100.dp)
+                .graphicsLayer {
+                    alpha = logoAlpha.value
+                    scaleX = logoScale.value
+                    scaleY = logoScale.value
+                }
+        )
 
         Spacer(modifier = Modifier.height(32.dp))
 
         // Brand name "Prody" - Poppins SemiBold 32sp
         Text(
             text = "Prody",
+            modifier = Modifier.graphicsLayer {
+                alpha = contentAlpha.value
+                translationY = contentTranslation.value
+            },
             style = TextStyle(
                 fontFamily = PoppinsFamily,
                 fontWeight = FontWeight.SemiBold,
@@ -168,21 +209,35 @@ private fun WelcomeScreen(
                 fontWeight = FontWeight.Normal,
                 fontSize = 16.sp
             ),
-            color = ProdyTextSecondaryLight
+            color = ProdyTextSecondaryLight,
+            modifier = Modifier.graphicsLayer {
+                alpha = contentAlpha.value
+                translationY = contentTranslation.value
+            }
         )
 
         Spacer(modifier = Modifier.weight(1f))
 
         // Progress Indicator
-        ProdyProgressIndicator(currentPage = 0, totalPages = 8)
+        Box(modifier = Modifier.graphicsLayer { alpha = contentAlpha.value }) {
+            ProdyProgressIndicator(currentPage = 0, totalPages = 8)
+        }
 
         Spacer(modifier = Modifier.height(48.dp))
 
         // Primary CTA Button: 56dp height, 16dp corner radius
         PrimaryButton(
             text = "Get Started",
-            onClick = onNext,
-            modifier = Modifier.fillMaxWidth()
+            onClick = {
+                haptic.click()
+                onNext()
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .graphicsLayer {
+                    alpha = contentAlpha.value
+                    translationY = contentTranslation.value
+                }
         )
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -190,7 +245,12 @@ private fun WelcomeScreen(
         // Secondary link
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.clickable { onLogin() }
+            modifier = Modifier
+                .graphicsLayer { alpha = contentAlpha.value }
+                .clickable {
+                    haptic.click()
+                    onLogin()
+                }
         ) {
             Text(
                 text = "Already have an account? ",
@@ -327,6 +387,23 @@ private fun FeatureScreenLayout(
     onSkip: () -> Unit,
     content: @Composable () -> Unit
 ) {
+    val haptic = rememberProdyHaptic()
+
+    // Entrance animations
+    val contentAlpha = remember { Animatable(0f) }
+    val contentTranslation = remember { Animatable(30f) }
+
+    LaunchedEffect(title) {
+        contentAlpha.snapTo(0f)
+        contentTranslation.snapTo(30f)
+        launch {
+            contentAlpha.animateTo(1f, tween(600, easing = EaseOutQuart))
+        }
+        launch {
+            contentTranslation.animateTo(0f, tween(600, easing = EaseOutBack))
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -348,7 +425,10 @@ private fun FeatureScreenLayout(
                     fontSize = 14.sp
                 ),
                 color = ProdyTextSecondaryLight,
-                modifier = Modifier.clickable { onSkip() }
+                modifier = Modifier.clickable {
+                    haptic.click()
+                    onSkip()
+                }
             )
         }
 
@@ -356,7 +436,12 @@ private fun FeatureScreenLayout(
 
         // Main Content (Card)
         Box(
-            modifier = Modifier.weight(1f),
+            modifier = Modifier
+                .weight(1f)
+                .graphicsLayer {
+                    alpha = contentAlpha.value
+                    translationY = contentTranslation.value
+                },
             contentAlignment = Alignment.Center
         ) {
             content()
@@ -373,7 +458,11 @@ private fun FeatureScreenLayout(
                 fontSize = 24.sp // Header text 24-32sp
             ),
             color = ProdyTextPrimaryLight,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
+            modifier = Modifier.graphicsLayer {
+                alpha = contentAlpha.value
+                translationY = contentTranslation.value * 0.5f
+            }
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -387,7 +476,11 @@ private fun FeatureScreenLayout(
                 lineHeight = 21.sp // 1.5 line height
             ),
             color = ProdyTextSecondaryLight,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
+            modifier = Modifier.graphicsLayer {
+                alpha = contentAlpha.value
+                translationY = contentTranslation.value * 0.3f
+            }
         )
 
         Spacer(modifier = Modifier.height(48.dp))
@@ -401,7 +494,10 @@ private fun FeatureScreenLayout(
             ProdyProgressIndicator(currentPage = currentPage, totalPages = totalPages)
 
             FloatingActionButton(
-                onClick = onNext,
+                onClick = {
+                    haptic.click()
+                    onNext()
+                },
                 containerColor = ProdyForestGreen,
                 contentColor = Color.White,
                 shape = CircleShape,
@@ -458,14 +554,19 @@ private fun LoginSignupScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     val scrollState = rememberScrollState()
-    val density = LocalDensity.current
-    val imeVisible = WindowInsets.ime.getBottom(density) > 0
+    val haptic = rememberProdyHaptic()
 
-    // Auto-scroll when keyboard appears
-    LaunchedEffect(imeVisible) {
-        if (imeVisible) {
-            scrollState.animateScrollTo(scrollState.maxValue)
-        }
+    // Optimized keyboard auto-scroll
+    val imeInsets = WindowInsets.ime
+    val density = LocalDensity.current
+
+    LaunchedEffect(Unit) {
+        snapshotFlow { imeInsets.getBottom(density) }
+            .collect { bottomInset ->
+                if (bottomInset > 0) {
+                    scrollState.animateScrollTo(scrollState.maxValue)
+                }
+            }
     }
 
     Column(
@@ -526,7 +627,9 @@ private fun LoginSignupScreen(
             color = ProdyTextSecondaryLight,
             modifier = Modifier
                 .align(Alignment.End)
-                .clickable { }
+                .clickable {
+                    haptic.click()
+                }
         )
 
         Spacer(modifier = Modifier.height(32.dp))
@@ -598,9 +701,25 @@ private fun LoginSignupScreen(
         Spacer(modifier = Modifier.height(32.dp))
 
         // Sign Up Link
+        val signupInteractionSource = remember { MutableInteractionSource() }
+        val isSignupPressed by signupInteractionSource.collectIsPressedAsState()
+        val signupScale by animateFloatAsState(if (isSignupPressed) 0.98f else 1f)
+
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.clickable { onCreateAccount() }
+            modifier = Modifier
+                .graphicsLayer {
+                    scaleX = signupScale
+                    scaleY = signupScale
+                }
+                .clickable(
+                    interactionSource = signupInteractionSource,
+                    indication = null,
+                    onClick = {
+                        haptic.click()
+                        onCreateAccount()
+                    }
+                )
         ) {
             Text(
                 text = "Don't have an account? ",
@@ -636,9 +755,27 @@ fun PrimaryButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val haptic = rememberProdyHaptic()
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.98f else 1f,
+        label = "button_scale"
+    )
+
     Button(
-        onClick = onClick,
-        modifier = modifier.height(56.dp),
+        onClick = {
+            haptic.click()
+            onClick()
+        },
+        modifier = modifier
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            }
+            .height(56.dp),
+        interactionSource = interactionSource,
         shape = RoundedCornerShape(16.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = ProdyForestGreen,

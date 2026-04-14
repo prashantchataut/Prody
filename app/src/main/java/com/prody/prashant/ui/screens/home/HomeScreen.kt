@@ -1,9 +1,12 @@
 package com.prody.prashant.ui.screens.home
 
 import com.prody.prashant.ui.icons.ProdyIcons
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -40,6 +43,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.ui.theme.*
 import com.prody.prashant.domain.intelligence.IntelligenceInsight
+import com.prody.prashant.ui.components.DualStreakCard
+import com.prody.prashant.ui.components.SurfacedMemoryCard
+import com.prody.prashant.util.rememberProdyHaptic
 
 // =============================================================================
 // PERSONALIZATION DASHBOARD - REVAMPED 2026
@@ -145,7 +151,7 @@ fun HomeScreen(
         contentPadding = PaddingValues(bottom = 80.dp)
     ) {
         // Header with Greeting
-        item {
+        item(key = "header") {
             DashboardHeader(
                 userName = uiState.userName,
                 greeting = greeting,
@@ -154,17 +160,58 @@ fun HomeScreen(
             )
         }
 
-        // Overview Section (Consistency & Badges)
-        item {
+        // Active Progress: Next Action
+        uiState.nextAction?.let { action ->
+            item(key = "next_action") {
+                NextActionCard(
+                    action = action,
+                    onClick = {
+                        when (action.actionRoute) {
+                            "journal/new" -> onNavigateToJournal()
+                            "vocabulary" -> onNavigateToVocabulary()
+                            "future_message/write" -> onNavigateToFutureMessage()
+                            "quotes" -> onNavigateToQuotes()
+                            else -> {}
+                        }
+                    }
+                )
+            }
+        }
+
+        // Active Progress: Today's Summary
+        item(key = "today_progress") {
+            TodayProgressCard(progress = uiState.todayProgress)
+        }
+
+        // Dual Streak System
+        item(key = "dual_streak") {
+            DualStreakCard(
+                dualStreakStatus = uiState.dualStreakStatus,
+                onTapForDetails = {}
+            )
+        }
+
+        // Overview Section (Badges)
+        item(key = "badges_overview") {
             OverviewSection(
-                streakDays = uiState.currentStreak,
                 badges = badges
             )
         }
 
+        // Surfaced Memory (Soul Layer)
+        if (uiState.showMemoryCard && uiState.surfacedMemory != null) {
+            item(key = "surfaced_memory") {
+                SurfacedMemoryCard(
+                    memory = uiState.surfacedMemory!!,
+                    onExpand = { viewModel.expandMemoryCard() },
+                    onDismiss = { viewModel.dismissMemoryCard() }
+                )
+            }
+        }
+
         // Personalized Pattern Card (opt-in, only shown when data exists)
         if (uiState.personalizedPatternText.isNotEmpty()) {
-            item {
+            item(key = "personalized_pattern") {
                 PersonalizedPatternCard(
                     patternText = uiState.personalizedPatternText,
                     patternSuggestion = uiState.personalizedPatternSuggestion
@@ -174,8 +221,7 @@ fun HomeScreen(
 
         // Premium Intelligence Insights (Opt-in)
         if (uiState.isPremiumIntelligenceEnabled && uiState.intelligenceInsights.isNotEmpty()) {
-            item {
-                Spacer(modifier = Modifier.height(24.dp))
+            item(key = "intelligence_insight") {
                 IntelligenceInsightCard(
                     insight = uiState.intelligenceInsights.first(),
                     onActionClick = {}
@@ -185,7 +231,7 @@ fun HomeScreen(
 
         // Mood Trend Chart - only show if there's real data
         if (uiState.journalEntriesThisWeek > 0) {
-            item {
+            item(key = "mood_trend") {
                 MoodTrendSection(
                     moodData = emptyList() // Mood trend requires historical mood data not exposed yet
                 )
@@ -193,7 +239,7 @@ fun HomeScreen(
         }
 
         // Weekly Summary from real data
-        item {
+        item(key = "weekly_summary") {
             WeeklySummarySection(
                 journalEntries = uiState.journalEntriesThisWeek,
                 wordsLearned = uiState.wordsLearnedThisWeek,
@@ -202,7 +248,7 @@ fun HomeScreen(
         }
 
         // Quick Actions (Navigation)
-        item {
+        item(key = "quick_actions") {
             QuickActionsGrid(
                 onJournalClick = onNavigateToJournal,
                 onHavenClick = onNavigateToHaven,
@@ -212,7 +258,7 @@ fun HomeScreen(
         }
 
         // Explore Section - routes to additional features
-        item {
+        item(key = "explore") {
             ExploreSection(
                 onMeditationClick = onNavigateToMeditation,
                 onChallengesClick = onNavigateToChallenges,
@@ -226,7 +272,7 @@ fun HomeScreen(
         }
 
         // Recent Activity - show today's journal status
-        item {
+        item(key = "recent_activity") {
             RecentActivitySection(
                 journaledToday = uiState.journaledToday,
                 todayMood = uiState.todayEntryMood,
@@ -277,22 +323,47 @@ fun DashboardHeader(
         }
         
         val profileContentDescription = stringResource(R.string.cd_profile_picture)
+        val haptic = rememberProdyHaptic()
+        val interactionSource = remember { MutableInteractionSource() }
+        val isPressed by interactionSource.collectIsPressedAsState()
 
-        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            IconButton(onClick = onNotificationClick) {
+        val scale by animateFloatAsState(
+            targetValue = if (isPressed) 0.98f else 1f,
+            label = "profile_scale"
+        )
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = {
+                haptic.click()
+                onNotificationClick()
+            }) {
                 Icon(
                     imageVector = Icons.Outlined.Notifications,
-                    contentDescription = "Notifications",
+                    contentDescription = stringResource(R.string.notifications),
                     tint = ProdyTextPrimaryLight
                 )
             }
             // Avatar / Profile
             Box(
                 modifier = Modifier
+                    .graphicsLayer {
+                        scaleX = scale
+                        scaleY = scale
+                    }
                     .size(40.dp)
                     .clip(CircleShape)
                     .background(ProdyForestGreen)
-                    .clickable { onProfileClick() }
+                    .clickable(
+                        interactionSource = interactionSource,
+                        indication = null,
+                        onClick = {
+                            haptic.click()
+                            onProfileClick()
+                        }
+                    )
                     .semantics {
                         role = Role.Button
                         contentDescription = profileContentDescription
@@ -311,60 +382,38 @@ fun DashboardHeader(
 
 @Composable
 fun OverviewSection(
-    streakDays: Int,
     badges: List<BadgeData>
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 24.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
+            .padding(horizontal = 24.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.Center
     ) {
-        // Streak Card
+        // Badges Card - Now simplified since DualStreakCard handles consistency
         Surface(
-            modifier = Modifier.weight(1f),
-            shape = RoundedCornerShape(16.dp),
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(20.dp),
             color = ProdySurfaceLight,
-            shadowElevation = 1.dp
+            tonalElevation = 0.dp
         ) {
             Column(
                 modifier = Modifier.padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = streakDays.toString(),
+                    text = "YOUR MILESTONES",
                     style = TextStyle(
                         fontFamily = PoppinsFamily,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 48.sp,
-                        color = ProdyForestGreen
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 11.sp,
+                        color = ProdyForestGreen,
+                        letterSpacing = 1.sp
                     )
                 )
-                Text(
-                    text = "Consistency Score",
-                    style = TextStyle(
-                        fontFamily = PoppinsFamily,
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 14.sp,
-                        color = ProdyTextSecondaryLight
-                    )
-                )
-            }
-        }
-
-        // Badges Card
-        Surface(
-            modifier = Modifier.weight(1f),
-            shape = RoundedCornerShape(16.dp),
-            color = ProdySurfaceLight,
-            shadowElevation = 1.dp
-        ) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
+                Spacer(modifier = Modifier.height(16.dp))
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     badges.forEach { badge ->
                         BadgeItem(badge)
@@ -372,11 +421,11 @@ fun OverviewSection(
                 }
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    text = "Points to Grow",
+                    text = "Keep growing to unlock more",
                     style = TextStyle(
                         fontFamily = PoppinsFamily,
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Normal,
+                        fontSize = 12.sp,
                         color = ProdyTextSecondaryLight
                     )
                 )
@@ -653,10 +702,31 @@ fun QuickActionsGrid(
 
 @Composable
 fun QuickActionTile(title: String, icon: androidx.compose.ui.graphics.vector.ImageVector, color: Color, onClick: () -> Unit, modifier: Modifier) {
+    val haptic = rememberProdyHaptic()
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.98f else 1f,
+        label = "quick_action_scale"
+    )
+
     Surface(
         modifier = modifier
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            }
             .height(100.dp)
-            .clickable(onClick = onClick),
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = {
+                    haptic.click()
+                    onClick()
+                }
+            )
+            .semantics { role = Role.Button },
         shape = RoundedCornerShape(16.dp),
         color = color.copy(alpha = 0.1f),
         border = androidx.compose.foundation.BorderStroke(1.dp, color.copy(alpha = 0.2f))
@@ -792,9 +862,30 @@ private fun ExploreChip(
     color: Color,
     onClick: () -> Unit
 ) {
+    val haptic = rememberProdyHaptic()
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.98f else 1f,
+        label = "explore_chip_scale"
+    )
+
     Surface(
         modifier = Modifier
-            .clickable(onClick = onClick),
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            }
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = {
+                    haptic.click()
+                    onClick()
+                }
+            )
+            .semantics { role = Role.Button },
         shape = RoundedCornerShape(12.dp),
         color = color.copy(alpha = 0.1f),
         border = androidx.compose.foundation.BorderStroke(1.dp, color.copy(alpha = 0.15f))
@@ -964,105 +1055,3 @@ private fun PersonalizedPatternCard(
     }
 }
 
-@Composable
-fun IntelligenceInsightCard(
-    insight: IntelligenceInsight,
-    onActionClick: () -> Unit
-) {
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp),
-        shape = RoundedCornerShape(24.dp),
-        color = ProdySurfaceLight,
-        shadowElevation = 8.dp
-    ) {
-        Column(
-            modifier = Modifier
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            ProdyForestGreen.copy(alpha = 0.05f),
-                            Color.Transparent
-                        )
-                    )
-                )
-                .padding(24.dp)
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(ProdyForestGreen.copy(alpha = 0.1f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.AutoAwesome,
-                        contentDescription = null,
-                        tint = ProdyForestGreen,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-                
-                Column {
-                    Text(
-                        text = "Identity Insight",
-                        style = TextStyle(
-                            fontFamily = PoppinsFamily,
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 12.sp,
-                            color = ProdyForestGreen
-                        )
-                    )
-                    Text(
-                        text = insight.title,
-                        style = TextStyle(
-                            fontFamily = PoppinsFamily,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 18.sp,
-                            color = ProdyTextPrimaryLight
-                        )
-                    )
-                }
-            }
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            Text(
-                text = insight.description,
-                style = TextStyle(
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Normal,
-                    fontSize = 15.sp,
-                    lineHeight = 22.sp,
-                    color = ProdyTextSecondaryLight
-                )
-            )
-            
-            if (insight.actionable != null) {
-                Spacer(modifier = Modifier.height(20.dp))
-                
-                androidx.compose.material3.Button(
-                    onClick = onActionClick,
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = ProdyForestGreen,
-                        contentColor = Color.White
-                    ),
-                    contentPadding = PaddingValues(vertical = 12.dp)
-                ) {
-                    Text(
-                        text = insight.actionable!!,
-                        fontFamily = PoppinsFamily,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
-            }
-        }
-    }
-}
