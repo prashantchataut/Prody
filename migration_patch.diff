@@ -1,0 +1,48 @@
+--- a/app/src/main/java/com/prody/prashant/data/local/database/ProdyDatabase.kt
++++ b/app/src/main/java/com/prody/prashant/data/local/database/ProdyDatabase.kt
+@@ -102,7 +102,11 @@
+  * - Version 20: Mirror Evolution - Sealed Pods (Future Message Prophecy)
+  *              Added prediction, predictionVerified, predictionVerifiedAt to FutureMessageEntity
+  *              Enables "Prophecy" evidence drops when predictions are verified
++ * - Version 21: Maintenance & Performance Optimization
++ *              Added indices to haven_sessions (isCompleted, containedCrisisDetection, isDeleted)
++ *              Added indices to haven_exercises (wasCompleted, isDeleted)
+  */
+ @Database(
+     entities = [
+         JournalEntryEntity::class,
+@@ -193,7 +197,7 @@
+         HavenMemoryEntity::class,
+         // Mirror Evolution: Evidence Locker
+         EvidenceEntity::class
+     ],
+-    version = 20,
++    version = 21,
+     exportSchema = true // Enable for migration verification
+ )
+ abstract class ProdyDatabase : RoomDatabase() {
+@@ -748,6 +752,24 @@
+             }
+         }
+
++        /**
++         * Migration 20 -> 21: Maintenance & Performance Optimization
++         *
++         * Changes:
++         * - Add indices to haven_sessions (isCompleted, containedCrisisDetection, isDeleted)
++         * - Add indices to haven_exercises (wasCompleted, isDeleted)
++         */
++        val MIGRATION_20_21: Migration = object : Migration(20, 21) {
++            override fun migrate(db: SupportSQLiteDatabase) {
++                db.execSQL("CREATE INDEX IF NOT EXISTS idx_haven_sessions_isCompleted ON haven_sessions(isCompleted)")
++                db.execSQL("CREATE INDEX IF NOT EXISTS idx_haven_sessions_containedCrisisDetection ON haven_sessions(containedCrisisDetection)")
++                db.execSQL("CREATE INDEX IF NOT EXISTS idx_haven_sessions_isDeleted ON haven_sessions(isDeleted)")
++
++                db.execSQL("CREATE INDEX IF NOT EXISTS idx_haven_exercises_wasCompleted ON haven_exercises(wasCompleted)")
++                db.execSQL("CREATE INDEX IF NOT EXISTS idx_haven_exercises_isDeleted ON haven_exercises(isDeleted)")
++            }
++        }
++
+         fun getInstance(context: Context): ProdyDatabase {
+             return INSTANCE ?: synchronized(this) {
+                 INSTANCE ?: DatabaseFactory.create(
