@@ -196,7 +196,7 @@ Prody includes extensive static content:
 
 ## Documentation
 
-- [Database Schema](docs/database_schema.md) - Complete entity definitions and relationships
+- [Database Schema](docs/database_schema.md) - Complete entity definitions and relationships (Updated with Haven indices)
 - [NEXT_STEPS.md](NEXT_STEPS.md) - Roadmap with 25+ planned features
 - [DEVELOPMENT_ROADMAP.md](DEVELOPMENT_ROADMAP.md) - Technical implementation phases
 
