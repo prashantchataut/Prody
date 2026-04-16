@@ -32,6 +32,9 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
 import java.util.Calendar
 import javax.inject.Inject
 
@@ -137,7 +140,9 @@ data class HomeUiState(
     val personalizedPatternSuggestion: String = "",
     // Intelligence Insights
     val intelligenceInsights: List<IntelligenceInsight> = emptyList(),
-    val isPremiumIntelligenceEnabled: Boolean = false
+    val isPremiumIntelligenceEnabled: Boolean = false,
+    // Mood Trend Data (7 values, 1.0 to 5.0)
+    val moodTrendData: List<Float> = emptyList()
 )
 
 private data class DailyContent(
@@ -204,6 +209,7 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             val weekStart = getWeekStartTimestamp()
             val todayStart = getTodayStartTimestamp()
+            val trendStart = todayStart - (6 * 24 * 60 * 60 * 1000L) // 7 days total including today
 
             // 1. Fetch one-time daily content in parallel to reduce I/O blocking.
             val dailyContent = fetchDailyContentConcurrently()
@@ -222,7 +228,7 @@ class HomeViewModel @Inject constructor(
             // 2. Combine all reactive flows and the results of the one-time fetch.
             combine(
                 userDao.getUserProfile(),
-                journalDao.getEntriesByDateRange(weekStart, System.currentTimeMillis()),
+                journalDao.getEntriesByDateRange(trendStart, System.currentTimeMillis()),
                 vocabularyDao.getLearnedCountSince(weekStart),
                 userDao.getStreakHistory(),
                 journalDao.getEntriesByDateRange(todayStart, System.currentTimeMillis()),
@@ -230,12 +236,16 @@ class HomeViewModel @Inject constructor(
                 preferencesManager.debugAiProofMode.distinctUntilChanged()
             ) { args ->
                 val profile = args.getOrNull(0) as? UserProfileEntity
-                val weeklyJournalEntries = (args.getOrNull(1) as? List<*>)?.filterIsInstance<JournalEntryEntity>() ?: emptyList()
+                val trendJournalEntries = (args.getOrNull(1) as? List<*>)?.filterIsInstance<JournalEntryEntity>() ?: emptyList()
+                val weeklyJournalEntries = trendJournalEntries.filter { it.createdAt >= weekStart }
                 val weeklyLearnedWords = args.getOrNull(2) as? Int ?: 0
                 val streakHistory = (args.getOrNull(3) as? List<*>)?.filterIsInstance<StreakHistoryEntity>() ?: emptyList()
                 val todayJournalEntries = (args.getOrNull(4) as? List<*>)?.filterIsInstance<JournalEntryEntity>() ?: emptyList()
                 val dualStreak = args.getOrNull(5) as? DualStreakStatus ?: DualStreakStatus.empty()
                 val aiProofMode = args.getOrNull(6) as? Boolean ?: false
+
+                // Calculate mood trend
+                val moodTrend = calculateMoodTrend(trendJournalEntries)
 
                 // Calculate weekly active days.
                 val daysActiveThisWeek = streakHistory.count { it.date >= weekStart }
@@ -273,6 +283,7 @@ class HomeViewModel @Inject constructor(
                     todayEntryMood = todayMood,
                     todayEntryPreview = todayPreview,
                     dualStreakStatus = dualStreak,
+                    moodTrendData = moodTrend,
                     buddhaWisdomProofInfo = _uiState.value.buddhaWisdomProofInfo.copy(isEnabled = aiProofMode),
                     isLoading = false // <-- Critical: Signal that loading is complete.
                 )
@@ -297,6 +308,37 @@ class HomeViewModel @Inject constructor(
             launch { loadDailySeed() }
             launch { checkAiConfiguration() }
             launch { loadSoulLayerContent() }
+        }
+    }
+
+    /**
+     * Calculates a 7-day mood trend from journal entries.
+     * Normalizes mood intensity (1-10) to a 1-5 scale for the chart.
+     * Fills gaps for days without entries with the neutral value (3.0f).
+     *
+     * Performance: Uses java.time for efficient date grouping and avoids
+     * multiple Calendar allocations.
+     */
+    private fun calculateMoodTrend(entries: List<JournalEntryEntity>): List<Float> {
+        val zoneId = ZoneId.systemDefault()
+        val today = LocalDate.now(zoneId)
+
+        // Group entries by LocalDate
+        val entriesByDay = entries.groupBy { entry ->
+            Instant.ofEpochMilli(entry.createdAt).atZone(zoneId).toLocalDate()
+        }
+
+        // Calculate for the last 7 days including today
+        return (6 downTo 0).map { i ->
+            val date = today.minusDays(i.toLong())
+            val dayEntries = entriesByDay[date]
+            if (dayEntries.isNullOrEmpty()) {
+                3.0f // Neutral fallback (normalized)
+            } else {
+                val avgIntensity = dayEntries.map { it.moodIntensity }.average().toFloat()
+                // Normalize 1-10 to 1-5
+                (avgIntensity / 2f).coerceIn(1f, 5f)
+            }
         }
     }
 

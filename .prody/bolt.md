@@ -21,3 +21,13 @@ This journal contains CRITICAL performance learnings specific to the Prody codeb
 **Context:** `ProgressIndicators.kt` and `OnboardingScreen.kt`.
 **Learning:** Using a `Row` of multiple `Box` composables for page indicators creates unnecessary layout nodes and triggers expensive layout passes during page swipes as dot widths animate. A single `Canvas` drawing all dots based on an animated float index is significantly more performant and smoother.
 **Action:** Prefer `Canvas`-based drawing for multi-state UI indicators like page dots or segmented progress bars to maintain 60fps during complex interactions.
+
+## 2024-05-25 - java.time for High-Performance Grouping
+**Context:** `HomeViewModel.kt` calculateMoodTrend logic.
+**Learning:** Using `Calendar.getInstance()` within loops or grouping operations for temporal analysis causes unnecessary object allocation and is significantly slower than modern `java.time` APIs. `LocalDate` with `ZoneId` provides a much cleaner and more performant way to group entries by day.
+**Action:** Always prefer `java.time.LocalDate` and `Instant` for performance-critical date grouping or temporal calculations in ViewModels.
+
+## 2024-05-25 - Deferring State Reads to Draw Phase
+**Context:** `ProgressIndicators.kt` and `HomeScreen.kt` animations.
+**Learning:** Reading an animated `Float` state directly in a Composable's body triggers recomposition of the entire scope every frame. Reading the state inside a `graphicsLayer` block or `Canvas` draw block defers the read to the drawing phase, completely bypassing recomposition.
+**Action:** Use lambda-based state access (e.g., `progress = { state.value }` or `graphicsLayer { alpha = state.value }`) to keep animations off the composition thread and ensure smooth 60fps performance.
