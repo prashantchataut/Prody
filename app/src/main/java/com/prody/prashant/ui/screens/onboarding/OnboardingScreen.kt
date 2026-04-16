@@ -134,10 +134,32 @@ private fun WelcomeScreen(
     onNext: () -> Unit,
     onLogin: () -> Unit
 ) {
+    val alpha = remember { Animatable(0f) }
+    val translateY = remember { Animatable(50f) }
+
+    LaunchedEffect(Unit) {
+        launch {
+            alpha.animateTo(
+                targetValue = 1f,
+                animationSpec = tween(1000, easing = EaseOutQuart)
+            )
+        }
+        launch {
+            translateY.animateTo(
+                targetValue = 0f,
+                animationSpec = tween(1000, easing = EaseOutQuart)
+            )
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 24.dp),
+            .padding(horizontal = 24.dp)
+            .graphicsLayer {
+                this.alpha = alpha.value
+                this.translationY = translateY.value
+            },
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Logo positioned at 25% from top
@@ -419,11 +441,28 @@ private fun FeatureScreenLayout(
 private fun StandardFeatureCard(
     content: @Composable ColumnScope.() -> Unit
 ) {
+    val alpha = remember { Animatable(0f) }
+    val scale = remember { Animatable(0.9f) }
+
+    LaunchedEffect(Unit) {
+        launch {
+            alpha.animateTo(1f, tween(600, easing = EaseOutQuart))
+        }
+        launch {
+            scale.animateTo(1f, tween(600, easing = EaseOutQuart))
+        }
+    }
+
     // Card Design: 12dp corner radius, 8dp elevation with proper shadow
     Surface(
         modifier = Modifier
             .fillMaxWidth()
             .aspectRatio(0.8f)
+            .graphicsLayer {
+                this.alpha = alpha.value
+                this.scaleX = scale.value
+                this.scaleY = scale.value
+            }
             .shadow(
                 elevation = 8.dp,
                 shape = RoundedCornerShape(12.dp),
@@ -459,13 +498,16 @@ private fun LoginSignupScreen(
     var password by remember { mutableStateOf("") }
     val scrollState = rememberScrollState()
     val density = LocalDensity.current
-    val imeVisible = WindowInsets.ime.getBottom(density) > 0
+    val imeInsets = WindowInsets.ime
 
-    // Auto-scroll when keyboard appears
-    LaunchedEffect(imeVisible) {
-        if (imeVisible) {
-            scrollState.animateScrollTo(scrollState.maxValue)
-        }
+    // Auto-scroll when keyboard appears - Optimized with snapshotFlow
+    LaunchedEffect(imeInsets, density) {
+        snapshotFlow { imeInsets.getBottom(density) > 0 }
+            .collect { isVisible ->
+                if (isVisible) {
+                    scrollState.animateScrollTo(scrollState.maxValue)
+                }
+            }
     }
 
     Column(
