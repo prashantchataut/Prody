@@ -7,3 +7,8 @@
 **Vulnerability:** Leaking API keys in Logcat via OkHttp interceptors and debug logs, and missing UI protection for therapeutic chats.
 **Learning:** Prody's `OpenRouterService` used `HttpLoggingInterceptor.Level.BODY` in debug mode without redacting the `Authorization` header, exposing API keys to anybody with ADB access. Additionally, Haven't therapeutic screens lacked `FLAG_SECURE`, risking user privacy.
 **Prevention:** Always use `redactHeader("Authorization")` in network interceptors. Remove logs that print partial secrets. Enforce `FLAG_SECURE` on all therapeutic and reflection screens by default.
+
+## 2026-04-17 - Secure Communication and Screen Protection
+**Vulnerability:** Placeholder certificate pins in `SecureHttpClient.kt` and missing `FLAG_SECURE` on sensitive screens (Future Messages, Micro-Journal, Monthly Letters, Locker).
+**Learning:** Hardcoded placeholders like `sha256/GThRnpaJ1x8I2c4e8p5h6k7l8m9n0o1p2q3r4s5t6u7v8w9x0y1z2a3b4c5d6e7f8` were used for certificate pinning, which provides no real security. Additionally, sensitive user content was exposed to screenshots because `FLAG_SECURE` was only applied to a subset of reflection screens.
+**Prevention:** Always synchronize certificate pins between `network_security_config.xml` and `SecureHttpClient.kt`. Use a centralized `SecureScreen` utility to ensure consistent application of `FLAG_SECURE` across all private data screens.
