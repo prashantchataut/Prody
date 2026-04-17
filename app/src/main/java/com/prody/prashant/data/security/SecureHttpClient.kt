@@ -34,9 +34,17 @@ class SecureHttpClient @Inject constructor(
         private const val READ_TIMEOUT_SECONDS = 60L
         private const val WRITE_TIMEOUT_SECONDS = 60L
         
-        // Certificate pinning hashes (these should be updated with actual certificate hashes)
-        private const val GEMINI_CERT_PIN = "sha256/GThRnpaJ1x8I2c4e8p5h6k7l8m9n0o1p2q3r4s5t6u7v8w9x0y1z2a3b4c5d6e7f8"
-        private const val OPENROUTER_CERT_PIN = "sha256/H2i3j4k5l6m7n8o9p0q1r2s3t4u5v6w7x8y9z0a1b2c3d4e5f6g7h8i9j0k1l2"
+        // Certificate pinning hashes from network_security_config.xml
+        private val GEMINI_PINS = arrayOf(
+            "sha256/ePd8DjIPDZVBxKmWbWHXy+wZjO75a6PEiRzXE7mbzZ0=",
+            "sha256/YPtHaftLw6/0vnc2BnNKGF54xiCA28WFcccjkA4ypCM=",
+            "sha256/hxqRlPTu1bMS/0DITB1SSu0vd4u/8l8TjPgfaAp63Gc="
+        )
+        private val OPENROUTER_PINS = arrayOf(
+            "sha256/2ETytvFJ0SYiiaUyT3xMrJ3Yuen/K58SNiB87YChuRg=",
+            "sha256/kIdp6NNEd8wsugYyyIYFsi1ylMCED3hZbSR8ZFsa/A4=",
+            "sha256/mEflZT5enoR1FuXLgYYGqnVEoZvmf9c2bVBpiOjYQ0c="
+        )
     }
 
     /**
@@ -56,9 +64,9 @@ class SecureHttpClient @Inject constructor(
      * Create a secure OkHttpClient for Google AI API with certificate pinning
      */
     fun createGeminiClient(): OkHttpClient {
-        val certificatePinner = CertificatePinner.Builder()
-            .add("generativelanguage.googleapis.com", GEMINI_CERT_PIN)
-            .build()
+        val certificatePinner = CertificatePinner.Builder().apply {
+            GEMINI_PINS.forEach { add("generativelanguage.googleapis.com", it) }
+        }.build()
 
         return OkHttpClient.Builder()
             .connectTimeout(CONNECT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
@@ -75,9 +83,9 @@ class SecureHttpClient @Inject constructor(
      * Create a secure OkHttpClient for OpenRouter API with certificate pinning
      */
     fun createOpenRouterClient(): OkHttpClient {
-        val certificatePinner = CertificatePinner.Builder()
-            .add("openrouter.ai", OPENROUTER_CERT_PIN)
-            .build()
+        val certificatePinner = CertificatePinner.Builder().apply {
+            OPENROUTER_PINS.forEach { add("openrouter.ai", it) }
+        }.build()
 
         return OkHttpClient.Builder()
             .connectTimeout(CONNECT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
@@ -127,6 +135,9 @@ class SecureHttpClient @Inject constructor(
             } else {
                 HttpLoggingInterceptor.Level.NONE
             }
+            // Security: Redact sensitive headers in logs to prevent accidental leakage
+            redactHeader("Authorization")
+            redactHeader("x-goog-api-key")
         }
     }
 
