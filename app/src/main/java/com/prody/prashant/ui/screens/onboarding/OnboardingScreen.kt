@@ -79,32 +79,34 @@ fun OnboardingScreen(
             modifier = Modifier.fillMaxSize(),
             userScrollEnabled = false // Force navigation via buttons
         ) { page ->
+            val animationSpec = tween<Float>(durationMillis = 600, easing = EaseOutQuart)
+
             when (page) {
                 0 -> WelcomeScreen(
-                    onNext = { coroutineScope.launch { pagerState.animateScrollToPage(1) } },
-                    onLogin = { coroutineScope.launch { pagerState.animateScrollToPage(7) } }
+                    onNext = { coroutineScope.launch { pagerState.animateScrollToPage(1, animationSpec = animationSpec) } },
+                    onLogin = { coroutineScope.launch { pagerState.animateScrollToPage(7, animationSpec = animationSpec) } }
                 )
                 1 -> HavenOnboardingScreen(
-                    onNext = { coroutineScope.launch { pagerState.animateScrollToPage(2) } }
+                    onNext = { coroutineScope.launch { pagerState.animateScrollToPage(2, animationSpec = animationSpec) } }
                 )
                 2 -> JournalingScreen(
-                    onNext = { coroutineScope.launch { pagerState.animateScrollToPage(3) } },
-                    onSkip = { coroutineScope.launch { pagerState.animateScrollToPage(7) } }
+                    onNext = { coroutineScope.launch { pagerState.animateScrollToPage(3, animationSpec = animationSpec) } },
+                    onSkip = { coroutineScope.launch { pagerState.animateScrollToPage(7, animationSpec = animationSpec) } }
                 )
                 3 -> GamificationLeaderboardScreen(
-                    onNext = { coroutineScope.launch { pagerState.animateScrollToPage(4) } },
-                    onSkip = { coroutineScope.launch { pagerState.animateScrollToPage(7) } }
+                    onNext = { coroutineScope.launch { pagerState.animateScrollToPage(4, animationSpec = animationSpec) } },
+                    onSkip = { coroutineScope.launch { pagerState.animateScrollToPage(7, animationSpec = animationSpec) } }
                 )
                 4 -> GamificationXpScreen(
-                    onNext = { coroutineScope.launch { pagerState.animateScrollToPage(5) } }
+                    onNext = { coroutineScope.launch { pagerState.animateScrollToPage(5, animationSpec = animationSpec) } }
                 )
                 5 -> DailyWisdomScreen(
-                    onNext = { coroutineScope.launch { pagerState.animateScrollToPage(6) } },
-                    onSkip = { coroutineScope.launch { pagerState.animateScrollToPage(7) } }
+                    onNext = { coroutineScope.launch { pagerState.animateScrollToPage(6, animationSpec = animationSpec) } },
+                    onSkip = { coroutineScope.launch { pagerState.animateScrollToPage(7, animationSpec = animationSpec) } }
                 )
                 6 -> InsightsScreen(
-                    onNext = { coroutineScope.launch { pagerState.animateScrollToPage(7) } },
-                    onSkip = { coroutineScope.launch { pagerState.animateScrollToPage(7) } }
+                    onNext = { coroutineScope.launch { pagerState.animateScrollToPage(7, animationSpec = animationSpec) } },
+                    onSkip = { coroutineScope.launch { pagerState.animateScrollToPage(7, animationSpec = animationSpec) } }
                 )
                 7 -> LoginSignupScreen(
                     onLogin = {
@@ -419,11 +421,27 @@ private fun FeatureScreenLayout(
 private fun StandardFeatureCard(
     content: @Composable ColumnScope.() -> Unit
 ) {
+    val alphaAnim = remember { Animatable(0f) }
+    val translationAnim = remember { Animatable(20f) }
+
+    LaunchedEffect(Unit) {
+        launch {
+            alphaAnim.animateTo(1f, animationSpec = tween(600, easing = EaseOutQuart))
+        }
+        launch {
+            translationAnim.animateTo(0f, animationSpec = tween(600, easing = EaseOutQuart))
+        }
+    }
+
     // Card Design: 12dp corner radius, 8dp elevation with proper shadow
     Surface(
         modifier = Modifier
             .fillMaxWidth()
             .aspectRatio(0.8f)
+            .graphicsLayer {
+                alpha = alphaAnim.value
+                translationY = translationAnim.value
+            }
             .shadow(
                 elevation = 8.dp,
                 shape = RoundedCornerShape(12.dp),

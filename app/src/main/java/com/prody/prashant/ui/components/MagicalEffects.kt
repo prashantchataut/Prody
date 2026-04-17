@@ -65,7 +65,7 @@ fun AmbientBackground(
     val infiniteTransition = rememberInfiniteTransition(label = "ambient_bg")
 
     // Slow, organic breathing animation
-    val breathingScale by infiniteTransition.animateFloat(
+    val breathingScale = infiniteTransition.animateFloat(
         initialValue = 1f,
         targetValue = 1.02f,
         animationSpec = infiniteRepeatable(
@@ -76,7 +76,7 @@ fun AmbientBackground(
     )
 
     // Gentle rotation for organic feel
-    val rotation by infiniteTransition.animateFloat(
+    val rotation = infiniteTransition.animateFloat(
         initialValue = 0f,
         targetValue = 360f,
         animationSpec = infiniteRepeatable(
@@ -87,7 +87,7 @@ fun AmbientBackground(
     )
 
     // Shifting ambient glow position
-    val glowOffset by infiniteTransition.animateFloat(
+    val glowOffset = infiniteTransition.animateFloat(
         initialValue = 0f,
         targetValue = 1f,
         animationSpec = infiniteRepeatable(
@@ -106,26 +106,30 @@ fun AmbientBackground(
         val centerY = size.height / 2
         val maxRadius = maxOf(size.width, size.height) * 0.8f
 
+        val currentBreathingScale = breathingScale.value
+        val currentGlowOffset = glowOffset.value
+        val currentRotation = rotation.value
+
         // Primary ambient glow
-        val glowX = centerX + (glowOffset - 0.5f) * size.width * 0.3f
-        val glowY = centerY + sin(glowOffset * PI).toFloat() * size.height * 0.1f
+        val glowX = centerX + (currentGlowOffset - 0.5f) * size.width * 0.3f
+        val glowY = centerY + sin(currentGlowOffset * PI).toFloat() * size.height * 0.1f
 
         drawCircle(
             brush = Brush.radialGradient(
                 colors = listOf(
-                    ambientColors.primary.copy(alpha = intensity * 0.15f * breathingScale),
+                    ambientColors.primary.copy(alpha = intensity * 0.15f * currentBreathingScale),
                     ambientColors.primary.copy(alpha = intensity * 0.05f),
                     Color.Transparent
                 ),
                 center = Offset(glowX, glowY),
-                radius = maxRadius * breathingScale
+                radius = maxRadius * currentBreathingScale
             ),
-            radius = maxRadius * breathingScale,
+            radius = maxRadius * currentBreathingScale,
             center = Offset(glowX, glowY)
         )
 
         // Secondary ambient accent
-        rotate(rotation, pivot = Offset(centerX, centerY)) {
+        rotate(currentRotation, pivot = Offset(centerX, centerY)) {
             drawCircle(
                 brush = Brush.radialGradient(
                     colors = listOf(
@@ -474,7 +478,7 @@ fun StreakFlame(
     }
 
     // Primary breathing animation
-    val breathingScale by infiniteTransition.animateFloat(
+    val breathingScale = infiniteTransition.animateFloat(
         initialValue = 0.9f,
         targetValue = 1.1f,
         animationSpec = infiniteRepeatable(
@@ -485,7 +489,7 @@ fun StreakFlame(
     )
 
     // Flickering animation
-    val flickerAlpha by infiniteTransition.animateFloat(
+    val flickerAlpha = infiniteTransition.animateFloat(
         initialValue = 0.7f,
         targetValue = 1f,
         animationSpec = infiniteRepeatable(
@@ -496,7 +500,7 @@ fun StreakFlame(
     )
 
     // Swaying animation
-    val sway by infiniteTransition.animateFloat(
+    val sway = infiniteTransition.animateFloat(
         initialValue = -3f,
         targetValue = 3f,
         animationSpec = infiniteRepeatable(
@@ -513,17 +517,21 @@ fun StreakFlame(
         val centerX = this.size.width / 2
         val baseY = this.size.height * 0.9f
 
+        val currentBreathingScale = breathingScale.value
+        val currentFlickerAlpha = flickerAlpha.value
+        val currentSway = sway.value
+
         // Outer glow
         drawCircle(
             brush = Brush.radialGradient(
                 colors = listOf(
-                    flameColors[0].copy(alpha = 0.4f * intensity * flickerAlpha),
+                    flameColors[0].copy(alpha = 0.4f * intensity * currentFlickerAlpha),
                     Color.Transparent
                 ),
                 center = Offset(centerX, baseY - sizePx * 0.3f),
-                radius = sizePx * 0.8f * breathingScale
+                radius = sizePx * 0.8f * currentBreathingScale
             ),
-            radius = sizePx * 0.8f * breathingScale,
+            radius = sizePx * 0.8f * currentBreathingScale,
             center = Offset(centerX, baseY - sizePx * 0.3f)
         )
 
@@ -533,15 +541,15 @@ fun StreakFlame(
 
             // Left curve
             cubicTo(
-                centerX - sizePx * 0.25f, baseY - sizePx * 0.4f * breathingScale,
-                centerX - sizePx * 0.1f + sway, baseY - sizePx * 0.7f * breathingScale,
-                centerX + sway * 0.5f, baseY - sizePx * 0.9f * breathingScale
+                centerX - sizePx * 0.25f, baseY - sizePx * 0.4f * currentBreathingScale,
+                centerX - sizePx * 0.1f + currentSway, baseY - sizePx * 0.7f * currentBreathingScale,
+                centerX + currentSway * 0.5f, baseY - sizePx * 0.9f * currentBreathingScale
             )
 
             // Right curve
             cubicTo(
-                centerX + sizePx * 0.1f + sway, baseY - sizePx * 0.7f * breathingScale,
-                centerX + sizePx * 0.25f, baseY - sizePx * 0.4f * breathingScale,
+                centerX + sizePx * 0.1f + currentSway, baseY - sizePx * 0.7f * currentBreathingScale,
+                centerX + sizePx * 0.25f, baseY - sizePx * 0.4f * currentBreathingScale,
                 centerX + sizePx * 0.2f, baseY
             )
 
@@ -552,11 +560,11 @@ fun StreakFlame(
             path = flamePath,
             brush = Brush.verticalGradient(
                 colors = listOf(
-                    flameColors[2].copy(alpha = flickerAlpha),
-                    flameColors[1].copy(alpha = flickerAlpha * 0.9f),
-                    flameColors[0].copy(alpha = flickerAlpha * 0.8f)
+                    flameColors[2].copy(alpha = currentFlickerAlpha),
+                    flameColors[1].copy(alpha = currentFlickerAlpha * 0.9f),
+                    flameColors[0].copy(alpha = currentFlickerAlpha * 0.8f)
                 ),
-                startY = baseY - sizePx * 0.9f * breathingScale,
+                startY = baseY - sizePx * 0.9f * currentBreathingScale,
                 endY = baseY
             )
         )
@@ -566,14 +574,14 @@ fun StreakFlame(
             moveTo(centerX - sizePx * 0.08f, baseY)
 
             cubicTo(
-                centerX - sizePx * 0.1f, baseY - sizePx * 0.25f * breathingScale,
-                centerX - sizePx * 0.05f + sway * 0.3f, baseY - sizePx * 0.45f * breathingScale,
-                centerX + sway * 0.2f, baseY - sizePx * 0.55f * breathingScale
+                centerX - sizePx * 0.1f, baseY - sizePx * 0.25f * currentBreathingScale,
+                centerX - sizePx * 0.05f + currentSway * 0.3f, baseY - sizePx * 0.45f * currentBreathingScale,
+                centerX + currentSway * 0.2f, baseY - sizePx * 0.55f * currentBreathingScale
             )
 
             cubicTo(
-                centerX + sizePx * 0.05f + sway * 0.3f, baseY - sizePx * 0.45f * breathingScale,
-                centerX + sizePx * 0.1f, baseY - sizePx * 0.25f * breathingScale,
+                centerX + sizePx * 0.05f + currentSway * 0.3f, baseY - sizePx * 0.45f * currentBreathingScale,
+                centerX + sizePx * 0.1f, baseY - sizePx * 0.25f * currentBreathingScale,
                 centerX + sizePx * 0.08f, baseY
             )
 
@@ -584,10 +592,10 @@ fun StreakFlame(
             path = corePath,
             brush = Brush.verticalGradient(
                 colors = listOf(
-                    Color.White.copy(alpha = flickerAlpha * 0.9f),
-                    flameColors[2].copy(alpha = flickerAlpha)
+                    Color.White.copy(alpha = currentFlickerAlpha * 0.9f),
+                    flameColors[2].copy(alpha = currentFlickerAlpha)
                 ),
-                startY = baseY - sizePx * 0.55f * breathingScale,
+                startY = baseY - sizePx * 0.55f * currentBreathingScale,
                 endY = baseY
             )
         )
