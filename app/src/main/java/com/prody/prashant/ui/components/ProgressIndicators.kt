@@ -73,7 +73,7 @@ fun ProdyCircularProgress(
 ) {
     var animationPlayed by remember { mutableStateOf(false) }
 
-    val animatedProgress by animateFloatAsState(
+    val animatedProgressState = animateFloatAsState(
         targetValue = if (animationPlayed) progress.coerceIn(0f, 1f) else 0f,
         animationSpec = tween(
             durationMillis = animationDuration,
@@ -86,7 +86,7 @@ fun ProdyCircularProgress(
         animationPlayed = true
     }
 
-    val percentageValue = (animatedProgress * 100).toInt()
+    val percentageValue = (animatedProgressState.value * 100).toInt()
     val accessibilityDescription = "Progress: $percentageValue percent"
 
     Box(
@@ -96,6 +96,7 @@ fun ProdyCircularProgress(
         contentAlignment = Alignment.Center
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
+            val progressVal = animatedProgressState.value
             val strokeWidthPx = strokeWidth.toPx()
             val radius = (min(this.size.width, this.size.height) - strokeWidthPx) / 2
             val center = Offset(this.size.width / 2, this.size.height / 2)
@@ -109,7 +110,7 @@ fun ProdyCircularProgress(
             )
 
             // Progress arc with gradient
-            val sweepAngle = animatedProgress * 360f
+            val sweepAngle = progressVal * 360f
             if (sweepAngle > 0f) {
                 drawArc(
                     brush = Brush.sweepGradient(
@@ -174,7 +175,7 @@ fun ProdyProgressIndicator(
     dotHeight: Dp = 4.dp,
     spacing: Dp = 4.dp
 ) {
-    val animatedIndex by animateFloatAsState(
+    val animatedIndexState = animateFloatAsState(
         targetValue = currentPage.toFloat(),
         animationSpec = spring(stiffness = Spring.StiffnessLow),
         label = "progress_indicator_index"
@@ -196,6 +197,7 @@ fun ProdyProgressIndicator(
             .height(dotHeight)
             .fillMaxWidth()
     ) {
+        val animIndex = animatedIndexState.value
         val yOffset = size.height / 2
 
         // Total width calculation for centering if needed
@@ -205,7 +207,7 @@ fun ProdyProgressIndicator(
 
         for (i in 0 until totalPages) {
             // Calculate distance from animated index to determine width and color
-            val distance = kotlin.math.abs(i - animatedIndex)
+            val distance = kotlin.math.abs(i - animIndex)
             val selectionProgress = (1f - distance).coerceIn(0f, 1f)
 
             val dotWidth = inactiveDotWidthPx + (activeDotWidthPx - inactiveDotWidthPx) * selectionProgress
@@ -248,7 +250,7 @@ fun ProdySmallCircularProgress(
 ) {
     var animationPlayed by remember { mutableStateOf(false) }
 
-    val animatedProgress by animateFloatAsState(
+    val animatedProgressState = animateFloatAsState(
         targetValue = if (animationPlayed) progress.coerceIn(0f, 1f) else 0f,
         animationSpec = tween(
             durationMillis = ProdyTokens.Animation.normal,
@@ -268,6 +270,7 @@ fun ProdySmallCircularProgress(
             .size(size)
             .semantics { contentDescription = "Progress: $percentageValue percent" }
     ) {
+        val progressVal = animatedProgressState.value
         val strokeWidthPx = strokeWidth.toPx()
         val radius = (min(this.size.width, this.size.height) - strokeWidthPx) / 2
         val center = Offset(this.size.width / 2, this.size.height / 2)
@@ -281,7 +284,7 @@ fun ProdySmallCircularProgress(
         )
 
         // Progress
-        val sweepAngle = animatedProgress * 360f
+        val sweepAngle = progressVal * 360f
         if (sweepAngle > 0f) {
             drawArc(
                 color = progressColor,
@@ -323,7 +326,7 @@ fun ProdyLinearProgress(
 ) {
     var animationPlayed by remember { mutableStateOf(false) }
 
-    val animatedProgress by animateFloatAsState(
+    val animatedProgressState = animateFloatAsState(
         targetValue = if (animationPlayed) progress.coerceIn(0f, 1f) else 0f,
         animationSpec = tween(
             durationMillis = animationDuration,
@@ -344,6 +347,7 @@ fun ProdyLinearProgress(
             .height(height)
             .semantics { contentDescription = "Progress: $percentageValue percent" }
     ) {
+        val progressVal = animatedProgressState.value
         val cornerRadiusPx = cornerRadius.toPx()
 
         // Background track
@@ -353,10 +357,10 @@ fun ProdyLinearProgress(
         )
 
         // Progress fill
-        if (animatedProgress > 0f) {
+        if (progressVal > 0f) {
             drawRoundRect(
                 brush = Brush.horizontalGradient(progressColors),
-                size = Size(this.size.width * animatedProgress, this.size.height),
+                size = Size(this.size.width * progressVal, this.size.height),
                 cornerRadius = CornerRadius(cornerRadiusPx)
             )
         }
@@ -449,7 +453,7 @@ fun ProdyLevelProgress(
 ) {
     var animationPlayed by remember { mutableStateOf(false) }
 
-    val animatedProgress by animateFloatAsState(
+    val animatedProgressState = animateFloatAsState(
         targetValue = if (animationPlayed) progress.coerceIn(0f, 1f) else 0f,
         animationSpec = tween(
             durationMillis = ProdyTokens.Animation.slow,
@@ -470,11 +474,12 @@ fun ProdyLevelProgress(
             .height(height)
             .semantics { contentDescription = "Level progress: $percentageValue percent" }
     ) {
+        val progressVal = animatedProgressState.value
         val cornerRadiusPx = (height / 2).toPx()
 
         // Optional glow effect
-        if (showGlow && animatedProgress > 0f) {
-            val glowWidth = this.size.width * animatedProgress
+        if (showGlow && progressVal > 0f) {
+            val glowWidth = this.size.width * progressVal
             drawRoundRect(
                 color = glowColor.copy(alpha = 0.3f),
                 size = Size(glowWidth + 4.dp.toPx(), this.size.height + 4.dp.toPx()),
@@ -490,10 +495,10 @@ fun ProdyLevelProgress(
         )
 
         // Progress fill with gradient
-        if (animatedProgress > 0f) {
+        if (progressVal > 0f) {
             drawRoundRect(
                 brush = Brush.horizontalGradient(progressColors),
-                size = Size(this.size.width * animatedProgress, this.size.height),
+                size = Size(this.size.width * progressVal, this.size.height),
                 cornerRadius = CornerRadius(cornerRadiusPx)
             )
         }
@@ -527,7 +532,7 @@ fun ProdyStreakProgressRing(
 ) {
     var animationPlayed by remember { mutableStateOf(false) }
 
-    val animatedProgress by animateFloatAsState(
+    val animatedProgressState = animateFloatAsState(
         targetValue = if (animationPlayed) progress.coerceIn(0f, 1f) else 0f,
         animationSpec = tween(
             durationMillis = ProdyTokens.Animation.slow,
@@ -549,6 +554,7 @@ fun ProdyStreakProgressRing(
         contentAlignment = Alignment.Center
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
+            val progressVal = animatedProgressState.value
             val strokeWidthPx = strokeWidth.toPx()
             val radius = (min(this.size.width, this.size.height) - strokeWidthPx) / 2
             val center = Offset(this.size.width / 2, this.size.height / 2)
@@ -562,7 +568,7 @@ fun ProdyStreakProgressRing(
             )
 
             // Progress arc
-            val sweepAngle = animatedProgress * 360f
+            val sweepAngle = progressVal * 360f
             if (sweepAngle > 0f) {
                 drawArc(
                     brush = Brush.sweepGradient(

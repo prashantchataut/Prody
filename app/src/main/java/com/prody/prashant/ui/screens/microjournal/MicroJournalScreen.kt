@@ -33,6 +33,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.data.local.entity.MicroEntryEntity
 import com.prody.prashant.domain.model.Mood
 import com.prody.prashant.ui.components.ProdyCard
+import com.prody.prashant.util.rememberProdyHaptic
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -416,10 +417,15 @@ private fun MicroEntryCard(
     onExpandClick: () -> Unit,
     showDate: Boolean
 ) {
+    val haptic = rememberProdyHaptic()
+
     ProdyCard(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
+            .clickable {
+                haptic.click()
+                onClick()
+            }
     ) {
         Column(
             modifier = Modifier.padding(16.dp)

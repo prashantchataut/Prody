@@ -67,6 +67,7 @@ import com.prody.prashant.ui.components.MoodBreathingHalo
 import com.prody.prashant.ui.components.PlayerSkillsCard
 import com.prody.prashant.ui.components.getCurrentTimeOfDay
 import com.prody.prashant.ui.theme.*
+import com.prody.prashant.util.rememberProdyHaptic
 import kotlinx.coroutines.delay
 
 /**
@@ -2043,6 +2044,8 @@ fun AchievementShelf(
     val textPrimary = if (isDarkMode) IdentityRoomColors.TextPrimaryDark else IdentityRoomColors.TextPrimaryLight
     val textSecondary = if (isDarkMode) IdentityRoomColors.TextSecondaryDark else IdentityRoomColors.TextSecondaryLight
 
+    val haptic = rememberProdyHaptic()
+
     Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -2071,7 +2074,10 @@ fun AchievementShelf(
             
             Text(
                 text = "View All",
-                modifier = Modifier.clickable { onViewAllClick() },
+                modifier = Modifier.clickable {
+                    haptic.click()
+                    onViewAllClick()
+                },
                 style = TextStyle(
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.SemiBold,
