@@ -90,7 +90,7 @@ fun PremiumHeader(
         
         // Subtle divider separating header from content if needed
         Spacer(modifier = Modifier.height(16.dp))
-        Divider(
+        HorizontalDivider(
             color = contentColor.copy(alpha = 0.05f),
             thickness = 1.dp
         )

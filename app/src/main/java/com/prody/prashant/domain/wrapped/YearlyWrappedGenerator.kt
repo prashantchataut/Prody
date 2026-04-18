@@ -41,7 +41,6 @@ class YearlyWrappedGenerator @Inject constructor(
         year: Int,
         config: WrappedGenerationConfig = WrappedGenerationConfig(year)
     ): Result<YearlyWrappedEntity> = try {
-        Log.d(TAG, "Starting wrapped generation for year $year")
 
         // Define year boundaries
         val yearStart = LocalDate.of(year, 1, 1)
@@ -169,7 +168,6 @@ class YearlyWrappedGenerator @Inject constructor(
             shareableCardsJson = gson.toJson(shareableCards)
         )
 
-        Log.d(TAG, "Wrapped generation completed successfully for year $year")
         Result.success(entity)
     } catch (e: Exception) {
         Log.e(TAG, "Failed to generate wrapped for year $year", e)
