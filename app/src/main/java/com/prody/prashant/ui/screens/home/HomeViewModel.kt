@@ -137,7 +137,9 @@ data class HomeUiState(
     val personalizedPatternSuggestion: String = "",
     // Intelligence Insights
     val intelligenceInsights: List<IntelligenceInsight> = emptyList(),
-    val isPremiumIntelligenceEnabled: Boolean = false
+    val isPremiumIntelligenceEnabled: Boolean = false,
+    // Mood Trend
+    val moodTrend: List<Float> = emptyList()
 )
 
 private data class DailyContent(
@@ -240,6 +242,9 @@ class HomeViewModel @Inject constructor(
                 // Calculate weekly active days.
                 val daysActiveThisWeek = streakHistory.count { it.date >= weekStart }
 
+                // Calculate Mood Trend (7 days)
+                val moodTrend = calculateMoodTrend(weeklyJournalEntries)
+
                 // Determine today's journaling status.
                 val (journaledToday, todayMood, todayPreview) = if (todayJournalEntries.isNotEmpty()) {
                     val latestEntry = todayJournalEntries.maxByOrNull { it.createdAt }
@@ -273,6 +278,7 @@ class HomeViewModel @Inject constructor(
                     todayEntryMood = todayMood,
                     todayEntryPreview = todayPreview,
                     dualStreakStatus = dualStreak,
+                    moodTrend = moodTrend,
                     buddhaWisdomProofInfo = _uiState.value.buddhaWisdomProofInfo.copy(isEnabled = aiProofMode),
                     isLoading = false // <-- Critical: Signal that loading is complete.
                 )
@@ -297,6 +303,41 @@ class HomeViewModel @Inject constructor(
             launch { loadDailySeed() }
             launch { checkAiConfiguration() }
             launch { loadSoulLayerContent() }
+        }
+    }
+
+    /**
+     * Calculate a 7-day mood trend from journal entries.
+     * Normalizes 1-10 intensity to 1-5 scale and fills gaps with neutral 3.0f.
+     */
+    private fun calculateMoodTrend(entries: List<JournalEntryEntity>): List<Float> {
+        if (entries.isEmpty()) return List(7) { 3.0f }
+
+        val today = java.time.LocalDate.now()
+        val trendMap = mutableMapOf<java.time.LocalDate, Float>()
+
+        // Group and average by date
+        entries.forEach { entry ->
+            val date = java.time.Instant.ofEpochMilli(entry.createdAt)
+                .atZone(java.time.ZoneId.systemDefault())
+                .toLocalDate()
+
+            // Raw intensity is 1-10, normalize to 1-5
+            val normalizedMood = entry.moodIntensity / 2f
+
+            val current = trendMap[date]
+            if (current == null) {
+                trendMap[date] = normalizedMood
+            } else {
+                // Simplified average for same-day entries
+                trendMap[date] = (current + normalizedMood) / 2f
+            }
+        }
+
+        // Fill 7-day trend with gap filling
+        return (0..6).reversed().map { daysAgo ->
+            val date = today.minusDays(daysAgo.toLong())
+            trendMap[date] ?: 3.0f // Neutral fallback
         }
     }
 

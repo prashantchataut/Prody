@@ -144,8 +144,10 @@ fun HomeScreen(
             .background(backgroundColor),
         contentPadding = PaddingValues(bottom = 80.dp)
     ) {
+        // Performance Optimization: Use stable keys for list items
+
         // Header with Greeting
-        item {
+        item(key = "header") {
             DashboardHeader(
                 userName = uiState.userName,
                 greeting = greeting,
@@ -155,7 +157,7 @@ fun HomeScreen(
         }
 
         // Overview Section (Consistency & Badges)
-        item {
+        item(key = "overview") {
             OverviewSection(
                 streakDays = uiState.currentStreak,
                 badges = badges
@@ -164,7 +166,7 @@ fun HomeScreen(
 
         // Personalized Pattern Card (opt-in, only shown when data exists)
         if (uiState.personalizedPatternText.isNotEmpty()) {
-            item {
+            item(key = "personalized_pattern") {
                 PersonalizedPatternCard(
                     patternText = uiState.personalizedPatternText,
                     patternSuggestion = uiState.personalizedPatternSuggestion
@@ -174,7 +176,7 @@ fun HomeScreen(
 
         // Premium Intelligence Insights (Opt-in)
         if (uiState.isPremiumIntelligenceEnabled && uiState.intelligenceInsights.isNotEmpty()) {
-            item {
+            item(key = "intelligence_insights") {
                 Spacer(modifier = Modifier.height(24.dp))
                 IntelligenceInsightCard(
                     insight = uiState.intelligenceInsights.first(),
@@ -185,15 +187,15 @@ fun HomeScreen(
 
         // Mood Trend Chart - only show if there's real data
         if (uiState.journalEntriesThisWeek > 0) {
-            item {
+            item(key = "mood_trend") {
                 MoodTrendSection(
-                    moodData = emptyList() // Mood trend requires historical mood data not exposed yet
+                    moodData = uiState.moodTrend
                 )
             }
         }
 
         // Weekly Summary from real data
-        item {
+        item(key = "weekly_summary") {
             WeeklySummarySection(
                 journalEntries = uiState.journalEntriesThisWeek,
                 wordsLearned = uiState.wordsLearnedThisWeek,
@@ -202,7 +204,7 @@ fun HomeScreen(
         }
 
         // Quick Actions (Navigation)
-        item {
+        item(key = "quick_actions") {
             QuickActionsGrid(
                 onJournalClick = onNavigateToJournal,
                 onHavenClick = onNavigateToHaven,
@@ -212,7 +214,7 @@ fun HomeScreen(
         }
 
         // Explore Section - routes to additional features
-        item {
+        item(key = "explore") {
             ExploreSection(
                 onMeditationClick = onNavigateToMeditation,
                 onChallengesClick = onNavigateToChallenges,
@@ -226,7 +228,7 @@ fun HomeScreen(
         }
 
         // Recent Activity - show today's journal status
-        item {
+        item(key = "recent_activity") {
             RecentActivitySection(
                 journaledToday = uiState.journaledToday,
                 todayMood = uiState.todayEntryMood,
