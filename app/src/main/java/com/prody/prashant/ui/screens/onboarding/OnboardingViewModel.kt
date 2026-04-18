@@ -36,9 +36,9 @@ class OnboardingViewModel @Inject constructor(
     fun completeOnboarding() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                // 1. DataStore updates - executed OUTSIDE Room transaction as per best practices.
-                // Room transactions should only contain Room operations.
-                preferencesManager.setOnboardingCompleted(true)
+                // 1. Initial DataStore updates.
+                // Note: setOnboardingCompleted(true) is moved to AFTER the transaction
+                // to ensure the Home screen doesn't load without data if the process is killed.
                 preferencesManager.setFirstLaunchTime(System.currentTimeMillis())
                 val userId = UUID.randomUUID().toString()
                 preferencesManager.setUserId(userId)
@@ -82,6 +82,10 @@ class OnboardingViewModel @Inject constructor(
                     // Populate initial content within the same transaction
                     performInitialContentPopulation()
                 }
+
+                // 3. Finalize onboarding state ONLY after successful DB transaction.
+                // This ensures that when the user is navigated to Home, the data is guaranteed to exist.
+                preferencesManager.setOnboardingCompleted(true)
             } catch (e: Exception) {
                 android.util.Log.e(TAG, "Error during onboarding completion", e)
                 // Still mark onboarding as completed to prevent being stuck in a loop
