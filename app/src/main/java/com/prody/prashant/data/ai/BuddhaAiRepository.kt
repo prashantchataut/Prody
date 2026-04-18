@@ -731,7 +731,6 @@ class BuddhaAiRepository @Inject constructor(
 
                         // Validate response doesn't contain generic AI language
                         if (!containsGenericAiLanguage(lastResponse)) {
-                            Log.d(TAG, "Gemini response passed persona validation on attempt $attempts")
                             return lastResponse
                         } else {
                             Log.w(TAG, "Gemini response contained generic AI language, retrying... (attempt $attempts)")
@@ -754,7 +753,6 @@ class BuddhaAiRepository @Inject constructor(
 
                         // Validate response doesn't contain generic AI language
                         if (!containsGenericAiLanguage(response)) {
-                            Log.d(TAG, "OpenRouter response passed persona validation on attempt $attempts")
                             return response
                         } else {
                             Log.w(TAG, "OpenRouter response contained generic AI language, retrying... (attempt $attempts)")
@@ -770,7 +768,6 @@ class BuddhaAiRepository @Inject constructor(
         lastResponse?.let { response ->
             val cleanedResponse = sanitizeGenericAiLanguage(response)
             if (cleanedResponse.isNotBlank()) {
-                Log.d(TAG, "Returning sanitized response after $attempts attempts")
                 return cleanedResponse
             }
         }

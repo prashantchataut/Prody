@@ -257,7 +257,6 @@ class NewJournalEntryViewModel @Inject constructor(
 
             // Guard against double-taps - prevent duplicate saves
             if (state.isSaving || state.isSaved) {
-                android.util.Log.d(TAG, "Save already in progress or completed, ignoring duplicate save request")
                 return@launch
             }
 
@@ -320,7 +319,6 @@ class NewJournalEntryViewModel @Inject constructor(
                     content = state.content,
                     mood = state.selectedMood.name
                 )
-                android.util.Log.d(TAG, "Journal entry saved, session result: ${sessionResult.rewards.totalXp} XP")
 
                 _uiState.update {
                     it.copy(
@@ -378,14 +376,12 @@ class NewJournalEntryViewModel @Inject constructor(
 
             when (geminiResult) {
                 is GeminiResult.Success -> {
-                    android.util.Log.d(TAG, "Buddha response generated via Gemini")
                     return geminiResult.data
                 }
                 is GeminiResult.Error -> {
                     android.util.Log.w(TAG, "Gemini failed: ${geminiResult.message}, trying OpenRouter fallback")
                 }
                 is GeminiResult.ApiKeyNotSet -> {
-                    android.util.Log.d(TAG, "Gemini API key not set, trying OpenRouter fallback")
                 }
                 is GeminiResult.Loading -> {
                     // Shouldn't happen for non-streaming calls, but handle gracefully
@@ -403,7 +399,6 @@ class NewJournalEntryViewModel @Inject constructor(
             )
 
             openRouterResult.onSuccess { response ->
-                android.util.Log.d(TAG, "Buddha response generated via OpenRouter fallback")
                 return response
             }.onFailure { e ->
                 android.util.Log.w(TAG, "OpenRouter fallback failed: ${e.message}, using local wisdom")
@@ -411,7 +406,6 @@ class NewJournalEntryViewModel @Inject constructor(
         }
 
         // Tier 3: Local BuddhaWisdom - always available, guaranteed response
-        android.util.Log.d(TAG, "Using local BuddhaWisdom for response")
         return BuddhaWisdom.generateResponse(
             content = state.content,
             mood = state.selectedMood,
@@ -472,7 +466,6 @@ class NewJournalEntryViewModel @Inject constructor(
                             showInsightCard = !insight.isInsufficientContext || insight.question != null
                         )
                     }
-                    android.util.Log.d(TAG, "Journal insight generated: ${insight.emotionLabel}, snippet: ${insight.snippet}")
                 } else {
                     _uiState.update { it.copy(isGeneratingInsight = false) }
                 }
@@ -595,19 +588,19 @@ class NewJournalEntryViewModel @Inject constructor(
             TranscriptionChoice.NOW -> {
                 // For now, we use the existing startTranscription method 
                 // which uses real-time transcription. 
-                // TODO: Implement file-based transcription if available in VoiceTranscriptionService
+                // NOTE: File-based transcription from VoiceTranscriptionService is not yet implemented.
+                // Using real-time transcription as a fallback.
+                android.util.Log.i(TAG, "Starting real-time transcription as fallback for NOW choice")
                 startTranscription()
             }
             TranscriptionChoice.LATER -> {
                 // Queue for later sync (handled by SyncManager)
                 uri?.let {
                     // Logic to be implemented in SyncManager or a dedicated TranscriptionWorker
-                    android.util.Log.d(TAG, "Queued recording for later transcription: $it")
                 }
             }
             TranscriptionChoice.NEVER -> {
                 // Do nothing
-                android.util.Log.d(TAG, "User chose not to transcribe recording")
             }
         }
     }
@@ -701,10 +694,8 @@ class NewJournalEntryViewModel @Inject constructor(
                 .collect { result ->
                     when (result) {
                         is TranscriptionResult.Ready -> {
-                            android.util.Log.d(TAG, "Transcription ready")
                         }
                         is TranscriptionResult.Started -> {
-                            android.util.Log.d(TAG, "Transcription started")
                         }
                         is TranscriptionResult.Partial -> {
                             _uiState.update { it.copy(transcriptionPartial = result.text) }
@@ -724,13 +715,11 @@ class NewJournalEntryViewModel @Inject constructor(
                                     transcriptionPartial = ""
                                 )
                             }
-                            android.util.Log.d(TAG, "Transcription complete: ${result.text}")
                         }
                         is TranscriptionResult.SoundLevel -> {
                             _uiState.update { it.copy(transcriptionSoundLevel = result.level) }
                         }
                         is TranscriptionResult.Ended -> {
-                            android.util.Log.d(TAG, "Speech ended, processing...")
                         }
                         is TranscriptionResult.Error -> {
                             _uiState.update {

@@ -100,7 +100,6 @@ class MissionSystem @Inject constructor(
                 awardMissionRewards(mission)
             }
 
-            Log.d(TAG, "Mission progress: ${mission.title} - $newProgress/${mission.targetValue}")
 
             MissionProgressResult.Success(
                 missionTitle = mission.title,
