@@ -584,7 +584,7 @@ private fun NeonProgressRing(
 
     // Subtle glow animation
     val infiniteTransition = rememberInfiniteTransition(label = "glow")
-    val glowAlpha by infiniteTransition.animateFloat(
+    val glowAlphaState = infiniteTransition.animateFloat(
         initialValue = 0.3f,
         targetValue = 0.6f,
         animationSpec = infiniteRepeatable(
@@ -609,7 +609,7 @@ private fun NeonProgressRing(
 
         // Glow effect (subtle)
         drawCircle(
-            color = accentColor.copy(alpha = glowAlpha * 0.15f),
+            color = accentColor.copy(alpha = glowAlphaState.value * 0.15f),
             radius = radius + 4.dp.toPx(),
             center = center,
             style = Stroke(width = 8.dp.toPx())
@@ -1957,7 +1957,7 @@ private fun ConsistencyScoreCard(
 
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
-                        text = "${(streakProgress * 100).toInt()}%",
+                        text = "${(animatedProgressState.value * 100).toInt()}%",
                         fontFamily = PoppinsFamily,
                         fontWeight = FontWeight.Bold,
                         fontSize = 18.sp,
@@ -2101,6 +2101,7 @@ fun AchievementBadge(
 ) {
     val cardBg = if (isDarkMode) IdentityRoomColors.CardBackgroundElevatedDark else IdentityRoomColors.CardBackgroundElevatedLight
     val textPrimary = if (isDarkMode) IdentityRoomColors.TextPrimaryDark else IdentityRoomColors.TextPrimaryLight
+    val achievementData = UiAchievements.getAchievementById(achievement.id)
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -2114,7 +2115,7 @@ fun AchievementBadge(
         ) {
             Box(contentAlignment = Alignment.Center) {
                 Icon(
-                    imageVector = Icons.Default.EmojiEvents,
+                    imageVector = achievementData?.icon ?: ProdyIcons.EmojiEvents,
                     contentDescription = null,
                     tint = IdentityRoomColors.AccentGreen,
                     modifier = Modifier.size(32.dp)
