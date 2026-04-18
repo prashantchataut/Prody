@@ -73,7 +73,7 @@ fun ProdyCircularProgress(
 ) {
     var animationPlayed by remember { mutableStateOf(false) }
 
-    val animatedProgress by animateFloatAsState(
+    val animatedProgressState = animateFloatAsState(
         targetValue = if (animationPlayed) progress.coerceIn(0f, 1f) else 0f,
         animationSpec = tween(
             durationMillis = animationDuration,
@@ -86,19 +86,23 @@ fun ProdyCircularProgress(
         animationPlayed = true
     }
 
-    val percentageValue = (animatedProgress * 100).toInt()
-    val accessibilityDescription = "Progress: $percentageValue percent"
+    val accessibilityDescription = remember(progress) { "Progress: ${(progress * 100).toInt()} percent" }
 
     Box(
         modifier = modifier
             .size(size)
-            .semantics { contentDescription = accessibilityDescription },
+            .semantics {
+                // Read from state during draw/semantic phase to avoid recomposition
+                val percentageValue = (animatedProgressState.value * 100).toInt()
+                contentDescription = "Progress: $percentageValue percent"
+            },
         contentAlignment = Alignment.Center
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
             val strokeWidthPx = strokeWidth.toPx()
             val radius = (min(this.size.width, this.size.height) - strokeWidthPx) / 2
             val center = Offset(this.size.width / 2, this.size.height / 2)
+            val animatedProgress = animatedProgressState.value
 
             // Background circle
             drawCircle(
@@ -133,7 +137,7 @@ fun ProdyCircularProgress(
 
         if (showPercentage) {
             Text(
-                text = "$percentageValue%",
+                text = "${(animatedProgressState.value * 100).toInt()}%",
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
@@ -248,7 +252,7 @@ fun ProdySmallCircularProgress(
 ) {
     var animationPlayed by remember { mutableStateOf(false) }
 
-    val animatedProgress by animateFloatAsState(
+    val animatedProgressState = animateFloatAsState(
         targetValue = if (animationPlayed) progress.coerceIn(0f, 1f) else 0f,
         animationSpec = tween(
             durationMillis = ProdyTokens.Animation.normal,
@@ -261,16 +265,18 @@ fun ProdySmallCircularProgress(
         animationPlayed = true
     }
 
-    val percentageValue = (progress * 100).toInt()
-
     Canvas(
         modifier = modifier
             .size(size)
-            .semantics { contentDescription = "Progress: $percentageValue percent" }
+            .semantics {
+                val percentageValue = (animatedProgressState.value * 100).toInt()
+                contentDescription = "Progress: $percentageValue percent"
+            }
     ) {
         val strokeWidthPx = strokeWidth.toPx()
         val radius = (min(this.size.width, this.size.height) - strokeWidthPx) / 2
         val center = Offset(this.size.width / 2, this.size.height / 2)
+        val animatedProgress = animatedProgressState.value
 
         // Background
         drawCircle(
@@ -323,7 +329,7 @@ fun ProdyLinearProgress(
 ) {
     var animationPlayed by remember { mutableStateOf(false) }
 
-    val animatedProgress by animateFloatAsState(
+    val animatedProgressState = animateFloatAsState(
         targetValue = if (animationPlayed) progress.coerceIn(0f, 1f) else 0f,
         animationSpec = tween(
             durationMillis = animationDuration,
@@ -336,15 +342,17 @@ fun ProdyLinearProgress(
         animationPlayed = true
     }
 
-    val percentageValue = (progress * 100).toInt()
-
     Canvas(
         modifier = modifier
             .fillMaxWidth()
             .height(height)
-            .semantics { contentDescription = "Progress: $percentageValue percent" }
+            .semantics {
+                val percentageValue = (animatedProgressState.value * 100).toInt()
+                contentDescription = "Progress: $percentageValue percent"
+            }
     ) {
         val cornerRadiusPx = cornerRadius.toPx()
+        val animatedProgress = animatedProgressState.value
 
         // Background track
         drawRoundRect(
@@ -449,7 +457,7 @@ fun ProdyLevelProgress(
 ) {
     var animationPlayed by remember { mutableStateOf(false) }
 
-    val animatedProgress by animateFloatAsState(
+    val animatedProgressState = animateFloatAsState(
         targetValue = if (animationPlayed) progress.coerceIn(0f, 1f) else 0f,
         animationSpec = tween(
             durationMillis = ProdyTokens.Animation.slow,
@@ -462,15 +470,17 @@ fun ProdyLevelProgress(
         animationPlayed = true
     }
 
-    val percentageValue = (progress * 100).toInt()
-
     Canvas(
         modifier = modifier
             .fillMaxWidth()
             .height(height)
-            .semantics { contentDescription = "Level progress: $percentageValue percent" }
+            .semantics {
+                val percentageValue = (animatedProgressState.value * 100).toInt()
+                contentDescription = "Level progress: $percentageValue percent"
+            }
     ) {
         val cornerRadiusPx = (height / 2).toPx()
+        val animatedProgress = animatedProgressState.value
 
         // Optional glow effect
         if (showGlow && animatedProgress > 0f) {
@@ -527,7 +537,7 @@ fun ProdyStreakProgressRing(
 ) {
     var animationPlayed by remember { mutableStateOf(false) }
 
-    val animatedProgress by animateFloatAsState(
+    val animatedProgressState = animateFloatAsState(
         targetValue = if (animationPlayed) progress.coerceIn(0f, 1f) else 0f,
         animationSpec = tween(
             durationMillis = ProdyTokens.Animation.slow,
@@ -540,18 +550,20 @@ fun ProdyStreakProgressRing(
         animationPlayed = true
     }
 
-    val percentageValue = (progress * 100).toInt()
-
     Box(
         modifier = modifier
             .size(size)
-            .semantics { contentDescription = "Streak progress: $percentageValue percent" },
+            .semantics {
+                val percentageValue = (animatedProgressState.value * 100).toInt()
+                contentDescription = "Streak progress: $percentageValue percent"
+            },
         contentAlignment = Alignment.Center
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
             val strokeWidthPx = strokeWidth.toPx()
             val radius = (min(this.size.width, this.size.height) - strokeWidthPx) / 2
             val center = Offset(this.size.width / 2, this.size.height / 2)
+            val animatedProgress = animatedProgressState.value
 
             // Background ring
             drawCircle(
