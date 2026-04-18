@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.data.local.entity.MicroEntryEntity
+import com.prody.prashant.ui.util.SecureScreen
 import com.prody.prashant.domain.model.Mood
 import com.prody.prashant.ui.components.ProdyCard
 import java.text.SimpleDateFormat
@@ -44,6 +45,9 @@ fun MicroJournalScreen(
     viewModel: MicroJournalViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    // Security: Prevent screenshots of micro-journaling
+    SecureScreen()
     val snackbarHostState = remember { SnackbarHostState() }
 
     // Handle success/error messages
