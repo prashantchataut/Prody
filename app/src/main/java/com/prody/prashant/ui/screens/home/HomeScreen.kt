@@ -40,6 +40,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.ui.theme.*
 import com.prody.prashant.domain.intelligence.IntelligenceInsight
+import com.prody.prashant.ui.components.DualStreakCard
+import com.prody.prashant.util.rememberProdyHaptic
 
 // =============================================================================
 // PERSONALIZATION DASHBOARD - REVAMPED 2026
@@ -53,6 +55,7 @@ fun HomeScreen(
     onNavigateToProverbs: () -> Unit = onNavigateToQuotes,
     onNavigateToJournal: () -> Unit,
     onNavigateToFutureMessage: () -> Unit,
+    onNavigateToProfile: () -> Unit = {},
     onNavigateToHaven: () -> Unit = {},
     onNavigateToMeditation: () -> Unit = {},
     onNavigateToChallenges: () -> Unit = {},
@@ -149,18 +152,58 @@ fun HomeScreen(
             DashboardHeader(
                 userName = uiState.userName,
                 greeting = greeting,
-                onProfileClick = {},
+                subtext = uiState.greetingSubtext,
+                onProfileClick = onNavigateToProfile,
                 onNotificationClick = onNavigateToSearch
             )
         }
 
-        // Overview Section (Consistency & Badges)
+        // Surfaced Memory (Soul Layer Magic Moment)
+        if (uiState.showMemoryCard && uiState.surfacedMemory != null) {
+            item {
+                SurfacedMemoryCard(
+                    memory = uiState.surfacedMemory!!,
+                    onRevisitClick = { viewModel.expandMemoryCard() },
+                    onDismiss = { viewModel.dismissMemoryCard() }
+                )
+            }
+        }
+
+        // Active Progress: Next Action
+        uiState.nextAction?.let { action ->
+            item {
+                NextActionCard(
+                    nextAction = action,
+                    onClick = {
+                        when (action.actionRoute) {
+                            "journal/new" -> onNavigateToJournal()
+                            "vocabulary" -> onNavigateToVocabulary()
+                            "future_message/write" -> onNavigateToFutureMessage()
+                            "quotes" -> onNavigateToQuotes()
+                            else -> {} // Handle other routes or fallback
+                        }
+                    }
+                )
+            }
+        }
+
+        // Dual Streak Card (High Fidelity)
         item {
-            OverviewSection(
-                streakDays = uiState.currentStreak,
-                badges = badges
+            DualStreakCard(
+                dualStreakStatus = uiState.dualStreakStatus,
+                onTapForDetails = {}
             )
         }
+
+        // Today's Progress
+        if (!uiState.todayProgress.isEmpty) {
+            item {
+                TodayProgressCard(progress = uiState.todayProgress)
+            }
+        }
+
+        // Overview Section (Consistency & Badges) - Kept for legacy/extra info if needed
+        // but DualStreakCard is primary now.
 
         // Personalized Pattern Card (opt-in, only shown when data exists)
         if (uiState.personalizedPatternText.isNotEmpty()) {
@@ -184,10 +227,10 @@ fun HomeScreen(
         }
 
         // Mood Trend Chart - only show if there's real data
-        if (uiState.journalEntriesThisWeek > 0) {
+        if (uiState.moodTrend.isNotEmpty()) {
             item {
                 MoodTrendSection(
-                    moodData = emptyList() // Mood trend requires historical mood data not exposed yet
+                    moodData = uiState.moodTrend
                 )
             }
         }
@@ -244,6 +287,7 @@ fun HomeScreen(
 fun DashboardHeader(
     userName: String,
     greeting: String = "Good Morning,",
+    subtext: String = "",
     onProfileClick: () -> Unit,
     onNotificationClick: () -> Unit
 ) {
@@ -255,7 +299,7 @@ fun DashboardHeader(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Column {
+        Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = greeting,
                 style = TextStyle(
@@ -274,12 +318,28 @@ fun DashboardHeader(
                 ),
                 color = ProdyTextPrimaryLight
             )
+            if (subtext.isNotEmpty()) {
+                Text(
+                    text = subtext,
+                    style = TextStyle(
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 12.sp
+                    ),
+                    color = ProdyForestGreen.copy(alpha = 0.8f),
+                    modifier = Modifier.padding(top = 2.dp)
+                )
+            }
         }
         
         val profileContentDescription = stringResource(R.string.cd_profile_picture)
 
         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            IconButton(onClick = onNotificationClick) {
+            val haptic = rememberProdyHaptic()
+            IconButton(onClick = {
+                haptic.click()
+                onNotificationClick()
+            }) {
                 Icon(
                     imageVector = Icons.Outlined.Notifications,
                     contentDescription = "Notifications",
@@ -653,10 +713,14 @@ fun QuickActionsGrid(
 
 @Composable
 fun QuickActionTile(title: String, icon: androidx.compose.ui.graphics.vector.ImageVector, color: Color, onClick: () -> Unit, modifier: Modifier) {
+    val haptic = rememberProdyHaptic()
     Surface(
         modifier = modifier
             .height(100.dp)
-            .clickable(onClick = onClick),
+            .clickable {
+                haptic.click()
+                onClick()
+            },
         shape = RoundedCornerShape(16.dp),
         color = color.copy(alpha = 0.1f),
         border = androidx.compose.foundation.BorderStroke(1.dp, color.copy(alpha = 0.2f))
@@ -792,9 +856,13 @@ private fun ExploreChip(
     color: Color,
     onClick: () -> Unit
 ) {
+    val haptic = rememberProdyHaptic()
     Surface(
         modifier = Modifier
-            .clickable(onClick = onClick),
+            .clickable {
+                haptic.click()
+                onClick()
+            },
         shape = RoundedCornerShape(12.dp),
         color = color.copy(alpha = 0.1f),
         border = androidx.compose.foundation.BorderStroke(1.dp, color.copy(alpha = 0.15f))

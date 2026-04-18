@@ -137,7 +137,9 @@ data class HomeUiState(
     val personalizedPatternSuggestion: String = "",
     // Intelligence Insights
     val intelligenceInsights: List<IntelligenceInsight> = emptyList(),
-    val isPremiumIntelligenceEnabled: Boolean = false
+    val isPremiumIntelligenceEnabled: Boolean = false,
+    // Mood Trend for the week
+    val moodTrend: List<Float> = emptyList()
 )
 
 private data class DailyContent(
@@ -248,6 +250,20 @@ class HomeViewModel @Inject constructor(
                     Triple(false, "", "")
                 }
 
+                // Calculate mood trend from weekly entries
+                val moodTrend = weeklyJournalEntries
+                    .sortedBy { it.createdAt }
+                    .map { entry ->
+                        when (entry.mood.lowercase()) {
+                            "happy", "excited" -> 5.0f
+                            "motivated", "grateful", "inspired" -> 4.0f
+                            "calm", "content", "neutral" -> 3.0f
+                            "thoughtful", "confused", "melancholy" -> 2.0f
+                            "anxious", "sad", "frustrated" -> 1.0f
+                            else -> 3.0f
+                        }
+                    }
+
                 // 3. Atomically update the UI state with all the loaded data.
                 _uiState.value.copy(
                     userName = profile?.displayName ?: "Growth Seeker",
@@ -273,6 +289,7 @@ class HomeViewModel @Inject constructor(
                     todayEntryMood = todayMood,
                     todayEntryPreview = todayPreview,
                     dualStreakStatus = dualStreak,
+                    moodTrend = moodTrend,
                     buddhaWisdomProofInfo = _uiState.value.buddhaWisdomProofInfo.copy(isEnabled = aiProofMode),
                     isLoading = false // <-- Critical: Signal that loading is complete.
                 )
