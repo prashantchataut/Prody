@@ -137,7 +137,9 @@ data class HomeUiState(
     val personalizedPatternSuggestion: String = "",
     // Intelligence Insights
     val intelligenceInsights: List<IntelligenceInsight> = emptyList(),
-    val isPremiumIntelligenceEnabled: Boolean = false
+    val isPremiumIntelligenceEnabled: Boolean = false,
+    // Mood trend for the last 7 days (1-5 scale)
+    val moodTrend: List<Float> = emptyList()
 )
 
 private data class DailyContent(
@@ -240,6 +242,9 @@ class HomeViewModel @Inject constructor(
                 // Calculate weekly active days.
                 val daysActiveThisWeek = streakHistory.count { it.date >= weekStart }
 
+                // Calculate 7-day mood trend
+                val moodTrend = calculateMoodTrend(weeklyJournalEntries)
+
                 // Determine today's journaling status.
                 val (journaledToday, todayMood, todayPreview) = if (todayJournalEntries.isNotEmpty()) {
                     val latestEntry = todayJournalEntries.maxByOrNull { it.createdAt }
@@ -273,6 +278,7 @@ class HomeViewModel @Inject constructor(
                     todayEntryMood = todayMood,
                     todayEntryPreview = todayPreview,
                     dualStreakStatus = dualStreak,
+                    moodTrend = moodTrend,
                     buddhaWisdomProofInfo = _uiState.value.buddhaWisdomProofInfo.copy(isEnabled = aiProofMode),
                     isLoading = false // <-- Critical: Signal that loading is complete.
                 )
@@ -298,6 +304,38 @@ class HomeViewModel @Inject constructor(
             launch { checkAiConfiguration() }
             launch { loadSoulLayerContent() }
         }
+    }
+
+    /**
+     * Calculates a 7-day mood trend based on journal entries.
+     * Normalizes 1-10 intensity to 1-5 scale.
+     * Uses 3.0f (neutral) for days with no data.
+     */
+    private fun calculateMoodTrend(entries: List<JournalEntryEntity>): List<Float> {
+        val calendar = Calendar.getInstance()
+        calendar.set(Calendar.HOUR_OF_DAY, 0)
+        calendar.set(Calendar.MINUTE, 0)
+        calendar.set(Calendar.SECOND, 0)
+        calendar.set(Calendar.MILLISECOND, 0)
+
+        val trend = mutableListOf<Float>()
+
+        // Loop through last 7 days (including today)
+        for (i in 6 downTo 0) {
+            val dayStart = calendar.timeInMillis - (i * 24 * 60 * 60 * 1000L)
+            val dayEnd = dayStart + (24 * 60 * 60 * 1000L)
+
+            val dayEntries = entries.filter { it.createdAt in dayStart until dayEnd }
+
+            if (dayEntries.isEmpty()) {
+                trend.add(3.0f) // Neutral fallback
+            } else {
+                val avgIntensity = dayEntries.map { it.moodIntensity }.average().toFloat()
+                // Normalize 1-10 to 1-5
+                trend.add(avgIntensity / 2f)
+            }
+        }
+        return trend
     }
 
     private suspend fun fetchDailyContentConcurrently(): DailyContent = coroutineScope {

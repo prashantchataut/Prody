@@ -21,3 +21,13 @@ This journal contains CRITICAL performance learnings specific to the Prody codeb
 **Context:** `ProgressIndicators.kt` and `OnboardingScreen.kt`.
 **Learning:** Using a `Row` of multiple `Box` composables for page indicators creates unnecessary layout nodes and triggers expensive layout passes during page swipes as dot widths animate. A single `Canvas` drawing all dots based on an animated float index is significantly more performant and smoother.
 **Action:** Prefer `Canvas`-based drawing for multi-state UI indicators like page dots or segmented progress bars to maintain 60fps during complex interactions.
+
+## 2024-05-25 - Isolated Navigation Animations
+**Context:** `MainActivity.kt` navigation bar.
+**Learning:** Continuous animations (like the Haven pulse) inside a `NavigationBar` can trigger recomposition for all navigation items if not properly isolated.
+**Action:** Wrap animated navigation items in their own private Composables and use `graphicsLayer` with direct `State<Float>.value` access to ensure animation updates stay in the Draw phase.
+
+## 2024-05-25 - Stable Keys in LazyColumn
+**Context:** `HomeScreen.kt` main content list.
+**Learning:** For long, complex lists with frequently updating state (like the Dashboard), `LazyColumn` without explicit keys can lead to significant jank and unnecessary item disposals/re-initializations during scroll or partial state updates.
+**Action:** Always provide unique, stable `key`s for `item` and `items` blocks in `LazyColumn` to help the Compose compiler track identity and skip recomposition for unchanged elements.

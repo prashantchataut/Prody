@@ -40,6 +40,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.ui.theme.*
 import com.prody.prashant.domain.intelligence.IntelligenceInsight
+import com.prody.prashant.util.rememberProdyHaptic
 
 // =============================================================================
 // PERSONALIZATION DASHBOARD - REVAMPED 2026
@@ -145,7 +146,7 @@ fun HomeScreen(
         contentPadding = PaddingValues(bottom = 80.dp)
     ) {
         // Header with Greeting
-        item {
+        item(key = "header") {
             DashboardHeader(
                 userName = uiState.userName,
                 greeting = greeting,
@@ -155,7 +156,7 @@ fun HomeScreen(
         }
 
         // Overview Section (Consistency & Badges)
-        item {
+        item(key = "overview") {
             OverviewSection(
                 streakDays = uiState.currentStreak,
                 badges = badges
@@ -164,7 +165,7 @@ fun HomeScreen(
 
         // Personalized Pattern Card (opt-in, only shown when data exists)
         if (uiState.personalizedPatternText.isNotEmpty()) {
-            item {
+            item(key = "personalized_pattern") {
                 PersonalizedPatternCard(
                     patternText = uiState.personalizedPatternText,
                     patternSuggestion = uiState.personalizedPatternSuggestion
@@ -174,7 +175,7 @@ fun HomeScreen(
 
         // Premium Intelligence Insights (Opt-in)
         if (uiState.isPremiumIntelligenceEnabled && uiState.intelligenceInsights.isNotEmpty()) {
-            item {
+            item(key = "intelligence_insight") {
                 Spacer(modifier = Modifier.height(24.dp))
                 IntelligenceInsightCard(
                     insight = uiState.intelligenceInsights.first(),
@@ -184,16 +185,16 @@ fun HomeScreen(
         }
 
         // Mood Trend Chart - only show if there's real data
-        if (uiState.journalEntriesThisWeek > 0) {
-            item {
+        if (uiState.journalEntriesThisWeek > 0 && uiState.moodTrend.isNotEmpty()) {
+            item(key = "mood_trend") {
                 MoodTrendSection(
-                    moodData = emptyList() // Mood trend requires historical mood data not exposed yet
+                    moodData = uiState.moodTrend
                 )
             }
         }
 
         // Weekly Summary from real data
-        item {
+        item(key = "weekly_summary") {
             WeeklySummarySection(
                 journalEntries = uiState.journalEntriesThisWeek,
                 wordsLearned = uiState.wordsLearnedThisWeek,
@@ -202,7 +203,7 @@ fun HomeScreen(
         }
 
         // Quick Actions (Navigation)
-        item {
+        item(key = "quick_actions") {
             QuickActionsGrid(
                 onJournalClick = onNavigateToJournal,
                 onHavenClick = onNavigateToHaven,
@@ -212,7 +213,7 @@ fun HomeScreen(
         }
 
         // Explore Section - routes to additional features
-        item {
+        item(key = "explore") {
             ExploreSection(
                 onMeditationClick = onNavigateToMeditation,
                 onChallengesClick = onNavigateToChallenges,
@@ -226,7 +227,7 @@ fun HomeScreen(
         }
 
         // Recent Activity - show today's journal status
-        item {
+        item(key = "recent_activity") {
             RecentActivitySection(
                 journaledToday = uiState.journaledToday,
                 todayMood = uiState.todayEntryMood,
@@ -277,6 +278,7 @@ fun DashboardHeader(
         }
         
         val profileContentDescription = stringResource(R.string.cd_profile_picture)
+        val haptic = rememberProdyHaptic()
 
         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             IconButton(onClick = onNotificationClick) {
@@ -292,7 +294,10 @@ fun DashboardHeader(
                     .size(40.dp)
                     .clip(CircleShape)
                     .background(ProdyForestGreen)
-                    .clickable { onProfileClick() }
+                    .clickable {
+                        haptic.click()
+                        onProfileClick()
+                    }
                     .semantics {
                         role = Role.Button
                         contentDescription = profileContentDescription
