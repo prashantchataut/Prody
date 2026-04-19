@@ -94,6 +94,8 @@ import com.prody.prashant.ui.components.SessionResultCard
 import com.prody.prashant.ui.components.rememberMoodSuggestionState
 import com.prody.prashant.ui.components.getCurrentTimeOfDay
 import com.prody.prashant.ui.components.mapMoodToAmbient
+import com.prody.prashant.ui.components.ProdyIconButton
+import com.prody.prashant.util.rememberProdyHaptic
 import com.prody.prashant.ui.theme.*
 
 /**
@@ -489,11 +491,33 @@ private fun Color.luminance(): Float = 0.2126f * red + 0.7152f * green + 0.0722f
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun JournalTopBar(onBackClick: () -> Unit, onSaveClick: () -> Unit, isSaveEnabled: Boolean, isSaving: Boolean, isGeneratingAi: Boolean, colors: JournalThemeColors) {
+    val haptic = rememberProdyHaptic()
     CenterAlignedTopAppBar(
         title = { Text(text = stringResource(R.string.new_entry), style = MaterialTheme.typography.titleMedium.copy(fontFamily = PoppinsFamily, fontWeight = FontWeight.SemiBold), color = colors.primaryText) },
-        navigationIcon = { IconButton(onClick = onBackClick) { Icon(imageVector = ProdyIcons.ArrowBack, contentDescription = stringResource(R.string.back), tint = colors.primaryText) } },
+        navigationIcon = {
+            ProdyIconButton(
+                icon = ProdyIcons.ArrowBack,
+                onClick = onBackClick,
+                contentDescription = stringResource(R.string.back),
+                tint = colors.primaryText
+            )
+        },
         actions = {
-            Box(modifier = Modifier.padding(end = 8.dp).clip(RoundedCornerShape(20.dp)).background(colors.saveButtonBg).clickable(enabled = isSaveEnabled) { onSaveClick() }.padding(horizontal = 16.dp, vertical = 8.dp), contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier
+                    .padding(end = 8.dp)
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(colors.saveButtonBg)
+                    .clickable(
+                        enabled = isSaveEnabled,
+                        role = Role.Button
+                    ) {
+                        haptic.click()
+                        onSaveClick()
+                    }
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                contentAlignment = Alignment.Center
+            ) {
                 if (isSaving) {
                     CircularProgressIndicator(modifier = Modifier.size(14.dp), strokeWidth = 2.dp, color = colors.accent)
                 } else {
@@ -550,7 +574,23 @@ private fun MoodSelectionSection(selectedMood: Mood, onMoodSelected: (Mood) -> U
 
 @Composable
 private fun MoodButton(mood: Mood, isSelected: Boolean, onClick: () -> Unit, colors: JournalThemeColors) {
-    Box(modifier = Modifier.height(48.dp).clip(RoundedCornerShape(24.dp)).background(if (isSelected) colors.accent else colors.surface).clickable(onClick = onClick).padding(horizontal = 16.dp), contentAlignment = Alignment.Center) {
+    val haptic = rememberProdyHaptic()
+    Box(
+        modifier = Modifier
+            .height(48.dp)
+            .clip(RoundedCornerShape(24.dp))
+            .background(if (isSelected) colors.accent else colors.surface)
+            .clickable(
+                onClick = {
+                    haptic.click()
+                    onClick()
+                },
+                role = Role.Button,
+                onClickLabel = stringResource(R.string.select_mood) + " " + mood.displayName
+            )
+            .padding(horizontal = 16.dp),
+        contentAlignment = Alignment.Center
+    ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Icon(imageVector = mood.icon, contentDescription = null, tint = if (isSelected) Color.White else colors.primaryText, modifier = Modifier.size(20.dp))
             Text(text = mood.displayName, style = MaterialTheme.typography.labelLarge.copy(fontFamily = PoppinsFamily, fontWeight = FontWeight.Bold), color = if (isSelected) Color.White else colors.primaryText)
@@ -568,15 +608,51 @@ private fun JournalInputField(content: String, wordCount: Int, onContentChanged:
     Column(modifier = Modifier.padding(horizontal = 16.dp)) {
         Box(modifier = Modifier.fillMaxWidth().heightIn(min = 200.dp).clip(RoundedCornerShape(16.dp)).background(colors.surface).padding(16.dp)) {
             Column {
-                BasicTextField(value = content, onValueChange = onContentChanged, modifier = Modifier.fillMaxWidth().heightIn(min = 120.dp).focusRequester(focusRequester), textStyle = TextStyle(fontFamily = PoppinsFamily, fontSize = 16.sp, color = colors.primaryText), cursorBrush = SolidColor(colors.accent), decorationBox = { inner -> Box { if (content.isEmpty()) Text("What's on your mind?", style = TextStyle(fontFamily = PoppinsFamily, fontSize = 16.sp, color = colors.placeholderText)) ; inner() } })
+                BasicTextField(
+                    value = content,
+                    onValueChange = onContentChanged,
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 120.dp).focusRequester(focusRequester),
+                    textStyle = TextStyle(fontFamily = PoppinsFamily, fontSize = 16.sp, color = colors.primaryText),
+                    cursorBrush = SolidColor(colors.accent),
+                    decorationBox = { inner ->
+                        Box {
+                            if (content.isEmpty()) {
+                                Text(
+                                    text = stringResource(R.string.journal_placeholder),
+                                    style = TextStyle(fontFamily = PoppinsFamily, fontSize = 16.sp, color = colors.placeholderText)
+                                )
+                            }
+                            inner()
+                        }
+                    }
+                )
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                        IconButton(onClick = onMediaClick) { Icon(imageVector = ProdyIcons.Image, contentDescription = null, tint = colors.primaryText) }
-                        IconButton(onClick = onVoiceClick) { Icon(imageVector = if (isRecording) ProdyIcons.Stop else ProdyIcons.Mic, contentDescription = null, tint = if (isRecording) colors.accent else colors.primaryText) }
-                        IconButton(onClick = onListClick) { Icon(imageVector = Icons.Filled.Menu, contentDescription = null, tint = colors.primaryText) }
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        ProdyIconButton(
+                            icon = ProdyIcons.Image,
+                            onClick = onMediaClick,
+                            contentDescription = stringResource(R.string.cd_add_media),
+                            tint = colors.primaryText
+                        )
+                        ProdyIconButton(
+                            icon = if (isRecording) ProdyIcons.Stop else ProdyIcons.Mic,
+                            onClick = onVoiceClick,
+                            contentDescription = stringResource(if (isRecording) R.string.cd_stop_recording else R.string.cd_voice_record),
+                            tint = if (isRecording) colors.accent else colors.primaryText
+                        )
+                        ProdyIconButton(
+                            icon = ProdyIcons.List,
+                            onClick = onListClick,
+                            contentDescription = stringResource(R.string.cd_bullet_list),
+                            tint = colors.primaryText
+                        )
                     }
-                    Text(text = "$wordCount WORDS", style = MaterialTheme.typography.labelSmall, color = colors.secondaryText)
+                    Text(
+                        text = stringResource(R.string.journal_word_count, wordCount).uppercase(),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = colors.secondaryText
+                    )
                 }
             }
         }
