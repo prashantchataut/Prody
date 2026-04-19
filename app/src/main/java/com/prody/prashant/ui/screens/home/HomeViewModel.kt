@@ -137,7 +137,9 @@ data class HomeUiState(
     val personalizedPatternSuggestion: String = "",
     // Intelligence Insights
     val intelligenceInsights: List<IntelligenceInsight> = emptyList(),
-    val isPremiumIntelligenceEnabled: Boolean = false
+    val isPremiumIntelligenceEnabled: Boolean = false,
+    // Mood Trend (normalized 1-5 scale)
+    val moodTrend: List<Float> = emptyList()
 )
 
 private data class DailyContent(
@@ -274,6 +276,7 @@ class HomeViewModel @Inject constructor(
                     todayEntryPreview = todayPreview,
                     dualStreakStatus = dualStreak,
                     buddhaWisdomProofInfo = _uiState.value.buddhaWisdomProofInfo.copy(isEnabled = aiProofMode),
+                    moodTrend = calculateMoodTrend(weeklyJournalEntries),
                     isLoading = false // <-- Critical: Signal that loading is complete.
                 )
             }.catch { e ->
@@ -941,6 +944,44 @@ class HomeViewModel @Inject constructor(
         _uiState.update { it.copy(isLoading = true) }
         loadInitialData()
         loadPersonalizedPattern()
+    }
+
+    /**
+     * Performance Optimization: Computes a 7-day mood trend based on journal entries.
+     *
+     * Groups entries by LocalDate and averages the moodIntensity for each day.
+     * Raw intensity (1-10) is normalized to a 1-5 scale (intensity / 2f) to meet
+     * the requirements of the MoodChart visualization.
+     *
+     * For days without entries, a neutral gap-filling strategy (3.0f) is used to
+     * ensure a continuous trend line, preventing visual jarring in the chart.
+     */
+    private fun calculateMoodTrend(entries: List<JournalEntryEntity>): List<Float> {
+        if (entries.isEmpty()) return emptyList()
+
+        val calendar = Calendar.getInstance()
+        val today = java.time.LocalDate.now()
+        val moodByDate = entries.groupBy {
+            val entryCal = Calendar.getInstance().apply { timeInMillis = it.createdAt }
+            java.time.LocalDate.of(
+                entryCal.get(Calendar.YEAR),
+                entryCal.get(Calendar.MONTH) + 1,
+                entryCal.get(Calendar.DAY_OF_MONTH)
+            )
+        }
+
+        return (0..6).reversed().map { dayOffset ->
+            val date = today.minusDays(dayOffset.toLong())
+            val dayEntries = moodByDate[date]
+
+            if (dayEntries.isNullOrEmpty()) {
+                3.0f // Neutral fallback for missing days
+            } else {
+                // Average intensity for the day and normalize from 1-10 to 1-5
+                val avgIntensity = dayEntries.map { it.moodIntensity }.average().toFloat()
+                (avgIntensity / 2f).coerceIn(1f, 5f)
+            }
+        }
     }
 
     /**
