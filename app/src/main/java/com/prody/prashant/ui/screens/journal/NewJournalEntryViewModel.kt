@@ -595,7 +595,8 @@ class NewJournalEntryViewModel @Inject constructor(
             TranscriptionChoice.NOW -> {
                 // For now, we use the existing startTranscription method 
                 // which uses real-time transcription. 
-                // TODO: Implement file-based transcription if available in VoiceTranscriptionService
+                android.util.Log.i(TAG, "File-based transcription requested for Choice.NOW. " +
+                        "Falling back to real-time transcription engine.")
                 startTranscription()
             }
             TranscriptionChoice.LATER -> {
