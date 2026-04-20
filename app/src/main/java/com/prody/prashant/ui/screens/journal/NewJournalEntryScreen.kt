@@ -75,6 +75,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import com.prody.prashant.util.AccessibilityUtils
+import com.prody.prashant.util.SecureScreen
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -119,13 +120,7 @@ fun NewJournalEntryScreen(
     }
 
     // Security: Prevent screenshots and screen recordings while writing a private journal entry
-    DisposableEffect(Unit) {
-        val window = (context as? Activity)?.window
-        window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
-        onDispose {
-            window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
-        }
-    }
+    SecureScreen()
 
     // Photo/Video picker launcher
     val mediaPickerLauncher = rememberLauncherForActivityResult(

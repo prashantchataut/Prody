@@ -42,12 +42,11 @@ object DatabaseFactory {
                 )
                 .build()
         } catch (e: Exception) {
-            Log.e("ProdyDatabase", "Failed to create secure database, falling back to unencrypted", e)
-            Room.databaseBuilder(context.applicationContext, ProdyDatabase::class.java, databaseName)
-                .addMigrations(*DatabaseMigrations.all)
-                .fallbackToDestructiveMigration()
-                .addCallback(DatabaseLifecycleCallback(tag = "ProdyDatabase", databaseProvider = instanceProvider))
-                .build()
+            // Security: Fail Securely. Do not fall back to an unencrypted database for sensitive user data.
+            // Letting this exception propagate will trigger the app's crash handler,
+            // preventing the app from running in an insecure state.
+            Log.e("ProdyDatabase", "CRITICAL: Failed to create secure database. Failing securely.", e)
+            throw RuntimeException("Secure database initialization failed. Application cannot start in an insecure state.", e)
         }
     }
 }

@@ -24,6 +24,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.R
 import com.prody.prashant.data.local.entity.JournalEntryEntity
 import com.prody.prashant.domain.model.Mood
+import com.prody.prashant.util.SecureScreen
 import com.prody.prashant.ui.components.ProdyCard
 import com.prody.prashant.ui.theme.*
 import java.text.SimpleDateFormat
@@ -53,6 +54,9 @@ fun JournalListScreen(
     viewModel: JournalViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    // Security: Prevent screenshots of journal list/snippets
+    SecureScreen()
 
     Scaffold(
         topBar = {
