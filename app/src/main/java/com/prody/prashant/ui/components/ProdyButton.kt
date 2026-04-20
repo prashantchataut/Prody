@@ -20,12 +20,17 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
+import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -502,6 +507,7 @@ private fun ButtonContent(
 /**
  * Circular icon button with proper touch target.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProdyIconButton(
     icon: ImageVector,
@@ -509,7 +515,9 @@ fun ProdyIconButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     contentDescription: String? = null,
+    tooltip: String? = null,
     tint: Color = MaterialTheme.colorScheme.onSurface,
+    containerColor: Color = Color.Transparent,
     size: Dp = ProdyTokens.Touch.minimum
 ) {
     val interactionSource = remember { MutableInteractionSource() }
@@ -525,33 +533,61 @@ fun ProdyIconButton(
         label = "icon_button_scale"
     )
 
-    Surface(
-        onClick = {
-            haptic.click()
-            onClick()
-        },
-        modifier = modifier
-            .scale(scale)
-            .size(size)
-            .semantics {
-                role = Role.Button
-                if (contentDescription != null) {
-                    this.contentDescription = contentDescription
+    val content = @Composable {
+        Surface(
+            onClick = {
+                haptic.click()
+                onClick()
+            },
+            modifier = modifier
+                .scale(scale)
+                .size(size)
+                .semantics {
+                    role = Role.Button
+                    if (contentDescription != null) {
+                        this.contentDescription = contentDescription
+                    } else if (tooltip != null) {
+                        this.contentDescription = tooltip
+                    }
+                },
+            enabled = enabled,
+            shape = RoundedCornerShape(50),
+            color = containerColor,
+            contentColor = tint,
+            interactionSource = interactionSource
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                modifier = Modifier
+                    .padding(12.dp)
+                    .size(24.dp),
+                tint = if (enabled) tint else tint.copy(alpha = ProdyTokens.Opacity.disabled)
+            )
+        }
+    }
+
+    if (tooltip != null) {
+        TooltipBox(
+            positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+            tooltip = {
+                PlainTooltip(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    shape = MaterialTheme.shapes.small
+                ) {
+                    Text(
+                        text = tooltip,
+                        style = MaterialTheme.typography.labelMedium,
+                        fontFamily = com.prody.prashant.ui.theme.PoppinsFamily
+                    )
                 }
             },
-        enabled = enabled,
-        shape = RoundedCornerShape(50),
-        color = Color.Transparent,
-        contentColor = tint,
-        interactionSource = interactionSource
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = contentDescription,
-            modifier = Modifier
-                .padding(12.dp)
-                .size(24.dp),
-            tint = if (enabled) tint else tint.copy(alpha = 0.38f)
-        )
+            state = rememberTooltipState()
+        ) {
+            content()
+        }
+    } else {
+        content()
     }
 }
