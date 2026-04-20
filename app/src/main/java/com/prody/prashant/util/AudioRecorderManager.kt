@@ -113,7 +113,6 @@ class AudioRecorderManager @Inject constructor(
 
                 setOnInfoListener { _, what, _ ->
                     if (what == MediaRecorder.MEDIA_RECORDER_INFO_MAX_DURATION_REACHED) {
-                        Log.d(TAG, "Max recording duration reached")
                         stopRecording()
                     }
                 }
@@ -136,7 +135,6 @@ class AudioRecorderManager @Inject constructor(
             startRecordingTimer()
 
             val uri = getUriForFile(currentRecordingFile!!)
-            Log.d(TAG, "Recording started: ${currentRecordingFile?.absolutePath}")
             return uri
 
         } catch (e: IOException) {
@@ -186,7 +184,6 @@ class AudioRecorderManager @Inject constructor(
 
             if (file != null && file.exists() && file.length() > 0) {
                 val uri = getUriForFile(file)
-                Log.d(TAG, "Recording stopped: duration=${duration}ms, file=${file.absolutePath}")
                 return Pair(uri, duration)
             } else {
                 Log.w(TAG, "Recording file is empty or doesn't exist")
@@ -228,7 +225,6 @@ class AudioRecorderManager @Inject constructor(
         _recordingDuration.value = 0L
         _recordingAmplitude.value = 0
 
-        Log.d(TAG, "Recording cancelled")
     }
 
     /**
@@ -267,7 +263,6 @@ class AudioRecorderManager @Inject constructor(
             // Start playback progress tracking
             startPlaybackTimer()
 
-            Log.d(TAG, "Playback started: $uri")
 
         } catch (e: Exception) {
             Log.e(TAG, "Failed to start playback", e)
@@ -299,7 +294,6 @@ class AudioRecorderManager @Inject constructor(
         _isPlaying.value = false
         _playbackProgress.value = 0f
 
-        Log.d(TAG, "Playback stopped")
     }
 
     /**

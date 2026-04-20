@@ -66,7 +66,7 @@ object ProdyIcons {
     val LocalFireDepartment: ImageVector = Icons.Filled.LocalFireDepartment
     val EmojiEvents: ImageVector = Icons.Filled.EmojiEvents
     val Psychology: ImageVector = Icons.Filled.Psychology
-    val Chat: ImageVector = Icons.Filled.Chat
+    val Chat: ImageVector = Icons.AutoMirrored.Filled.Chat
     val Notifications: ImageVector = Icons.Filled.Notifications
     val Inbox: ImageVector = Icons.Filled.Inbox
     val Refresh: ImageVector = Icons.Filled.Refresh
@@ -118,9 +118,9 @@ object ProdyIcons {
     val Token: ImageVector = Icons.Filled.Star
     val HelpOutline: ImageVector = Icons.AutoMirrored.Filled.Help
     val Loop: ImageVector = Icons.Filled.Refresh
-    val Tag: ImageVector = Icons.AutoMirrored.Filled.List
+    val Tag: ImageVector = Icons.Filled.Tag
     val Circle: ImageVector = Icons.Filled.Star
-    val OpenInNew: ImageVector = Icons.AutoMirrored.Filled.ExitToApp
+    val OpenInNew: ImageVector = Icons.AutoMirrored.Filled.OpenInNew
     val Summarize: ImageVector = Icons.AutoMirrored.Filled.List
     val StickyNote2: ImageVector = Icons.Filled.Edit
     val Article: ImageVector = Icons.Filled.Description

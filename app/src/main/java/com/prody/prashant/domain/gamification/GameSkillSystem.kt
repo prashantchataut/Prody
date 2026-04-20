@@ -67,7 +67,6 @@ class GameSkillSystem @Inject constructor(
             if (idempotencyKey != null) {
                 val alreadyAwarded = userDao.hasProcessedRewardKey(idempotencyKey)
                 if (alreadyAwarded) {
-                    Log.d(TAG, "Reward already processed for key: $idempotencyKey")
                     return SkillXpResult.AlreadyAwarded
                 }
             }
@@ -81,7 +80,6 @@ class GameSkillSystem @Inject constructor(
             val actualXp = baseXp.coerceAtMost(remainingCap)
 
             if (actualXp <= 0) {
-                Log.d(TAG, "Daily cap reached for $skillType")
                 return SkillXpResult.DailyCapReached
             }
 
@@ -102,7 +100,6 @@ class GameSkillSystem @Inject constructor(
 
             val leveledUp = newLevel > previousLevel
 
-            Log.d(TAG, "Awarded $actualXp $skillType XP (base: $baseXp, capped: ${actualXp != baseXp})")
 
             SkillXpResult.Success(
                 skillType = skillType,

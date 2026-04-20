@@ -157,7 +157,6 @@ I am here to listen, but I cannot provide the emergency care you might need. Ple
                     throw e
                 }
 
-                Log.d(TAG, "Retrying $operation in ${delayMs}ms...")
                 kotlinx.coroutines.delay(delayMs)
                 delayMs = (delayMs * RETRY_MULTIPLIER).toLong().coerceAtMost(MAX_RETRY_DELAY_MS)
             }
@@ -189,7 +188,6 @@ I am here to listen, but I cannot provide the emergency care you might need. Ple
         if (!isOfflineMode || initializationAttempts >= MAX_RETRY_ATTEMPTS) {
             return !isOfflineMode
         }
-        Log.d(TAG, "Retrying initialization (attempt ${initializationAttempts + 1})")
         initializeModel()
         return !isOfflineMode
     }
@@ -205,7 +203,6 @@ I am here to listen, but I cannot provide the emergency care you might need. Ple
             val therapistKeyPresent = BuildConfig.THERAPIST_API_KEY.isNotBlank()
             val aiKeyPresent = BuildConfig.AI_API_KEY.isNotBlank()
 
-            Log.d(TAG, "API Key Check (attempt $initializationAttempts) - THERAPIST_API_KEY present: $therapistKeyPresent, AI_API_KEY present: $aiKeyPresent")
 
             // Try THERAPIST_API_KEY first, then fall back to AI_API_KEY (Gemini)
             val apiKey = BuildConfig.THERAPIST_API_KEY.takeIf { it.isNotBlank() }
@@ -220,7 +217,6 @@ I am here to listen, but I cannot provide the emergency care you might need. Ple
             }
 
             val keySource = if (BuildConfig.THERAPIST_API_KEY.isNotBlank()) "THERAPIST_API_KEY" else "AI_API_KEY"
-            Log.d(TAG, "Initializing Haven with $keySource (length: ${apiKey.length})")
 
             // Safety settings - less restrictive for mental health content
             val safetySettings = listOf(
@@ -247,7 +243,6 @@ I am here to listen, but I cannot provide the emergency care you might need. Ple
             isInitialized = true
             isOfflineMode = false
             initializationError = null
-            Log.d(TAG, "Haven AI Service initialized successfully with $keySource")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to initialize Haven AI Service", e)
             initializationError = "Initialization error: ${e.message}"
