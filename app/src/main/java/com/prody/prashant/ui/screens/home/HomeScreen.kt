@@ -40,6 +40,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.ui.theme.*
 import com.prody.prashant.domain.intelligence.IntelligenceInsight
+import com.prody.prashant.util.rememberProdyHaptic
+import com.prody.prashant.ui.components.ProdyClickableCard
+import com.prody.prashant.ui.components.ProdyIconButton
 
 // =============================================================================
 // PERSONALIZATION DASHBOARD - REVAMPED 2026
@@ -230,7 +233,8 @@ fun HomeScreen(
             RecentActivitySection(
                 journaledToday = uiState.journaledToday,
                 todayMood = uiState.todayEntryMood,
-                todayPreview = uiState.todayEntryPreview
+                todayPreview = uiState.todayEntryPreview,
+                onClick = onNavigateToJournal
             )
         }
     }
@@ -247,6 +251,7 @@ fun DashboardHeader(
     onProfileClick: () -> Unit,
     onNotificationClick: () -> Unit
 ) {
+    val haptic = rememberProdyHaptic()
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -279,20 +284,23 @@ fun DashboardHeader(
         val profileContentDescription = stringResource(R.string.cd_profile_picture)
 
         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            IconButton(onClick = onNotificationClick) {
-                Icon(
-                    imageVector = Icons.Outlined.Notifications,
-                    contentDescription = "Notifications",
-                    tint = ProdyTextPrimaryLight
-                )
-            }
+            ProdyIconButton(
+                icon = Icons.Outlined.Notifications,
+                onClick = onNotificationClick,
+                contentDescription = "Notifications",
+                tint = ProdyTextPrimaryLight,
+                size = 40.dp
+            )
             // Avatar / Profile
             Box(
                 modifier = Modifier
                     .size(40.dp)
                     .clip(CircleShape)
                     .background(ProdyForestGreen)
-                    .clickable { onProfileClick() }
+                    .clickable {
+                        haptic.click()
+                        onProfileClick()
+                    }
                     .semantics {
                         role = Role.Button
                         contentDescription = profileContentDescription
@@ -653,10 +661,14 @@ fun QuickActionsGrid(
 
 @Composable
 fun QuickActionTile(title: String, icon: androidx.compose.ui.graphics.vector.ImageVector, color: Color, onClick: () -> Unit, modifier: Modifier) {
+    val haptic = rememberProdyHaptic()
     Surface(
         modifier = modifier
             .height(100.dp)
-            .clickable(onClick = onClick),
+            .clickable(onClick = {
+                haptic.click()
+                onClick()
+            }),
         shape = RoundedCornerShape(16.dp),
         color = color.copy(alpha = 0.1f),
         border = androidx.compose.foundation.BorderStroke(1.dp, color.copy(alpha = 0.2f))
@@ -792,9 +804,13 @@ private fun ExploreChip(
     color: Color,
     onClick: () -> Unit
 ) {
+    val haptic = rememberProdyHaptic()
     Surface(
         modifier = Modifier
-            .clickable(onClick = onClick),
+            .clickable(onClick = {
+                haptic.click()
+                onClick()
+            }),
         shape = RoundedCornerShape(12.dp),
         color = color.copy(alpha = 0.1f),
         border = androidx.compose.foundation.BorderStroke(1.dp, color.copy(alpha = 0.15f))
@@ -827,7 +843,8 @@ private fun ExploreChip(
 fun RecentActivitySection(
     journaledToday: Boolean = false,
     todayMood: String = "",
-    todayPreview: String = ""
+    todayPreview: String = "",
+    onClick: () -> Unit = {}
 ) {
     Column(modifier = Modifier.padding(horizontal = 24.dp)) {
         Text(
@@ -841,11 +858,11 @@ fun RecentActivitySection(
         )
         Spacer(modifier = Modifier.height(16.dp))
         
-        Surface(
+        ProdyClickableCard(
+            onClick = onClick,
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
-            color = ProdySurfaceLight,
-            shadowElevation = 1.dp
+            backgroundColor = ProdySurfaceLight
         ) {
             Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                 Box(
