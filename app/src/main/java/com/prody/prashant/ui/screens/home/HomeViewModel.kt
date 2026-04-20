@@ -32,6 +32,9 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
 import java.util.Calendar
 import javax.inject.Inject
 
@@ -135,6 +138,8 @@ data class HomeUiState(
     // ============== PERSONALIZED PATTERN (local ML) ==============
     val personalizedPatternText: String = "",
     val personalizedPatternSuggestion: String = "",
+    // Mood trend for the last 7 days
+    val moodTrend: List<Float> = emptyList(),
     // Intelligence Insights
     val intelligenceInsights: List<IntelligenceInsight> = emptyList(),
     val isPremiumIntelligenceEnabled: Boolean = false
@@ -248,6 +253,9 @@ class HomeViewModel @Inject constructor(
                     Triple(false, "", "")
                 }
 
+                // Calculate 7-day mood trend.
+                val moodTrend = calculateMoodTrend(weeklyJournalEntries)
+
                 // 3. Atomically update the UI state with all the loaded data.
                 _uiState.value.copy(
                     userName = profile?.displayName ?: "Growth Seeker",
@@ -273,6 +281,7 @@ class HomeViewModel @Inject constructor(
                     todayEntryMood = todayMood,
                     todayEntryPreview = todayPreview,
                     dualStreakStatus = dualStreak,
+                    moodTrend = moodTrend,
                     buddhaWisdomProofInfo = _uiState.value.buddhaWisdomProofInfo.copy(isEnabled = aiProofMode),
                     isLoading = false // <-- Critical: Signal that loading is complete.
                 )
@@ -961,6 +970,31 @@ class HomeViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 android.util.Log.e(TAG, "Error loading personalized pattern", e)
+            }
+        }
+    }
+
+    /**
+     * Calculates a 7-day mood trend from journal entries.
+     * Normalizes the raw 1-10 intensity to a 1-5 scale for visualization.
+     * Uses a neutral 3.0f value for days with no entries.
+     */
+    private fun calculateMoodTrend(entries: List<JournalEntryEntity>): List<Float> {
+        val now = LocalDate.now()
+        val zoneId = ZoneId.systemDefault()
+
+        val entriesByDate = entries.groupBy {
+            Instant.ofEpochMilli(it.createdAt).atZone(zoneId).toLocalDate()
+        }
+
+        return (6 downTo 0).map { i ->
+            val date = now.minusDays(i.toLong())
+            val dayEntries = entriesByDate[date]
+            if (dayEntries.isNullOrEmpty()) {
+                3.0f // Neutral fallback
+            } else {
+                val avgIntensity = dayEntries.map { it.moodIntensity }.average().toFloat()
+                avgIntensity / 2f // Normalize 1-10 to 1-5 scale
             }
         }
     }
