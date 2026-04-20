@@ -86,8 +86,8 @@ class SecureDatabaseManager @Inject constructor(
             encryptedPrefs.edit().putString(DB_PASSPHRASE_KEY, newKey).apply()
             newKey
         } catch (e: Exception) {
-            Log.e(TAG, "Error getting database passphrase synchronously", e)
-            generateFallbackPassphrase()
+            Log.e(TAG, "Security Error: Failed to retrieve or generate secure database passphrase", e)
+            throw SecurityException("Database security failed: Could not establish secure passphrase", e)
         }
     }
 
@@ -140,27 +140,6 @@ class SecureDatabaseManager @Inject constructor(
         System.arraycopy(signatureBytes, 0, combinedBytes, bytes.size, signatureBytes.size)
         
         return android.util.Base64.encodeToString(combinedBytes, android.util.Base64.NO_WRAP)
-    }
-
-    /**
-     * Generate a deterministic fallback passphrase in case of errors.
-     */
-    private fun generateFallbackPassphrase(): String {
-        try {
-            val deviceId = android.provider.Settings.Secure.getString(
-                context.contentResolver,
-                android.provider.Settings.Secure.ANDROID_ID
-            ) ?: "unknown_device"
-
-            val appData = "${context.packageName}_${BuildConfig.VERSION_CODE}"
-            val combined = "${deviceId}_${appData}_prody_secure_fallback"
-
-            val digest = java.security.MessageDigest.getInstance("SHA-256")
-            val hash = digest.digest(combined.toByteArray(Charsets.UTF_8))
-            return android.util.Base64.encodeToString(hash, android.util.Base64.NO_WRAP)
-        } catch (e: Exception) {
-            return "prody_ultimate_fallback_${BuildConfig.VERSION_CODE}"
-        }
     }
 
     /**
