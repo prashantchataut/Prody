@@ -22,7 +22,6 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Icon
 import com.prody.prashant.ui.icons.ProdyIcons
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -38,8 +37,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.prody.prashant.R
 import com.prody.prashant.ui.theme.ProdyTokens
 
 /**
@@ -224,16 +225,13 @@ private fun MinimalHeader(
                     modifier = Modifier.weight(1f)
                 ) {
                     if (navigationIcon != null && onNavigationClick != null) {
-                        IconButton(
+                        ProdyIconButton(
+                            icon = navigationIcon,
                             onClick = onNavigationClick,
-                            modifier = Modifier.padding(end = ProdyTokens.Spacing.xs)
-                        ) {
-                            Icon(
-                                imageVector = navigationIcon,
-                                contentDescription = "Navigate back",
-                                tint = contentColor
-                            )
-                        }
+                            tooltip = stringResource(R.string.cd_back_button),
+                            modifier = Modifier.padding(end = ProdyTokens.Spacing.xs),
+                            tint = contentColor
+                        )
                     }
 
                     Column(modifier = Modifier.weight(1f)) {
@@ -321,16 +319,13 @@ private fun ContextualHeader(
                     modifier = Modifier.weight(1f)
                 ) {
                     if (navigationIcon != null && onNavigationClick != null) {
-                        IconButton(
+                        ProdyIconButton(
+                            icon = navigationIcon,
                             onClick = onNavigationClick,
-                            modifier = Modifier.padding(end = ProdyTokens.Spacing.xs)
-                        ) {
-                            Icon(
-                                imageVector = navigationIcon,
-                                contentDescription = "Navigate back",
-                                tint = contentColor
-                            )
-                        }
+                            tooltip = stringResource(R.string.cd_back_button),
+                            modifier = Modifier.padding(end = ProdyTokens.Spacing.xs),
+                            tint = contentColor
+                        )
                     }
 
                     Column(modifier = Modifier.weight(1f)) {
@@ -437,16 +432,13 @@ private fun ScrollAwareHeader(
                     modifier = Modifier.weight(1f)
                 ) {
                     if (navigationIcon != null && onNavigationClick != null) {
-                        IconButton(
+                        ProdyIconButton(
+                            icon = navigationIcon,
                             onClick = onNavigationClick,
-                            modifier = Modifier.padding(end = ProdyTokens.Spacing.xs)
-                        ) {
-                            Icon(
-                                imageVector = navigationIcon,
-                                contentDescription = "Navigate back",
-                                tint = contentColor
-                            )
-                        }
+                            tooltip = stringResource(R.string.cd_back_button),
+                            modifier = Modifier.padding(end = ProdyTokens.Spacing.xs),
+                            tint = contentColor
+                        )
                     }
 
                     Column(
