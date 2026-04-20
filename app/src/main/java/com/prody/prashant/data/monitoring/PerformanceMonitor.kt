@@ -215,7 +215,6 @@ class PerformanceMonitor @Inject constructor(
         checkBaseline(metric)
         updateReport()
 
-        Log.d(TAG, "Recorded ${metric.type}: ${metric.durationMs}ms, success=${metric.success}")
     }
 
     /**

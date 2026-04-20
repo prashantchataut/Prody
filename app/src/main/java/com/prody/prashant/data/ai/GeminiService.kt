@@ -514,7 +514,6 @@ class GeminiService @Inject constructor() {
 
         if (apiKey != currentApiKey || model != currentModel) {
             try {
-                android.util.Log.d("GeminiService", "Initializing Gemini with model: ${model.displayName}")
                 currentApiKey = apiKey
                 currentModel = model
 

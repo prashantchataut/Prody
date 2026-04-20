@@ -135,7 +135,6 @@ class WisdomShield @Inject constructor(
             prefs.put("wisdomShieldEarnedDate", System.currentTimeMillis())
 
             userDao.updatePreferences(prefs.toString())
-            Log.d(TAG, "Wisdom Shield earned at $currentStreak day streak!")
             true
         } catch (e: Exception) {
             Log.e(TAG, "Error earning shield", e)
@@ -168,7 +167,6 @@ class WisdomShield @Inject constructor(
             prefs.put("wisdomShieldUsedDate", System.currentTimeMillis())
 
             userDao.updatePreferences(prefs.toString())
-            Log.d(TAG, "Wisdom Shield used to protect streak!")
             true
         } catch (e: Exception) {
             Log.e(TAG, "Error using shield", e)
@@ -236,7 +234,6 @@ class WisdomShield @Inject constructor(
                 prefs.put("wisdomShieldEarnedDate", System.currentTimeMillis())
 
                 userDao.updatePreferences(prefs.toString())
-                Log.d(TAG, "Wisdom Shield regenerated!")
                 return@withContext true
             }
 

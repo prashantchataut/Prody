@@ -10,6 +10,8 @@ import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
+import android.app.Activity
+import android.view.WindowManager
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
@@ -74,6 +76,16 @@ fun FutureMessageListScreen(
     var selectedTab by remember { mutableIntStateOf(0) }
     var showFilterDialog by remember { mutableStateOf(false) }
     val isDark = isDarkTheme()
+    val context = androidx.compose.ui.platform.LocalContext.current
+
+    // Security: Prevent screenshots and screen recordings of private future letters
+    DisposableEffect(Unit) {
+        val window = (context as? Activity)?.window
+        window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        onDispose {
+            window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        }
+    }
 
     // Theme-aware colors
     val backgroundColor = if (isDark) TimeCapsuleBackgroundDark else TimeCapsuleBackgroundLight
