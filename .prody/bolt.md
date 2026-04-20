@@ -21,3 +21,13 @@ This journal contains CRITICAL performance learnings specific to the Prody codeb
 **Context:** `ProgressIndicators.kt` and `OnboardingScreen.kt`.
 **Learning:** Using a `Row` of multiple `Box` composables for page indicators creates unnecessary layout nodes and triggers expensive layout passes during page swipes as dot widths animate. A single `Canvas` drawing all dots based on an animated float index is significantly more performant and smoother.
 **Action:** Prefer `Canvas`-based drawing for multi-state UI indicators like page dots or segmented progress bars to maintain 60fps during complex interactions.
+
+## 2024-05-25 - Composable Haptic Scope
+**Context:** `HomeScreen.kt` click handlers.
+**Learning:** Calling `rememberProdyHaptic()` inside an `onClick` lambda (e.g., `clickable { rememberProdyHaptic().click() }`) is invalid as Composable functions can only be called from other Composables. This causes compilation errors.
+**Action:** Always hoist `rememberProdyHaptic()` to the top of the Composable function and use the resulting instance inside event lambdas.
+
+## 2024-05-25 - LazyColumn Key Optimization
+**Context:** `HomeScreen.kt` LazyColumn.
+**Learning:** Using stable keys for `LazyColumn` items (e.g., `item(key = "header")`) significantly improves scroll performance and maintains item state persistence across recompositions. Without keys, Compose may unnecessarily recreate items instead of repositioning them.
+**Action:** Assign unique, stable string keys to all non-dynamic items in a `LazyColumn` or `LazyRow` to optimize composition performance.
