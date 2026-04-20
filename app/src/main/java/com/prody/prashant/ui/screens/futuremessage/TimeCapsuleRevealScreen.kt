@@ -24,6 +24,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.prody.prashant.util.SecureScreen
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -51,6 +52,9 @@ fun TimeCapsuleRevealScreen(
     viewModel: TimeCapsuleRevealViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    // Security: Prevent screenshots and screen recordings of private future messages
+    SecureScreen()
     val view = LocalView.current
     val scrollState = rememberScrollState()
     val coroutineScope = androidx.compose.runtime.rememberCoroutineScope()

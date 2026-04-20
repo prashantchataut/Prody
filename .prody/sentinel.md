@@ -7,3 +7,8 @@
 **Vulnerability:** Leaking API keys in Logcat via OkHttp interceptors and debug logs, and missing UI protection for therapeutic chats.
 **Learning:** Prody's `OpenRouterService` used `HttpLoggingInterceptor.Level.BODY` in debug mode without redacting the `Authorization` header, exposing API keys to anybody with ADB access. Additionally, Haven't therapeutic screens lacked `FLAG_SECURE`, risking user privacy.
 **Prevention:** Always use `redactHeader("Authorization")` in network interceptors. Remove logs that print partial secrets. Enforce `FLAG_SECURE` on all therapeutic and reflection screens by default.
+
+## 2025-05-16 - Centralized UI Privacy and Crash Report Hardening
+**Vulnerability:** Information leakage via technical crash details in production and inconsistent screenshot protection across sensitive screens.
+**Learning:** `CrashActivity` was exposing full stack traces and exception messages to users in production builds, which could leak internal logic or data. Additionally, while some screens manually applied `FLAG_SECURE`, others like weekly summaries and monthly letters were unprotected.
+**Prevention:** Implement a centralized `SecureScreen` utility to ensure consistent application of `FLAG_SECURE`. Always wrap technical debug info in `if (BuildConfig.DEBUG)` checks on public-facing error screens.

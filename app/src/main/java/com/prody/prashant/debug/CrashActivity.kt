@@ -35,6 +35,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.prody.prashant.MainActivity
+import com.prody.prashant.BuildConfig
 
 /**
  * Crash Activity - Beautiful Debug Screen
@@ -191,16 +192,26 @@ private fun CrashScreen(
             }
             Spacer(modifier = Modifier.height(20.dp))
             Text(text = "App Crashed", style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.onBackground)
-            Text(text = "$timestamp • $threadName", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Spacer(modifier = Modifier.height(20.dp))
             
-            // Simplified for brevity and compilation safety
-            Text(text = exceptionType, color = Color(0xFFE65C5C), fontWeight = FontWeight.Bold)
-            Text(text = exceptionMessage, color = MaterialTheme.colorScheme.onSurface)
-            
-            Spacer(modifier = Modifier.height(20.dp))
-            
-            Button(onClick = onCopyClick) { Text("Copy Report") }
+            if (BuildConfig.DEBUG) {
+                Text(text = "$timestamp • $threadName", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Spacer(modifier = Modifier.height(20.dp))
+
+                Text(text = exceptionType, color = Color(0xFFE65C5C), fontWeight = FontWeight.Bold)
+                Text(text = exceptionMessage, color = MaterialTheme.colorScheme.onSurface)
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                Button(onClick = onCopyClick) { Text("Copy Report") }
+            } else {
+                Spacer(modifier = Modifier.height(20.dp))
+                Text(
+                    text = "Prody encountered an unexpected error and needs to restart. No personal data was affected.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    textAlign = TextAlign.Center
+                )
+            }
             Spacer(modifier = Modifier.height(10.dp))
             Button(onClick = onRestartClick) { Text("Restart App") }
         }
