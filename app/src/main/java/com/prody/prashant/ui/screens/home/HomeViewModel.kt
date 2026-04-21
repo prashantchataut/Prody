@@ -32,6 +32,9 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
 import java.util.Calendar
 import javax.inject.Inject
 
@@ -137,7 +140,8 @@ data class HomeUiState(
     val personalizedPatternSuggestion: String = "",
     // Intelligence Insights
     val intelligenceInsights: List<IntelligenceInsight> = emptyList(),
-    val isPremiumIntelligenceEnabled: Boolean = false
+    val isPremiumIntelligenceEnabled: Boolean = false,
+    val moodTrend: List<Float> = emptyList()
 )
 
 private data class DailyContent(
@@ -248,6 +252,9 @@ class HomeViewModel @Inject constructor(
                     Triple(false, "", "")
                 }
 
+                // Calculate mood trend
+                val moodTrend = calculateMoodTrend(weeklyJournalEntries)
+
                 // 3. Atomically update the UI state with all the loaded data.
                 _uiState.value.copy(
                     userName = profile?.displayName ?: "Growth Seeker",
@@ -273,6 +280,7 @@ class HomeViewModel @Inject constructor(
                     todayEntryMood = todayMood,
                     todayEntryPreview = todayPreview,
                     dualStreakStatus = dualStreak,
+                    moodTrend = moodTrend,
                     buddhaWisdomProofInfo = _uiState.value.buddhaWisdomProofInfo.copy(isEnabled = aiProofMode),
                     isLoading = false // <-- Critical: Signal that loading is complete.
                 )
@@ -414,7 +422,6 @@ class HomeViewModel @Inject constructor(
             try {
                 val result = dualStreakManager.maintainWisdomStreak()
                 // Result can be used to show feedback/celebration if needed
-                android.util.Log.d(TAG, "Wisdom streak result: $result")
             } catch (e: Exception) {
                 android.util.Log.e(TAG, "Error maintaining wisdom streak", e)
             }
@@ -430,7 +437,6 @@ class HomeViewModel @Inject constructor(
             try {
                 val result = dualStreakManager.maintainReflectionStreak()
                 // Result can be used to show feedback/celebration if needed
-                android.util.Log.d(TAG, "Reflection streak result: $result")
             } catch (e: Exception) {
                 android.util.Log.e(TAG, "Error maintaining reflection streak", e)
             }
@@ -482,7 +488,6 @@ class HomeViewModel @Inject constructor(
                 // Load Premium Intelligence Insights (Opt-in)
                 loadIntelligenceInsights(context)
 
-                android.util.Log.d(TAG, "Soul Layer content loaded - Archetype: ${context.userArchetype}, Trust: ${context.trustLevel}")
 
             } catch (e: Exception) {
                 android.util.Log.e(TAG, "Error loading Soul Layer content", e)
@@ -557,7 +562,6 @@ class HomeViewModel @Inject constructor(
             }
 
             if (memory != null) {
-                android.util.Log.d(TAG, "Surfaced memory: ${memory.surfaceReason} - ${memory.memory.preview.take(50)}...")
             }
         } catch (e: Exception) {
             android.util.Log.e(TAG, "Error loading surfaced memory", e)
@@ -576,7 +580,6 @@ class HomeViewModel @Inject constructor(
             }
 
             if (anniversaries.isNotEmpty()) {
-                android.util.Log.d(TAG, "Found ${anniversaries.size} anniversary memories for today")
             }
         } catch (e: Exception) {
             android.util.Log.e(TAG, "Error loading anniversary memories", e)
@@ -610,7 +613,6 @@ class HomeViewModel @Inject constructor(
             }
             
             if (insights.isNotEmpty()) {
-                android.util.Log.d(TAG, "Detected ${insights.size} intelligence insights")
             }
         } catch (e: Exception) {
             android.util.Log.e(TAG, "Error loading intelligence insights", e)
@@ -627,7 +629,6 @@ class HomeViewModel @Inject constructor(
 
                 // Track the interaction in Soul Layer
                 // This helps the system learn what memories resonate
-                android.util.Log.d(TAG, "Memory interaction: $interactionType for entry ${memory.memory.id}")
 
                 // Mark memory as interacted
                 // The repository will handle persistence
@@ -675,7 +676,6 @@ class HomeViewModel @Inject constructor(
                 // Refresh first week state
                 loadFirstWeekState()
 
-                android.util.Log.d(TAG, "First week milestone completed: $milestone")
 
             } catch (e: Exception) {
                 android.util.Log.e(TAG, "Error handling first week milestone", e)
@@ -852,7 +852,6 @@ class HomeViewModel @Inject constructor(
                                 )
                             )
                         }
-                        android.util.Log.d(TAG, "Buddha wisdom loaded (AI: ${result.data.isAiGenerated})")
                     }
                     is BuddhaAiResult.Fallback -> {
                         _uiState.update { state ->
@@ -870,7 +869,6 @@ class HomeViewModel @Inject constructor(
                                 )
                             )
                         }
-                        android.util.Log.d(TAG, "Buddha wisdom loaded (fallback, AI configured: $isAiConfigured)")
                     }
                     is BuddhaAiResult.Error -> {
                         // Fall back to local wisdom
@@ -941,6 +939,32 @@ class HomeViewModel @Inject constructor(
         _uiState.update { it.copy(isLoading = true) }
         loadInitialData()
         loadPersonalizedPattern()
+    }
+
+    /**
+     * Calculate 7-day mood trend from weekly journal entries.
+     * Normalizes 1-10 intensity to 1-5 scale and fills gaps with 3.0f.
+     */
+    private fun calculateMoodTrend(entries: List<JournalEntryEntity>): List<Float> {
+        val today = LocalDate.now()
+        val trend = mutableListOf<Float>()
+
+        // Create a map of date to average mood intensity
+        val moodMap = entries.groupBy {
+            Instant.ofEpochMilli(it.createdAt)
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate()
+        }.mapValues { (_, dayEntries) ->
+            dayEntries.map { it.moodIntensity }.average().toFloat() / 2f
+        }
+
+        // Fill 7 days of trend data (last 7 days including today)
+        for (i in 6 downTo 0) {
+            val date = today.minusDays(i.toLong())
+            trend.add(moodMap[date] ?: 3.0f) // 3.0f is neutral in 1-5 scale
+        }
+
+        return trend
     }
 
     /**
