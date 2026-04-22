@@ -21,3 +21,8 @@ This journal contains CRITICAL performance learnings specific to the Prody codeb
 **Context:** `ProgressIndicators.kt` and `OnboardingScreen.kt`.
 **Learning:** Using a `Row` of multiple `Box` composables for page indicators creates unnecessary layout nodes and triggers expensive layout passes during page swipes as dot widths animate. A single `Canvas` drawing all dots based on an animated float index is significantly more performant and smoother.
 **Action:** Prefer `Canvas`-based drawing for multi-state UI indicators like page dots or segmented progress bars to maintain 60fps during complex interactions.
+
+## 2024-05-25 - SnapshotFlow and Composable Context
+**Context:** `OnboardingScreen.kt` keyboard auto-scroll logic.
+**Learning:** Using `snapshotFlow` within a `LaunchedEffect` to observe keyboard visibility (via `WindowInsets.ime`) requires careful handling of Composable dependencies. Accessing `@Composable` properties like `WindowInsets.ime.getBottom(density)` directly inside the `snapshotFlow` lambda can trigger "invocations can only happen from the context of a @Composable function" errors if the lambda is not carefully structured.
+**Action:** Capture both `WindowInsets.ime` and `LocalDensity.current` into local variables in the Composable scope and pass them as keys to the `LaunchedEffect`. This ensures the flow correctly tracks changes while adhering to Compose's structural constraints.
