@@ -137,7 +137,9 @@ data class HomeUiState(
     val personalizedPatternSuggestion: String = "",
     // Intelligence Insights
     val intelligenceInsights: List<IntelligenceInsight> = emptyList(),
-    val isPremiumIntelligenceEnabled: Boolean = false
+    val isPremiumIntelligenceEnabled: Boolean = false,
+    // Mood Trend
+    val moodTrend: List<Float> = emptyList()
 )
 
 private data class DailyContent(
@@ -274,6 +276,7 @@ class HomeViewModel @Inject constructor(
                     todayEntryPreview = todayPreview,
                     dualStreakStatus = dualStreak,
                     buddhaWisdomProofInfo = _uiState.value.buddhaWisdomProofInfo.copy(isEnabled = aiProofMode),
+                    moodTrend = calculateMoodTrend(weeklyJournalEntries),
                     isLoading = false // <-- Critical: Signal that loading is complete.
                 )
             }.catch { e ->
@@ -963,5 +966,37 @@ class HomeViewModel @Inject constructor(
                 android.util.Log.e(TAG, "Error loading personalized pattern", e)
             }
         }
+    }
+
+    /**
+     * Calculate 7-day mood trend from journal entries.
+     * Normalizes 1-10 intensity to 1-5 scale for the MoodChart.
+     * Uses 3.0f (neutral) for days without entries.
+     */
+    private fun calculateMoodTrend(entries: List<JournalEntryEntity>): List<Float> {
+        val calendar = Calendar.getInstance()
+        val trend = mutableListOf<Float>()
+
+        // Look back 7 days including today
+        for (i in 6 downTo 0) {
+            calendar.timeInMillis = System.currentTimeMillis()
+            calendar.add(Calendar.DAY_OF_YEAR, -i)
+            val year = calendar.get(Calendar.YEAR)
+            val dayOfYear = calendar.get(Calendar.DAY_OF_YEAR)
+
+            val dailyEntries = entries.filter { entry ->
+                val entryCal = Calendar.getInstance()
+                entryCal.timeInMillis = entry.createdAt
+                entryCal.get(Calendar.YEAR) == year && entryCal.get(Calendar.DAY_OF_YEAR) == dayOfYear
+            }
+
+            if (dailyEntries.isEmpty()) {
+                trend.add(3.0f) // Neutral fallback
+            } else {
+                val avgIntensity = dailyEntries.map { it.moodIntensity }.average().toFloat()
+                trend.add(avgIntensity / 2f) // Normalize 1-10 to 1-5
+            }
+        }
+        return trend
     }
 }
