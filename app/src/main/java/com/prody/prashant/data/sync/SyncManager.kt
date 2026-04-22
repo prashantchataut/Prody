@@ -147,7 +147,6 @@ class SyncManager @Inject constructor(
                 when (networkState.status) {
                     NetworkStatus.AVAILABLE -> {
                         if (_syncEnabled.value && operationQueue.isNotEmpty()) {
-                            Log.d(TAG, "Network available, starting sync")
                             processSyncQueue()
                         } else {
                             updateSyncStatus(
@@ -157,7 +156,6 @@ class SyncManager @Inject constructor(
                         }
                     }
                     NetworkStatus.LOST, NetworkStatus.UNAVAILABLE -> {
-                        Log.d(TAG, "Network lost, entering offline mode")
                         updateSyncStatus(SyncStatus.OFFLINE)
                     }
                     else -> {}
@@ -171,7 +169,6 @@ class SyncManager @Inject constructor(
         savePendingOperations()
         updatePendingCount()
 
-        Log.d(TAG, "Queued operation: ${operation.type}, queue size: ${operationQueue.size}")
 
         if (networkManager.isOnline && _syncEnabled.value) {
             scope.launch {
@@ -230,7 +227,6 @@ class SyncManager @Inject constructor(
                             operation.entityId?.let { syncVocabulary(it) }
                         }
                         else -> {
-                            Log.d(TAG, "Sync logic not implemented for type: ${operation.type}")
                         }
                     }
                     operationQueue.remove(operation)

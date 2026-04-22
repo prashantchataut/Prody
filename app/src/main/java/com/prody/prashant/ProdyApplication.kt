@@ -91,7 +91,6 @@ class ProdyApplication : Application(), Configuration.Provider {
         // This MUST happen IMMEDIATELY after super.attachBaseContext() completes.
         try {
             CrashHandler.initialize(this)
-            Log.d(TAG, "CrashHandler initialized in attachBaseContext")
         } catch (e: Exception) {
             // Failed to initialize crash handler - log but don't crash
             // The app will run without crash reporting, but at least it might start
@@ -117,7 +116,6 @@ class ProdyApplication : Application(), Configuration.Provider {
         }
 
         if (inCrashProcess) {
-            Log.d(TAG, "Running in crash process, skipping Hilt injection and initialization")
             // CRITICAL: For the crash process, we skip Hilt initialization entirely.
             // CrashActivity is designed to work without any Hilt/DI dependencies.
             // We don't call super.onCreate() because:
@@ -185,7 +183,6 @@ class ProdyApplication : Application(), Configuration.Provider {
                 if (::gamificationService.isInitialized) {
                     gamificationService.initializeUserData()
                     gamificationService.checkAndResetDailyStats()
-                    Log.d(TAG, "Gamification data initialized")
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to initialize gamification data", e)
@@ -197,7 +194,6 @@ class ProdyApplication : Application(), Configuration.Provider {
             try {
                 if (::witnessModeManager.isInitialized) {
                     witnessModeManager.checkForPendingFollowUps()
-                    Log.d(TAG, "Witness Mode check completed")
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to check Witness Mode follow-ups", e)
@@ -280,7 +276,6 @@ class ProdyApplication : Application(), Configuration.Provider {
                 notificationManager.createNotificationChannels(
                     listOf(mainChannel, wisdomChannel, journalChannel, futureChannel, achievementsChannel, havenChannel)
                 )
-                Log.d(TAG, "Notification channels created successfully")
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to create notification channels", e)
             }

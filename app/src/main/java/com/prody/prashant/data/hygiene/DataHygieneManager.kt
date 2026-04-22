@@ -53,7 +53,6 @@ class DataHygieneManager @Inject constructor(
      * @return CleanupResult with details of what was cleaned
      */
     suspend fun performFullCleanup(): CleanupResult = withContext(Dispatchers.IO) {
-        Log.d(TAG, "Starting full data hygiene cleanup")
 
         val results = mutableListOf<CleanupAction>()
         var totalBytesFreed = 0L
@@ -117,7 +116,6 @@ class DataHygieneManager @Inject constructor(
             results.add(CleanupAction("Database", 0, false, e.message))
         }
 
-        Log.d(TAG, "Full cleanup completed. Total bytes freed: $totalBytesFreed")
 
         CleanupResult(
             actions = results,
@@ -299,7 +297,6 @@ class DataHygieneManager @Inject constructor(
             context.cacheDir.deleteRecursively()
             context.externalCacheDir?.deleteRecursively()
 
-            Log.d(TAG, "All user data cleared successfully")
             true
         } catch (e: Exception) {
             Log.e(TAG, "Failed to clear all user data", e)
@@ -361,7 +358,6 @@ class DataHygieneManager @Inject constructor(
         // Purge soft-deleted future messages
         count += futureMessageDao.purgeSoftDeleted()
 
-        Log.d(TAG, "Purged $count soft-deleted items")
         count
     }
 
@@ -373,7 +369,6 @@ class DataHygieneManager @Inject constructor(
 
         // Trigger cleanup if cache exceeds limit
         if (stats.totalCacheSize > MAX_CACHE_SIZE_MB * 1024 * 1024) {
-            Log.d(TAG, "Cache size exceeded limit, triggering auto-cleanup")
             performFullCleanup()
             return@withContext true
         }

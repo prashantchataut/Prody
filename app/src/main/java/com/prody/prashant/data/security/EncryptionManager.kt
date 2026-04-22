@@ -78,7 +78,6 @@ class EncryptionManager @Inject constructor(
                 .putString(KEY_JOURNAL_KEY, Base64.encodeToString(keyBytes, Base64.NO_WRAP))
                 .apply()
 
-            Log.d(TAG, "Created new journal encryption key")
             key
         }
     }
@@ -182,7 +181,6 @@ class EncryptionManager @Inject constructor(
     fun clearEncryptionKeys() {
         try {
             encryptedPrefs.edit().clear().apply()
-            Log.d(TAG, "Encryption keys cleared")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to clear encryption keys", e)
         }

@@ -93,7 +93,6 @@ class SeedBloomService @Inject constructor(
             userDao.addPoints(BLOOM_REWARD_POINTS)
             seedDao.markRewardClaimed(todaySeed.id)
 
-            Log.d(TAG, "Seed '${todaySeed.seedContent}' bloomed in $bloomSource!")
 
             BloomResult.Bloomed(
                 seedContent = todaySeed.seedContent,
