@@ -81,7 +81,6 @@ class CollaborativeMessageScheduler @Inject constructor(
                 dao.updateMessageStatus(message.id, MessageStatus.SCHEDULED.name.lowercase())
             }
 
-            Log.d(TAG, "Scheduled message ${message.id} for delivery at ${message.deliveryDate}")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to schedule message delivery", e)
         }
@@ -106,7 +105,6 @@ class CollaborativeMessageScheduler @Inject constructor(
         try {
             alarmManager.cancel(pendingIntent)
             pendingIntent.cancel()
-            Log.d(TAG, "Canceled scheduled delivery for message $messageId")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to cancel message delivery", e)
         }
@@ -173,7 +171,6 @@ class CollaborativeMessageScheduler @Inject constructor(
                 pendingIntent
             )
 
-            Log.d(TAG, "Scheduled occasion reminder for ${occasion.occasionType.displayName} at $reminderDateTime")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to schedule occasion reminder", e)
         }
@@ -198,7 +195,6 @@ class CollaborativeMessageScheduler @Inject constructor(
         try {
             alarmManager.cancel(pendingIntent)
             pendingIntent.cancel()
-            Log.d(TAG, "Canceled occasion reminder $occasionId")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to cancel occasion reminder", e)
         }
@@ -219,7 +215,6 @@ class CollaborativeMessageScheduler @Inject constructor(
                 }
             }
 
-            Log.d(TAG, "Rescheduled ${scheduledMessages.size} pending messages")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to reschedule pending messages", e)
         }
@@ -246,7 +241,6 @@ class CollaborativeMessageScheduler @Inject constructor(
                 }
             }
 
-            Log.d(TAG, "Rescheduled ${occasions.size} occasion reminders")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to reschedule occasion reminders", e)
         }
@@ -266,7 +260,6 @@ class CollaborativeMessageScheduler @Inject constructor(
             }
 
             if (overdueMessages.isNotEmpty()) {
-                Log.d(TAG, "Delivered ${overdueMessages.size} overdue messages")
             }
         } catch (e: Exception) {
             Log.e(TAG, "Failed to deliver overdue messages", e)

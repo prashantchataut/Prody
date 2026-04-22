@@ -175,6 +175,7 @@ class OpenRouterService @Inject constructor() {
                 }
                 // Security: Redact Authorization header to prevent API key leak in logs
                 redactHeader("Authorization")
+                redactHeader("x-goog-api-key")
             })
             .build()
     }

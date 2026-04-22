@@ -154,7 +154,6 @@ class StatsViewModel @Inject constructor(
                 // This prevents overwriting real user progress on every launch
                 val existingCount = userDao.getLeaderboardCount()
                 if (existingCount == 0) {
-                    android.util.Log.d(TAG, "Seeding initial demo leaderboard data")
                     val sampleLeaderboard = createSampleLeaderboard()
                     userDao.insertLeaderboardEntries(sampleLeaderboard)
                 }
@@ -308,7 +307,6 @@ class StatsViewModel @Inject constructor(
                     congratsReceived = 0
                 )
                 userDao.insertLeaderboardEntry(currentUserEntry)
-                android.util.Log.d(TAG, "Synced current user leaderboard entry with profile")
             }
         } catch (e: Exception) {
             android.util.Log.e(TAG, "Error syncing current user leaderboard entry", e)
@@ -343,7 +341,6 @@ class StatsViewModel @Inject constructor(
      * Currently updates local state - future implementation will filter data accordingly.
      */
     fun setFilterPeriod(period: String) {
-        android.util.Log.d(TAG, "Filter period set to: $period")
         // Future implementation: filter stats data based on period
         // For now, this stores the selection and logs it
         // When full analytics are implemented, this will trigger data refresh
@@ -369,7 +366,6 @@ class StatsViewModel @Inject constructor(
         viewModelScope.launch {
             val currentState = _uiState.value
             if (!currentState.canBoostToday) {
-                android.util.Log.d(TAG, "Cannot boost: daily limit reached")
                 return@launch
             }
 
@@ -398,7 +394,6 @@ class StatsViewModel @Inject constructor(
                 // Update database
                 userDao.incrementBoosts(userId)
 
-                android.util.Log.d(TAG, "Boost sent to $userId. Today's count: $newBoostCount/$MAX_BOOSTS_PER_DAY")
             } catch (e: Exception) {
                 android.util.Log.e(TAG, "Error sending boost", e)
             }
@@ -414,7 +409,6 @@ class StatsViewModel @Inject constructor(
         viewModelScope.launch {
             val currentState = _uiState.value
             if (!currentState.canRespectToday) {
-                android.util.Log.d(TAG, "Cannot respect: daily limit reached")
                 return@launch
             }
 
@@ -443,7 +437,6 @@ class StatsViewModel @Inject constructor(
                 // Update database
                 userDao.incrementRespects(userId)
 
-                android.util.Log.d(TAG, "Respect sent to $userId. Today's count: $newRespectCount/$MAX_RESPECTS_PER_DAY")
             } catch (e: Exception) {
                 android.util.Log.e(TAG, "Error sending respect", e)
             }

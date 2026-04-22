@@ -132,6 +132,9 @@ import net.sqlcipher.database.SupportFactory
  * - Version 20: Mirror Evolution - Sealed Pods (Future Message Prophecy)
  *              Added prediction, predictionVerified, predictionVerifiedAt to FutureMessageEntity
  *              Enables "Prophecy" evidence drops when predictions are verified
+ * - Version 21: Maintenance & Performance Optimization
+ *              Added indices to haven_sessions (isCompleted, containedCrisisDetection, isDeleted)
+ *              Added indices to haven_exercises (wasCompleted, isDeleted)
  */
 @Database(
     entities = [
@@ -223,7 +226,7 @@ import net.sqlcipher.database.SupportFactory
         // Mirror Evolution: Evidence Locker
         EvidenceEntity::class
     ],
-    version = 20,
+    version = 21,
     exportSchema = true // Enable for migration verification
 )
 abstract class ProdyDatabase : RoomDatabase() {
@@ -1689,6 +1692,26 @@ abstract class ProdyDatabase : RoomDatabase() {
                 db.execSQL("ALTER TABLE future_messages ADD COLUMN prediction TEXT")
                 db.execSQL("ALTER TABLE future_messages ADD COLUMN predictionVerified INTEGER")
                 db.execSQL("ALTER TABLE future_messages ADD COLUMN predictionVerifiedAt INTEGER")
+            }
+        }
+
+        /**
+         * Migration 20 -> 21: Maintenance & Performance Optimization
+         *
+         * Changes:
+         * - Add indices to haven_sessions for frequent status queries
+         * - Add indices to haven_exercises for completion tracking
+         */
+        val MIGRATION_20_21: Migration = object : Migration(20, 21) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Add indices to haven_sessions
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_haven_sessions_isCompleted ON haven_sessions(isCompleted)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_haven_sessions_containedCrisisDetection ON haven_sessions(containedCrisisDetection)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_haven_sessions_isDeleted ON haven_sessions(isDeleted)")
+
+                // Add indices to haven_exercises
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_haven_exercises_wasCompleted ON haven_exercises(wasCompleted)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_haven_exercises_isDeleted ON haven_exercises(isDeleted)")
             }
         }
 
