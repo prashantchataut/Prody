@@ -5,3 +5,7 @@
 ## 2025-01-26 - Dynamic Form Validation Feedback
 **Learning:** Providing real-time, visual feedback as users approach form constraints (like character limits) significantly reduces friction and errors. Semantic color shifts (warning at 80%, error at 100%) are more intuitive than simple counters.
 **Action:** Implement dynamic character counters in all high-priority input forms. Use `ProdyDesignTokens.SemanticColors.warning` for the cautionary state to provide a consistent cross-app language for constraints.
+
+## 2025-01-26 - Label Clarity vs. Iconography in High-Context Actions
+**Learning:** While icon-only buttons (`ProdyIconButton`) are great for common secondary actions, complex or high-stakes interactions (like 'Stop recording' or 'Done' with transcription) often require explicit text labels to ensure zero ambiguity and better accessibility. Screen reader labels must also precisely match the visual action (e.g., 'Pause' vs 'Cancel').
+**Action:** Prioritize `TextButton` or `Button` with explicit labels for primary workflow controls. Reserve `ProdyIconButton` for universal symbols where the icon's meaning is unambiguous within the app's design language.
