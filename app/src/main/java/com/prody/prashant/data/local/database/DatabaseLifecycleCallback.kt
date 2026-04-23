@@ -13,14 +13,12 @@ open class DatabaseLifecycleCallback(
 ) : RoomDatabase.Callback() {
     override fun onCreate(db: SupportSQLiteDatabase) {
         super.onCreate(db)
-        Log.d(tag, "Database created successfully - initiating data seeding")
         databaseProvider()?.let { DatabaseSeeder.seedDatabase(it) }
             ?: Log.e(tag, "Failed to seed database: INSTANCE is null")
     }
 
     override fun onOpen(db: SupportSQLiteDatabase) {
         super.onOpen(db)
-        Log.d(tag, "Database opened")
     }
 
     override fun onDestructiveMigration(db: SupportSQLiteDatabase) {

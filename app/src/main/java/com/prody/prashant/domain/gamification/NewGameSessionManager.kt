@@ -131,7 +131,6 @@ class NewGameSessionManager @Inject constructor(
         val skillsState = gamificationRepository.getPlayerSkillsSync()
         builder.currentSkillsState(skillsState)
 
-        Log.d(TAG, "Reflect session completed: $wordCount words, ${builder.build().totalXpAwarded} XP")
 
         return builder.build()
     }
@@ -267,7 +266,6 @@ class NewGameSessionManager @Inject constructor(
         val skillsState = gamificationRepository.getPlayerSkillsSync()
         builder.currentSkillsState(skillsState)
 
-        Log.d(TAG, "Sharpen session completed: $cardsReviewed cards, ${builder.build().totalXpAwarded} XP")
 
         return builder.build()
     }
@@ -412,7 +410,6 @@ class NewGameSessionManager @Inject constructor(
         val skillsState = gamificationRepository.getPlayerSkillsSync()
         builder.currentSkillsState(skillsState)
 
-        Log.d(TAG, "Commit session completed: $daysUntilDelivery days, ${builder.build().totalXpAwarded} XP")
 
         return builder.build()
     }

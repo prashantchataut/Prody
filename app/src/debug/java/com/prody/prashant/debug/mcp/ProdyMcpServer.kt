@@ -10,7 +10,6 @@ object ProdyMcpServer {
     private const val TAG = "ProdyMcpServer"
 
     fun start(context: Context) {
-        Log.d(TAG, "MCP Diagnostic Server is disabled")
     }
 
     fun stop() {
