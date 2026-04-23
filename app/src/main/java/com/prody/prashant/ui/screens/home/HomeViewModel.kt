@@ -137,7 +137,9 @@ data class HomeUiState(
     val personalizedPatternSuggestion: String = "",
     // Intelligence Insights
     val intelligenceInsights: List<IntelligenceInsight> = emptyList(),
-    val isPremiumIntelligenceEnabled: Boolean = false
+    val isPremiumIntelligenceEnabled: Boolean = false,
+    // Mood Trend Data
+    val moodTrend: List<Float> = emptyList()
 )
 
 private data class DailyContent(
@@ -248,6 +250,9 @@ class HomeViewModel @Inject constructor(
                     Triple(false, "", "")
                 }
 
+                // Calculate mood trend for the chart
+                val moodTrend = calculateMoodTrend(weeklyJournalEntries)
+
                 // 3. Atomically update the UI state with all the loaded data.
                 _uiState.value.copy(
                     userName = profile?.displayName ?: "Growth Seeker",
@@ -273,6 +278,7 @@ class HomeViewModel @Inject constructor(
                     todayEntryMood = todayMood,
                     todayEntryPreview = todayPreview,
                     dualStreakStatus = dualStreak,
+                    moodTrend = moodTrend,
                     buddhaWisdomProofInfo = _uiState.value.buddhaWisdomProofInfo.copy(isEnabled = aiProofMode),
                     isLoading = false // <-- Critical: Signal that loading is complete.
                 )
@@ -941,6 +947,48 @@ class HomeViewModel @Inject constructor(
         _uiState.update { it.copy(isLoading = true) }
         loadInitialData()
         loadPersonalizedPattern()
+    }
+
+    /**
+     * Performance Optimization: Calculates a 7-day mood trend by grouping entries by day.
+     *
+     * Logic:
+     * 1. Normalizes raw 1-10 intensity to 1-5 scale (intensity / 2f).
+     * 2. Groups multiple entries per day by averaging their intensities.
+     * 3. Fills gaps for days without entries with a neutral 3.0f value.
+     *
+     * Uses a unique day identifier (Year * 1000 + DayOfYear) to avoid cross-year collision.
+     */
+    private fun calculateMoodTrend(entries: List<JournalEntryEntity>): List<Float> {
+        val calendar = Calendar.getInstance()
+        val trendMap = mutableMapOf<Int, MutableList<Float>>()
+
+        // Initialize last 7 days with neutral value
+        for (i in 0..6) {
+            calendar.timeInMillis = System.currentTimeMillis()
+            calendar.add(Calendar.DAY_OF_YEAR, -i)
+            val dayKey = calendar.get(Calendar.YEAR) * 1000 + calendar.get(Calendar.DAY_OF_YEAR)
+            trendMap[dayKey] = mutableListOf(3.0f)
+        }
+
+        // Populate with real data
+        entries.forEach { entry ->
+            calendar.timeInMillis = entry.createdAt
+            val dayKey = calendar.get(Calendar.YEAR) * 1000 + calendar.get(Calendar.DAY_OF_YEAR)
+            if (trendMap.containsKey(dayKey)) {
+                // Remove neutral placeholder if first real entry for this day
+                if (trendMap[dayKey]?.size == 1 && trendMap[dayKey]?.first() == 3.0f) {
+                    trendMap[dayKey]?.clear()
+                }
+                // Normalize 1-10 to 1-5
+                trendMap[dayKey]?.add(entry.moodIntensity / 2f)
+            }
+        }
+
+        // Return averages sorted by day key (ascending order)
+        return trendMap.entries
+            .sortedBy { it.key }
+            .map { it.value.average().toFloat() }
     }
 
     /**
