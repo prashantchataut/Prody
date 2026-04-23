@@ -22,6 +22,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -368,6 +369,7 @@ fun ProdyErrorEmptyState(
  * @param getStartedLabel Label for the get started button
  * @param onGetStartedClick Callback when get started is clicked
  * @param modifier Modifier for the component
+ * @param iconContentDescription Optional icon description
  */
 @Composable
 fun ProdyWelcomeEmptyState(
@@ -376,11 +378,12 @@ fun ProdyWelcomeEmptyState(
     message: String,
     getStartedLabel: String,
     onGetStartedClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    iconContentDescription: String? = null
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "welcome_state")
 
-    val iconScale by infiniteTransition.animateFloat(
+    val iconScale = infiniteTransition.animateFloat(
         initialValue = 0.95f,
         targetValue = 1.05f,
         animationSpec = infiniteRepeatable(
@@ -399,9 +402,13 @@ fun ProdyWelcomeEmptyState(
     ) {
         Icon(
             imageVector = icon,
-            contentDescription = "Welcome",
+            contentDescription = iconContentDescription ?: "Welcome",
             modifier = Modifier
                 .size(96.dp)
+                .graphicsLayer {
+                    scaleX = iconScale.value
+                    scaleY = iconScale.value
+                }
                 .alpha(0.9f),
             tint = MaterialTheme.colorScheme.primary
         )
