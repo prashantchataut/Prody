@@ -65,7 +65,7 @@ fun AmbientBackground(
     val infiniteTransition = rememberInfiniteTransition(label = "ambient_bg")
 
     // Slow, organic breathing animation
-    val breathingScale by infiniteTransition.animateFloat(
+    val breathingScaleState = infiniteTransition.animateFloat(
         initialValue = 1f,
         targetValue = 1.02f,
         animationSpec = infiniteRepeatable(
@@ -76,7 +76,7 @@ fun AmbientBackground(
     )
 
     // Gentle rotation for organic feel
-    val rotation by infiniteTransition.animateFloat(
+    val rotationState = infiniteTransition.animateFloat(
         initialValue = 0f,
         targetValue = 360f,
         animationSpec = infiniteRepeatable(
@@ -87,7 +87,7 @@ fun AmbientBackground(
     )
 
     // Shifting ambient glow position
-    val glowOffset by infiniteTransition.animateFloat(
+    val glowOffsetState = infiniteTransition.animateFloat(
         initialValue = 0f,
         targetValue = 1f,
         animationSpec = infiniteRepeatable(
@@ -102,13 +102,17 @@ fun AmbientBackground(
     }
 
     Canvas(modifier = modifier.fillMaxSize()) {
+        val breathingScale = breathingScaleState.value
+        val rotation = rotationState.value
+        val glowOffset = glowOffsetState.value
+
         val centerX = size.width / 2
         val centerY = size.height / 2
         val maxRadius = maxOf(size.width, size.height) * 0.8f
 
         // Primary ambient glow
         val glowX = centerX + (glowOffset - 0.5f) * size.width * 0.3f
-        val glowY = centerY + sin(glowOffset * PI).toFloat() * size.height * 0.1f
+        val glowY = centerY + sin(glowOffset * PI.toDouble()).toFloat() * size.height * 0.1f
 
         drawCircle(
             brush = Brush.radialGradient(
@@ -474,7 +478,7 @@ fun StreakFlame(
     }
 
     // Primary breathing animation
-    val breathingScale by infiniteTransition.animateFloat(
+    val breathingScaleState = infiniteTransition.animateFloat(
         initialValue = 0.9f,
         targetValue = 1.1f,
         animationSpec = infiniteRepeatable(
@@ -485,7 +489,7 @@ fun StreakFlame(
     )
 
     // Flickering animation
-    val flickerAlpha by infiniteTransition.animateFloat(
+    val flickerAlphaState = infiniteTransition.animateFloat(
         initialValue = 0.7f,
         targetValue = 1f,
         animationSpec = infiniteRepeatable(
@@ -496,7 +500,7 @@ fun StreakFlame(
     )
 
     // Swaying animation
-    val sway by infiniteTransition.animateFloat(
+    val swayState = infiniteTransition.animateFloat(
         initialValue = -3f,
         targetValue = 3f,
         animationSpec = infiniteRepeatable(
@@ -510,6 +514,10 @@ fun StreakFlame(
     val sizePx = with(density) { size.toPx() }
 
     Canvas(modifier = modifier.size(size)) {
+        val breathingScale = breathingScaleState.value
+        val flickerAlpha = flickerAlphaState.value
+        val sway = swayState.value
+
         val centerX = this.size.width / 2
         val baseY = this.size.height * 0.9f
 
@@ -679,7 +687,7 @@ fun AchievementRevealCelebration(
     }
 
     // Background overlay
-    val overlayAlpha by animateFloatAsState(
+    val overlayAlphaState = animateFloatAsState(
         targetValue = when (phase) {
             1, 2, 3 -> 0.7f
             4 -> 0f
@@ -690,7 +698,7 @@ fun AchievementRevealCelebration(
     )
 
     // Central burst scale
-    val burstScale by animateFloatAsState(
+    val burstScaleState = animateFloatAsState(
         targetValue = when (phase) {
             1 -> 0.3f
             2 -> 1.5f
@@ -705,7 +713,7 @@ fun AchievementRevealCelebration(
     )
 
     // Central glow alpha
-    val glowAlpha by animateFloatAsState(
+    val glowAlphaState = animateFloatAsState(
         targetValue = when (phase) {
             1 -> 0.3f
             2 -> 1f
@@ -720,10 +728,16 @@ fun AchievementRevealCelebration(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black.copy(alpha = overlayAlpha)),
+            .graphicsLayer {
+                alpha = overlayAlphaState.value
+            }
+            .background(Color.Black),
         contentAlignment = Alignment.Center
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
+            val burstScale = burstScaleState.value
+            val glowAlpha = glowAlphaState.value
+
             val centerX = size.width / 2
             val centerY = size.height / 2
             val maxRadius = minOf(size.width, size.height) * 0.4f
@@ -850,7 +864,7 @@ fun TimeCapsuleSealAnimation(
         }
     }
 
-    val foldScale by animateFloatAsState(
+    val foldScaleState = animateFloatAsState(
         targetValue = when (phase) {
             1 -> 0.6f
             2, 3 -> 0.1f
@@ -860,7 +874,7 @@ fun TimeCapsuleSealAnimation(
         label = "fold_scale"
     )
 
-    val glowIntensity by animateFloatAsState(
+    val glowIntensityState = animateFloatAsState(
         targetValue = when (phase) {
             2 -> 0.8f
             3 -> 1f
@@ -870,7 +884,7 @@ fun TimeCapsuleSealAnimation(
         label = "glow_intensity"
     )
 
-    val travelOffsetY by animateFloatAsState(
+    val travelOffsetYState = animateFloatAsState(
         targetValue = when (phase) {
             3 -> -500f
             else -> 0f
@@ -879,7 +893,7 @@ fun TimeCapsuleSealAnimation(
         label = "travel_offset"
     )
 
-    val travelOffsetX by animateFloatAsState(
+    val travelOffsetXState = animateFloatAsState(
         targetValue = when (phase) {
             3 -> 200f
             else -> 0f
@@ -895,12 +909,15 @@ fun TimeCapsuleSealAnimation(
         Canvas(
             modifier = Modifier
                 .size(100.dp)
-                .scale(foldScale)
                 .graphicsLayer {
-                    translationY = travelOffsetY
-                    translationX = travelOffsetX
+                    val scale = foldScaleState.value
+                    scaleX = scale
+                    scaleY = scale
+                    translationY = travelOffsetYState.value
+                    translationX = travelOffsetXState.value
                 }
         ) {
+            val glowIntensity = glowIntensityState.value
             val centerX = size.width / 2
             val centerY = size.height / 2
 
@@ -953,14 +970,14 @@ fun TimeCapsuleUnsealAnimation(
 ) {
     var revealed by remember { mutableStateOf(false) }
 
-    val revealProgress by animateFloatAsState(
+    val revealProgressState = animateFloatAsState(
         targetValue = if (isOpen) 1f else 0f,
         animationSpec = tween(800, easing = EaseOutCubic),
         label = "reveal_progress",
         finishedListener = { if (isOpen) revealed = true; onComplete() }
     )
 
-    val glowAlpha by animateFloatAsState(
+    val glowAlphaState = animateFloatAsState(
         targetValue = if (isOpen && !revealed) 0.8f else 0f,
         animationSpec = tween(400),
         label = "unseal_glow"
@@ -971,33 +988,35 @@ fun TimeCapsuleUnsealAnimation(
         contentAlignment = Alignment.Center
     ) {
         // Glow effect during reveal
-        if (glowAlpha > 0f) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp)
-                    .alpha(glowAlpha)
-                    .blur(20.dp)
-                    .background(
-                        brush = Brush.radialGradient(
-                            colors = listOf(
-                                TimeCapsuleAccent.copy(alpha = 0.5f),
-                                FutureMessageArrived.copy(alpha = 0.3f),
-                                Color.Transparent
-                            )
-                        ),
-                        shape = RoundedCornerShape(16.dp)
-                    )
-            )
-        }
+        // Performance Optimization: Using graphicsLayer for alpha to avoid recomposition
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp)
+                .graphicsLayer {
+                    alpha = glowAlphaState.value
+                }
+                .blur(20.dp)
+                .background(
+                    brush = Brush.radialGradient(
+                        colors = listOf(
+                            TimeCapsuleAccent.copy(alpha = 0.5f),
+                            FutureMessageArrived.copy(alpha = 0.3f),
+                            Color.Transparent
+                        )
+                    ),
+                    shape = RoundedCornerShape(16.dp)
+                )
+        )
 
         // Content with reveal animation
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .graphicsLayer {
-                    scaleY = revealProgress
-                    alpha = revealProgress
+                    val progress = revealProgressState.value
+                    scaleY = progress
+                    alpha = progress
                     transformOrigin = TransformOrigin(0.5f, 0f)
                 }
         ) {
@@ -1060,7 +1079,8 @@ fun NavigationBreathingGlow(
     ) {
         // Breathing glow behind active item
         // Note: Using a fixed scale for the Box size and graphicsLayer for animated scale
-        // to prevent layout shifts/recompositions
+        // to prevent layout shifts/recompositions.
+        // Performance Optimization: Direct .value access inside graphicsLayer block.
         Box(
             modifier = Modifier
                 .size(48.dp)
