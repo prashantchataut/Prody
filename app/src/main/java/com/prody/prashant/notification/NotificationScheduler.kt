@@ -54,12 +54,10 @@ class NotificationScheduler @Inject constructor(
         try {
             val notificationsEnabled = preferencesManager.notificationsEnabled.first()
             if (!notificationsEnabled) {
-                android.util.Log.d(TAG, "Notifications disabled, cancelling all")
                 cancelAllNotifications()
                 return
             }
 
-            android.util.Log.d(TAG, "Rescheduling all notifications...")
 
             // Schedule each notification type independently
             // If one fails, the others should still be scheduled
@@ -81,7 +79,6 @@ class NotificationScheduler @Inject constructor(
             runCatching { scheduleFutureMessages() }
                 .onFailure { android.util.Log.e(TAG, "Failed to schedule future messages", it) }
 
-            android.util.Log.d(TAG, "Notification rescheduling completed")
         } catch (e: Exception) {
             android.util.Log.e(TAG, "Failed to reschedule notifications", e)
         }
@@ -370,7 +367,6 @@ class NotificationScheduler @Inject constructor(
             }
         }
 
-        android.util.Log.d(TAG, "Triggering debug notification: $type")
 
         val intent = Intent(context, NotificationReceiver::class.java).apply {
             this.action = action
@@ -382,7 +378,6 @@ class NotificationScheduler @Inject constructor(
 
         // Send broadcast immediately
         context.sendBroadcast(intent)
-        android.util.Log.d(TAG, "Debug notification broadcast sent for: $type")
     }
 
     /**
@@ -411,7 +406,6 @@ class NotificationScheduler @Inject constructor(
         }
 
         val triggerTime = System.currentTimeMillis() + (delaySeconds * 1000L)
-        android.util.Log.d(TAG, "Scheduling debug notification '$type' in $delaySeconds seconds")
 
         scheduleExactAlarm(
             action = action,

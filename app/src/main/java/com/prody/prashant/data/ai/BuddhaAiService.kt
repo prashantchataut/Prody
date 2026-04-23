@@ -62,12 +62,10 @@ class BuddhaAiService @Inject constructor(
         // Check cache first
         val cached = cacheManager.getDailyWisdom()
         if (cached != null) {
-            Log.d(TAG, "Returning cached daily wisdom")
             return@withContext GeminiResult.Success(cached)
         }
 
         // Generate fresh wisdom
-        Log.d(TAG, "Generating fresh daily wisdom")
         val result = geminiService.generateDailyWisdom()
 
         // Cache successful results
@@ -91,12 +89,10 @@ class BuddhaAiService @Inject constructor(
         // Check cache first
         val cached = cacheManager.getJournalPrompt(moodKey)
         if (cached != null) {
-            Log.d(TAG, "Returning cached journal prompt for $moodKey")
             return@withContext GeminiResult.Success(cached)
         }
 
         // Generate fresh prompt
-        Log.d(TAG, "Generating fresh journal prompt for $moodKey")
         val result = geminiService.generateJournalPrompt(mood)
 
         // Cache successful results
@@ -131,7 +127,6 @@ class BuddhaAiService @Inject constructor(
             }
             // If Gemini fails but OpenRouter is available, try fallback
             if (openRouterService.isConfigured()) {
-                Log.d(TAG, "Gemini failed, falling back to OpenRouter")
                 return tryOpenRouterFallback(content, mood, moodIntensity, wordCount)
             }
             return result
@@ -139,7 +134,6 @@ class BuddhaAiService @Inject constructor(
         
         // If Gemini not configured, try OpenRouter directly
         if (openRouterService.isConfigured()) {
-            Log.d(TAG, "Gemini not configured, using OpenRouter")
             return tryOpenRouterFallback(content, mood, moodIntensity, wordCount)
         }
         
@@ -189,12 +183,10 @@ class BuddhaAiService @Inject constructor(
         // Check cache first
         val cached = cacheManager.getQuoteExplanation(quoteId)
         if (cached != null) {
-            Log.d(TAG, "Returning cached quote explanation for ID $quoteId")
             return@withContext GeminiResult.Success(cached)
         }
 
         // Generate fresh explanation
-        Log.d(TAG, "Generating fresh quote explanation for ID $quoteId")
         val result = geminiService.generateQuoteExplanation(quote, author)
 
         // Cache successful results
@@ -220,12 +212,10 @@ class BuddhaAiService @Inject constructor(
         // Check cache first
         val cached = cacheManager.getVocabularyContext(wordId)
         if (cached != null) {
-            Log.d(TAG, "Returning cached vocabulary context for ID $wordId")
             return@withContext GeminiResult.Success(cached)
         }
 
         // Generate fresh context
-        Log.d(TAG, "Generating fresh vocabulary context for ID $wordId")
         val result = geminiService.generateVocabularyContext(word, definition)
 
         // Cache successful results
@@ -250,12 +240,10 @@ class BuddhaAiService @Inject constructor(
         // Check cache first
         val cached = cacheManager.getStreakMessage(streakCount)
         if (cached != null) {
-            Log.d(TAG, "Returning cached streak message for $streakCount days")
             return@withContext GeminiResult.Success(cached)
         }
 
         // Generate fresh celebration
-        Log.d(TAG, "Generating fresh streak celebration for $streakCount days")
         val result = geminiService.generateStreakCelebration(streakCount, previousBest)
 
         // Cache successful results
@@ -283,12 +271,10 @@ class BuddhaAiService @Inject constructor(
         // Check cache first
         val cached = cacheManager.getMoodInsight(moodKey)
         if (cached != null) {
-            Log.d(TAG, "Returning cached mood insight for $moodKey")
             return@withContext GeminiResult.Success(cached)
         }
 
         // Generate fresh insight
-        Log.d(TAG, "Generating fresh mood insight for $moodKey")
         val result = geminiService.generateMoodPatternInsight(dominantMood, moodDistribution, journalCount)
 
         // Cache successful results
@@ -316,12 +302,10 @@ class BuddhaAiService @Inject constructor(
         // Check cache first
         val cached = cacheManager.getWeeklySummary()
         if (cached != null) {
-            Log.d(TAG, "Returning cached weekly summary")
             return@withContext GeminiResult.Success(cached)
         }
 
         // Generate fresh summary
-        Log.d(TAG, "Generating fresh weekly summary")
         val result = geminiService.generateWeeklySummary(
             journalCount,
             wordsLearned,
@@ -477,7 +461,6 @@ class BuddhaAiService @Inject constructor(
      */
     suspend fun clearAllCache() {
         cacheManager.clearAllCache()
-        Log.d(TAG, "Cleared all AI cache")
     }
 
     /**
@@ -504,7 +487,6 @@ class BuddhaAiService @Inject constructor(
      * Call this during app initialization or when on WiFi.
      */
     suspend fun preloadCommonContent() = withContext(Dispatchers.IO) {
-        Log.d(TAG, "Preloading common AI content...")
 
         // Preload daily wisdom
         if (cacheManager.getDailyWisdom() == null) {
@@ -518,6 +500,5 @@ class BuddhaAiService @Inject constructor(
             }
         }
 
-        Log.d(TAG, "Preloading complete")
     }
 }

@@ -35,7 +35,6 @@ class MessageDeliveryService @Inject constructor(
     suspend fun deliverMessage(message: CollaborativeMessage): DeliveryResult {
         return withContext(Dispatchers.IO) {
             try {
-                Log.d(TAG, "Attempting to deliver message ${message.id} via ${message.recipient.method}")
 
                 val result = when (message.recipient.method) {
                     ContactMethod.APP_USER -> deliverInApp(message)
@@ -60,7 +59,6 @@ class MessageDeliveryService @Inject constructor(
                         // Notify sender that message was delivered
                         notifications.notifyMessageDelivered(message)
 
-                        Log.d(TAG, "Successfully delivered message ${message.id}")
                     }
                     is DeliveryResult.Failure -> {
                         dao.incrementRetryCount(message.id)

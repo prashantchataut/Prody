@@ -41,7 +41,6 @@ object DatabaseSeeder {
     fun seedDatabase(database: ProdyDatabase) {
         scope.launch {
             try {
-                Log.d(TAG, "Starting database seeding...")
 
                 // Seed all content types in parallel for faster initialization
                 launch { seedQuotes(database) }
@@ -53,7 +52,6 @@ object DatabaseSeeder {
                 launch { seedUserProfile(database) }
                 launch { seedAchievements(database) }
 
-                Log.d(TAG, "Database seeding initiated successfully")
             } catch (e: Exception) {
                 Log.e(TAG, "Error seeding database", e)
             }
@@ -64,7 +62,6 @@ object DatabaseSeeder {
         try {
             val quoteDao = database.quoteDao()
             quoteDao.insertQuotes(getInitialQuotes())
-            Log.d(TAG, "Seeded ${getInitialQuotes().size} quotes")
         } catch (e: Exception) {
             Log.e(TAG, "Error seeding quotes", e)
         }
@@ -74,7 +71,6 @@ object DatabaseSeeder {
         try {
             val proverbDao = database.proverbDao()
             proverbDao.insertProverbs(getInitialProverbs())
-            Log.d(TAG, "Seeded ${getInitialProverbs().size} proverbs")
         } catch (e: Exception) {
             Log.e(TAG, "Error seeding proverbs", e)
         }
@@ -84,7 +80,6 @@ object DatabaseSeeder {
         try {
             val idiomDao = database.idiomDao()
             idiomDao.insertIdioms(getInitialIdioms())
-            Log.d(TAG, "Seeded ${getInitialIdioms().size} idioms")
         } catch (e: Exception) {
             Log.e(TAG, "Error seeding idioms", e)
         }
@@ -94,7 +89,6 @@ object DatabaseSeeder {
         try {
             val phraseDao = database.phraseDao()
             phraseDao.insertPhrases(getInitialPhrases())
-            Log.d(TAG, "Seeded ${getInitialPhrases().size} phrases")
         } catch (e: Exception) {
             Log.e(TAG, "Error seeding phrases", e)
         }
@@ -1088,7 +1082,6 @@ object DatabaseSeeder {
         try {
             val vocabularyDao = database.vocabularyDao()
             vocabularyDao.insertWords(getInitialVocabulary())
-            Log.d(TAG, "Seeded ${getInitialVocabulary().size} vocabulary words")
         } catch (e: Exception) {
             Log.e(TAG, "Error seeding vocabulary", e)
         }
@@ -1670,7 +1663,6 @@ object DatabaseSeeder {
         try {
             val userDao = database.userDao()
             userDao.insertLeaderboardEntries(getInitialLeaderboard())
-            Log.d(TAG, "Seeded ${getInitialLeaderboard().size} leaderboard entries")
         } catch (e: Exception) {
             Log.e(TAG, "Error seeding leaderboard", e)
         }
@@ -2006,7 +1998,6 @@ object DatabaseSeeder {
             if (existingProfile == null) {
                 userDao.insertUserProfile(getInitialUserProfile())
                 userDao.insertUserStats(getInitialUserStats())
-                Log.d(TAG, "Seeded initial user profile")
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error seeding user profile", e)
@@ -2045,7 +2036,6 @@ object DatabaseSeeder {
         try {
             val userDao = database.userDao()
             userDao.insertAchievements(getInitialAchievements())
-            Log.d(TAG, "Seeded ${getInitialAchievements().size} achievements")
         } catch (e: Exception) {
             Log.e(TAG, "Error seeding achievements", e)
         }
