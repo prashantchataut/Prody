@@ -39,6 +39,8 @@ import com.prody.prashant.R
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.ui.theme.*
+import com.prody.prashant.ui.components.ProdyIconButton
+import com.prody.prashant.ui.components.ProdyClickableCard
 import com.prody.prashant.domain.intelligence.IntelligenceInsight
 
 // =============================================================================
@@ -145,7 +147,7 @@ fun HomeScreen(
         contentPadding = PaddingValues(bottom = 80.dp)
     ) {
         // Header with Greeting
-        item {
+            item(key = "header") {
             DashboardHeader(
                 userName = uiState.userName,
                 greeting = greeting,
@@ -155,7 +157,7 @@ fun HomeScreen(
         }
 
         // Overview Section (Consistency & Badges)
-        item {
+        item(key = "overview") {
             OverviewSection(
                 streakDays = uiState.currentStreak,
                 badges = badges
@@ -164,7 +166,7 @@ fun HomeScreen(
 
         // Personalized Pattern Card (opt-in, only shown when data exists)
         if (uiState.personalizedPatternText.isNotEmpty()) {
-            item {
+            item(key = "personalized_pattern") {
                 PersonalizedPatternCard(
                     patternText = uiState.personalizedPatternText,
                     patternSuggestion = uiState.personalizedPatternSuggestion
@@ -174,7 +176,7 @@ fun HomeScreen(
 
         // Premium Intelligence Insights (Opt-in)
         if (uiState.isPremiumIntelligenceEnabled && uiState.intelligenceInsights.isNotEmpty()) {
-            item {
+            item(key = "intelligence_insight") {
                 Spacer(modifier = Modifier.height(24.dp))
                 IntelligenceInsightCard(
                     insight = uiState.intelligenceInsights.first(),
@@ -184,16 +186,16 @@ fun HomeScreen(
         }
 
         // Mood Trend Chart - only show if there's real data
-        if (uiState.journalEntriesThisWeek > 0) {
-            item {
+        if (uiState.journalEntriesThisWeek > 0 && uiState.moodTrend.isNotEmpty()) {
+            item(key = "mood_trend") {
                 MoodTrendSection(
-                    moodData = emptyList() // Mood trend requires historical mood data not exposed yet
+                    moodData = uiState.moodTrend
                 )
             }
         }
 
         // Weekly Summary from real data
-        item {
+        item(key = "weekly_summary") {
             WeeklySummarySection(
                 journalEntries = uiState.journalEntriesThisWeek,
                 wordsLearned = uiState.wordsLearnedThisWeek,
@@ -202,7 +204,7 @@ fun HomeScreen(
         }
 
         // Quick Actions (Navigation)
-        item {
+        item(key = "quick_actions") {
             QuickActionsGrid(
                 onJournalClick = onNavigateToJournal,
                 onHavenClick = onNavigateToHaven,
@@ -212,7 +214,7 @@ fun HomeScreen(
         }
 
         // Explore Section - routes to additional features
-        item {
+        item(key = "explore") {
             ExploreSection(
                 onMeditationClick = onNavigateToMeditation,
                 onChallengesClick = onNavigateToChallenges,
@@ -226,11 +228,12 @@ fun HomeScreen(
         }
 
         // Recent Activity - show today's journal status
-        item {
+        item(key = "recent_activity") {
             RecentActivitySection(
                 journaledToday = uiState.journaledToday,
                 todayMood = uiState.todayEntryMood,
-                todayPreview = uiState.todayEntryPreview
+                todayPreview = uiState.todayEntryPreview,
+                onClick = onNavigateToJournal
             )
         }
     }
@@ -279,13 +282,12 @@ fun DashboardHeader(
         val profileContentDescription = stringResource(R.string.cd_profile_picture)
 
         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            IconButton(onClick = onNotificationClick) {
-                Icon(
-                    imageVector = Icons.Outlined.Notifications,
-                    contentDescription = "Notifications",
-                    tint = ProdyTextPrimaryLight
-                )
-            }
+            ProdyIconButton(
+                icon = Icons.Outlined.Notifications,
+                onClick = onNotificationClick,
+                contentDescription = "Notifications",
+                tint = ProdyTextPrimaryLight
+            )
             // Avatar / Profile
             Box(
                 modifier = Modifier
@@ -827,7 +829,8 @@ private fun ExploreChip(
 fun RecentActivitySection(
     journaledToday: Boolean = false,
     todayMood: String = "",
-    todayPreview: String = ""
+    todayPreview: String = "",
+    onClick: () -> Unit = {}
 ) {
     Column(modifier = Modifier.padding(horizontal = 24.dp)) {
         Text(
@@ -841,11 +844,10 @@ fun RecentActivitySection(
         )
         Spacer(modifier = Modifier.height(16.dp))
         
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp),
-            color = ProdySurfaceLight,
-            shadowElevation = 1.dp
+        // Performance & UX: Using ProdyClickableCard for consistent interaction and haptics
+        ProdyClickableCard(
+            onClick = onClick,
+            modifier = Modifier.fillMaxWidth()
         ) {
             Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                 Box(
@@ -869,7 +871,8 @@ fun RecentActivitySection(
                     Text(
                         text = if (journaledToday) "Journal Entry" else "Daily Journal",
                         fontWeight = FontWeight.SemiBold,
-                        fontFamily = PoppinsFamily
+                        fontFamily = PoppinsFamily,
+                        color = ProdyTextPrimaryLight
                     )
                     Text(
                         text = when {

@@ -458,14 +458,20 @@ private fun LoginSignupScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     val scrollState = rememberScrollState()
+
+    // Performance Optimization: Deferring IME visibility read to a LaunchedEffect
+    // to avoid screen-wide recompositions when the keyboard appears/disappears.
+    val imeInsets = WindowInsets.ime
     val density = LocalDensity.current
-    val imeVisible = WindowInsets.ime.getBottom(density) > 0
 
     // Auto-scroll when keyboard appears
-    LaunchedEffect(imeVisible) {
-        if (imeVisible) {
-            scrollState.animateScrollTo(scrollState.maxValue)
-        }
+    LaunchedEffect(imeInsets, density) {
+        snapshotFlow { imeInsets.getBottom(density) > 0 }
+            .collect { isVisible ->
+                if (isVisible) {
+                    scrollState.animateScrollTo(scrollState.maxValue)
+                }
+            }
     }
 
     Column(

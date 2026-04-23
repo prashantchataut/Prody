@@ -135,6 +135,8 @@ data class HomeUiState(
     // ============== PERSONALIZED PATTERN (local ML) ==============
     val personalizedPatternText: String = "",
     val personalizedPatternSuggestion: String = "",
+    // Mood Trend
+    val moodTrend: List<Float> = emptyList(),
     // Intelligence Insights
     val intelligenceInsights: List<IntelligenceInsight> = emptyList(),
     val isPremiumIntelligenceEnabled: Boolean = false
@@ -248,6 +250,12 @@ class HomeViewModel @Inject constructor(
                     Triple(false, "", "")
                 }
 
+                // Performance Optimization: Calculate mood trend for the last 7 days.
+                // 1. Group entries by day.
+                // 2. Map raw mood intensity (1-10) to chart scale (1-5).
+                // 3. Fill gaps for missing days with neutral (3.0f).
+                val moodTrend = calculateMoodTrend(weeklyJournalEntries)
+
                 // 3. Atomically update the UI state with all the loaded data.
                 _uiState.value.copy(
                     userName = profile?.displayName ?: "Growth Seeker",
@@ -273,6 +281,7 @@ class HomeViewModel @Inject constructor(
                     todayEntryMood = todayMood,
                     todayEntryPreview = todayPreview,
                     dualStreakStatus = dualStreak,
+                    moodTrend = moodTrend,
                     buddhaWisdomProofInfo = _uiState.value.buddhaWisdomProofInfo.copy(isEnabled = aiProofMode),
                     isLoading = false // <-- Critical: Signal that loading is complete.
                 )
@@ -298,6 +307,40 @@ class HomeViewModel @Inject constructor(
             launch { checkAiConfiguration() }
             launch { loadSoulLayerContent() }
         }
+    }
+
+    /**
+     * Logic Detail: Calculates a normalized 7-day mood trend from a list of journal entries.
+     * Raw intensity (1-10) is scaled to 1-5 (via intensity / 2f).
+     * Days without entries are filled with a neutral 3.0f value.
+     */
+    private fun calculateMoodTrend(entries: List<JournalEntryEntity>): List<Float> {
+        if (entries.isEmpty()) return emptyList()
+
+        val calendar = Calendar.getInstance()
+        val trend = mutableListOf<Float>()
+
+        // Look back 7 days from today
+        for (i in 6 downTo 0) {
+            calendar.timeInMillis = System.currentTimeMillis()
+            calendar.add(Calendar.DAY_OF_YEAR, -i)
+            val year = calendar.get(Calendar.YEAR)
+            val dayOfYear = calendar.get(Calendar.DAY_OF_YEAR)
+
+            val dailyEntries = entries.filter { entry ->
+                val entryCal = Calendar.getInstance().apply { timeInMillis = entry.createdAt }
+                entryCal.get(Calendar.YEAR) == year && entryCal.get(Calendar.DAY_OF_YEAR) == dayOfYear
+            }
+
+            if (dailyEntries.isNotEmpty()) {
+                val avgIntensity = dailyEntries.map { it.moodIntensity.toFloat() }.average().toFloat()
+                // Normalize 1-10 to 1-5 scale for the chart
+                trend.add((avgIntensity / 2f).coerceIn(1f, 5f))
+            } else {
+                trend.add(3.0f) // Neutral fallback
+            }
+        }
+        return trend
     }
 
     private suspend fun fetchDailyContentConcurrently(): DailyContent = coroutineScope {
