@@ -189,7 +189,6 @@ I am here to listen, but I cannot provide the emergency care you might need. Ple
         if (!isOfflineMode || initializationAttempts >= MAX_RETRY_ATTEMPTS) {
             return !isOfflineMode
         }
-        Log.d(TAG, "Retrying initialization (attempt ${initializationAttempts + 1})")
         initializeModel()
         return !isOfflineMode
     }
@@ -201,12 +200,6 @@ I am here to listen, but I cannot provide the emergency care you might need. Ple
     private fun initializeModel() {
         initializationAttempts++
         try {
-            // Log key presence for debugging (never log actual keys!)
-            val therapistKeyPresent = BuildConfig.THERAPIST_API_KEY.isNotBlank()
-            val aiKeyPresent = BuildConfig.AI_API_KEY.isNotBlank()
-
-            Log.d(TAG, "API Key Check (attempt $initializationAttempts) - THERAPIST_API_KEY present: $therapistKeyPresent, AI_API_KEY present: $aiKeyPresent")
-
             // Try THERAPIST_API_KEY first, then fall back to AI_API_KEY (Gemini)
             val apiKey = BuildConfig.THERAPIST_API_KEY.takeIf { it.isNotBlank() }
                 ?: BuildConfig.AI_API_KEY.takeIf { it.isNotBlank() }
@@ -218,9 +211,6 @@ I am here to listen, but I cannot provide the emergency care you might need. Ple
                 isInitialized = true // We are initialized in offline mode
                 return
             }
-
-            val keySource = if (BuildConfig.THERAPIST_API_KEY.isNotBlank()) "THERAPIST_API_KEY" else "AI_API_KEY"
-            Log.d(TAG, "Initializing Haven with $keySource (length: ${apiKey.length})")
 
             // Safety settings - less restrictive for mental health content
             val safetySettings = listOf(
@@ -247,7 +237,6 @@ I am here to listen, but I cannot provide the emergency care you might need. Ple
             isInitialized = true
             isOfflineMode = false
             initializationError = null
-            Log.d(TAG, "Haven AI Service initialized successfully with $keySource")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to initialize Haven AI Service", e)
             initializationError = "Initialization error: ${e.message}"
@@ -261,19 +250,12 @@ I am here to listen, but I cannot provide the emergency care you might need. Ple
      * Returns detailed configuration status for debugging.
      */
     fun getConfigurationStatus(): String {
-        val therapistKeyStatus = if (BuildConfig.THERAPIST_API_KEY.isNotBlank()) 
-            "present (${BuildConfig.THERAPIST_API_KEY.length} chars)" else "missing"
-        val aiKeyStatus = if (BuildConfig.AI_API_KEY.isNotBlank()) 
-            "present (${BuildConfig.AI_API_KEY.length} chars)" else "missing"
-            
         return when {
             isOfflineMode -> buildString {
                 append("Offline Mode")
                 if (initializationError != null) {
                     append(": $initializationError")
                 }
-                append("\nTHERAPIST_API_KEY: $therapistKeyStatus")
-                append("\nAI_API_KEY: $aiKeyStatus")
             }
             isInitialized && generativeModel != null -> "Haven AI is ready"
             else -> "Initialization failed: ${initializationError ?: "Unknown error"}"

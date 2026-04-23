@@ -48,6 +48,7 @@ import com.prody.prashant.R
 import com.prody.prashant.data.local.entity.FutureMessageEntity
 import com.prody.prashant.ui.components.DeliveryCountdownAura
 import com.prody.prashant.ui.components.PodGrid
+import com.prody.prashant.ui.components.SecureScreen
 import com.prody.prashant.ui.theme.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -74,6 +75,9 @@ fun FutureMessageListScreen(
     var selectedTab by remember { mutableIntStateOf(0) }
     var showFilterDialog by remember { mutableStateOf(false) }
     val isDark = isDarkTheme()
+
+    // Security: Protect time capsule content
+    SecureScreen()
 
     // Theme-aware colors
     val backgroundColor = if (isDark) TimeCapsuleBackgroundDark else TimeCapsuleBackgroundLight
