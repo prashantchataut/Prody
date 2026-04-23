@@ -23,6 +23,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.prody.prashant.domain.model.MonthlyLetter
+import com.prody.prashant.util.PreventScreenshots
 import com.prody.prashant.ui.theme.*
 
 /**
@@ -37,6 +38,9 @@ fun MonthlyLetterScreen(
     viewModel: MonthlyLetterViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    // Security: Prevent screenshots and screen recordings of private monthly reflections
+    PreventScreenshots()
 
     // Load specific letter if ID provided
     LaunchedEffect(letterId) {
