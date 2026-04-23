@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.R
+import com.prody.prashant.ui.components.SecureScreen
 import com.prody.prashant.domain.collaborative.*
 import com.prody.prashant.ui.theme.*
 import java.time.LocalDateTime
@@ -61,6 +62,9 @@ fun ComposeMessageScreen(
     var showOccasionPicker by remember { mutableStateOf(false) }
     var showThemePicker by remember { mutableStateOf(false) }
     var showContactPicker by remember { mutableStateOf(false) }
+
+    // Security: Protect composing sensitive collaborative messages
+    SecureScreen()
 
     // Initialize with pre-selected values
     LaunchedEffect(preSelectedContactId, preSelectedOccasion) {

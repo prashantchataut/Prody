@@ -72,6 +72,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.prody.prashant.R
+import com.prody.prashant.ui.components.SecureScreen
 import com.prody.prashant.ui.components.TimeCapsuleSealAnimation
 import com.prody.prashant.ui.components.rememberTimeCapsuleSealState
 import com.prody.prashant.ui.theme.*
@@ -98,6 +99,9 @@ fun WriteMessageScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isDark = isDarkTheme()
     val context = LocalContext.current
+
+    // Security: Protect writing of future message
+    SecureScreen()
 
     // Media picker launcher
     val mediaPickerLauncher = rememberLauncherForActivityResult(
