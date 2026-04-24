@@ -182,6 +182,7 @@ class NotificationReceiver : BroadcastReceiver() {
             .setPriority(priority)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
+            .setVisibility(NotificationCompat.VISIBILITY_PRIVATE) // Security: Hide sensitive content on lock screen
             .build()
 
         NotificationManagerCompat.from(context).notify(notificationId, notification)

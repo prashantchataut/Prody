@@ -7,3 +7,8 @@
 **Vulnerability:** Leaking API keys in Logcat via OkHttp interceptors and debug logs, and missing UI protection for therapeutic chats.
 **Learning:** Prody's `OpenRouterService` used `HttpLoggingInterceptor.Level.BODY` in debug mode without redacting the `Authorization` header, exposing API keys to anybody with ADB access. Additionally, Haven't therapeutic screens lacked `FLAG_SECURE`, risking user privacy.
 **Prevention:** Always use `redactHeader("Authorization")` in network interceptors. Remove logs that print partial secrets. Enforce `FLAG_SECURE` on all therapeutic and reflection screens by default.
+
+## 2026-04-24 - Centralized UI Privacy and Notification Hardening
+**Vulnerability:** Fragmented screenshot protection and exposure of sensitive user content on the lock screen via notifications.
+**Learning:** While some sensitive screens (Journal, Haven) implemented `FLAG_SECURE` manually, others (Future Messages, Collaborative Messages, Monthly Letters) were left unprotected. Furthermore, notifications for these features did not specify visibility, allowing private user data to be visible on the lock screen.
+**Prevention:** Centralize UI security logic in a reusable `SecureScreen` component to ensure consistent application. Always set `setVisibility(NotificationCompat.VISIBILITY_PRIVATE)` for any notification that contains or hints at private user content to respect OS-level privacy settings.

@@ -48,6 +48,7 @@ import com.prody.prashant.R
 import com.prody.prashant.data.local.entity.FutureMessageEntity
 import com.prody.prashant.ui.components.DeliveryCountdownAura
 import com.prody.prashant.ui.components.PodGrid
+import com.prody.prashant.ui.components.SecureScreen
 import com.prody.prashant.ui.theme.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -80,6 +81,9 @@ fun FutureMessageListScreen(
     val primaryTextColor = if (isDark) TimeCapsuleTextPrimaryDark else TimeCapsuleTextPrimaryLight
     val secondaryTextColor = if (isDark) TimeCapsuleTextSecondaryDark else TimeCapsuleTextSecondaryLight
     val iconColor = if (isDark) TimeCapsuleIconDark else TimeCapsuleIconLight
+
+    // Security: Prevent screenshots of highly personal future messages
+    SecureScreen()
 
     Box(
         modifier = Modifier
