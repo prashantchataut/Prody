@@ -102,6 +102,7 @@ class CollaborativeMessageNotifications @Inject constructor(
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
             .setContentIntent(pendingIntent)
+            .setVisibility(NotificationCompat.VISIBILITY_PRIVATE) // Security: Hide personal message content on lock screen
 
         // Add occasion emoji if present
         if (message.occasion != null) {
@@ -137,6 +138,7 @@ class CollaborativeMessageNotifications @Inject constructor(
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setAutoCancel(true)
             .setContentIntent(pendingIntent)
+            .setVisibility(NotificationCompat.VISIBILITY_PRIVATE) // Security: Hide message metadata on lock screen
 
         notificationManager.notify(
             NOTIFICATION_ID_DELIVERED_BASE + message.id.hashCode(),
@@ -183,6 +185,7 @@ class CollaborativeMessageNotifications @Inject constructor(
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
             .setContentIntent(pendingIntent)
+            .setVisibility(NotificationCompat.VISIBILITY_PRIVATE) // Security: Hide occasion details on lock screen
             .addAction(
                 R.drawable.ic_notification,
                 "Write Message",
@@ -221,6 +224,7 @@ class CollaborativeMessageNotifications @Inject constructor(
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
             .setContentIntent(pendingIntent)
+            .setVisibility(NotificationCompat.VISIBILITY_PRIVATE) // Security: Hide delivery failure details on lock screen
 
         notificationManager.notify(
             NOTIFICATION_ID_DELIVERED_BASE + message.id.hashCode(),
