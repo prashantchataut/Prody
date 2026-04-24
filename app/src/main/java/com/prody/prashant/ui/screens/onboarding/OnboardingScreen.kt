@@ -459,12 +459,17 @@ private fun LoginSignupScreen(
     var password by remember { mutableStateOf("") }
     val scrollState = rememberScrollState()
     val density = LocalDensity.current
-    val imeVisible = WindowInsets.ime.getBottom(density) > 0
+    val ime = WindowInsets.ime
 
-    // Auto-scroll when keyboard appears
-    LaunchedEffect(imeVisible) {
-        if (imeVisible) {
-            scrollState.animateScrollTo(scrollState.maxValue)
+    // Performance Optimization: Observe keyboard visibility via snapshotFlow
+    // capturing local variables to avoid @Composable invocation errors.
+    LaunchedEffect(ime, density) {
+        snapshotFlow {
+            ime.getBottom(density) > 0
+        }.collect { isVisible ->
+            if (isVisible) {
+                scrollState.animateScrollTo(scrollState.maxValue)
+            }
         }
     }
 
