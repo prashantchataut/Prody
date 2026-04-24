@@ -464,15 +464,6 @@ fun StreakFlame(
         else -> 0.4f               // Cold/Starting
     }
 
-    // Flame colors based on intensity
-    val flameColors = when {
-        streakDays >= 365 -> listOf(StreakInferno, Color(0xFFFF00FF), Color(0xFFFFD700))
-        streakDays >= 90 -> listOf(StreakBlazing, Color(0xFFFF4500), Color(0xFFFFD700))
-        streakDays >= 30 -> listOf(StreakHot, StreakFire, Color(0xFFFFD700))
-        streakDays >= 7 -> listOf(StreakWarm, Color(0xFFFFB74D), Color(0xFFFFF59D))
-        else -> listOf(StreakCold, Color(0xFF64B5F6), Color(0xFFE3F2FD))
-    }
-
     // Primary breathing animation
     val breathingScale by infiniteTransition.animateFloat(
         initialValue = 0.9f,
@@ -505,6 +496,17 @@ fun StreakFlame(
         ),
         label = "flame_sway"
     )
+
+    // Optimization: Pre-compute flame colors to avoid allocations during recomposition
+    val flameColors = remember(streakDays) {
+        when {
+            streakDays >= 365 -> listOf(StreakInferno, Color(0xFFFF00FF), Color(0xFFFFD700))
+            streakDays >= 90 -> listOf(StreakBlazing, Color(0xFFFF4500), Color(0xFFFFD700))
+            streakDays >= 30 -> listOf(StreakHot, StreakFire, Color(0xFFFFD700))
+            streakDays >= 7 -> listOf(StreakWarm, Color(0xFFFFB74D), Color(0xFFFFF59D))
+            else -> listOf(StreakCold, Color(0xFF64B5F6), Color(0xFFE3F2FD))
+        }
+    }
 
     val density = LocalDensity.current
     val sizePx = with(density) { size.toPx() }

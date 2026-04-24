@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -230,101 +231,28 @@ fun ProdyApp(
                             it.route == item.route
                         } == true
 
-                        if (item == BottomNavItem.Haven) {
-                            // Special Haven FAB Item
-                            NavigationBarItem(
-                                selected = selected,
-                                onClick = {
-                                    haptic.selection()
-                                    navController.navigate(item.route) {
-                                        popUpTo(navController.graph.findStartDestination().id) {
-                                            saveState = true
-                                        }
-                                        launchSingleTop = true
-                                        restoreState = true
-                                    }
-                                },
-                                icon = {
-                                    // Breathing Pulse Animation
-                                    val infiniteTransition = rememberInfiniteTransition(label = "HavenPulse")
-                                    val animatedAlpha by infiniteTransition.animateFloat(
-                                        initialValue = 0.6f,
-                                        targetValue = 1f,
-                                        animationSpec = infiniteRepeatable(
-                                            animation = tween(2000, easing = LinearEasing),
-                                            repeatMode = RepeatMode.Reverse
-                                        ),
-                                        label = "HavenAlpha"
-                                    )
-                                    val scale by infiniteTransition.animateFloat(
-                                        initialValue = 0.95f,
-                                        targetValue = 1.05f,
-                                        animationSpec = infiniteRepeatable(
-                                            animation = tween(2000, easing = LinearEasing),
-                                            repeatMode = RepeatMode.Reverse
-                                        ),
-                                        label = "HavenScale"
-                                    )
+                        val onItemClick = {
+                            haptic.selection()
+                            navController.navigate(item.route) {
+                                popUpTo(navController.graph.findStartDestination().id) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        }
 
-                                    Box(
-                                        modifier = Modifier
-                                            .size(56.dp) // Larger than standard icon
-                                            .graphicsLayer {
-                                                scaleX = scale
-                                                scaleY = scale
-                                                alpha = if (selected) 1f else animatedAlpha
-                                            }
-                                            .clip(CircleShape)
-                                            .background(
-                                                androidx.compose.ui.graphics.Brush.verticalGradient(
-                                                    colors = listOf(
-                                                        com.prody.prashant.ui.theme.HavenBubbleLight,
-                                                        com.prody.prashant.ui.theme.HavenBubbleLight.copy(alpha = 0.8f)
-                                                    )
-                                                )
-                                            ),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Icon(
-                                            imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
-                                            contentDescription = stringResource(item.contentDescriptionResId),
-                                            tint = com.prody.prashant.ui.theme.HavenTextLight,
-                                            modifier = Modifier.size(28.dp)
-                                        )
-                                    }
-                                },
-                                label = { /* No label for FAB look */ },
-                                colors = NavigationBarItemDefaults.colors(
-                                    indicatorColor = Color.Transparent // Disable standard indicator
-                                )
+                        if (item == BottomNavItem.Haven) {
+                            HavenNavigationBarItem(
+                                selected = selected,
+                                onClick = onItemClick,
+                                item = item
                             )
                         } else {
-                            // Standard Navigation Item
-                            NavigationBarItem(
-                                icon = {
-                                    // Wrap icon with magical breathing glow effect
-                                    NavigationBreathingGlow(
-                                        isActive = selected,
-                                        color = ProdyPrimary
-                                    ) {
-                                        Icon(
-                                            imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
-                                            contentDescription = null
-                                        )
-                                    }
-                                },
-                                label = { Text(stringResource(item.labelResId)) },
+                            StandardNavigationBarItem(
                                 selected = selected,
-                                onClick = {
-                                    haptic.selection()
-                                    navController.navigate(item.route) {
-                                        popUpTo(navController.graph.findStartDestination().id) {
-                                            saveState = true
-                                        }
-                                        launchSingleTop = true
-                                        restoreState = true
-                                    }
-                                }
+                                onClick = onItemClick,
+                                item = item
                             )
                         }
                     }
@@ -341,4 +269,100 @@ fun ProdyApp(
     }
 }
 
+/**
+ * Performance-optimized NavigationBarItem for Haven.
+ * Uses isolated state reads within graphicsLayer to prevent global recompositions.
+ */
+@Composable
+private fun RowScope.HavenNavigationBarItem(
+    selected: Boolean,
+    onClick: () -> Unit,
+    item: BottomNavItem
+) {
+    NavigationBarItem(
+        selected = selected,
+        onClick = onClick,
+        icon = {
+            // Breathing Pulse Animation - Using State instead of delegation
+            // for deferred execution in graphicsLayer
+            val infiniteTransition = rememberInfiniteTransition(label = "HavenPulse")
+            val animatedAlpha = infiniteTransition.animateFloat(
+                initialValue = 0.6f,
+                targetValue = 1f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(2000, easing = LinearEasing),
+                    repeatMode = RepeatMode.Reverse
+                ),
+                label = "HavenAlpha"
+            )
+            val scale = infiniteTransition.animateFloat(
+                initialValue = 0.95f,
+                targetValue = 1.05f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(2000, easing = LinearEasing),
+                    repeatMode = RepeatMode.Reverse
+                ),
+                label = "HavenScale"
+            )
+
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .graphicsLayer {
+                        scaleX = scale.value
+                        scaleY = scale.value
+                        alpha = if (selected) 1f else animatedAlpha.value
+                    }
+                    .clip(CircleShape)
+                    .background(
+                        androidx.compose.ui.graphics.Brush.verticalGradient(
+                            colors = listOf(
+                                com.prody.prashant.ui.theme.HavenBubbleLight,
+                                com.prody.prashant.ui.theme.HavenBubbleLight.copy(alpha = 0.8f)
+                            )
+                        )
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
+                    contentDescription = stringResource(item.contentDescriptionResId),
+                    tint = com.prody.prashant.ui.theme.HavenTextLight,
+                    modifier = Modifier.size(28.dp)
+                )
+            }
+        },
+        label = { /* No label for FAB look */ },
+        colors = NavigationBarItemDefaults.colors(
+            indicatorColor = Color.Transparent
+        )
+    )
+}
+
+/**
+ * Isolated standard navigation item to minimize recomposition scope.
+ */
+@Composable
+private fun RowScope.StandardNavigationBarItem(
+    selected: Boolean,
+    onClick: () -> Unit,
+    item: BottomNavItem
+) {
+    NavigationBarItem(
+        icon = {
+            NavigationBreathingGlow(
+                isActive = selected,
+                color = ProdyPrimary
+            ) {
+                Icon(
+                    imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
+                    contentDescription = null
+                )
+            }
+        },
+        label = { Text(stringResource(item.labelResId)) },
+        selected = selected,
+        onClick = onClick
+    )
+}
 

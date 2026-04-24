@@ -35,11 +35,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.prody.prashant.R
+import com.prody.prashant.ui.components.ProdyIconButton
+import com.prody.prashant.ui.components.ProdyClickableCard
 
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.ui.theme.*
 import com.prody.prashant.domain.intelligence.IntelligenceInsight
+import com.prody.prashant.util.rememberProdyHaptic
+import androidx.compose.foundation.border
 
 // =============================================================================
 // PERSONALIZATION DASHBOARD - REVAMPED 2026
@@ -247,6 +251,7 @@ fun DashboardHeader(
     onProfileClick: () -> Unit,
     onNotificationClick: () -> Unit
 ) {
+    val haptic = rememberProdyHaptic()
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -278,21 +283,26 @@ fun DashboardHeader(
         
         val profileContentDescription = stringResource(R.string.cd_profile_picture)
 
-        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            IconButton(onClick = onNotificationClick) {
-                Icon(
-                    imageVector = Icons.Outlined.Notifications,
-                    contentDescription = "Notifications",
-                    tint = ProdyTextPrimaryLight
-                )
-            }
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            ProdyIconButton(
+                icon = Icons.Outlined.Notifications,
+                onClick = onNotificationClick,
+                contentDescription = "Notifications",
+                tint = ProdyTextPrimaryLight
+            )
             // Avatar / Profile
             Box(
                 modifier = Modifier
                     .size(40.dp)
                     .clip(CircleShape)
                     .background(ProdyForestGreen)
-                    .clickable { onProfileClick() }
+                    .clickable {
+                        haptic.click()
+                        onProfileClick()
+                    }
                     .semantics {
                         role = Role.Button
                         contentDescription = profileContentDescription
@@ -653,16 +663,17 @@ fun QuickActionsGrid(
 
 @Composable
 fun QuickActionTile(title: String, icon: androidx.compose.ui.graphics.vector.ImageVector, color: Color, onClick: () -> Unit, modifier: Modifier) {
-    Surface(
-        modifier = modifier
-            .height(100.dp)
-            .clickable(onClick = onClick),
+    ProdyClickableCard(
+        onClick = onClick,
+        modifier = modifier.height(100.dp),
         shape = RoundedCornerShape(16.dp),
-        color = color.copy(alpha = 0.1f),
-        border = androidx.compose.foundation.BorderStroke(1.dp, color.copy(alpha = 0.2f))
+        backgroundColor = color.copy(alpha = 0.1f)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+                .border(1.dp, color.copy(alpha = 0.2f), RoundedCornerShape(16.dp)),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -792,15 +803,15 @@ private fun ExploreChip(
     color: Color,
     onClick: () -> Unit
 ) {
-    Surface(
-        modifier = Modifier
-            .clickable(onClick = onClick),
+    ProdyClickableCard(
+        onClick = onClick,
         shape = RoundedCornerShape(12.dp),
-        color = color.copy(alpha = 0.1f),
-        border = androidx.compose.foundation.BorderStroke(1.dp, color.copy(alpha = 0.15f))
+        backgroundColor = color.copy(alpha = 0.1f)
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+            modifier = Modifier
+                .border(1.dp, color.copy(alpha = 0.15f), RoundedCornerShape(12.dp))
+                .padding(horizontal = 14.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
@@ -841,11 +852,12 @@ fun RecentActivitySection(
         )
         Spacer(modifier = Modifier.height(16.dp))
         
-        Surface(
+        ProdyClickableCard(
+            onClick = { /* Navigate to Journal or relevant screen */ },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
-            color = ProdySurfaceLight,
-            shadowElevation = 1.dp
+            backgroundColor = ProdySurfaceLight,
+            contentDescription = "Today's journal activity"
         ) {
             Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                 Box(
