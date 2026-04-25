@@ -89,6 +89,7 @@ import com.prody.prashant.domain.model.Mood
 import com.prody.prashant.domain.validation.ContentValidation
 import com.prody.prashant.domain.validation.ContentValidator
 import com.prody.prashant.ui.components.AmbientBackground
+import com.prody.prashant.ui.components.SecureScreen
 import com.prody.prashant.ui.components.MoodSuggestionHint
 import com.prody.prashant.ui.components.SessionResultCard
 import com.prody.prashant.ui.components.rememberMoodSuggestionState
@@ -106,7 +107,7 @@ fun NewJournalEntryScreen(
     onEntrySaved: () -> Unit,
     prefilledContent: String? = null,
     viewModel: NewJournalEntryViewModel = hiltViewModel()
-) {
+) = SecureScreen {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
@@ -115,15 +116,6 @@ fun NewJournalEntryScreen(
     LaunchedEffect(prefilledContent) {
         if (!prefilledContent.isNullOrBlank()) {
             viewModel.updateContent(prefilledContent)
-        }
-    }
-
-    // Security: Prevent screenshots and screen recordings while writing a private journal entry
-    DisposableEffect(Unit) {
-        val window = (context as? Activity)?.window
-        window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
-        onDispose {
-            window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
         }
     }
 

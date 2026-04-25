@@ -77,6 +77,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.data.local.entity.EvidenceEntity
 import com.prody.prashant.data.local.entity.EvidenceRarity
 import com.prody.prashant.data.local.entity.EvidenceType
+import com.prody.prashant.ui.components.SecureScreen
 import com.prody.prashant.ui.theme.ProdyAccentGreen
 import com.prody.prashant.ui.theme.isDarkTheme
 import kotlinx.coroutines.launch
@@ -111,7 +112,7 @@ private val LegendaryColor = Color(0xFFFFD54F)
 fun LockerScreen(
     viewModel: LockerViewModel = hiltViewModel(),
     onNavigateBack: () -> Unit = {}
-) {
+) = SecureScreen {
     val evidence by viewModel.evidence.collectAsStateWithLifecycle()
     val selectedFilter by viewModel.selectedFilter.collectAsStateWithLifecycle()
     val selectedEvidence by viewModel.selectedEvidence.collectAsStateWithLifecycle()
