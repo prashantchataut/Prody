@@ -48,11 +48,9 @@ class BootReceiver : BroadcastReceiver() {
         // Validate intent action
         val action = intent.action
         if (action != Intent.ACTION_BOOT_COMPLETED && action != Intent.ACTION_MY_PACKAGE_REPLACED) {
-            Log.d(TAG, "Ignoring unhandled action: $action")
             return
         }
 
-        Log.d(TAG, "Received action: $action")
 
         // Use goAsync() to get more time for background work in BroadcastReceiver
         val pendingResult = goAsync()
@@ -84,7 +82,6 @@ class BootReceiver : BroadcastReceiver() {
             scope.launch {
                 try {
                     notificationScheduler.rescheduleAllNotifications()
-                    Log.d(TAG, "Notifications rescheduled successfully after $action")
                 } catch (e: Exception) {
                     Log.e(TAG, "Failed to reschedule notifications", e)
                 } finally {

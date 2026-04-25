@@ -99,7 +99,6 @@ class VoiceTranscriptionService @Inject constructor(
             _partialTranscription.value = ""
             _error.value = null
 
-            Log.d(TAG, "Started listening")
 
         } catch (e: Exception) {
             Log.e(TAG, "Failed to start listening", e)
@@ -115,7 +114,6 @@ class VoiceTranscriptionService @Inject constructor(
         try {
             speechRecognizer?.stopListening()
             _isListening.value = false
-            Log.d(TAG, "Stopped listening")
         } catch (e: Exception) {
             Log.w(TAG, "Error stopping listener", e)
         }
@@ -129,7 +127,6 @@ class VoiceTranscriptionService @Inject constructor(
             speechRecognizer?.cancel()
             _isListening.value = false
             _partialTranscription.value = ""
-            Log.d(TAG, "Cancelled recognition")
         } catch (e: Exception) {
             Log.w(TAG, "Error cancelling", e)
         }
@@ -143,7 +140,6 @@ class VoiceTranscriptionService @Inject constructor(
             speechRecognizer?.destroy()
             speechRecognizer = null
             _isListening.value = false
-            Log.d(TAG, "Released resources")
         } catch (e: Exception) {
             Log.w(TAG, "Error releasing", e)
         }
@@ -240,11 +236,9 @@ class VoiceTranscriptionService @Inject constructor(
     private fun createRecognitionListener(): RecognitionListener {
         return object : RecognitionListener {
             override fun onReadyForSpeech(params: Bundle?) {
-                Log.d(TAG, "Ready for speech")
             }
 
             override fun onBeginningOfSpeech() {
-                Log.d(TAG, "Speech started")
             }
 
             override fun onRmsChanged(rmsdB: Float) {
@@ -256,7 +250,6 @@ class VoiceTranscriptionService @Inject constructor(
             override fun onBufferReceived(buffer: ByteArray?) {}
 
             override fun onEndOfSpeech() {
-                Log.d(TAG, "Speech ended")
             }
 
             override fun onError(errorCode: Int) {
@@ -272,7 +265,6 @@ class VoiceTranscriptionService @Inject constructor(
                 _transcription.value = text
                 _partialTranscription.value = ""
                 _isListening.value = false
-                Log.d(TAG, "Final result: $text")
             }
 
             override fun onPartialResults(partialResults: Bundle?) {

@@ -66,7 +66,7 @@ object ProdyIcons {
     val LocalFireDepartment: ImageVector = Icons.Filled.LocalFireDepartment
     val EmojiEvents: ImageVector = Icons.Filled.EmojiEvents
     val Psychology: ImageVector = Icons.Filled.Psychology
-    val Chat: ImageVector = Icons.Filled.Chat
+    val Chat: ImageVector = Icons.AutoMirrored.Filled.Chat
     val Notifications: ImageVector = Icons.Filled.Notifications
     val Inbox: ImageVector = Icons.Filled.Inbox
     val Refresh: ImageVector = Icons.Filled.Refresh
@@ -152,7 +152,7 @@ object ProdyIcons {
         val TextFormat: ImageVector = Icons.AutoMirrored.Outlined.List
         val AutoAwesome: ImageVector = Icons.Outlined.AutoAwesome
         val BarChart: ImageVector = Icons.AutoMirrored.Outlined.TrendingUp // Fallback for Stats
-        val Leaderboard: ImageVector = Icons.Outlined.List
+        val Leaderboard: ImageVector = Icons.AutoMirrored.Outlined.List
         val Star: ImageVector = Icons.Outlined.Star
         val Email: ImageVector = Icons.Outlined.Email
         val Lock: ImageVector = Icons.Outlined.Lock
@@ -173,7 +173,7 @@ object ProdyIcons {
         val TrendingFlat: ImageVector = Icons.AutoMirrored.Outlined.ArrowForward
         val Tag: ImageVector = Icons.Outlined.Star
         val Circle: ImageVector = Icons.Outlined.Face
-        val Summarize: ImageVector = Icons.Outlined.Face
+        val Summarize: ImageVector = Icons.AutoMirrored.Outlined.List
         val Loop: ImageVector = Icons.Outlined.Refresh
         val CameraAlt: ImageVector = Icons.Outlined.Face
         val Stop: ImageVector = Icons.Outlined.Face
@@ -247,7 +247,7 @@ object ProdyIcons {
     val SearchOff: ImageVector = Icons.Filled.Search
     val Clear: ImageVector = Icons.Filled.Close
     val Create: ImageVector = Icons.Filled.Edit
-    val OpenInFull: ImageVector = Icons.Filled.ExitToApp // Fallback
+    val OpenInFull: ImageVector = Icons.AutoMirrored.Filled.ExitToApp // Fallback
     val NoteAlt: ImageVector = Icons.Filled.Edit
     val NoteAdd: ImageVector = Icons.Filled.Edit
     val BookmarkRemove: ImageVector = Icons.Filled.Bookmark
@@ -321,7 +321,7 @@ object ProdyIcons {
     val FilterAlt: ImageVector = FilterList
     val Tune: ImageVector = Settings
     val Help: ImageVector = Info
-    val ExitToApp: ImageVector = ArrowForward
+    val ExitToApp: ImageVector = Icons.AutoMirrored.Filled.ExitToApp
     val ArrowUpward: ImageVector = ExpandLess
     val ArrowDownward: ImageVector = ExpandMore
     val ArrowDropDown: ImageVector = ExpandMore

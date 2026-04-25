@@ -185,7 +185,6 @@ class ContentModerationManager @Inject constructor(
         }
 
         updatePendingCount()
-        Log.d(TAG, "Report created: ${report.id}")
         return report
     }
 
@@ -240,7 +239,6 @@ class ContentModerationManager @Inject constructor(
 
         try {
             context.startActivity(intent)
-            Log.d(TAG, "Opened email for report: ${report.id}")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to open email client", e)
         }
