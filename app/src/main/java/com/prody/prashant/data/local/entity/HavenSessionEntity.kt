@@ -18,7 +18,10 @@ import androidx.room.PrimaryKey
         androidx.room.Index(value = ["userId"]),
         androidx.room.Index(value = ["startedAt"]),
         androidx.room.Index(value = ["sessionType"]),
-        androidx.room.Index(value = ["userId", "startedAt"])
+        androidx.room.Index(value = ["userId", "startedAt"]),
+        androidx.room.Index(value = ["isCompleted"]),
+        androidx.room.Index(value = ["containedCrisisDetection"]),
+        androidx.room.Index(value = ["isDeleted"])
     ]
 )
 data class HavenSessionEntity(
@@ -74,7 +77,9 @@ data class HavenSessionEntity(
         androidx.room.Index(value = ["completedAt"]),
         androidx.room.Index(value = ["exerciseType"]),
         androidx.room.Index(value = ["fromSessionId"]),
-        androidx.room.Index(value = ["userId", "completedAt"])
+        androidx.room.Index(value = ["userId", "completedAt"]),
+        androidx.room.Index(value = ["wasCompleted"]),
+        androidx.room.Index(value = ["isDeleted"])
     ]
 )
 data class HavenExerciseEntity(

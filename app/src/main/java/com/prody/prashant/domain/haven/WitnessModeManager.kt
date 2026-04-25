@@ -55,16 +55,13 @@ class WitnessModeManager @Inject constructor(
      */
     suspend fun checkForPendingFollowUps(userId: String = "local") = withContext(Dispatchers.IO) {
         try {
-            Log.d(TAG, "Checking for pending memory follow-ups...")
 
             val pendingMemories = havenMemoryDao.getPendingMemoriesForFollowUp(userId)
 
             if (pendingMemories.isEmpty()) {
-                Log.d(TAG, "No pending memories to follow up on")
                 return@withContext
             }
 
-            Log.d(TAG, "Found ${pendingMemories.size} memories ready for follow-up")
 
             // Process top N memories to avoid notification spam
             val memoriesToProcess = pendingMemories.take(MAX_NOTIFICATIONS_PER_CHECK)
@@ -76,7 +73,6 @@ class WitnessModeManager @Inject constructor(
                     // Mark as followed up to prevent re-sending
                     havenMemoryDao.markAsFollowedUp(memory.id)
 
-                    Log.d(TAG, "Sent follow-up notification for memory: ${memory.fact.take(50)}...")
                 } catch (e: Exception) {
                     Log.e(TAG, "Failed to send notification for memory ${memory.id}", e)
                 }
@@ -209,7 +205,6 @@ class WitnessModeManager @Inject constructor(
     ) = withContext(Dispatchers.IO) {
         try {
             havenMemoryDao.recordOutcome(memoryId, outcome, response)
-            Log.d(TAG, "Recorded outcome for memory $memoryId: $outcome")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to record outcome for memory $memoryId", e)
         }
@@ -221,7 +216,6 @@ class WitnessModeManager @Inject constructor(
     suspend fun dismissMemory(memoryId: Long) = withContext(Dispatchers.IO) {
         try {
             havenMemoryDao.dismissMemory(memoryId)
-            Log.d(TAG, "Dismissed memory $memoryId")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to dismiss memory $memoryId", e)
         }
