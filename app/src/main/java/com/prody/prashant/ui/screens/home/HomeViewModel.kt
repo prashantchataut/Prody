@@ -137,7 +137,9 @@ data class HomeUiState(
     val personalizedPatternSuggestion: String = "",
     // Intelligence Insights
     val intelligenceInsights: List<IntelligenceInsight> = emptyList(),
-    val isPremiumIntelligenceEnabled: Boolean = false
+    val isPremiumIntelligenceEnabled: Boolean = false,
+    // Mood Trend
+    val moodTrend: List<Float> = emptyList()
 )
 
 private data class DailyContent(
@@ -145,6 +147,19 @@ private data class DailyContent(
     val word: VocabularyEntity?,
     val proverb: ProverbEntity?,
     val idiom: IdiomEntity?
+)
+
+private data class InitialDataResult(
+    val profile: UserProfileEntity?,
+    val weeklyJournalEntriesCount: Int,
+    val weeklyLearnedWords: Int,
+    val daysActiveThisWeek: Int,
+    val journaledToday: Boolean,
+    val todayMood: String,
+    val todayPreview: String,
+    val dualStreak: DualStreakStatus,
+    val moodTrend: List<Float>,
+    val aiProofMode: Boolean
 )
 
 @HiltViewModel
@@ -248,33 +263,21 @@ class HomeViewModel @Inject constructor(
                     Triple(false, "", "")
                 }
 
-                // 3. Atomically update the UI state with all the loaded data.
-                _uiState.value.copy(
-                    userName = profile?.displayName ?: "Growth Seeker",
-                    currentStreak = profile?.currentStreak ?: 0,
-                    totalPoints = profile?.totalPoints ?: 0,
-                    dailyQuote = dailyContent.quote?.content ?: _uiState.value.dailyQuote,
-                    dailyQuoteAuthor = dailyContent.quote?.author ?: _uiState.value.dailyQuoteAuthor,
-                    wordOfTheDay = dailyContent.word?.word ?: _uiState.value.wordOfTheDay,
-                    wordDefinition = dailyContent.word?.definition ?: _uiState.value.wordDefinition,
-                    wordPronunciation = dailyContent.word?.pronunciation ?: _uiState.value.wordPronunciation,
-                    wordId = dailyContent.word?.id ?: _uiState.value.wordId,
-                    dailyProverb = dailyContent.proverb?.content ?: _uiState.value.dailyProverb,
-                    proverbMeaning = dailyContent.proverb?.meaning ?: _uiState.value.proverbMeaning,
-                    proverbOrigin = dailyContent.proverb?.origin ?: _uiState.value.proverbOrigin,
-                    dailyIdiom = dailyContent.idiom?.phrase ?: _uiState.value.dailyIdiom,
-                    idiomMeaning = dailyContent.idiom?.meaning ?: _uiState.value.idiomMeaning,
-                    idiomExample = dailyContent.idiom?.exampleSentence ?: _uiState.value.idiomExample,
-                    idiomId = dailyContent.idiom?.id ?: _uiState.value.idiomId,
-                    journalEntriesThisWeek = weeklyJournalEntries.size,
-                    wordsLearnedThisWeek = weeklyLearnedWords,
+                // Calculate mood trend for the week
+                val moodTrend = calculateMoodTrend(weeklyJournalEntries)
+
+                // Return all computed data to be applied in collect
+                InitialDataResult(
+                    profile = profile,
+                    weeklyJournalEntriesCount = weeklyJournalEntries.size,
+                    weeklyLearnedWords = weeklyLearnedWords,
                     daysActiveThisWeek = daysActiveThisWeek,
                     journaledToday = journaledToday,
-                    todayEntryMood = todayMood,
-                    todayEntryPreview = todayPreview,
-                    dualStreakStatus = dualStreak,
-                    buddhaWisdomProofInfo = _uiState.value.buddhaWisdomProofInfo.copy(isEnabled = aiProofMode),
-                    isLoading = false // <-- Critical: Signal that loading is complete.
+                    todayMood = todayMood,
+                    todayPreview = todayPreview,
+                    dualStreak = dualStreak,
+                    moodTrend = moodTrend,
+                    aiProofMode = aiProofMode
                 )
             }.catch { e ->
                 android.util.Log.e(TAG, "Error in combined home data flow", e)
@@ -285,8 +288,38 @@ class HomeViewModel @Inject constructor(
                         error = "Failed to load home data. Please check your connection."
                     )
                 }
-            }.collect { newState ->
-                _uiState.value = newState
+            }.collect { result ->
+                // 3. Atomically update the UI state using update{} to avoid race conditions.
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        userName = result.profile?.displayName ?: currentState.userName,
+                        currentStreak = result.profile?.currentStreak ?: currentState.currentStreak,
+                        totalPoints = result.profile?.totalPoints ?: currentState.totalPoints,
+                        dailyQuote = dailyContent.quote?.content ?: currentState.dailyQuote,
+                        dailyQuoteAuthor = dailyContent.quote?.author ?: currentState.dailyQuoteAuthor,
+                        wordOfTheDay = dailyContent.word?.word ?: currentState.wordOfTheDay,
+                        wordDefinition = dailyContent.word?.definition ?: currentState.wordDefinition,
+                        wordPronunciation = dailyContent.word?.pronunciation ?: currentState.wordPronunciation,
+                        wordId = dailyContent.word?.id ?: currentState.wordId,
+                        dailyProverb = dailyContent.proverb?.content ?: currentState.dailyProverb,
+                        proverbMeaning = dailyContent.proverb?.meaning ?: currentState.proverbMeaning,
+                        proverbOrigin = dailyContent.proverb?.origin ?: currentState.proverbOrigin,
+                        dailyIdiom = dailyContent.idiom?.phrase ?: currentState.dailyIdiom,
+                        idiomMeaning = dailyContent.idiom?.meaning ?: currentState.idiomMeaning,
+                        idiomExample = dailyContent.idiom?.exampleSentence ?: currentState.idiomExample,
+                        idiomId = dailyContent.idiom?.id ?: currentState.idiomId,
+                        journalEntriesThisWeek = result.weeklyJournalEntriesCount,
+                        wordsLearnedThisWeek = result.weeklyLearnedWords,
+                        daysActiveThisWeek = result.daysActiveThisWeek,
+                        journaledToday = result.journaledToday,
+                        todayEntryMood = result.todayMood,
+                        todayEntryPreview = result.todayPreview,
+                        dualStreakStatus = result.dualStreak,
+                        moodTrend = result.moodTrend,
+                        buddhaWisdomProofInfo = currentState.buddhaWisdomProofInfo.copy(isEnabled = result.aiProofMode),
+                        isLoading = false // <-- Critical: Signal that loading is complete.
+                    )
+                }
             }
 
             // 4. Launch non-essential and secondary data loading tasks.
@@ -297,6 +330,43 @@ class HomeViewModel @Inject constructor(
             launch { loadDailySeed() }
             launch { checkAiConfiguration() }
             launch { loadSoulLayerContent() }
+        }
+    }
+
+    /**
+     * Calculate 7-day mood trend from weekly journal entries.
+     *
+     * Logic Detail:
+     * - Group entries by day using a unique identifier (Year * 1000 + DayOfYear).
+     * - Average moodIntensity (1-10) for each day.
+     * - Normalize average to 1-5 scale (intensity / 2f).
+     * - Fill gaps for days without entries with 3.0f (Neutral).
+     * - Ensures exactly 7 data points for the visualization.
+     */
+    private fun calculateMoodTrend(entries: List<JournalEntryEntity>): List<Float> {
+        val calendar = java.util.Calendar.getInstance()
+
+        // Group entries by day - using local calendar to avoid shared state mutations
+        val dayGroups = entries.groupBy { entry ->
+            val entryCal = java.util.Calendar.getInstance()
+            entryCal.timeInMillis = entry.createdAt
+            entryCal.get(java.util.Calendar.YEAR) * 1000 + entryCal.get(java.util.Calendar.DAY_OF_YEAR)
+        }
+
+        // Generate trend for last 7 days
+        return (6 downTo 0).map { daysAgo ->
+            val dayCal = java.util.Calendar.getInstance()
+            dayCal.add(java.util.Calendar.DAY_OF_YEAR, -daysAgo)
+            val dayId = dayCal.get(java.util.Calendar.YEAR) * 1000 + dayCal.get(java.util.Calendar.DAY_OF_YEAR)
+
+            val dayEntries = dayGroups[dayId]
+            if (dayEntries.isNullOrEmpty()) {
+                3.0f // Neutral fallback for missing days
+            } else {
+                // Average intensity and normalize to 1-5 scale (from 1-10 raw range)
+                val avgIntensity = dayEntries.map { it.moodIntensity }.average().toFloat()
+                (avgIntensity / 2f).coerceIn(1f, 5f)
+            }
         }
     }
 
@@ -452,7 +522,10 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 // Load user context first - it's the foundation
-                val context = soulLayerRepository.getCurrentContext()
+                // PERFORMANCE: soulLayerRepository may perform blocking I/O, ensure it runs on IO dispatcher.
+                val context = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                    soulLayerRepository.getCurrentContext()
+                }
 
                 // Update basic context info
                 _uiState.update { state ->
@@ -501,7 +574,9 @@ class HomeViewModel @Inject constructor(
      */
     private suspend fun loadIntelligentGreeting() {
         try {
-            val greeting = soulLayerRepository.getGreeting()
+            val greeting = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                soulLayerRepository.getGreeting()
+            }
             _uiState.update { state ->
                 state.copy(
                     intelligentGreeting = greeting.greeting,
@@ -526,9 +601,13 @@ class HomeViewModel @Inject constructor(
      */
     private suspend fun loadFirstWeekState() {
         try {
-            val state = soulLayerRepository.getFirstWeekState()
-            val dayContent = soulLayerRepository.getFirstWeekDayContent()
-            val progress = soulLayerRepository.getFirstWeekProgress()
+            val (state, dayContent, progress) = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                Triple(
+                    soulLayerRepository.getFirstWeekState(),
+                    soulLayerRepository.getFirstWeekDayContent(),
+                    soulLayerRepository.getFirstWeekProgress()
+                )
+            }
 
             _uiState.update { uiState ->
                 uiState.copy(
@@ -548,7 +627,9 @@ class HomeViewModel @Inject constructor(
      */
     private suspend fun loadSurfacedMemory() {
         try {
-            val memory = soulLayerRepository.getMemoryToSurface(MemorySurfaceContext.APP_OPEN)
+            val memory = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                soulLayerRepository.getMemoryToSurface(MemorySurfaceContext.APP_OPEN)
+            }
             _uiState.update { state ->
                 state.copy(
                     surfacedMemory = memory,
@@ -570,7 +651,9 @@ class HomeViewModel @Inject constructor(
      */
     private suspend fun loadAnniversaryMemories() {
         try {
-            val anniversaries = soulLayerRepository.getAnniversaryMemories()
+            val anniversaries = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                soulLayerRepository.getAnniversaryMemories()
+            }
             _uiState.update { state ->
                 state.copy(anniversaryMemories = anniversaries)
             }
@@ -795,21 +878,21 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun getWeekStartTimestamp(): Long {
-        val calendar = Calendar.getInstance()
-        calendar.set(Calendar.DAY_OF_WEEK, calendar.firstDayOfWeek)
-        calendar.set(Calendar.HOUR_OF_DAY, 0)
-        calendar.set(Calendar.MINUTE, 0)
-        calendar.set(Calendar.SECOND, 0)
-        calendar.set(Calendar.MILLISECOND, 0)
+        val calendar = java.util.Calendar.getInstance()
+        calendar.set(java.util.Calendar.DAY_OF_WEEK, calendar.firstDayOfWeek)
+        calendar.set(java.util.Calendar.HOUR_OF_DAY, 0)
+        calendar.set(java.util.Calendar.MINUTE, 0)
+        calendar.set(java.util.Calendar.SECOND, 0)
+        calendar.set(java.util.Calendar.MILLISECOND, 0)
         return calendar.timeInMillis
     }
 
     private fun getTodayStartTimestamp(): Long {
-        val calendar = Calendar.getInstance()
-        calendar.set(Calendar.HOUR_OF_DAY, 0)
-        calendar.set(Calendar.MINUTE, 0)
-        calendar.set(Calendar.SECOND, 0)
-        calendar.set(Calendar.MILLISECOND, 0)
+        val calendar = java.util.Calendar.getInstance()
+        calendar.set(java.util.Calendar.HOUR_OF_DAY, 0)
+        calendar.set(java.util.Calendar.MINUTE, 0)
+        calendar.set(java.util.Calendar.SECOND, 0)
+        calendar.set(java.util.Calendar.MILLISECOND, 0)
         return calendar.timeInMillis
     }
 
