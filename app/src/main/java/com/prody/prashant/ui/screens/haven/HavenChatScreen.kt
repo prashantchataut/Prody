@@ -56,6 +56,7 @@ import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
 import com.prody.prashant.R
 import com.prody.prashant.domain.haven.*
+import com.prody.prashant.ui.components.SecureScreen
 import com.prody.prashant.ui.theme.*
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
@@ -80,7 +81,7 @@ fun HavenChatScreen(
     onNavigateToExercise: (ExerciseType) -> Unit,
     onSessionComplete: () -> Unit,
     viewModel: HavenViewModel = hiltViewModel()
-) {
+) = SecureScreen {
     val uiState by viewModel.chatState.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
     val focusManager = LocalFocusManager.current
@@ -92,15 +93,6 @@ fun HavenChatScreen(
     var showSoftMenu by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
-
-    // Security: Prevent screenshots and screen recordings while in a therapeutic chat
-    DisposableEffect(Unit) {
-        val window = (context as? android.app.Activity)?.window
-        window?.addFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)
-        onDispose {
-            window?.clearFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)
-        }
-    }
 
     // Haven Theme Colors
     val havenBackground = if (isDark) HavenBackgroundDark else HavenBackgroundLight
