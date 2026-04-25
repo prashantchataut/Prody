@@ -116,26 +116,30 @@ fun HomeScreen(
     }
 
     // Determine greeting based on ViewModel state or time-based fallback
-    val greeting = remember(uiState.intelligentGreeting) {
-        if (uiState.intelligentGreeting.isNotEmpty()) {
-            uiState.intelligentGreeting
-        } else {
-            val hour = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY)
-            when {
-                hour < 12 -> "Good Morning,"
-                hour < 17 -> "Good Afternoon,"
-                else -> "Good Evening,"
+    val greeting by remember(uiState.intelligentGreeting) {
+        derivedStateOf {
+            if (uiState.intelligentGreeting.isNotEmpty()) {
+                uiState.intelligentGreeting
+            } else {
+                val hour = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY)
+                when {
+                    hour < 12 -> "Good Morning,"
+                    hour < 17 -> "Good Afternoon,"
+                    else -> "Good Evening,"
+                }
             }
         }
     }
 
     // Build badge data from real achievement progress
-    val badges = remember(uiState.totalPoints, uiState.journalEntriesThisWeek, uiState.daysActiveThisWeek) {
-        listOf(
-            BadgeData(ProdyIcons.EmojiEvents, (uiState.totalPoints.coerceAtMost(1000) / 1000f).coerceIn(0f, 1f), ProdyWarmAmber),
-            BadgeData(ProdyIcons.Edit, (uiState.journalEntriesThisWeek.coerceAtMost(7) / 7f).coerceIn(0f, 1f), ProdyForestGreen),
-            BadgeData(ProdyIcons.Psychology, (uiState.daysActiveThisWeek.coerceAtMost(7) / 7f).coerceIn(0f, 1f), ProdyInfo)
-        )
+    val badges by remember(uiState.totalPoints, uiState.journalEntriesThisWeek, uiState.daysActiveThisWeek) {
+        derivedStateOf {
+            listOf(
+                BadgeData(ProdyIcons.EmojiEvents, (uiState.totalPoints.coerceAtMost(1000) / 1000f).coerceIn(0f, 1f), ProdyWarmAmber),
+                BadgeData(ProdyIcons.Edit, (uiState.journalEntriesThisWeek.coerceAtMost(7) / 7f).coerceIn(0f, 1f), ProdyForestGreen),
+                BadgeData(ProdyIcons.Psychology, (uiState.daysActiveThisWeek.coerceAtMost(7) / 7f).coerceIn(0f, 1f), ProdyInfo)
+            )
+        }
     }
 
     LazyColumn(
@@ -145,7 +149,7 @@ fun HomeScreen(
         contentPadding = PaddingValues(bottom = 80.dp)
     ) {
         // Header with Greeting
-        item {
+        item(key = "header") {
             DashboardHeader(
                 userName = uiState.userName,
                 greeting = greeting,
@@ -155,7 +159,7 @@ fun HomeScreen(
         }
 
         // Overview Section (Consistency & Badges)
-        item {
+        item(key = "overview") {
             OverviewSection(
                 streakDays = uiState.currentStreak,
                 badges = badges
@@ -164,7 +168,7 @@ fun HomeScreen(
 
         // Personalized Pattern Card (opt-in, only shown when data exists)
         if (uiState.personalizedPatternText.isNotEmpty()) {
-            item {
+            item(key = "personalized_pattern") {
                 PersonalizedPatternCard(
                     patternText = uiState.personalizedPatternText,
                     patternSuggestion = uiState.personalizedPatternSuggestion
@@ -174,7 +178,7 @@ fun HomeScreen(
 
         // Premium Intelligence Insights (Opt-in)
         if (uiState.isPremiumIntelligenceEnabled && uiState.intelligenceInsights.isNotEmpty()) {
-            item {
+            item(key = "intelligence_insight") {
                 Spacer(modifier = Modifier.height(24.dp))
                 IntelligenceInsightCard(
                     insight = uiState.intelligenceInsights.first(),
@@ -184,16 +188,16 @@ fun HomeScreen(
         }
 
         // Mood Trend Chart - only show if there's real data
-        if (uiState.journalEntriesThisWeek > 0) {
-            item {
+        if (uiState.journalEntriesThisWeek > 0 && uiState.moodTrend.isNotEmpty()) {
+            item(key = "mood_trend") {
                 MoodTrendSection(
-                    moodData = emptyList() // Mood trend requires historical mood data not exposed yet
+                    moodData = uiState.moodTrend
                 )
             }
         }
 
         // Weekly Summary from real data
-        item {
+        item(key = "weekly_summary") {
             WeeklySummarySection(
                 journalEntries = uiState.journalEntriesThisWeek,
                 wordsLearned = uiState.wordsLearnedThisWeek,
@@ -202,7 +206,7 @@ fun HomeScreen(
         }
 
         // Quick Actions (Navigation)
-        item {
+        item(key = "quick_actions") {
             QuickActionsGrid(
                 onJournalClick = onNavigateToJournal,
                 onHavenClick = onNavigateToHaven,
@@ -212,7 +216,7 @@ fun HomeScreen(
         }
 
         // Explore Section - routes to additional features
-        item {
+        item(key = "explore") {
             ExploreSection(
                 onMeditationClick = onNavigateToMeditation,
                 onChallengesClick = onNavigateToChallenges,
@@ -226,7 +230,7 @@ fun HomeScreen(
         }
 
         // Recent Activity - show today's journal status
-        item {
+        item(key = "recent_activity") {
             RecentActivitySection(
                 journaledToday = uiState.journaledToday,
                 todayMood = uiState.todayEntryMood,
@@ -278,14 +282,16 @@ fun DashboardHeader(
         
         val profileContentDescription = stringResource(R.string.cd_profile_picture)
 
-        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            IconButton(onClick = onNotificationClick) {
-                Icon(
-                    imageVector = Icons.Outlined.Notifications,
-                    contentDescription = "Notifications",
-                    tint = ProdyTextPrimaryLight
-                )
-            }
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            com.prody.prashant.ui.components.ProdyIconButton(
+                icon = Icons.Outlined.Notifications,
+                onClick = onNotificationClick,
+                contentDescription = "Notifications",
+                tint = ProdyTextPrimaryLight
+            )
             // Avatar / Profile
             Box(
                 modifier = Modifier
