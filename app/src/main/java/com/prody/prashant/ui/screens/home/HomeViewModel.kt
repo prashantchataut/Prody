@@ -137,7 +137,8 @@ data class HomeUiState(
     val personalizedPatternSuggestion: String = "",
     // Intelligence Insights
     val intelligenceInsights: List<IntelligenceInsight> = emptyList(),
-    val isPremiumIntelligenceEnabled: Boolean = false
+    val isPremiumIntelligenceEnabled: Boolean = false,
+    val moodTrend: List<Float> = emptyList()
 )
 
 private data class DailyContent(
@@ -248,6 +249,9 @@ class HomeViewModel @Inject constructor(
                     Triple(false, "", "")
                 }
 
+                // Calculate mood trend for the last 7 days
+                val moodTrend = calculateMoodTrend(weeklyJournalEntries)
+
                 // 3. Atomically update the UI state with all the loaded data.
                 _uiState.value.copy(
                     userName = profile?.displayName ?: "Growth Seeker",
@@ -273,6 +277,7 @@ class HomeViewModel @Inject constructor(
                     todayEntryMood = todayMood,
                     todayEntryPreview = todayPreview,
                     dualStreakStatus = dualStreak,
+                    moodTrend = moodTrend,
                     buddhaWisdomProofInfo = _uiState.value.buddhaWisdomProofInfo.copy(isEnabled = aiProofMode),
                     isLoading = false // <-- Critical: Signal that loading is complete.
                 )
@@ -298,6 +303,44 @@ class HomeViewModel @Inject constructor(
             launch { checkAiConfiguration() }
             launch { loadSoulLayerContent() }
         }
+    }
+
+    /**
+     * Calculate a 7-day mood trend from journal entries.
+     * Normalizes 1-10 moodIntensity to 1-5 scale for the UI.
+     * Uses a neutral gap-filling strategy (3.0f) for days without entries.
+     */
+    private fun calculateMoodTrend(entries: List<JournalEntryEntity>): List<Float> {
+        val calendar = Calendar.getInstance()
+        val today = calendar.get(Calendar.DAY_OF_YEAR)
+        val currentYear = calendar.get(Calendar.YEAR)
+
+        // Map entries to DayOfYear index for easy grouping
+        val entriesByDay = entries.groupBy { entry ->
+            val entryCal = Calendar.getInstance().apply { timeInMillis = entry.createdAt }
+            // Unique key considering year to avoid cross-year collisions
+            entryCal.get(Calendar.YEAR) * 1000 + entryCal.get(Calendar.DAY_OF_YEAR)
+        }
+
+        val trend = mutableListOf<Float>()
+
+        // Go back 6 days + today = 7 days
+        for (i in 6 downTo 0) {
+            val dayCal = Calendar.getInstance()
+            dayCal.add(Calendar.DAY_OF_YEAR, -i)
+            val dayKey = dayCal.get(Calendar.YEAR) * 1000 + dayCal.get(Calendar.DAY_OF_YEAR)
+
+            val dayEntries = entriesByDay[dayKey]
+            if (dayEntries.isNullOrEmpty()) {
+                trend.add(3.0f) // Neutral fallback
+            } else {
+                val avgIntensity = dayEntries.map { it.moodIntensity }.average().toFloat()
+                // Normalize 1-10 to 1-5 scale (UI expectation)
+                trend.add(avgIntensity / 2f)
+            }
+        }
+
+        return trend
     }
 
     private suspend fun fetchDailyContentConcurrently(): DailyContent = coroutineScope {

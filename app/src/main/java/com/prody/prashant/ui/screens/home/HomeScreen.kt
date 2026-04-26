@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
@@ -32,6 +33,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import com.prody.prashant.ui.components.*
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.prody.prashant.R
@@ -145,7 +147,7 @@ fun HomeScreen(
         contentPadding = PaddingValues(bottom = 80.dp)
     ) {
         // Header with Greeting
-        item {
+        item(key = "header") {
             DashboardHeader(
                 userName = uiState.userName,
                 greeting = greeting,
@@ -154,8 +156,54 @@ fun HomeScreen(
             )
         }
 
-        // Overview Section (Consistency & Badges)
-        item {
+        // Soul Layer: First Week Progress
+        if (uiState.isInFirstWeek) {
+            item(key = "first_week_progress") {
+                FirstWeekProgressCard(
+                    dayNumber = uiState.firstWeekDayNumber,
+                    progress = uiState.firstWeekProgress,
+                    dayContent = uiState.firstWeekDayContent,
+                    onContinue = { /* Navigation handled via FirstWeekDayContent actions if needed */ },
+                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
+                )
+            }
+        }
+
+        // Dual Streak Card (Replacing old OverviewSection for more depth)
+        item(key = "dual_streak") {
+            DualStreakCard(
+                dualStreakStatus = uiState.dualStreakStatus,
+                onTapForDetails = { /* Show details dialog if implemented in Screen */ }
+            )
+        }
+
+        // Soul Layer: Surfaced Memory
+        if (uiState.showMemoryCard && uiState.surfacedMemory != null) {
+            item(key = "surfaced_memory") {
+                SurfacedMemoryCard(
+                    memory = uiState.surfacedMemory!!,
+                    onExpand = { viewModel.expandMemoryCard() },
+                    onDismiss = { viewModel.dismissMemoryCard() },
+                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
+                )
+            }
+        }
+
+        // Soul Layer: Anniversary Memories
+        items(
+            items = uiState.anniversaryMemories,
+            key = { "anniversary_${it.memory.id}" }
+        ) { anniversary ->
+            AnniversaryMemoryCard(
+                anniversary = anniversary,
+                onView = { /* Navigate to memory detail */ },
+                onDismiss = { /* Optionally dismiss */ },
+                modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
+            )
+        }
+
+        // Overview Section (Badges & Secondary Stats)
+        item(key = "overview") {
             OverviewSection(
                 streakDays = uiState.currentStreak,
                 badges = badges
@@ -164,7 +212,7 @@ fun HomeScreen(
 
         // Personalized Pattern Card (opt-in, only shown when data exists)
         if (uiState.personalizedPatternText.isNotEmpty()) {
-            item {
+            item(key = "personalized_pattern") {
                 PersonalizedPatternCard(
                     patternText = uiState.personalizedPatternText,
                     patternSuggestion = uiState.personalizedPatternSuggestion
@@ -174,7 +222,7 @@ fun HomeScreen(
 
         // Premium Intelligence Insights (Opt-in)
         if (uiState.isPremiumIntelligenceEnabled && uiState.intelligenceInsights.isNotEmpty()) {
-            item {
+            item(key = "intelligence_insight") {
                 Spacer(modifier = Modifier.height(24.dp))
                 IntelligenceInsightCard(
                     insight = uiState.intelligenceInsights.first(),
@@ -184,16 +232,16 @@ fun HomeScreen(
         }
 
         // Mood Trend Chart - only show if there's real data
-        if (uiState.journalEntriesThisWeek > 0) {
-            item {
+        if (uiState.moodTrend.isNotEmpty()) {
+            item(key = "mood_trend") {
                 MoodTrendSection(
-                    moodData = emptyList() // Mood trend requires historical mood data not exposed yet
+                    moodData = uiState.moodTrend
                 )
             }
         }
 
         // Weekly Summary from real data
-        item {
+        item(key = "weekly_summary") {
             WeeklySummarySection(
                 journalEntries = uiState.journalEntriesThisWeek,
                 wordsLearned = uiState.wordsLearnedThisWeek,
@@ -202,7 +250,7 @@ fun HomeScreen(
         }
 
         // Quick Actions (Navigation)
-        item {
+        item(key = "quick_actions") {
             QuickActionsGrid(
                 onJournalClick = onNavigateToJournal,
                 onHavenClick = onNavigateToHaven,
@@ -212,7 +260,7 @@ fun HomeScreen(
         }
 
         // Explore Section - routes to additional features
-        item {
+        item(key = "explore") {
             ExploreSection(
                 onMeditationClick = onNavigateToMeditation,
                 onChallengesClick = onNavigateToChallenges,
@@ -226,11 +274,12 @@ fun HomeScreen(
         }
 
         // Recent Activity - show today's journal status
-        item {
+        item(key = "recent_activity") {
             RecentActivitySection(
                 journaledToday = uiState.journaledToday,
                 todayMood = uiState.todayEntryMood,
-                todayPreview = uiState.todayEntryPreview
+                todayPreview = uiState.todayEntryPreview,
+                onClick = onNavigateToJournal
             )
         }
     }
@@ -278,14 +327,13 @@ fun DashboardHeader(
         
         val profileContentDescription = stringResource(R.string.cd_profile_picture)
 
-        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            IconButton(onClick = onNotificationClick) {
-                Icon(
-                    imageVector = Icons.Outlined.Notifications,
-                    contentDescription = "Notifications",
-                    tint = ProdyTextPrimaryLight
-                )
-            }
+        Row(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically) {
+            ProdyIconButton(
+                icon = Icons.Outlined.Notifications,
+                onClick = onNotificationClick,
+                contentDescription = "Notifications",
+                tint = ProdyTextPrimaryLight
+            )
             // Avatar / Profile
             Box(
                 modifier = Modifier
@@ -321,11 +369,9 @@ fun OverviewSection(
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         // Streak Card
-        Surface(
+        ProdyCard(
             modifier = Modifier.weight(1f),
-            shape = RoundedCornerShape(16.dp),
-            color = ProdySurfaceLight,
-            shadowElevation = 1.dp
+            backgroundColor = ProdySurfaceLight
         ) {
             Column(
                 modifier = Modifier.padding(16.dp),
@@ -353,11 +399,9 @@ fun OverviewSection(
         }
 
         // Badges Card
-        Surface(
+        ProdyCard(
             modifier = Modifier.weight(1f),
-            shape = RoundedCornerShape(16.dp),
-            color = ProdySurfaceLight,
-            shadowElevation = 1.dp
+            backgroundColor = ProdySurfaceLight
         ) {
             Column(
                 modifier = Modifier.padding(16.dp),
@@ -433,13 +477,11 @@ fun MoodTrendSection(moodData: List<Float>) {
         Spacer(modifier = Modifier.height(16.dp))
 
         // Chart Card
-        Surface(
+        ProdyCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(200.dp),
-            shape = RoundedCornerShape(16.dp),
-            color = ProdySurfaceLight,
-            shadowElevation = 1.dp
+            backgroundColor = ProdySurfaceLight
         ) {
             MoodChart(data = moodData, modifier = Modifier.padding(24.dp))
         }
@@ -448,52 +490,61 @@ fun MoodTrendSection(moodData: List<Float>) {
 
 @Composable
 fun MoodChart(data: List<Float>, modifier: Modifier = Modifier) {
-    Canvas(modifier = modifier.fillMaxSize()) {
-        if (data.isEmpty()) return@Canvas
+    androidx.compose.foundation.Canvas(
+        modifier = modifier
+            .fillMaxSize()
+            .drawWithCache {
+                if (data.isEmpty()) {
+                    onDrawBehind { /* Nothing to draw */ }
+                } else {
+                    val width = size.width
+                    val height = size.height
+                    val stepX = width / (data.size - 1)
 
-        val width = size.width
-        val height = size.height
-        val stepX = width / (data.size - 1)
-        
-        // Normalize data to height (1-5 scale)
-        val points = data.mapIndexed { index, value ->
-            val x = index * stepX
-            val y = height - ((value - 1) / 4f) * height
-            Offset(x, y)
-        }
+                    // Normalize data to height (1-5 scale)
+                    val points = data.mapIndexed { index, value ->
+                        val x = index * stepX
+                        val y = height - ((value - 1) / 4f) * height
+                        Offset(x, y)
+                    }
 
-        // Draw Line
-        val path = Path().apply {
-            moveTo(points.first().x, points.first().y)
-            for (i in 1 until points.size) {
-                // Bezier curve for smoothness
-                val p0 = points[i - 1]
-                val p1 = points[i]
-                val controlPoint1 = Offset(p0.x + (p1.x - p0.x) / 2, p0.y)
-                val controlPoint2 = Offset(p0.x + (p1.x - p0.x) / 2, p1.y)
-                cubicTo(controlPoint1.x, controlPoint1.y, controlPoint2.x, controlPoint2.y, p1.x, p1.y)
+                    // Draw Line Path
+                    val path = Path().apply {
+                        moveTo(points.first().x, points.first().y)
+                        for (i in 1 until points.size) {
+                            val p0 = points[i - 1]
+                            val p1 = points[i]
+                            val controlPoint1 = Offset(p0.x + (p1.x - p0.x) / 2, p0.y)
+                            val controlPoint2 = Offset(p0.x + (p1.x - p0.x) / 2, p1.y)
+                            cubicTo(controlPoint1.x, controlPoint1.y, controlPoint2.x, controlPoint2.y, p1.x, p1.y)
+                        }
+                    }
+
+                    onDrawBehind {
+                        drawPath(
+                            path = path,
+                            color = ProdyForestGreen,
+                            style = Stroke(width = 4.dp.toPx(), cap = StrokeCap.Round)
+                        )
+
+                        // Draw Points
+                        points.forEach { point ->
+                            drawCircle(
+                                color = Color.White,
+                                radius = 6.dp.toPx(),
+                                center = point
+                            )
+                            drawCircle(
+                                color = ProdyForestGreen,
+                                radius = 4.dp.toPx(),
+                                center = point
+                            )
+                        }
+                    }
+                }
             }
-        }
-
-        drawPath(
-            path = path,
-            color = ProdyForestGreen,
-            style = Stroke(width = 4.dp.toPx(), cap = StrokeCap.Round)
-        )
-
-        // Draw Points
-        points.forEach { point ->
-            drawCircle(
-                color = Color.White,
-                radius = 6.dp.toPx(),
-                center = point
-            )
-            drawCircle(
-                color = ProdyForestGreen,
-                radius = 4.dp.toPx(),
-                center = point
-            )
-        }
+    ) {
+        // Drawing logic moved to drawWithCache for performance optimization
     }
 }
 
@@ -543,14 +594,12 @@ fun WeeklySummarySection(journalEntries: Int, wordsLearned: Int, mindfulMinutes:
 
 @Composable
 fun SummaryCard(label: String, value: String, icon: androidx.compose.ui.graphics.vector.ImageVector, color: Color, modifier: Modifier) {
-    Surface(
+    ProdyCard(
         modifier = modifier,
-        shape = RoundedCornerShape(12.dp),
-        color = ProdySurfaceLight,
-        shadowElevation = 2.dp
+        backgroundColor = ProdySurfaceLight
     ) {
         Column(
-            modifier = Modifier.padding(12.dp),
+            modifier = Modifier.padding(12.dp).fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Icon(
@@ -653,13 +702,10 @@ fun QuickActionsGrid(
 
 @Composable
 fun QuickActionTile(title: String, icon: androidx.compose.ui.graphics.vector.ImageVector, color: Color, onClick: () -> Unit, modifier: Modifier) {
-    Surface(
-        modifier = modifier
-            .height(100.dp)
-            .clickable(onClick = onClick),
-        shape = RoundedCornerShape(16.dp),
-        color = color.copy(alpha = 0.1f),
-        border = androidx.compose.foundation.BorderStroke(1.dp, color.copy(alpha = 0.2f))
+    ProdyClickableCard(
+        onClick = onClick,
+        modifier = modifier.height(100.dp),
+        backgroundColor = color.copy(alpha = 0.1f)
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
@@ -792,12 +838,10 @@ private fun ExploreChip(
     color: Color,
     onClick: () -> Unit
 ) {
-    Surface(
-        modifier = Modifier
-            .clickable(onClick = onClick),
-        shape = RoundedCornerShape(12.dp),
-        color = color.copy(alpha = 0.1f),
-        border = androidx.compose.foundation.BorderStroke(1.dp, color.copy(alpha = 0.15f))
+    ProdyClickableCard(
+        onClick = onClick,
+        backgroundColor = color.copy(alpha = 0.1f),
+        shape = RoundedCornerShape(12.dp)
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
@@ -827,7 +871,8 @@ private fun ExploreChip(
 fun RecentActivitySection(
     journaledToday: Boolean = false,
     todayMood: String = "",
-    todayPreview: String = ""
+    todayPreview: String = "",
+    onClick: () -> Unit = {}
 ) {
     Column(modifier = Modifier.padding(horizontal = 24.dp)) {
         Text(
@@ -841,11 +886,10 @@ fun RecentActivitySection(
         )
         Spacer(modifier = Modifier.height(16.dp))
         
-        Surface(
+        ProdyClickableCard(
+            onClick = onClick,
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp),
-            color = ProdySurfaceLight,
-            shadowElevation = 1.dp
+            backgroundColor = ProdySurfaceLight
         ) {
             Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                 Box(
@@ -907,13 +951,11 @@ private fun PersonalizedPatternCard(
     patternText: String,
     patternSuggestion: String
 ) {
-    Surface(
+    ProdyCard(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 24.dp, vertical = 8.dp),
-        shape = RoundedCornerShape(16.dp),
-        color = ProdySurfaceLight,
-        shadowElevation = 2.dp
+        backgroundColor = ProdySurfaceLight
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
@@ -969,13 +1011,12 @@ fun IntelligenceInsightCard(
     insight: IntelligenceInsight,
     onActionClick: () -> Unit
 ) {
-    Surface(
+    ProdyNotificationCard(
+        accentColor = ProdyForestGreen,
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 24.dp),
-        shape = RoundedCornerShape(24.dp),
-        color = ProdySurfaceLight,
-        shadowElevation = 8.dp
+        backgroundColor = ProdySurfaceLight
     ) {
         Column(
             modifier = Modifier
