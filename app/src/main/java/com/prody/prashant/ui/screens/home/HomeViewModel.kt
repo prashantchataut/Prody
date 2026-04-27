@@ -181,6 +181,19 @@ class HomeViewModel @Inject constructor(
         loadPersonalizedPattern()
     }
 
+    private data class InitialDataPart1(
+        val profile: UserProfileEntity?,
+        val weeklyJournalEntries: List<JournalEntryEntity>,
+        val weeklyLearnedWords: Int,
+        val streakHistory: List<StreakHistoryEntity>
+    )
+
+    private data class InitialDataPart2(
+        val todayJournalEntries: List<JournalEntryEntity>,
+        val dualStreak: DualStreakStatus,
+        val aiProofMode: Boolean
+    )
+
     /**
      * Performance Optimization: This is the primary data loading function for the HomeScreen.
      * It consolidates multiple data sources into a single, efficient pipeline.
@@ -189,16 +202,14 @@ class HomeViewModel @Inject constructor(
      * 1.  **Parallel Daily Content Fetch**: `async` is used to fetch the daily quote, word, proverb,
      *     and idiom concurrently. This avoids the previous sequential (blocking) fetch, which
      *     was a major source of startup lag.
-     * 2.  **Single `combine` Operator**: All reactive and one-time data sources are merged using a
-     *     single `combine` operator. This ensures that the UI state is updated only ONCE, in a
-     *     single, atomic operation, after all necessary data is available. This prevents multiple,
-     *     staggered recompositions on the home screen.
+     * 2.  **Nested `combine` Strategy**: Large reactive flows are split into manageable parts
+     *     with type-safe data classes. This ensures that the UI state is updated atomically
+     *     and avoids index-out-of-bounds errors in large `args` arrays.
      * 3.  **Asynchronous Initialization**: The entire data loading process is off the main thread,
      *     ensuring the UI remains responsive during startup. The `isLoading` flag is set to `false`
      *     only at the very end, signaling the splash screen to disappear.
      * 4.  **Error Isolation**: Each data fetch is wrapped in a `try-catch` block. This prevents a
-     *     failure in one data source (e.g., a missing proverb) from crashing the entire app or
-     *     blocking other data from loading.
+     *     failure in one data source (e.g., a missing proverb) from crashing the entire app.
      */
     private fun loadInitialData() {
         viewModelScope.launch {
@@ -219,40 +230,50 @@ class HomeViewModel @Inject constructor(
                 dailyContent.idiom?.let { idiomDao.markAsShownDaily(it.id) }
             }
 
-            // 2. Combine all reactive flows and the results of the one-time fetch.
-            combine(
+            val part1Flow = combine(
                 userDao.getUserProfile(),
                 journalDao.getEntriesByDateRange(weekStart, System.currentTimeMillis()),
                 vocabularyDao.getLearnedCountSince(weekStart),
-                userDao.getStreakHistory(),
+                userDao.getStreakHistory()
+            ) { profile, entries, words, history ->
+                InitialDataPart1(
+                    profile = profile,
+                    weeklyJournalEntries = entries,
+                    weeklyLearnedWords = words,
+                    streakHistory = history
+                )
+            }
+
+            val part2Flow = combine(
                 journalDao.getEntriesByDateRange(todayStart, System.currentTimeMillis()),
                 dualStreakManager.getDualStreakStatusFlow(),
                 preferencesManager.debugAiProofMode.distinctUntilChanged()
-            ) { args ->
-                val profile = args.getOrNull(0) as? UserProfileEntity
-                val weeklyJournalEntries = (args.getOrNull(1) as? List<*>)?.filterIsInstance<JournalEntryEntity>() ?: emptyList()
-                val weeklyLearnedWords = args.getOrNull(2) as? Int ?: 0
-                val streakHistory = (args.getOrNull(3) as? List<*>)?.filterIsInstance<StreakHistoryEntity>() ?: emptyList()
-                val todayJournalEntries = (args.getOrNull(4) as? List<*>)?.filterIsInstance<JournalEntryEntity>() ?: emptyList()
-                val dualStreak = args.getOrNull(5) as? DualStreakStatus ?: DualStreakStatus.empty()
-                val aiProofMode = args.getOrNull(6) as? Boolean ?: false
+            ) { entries, streak, proof ->
+                InitialDataPart2(
+                    todayJournalEntries = entries,
+                    dualStreak = streak,
+                    aiProofMode = proof
+                )
+            }
 
+            // 2. Combine the part flows and the results of the one-time fetch.
+            combine(part1Flow, part2Flow) { part1, part2 ->
                 // Calculate weekly active days.
-                val daysActiveThisWeek = streakHistory.count { it.date >= weekStart }
+                val daysActiveThisWeek = part1.streakHistory.count { it.date >= weekStart }
 
                 // Determine today's journaling status.
-                val (journaledToday, todayMood, todayPreview) = if (todayJournalEntries.isNotEmpty()) {
-                    val latestEntry = todayJournalEntries.maxByOrNull { it.createdAt }
+                val (journaledToday, todayMood, todayPreview) = if (part2.todayJournalEntries.isNotEmpty()) {
+                    val latestEntry = part2.todayJournalEntries.maxByOrNull { it.createdAt }
                     Triple(true, latestEntry?.mood ?: "", latestEntry?.content?.take(100) ?: "")
                 } else {
                     Triple(false, "", "")
                 }
 
-                // 3. Atomically update the UI state with all the loaded data.
+                // Prepare the new state.
                 _uiState.value.copy(
-                    userName = profile?.displayName ?: "Growth Seeker",
-                    currentStreak = profile?.currentStreak ?: 0,
-                    totalPoints = profile?.totalPoints ?: 0,
+                    userName = part1.profile?.displayName ?: "Growth Seeker",
+                    currentStreak = part1.profile?.currentStreak ?: 0,
+                    totalPoints = part1.profile?.totalPoints ?: 0,
                     dailyQuote = dailyContent.quote?.content ?: _uiState.value.dailyQuote,
                     dailyQuoteAuthor = dailyContent.quote?.author ?: _uiState.value.dailyQuoteAuthor,
                     wordOfTheDay = dailyContent.word?.word ?: _uiState.value.wordOfTheDay,
@@ -266,14 +287,14 @@ class HomeViewModel @Inject constructor(
                     idiomMeaning = dailyContent.idiom?.meaning ?: _uiState.value.idiomMeaning,
                     idiomExample = dailyContent.idiom?.exampleSentence ?: _uiState.value.idiomExample,
                     idiomId = dailyContent.idiom?.id ?: _uiState.value.idiomId,
-                    journalEntriesThisWeek = weeklyJournalEntries.size,
-                    wordsLearnedThisWeek = weeklyLearnedWords,
+                    journalEntriesThisWeek = part1.weeklyJournalEntries.size,
+                    wordsLearnedThisWeek = part1.weeklyLearnedWords,
                     daysActiveThisWeek = daysActiveThisWeek,
                     journaledToday = journaledToday,
                     todayEntryMood = todayMood,
                     todayEntryPreview = todayPreview,
-                    dualStreakStatus = dualStreak,
-                    buddhaWisdomProofInfo = _uiState.value.buddhaWisdomProofInfo.copy(isEnabled = aiProofMode),
+                    dualStreakStatus = part2.dualStreak,
+                    buddhaWisdomProofInfo = _uiState.value.buddhaWisdomProofInfo.copy(isEnabled = part2.aiProofMode),
                     isLoading = false // <-- Critical: Signal that loading is complete.
                 )
             }.catch { e ->
@@ -452,7 +473,9 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 // Load user context first - it's the foundation
-                val context = soulLayerRepository.getCurrentContext()
+                val context = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                    soulLayerRepository.getCurrentContext()
+                }
 
                 // Update basic context info
                 _uiState.update { state ->

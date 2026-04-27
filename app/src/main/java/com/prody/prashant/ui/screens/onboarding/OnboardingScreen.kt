@@ -179,10 +179,11 @@ private fun WelcomeScreen(
         Spacer(modifier = Modifier.height(48.dp))
 
         // Primary CTA Button: 56dp height, 16dp corner radius
-        PrimaryButton(
+        com.prody.prashant.ui.components.ProdyPrimaryButton(
             text = "Get Started",
             onClick = onNext,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            size = com.prody.prashant.ui.components.ProdyButtonSize.LARGE
         )
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -419,19 +420,12 @@ private fun FeatureScreenLayout(
 private fun StandardFeatureCard(
     content: @Composable ColumnScope.() -> Unit
 ) {
-    // Card Design: 12dp corner radius, 8dp elevation with proper shadow
-    Surface(
+    com.prody.prashant.ui.components.ProdyCard(
         modifier = Modifier
             .fillMaxWidth()
-            .aspectRatio(0.8f)
-            .shadow(
-                elevation = 8.dp,
-                shape = RoundedCornerShape(12.dp),
-                spotColor = Color(0x1A000000), // Soft shadow
-                ambientColor = Color(0x1A000000)
-            ),
-        shape = RoundedCornerShape(12.dp),
-        color = Color.White
+            .aspectRatio(0.8f),
+        backgroundColor = Color.White,
+        shape = RoundedCornerShape(12.dp)
     ) {
         Column(
             modifier = Modifier
@@ -532,10 +526,11 @@ private fun LoginSignupScreen(
         Spacer(modifier = Modifier.height(32.dp))
 
         // Login Button
-        PrimaryButton(
+        com.prody.prashant.ui.components.ProdyPrimaryButton(
             text = "Log In",
             onClick = onLogin,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            size = com.prody.prashant.ui.components.ProdyButtonSize.LARGE
         )
 
         Spacer(modifier = Modifier.height(24.dp))
