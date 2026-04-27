@@ -29,6 +29,7 @@ object ProdyIcons {
     val ChevronRight: ImageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight
     val KeyboardArrowRight: ImageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight
     val List: ImageVector = Icons.AutoMirrored.Filled.List
+    val OutlinedList: ImageVector = Icons.AutoMirrored.Outlined.List
     val Send: ImageVector = Icons.AutoMirrored.Filled.Send
     
     val Check: ImageVector = Icons.Filled.Check
@@ -66,7 +67,7 @@ object ProdyIcons {
     val LocalFireDepartment: ImageVector = Icons.Filled.LocalFireDepartment
     val EmojiEvents: ImageVector = Icons.Filled.EmojiEvents
     val Psychology: ImageVector = Icons.Filled.Psychology
-    val Chat: ImageVector = Icons.Filled.Chat
+    val Chat: ImageVector = Icons.AutoMirrored.Filled.Chat
     val Notifications: ImageVector = Icons.Filled.Notifications
     val Inbox: ImageVector = Icons.Filled.Inbox
     val Refresh: ImageVector = Icons.Filled.Refresh
@@ -121,6 +122,7 @@ object ProdyIcons {
     val Tag: ImageVector = Icons.AutoMirrored.Filled.List
     val Circle: ImageVector = Icons.Filled.Star
     val OpenInNew: ImageVector = Icons.AutoMirrored.Filled.ExitToApp
+    val ExitToApp: ImageVector = Icons.AutoMirrored.Filled.ExitToApp
     val Summarize: ImageVector = Icons.AutoMirrored.Filled.List
     val StickyNote2: ImageVector = Icons.Filled.Edit
     val Article: ImageVector = Icons.Filled.Description
@@ -150,9 +152,10 @@ object ProdyIcons {
         val School: ImageVector = Icons.Outlined.School
         val ChatBubble: ImageVector = Icons.Outlined.ChatBubble
         val TextFormat: ImageVector = Icons.AutoMirrored.Outlined.List
+        val List: ImageVector = Icons.AutoMirrored.Outlined.List
         val AutoAwesome: ImageVector = Icons.Outlined.AutoAwesome
         val BarChart: ImageVector = Icons.AutoMirrored.Outlined.TrendingUp // Fallback for Stats
-        val Leaderboard: ImageVector = Icons.Outlined.List
+        val Leaderboard: ImageVector = Icons.AutoMirrored.Outlined.List
         val Star: ImageVector = Icons.Outlined.Star
         val Email: ImageVector = Icons.Outlined.Email
         val Lock: ImageVector = Icons.Outlined.Lock
@@ -197,6 +200,16 @@ object ProdyIcons {
         val Contacts: ImageVector = Icons.Outlined.Person
         val Home: ImageVector = Icons.Outlined.Home
         val Person: ImageVector = Icons.Outlined.Person
+    }
+
+    object AutoMirrored {
+        object Filled {
+            val Chat: ImageVector = Icons.AutoMirrored.Filled.Chat
+            val ExitToApp: ImageVector = Icons.AutoMirrored.Filled.ExitToApp
+        }
+        object Outlined {
+            val List: ImageVector = Icons.AutoMirrored.Outlined.List
+        }
     }
 
     object Rounded {
@@ -247,7 +260,7 @@ object ProdyIcons {
     val SearchOff: ImageVector = Icons.Filled.Search
     val Clear: ImageVector = Icons.Filled.Close
     val Create: ImageVector = Icons.Filled.Edit
-    val OpenInFull: ImageVector = Icons.Filled.ExitToApp // Fallback
+    val OpenInFull: ImageVector = Icons.AutoMirrored.Filled.ExitToApp // Fallback
     val NoteAlt: ImageVector = Icons.Filled.Edit
     val NoteAdd: ImageVector = Icons.Filled.Edit
     val BookmarkRemove: ImageVector = Icons.Filled.Bookmark
@@ -321,7 +334,6 @@ object ProdyIcons {
     val FilterAlt: ImageVector = FilterList
     val Tune: ImageVector = Settings
     val Help: ImageVector = Info
-    val ExitToApp: ImageVector = ArrowForward
     val ArrowUpward: ImageVector = ExpandLess
     val ArrowDownward: ImageVector = ExpandMore
     val ArrowDropDown: ImageVector = ExpandMore
