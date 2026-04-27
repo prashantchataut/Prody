@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.prody.prashant.ui.components.SecureScreen
 import com.prody.prashant.R
 import com.prody.prashant.domain.collaborative.*
 import com.prody.prashant.ui.theme.*
@@ -50,6 +51,9 @@ fun CollaborativeHomeScreen(
     viewModel: CollaborativeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.homeState.collectAsStateWithLifecycle()
+
+    // Security: Prevent screenshots of collaborative messages
+    SecureScreen()
 
     Scaffold(
         topBar = {

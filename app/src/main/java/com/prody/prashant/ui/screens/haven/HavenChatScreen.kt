@@ -49,6 +49,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.prody.prashant.ui.components.SecureScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
@@ -91,16 +92,8 @@ fun HavenChatScreen(
     var showCompletionDialog by remember { mutableStateOf(false) }
     var showSoftMenu by remember { mutableStateOf(false) }
 
-    val context = LocalContext.current
-
     // Security: Prevent screenshots and screen recordings while in a therapeutic chat
-    DisposableEffect(Unit) {
-        val window = (context as? android.app.Activity)?.window
-        window?.addFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)
-        onDispose {
-            window?.clearFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)
-        }
-    }
+    SecureScreen()
 
     // Haven Theme Colors
     val havenBackground = if (isDark) HavenBackgroundDark else HavenBackgroundLight
