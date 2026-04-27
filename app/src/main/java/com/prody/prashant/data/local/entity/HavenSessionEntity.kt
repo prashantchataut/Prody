@@ -15,10 +15,13 @@ import androidx.room.PrimaryKey
 @Entity(
     tableName = "haven_sessions",
     indices = [
-        androidx.room.Index(value = ["userId"]),
-        androidx.room.Index(value = ["startedAt"]),
-        androidx.room.Index(value = ["sessionType"]),
-        androidx.room.Index(value = ["userId", "startedAt"])
+        androidx.room.Index(value = ["userId"], name = "index_haven_sessions_userId"),
+        androidx.room.Index(value = ["startedAt"], name = "index_haven_sessions_startedAt"),
+        androidx.room.Index(value = ["sessionType"], name = "index_haven_sessions_sessionType"),
+        androidx.room.Index(value = ["isCompleted"], name = "index_haven_sessions_isCompleted"),
+        androidx.room.Index(value = ["containedCrisisDetection"], name = "index_haven_sessions_containedCrisisDetection"),
+        androidx.room.Index(value = ["isDeleted"], name = "index_haven_sessions_isDeleted"),
+        androidx.room.Index(value = ["userId", "startedAt"], name = "index_haven_sessions_userId_startedAt")
     ]
 )
 data class HavenSessionEntity(
@@ -70,11 +73,13 @@ data class HavenSessionEntity(
 @Entity(
     tableName = "haven_exercises",
     indices = [
-        androidx.room.Index(value = ["userId"]),
-        androidx.room.Index(value = ["completedAt"]),
-        androidx.room.Index(value = ["exerciseType"]),
-        androidx.room.Index(value = ["fromSessionId"]),
-        androidx.room.Index(value = ["userId", "completedAt"])
+        androidx.room.Index(value = ["userId"], name = "index_haven_exercises_userId"),
+        androidx.room.Index(value = ["completedAt"], name = "index_haven_exercises_completedAt"),
+        androidx.room.Index(value = ["exerciseType"], name = "index_haven_exercises_exerciseType"),
+        androidx.room.Index(value = ["fromSessionId"], name = "index_haven_exercises_fromSessionId"),
+        androidx.room.Index(value = ["wasCompleted"], name = "index_haven_exercises_wasCompleted"),
+        androidx.room.Index(value = ["isDeleted"], name = "index_haven_exercises_isDeleted"),
+        androidx.room.Index(value = ["userId", "completedAt"], name = "index_haven_exercises_userId_completedAt")
     ]
 )
 data class HavenExerciseEntity(
