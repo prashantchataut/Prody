@@ -1065,6 +1065,8 @@ fun NavigationBreathingGlow(
             modifier = Modifier
                 .size(48.dp)
                 .graphicsLayer {
+                    // Performance: Accessing animated values within graphicsLayer to defer
+                    // state reads to the draw phase, preventing global recompositions.
                     val active = activeAlphaState.value
                     scaleX = glowScaleState.value * active
                     scaleY = glowScaleState.value * active
