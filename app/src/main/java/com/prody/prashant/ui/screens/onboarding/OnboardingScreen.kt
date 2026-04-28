@@ -42,7 +42,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.prody.prashant.ui.components.ProdyProgressIndicator
+import com.prody.prashant.ui.components.*
 import com.prody.prashant.ui.theme.*
 import kotlinx.coroutines.launch
 
@@ -178,11 +178,12 @@ private fun WelcomeScreen(
 
         Spacer(modifier = Modifier.height(48.dp))
 
-        // Primary CTA Button: 56dp height, 16dp corner radius
-        PrimaryButton(
+        // Primary CTA Button
+        ProdyPrimaryButton(
             text = "Get Started",
             onClick = onNext,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            size = ProdyButtonSize.LARGE
         )
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -419,19 +420,12 @@ private fun FeatureScreenLayout(
 private fun StandardFeatureCard(
     content: @Composable ColumnScope.() -> Unit
 ) {
-    // Card Design: 12dp corner radius, 8dp elevation with proper shadow
-    Surface(
+    // Card Design: Phase 2 Flat design
+    ProdyCard(
         modifier = Modifier
             .fillMaxWidth()
-            .aspectRatio(0.8f)
-            .shadow(
-                elevation = 8.dp,
-                shape = RoundedCornerShape(12.dp),
-                spotColor = Color(0x1A000000), // Soft shadow
-                ambientColor = Color(0x1A000000)
-            ),
-        shape = RoundedCornerShape(12.dp),
-        color = Color.White
+            .aspectRatio(0.8f),
+        backgroundColor = Color.White
     ) {
         Column(
             modifier = Modifier
@@ -532,10 +526,11 @@ private fun LoginSignupScreen(
         Spacer(modifier = Modifier.height(32.dp))
 
         // Login Button
-        PrimaryButton(
+        ProdyPrimaryButton(
             text = "Log In",
             onClick = onLogin,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            size = ProdyButtonSize.LARGE
         )
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -629,37 +624,6 @@ private fun LoginSignupScreen(
 // =============================================================================
 // SHARED COMPONENTS
 // =============================================================================
-
-@Composable
-fun PrimaryButton(
-    text: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Button(
-        onClick = onClick,
-        modifier = modifier.height(56.dp),
-        shape = RoundedCornerShape(16.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = ProdyForestGreen,
-            contentColor = Color.White
-        ),
-        elevation = ButtonDefaults.buttonElevation(
-            defaultElevation = 0.dp,
-            pressedElevation = 0.dp
-        )
-    ) {
-        Text(
-            text = text,
-            style = TextStyle(
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 16.sp,
-                letterSpacing = 0.5.sp
-            )
-        )
-    }
-}
 
 @Composable
 fun ProdyInputField(
