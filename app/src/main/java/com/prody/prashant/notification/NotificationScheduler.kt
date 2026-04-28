@@ -357,6 +357,8 @@ class NotificationScheduler @Inject constructor(
             return
         }
 
+        android.util.Log.d(TAG, "Triggering debug notification: $type")
+
         val action = when (type.lowercase()) {
             "morning" -> NotificationReceiver.ACTION_MORNING_WISDOM
             "evening" -> NotificationReceiver.ACTION_EVENING_REFLECTION
@@ -370,7 +372,7 @@ class NotificationScheduler @Inject constructor(
             }
         }
 
-        android.util.Log.d(TAG, "Triggering debug notification: $type")
+        android.util.Log.d(TAG, "Debug notification broadcast sent for: $type")
 
         val intent = Intent(context, NotificationReceiver::class.java).apply {
             this.action = action
@@ -382,7 +384,6 @@ class NotificationScheduler @Inject constructor(
 
         // Send broadcast immediately
         context.sendBroadcast(intent)
-        android.util.Log.d(TAG, "Debug notification broadcast sent for: $type")
     }
 
     /**
@@ -411,6 +412,7 @@ class NotificationScheduler @Inject constructor(
         }
 
         val triggerTime = System.currentTimeMillis() + (delaySeconds * 1000L)
+
         android.util.Log.d(TAG, "Scheduling debug notification '$type' in $delaySeconds seconds")
 
         scheduleExactAlarm(

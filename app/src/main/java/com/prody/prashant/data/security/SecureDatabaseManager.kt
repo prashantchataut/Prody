@@ -74,7 +74,6 @@ class SecureDatabaseManager @Inject constructor(
                     // Use commit() instead of apply() to ensure the key is written before deleting the legacy file
                     val success = encryptedPrefs.edit().putString(DB_PASSPHRASE_KEY, legacyKey).commit()
                     if (success) {
-                        Log.d(TAG, "Successfully migrated database key, deleting legacy file")
                         legacyFile.delete()
                     }
                     return legacyKey
@@ -82,6 +81,7 @@ class SecureDatabaseManager @Inject constructor(
             }
 
             // 3. No key exists, generate a new one
+            Log.d(TAG, "No database key found, generating new secure key")
             val newKey = generateSecureDatabaseKey()
             encryptedPrefs.edit().putString(DB_PASSPHRASE_KEY, newKey).apply()
             newKey
@@ -207,7 +207,6 @@ class SecureDatabaseManager @Inject constructor(
             val isIntact = testDb.isOpen
             testDb.close()
             
-            Log.d(TAG, "Database integrity check: ${if (isIntact) "PASSED" else "FAILED"}")
             isIntact
             
         } catch (e: Exception) {
@@ -221,6 +220,7 @@ class SecureDatabaseManager @Inject constructor(
      */
     suspend fun clearDatabaseEncryption() = withContext(Dispatchers.IO) {
         try {
+            Log.d(TAG, "Clearing all database encryption data")
             encryptedPrefs.edit().remove(DB_PASSPHRASE_KEY).apply()
 
             val keyFile = getDatabaseKeyFile()
@@ -228,7 +228,6 @@ class SecureDatabaseManager @Inject constructor(
                 keyFile.delete()
             }
             
-            Log.d(TAG, "Database encryption data cleared")
         } catch (e: Exception) {
             Log.e(TAG, "Error clearing database encryption", e)
         }
