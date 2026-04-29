@@ -414,7 +414,6 @@ class HomeViewModel @Inject constructor(
             try {
                 val result = dualStreakManager.maintainWisdomStreak()
                 // Result can be used to show feedback/celebration if needed
-                android.util.Log.d(TAG, "Wisdom streak result: $result")
             } catch (e: Exception) {
                 android.util.Log.e(TAG, "Error maintaining wisdom streak", e)
             }
@@ -430,7 +429,6 @@ class HomeViewModel @Inject constructor(
             try {
                 val result = dualStreakManager.maintainReflectionStreak()
                 // Result can be used to show feedback/celebration if needed
-                android.util.Log.d(TAG, "Reflection streak result: $result")
             } catch (e: Exception) {
                 android.util.Log.e(TAG, "Error maintaining reflection streak", e)
             }
@@ -482,7 +480,6 @@ class HomeViewModel @Inject constructor(
                 // Load Premium Intelligence Insights (Opt-in)
                 loadIntelligenceInsights(context)
 
-                android.util.Log.d(TAG, "Soul Layer content loaded - Archetype: ${context.userArchetype}, Trust: ${context.trustLevel}")
 
             } catch (e: Exception) {
                 android.util.Log.e(TAG, "Error loading Soul Layer content", e)
@@ -557,7 +554,6 @@ class HomeViewModel @Inject constructor(
             }
 
             if (memory != null) {
-                android.util.Log.d(TAG, "Surfaced memory: ${memory.surfaceReason} - ${memory.memory.preview.take(50)}...")
             }
         } catch (e: Exception) {
             android.util.Log.e(TAG, "Error loading surfaced memory", e)
@@ -576,7 +572,6 @@ class HomeViewModel @Inject constructor(
             }
 
             if (anniversaries.isNotEmpty()) {
-                android.util.Log.d(TAG, "Found ${anniversaries.size} anniversary memories for today")
             }
         } catch (e: Exception) {
             android.util.Log.e(TAG, "Error loading anniversary memories", e)
@@ -610,7 +605,6 @@ class HomeViewModel @Inject constructor(
             }
             
             if (insights.isNotEmpty()) {
-                android.util.Log.d(TAG, "Detected ${insights.size} intelligence insights")
             }
         } catch (e: Exception) {
             android.util.Log.e(TAG, "Error loading intelligence insights", e)
@@ -627,7 +621,6 @@ class HomeViewModel @Inject constructor(
 
                 // Track the interaction in Soul Layer
                 // This helps the system learn what memories resonate
-                android.util.Log.d(TAG, "Memory interaction: $interactionType for entry ${memory.memory.id}")
 
                 // Mark memory as interacted
                 // The repository will handle persistence
@@ -675,7 +668,6 @@ class HomeViewModel @Inject constructor(
                 // Refresh first week state
                 loadFirstWeekState()
 
-                android.util.Log.d(TAG, "First week milestone completed: $milestone")
 
             } catch (e: Exception) {
                 android.util.Log.e(TAG, "Error handling first week milestone", e)
@@ -852,7 +844,6 @@ class HomeViewModel @Inject constructor(
                                 )
                             )
                         }
-                        android.util.Log.d(TAG, "Buddha wisdom loaded (AI: ${result.data.isAiGenerated})")
                     }
                     is BuddhaAiResult.Fallback -> {
                         _uiState.update { state ->
@@ -870,7 +861,6 @@ class HomeViewModel @Inject constructor(
                                 )
                             )
                         }
-                        android.util.Log.d(TAG, "Buddha wisdom loaded (fallback, AI configured: $isAiConfigured)")
                     }
                     is BuddhaAiResult.Error -> {
                         // Fall back to local wisdom

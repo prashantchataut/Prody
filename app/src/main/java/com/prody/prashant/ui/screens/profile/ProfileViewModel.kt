@@ -294,7 +294,6 @@ class ProfileViewModel @Inject constructor(
                             hasEnoughDataForPattern = true
                         )
                     }
-                    android.util.Log.d(TAG, "Weekly pattern loaded: ${pattern.keyPattern}")
                 } ?: run {
                     _uiState.update {
                         it.copy(isLoadingWeeklyPattern = false)
