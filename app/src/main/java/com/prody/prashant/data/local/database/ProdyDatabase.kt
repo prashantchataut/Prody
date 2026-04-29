@@ -223,7 +223,7 @@ import net.sqlcipher.database.SupportFactory
         // Mirror Evolution: Evidence Locker
         EvidenceEntity::class
     ],
-    version = 21,
+    version = 22,
     exportSchema = true // Enable for migration verification
 )
 abstract class ProdyDatabase : RoomDatabase() {
@@ -1709,6 +1709,19 @@ abstract class ProdyDatabase : RoomDatabase() {
                 // Add indices to haven_exercises
                 db.execSQL("CREATE INDEX IF NOT EXISTS index_haven_exercises_wasCompleted ON haven_exercises(wasCompleted)")
                 db.execSQL("CREATE INDEX IF NOT EXISTS index_haven_exercises_isDeleted ON haven_exercises(isDeleted)")
+            }
+        }
+
+        /**
+         * Migration 21 -> 22: Maintenance & Performance Optimization
+         *
+         * Changes:
+         * - Add index for sourceSessionId in haven_memories
+         */
+        val MIGRATION_21_22: Migration = object : Migration(21, 22) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Add index to haven_memories
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_haven_memories_sourceSessionId ON haven_memories(sourceSessionId)")
             }
         }
 
