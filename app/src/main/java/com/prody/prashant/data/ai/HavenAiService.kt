@@ -256,10 +256,8 @@ I am here to listen, but I cannot provide the emergency care you might need. Ple
      * Returns detailed configuration status for debugging.
      */
     fun getConfigurationStatus(): String {
-        val therapistKeyStatus = if (BuildConfig.THERAPIST_API_KEY.isNotBlank()) 
-            "present (${BuildConfig.THERAPIST_API_KEY.length} chars)" else "missing"
-        val aiKeyStatus = if (BuildConfig.AI_API_KEY.isNotBlank()) 
-            "present (${BuildConfig.AI_API_KEY.length} chars)" else "missing"
+        val therapistKeyStatus = if (BuildConfig.THERAPIST_API_KEY.isNotBlank()) "configured" else "missing"
+        val aiKeyStatus = if (BuildConfig.AI_API_KEY.isNotBlank()) "configured" else "missing"
             
         return when {
             isOfflineMode -> buildString {
@@ -270,8 +268,8 @@ I am here to listen, but I cannot provide the emergency care you might need. Ple
                 append("\nTHERAPIST_API_KEY: $therapistKeyStatus")
                 append("\nAI_API_KEY: $aiKeyStatus")
             }
-            isInitialized && generativeModel != null -> "Haven AI is ready"
-            else -> "Initialization failed: ${initializationError ?: "Unknown error"}"
+            isInitialized && generativeModel != null -> "Haven AI is ready (Keys: $therapistKeyStatus/$aiKeyStatus)"
+            else -> "Initialization failed: ${initializationError ?: "Unknown error"} (Keys: $therapistKeyStatus/$aiKeyStatus)"
         }
     }
 
