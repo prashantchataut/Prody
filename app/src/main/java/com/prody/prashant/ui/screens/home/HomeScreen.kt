@@ -190,7 +190,7 @@ fun HomeScreen(
         if (uiState.journalEntriesThisWeek > 0) {
             item(key = "mood_trend") {
                 MoodTrendSection(
-                    moodData = emptyList() // Mood trend requires historical mood data not exposed yet
+                    moodData = uiState.moodTrendData
                 )
             }
         }
@@ -292,10 +292,11 @@ fun DashboardHeader(
                 contentDescription = "Notifications",
                 tint = ProdyTextPrimaryLight
             )
-            // Avatar / Profile
+            // Avatar / Profile using ProdyIconButton-like consistency
+            // Note: Avatar has initials, so we keep the Box but apply ProdyIconButton's size token
             Box(
                 modifier = Modifier
-                    .size(40.dp)
+                    .size(ProdyTokens.Touch.minimum)
                     .clip(CircleShape)
                     .background(ProdyForestGreen)
                     .clickable { onProfileClick() }

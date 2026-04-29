@@ -21,3 +21,13 @@ This journal contains CRITICAL performance learnings specific to the Prody codeb
 **Context:** `ProgressIndicators.kt` and `OnboardingScreen.kt`.
 **Learning:** Using a `Row` of multiple `Box` composables for page indicators creates unnecessary layout nodes and triggers expensive layout passes during page swipes as dot widths animate. A single `Canvas` drawing all dots based on an animated float index is significantly more performant and smoother.
 **Action:** Prefer `Canvas`-based drawing for multi-state UI indicators like page dots or segmented progress bars to maintain 60fps during complex interactions.
+
+## 2024-05-27 - High-Frequency Animation Optimization
+**Context:** Haven FAB pulse animation in `MainActivity.kt`.
+**Learning:** Even when using `graphicsLayer`, property delegation (`by animateFloatAsState`) inside a Composable causes it to recompose whenever the value changes. High-frequency animations (like pulses) should access the raw `State.value` directly inside the `graphicsLayer { ... }` lambda to defer the read until the draw phase, completely skipping the Recomposition and Layout phases of the Compose lifecycle.
+**Action:** Isolate high-frequency animations into dedicated components and ensure state reads are deferred to the draw phase using lambda-based modifiers.
+
+## 2024-05-27 - Bridging the Mood Trend Gap
+**Context:** `HomeViewModel.kt` and `HomeScreen.kt`.
+**Learning:** The mood chart remained static because raw `JournalEntryEntity` data wasn't being aggregated into a time-series trend. Restoring broken functionality is often about correctly implementing the "Logic Bridge" in the ViewModel (e.g., a 7-day sliding average) rather than just UI tweaks.
+**Action:** Process raw database collections into UI-ready primitives (like `List<Float>`) within the ViewModel's flow pipeline to ensure immediate and accurate feature availability.
