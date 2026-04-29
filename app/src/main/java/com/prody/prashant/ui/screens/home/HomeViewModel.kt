@@ -221,12 +221,12 @@ class HomeViewModel @Inject constructor(
 
             // 2. Combine all reactive flows and the results of the one-time fetch.
             combine(
-                userDao.getUserProfile(),
-                journalDao.getEntriesByDateRange(weekStart, System.currentTimeMillis()),
-                vocabularyDao.getLearnedCountSince(weekStart),
-                userDao.getStreakHistory(),
-                journalDao.getEntriesByDateRange(todayStart, System.currentTimeMillis()),
-                dualStreakManager.getDualStreakStatusFlow(),
+                userDao.getUserProfile().distinctUntilChanged(),
+                journalDao.getEntriesByDateRange(weekStart, System.currentTimeMillis()).distinctUntilChanged(),
+                vocabularyDao.getLearnedCountSince(weekStart).distinctUntilChanged(),
+                userDao.getStreakHistory().distinctUntilChanged(),
+                journalDao.getEntriesByDateRange(todayStart, System.currentTimeMillis()).distinctUntilChanged(),
+                dualStreakManager.getDualStreakStatusFlow().distinctUntilChanged(),
                 preferencesManager.debugAiProofMode.distinctUntilChanged()
             ) { args ->
                 val profile = args.getOrNull(0) as? UserProfileEntity
