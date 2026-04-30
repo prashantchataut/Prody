@@ -28,6 +28,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.R
 import com.prody.prashant.domain.collaborative.*
+import com.prody.prashant.ui.components.SecureScreen
 import com.prody.prashant.ui.theme.*
 import java.time.format.DateTimeFormatter
 
@@ -50,6 +51,8 @@ fun CollaborativeHomeScreen(
     viewModel: CollaborativeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.homeState.collectAsStateWithLifecycle()
+
+    SecureScreen()
 
     Scaffold(
         topBar = {

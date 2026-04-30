@@ -46,6 +46,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.R
 import com.prody.prashant.data.local.entity.FutureMessageEntity
+import com.prody.prashant.ui.components.SecureScreen
 import com.prody.prashant.ui.components.DeliveryCountdownAura
 import com.prody.prashant.ui.components.PodGrid
 import com.prody.prashant.ui.theme.*
@@ -80,6 +81,8 @@ fun FutureMessageListScreen(
     val primaryTextColor = if (isDark) TimeCapsuleTextPrimaryDark else TimeCapsuleTextPrimaryLight
     val secondaryTextColor = if (isDark) TimeCapsuleTextSecondaryDark else TimeCapsuleTextSecondaryLight
     val iconColor = if (isDark) TimeCapsuleIconDark else TimeCapsuleIconLight
+
+    SecureScreen()
 
     Box(
         modifier = Modifier

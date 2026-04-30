@@ -77,6 +77,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.data.local.entity.EvidenceEntity
 import com.prody.prashant.data.local.entity.EvidenceRarity
 import com.prody.prashant.data.local.entity.EvidenceType
+import com.prody.prashant.ui.components.SecureScreen
 import com.prody.prashant.ui.theme.ProdyAccentGreen
 import com.prody.prashant.ui.theme.isDarkTheme
 import kotlinx.coroutines.launch
@@ -126,6 +127,8 @@ fun LockerScreen(
 
     val backgroundColor = if (isDark) Color(0xFF0D1B19) else Color(0xFFF5F9F8)
     val cardColor = if (isDark) Color(0xFF1A2E2A) else Color(0xFFFFFFFF)
+
+    SecureScreen()
 
     Scaffold(
         containerColor = backgroundColor
