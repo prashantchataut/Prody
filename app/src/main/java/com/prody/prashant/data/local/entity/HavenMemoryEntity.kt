@@ -29,7 +29,8 @@ import androidx.room.PrimaryKey
         Index(value = ["factDate"]),
         Index(value = ["createdAt"]),
         Index(value = ["userId", "status"]),
-        Index(value = ["category"])
+        Index(value = ["category"]),
+        Index(value = ["sourceSessionId"])
     ]
 )
 data class HavenMemoryEntity(
