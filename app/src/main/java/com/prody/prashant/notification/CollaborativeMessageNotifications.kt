@@ -100,6 +100,7 @@ class CollaborativeMessageNotifications @Inject constructor(
             .setStyle(NotificationCompat.BigTextStyle()
                 .bigText("${message.title}\n\n${message.content.take(100)}${if (message.content.length > 100) "..." else ""}"))
             .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
             .setAutoCancel(true)
             .setContentIntent(pendingIntent)
 
@@ -135,6 +136,7 @@ class CollaborativeMessageNotifications @Inject constructor(
             .setContentTitle("Message Delivered")
             .setContentText("Your message to ${message.recipient.name} has been delivered")
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
             .setAutoCancel(true)
             .setContentIntent(pendingIntent)
 
@@ -181,6 +183,7 @@ class CollaborativeMessageNotifications @Inject constructor(
             .setStyle(NotificationCompat.BigTextStyle()
                 .bigText("$contactName's $occasionName is coming up $daysText!\n\nTap to compose a heartfelt message to make their day special."))
             .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
             .setAutoCancel(true)
             .setContentIntent(pendingIntent)
             .addAction(
@@ -219,6 +222,7 @@ class CollaborativeMessageNotifications @Inject constructor(
             .setStyle(NotificationCompat.BigTextStyle()
                 .bigText("Failed to deliver your message to ${message.recipient.name}.\n\nReason: $reason\n\nTap to retry."))
             .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
             .setAutoCancel(true)
             .setContentIntent(pendingIntent)
 

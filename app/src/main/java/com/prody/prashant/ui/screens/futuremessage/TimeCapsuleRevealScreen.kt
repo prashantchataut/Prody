@@ -22,6 +22,7 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.prody.prashant.ui.components.SecureScreen
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.delay
@@ -63,6 +64,8 @@ fun TimeCapsuleRevealScreen(
         // Haptic feedback on reveal
         view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
     }
+
+    SecureScreen()
 
     Scaffold(
         topBar = {

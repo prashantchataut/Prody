@@ -126,6 +126,7 @@ class MonthlyLetterScheduler @Inject constructor(
             .setContentText("Your monthly reflection is here. Tap to open.")
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setContentIntent(pendingIntent)
+            .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
             .setAutoCancel(true)
             .build()
 

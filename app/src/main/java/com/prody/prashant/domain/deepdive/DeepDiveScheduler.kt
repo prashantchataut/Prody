@@ -455,6 +455,7 @@ class DeepDiveNotificationReceiver : android.content.BroadcastReceiver() {
             .setContentTitle("$themeIcon $themeDisplayName Deep Dive Tomorrow")
             .setContentText(message)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
             .setAutoCancel(true)
             .build()
 

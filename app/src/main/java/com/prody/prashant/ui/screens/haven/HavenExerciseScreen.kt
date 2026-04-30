@@ -1,5 +1,6 @@
 package com.prody.prashant.ui.screens.haven
 import com.prody.prashant.ui.icons.ProdyIcons
+import com.prody.prashant.ui.components.SecureScreen
 
 import android.content.Context
 import android.os.Build
@@ -90,13 +91,7 @@ fun HavenExerciseScreen(
     val context = androidx.compose.ui.platform.LocalContext.current
 
     // Security: Prevent screenshots and screen recordings while in a therapeutic exercise
-    DisposableEffect(Unit) {
-        val window = (context as? android.app.Activity)?.window
-        window?.addFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)
-        onDispose {
-            window?.clearFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)
-        }
-    }
+    SecureScreen()
 
     // Start exercise when screen loads
     LaunchedEffect(exerciseType) {

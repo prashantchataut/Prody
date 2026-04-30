@@ -34,9 +34,14 @@ class SecureHttpClient @Inject constructor(
         private const val READ_TIMEOUT_SECONDS = 60L
         private const val WRITE_TIMEOUT_SECONDS = 60L
         
-        // Certificate pinning hashes (these should be updated with actual certificate hashes)
-        private const val GEMINI_CERT_PIN = "sha256/GThRnpaJ1x8I2c4e8p5h6k7l8m9n0o1p2q3r4s5t6u7v8w9x0y1z2a3b4c5d6e7f8"
-        private const val OPENROUTER_CERT_PIN = "sha256/H2i3j4k5l6m7n8o9p0q1r2s3t4u5v6w7x8y9z0a1b2c3d4e5f6g7h8i9j0k1l2"
+        // Certificate pinning hashes (Synchronized with network_security_config.xml)
+        private const val GEMINI_PIN_LEAF = "sha256/ePd8DjIPDZVBxKmWbWHXy+wZjO75a6PEiRzXE7mbzZ0="
+        private const val GEMINI_PIN_INTERMEDIATE = "sha256/YPtHaftLw6/0vnc2BnNKGF54xiCA28WFcccjkA4ypCM="
+        private const val GEMINI_PIN_BACKUP = "sha256/hxqRlPTu1bMS/0DITB1SSu0vd4u/8l8TjPgfaAp63Gc="
+
+        private const val OPENROUTER_PIN_LEAF = "sha256/2ETytvFJ0SYiiaUyT3xMrJ3Yuen/K58SNiB87YChuRg="
+        private const val OPENROUTER_PIN_INTERMEDIATE = "sha256/kIdp6NNEd8wsugYyyIYFsi1ylMCED3hZbSR8ZFsa/A4="
+        private const val OPENROUTER_PIN_BACKUP = "sha256/mEflZT5enoR1FuXLgYYGqnVEoZvmf9c2bVBpiOjYQ0c="
     }
 
     /**
@@ -57,7 +62,9 @@ class SecureHttpClient @Inject constructor(
      */
     fun createGeminiClient(): OkHttpClient {
         val certificatePinner = CertificatePinner.Builder()
-            .add("generativelanguage.googleapis.com", GEMINI_CERT_PIN)
+            .add("generativelanguage.googleapis.com", GEMINI_PIN_LEAF)
+            .add("generativelanguage.googleapis.com", GEMINI_PIN_INTERMEDIATE)
+            .add("generativelanguage.googleapis.com", GEMINI_PIN_BACKUP)
             .build()
 
         return OkHttpClient.Builder()
@@ -76,7 +83,9 @@ class SecureHttpClient @Inject constructor(
      */
     fun createOpenRouterClient(): OkHttpClient {
         val certificatePinner = CertificatePinner.Builder()
-            .add("openrouter.ai", OPENROUTER_CERT_PIN)
+            .add("openrouter.ai", OPENROUTER_PIN_LEAF)
+            .add("openrouter.ai", OPENROUTER_PIN_INTERMEDIATE)
+            .add("openrouter.ai", OPENROUTER_PIN_BACKUP)
             .build()
 
         return OkHttpClient.Builder()
