@@ -5,3 +5,7 @@
 ## 2025-01-26 - Dynamic Form Validation Feedback
 **Learning:** Providing real-time, visual feedback as users approach form constraints (like character limits) significantly reduces friction and errors. Semantic color shifts (warning at 80%, error at 100%) are more intuitive than simple counters.
 **Action:** Implement dynamic character counters in all high-priority input forms. Use `ProdyDesignTokens.SemanticColors.warning` for the cautionary state to provide a consistent cross-app language for constraints.
+
+## 2025-01-26 - Accessible Icon-Only Interactions
+**Learning:** In feature-rich screens like `NewJournalEntryScreen`, icon-only buttons are essential for a clean UI but must be paired with meaningful accessibility labels to remain inclusive. Reusing design system components like `ProdyIconButton` ensures these buttons also inherit standard haptics and touch target sizes.
+**Action:** Replace standard `IconButton` with `ProdyIconButton` and always provide a `contentDescription` from `strings.xml`. Use `<plurals>` for all user-facing counts to ensure grammatical correctness across locales.

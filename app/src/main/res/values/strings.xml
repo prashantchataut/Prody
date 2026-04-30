@@ -97,7 +97,10 @@
     <string name="journal_prompt_more">More prompts</string>
     <string name="journal_placeholder">What\'s on your mind?</string>
     <string name="journal_saved">Entry saved!</string>
-    <string name="journal_word_count">%d words</string>
+    <plurals name="journal_word_count">
+        <item quantity="one">1 word</item>
+        <item quantity="other">%d words</item>
+    </plurals>
     <string name="journal_empty_title">No entries yet</string>
     <string name="journal_empty_message">Start your journey by writing your first entry.</string>
     <string name="journal_today">Today</string>
@@ -501,6 +504,13 @@
     <string name="cd_mood_selector">Select your mood</string>
     <string name="cd_play_audio">Play pronunciation</string>
     <string name="cd_navigation_item">Navigate to %s</string>
+    <string name="cd_add_media">Add media</string>
+    <string name="cd_voice_record">Start voice recording</string>
+    <string name="cd_stop_recording">Stop recording</string>
+    <string name="cd_bullet_list">Bullet list</string>
+    <string name="cd_remove_media">Remove media</string>
+    <string name="cd_play">Play</string>
+    <string name="cd_pause">Pause</string>
 
     <!-- ==================== -->
     <!-- ONBOARDING -->
