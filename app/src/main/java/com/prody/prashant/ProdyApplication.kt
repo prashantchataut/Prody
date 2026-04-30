@@ -172,7 +172,11 @@ class ProdyApplication : Application(), Configuration.Provider {
         // Launch on a background thread to avoid blocking startup
         applicationScope.launch {
             try {
-                createNotificationChannels()
+                // Ensure I/O intensive channel creation is off the main thread
+                // and isolated from CPU-bound tasks on Default dispatcher.
+                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                    createNotificationChannels()
+                }
             } catch (e: Exception) {
                 // Log error but don't crash the app - notifications are not critical for launch
                 Log.e(TAG, "Failed to create notification channels", e)

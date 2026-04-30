@@ -137,7 +137,21 @@ data class HomeUiState(
     val personalizedPatternSuggestion: String = "",
     // Intelligence Insights
     val intelligenceInsights: List<IntelligenceInsight> = emptyList(),
-    val isPremiumIntelligenceEnabled: Boolean = false
+    val isPremiumIntelligenceEnabled: Boolean = false,
+    val moodTrend: List<Float> = emptyList()
+)
+
+private data class InitialDataPart1(
+    val profile: UserProfileEntity?,
+    val recentJournalEntries: List<JournalEntryEntity>,
+    val weeklyLearnedWords: Int,
+    val streakHistory: List<StreakHistoryEntity>
+)
+
+private data class InitialDataPart2(
+    val todayJournalEntries: List<JournalEntryEntity>,
+    val dualStreak: DualStreakStatus,
+    val aiProofMode: Boolean
 )
 
 private data class DailyContent(
@@ -187,28 +201,21 @@ class HomeViewModel @Inject constructor(
      *
      * Key Optimizations:
      * 1.  **Parallel Daily Content Fetch**: `async` is used to fetch the daily quote, word, proverb,
-     *     and idiom concurrently. This avoids the previous sequential (blocking) fetch, which
-     *     was a major source of startup lag.
-     * 2.  **Single `combine` Operator**: All reactive and one-time data sources are merged using a
-     *     single `combine` operator. This ensures that the UI state is updated only ONCE, in a
-     *     single, atomic operation, after all necessary data is available. This prevents multiple,
-     *     staggered recompositions on the home screen.
-     * 3.  **Asynchronous Initialization**: The entire data loading process is off the main thread,
-     *     ensuring the UI remains responsive during startup. The `isLoading` flag is set to `false`
-     *     only at the very end, signaling the splash screen to disappear.
-     * 4.  **Error Isolation**: Each data fetch is wrapped in a `try-catch` block. This prevents a
-     *     failure in one data source (e.g., a missing proverb) from crashing the entire app or
-     *     blocking other data from loading.
+     *     and idiom concurrently.
+     * 2.  **Refactored Nested Combine**: Replaces index-based `args` array with type-safe
+     *     intermediate data classes (`InitialDataPart1`, `InitialDataPart2`).
+     * 3.  **7-Day Mood Trend**: Dynamically calculates normalized mood trend data from recent entries.
+     * 4.  **Single Atomic Update**: Ensures the UI state is updated once per emission to minimize recompositions.
      */
     private fun loadInitialData() {
         viewModelScope.launch {
             val weekStart = getWeekStartTimestamp()
             val todayStart = getTodayStartTimestamp()
+            val sevenDaysAgo = System.currentTimeMillis() - (7 * 24 * 60 * 60 * 1000L)
 
-            // 1. Fetch one-time daily content in parallel to reduce I/O blocking.
+            // 1. Fetch one-time daily content in parallel.
             val dailyContent = fetchDailyContentConcurrently()
 
-            // Mark the fetched content as "shown" for the day.
             viewModelScope.launch {
                 dailyContent.quote?.let { quoteDao.markAsShownDaily(it.id) }
                 dailyContent.word?.let {
@@ -219,26 +226,42 @@ class HomeViewModel @Inject constructor(
                 dailyContent.idiom?.let { idiomDao.markAsShownDaily(it.id) }
             }
 
-            // 2. Combine all reactive flows and the results of the one-time fetch.
-            combine(
+            // 2. Refactor into type-safe combined flows.
+            val part1Flow = combine(
                 userDao.getUserProfile().distinctUntilChanged(),
-                journalDao.getEntriesByDateRange(weekStart, System.currentTimeMillis()).distinctUntilChanged(),
+                journalDao.getEntriesByDateRange(sevenDaysAgo, System.currentTimeMillis()).distinctUntilChanged(),
                 vocabularyDao.getLearnedCountSince(weekStart).distinctUntilChanged(),
-                userDao.getStreakHistory().distinctUntilChanged(),
+                userDao.getStreakHistory().distinctUntilChanged()
+            ) { profile, entries, learned, streaks ->
+                InitialDataPart1(profile, entries, learned, streaks)
+            }
+
+            val part2Flow = combine(
                 journalDao.getEntriesByDateRange(todayStart, System.currentTimeMillis()).distinctUntilChanged(),
                 dualStreakManager.getDualStreakStatusFlow().distinctUntilChanged(),
                 preferencesManager.debugAiProofMode.distinctUntilChanged()
-            ) { args ->
-                val profile = args.getOrNull(0) as? UserProfileEntity
-                val weeklyJournalEntries = (args.getOrNull(1) as? List<*>)?.filterIsInstance<JournalEntryEntity>() ?: emptyList()
-                val weeklyLearnedWords = args.getOrNull(2) as? Int ?: 0
-                val streakHistory = (args.getOrNull(3) as? List<*>)?.filterIsInstance<StreakHistoryEntity>() ?: emptyList()
-                val todayJournalEntries = (args.getOrNull(4) as? List<*>)?.filterIsInstance<JournalEntryEntity>() ?: emptyList()
-                val dualStreak = args.getOrNull(5) as? DualStreakStatus ?: DualStreakStatus.empty()
-                val aiProofMode = args.getOrNull(6) as? Boolean ?: false
+            ) { today, dual, ai ->
+                InitialDataPart2(today, dual, ai)
+            }
+
+            combine(part1Flow, part2Flow) { part1, part2 ->
+                val profile = part1.profile
+                val recentEntries = part1.recentJournalEntries
+                val weeklyLearnedWords = part1.weeklyLearnedWords
+                val streakHistory = part1.streakHistory
+
+                val todayJournalEntries = part2.todayJournalEntries
+                val dualStreak = part2.dualStreak
+                val aiProofMode = part2.aiProofMode
 
                 // Calculate weekly active days.
                 val daysActiveThisWeek = streakHistory.count { it.date >= weekStart }
+
+                // Calculate actual entries "this week" (since Sunday/Monday)
+                val entriesThisWeekCount = recentEntries.count { it.createdAt >= weekStart }
+
+                // Calculate 7-day mood trend.
+                val moodTrend = calculateMoodTrend(recentEntries)
 
                 // Determine today's journaling status.
                 val (journaledToday, todayMood, todayPreview) = if (todayJournalEntries.isNotEmpty()) {
@@ -248,7 +271,7 @@ class HomeViewModel @Inject constructor(
                     Triple(false, "", "")
                 }
 
-                // 3. Atomically update the UI state with all the loaded data.
+                // 3. Atomically update UI state.
                 _uiState.value.copy(
                     userName = profile?.displayName ?: "Growth Seeker",
                     currentStreak = profile?.currentStreak ?: 0,
@@ -266,15 +289,16 @@ class HomeViewModel @Inject constructor(
                     idiomMeaning = dailyContent.idiom?.meaning ?: _uiState.value.idiomMeaning,
                     idiomExample = dailyContent.idiom?.exampleSentence ?: _uiState.value.idiomExample,
                     idiomId = dailyContent.idiom?.id ?: _uiState.value.idiomId,
-                    journalEntriesThisWeek = weeklyJournalEntries.size,
+                    journalEntriesThisWeek = entriesThisWeekCount,
                     wordsLearnedThisWeek = weeklyLearnedWords,
                     daysActiveThisWeek = daysActiveThisWeek,
                     journaledToday = journaledToday,
                     todayEntryMood = todayMood,
                     todayEntryPreview = todayPreview,
                     dualStreakStatus = dualStreak,
+                    moodTrend = moodTrend,
                     buddhaWisdomProofInfo = _uiState.value.buddhaWisdomProofInfo.copy(isEnabled = aiProofMode),
-                    isLoading = false // <-- Critical: Signal that loading is complete.
+                    isLoading = false
                 )
             }.catch { e ->
                 android.util.Log.e(TAG, "Error in combined home data flow", e)
@@ -282,7 +306,7 @@ class HomeViewModel @Inject constructor(
                     it.copy(
                         isLoading = false,
                         hasLoadError = true,
-                        error = "Failed to load home data. Please check your connection."
+                        error = "Failed to load home data."
                     )
                 }
             }.collect { newState ->
@@ -298,6 +322,38 @@ class HomeViewModel @Inject constructor(
             launch { checkAiConfiguration() }
             launch { loadSoulLayerContent() }
         }
+    }
+
+    /**
+     * Calculates a 7-day mood trend from recent journal entries.
+     * Normalizes 1-10 intensity to 1-5 scale for the UI chart.
+     */
+    private fun calculateMoodTrend(entries: List<JournalEntryEntity>): List<Float> {
+        val calendar = Calendar.getInstance()
+
+        // Group entries by unique day identifier (Year * 1000 + DayOfYear) to avoid collisions
+        val dayToMoods = entries.groupBy { entry ->
+            val entryCal = Calendar.getInstance().apply { timeInMillis = entry.createdAt }
+            entryCal.get(Calendar.YEAR) * 1000 + entryCal.get(Calendar.DAY_OF_YEAR)
+        }
+
+        val trend = mutableListOf<Float>()
+        // Generate trend for the last 7 days ending today
+        for (i in 6 downTo 0) {
+            val checkCal = Calendar.getInstance().apply {
+                add(Calendar.DAY_OF_YEAR, -i)
+            }
+            val dayKey = checkCal.get(Calendar.YEAR) * 1000 + checkCal.get(Calendar.DAY_OF_YEAR)
+            val dayEntries = dayToMoods[dayKey]
+
+            if (dayEntries.isNullOrEmpty()) {
+                trend.add(3.0f) // Neutral gap-fill
+            } else {
+                val avgIntensity = dayEntries.map { it.moodIntensity }.average().toFloat()
+                trend.add(avgIntensity / 2f) // Normalize 1-10 to 1-5 scale
+            }
+        }
+        return trend
     }
 
     private suspend fun fetchDailyContentConcurrently(): DailyContent = coroutineScope {
