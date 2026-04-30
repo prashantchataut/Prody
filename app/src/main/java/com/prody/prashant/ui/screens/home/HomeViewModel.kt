@@ -137,7 +137,9 @@ data class HomeUiState(
     val personalizedPatternSuggestion: String = "",
     // Intelligence Insights
     val intelligenceInsights: List<IntelligenceInsight> = emptyList(),
-    val isPremiumIntelligenceEnabled: Boolean = false
+    val isPremiumIntelligenceEnabled: Boolean = false,
+    // Mood Trend for the last 7 days
+    val moodTrendData: List<Float> = emptyList()
 )
 
 private data class DailyContent(
@@ -145,6 +147,19 @@ private data class DailyContent(
     val word: VocabularyEntity?,
     val proverb: ProverbEntity?,
     val idiom: IdiomEntity?
+)
+
+private data class InitialDataPart1(
+    val profile: UserProfileEntity?,
+    val weeklyJournalEntries: List<JournalEntryEntity>,
+    val weeklyLearnedWords: Int,
+    val streakHistory: List<StreakHistoryEntity>
+)
+
+private data class InitialDataPart2(
+    val todayJournalEntries: List<JournalEntryEntity>,
+    val dualStreak: DualStreakStatus,
+    val aiProofMode: Boolean
 )
 
 @HiltViewModel
@@ -220,39 +235,45 @@ class HomeViewModel @Inject constructor(
             }
 
             // 2. Combine all reactive flows and the results of the one-time fetch.
-            combine(
+            // Split into two parts to avoid huge combine blocks and index errors.
+            val flowPart1 = combine(
                 userDao.getUserProfile().distinctUntilChanged(),
                 journalDao.getEntriesByDateRange(weekStart, System.currentTimeMillis()).distinctUntilChanged(),
                 vocabularyDao.getLearnedCountSince(weekStart).distinctUntilChanged(),
-                userDao.getStreakHistory().distinctUntilChanged(),
+                userDao.getStreakHistory().distinctUntilChanged()
+            ) { profile, weeklyJournalEntries, weeklyLearnedWords, streakHistory ->
+                InitialDataPart1(profile, weeklyJournalEntries, weeklyLearnedWords, streakHistory)
+            }
+
+            val flowPart2 = combine(
                 journalDao.getEntriesByDateRange(todayStart, System.currentTimeMillis()).distinctUntilChanged(),
                 dualStreakManager.getDualStreakStatusFlow().distinctUntilChanged(),
                 preferencesManager.debugAiProofMode.distinctUntilChanged()
-            ) { args ->
-                val profile = args.getOrNull(0) as? UserProfileEntity
-                val weeklyJournalEntries = (args.getOrNull(1) as? List<*>)?.filterIsInstance<JournalEntryEntity>() ?: emptyList()
-                val weeklyLearnedWords = args.getOrNull(2) as? Int ?: 0
-                val streakHistory = (args.getOrNull(3) as? List<*>)?.filterIsInstance<StreakHistoryEntity>() ?: emptyList()
-                val todayJournalEntries = (args.getOrNull(4) as? List<*>)?.filterIsInstance<JournalEntryEntity>() ?: emptyList()
-                val dualStreak = args.getOrNull(5) as? DualStreakStatus ?: DualStreakStatus.empty()
-                val aiProofMode = args.getOrNull(6) as? Boolean ?: false
+            ) { todayJournalEntries, dualStreak, aiProofMode ->
+                InitialDataPart2(todayJournalEntries, dualStreak, aiProofMode)
+            }
 
+            combine(flowPart1, flowPart2) { part1, part2 ->
                 // Calculate weekly active days.
-                val daysActiveThisWeek = streakHistory.count { it.date >= weekStart }
+                val daysActiveThisWeek = part1.streakHistory.count { it.date >= weekStart }
 
                 // Determine today's journaling status.
-                val (journaledToday, todayMood, todayPreview) = if (todayJournalEntries.isNotEmpty()) {
-                    val latestEntry = todayJournalEntries.maxByOrNull { it.createdAt }
+                val (journaledToday, todayMood, todayPreview) = if (part2.todayJournalEntries.isNotEmpty()) {
+                    val latestEntry = part2.todayJournalEntries.maxByOrNull { it.createdAt }
                     Triple(true, latestEntry?.mood ?: "", latestEntry?.content?.take(100) ?: "")
                 } else {
                     Triple(false, "", "")
                 }
 
+                // Calculate mood trend for the last 7 days
+                val moodTrend = calculateMoodTrend(part1.weeklyJournalEntries)
+
                 // 3. Atomically update the UI state with all the loaded data.
                 _uiState.value.copy(
-                    userName = profile?.displayName ?: "Growth Seeker",
-                    currentStreak = profile?.currentStreak ?: 0,
-                    totalPoints = profile?.totalPoints ?: 0,
+                    userName = part1.profile?.displayName ?: "Growth Seeker",
+                    moodTrendData = moodTrend,
+                    currentStreak = part1.profile?.currentStreak ?: 0,
+                    totalPoints = part1.profile?.totalPoints ?: 0,
                     dailyQuote = dailyContent.quote?.content ?: _uiState.value.dailyQuote,
                     dailyQuoteAuthor = dailyContent.quote?.author ?: _uiState.value.dailyQuoteAuthor,
                     wordOfTheDay = dailyContent.word?.word ?: _uiState.value.wordOfTheDay,
@@ -266,14 +287,14 @@ class HomeViewModel @Inject constructor(
                     idiomMeaning = dailyContent.idiom?.meaning ?: _uiState.value.idiomMeaning,
                     idiomExample = dailyContent.idiom?.exampleSentence ?: _uiState.value.idiomExample,
                     idiomId = dailyContent.idiom?.id ?: _uiState.value.idiomId,
-                    journalEntriesThisWeek = weeklyJournalEntries.size,
-                    wordsLearnedThisWeek = weeklyLearnedWords,
+                    journalEntriesThisWeek = part1.weeklyJournalEntries.size,
+                    wordsLearnedThisWeek = part1.weeklyLearnedWords,
                     daysActiveThisWeek = daysActiveThisWeek,
                     journaledToday = journaledToday,
                     todayEntryMood = todayMood,
                     todayEntryPreview = todayPreview,
-                    dualStreakStatus = dualStreak,
-                    buddhaWisdomProofInfo = _uiState.value.buddhaWisdomProofInfo.copy(isEnabled = aiProofMode),
+                    dualStreakStatus = part2.dualStreak,
+                    buddhaWisdomProofInfo = _uiState.value.buddhaWisdomProofInfo.copy(isEnabled = part2.aiProofMode),
                     isLoading = false // <-- Critical: Signal that loading is complete.
                 )
             }.catch { e ->
@@ -450,7 +471,10 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 // Load user context first - it's the foundation
-                val context = soulLayerRepository.getCurrentContext()
+                // Performance Pattern: Explicitly wrap Soul Layer calls in Dispatchers.IO
+                val context = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                    soulLayerRepository.getCurrentContext()
+                }
 
                 // Update basic context info
                 _uiState.update { state ->
@@ -498,7 +522,9 @@ class HomeViewModel @Inject constructor(
      */
     private suspend fun loadIntelligentGreeting() {
         try {
-            val greeting = soulLayerRepository.getGreeting()
+            val greeting = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                soulLayerRepository.getGreeting()
+            }
             _uiState.update { state ->
                 state.copy(
                     intelligentGreeting = greeting.greeting,
@@ -523,9 +549,13 @@ class HomeViewModel @Inject constructor(
      */
     private suspend fun loadFirstWeekState() {
         try {
-            val state = soulLayerRepository.getFirstWeekState()
-            val dayContent = soulLayerRepository.getFirstWeekDayContent()
-            val progress = soulLayerRepository.getFirstWeekProgress()
+            val (state, dayContent, progress) = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                Triple(
+                    soulLayerRepository.getFirstWeekState(),
+                    soulLayerRepository.getFirstWeekDayContent(),
+                    soulLayerRepository.getFirstWeekProgress()
+                )
+            }
 
             _uiState.update { uiState ->
                 uiState.copy(
@@ -545,7 +575,9 @@ class HomeViewModel @Inject constructor(
      */
     private suspend fun loadSurfacedMemory() {
         try {
-            val memory = soulLayerRepository.getMemoryToSurface(MemorySurfaceContext.APP_OPEN)
+            val memory = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                soulLayerRepository.getMemoryToSurface(MemorySurfaceContext.APP_OPEN)
+            }
             _uiState.update { state ->
                 state.copy(
                     surfacedMemory = memory,
@@ -566,7 +598,9 @@ class HomeViewModel @Inject constructor(
      */
     private suspend fun loadAnniversaryMemories() {
         try {
-            val anniversaries = soulLayerRepository.getAnniversaryMemories()
+            val anniversaries = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                soulLayerRepository.getAnniversaryMemories()
+            }
             _uiState.update { state ->
                 state.copy(anniversaryMemories = anniversaries)
             }
@@ -690,7 +724,9 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 // Force refresh the context
-                soulLayerRepository.refreshContext()
+                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                    soulLayerRepository.refreshContext()
+                }
 
                 // Reload all Soul Layer content
                 loadSoulLayerContent()
@@ -925,6 +961,43 @@ class HomeViewModel @Inject constructor(
         }
 
         loadBuddhaWisdom(forceRefresh = true)
+    }
+
+    /**
+     * Performance Pattern: Calculate mood trend by grouping entries by day.
+     * Normalizes moodIntensity (1-10) to a 1-5 scale for the chart.
+     */
+    private fun calculateMoodTrend(entries: List<JournalEntryEntity>): List<Float> {
+        val calendar = Calendar.getInstance()
+        val today = calendar.get(Calendar.DAY_OF_YEAR)
+        val year = calendar.get(Calendar.YEAR)
+
+        // Group entries by day (last 7 days)
+        val dayGroups = entries.groupBy { entry ->
+            calendar.timeInMillis = entry.createdAt
+            val entryDay = calendar.get(Calendar.DAY_OF_YEAR)
+            val entryYear = calendar.get(Calendar.YEAR)
+            entryYear * 1000 + entryDay // Unique key for day
+        }
+
+        val trendData = mutableListOf<Float>()
+        for (i in 6 downTo 0) {
+            calendar.timeInMillis = System.currentTimeMillis()
+            calendar.add(Calendar.DAY_OF_YEAR, -i)
+            val targetDay = calendar.get(Calendar.DAY_OF_YEAR)
+            val targetYear = calendar.get(Calendar.YEAR)
+            val dayKey = targetYear * 1000 + targetDay
+
+            val dayEntries = dayGroups[dayKey]
+            if (dayEntries != null && dayEntries.isNotEmpty()) {
+                val avgIntensity = dayEntries.map { it.moodIntensity }.average().toFloat()
+                // Normalize 1-10 to 1-5 scale: (intensity / 2f).coerceIn(1f, 5f)
+                trendData.add((avgIntensity / 2f).coerceIn(1f, 5f))
+            } else {
+                trendData.add(3.0f) // Neutral fallback for days without entries
+            }
+        }
+        return trendData
     }
 
     fun retry() {
