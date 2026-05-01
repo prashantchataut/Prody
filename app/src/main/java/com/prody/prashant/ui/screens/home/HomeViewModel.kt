@@ -147,6 +147,19 @@ private data class DailyContent(
     val idiom: IdiomEntity?
 )
 
+private data class InitialDataPart1(
+    val profile: UserProfileEntity?,
+    val weeklyJournalEntries: List<JournalEntryEntity>,
+    val weeklyLearnedWords: Int
+)
+
+private data class InitialDataPart2(
+    val streakHistory: List<StreakHistoryEntity>,
+    val todayJournalEntries: List<JournalEntryEntity>,
+    val dualStreak: DualStreakStatus,
+    val aiProofMode: Boolean
+)
+
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val userDao: UserDao,
@@ -219,30 +232,40 @@ class HomeViewModel @Inject constructor(
                 dailyContent.idiom?.let { idiomDao.markAsShownDaily(it.id) }
             }
 
-            // 2. Combine all reactive flows and the results of the one-time fetch.
-            combine(
+            // 2. Combine all reactive flows into intermediate data classes to improve type safety.
+            val flowPart1 = combine(
                 userDao.getUserProfile().distinctUntilChanged(),
                 journalDao.getEntriesByDateRange(weekStart, System.currentTimeMillis()).distinctUntilChanged(),
-                vocabularyDao.getLearnedCountSince(weekStart).distinctUntilChanged(),
+                vocabularyDao.getLearnedCountSince(weekStart).distinctUntilChanged()
+            ) { profile, weeklyEntries, learnedWords ->
+                InitialDataPart1(
+                    profile = profile,
+                    weeklyJournalEntries = weeklyEntries,
+                    weeklyLearnedWords = learnedWords
+                )
+            }
+
+            val flowPart2 = combine(
                 userDao.getStreakHistory().distinctUntilChanged(),
                 journalDao.getEntriesByDateRange(todayStart, System.currentTimeMillis()).distinctUntilChanged(),
                 dualStreakManager.getDualStreakStatusFlow().distinctUntilChanged(),
                 preferencesManager.debugAiProofMode.distinctUntilChanged()
-            ) { args ->
-                val profile = args.getOrNull(0) as? UserProfileEntity
-                val weeklyJournalEntries = (args.getOrNull(1) as? List<*>)?.filterIsInstance<JournalEntryEntity>() ?: emptyList()
-                val weeklyLearnedWords = args.getOrNull(2) as? Int ?: 0
-                val streakHistory = (args.getOrNull(3) as? List<*>)?.filterIsInstance<StreakHistoryEntity>() ?: emptyList()
-                val todayJournalEntries = (args.getOrNull(4) as? List<*>)?.filterIsInstance<JournalEntryEntity>() ?: emptyList()
-                val dualStreak = args.getOrNull(5) as? DualStreakStatus ?: DualStreakStatus.empty()
-                val aiProofMode = args.getOrNull(6) as? Boolean ?: false
+            ) { streakHistory, todayEntries, dualStreak, aiProofMode ->
+                InitialDataPart2(
+                    streakHistory = streakHistory,
+                    todayJournalEntries = todayEntries,
+                    dualStreak = dualStreak,
+                    aiProofMode = aiProofMode
+                )
+            }
 
+            combine(flowPart1, flowPart2) { part1, part2 ->
                 // Calculate weekly active days.
-                val daysActiveThisWeek = streakHistory.count { it.date >= weekStart }
+                val daysActiveThisWeek = part2.streakHistory.count { it.date >= weekStart }
 
                 // Determine today's journaling status.
-                val (journaledToday, todayMood, todayPreview) = if (todayJournalEntries.isNotEmpty()) {
-                    val latestEntry = todayJournalEntries.maxByOrNull { it.createdAt }
+                val (journaledToday, todayMood, todayPreview) = if (part2.todayJournalEntries.isNotEmpty()) {
+                    val latestEntry = part2.todayJournalEntries.maxByOrNull { it.createdAt }
                     Triple(true, latestEntry?.mood ?: "", latestEntry?.content?.take(100) ?: "")
                 } else {
                     Triple(false, "", "")
@@ -250,9 +273,9 @@ class HomeViewModel @Inject constructor(
 
                 // 3. Atomically update the UI state with all the loaded data.
                 _uiState.value.copy(
-                    userName = profile?.displayName ?: "Growth Seeker",
-                    currentStreak = profile?.currentStreak ?: 0,
-                    totalPoints = profile?.totalPoints ?: 0,
+                    userName = part1.profile?.displayName ?: "Growth Seeker",
+                    currentStreak = part1.profile?.currentStreak ?: 0,
+                    totalPoints = part1.profile?.totalPoints ?: 0,
                     dailyQuote = dailyContent.quote?.content ?: _uiState.value.dailyQuote,
                     dailyQuoteAuthor = dailyContent.quote?.author ?: _uiState.value.dailyQuoteAuthor,
                     wordOfTheDay = dailyContent.word?.word ?: _uiState.value.wordOfTheDay,
@@ -266,14 +289,14 @@ class HomeViewModel @Inject constructor(
                     idiomMeaning = dailyContent.idiom?.meaning ?: _uiState.value.idiomMeaning,
                     idiomExample = dailyContent.idiom?.exampleSentence ?: _uiState.value.idiomExample,
                     idiomId = dailyContent.idiom?.id ?: _uiState.value.idiomId,
-                    journalEntriesThisWeek = weeklyJournalEntries.size,
-                    wordsLearnedThisWeek = weeklyLearnedWords,
+                    journalEntriesThisWeek = part1.weeklyJournalEntries.size,
+                    wordsLearnedThisWeek = part1.weeklyLearnedWords,
                     daysActiveThisWeek = daysActiveThisWeek,
                     journaledToday = journaledToday,
                     todayEntryMood = todayMood,
                     todayEntryPreview = todayPreview,
-                    dualStreakStatus = dualStreak,
-                    buddhaWisdomProofInfo = _uiState.value.buddhaWisdomProofInfo.copy(isEnabled = aiProofMode),
+                    dualStreakStatus = part2.dualStreak,
+                    buddhaWisdomProofInfo = _uiState.value.buddhaWisdomProofInfo.copy(isEnabled = part2.aiProofMode),
                     isLoading = false // <-- Critical: Signal that loading is complete.
                 )
             }.catch { e ->
