@@ -137,7 +137,9 @@ data class HomeUiState(
     val personalizedPatternSuggestion: String = "",
     // Intelligence Insights
     val intelligenceInsights: List<IntelligenceInsight> = emptyList(),
-    val isPremiumIntelligenceEnabled: Boolean = false
+    val isPremiumIntelligenceEnabled: Boolean = false,
+    // Mood trend for the last 7 days (normalized 1-5)
+    val moodTrend: List<Float> = emptyList()
 )
 
 private data class DailyContent(
@@ -248,6 +250,9 @@ class HomeViewModel @Inject constructor(
                     Triple(false, "", "")
                 }
 
+                // Calculate 7-day mood trend
+                val moodTrend = calculateMoodTrend(weeklyJournalEntries)
+
                 // 3. Atomically update the UI state with all the loaded data.
                 _uiState.value.copy(
                     userName = profile?.displayName ?: "Growth Seeker",
@@ -273,6 +278,7 @@ class HomeViewModel @Inject constructor(
                     todayEntryMood = todayMood,
                     todayEntryPreview = todayPreview,
                     dualStreakStatus = dualStreak,
+                    moodTrend = moodTrend,
                     buddhaWisdomProofInfo = _uiState.value.buddhaWisdomProofInfo.copy(isEnabled = aiProofMode),
                     isLoading = false // <-- Critical: Signal that loading is complete.
                 )
@@ -794,6 +800,39 @@ class HomeViewModel @Inject constructor(
         calendar.set(Calendar.SECOND, 0)
         calendar.set(Calendar.MILLISECOND, 0)
         return calendar.timeInMillis
+    }
+
+    /**
+     * Performance Optimization: Computes a 7-day mood trend from journal entries.
+     * Uses a unique day identifier to group entries and handles gap-filling for empty days.
+     */
+    private fun calculateMoodTrend(entries: List<JournalEntryEntity>): List<Float> {
+        val calendar = Calendar.getInstance()
+        val trend = mutableListOf<Float>()
+
+        // Use Year * 1000 + DayOfYear as a unique key for grouping
+        val entriesByDay = entries.groupBy { entry ->
+            calendar.timeInMillis = entry.createdAt
+            calendar.get(Calendar.YEAR) * 1000 + calendar.get(Calendar.DAY_OF_YEAR)
+        }
+
+        // Generate values for the last 7 days including today
+        for (i in 6 downTo 0) {
+            calendar.timeInMillis = System.currentTimeMillis()
+            calendar.add(Calendar.DAY_OF_YEAR, -i)
+            val dayKey = calendar.get(Calendar.YEAR) * 1000 + calendar.get(Calendar.DAY_OF_YEAR)
+
+            val dayEntries = entriesByDay[dayKey]
+            if (dayEntries.isNullOrEmpty()) {
+                trend.add(3.0f) // Neutral fallback
+            } else {
+                val avgIntensity = dayEntries.map { it.moodIntensity }.average().toFloat()
+                // Normalize 1-10 scale to 1-5 scale for UI
+                trend.add((avgIntensity / 2f).coerceIn(1f, 5f))
+            }
+        }
+
+        return trend
     }
 
     private fun getTodayStartTimestamp(): Long {
