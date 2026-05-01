@@ -39,9 +39,6 @@ class VocabularyReviewViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(VocabularyReviewUiState())
     val uiState: StateFlow<VocabularyReviewUiState> = _uiState.asStateFlow()
 
-    // Get current user ID from authentication service
-    private val userId = preferencesManager.getCurrentUserId() ?: "local"
-
     init {
         loadVocabularyReview()
     }
@@ -51,6 +48,9 @@ class VocabularyReviewViewModel @Inject constructor(
             _uiState.update { it.copy(isLoading = true) }
 
             try {
+                // Get current user ID from authentication service
+                val userId = preferencesManager.getCurrentUserId() ?: "local"
+
                 // Get week boundaries
                 val weekStart = getWeekStartTimestamp()
                 val now = System.currentTimeMillis()
@@ -71,7 +71,7 @@ class VocabularyReviewViewModel @Inject constructor(
                     .mapNotNull { id -> allLearnedWords.find { it.id == id } }
 
                 // Calculate vocabulary growth over time
-                val growthData = calculateGrowthData(allLearnedWords)
+                val growthData = calculateGrowthData(userId, allLearnedWords)
 
                 // Get words needing practice
                 val wordsNeedingPractice = suggestionEngine.getWordsNeedingPractice(userId, 5)
@@ -110,7 +110,7 @@ class VocabularyReviewViewModel @Inject constructor(
     /**
      * Calculate vocabulary growth data for the chart.
      */
-    private suspend fun calculateGrowthData(learnedWords: List<VocabularyEntity>): List<VocabularyGrowthPoint> {
+    private suspend fun calculateGrowthData(userId: String, learnedWords: List<VocabularyEntity>): List<VocabularyGrowthPoint> {
         if (learnedWords.isEmpty()) return emptyList()
 
         // Group words by week

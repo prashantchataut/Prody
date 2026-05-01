@@ -21,7 +21,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Named
@@ -474,11 +473,9 @@ class PreferencesManager @Inject constructor(
     }
 
     /**
-     * Synchronous access to current user ID (using runBlocking for simplicity in this legacy call)
+     * Asynchronous access to current user ID.
      */
-    fun getCurrentUserId(): String? = runBlocking {
-        dataStore.data.map { it[PreferencesKeys.USER_ID] }.first()
-    }
+    suspend fun getCurrentUserId(): String? = dataStore.data.map { it[PreferencesKeys.USER_ID] }.first()
 
     // Gamification Initialized Flag
     val gamificationInitialized: Flow<Boolean> = dataStore.data

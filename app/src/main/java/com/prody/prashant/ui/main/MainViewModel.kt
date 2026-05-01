@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -55,8 +56,8 @@ class MainViewModel @Inject constructor(
         // Asynchronously load user preferences and apply them.
         viewModelScope.launch {
             combine(
-                preferencesManager.themeMode.catch { emit("system") },
-                preferencesManager.hapticFeedbackEnabled.catch { emit(true) }
+                preferencesManager.themeMode.distinctUntilChanged().catch { emit("system") },
+                preferencesManager.hapticFeedbackEnabled.distinctUntilChanged().catch { emit(true) }
             ) { themeModeString, hapticEnabled ->
                 val themeMode = when (themeModeString.lowercase()) {
                     "light" -> ThemeMode.LIGHT
