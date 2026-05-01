@@ -1066,8 +1066,9 @@ fun NavigationBreathingGlow(
                 .size(48.dp)
                 .graphicsLayer {
                     val active = activeAlphaState.value
-                    scaleX = glowScaleState.value * active
-                    scaleY = glowScaleState.value * active
+                    val scale = glowScaleState.value
+                    scaleX = scale * active
+                    scaleY = scale * active
                     alpha = glowAlphaState.value * active
                 }
                 .blur(12.dp)

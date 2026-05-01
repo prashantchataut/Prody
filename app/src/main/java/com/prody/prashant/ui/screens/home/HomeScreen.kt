@@ -152,9 +152,51 @@ fun HomeScreen(
             DashboardHeader(
                 userName = uiState.userName,
                 greeting = greeting,
+                subtext = uiState.greetingSubtext,
                 onProfileClick = {},
                 onNotificationClick = onNavigateToSearch
             )
+        }
+
+        // First Week Journey Progress
+        if (uiState.isInFirstWeek) {
+            item(key = "first_week_progress") {
+                FirstWeekProgressCard(
+                    dayNumber = uiState.firstWeekDayNumber,
+                    progress = uiState.firstWeekProgress,
+                    dayContent = uiState.firstWeekDayContent,
+                    onContinue = {
+                        uiState.firstWeekDayContent?.primaryAction?.let { action ->
+                            // Execute first week action
+                        }
+                    },
+                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
+                )
+            }
+        }
+
+        // Surfaced Memory from Soul Layer
+        if (uiState.showMemoryCard && uiState.surfacedMemory != null) {
+            item(key = "surfaced_memory") {
+                SurfacedMemoryCard(
+                    memory = uiState.surfacedMemory!!,
+                    onExpand = { viewModel.expandMemoryCard() },
+                    onDismiss = { viewModel.dismissMemoryCard() },
+                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
+                )
+            }
+        }
+
+        // Anniversary Memories
+        uiState.anniversaryMemories.forEachIndexed { index, anniversary ->
+            item(key = "anniversary_memory_$index") {
+                AnniversaryMemoryCard(
+                    anniversary = anniversary,
+                    onView = { /* Navigation to entry */ },
+                    onDismiss = { /* Dismiss logic */ },
+                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
+                )
+            }
         }
 
         // Overview Section (Consistency & Badges)
@@ -187,10 +229,10 @@ fun HomeScreen(
         }
 
         // Mood Trend Chart - only show if there's real data
-        if (uiState.journalEntriesThisWeek > 0) {
+        if (uiState.moodTrend.isNotEmpty()) {
             item(key = "mood_trend") {
                 MoodTrendSection(
-                    moodData = emptyList() // Mood trend requires historical mood data not exposed yet
+                    moodData = uiState.moodTrend
                 )
             }
         }
@@ -238,6 +280,14 @@ fun HomeScreen(
             )
         }
     }
+
+    // Celebration Overlays (Milestones, First Week etc)
+    if (uiState.showFirstWeekCelebration && uiState.firstWeekCelebration != null) {
+        CelebrationDialog(
+            celebration = uiState.firstWeekCelebration!!,
+            onDismiss = { viewModel.dismissFirstWeekCelebration() }
+        )
+    }
 }
 
 // =============================================================================
@@ -248,6 +298,7 @@ fun HomeScreen(
 fun DashboardHeader(
     userName: String,
     greeting: String = "Good Morning,",
+    subtext: String = "",
     onProfileClick: () -> Unit,
     onNotificationClick: () -> Unit
 ) {
@@ -269,6 +320,17 @@ fun DashboardHeader(
                 ),
                 color = ProdyTextSecondaryLight
             )
+            if (subtext.isNotEmpty()) {
+                Text(
+                    text = subtext,
+                    style = TextStyle(
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.Normal,
+                        fontSize = 12.sp
+                    ),
+                    color = ProdyTextSecondaryLight.copy(alpha = 0.8f)
+                )
+            }
             Text(
                 text = userName,
                 style = TextStyle(
