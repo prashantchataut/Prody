@@ -69,6 +69,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.prody.prashant.ui.components.SecureScreen
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.prody.prashant.R
@@ -98,6 +99,9 @@ fun WriteMessageScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isDark = isDarkTheme()
     val context = LocalContext.current
+
+    // Security: Prevent screenshots while writing future messages
+    SecureScreen()
 
     // Media picker launcher
     val mediaPickerLauncher = rememberLauncherForActivityResult(

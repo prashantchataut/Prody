@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.prody.prashant.ui.components.SecureScreen
 import com.prody.prashant.R
 import com.prody.prashant.domain.collaborative.*
 import com.prody.prashant.ui.theme.*
@@ -49,6 +50,9 @@ fun MessageDetailScreen(
     val uiState by viewModel.detailState.collectAsStateWithLifecycle()
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showCancelDialog by remember { mutableStateOf(false) }
+
+    // Security: Prevent screenshots of collaborative messages
+    SecureScreen()
 
     // Load message
     LaunchedEffect(messageId, isReceived) {
