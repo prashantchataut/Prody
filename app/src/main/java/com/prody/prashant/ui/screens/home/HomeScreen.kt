@@ -1,6 +1,9 @@
 package com.prody.prashant.ui.screens.home
 
 import com.prody.prashant.ui.icons.ProdyIcons
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.EaseOutCubic
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -42,6 +45,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.ui.theme.*
 import com.prody.prashant.domain.intelligence.IntelligenceInsight
 import com.prody.prashant.ui.components.*
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 // =============================================================================
 // PERSONALIZATION DASHBOARD - REVAMPED 2026
@@ -141,6 +146,14 @@ fun HomeScreen(
         )
     }
 
+    // Celebration Dialog for Soul Layer milestones
+    if (uiState.showFirstWeekCelebration && uiState.firstWeekCelebration != null) {
+        CelebrationDialog(
+            celebration = uiState.firstWeekCelebration!!,
+            onDismiss = { viewModel.dismissFirstWeekCelebration() }
+        )
+    }
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -149,20 +162,98 @@ fun HomeScreen(
     ) {
         // Header with Greeting
         item(key = "header") {
-            DashboardHeader(
-                userName = uiState.userName,
-                greeting = greeting,
-                onProfileClick = {},
-                onNotificationClick = onNavigateToSearch
-            )
+            val entranceAlpha = remember { Animatable(0f) }
+            val entranceTranslation = remember { Animatable(20f) }
+
+            LaunchedEffect(Unit) {
+                launch {
+                    entranceAlpha.animateTo(1f, animationSpec = tween(600, easing = EaseOutCubic))
+                }
+                launch {
+                    entranceTranslation.animateTo(0f, animationSpec = tween(600, easing = EaseOutCubic))
+                }
+            }
+
+            Box(modifier = Modifier.graphicsLayer {
+                alpha = entranceAlpha.value
+                translationY = entranceTranslation.value
+            }) {
+                DashboardHeader(
+                    userName = uiState.userName,
+                    greeting = greeting,
+                    onProfileClick = {},
+                    onNotificationClick = onNavigateToSearch
+                )
+            }
         }
 
         // Overview Section (Consistency & Badges)
         item(key = "overview") {
-            OverviewSection(
-                streakDays = uiState.currentStreak,
-                badges = badges
-            )
+            val entranceAlpha = remember { Animatable(0f) }
+            val entranceTranslation = remember { Animatable(20f) }
+
+            LaunchedEffect(Unit) {
+                delay(100)
+                launch {
+                    entranceAlpha.animateTo(1f, animationSpec = tween(600, easing = EaseOutCubic))
+                }
+                launch {
+                    entranceTranslation.animateTo(0f, animationSpec = tween(600, easing = EaseOutCubic))
+                }
+            }
+
+            Box(modifier = Modifier.graphicsLayer {
+                alpha = entranceAlpha.value
+                translationY = entranceTranslation.value
+            }) {
+                OverviewSection(
+                    streakDays = uiState.currentStreak,
+                    badges = badges
+                )
+            }
+        }
+
+        // Soul Layer: First Week Journey
+        if (uiState.isInFirstWeek) {
+            item(key = "first_week_journey") {
+                Spacer(modifier = Modifier.height(16.dp))
+                FirstWeekProgressCard(
+                    dayNumber = uiState.firstWeekDayNumber,
+                    progress = uiState.firstWeekProgress,
+                    dayContent = uiState.firstWeekDayContent,
+                    onContinue = { /* Handle continue - navigation or action */ },
+                    modifier = Modifier.padding(horizontal = 24.dp)
+                )
+            }
+        }
+
+        // Soul Layer: Surfaced Memory
+        if (uiState.showMemoryCard && uiState.surfacedMemory != null) {
+            item(key = "surfaced_memory") {
+                Spacer(modifier = Modifier.height(16.dp))
+                SurfacedMemoryCard(
+                    memory = uiState.surfacedMemory!!,
+                    onExpand = { viewModel.expandMemoryCard() },
+                    onDismiss = { viewModel.dismissMemoryCard() },
+                    modifier = Modifier.padding(horizontal = 24.dp)
+                )
+            }
+        }
+
+        // Soul Layer: Anniversary Memories
+        if (uiState.anniversaryMemories.isNotEmpty()) {
+            items(
+                items = uiState.anniversaryMemories,
+                key = { "anniversary_${it.memory.id}" }
+            ) { anniversary ->
+                Spacer(modifier = Modifier.height(16.dp))
+                AnniversaryMemoryCard(
+                    anniversary = anniversary,
+                    onView = { /* Navigate to memory detail */ },
+                    onDismiss = { /* Handle dismiss */ },
+                    modifier = Modifier.padding(horizontal = 24.dp)
+                )
+            }
         }
 
         // Personalized Pattern Card (opt-in, only shown when data exists)
@@ -206,36 +297,90 @@ fun HomeScreen(
 
         // Quick Actions (Navigation)
         item(key = "quick_actions") {
-            QuickActionsGrid(
-                onJournalClick = onNavigateToJournal,
-                onHavenClick = onNavigateToHaven,
-                onWisdomClick = onNavigateToQuotes,
-                onFutureClick = onNavigateToFutureMessage
-            )
+            val entranceAlpha = remember { Animatable(0f) }
+            val entranceTranslation = remember { Animatable(20f) }
+
+            LaunchedEffect(Unit) {
+                delay(200)
+                launch {
+                    entranceAlpha.animateTo(1f, animationSpec = tween(600, easing = EaseOutCubic))
+                }
+                launch {
+                    entranceTranslation.animateTo(0f, animationSpec = tween(600, easing = EaseOutCubic))
+                }
+            }
+
+            Box(modifier = Modifier.graphicsLayer {
+                alpha = entranceAlpha.value
+                translationY = entranceTranslation.value
+            }) {
+                QuickActionsGrid(
+                    onJournalClick = onNavigateToJournal,
+                    onHavenClick = onNavigateToHaven,
+                    onWisdomClick = onNavigateToQuotes,
+                    onFutureClick = onNavigateToFutureMessage
+                )
+            }
         }
 
         // Explore Section - routes to additional features
         item(key = "explore") {
-            ExploreSection(
-                onMeditationClick = onNavigateToMeditation,
-                onChallengesClick = onNavigateToChallenges,
-                onMissionsClick = onNavigateToMissions,
-                onLearningClick = onNavigateToLearning,
-                onDeepDiveClick = onNavigateToDeepDive,
-                onVocabularyClick = onNavigateToVocabulary,
-                onMicroJournalClick = onNavigateToMicroJournal,
-                onDailyRitualClick = onNavigateToDailyRitual
-            )
+            val entranceAlpha = remember { Animatable(0f) }
+            val entranceTranslation = remember { Animatable(20f) }
+
+            LaunchedEffect(Unit) {
+                delay(300)
+                launch {
+                    entranceAlpha.animateTo(1f, animationSpec = tween(600, easing = EaseOutCubic))
+                }
+                launch {
+                    entranceTranslation.animateTo(0f, animationSpec = tween(600, easing = EaseOutCubic))
+                }
+            }
+
+            Box(modifier = Modifier.graphicsLayer {
+                alpha = entranceAlpha.value
+                translationY = entranceTranslation.value
+            }) {
+                ExploreSection(
+                    onMeditationClick = onNavigateToMeditation,
+                    onChallengesClick = onNavigateToChallenges,
+                    onMissionsClick = onNavigateToMissions,
+                    onLearningClick = onNavigateToLearning,
+                    onDeepDiveClick = onNavigateToDeepDive,
+                    onVocabularyClick = onNavigateToVocabulary,
+                    onMicroJournalClick = onNavigateToMicroJournal,
+                    onDailyRitualClick = onNavigateToDailyRitual
+                )
+            }
         }
 
         // Recent Activity - show today's journal status
         item(key = "recent_activity") {
-            RecentActivitySection(
-                journaledToday = uiState.journaledToday,
-                todayMood = uiState.todayEntryMood,
-                todayPreview = uiState.todayEntryPreview,
-                onClick = onNavigateToJournal
-            )
+            val entranceAlpha = remember { Animatable(0f) }
+            val entranceTranslation = remember { Animatable(20f) }
+
+            LaunchedEffect(Unit) {
+                delay(400)
+                launch {
+                    entranceAlpha.animateTo(1f, animationSpec = tween(600, easing = EaseOutCubic))
+                }
+                launch {
+                    entranceTranslation.animateTo(0f, animationSpec = tween(600, easing = EaseOutCubic))
+                }
+            }
+
+            Box(modifier = Modifier.graphicsLayer {
+                alpha = entranceAlpha.value
+                translationY = entranceTranslation.value
+            }) {
+                RecentActivitySection(
+                    journaledToday = uiState.journaledToday,
+                    todayMood = uiState.todayEntryMood,
+                    todayPreview = uiState.todayEntryPreview,
+                    onClick = onNavigateToJournal
+                )
+            }
         }
     }
 }
