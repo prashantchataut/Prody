@@ -165,6 +165,54 @@ fun HomeScreen(
             )
         }
 
+        // Dual Streak Card (Dynamic status from dual streak system)
+        item(key = "dual_streak") {
+            DualStreakCard(
+                dualStreakStatus = uiState.dualStreakStatus,
+                onTapForDetails = { /* Show details if needed */ }
+            )
+        }
+
+        // Soul Layer: First Week Journey
+        if (uiState.isInFirstWeek) {
+            item(key = "first_week_journey") {
+                Spacer(modifier = Modifier.height(16.dp))
+                FirstWeekProgressCard(
+                    dayNumber = uiState.firstWeekDayNumber,
+                    progress = uiState.firstWeekProgress,
+                    dayContent = uiState.firstWeekDayContent,
+                    onContinue = { /* Navigate to current first week lesson or task */ },
+                    modifier = Modifier.padding(horizontal = 24.dp)
+                )
+            }
+        }
+
+        // Soul Layer: Anniversary Memory (Nostalgia)
+        if (uiState.anniversaryMemories.isNotEmpty()) {
+            item(key = "anniversary_memory") {
+                Spacer(modifier = Modifier.height(16.dp))
+                AnniversaryMemoryCard(
+                    anniversary = uiState.anniversaryMemories.first(),
+                    onView = { /* Navigate to memory detail */ },
+                    onDismiss = { /* Optional: Tell VM to hide this specific one */ },
+                    modifier = Modifier.padding(horizontal = 24.dp)
+                )
+            }
+        }
+
+        // Soul Layer: Surfaced Memory Card
+        if (uiState.showMemoryCard && uiState.surfacedMemory != null) {
+            item(key = "surfaced_memory") {
+                Spacer(modifier = Modifier.height(16.dp))
+                SurfacedMemoryCard(
+                    memory = uiState.surfacedMemory!!,
+                    onExpand = { viewModel.expandMemoryCard() },
+                    onDismiss = { viewModel.dismissMemoryCard() },
+                    modifier = Modifier.padding(horizontal = 24.dp)
+                )
+            }
+        }
+
         // Personalized Pattern Card (opt-in, only shown when data exists)
         if (uiState.personalizedPatternText.isNotEmpty()) {
             item(key = "personalized_pattern") {
@@ -187,10 +235,10 @@ fun HomeScreen(
         }
 
         // Mood Trend Chart - only show if there's real data
-        if (uiState.journalEntriesThisWeek > 0) {
+        if (uiState.moodTrend.isNotEmpty()) {
             item(key = "mood_trend") {
                 MoodTrendSection(
-                    moodData = emptyList() // Mood trend requires historical mood data not exposed yet
+                    moodData = uiState.moodTrend
                 )
             }
         }
