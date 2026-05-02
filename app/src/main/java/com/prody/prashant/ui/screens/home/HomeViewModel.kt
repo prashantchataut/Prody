@@ -127,6 +127,8 @@ data class HomeUiState(
     val showMemoryCard: Boolean = false,
     // Anniversary memories for today
     val anniversaryMemories: List<AnniversaryMemory> = emptyList(),
+    // Mood trend for the last 7 days (normalized 1.0 - 5.0)
+    val moodTrendData: List<Float> = emptyList(),
     // User context for personalization
     val userArchetype: UserArchetype = UserArchetype.EXPLORER,
     val trustLevel: TrustLevel = TrustLevel.NEW,
@@ -240,6 +242,9 @@ class HomeViewModel @Inject constructor(
                 // Calculate weekly active days.
                 val daysActiveThisWeek = streakHistory.count { it.date >= weekStart }
 
+                // Performance Optimization: Calculate 7-day mood trend from weekly entries
+                val moodTrend = calculateMoodTrend(weeklyJournalEntries)
+
                 // Determine today's journaling status.
                 val (journaledToday, todayMood, todayPreview) = if (todayJournalEntries.isNotEmpty()) {
                     val latestEntry = todayJournalEntries.maxByOrNull { it.createdAt }
@@ -273,6 +278,7 @@ class HomeViewModel @Inject constructor(
                     todayEntryMood = todayMood,
                     todayEntryPreview = todayPreview,
                     dualStreakStatus = dualStreak,
+                    moodTrendData = moodTrend,
                     buddhaWisdomProofInfo = _uiState.value.buddhaWisdomProofInfo.copy(isEnabled = aiProofMode),
                     isLoading = false // <-- Critical: Signal that loading is complete.
                 )
@@ -910,6 +916,49 @@ class HomeViewModel @Inject constructor(
      * Refresh Buddha's thought with a new AI-generated one.
      * Has a cooldown to prevent spam.
      */
+    /**
+     * Performance Optimization: Groups journal entries by day to calculate a 7-day trend.
+     * Uses a composite key (Year * 1000 + DayOfYear) for accurate grouping.
+     * Normalizes values to a 1.0 - 5.0 scale.
+     */
+    private fun calculateMoodTrend(entries: List<JournalEntryEntity>): List<Float> {
+        if (entries.isEmpty()) return emptyList()
+
+        val calendar = Calendar.getInstance()
+        val today = calendar.get(Calendar.DAY_OF_YEAR)
+        val year = calendar.get(Calendar.YEAR)
+
+        // Map entries to DayOfYear for the last 7 days
+        val moodMap = mutableMapOf<Int, MutableList<Float>>()
+
+        // Initialize last 7 days with neutral values if we want a continuous line,
+        // or leave empty if we only want to show days with data.
+        // For Prody, we'll show the last 7 days.
+        for (i in 0 until 7) {
+            calendar.timeInMillis = System.currentTimeMillis()
+            calendar.add(Calendar.DAY_OF_YEAR, -i)
+            val dayKey = calendar.get(Calendar.YEAR) * 1000 + calendar.get(Calendar.DAY_OF_YEAR)
+            moodMap[dayKey] = mutableListOf()
+        }
+
+        entries.forEach { entry ->
+            calendar.timeInMillis = entry.createdAt
+            val dayKey = calendar.get(Calendar.YEAR) * 1000 + calendar.get(Calendar.DAY_OF_YEAR)
+            if (moodMap.containsKey(dayKey)) {
+                // Map intensity (0.0 - 10.0) to (1.0 - 5.0)
+                val normalizedMood = (entry.moodIntensity / 2f).coerceIn(1f, 5f)
+                moodMap[dayKey]?.add(normalizedMood)
+            }
+        }
+
+        // Return averages for each day, chronologically (oldest to newest)
+        return moodMap.keys.sorted().map { dayKey ->
+            val dailyMoods = moodMap[dayKey] ?: emptyList()
+            if (dailyMoods.isEmpty()) 3.0f // Neutral fallback for gaps
+            else dailyMoods.average().toFloat()
+        }
+    }
+
     fun refreshBuddhaThought() {
         val timeSinceLastRefresh = System.currentTimeMillis() - lastBuddhaRefreshTime
 

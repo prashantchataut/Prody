@@ -16,6 +16,9 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
@@ -159,84 +162,138 @@ fun HomeScreen(
 
         // Overview Section (Consistency & Badges)
         item(key = "overview") {
-            OverviewSection(
-                streakDays = uiState.currentStreak,
-                badges = badges
-            )
+            StaggeredEntranceItem(index = 0) {
+                OverviewSection(
+                    streakDays = uiState.currentStreak,
+                    badges = badges
+                )
+            }
         }
 
         // Personalized Pattern Card (opt-in, only shown when data exists)
         if (uiState.personalizedPatternText.isNotEmpty()) {
             item(key = "personalized_pattern") {
-                PersonalizedPatternCard(
-                    patternText = uiState.personalizedPatternText,
-                    patternSuggestion = uiState.personalizedPatternSuggestion
-                )
+                StaggeredEntranceItem(index = 1) {
+                    PersonalizedPatternCard(
+                        patternText = uiState.personalizedPatternText,
+                        patternSuggestion = uiState.personalizedPatternSuggestion
+                    )
+                }
             }
         }
 
         // Premium Intelligence Insights (Opt-in)
         if (uiState.isPremiumIntelligenceEnabled && uiState.intelligenceInsights.isNotEmpty()) {
             item(key = "intelligence_insight") {
-                Spacer(modifier = Modifier.height(24.dp))
-                IntelligenceInsightCard(
-                    insight = uiState.intelligenceInsights.first(),
-                    onActionClick = {}
-                )
+                StaggeredEntranceItem(index = 2) {
+                    Column {
+                        Spacer(modifier = Modifier.height(24.dp))
+                        IntelligenceInsightCard(
+                            insight = uiState.intelligenceInsights.first(),
+                            onActionClick = {}
+                        )
+                    }
+                }
             }
         }
 
         // Mood Trend Chart - only show if there's real data
-        if (uiState.journalEntriesThisWeek > 0) {
+        if (uiState.moodTrendData.isNotEmpty()) {
             item(key = "mood_trend") {
-                MoodTrendSection(
-                    moodData = emptyList() // Mood trend requires historical mood data not exposed yet
-                )
+                StaggeredEntranceItem(index = 3) {
+                    MoodTrendSection(
+                        moodData = uiState.moodTrendData
+                    )
+                }
             }
         }
 
         // Weekly Summary from real data
         item(key = "weekly_summary") {
-            WeeklySummarySection(
-                journalEntries = uiState.journalEntriesThisWeek,
-                wordsLearned = uiState.wordsLearnedThisWeek,
-                mindfulMinutes = uiState.daysActiveThisWeek * 15 // Approximate based on active days
-            )
+            StaggeredEntranceItem(index = 4) {
+                WeeklySummarySection(
+                    journalEntries = uiState.journalEntriesThisWeek,
+                    wordsLearned = uiState.wordsLearnedThisWeek,
+                    mindfulMinutes = uiState.daysActiveThisWeek * 15 // Approximate based on active days
+                )
+            }
         }
 
         // Quick Actions (Navigation)
         item(key = "quick_actions") {
-            QuickActionsGrid(
-                onJournalClick = onNavigateToJournal,
-                onHavenClick = onNavigateToHaven,
-                onWisdomClick = onNavigateToQuotes,
-                onFutureClick = onNavigateToFutureMessage
-            )
+            StaggeredEntranceItem(index = 5) {
+                QuickActionsGrid(
+                    onJournalClick = onNavigateToJournal,
+                    onHavenClick = onNavigateToHaven,
+                    onWisdomClick = onNavigateToQuotes,
+                    onFutureClick = onNavigateToFutureMessage
+                )
+            }
         }
 
         // Explore Section - routes to additional features
         item(key = "explore") {
-            ExploreSection(
-                onMeditationClick = onNavigateToMeditation,
-                onChallengesClick = onNavigateToChallenges,
-                onMissionsClick = onNavigateToMissions,
-                onLearningClick = onNavigateToLearning,
-                onDeepDiveClick = onNavigateToDeepDive,
-                onVocabularyClick = onNavigateToVocabulary,
-                onMicroJournalClick = onNavigateToMicroJournal,
-                onDailyRitualClick = onNavigateToDailyRitual
-            )
+            StaggeredEntranceItem(index = 6) {
+                ExploreSection(
+                    onMeditationClick = onNavigateToMeditation,
+                    onChallengesClick = onNavigateToChallenges,
+                    onMissionsClick = onNavigateToMissions,
+                    onLearningClick = onNavigateToLearning,
+                    onDeepDiveClick = onNavigateToDeepDive,
+                    onVocabularyClick = onNavigateToVocabulary,
+                    onMicroJournalClick = onNavigateToMicroJournal,
+                    onDailyRitualClick = onNavigateToDailyRitual
+                )
+            }
         }
 
         // Recent Activity - show today's journal status
         item(key = "recent_activity") {
-            RecentActivitySection(
-                journaledToday = uiState.journaledToday,
-                todayMood = uiState.todayEntryMood,
-                todayPreview = uiState.todayEntryPreview,
-                onClick = onNavigateToJournal
-            )
+            StaggeredEntranceItem(index = 7) {
+                RecentActivitySection(
+                    journaledToday = uiState.journaledToday,
+                    todayMood = uiState.todayEntryMood,
+                    todayPreview = uiState.todayEntryPreview,
+                    onClick = onNavigateToJournal
+                )
+            }
         }
+    }
+}
+
+// =============================================================================
+// ANIMATION COMPONENTS
+// =============================================================================
+
+@Composable
+private fun StaggeredEntranceItem(
+    index: Int,
+    content: @Composable () -> Unit
+) {
+    val animatable = remember { Animatable(0f) }
+
+    LaunchedEffect(Unit) {
+        kotlinx.coroutines.delay(index * 100L)
+        animatable.animateTo(
+            targetValue = 1f,
+            animationSpec = spring(
+                dampingRatio = Spring.DampingRatioLowBouncy,
+                stiffness = Spring.StiffnessLow
+            )
+        )
+    }
+
+    Box(
+        modifier = Modifier.graphicsLayer {
+            // Accessing .value directly inside the lambda defers read to draw phase
+            val progress = animatable.value
+            alpha = progress
+            translationY = (1f - progress) * 50.dp.toPx()
+            scaleX = 0.95f + (0.05f * progress)
+            scaleY = 0.95f + (0.05f * progress)
+        }
+    ) {
+        content()
     }
 }
 
