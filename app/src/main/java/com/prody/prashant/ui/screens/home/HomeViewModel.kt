@@ -137,7 +137,19 @@ data class HomeUiState(
     val personalizedPatternSuggestion: String = "",
     // Intelligence Insights
     val intelligenceInsights: List<IntelligenceInsight> = emptyList(),
-    val isPremiumIntelligenceEnabled: Boolean = false
+    val isPremiumIntelligenceEnabled: Boolean = false,
+    // Mood Trend
+    val moodTrend: List<Float> = emptyList()
+)
+
+private data class HomeDataArgs(
+    val profile: UserProfileEntity?,
+    val weeklyJournalEntries: List<JournalEntryEntity>,
+    val weeklyLearnedWords: Int,
+    val streakHistory: List<StreakHistoryEntity>,
+    val todayJournalEntries: List<JournalEntryEntity>,
+    val dualStreak: DualStreakStatus,
+    val aiProofMode: Boolean
 )
 
 private data class DailyContent(
@@ -220,6 +232,8 @@ class HomeViewModel @Inject constructor(
             }
 
             // 2. Combine all reactive flows and the results of the one-time fetch.
+            // Performance Optimization: Use a typed data class for combine arguments
+            // to improve maintainability and avoid indexing errors.
             combine(
                 userDao.getUserProfile().distinctUntilChanged(),
                 journalDao.getEntriesByDateRange(weekStart, System.currentTimeMillis()).distinctUntilChanged(),
@@ -229,30 +243,36 @@ class HomeViewModel @Inject constructor(
                 dualStreakManager.getDualStreakStatusFlow().distinctUntilChanged(),
                 preferencesManager.debugAiProofMode.distinctUntilChanged()
             ) { args ->
-                val profile = args.getOrNull(0) as? UserProfileEntity
-                val weeklyJournalEntries = (args.getOrNull(1) as? List<*>)?.filterIsInstance<JournalEntryEntity>() ?: emptyList()
-                val weeklyLearnedWords = args.getOrNull(2) as? Int ?: 0
-                val streakHistory = (args.getOrNull(3) as? List<*>)?.filterIsInstance<StreakHistoryEntity>() ?: emptyList()
-                val todayJournalEntries = (args.getOrNull(4) as? List<*>)?.filterIsInstance<JournalEntryEntity>() ?: emptyList()
-                val dualStreak = args.getOrNull(5) as? DualStreakStatus ?: DualStreakStatus.empty()
-                val aiProofMode = args.getOrNull(6) as? Boolean ?: false
-
+                // Note: For >5 flows, combine provides an Array<Any?>
+                HomeDataArgs(
+                    profile = args[0] as? UserProfileEntity,
+                    weeklyJournalEntries = (args[1] as? List<*>)?.filterIsInstance<JournalEntryEntity>() ?: emptyList(),
+                    weeklyLearnedWords = args[2] as? Int ?: 0,
+                    streakHistory = (args[3] as? List<*>)?.filterIsInstance<StreakHistoryEntity>() ?: emptyList(),
+                    todayJournalEntries = (args[4] as? List<*>)?.filterIsInstance<JournalEntryEntity>() ?: emptyList(),
+                    dualStreak = args[5] as? DualStreakStatus ?: DualStreakStatus.empty(),
+                    aiProofMode = args[6] as? Boolean ?: false
+                )
+            }.map { args ->
                 // Calculate weekly active days.
-                val daysActiveThisWeek = streakHistory.count { it.date >= weekStart }
+                val daysActiveThisWeek = args.streakHistory.count { it.date >= weekStart }
 
                 // Determine today's journaling status.
-                val (journaledToday, todayMood, todayPreview) = if (todayJournalEntries.isNotEmpty()) {
-                    val latestEntry = todayJournalEntries.maxByOrNull { it.createdAt }
+                val (journaledToday, todayMood, todayPreview) = if (args.todayJournalEntries.isNotEmpty()) {
+                    val latestEntry = args.todayJournalEntries.maxByOrNull { it.createdAt }
                     Triple(true, latestEntry?.mood ?: "", latestEntry?.content?.take(100) ?: "")
                 } else {
                     Triple(false, "", "")
                 }
 
+                // Calculate Mood Trend for the last 7 days.
+                val moodTrend = calculateMoodTrend(args.weeklyJournalEntries)
+
                 // 3. Atomically update the UI state with all the loaded data.
                 _uiState.value.copy(
-                    userName = profile?.displayName ?: "Growth Seeker",
-                    currentStreak = profile?.currentStreak ?: 0,
-                    totalPoints = profile?.totalPoints ?: 0,
+                    userName = args.profile?.displayName ?: "Growth Seeker",
+                    currentStreak = args.profile?.currentStreak ?: 0,
+                    totalPoints = args.profile?.totalPoints ?: 0,
                     dailyQuote = dailyContent.quote?.content ?: _uiState.value.dailyQuote,
                     dailyQuoteAuthor = dailyContent.quote?.author ?: _uiState.value.dailyQuoteAuthor,
                     wordOfTheDay = dailyContent.word?.word ?: _uiState.value.wordOfTheDay,
@@ -266,14 +286,15 @@ class HomeViewModel @Inject constructor(
                     idiomMeaning = dailyContent.idiom?.meaning ?: _uiState.value.idiomMeaning,
                     idiomExample = dailyContent.idiom?.exampleSentence ?: _uiState.value.idiomExample,
                     idiomId = dailyContent.idiom?.id ?: _uiState.value.idiomId,
-                    journalEntriesThisWeek = weeklyJournalEntries.size,
-                    wordsLearnedThisWeek = weeklyLearnedWords,
+                    journalEntriesThisWeek = args.weeklyJournalEntries.size,
+                    wordsLearnedThisWeek = args.weeklyLearnedWords,
                     daysActiveThisWeek = daysActiveThisWeek,
                     journaledToday = journaledToday,
                     todayEntryMood = todayMood,
                     todayEntryPreview = todayPreview,
-                    dualStreakStatus = dualStreak,
-                    buddhaWisdomProofInfo = _uiState.value.buddhaWisdomProofInfo.copy(isEnabled = aiProofMode),
+                    dualStreakStatus = args.dualStreak,
+                    buddhaWisdomProofInfo = _uiState.value.buddhaWisdomProofInfo.copy(isEnabled = args.aiProofMode),
+                    moodTrend = moodTrend,
                     isLoading = false // <-- Critical: Signal that loading is complete.
                 )
             }.catch { e ->
@@ -298,6 +319,44 @@ class HomeViewModel @Inject constructor(
             launch { checkAiConfiguration() }
             launch { loadSoulLayerContent() }
         }
+    }
+
+    /**
+     * Calculates a 7-day mood trend from journal entries.
+     * Groups entries by day, averages intensity (1-10), and normalizes to 1-5 scale.
+     * Uses 3.0 (Neutral) for days without entries.
+     */
+    private fun calculateMoodTrend(entries: List<JournalEntryEntity>): List<Float> {
+        val calendar = Calendar.getInstance()
+        val today = calendar.get(Calendar.DAY_OF_YEAR)
+        val year = calendar.get(Calendar.YEAR)
+
+        // Group entries by unique day identifier (Year * 1000 + DayOfYear)
+        val entriesByDay = entries.groupBy { entry ->
+            calendar.timeInMillis = entry.createdAt
+            calendar.get(Calendar.YEAR) * 1000 + calendar.get(Calendar.DAY_OF_YEAR)
+        }
+
+        val trend = mutableListOf<Float>()
+
+        // Iterate back 7 days from today
+        for (i in 6 downTo 0) {
+            calendar.set(Calendar.YEAR, year)
+            calendar.set(Calendar.DAY_OF_YEAR, today)
+            calendar.add(Calendar.DAY_OF_YEAR, -i)
+
+            val dayKey = calendar.get(Calendar.YEAR) * 1000 + calendar.get(Calendar.DAY_OF_YEAR)
+            val dayEntries = entriesByDay[dayKey]
+
+            if (dayEntries.isNullOrEmpty()) {
+                trend.add(3.0f) // Neutral fallback
+            } else {
+                val avgIntensity = dayEntries.map { it.moodIntensity }.average().toFloat()
+                trend.add(avgIntensity / 2f) // Normalize 1-10 to 1-5
+            }
+        }
+
+        return trend
     }
 
     private suspend fun fetchDailyContentConcurrently(): DailyContent = coroutineScope {

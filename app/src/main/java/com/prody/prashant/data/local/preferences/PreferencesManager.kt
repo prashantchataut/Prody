@@ -474,10 +474,12 @@ class PreferencesManager @Inject constructor(
     }
 
     /**
-     * Synchronous access to current user ID (using runBlocking for simplicity in this legacy call)
+     * Retrieves the current user ID from DataStore.
+     * Performance Optimization: Implemented as a suspend function to avoid blocking
+     * the main thread and mitigate ANR risks previously associated with runBlocking.
      */
-    fun getCurrentUserId(): String? = runBlocking {
-        dataStore.data.map { it[PreferencesKeys.USER_ID] }.first()
+    suspend fun getCurrentUserId(): String? {
+        return dataStore.data.map { it[PreferencesKeys.USER_ID] }.first()
     }
 
     // Gamification Initialized Flag
