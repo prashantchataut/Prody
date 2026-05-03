@@ -32,7 +32,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.data.local.entity.MicroEntryEntity
 import com.prody.prashant.domain.model.Mood
-import com.prody.prashant.ui.components.ProdyCard
+import com.prody.prashant.ui.components.*
+import com.prody.prashant.ui.theme.ProdyDesignTokens
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -75,12 +76,11 @@ fun MicroJournalScreen(
                     }
                 },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(
-                            imageVector = ProdyIcons.ArrowBack,
-                            contentDescription = "Back"
-                        )
-                    }
+                    ProdyIconButton(
+                        icon = ProdyIcons.ArrowBack,
+                        onClick = onNavigateBack,
+                        contentDescription = "Back"
+                    )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.background
@@ -215,10 +215,11 @@ private fun QuickCaptureSheet(
                 Text(
                     text = "$characterCount/$maxCharacters",
                     style = MaterialTheme.typography.bodySmall,
-                    color = if (characterCount > maxCharacters * 0.9)
-                        MaterialTheme.colorScheme.error
-                    else
-                        MaterialTheme.colorScheme.onSurfaceVariant
+                    color = when {
+                        characterCount >= maxCharacters -> MaterialTheme.colorScheme.error
+                        characterCount >= maxCharacters * 0.8 -> ProdyDesignTokens.SemanticColors.warning
+                        else -> MaterialTheme.colorScheme.onSurfaceVariant
+                    }
                 )
             }
 
@@ -256,23 +257,14 @@ private fun QuickCaptureSheet(
             Spacer(modifier = Modifier.height(24.dp))
 
             // Save button
-            Button(
+            ProdyPrimaryButton(
+                text = "Save",
                 onClick = onSave,
                 modifier = Modifier.fillMaxWidth(),
-                enabled = content.isNotBlank() && !isSaving
-            ) {
-                if (isSaving) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(20.dp),
-                        strokeWidth = 2.dp,
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-                } else {
-                    Icon(ProdyIcons.Check, contentDescription = null)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Save")
-                }
-            }
+                enabled = content.isNotBlank(),
+                loading = isSaving,
+                leadingIcon = ProdyIcons.Check
+            )
 
             Spacer(modifier = Modifier.height(32.dp))
         }
@@ -593,18 +585,12 @@ private fun MicroEntryDetailSheet(
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 if (entry.expandedToEntryId == null) {
-                    OutlinedButton(
+                    ProdyOutlinedButton(
+                        text = "Expand",
                         onClick = onExpand,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(
-                            imageVector = ProdyIcons.OpenInFull,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Expand")
-                    }
+                        modifier = Modifier.weight(1f),
+                        leadingIcon = ProdyIcons.OpenInFull
+                    )
                 }
 
                 OutlinedButton(
