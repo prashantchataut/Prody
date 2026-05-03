@@ -31,6 +31,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.R
 import com.prody.prashant.domain.collaborative.*
+import com.prody.prashant.ui.components.SecureScreen
 import com.prody.prashant.ui.theme.*
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -56,6 +57,9 @@ fun ComposeMessageScreen(
 ) {
     val uiState by viewModel.composeState.collectAsStateWithLifecycle()
     val homeState by viewModel.homeState.collectAsStateWithLifecycle()
+
+    // Security: Prevent screenshots and screen recordings while composing a private message
+    SecureScreen()
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
     var showOccasionPicker by remember { mutableStateOf(false) }
