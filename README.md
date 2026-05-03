@@ -50,6 +50,12 @@
 - Weekly summaries of your growth journey
 - Mood-appropriate wisdom delivery
 
+### Haven - Your Therapeutic AI Companion (NEW)
+- **Anti-Stop Policy**: Intelligent graceful degradation to Offline Mode when AI keys are missing or network is unavailable, ensuring uninterrupted access to core tools.
+- **Empathetic Onboarding**: Privacy-focused introduction to therapeutic support.
+- **Therapeutic Boundaries**: Strict adherence to professional boundaries and CBT/DBT techniques.
+- **Witness Mode**: Haven remembers key facts and commitments from your conversations to provide thoughtful follow-ups.
+
 ### Future Self Messaging
 - Write letters to your future self
 - Schedule delivery from 1 week to 1 year

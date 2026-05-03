@@ -24,12 +24,12 @@ import androidx.room.PrimaryKey
 @Entity(
     tableName = "haven_memories",
     indices = [
-        Index(value = ["userId"]),
-        Index(value = ["status"]),
-        Index(value = ["factDate"]),
-        Index(value = ["createdAt"]),
-        Index(value = ["userId", "status"]),
-        Index(value = ["category"])
+        Index(value = ["userId"], name = "idx_haven_memories_user"),
+        Index(value = ["status"], name = "idx_haven_memories_status"),
+        Index(value = ["factDate"], name = "idx_haven_memories_fact_date"),
+        Index(value = ["createdAt"], name = "idx_haven_memories_created"),
+        Index(value = ["userId", "status"], name = "idx_haven_memories_user_status"),
+        Index(value = ["category"], name = "idx_haven_memories_category")
     ]
 )
 data class HavenMemoryEntity(
