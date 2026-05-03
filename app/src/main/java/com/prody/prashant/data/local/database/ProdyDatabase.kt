@@ -223,7 +223,7 @@ import net.sqlcipher.database.SupportFactory
         // Mirror Evolution: Evidence Locker
         EvidenceEntity::class
     ],
-    version = 21,
+    version = 22,
     exportSchema = true // Enable for migration verification
 )
 abstract class ProdyDatabase : RoomDatabase() {
@@ -1709,6 +1709,55 @@ abstract class ProdyDatabase : RoomDatabase() {
                 // Add indices to haven_exercises
                 db.execSQL("CREATE INDEX IF NOT EXISTS index_haven_exercises_wasCompleted ON haven_exercises(wasCompleted)")
                 db.execSQL("CREATE INDEX IF NOT EXISTS index_haven_exercises_isDeleted ON haven_exercises(isDeleted)")
+            }
+        }
+
+        /**
+         * Migration 21 -> 22: Index Name Standardization
+         *
+         * Changes:
+         * - Explicitly rename indices in haven_memories, haven_sessions, and haven_exercises
+         *   to match the naming convention used in the @Entity annotations.
+         */
+        val MIGRATION_21_22: Migration = object : Migration(21, 22) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // haven_sessions renames (Wait, we can't rename indices in SQLite easily, we have to drop and recreate)
+
+                // Drop old indices (implicitly named or incorrectly named)
+                db.execSQL("DROP INDEX IF EXISTS idx_haven_sessions_user")
+                db.execSQL("DROP INDEX IF EXISTS idx_haven_sessions_type")
+                db.execSQL("DROP INDEX IF EXISTS idx_haven_sessions_started")
+
+                // Re-create with standardized names
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_haven_sessions_user ON haven_sessions(userId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_haven_sessions_type ON haven_sessions(sessionType)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_haven_sessions_started ON haven_sessions(startedAt)")
+
+                // haven_exercises renames
+                db.execSQL("DROP INDEX IF EXISTS idx_haven_exercises_user")
+                db.execSQL("DROP INDEX IF EXISTS idx_haven_exercises_type")
+                db.execSQL("DROP INDEX IF EXISTS idx_haven_exercises_session")
+                db.execSQL("DROP INDEX IF EXISTS idx_haven_exercises_completed")
+
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_haven_exercises_user ON haven_exercises(userId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_haven_exercises_type ON haven_exercises(exerciseType)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_haven_exercises_session ON haven_exercises(fromSessionId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_haven_exercises_completed ON haven_exercises(completedAt)")
+
+                // haven_memories renames
+                db.execSQL("DROP INDEX IF EXISTS idx_haven_memories_user")
+                db.execSQL("DROP INDEX IF EXISTS idx_haven_memories_status")
+                db.execSQL("DROP INDEX IF EXISTS idx_haven_memories_fact_date")
+                db.execSQL("DROP INDEX IF EXISTS idx_haven_memories_created")
+                db.execSQL("DROP INDEX IF EXISTS idx_haven_memories_user_status")
+                db.execSQL("DROP INDEX IF EXISTS idx_haven_memories_category")
+
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_haven_memories_user ON haven_memories(userId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_haven_memories_status ON haven_memories(status)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_haven_memories_fact_date ON haven_memories(factDate)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_haven_memories_created ON haven_memories(createdAt)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_haven_memories_user_status ON haven_memories(userId, status)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_haven_memories_category ON haven_memories(category)")
             }
         }
 

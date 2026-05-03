@@ -483,7 +483,7 @@ fun SparkleEffect(
  * Staggered entrance animation helper
  */
 @Composable
-fun StaggeredAnimationState(
+fun staggeredAnimationState(
     itemCount: Int,
     delayPerItem: Int = 100
 ): List<State<Float>> {
