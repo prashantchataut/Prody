@@ -1,6 +1,9 @@
 package com.prody.prashant.ui.screens.home
 
 import com.prody.prashant.ui.icons.ProdyIcons
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.CubicBezierEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -71,6 +74,14 @@ fun HomeScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val backgroundColor = MaterialTheme.colorScheme.background
 
+    // Entrance animation state
+    var isVisible by remember { mutableStateOf(false) }
+    LaunchedEffect(uiState.isLoading) {
+        if (!uiState.isLoading) {
+            isVisible = true
+        }
+    }
+
     if (uiState.isLoading) {
         Box(
             modifier = Modifier
@@ -118,125 +129,163 @@ fun HomeScreen(
         return
     }
 
-    // Determine greeting based on ViewModel state or time-based fallback
-    val greeting = remember(uiState.intelligentGreeting) {
-        if (uiState.intelligentGreeting.isNotEmpty()) {
-            uiState.intelligentGreeting
-        } else {
-            val hour = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY)
-            when {
-                hour < 12 -> "Good Morning,"
-                hour < 17 -> "Good Afternoon,"
-                else -> "Good Evening,"
-            }
-        }
-    }
-
-    // Build badge data from real achievement progress
-    val badges = remember(uiState.totalPoints, uiState.journalEntriesThisWeek, uiState.daysActiveThisWeek) {
-        listOf(
-            BadgeData(ProdyIcons.EmojiEvents, (uiState.totalPoints.coerceAtMost(1000) / 1000f).coerceIn(0f, 1f), ProdyWarmAmber),
-            BadgeData(ProdyIcons.Edit, (uiState.journalEntriesThisWeek.coerceAtMost(7) / 7f).coerceIn(0f, 1f), ProdyForestGreen),
-            BadgeData(ProdyIcons.Psychology, (uiState.daysActiveThisWeek.coerceAtMost(7) / 7f).coerceIn(0f, 1f), ProdyInfo)
+    Box(modifier = Modifier.fillMaxSize()) {
+        // Ambient Background for "living" feel
+        AmbientBackground(
+            modifier = Modifier.fillMaxSize(),
+            timeOfDay = getCurrentTimeOfDay()
         )
-    }
 
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(backgroundColor),
-        contentPadding = PaddingValues(bottom = 80.dp)
-    ) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize(),
+            contentPadding = PaddingValues(bottom = 80.dp)
+        ) {
         // Header with Greeting
         item(key = "header") {
-            DashboardHeader(
-                userName = uiState.userName,
-                greeting = greeting,
-                onProfileClick = {},
-                onNotificationClick = onNavigateToSearch
-            )
+            StaggeredEntranceItem(index = 0, isVisible = isVisible) {
+                DashboardHeader(
+                    userName = uiState.userName,
+                    greeting = uiState.greeting,
+                    onProfileClick = {},
+                    onNotificationClick = onNavigateToSearch
+                )
+            }
         }
 
         // Overview Section (Consistency & Badges)
         item(key = "overview") {
-            OverviewSection(
-                streakDays = uiState.currentStreak,
-                badges = badges
-            )
+            StaggeredEntranceItem(index = 1, isVisible = isVisible) {
+                OverviewSection(
+                    streakDays = uiState.currentStreak,
+                    badges = uiState.badges
+                )
+            }
         }
 
         // Personalized Pattern Card (opt-in, only shown when data exists)
         if (uiState.personalizedPatternText.isNotEmpty()) {
             item(key = "personalized_pattern") {
-                PersonalizedPatternCard(
-                    patternText = uiState.personalizedPatternText,
-                    patternSuggestion = uiState.personalizedPatternSuggestion
-                )
+                StaggeredEntranceItem(index = 2, isVisible = isVisible) {
+                    PersonalizedPatternCard(
+                        patternText = uiState.personalizedPatternText,
+                        patternSuggestion = uiState.personalizedPatternSuggestion
+                    )
+                }
             }
         }
 
         // Premium Intelligence Insights (Opt-in)
         if (uiState.isPremiumIntelligenceEnabled && uiState.intelligenceInsights.isNotEmpty()) {
             item(key = "intelligence_insight") {
-                Spacer(modifier = Modifier.height(24.dp))
-                IntelligenceInsightCard(
-                    insight = uiState.intelligenceInsights.first(),
-                    onActionClick = {}
-                )
+                StaggeredEntranceItem(index = 3, isVisible = isVisible) {
+                    Column {
+                        Spacer(modifier = Modifier.height(24.dp))
+                        IntelligenceInsightCard(
+                            insight = uiState.intelligenceInsights.first(),
+                            onActionClick = {}
+                        )
+                    }
+                }
             }
         }
 
         // Mood Trend Chart - only show if there's real data
         if (uiState.journalEntriesThisWeek > 0) {
             item(key = "mood_trend") {
-                MoodTrendSection(
-                    moodData = emptyList() // Mood trend requires historical mood data not exposed yet
-                )
+                StaggeredEntranceItem(index = 4, isVisible = isVisible) {
+                    MoodTrendSection(
+                        moodData = uiState.moodTrendData
+                    )
+                }
             }
         }
 
         // Weekly Summary from real data
         item(key = "weekly_summary") {
-            WeeklySummarySection(
-                journalEntries = uiState.journalEntriesThisWeek,
-                wordsLearned = uiState.wordsLearnedThisWeek,
-                mindfulMinutes = uiState.daysActiveThisWeek * 15 // Approximate based on active days
-            )
+            StaggeredEntranceItem(index = 5, isVisible = isVisible) {
+                WeeklySummarySection(
+                    journalEntries = uiState.journalEntriesThisWeek,
+                    wordsLearned = uiState.wordsLearnedThisWeek,
+                    mindfulMinutes = uiState.daysActiveThisWeek * 15 // Approximate based on active days
+                )
+            }
         }
 
         // Quick Actions (Navigation)
         item(key = "quick_actions") {
-            QuickActionsGrid(
-                onJournalClick = onNavigateToJournal,
-                onHavenClick = onNavigateToHaven,
-                onWisdomClick = onNavigateToQuotes,
-                onFutureClick = onNavigateToFutureMessage
-            )
+            StaggeredEntranceItem(index = 6, isVisible = isVisible) {
+                QuickActionsGrid(
+                    onJournalClick = onNavigateToJournal,
+                    onHavenClick = onNavigateToHaven,
+                    onWisdomClick = onNavigateToQuotes,
+                    onFutureClick = onNavigateToFutureMessage
+                )
+            }
         }
 
         // Explore Section - routes to additional features
         item(key = "explore") {
-            ExploreSection(
-                onMeditationClick = onNavigateToMeditation,
-                onChallengesClick = onNavigateToChallenges,
-                onMissionsClick = onNavigateToMissions,
-                onLearningClick = onNavigateToLearning,
-                onDeepDiveClick = onNavigateToDeepDive,
-                onVocabularyClick = onNavigateToVocabulary,
-                onMicroJournalClick = onNavigateToMicroJournal,
-                onDailyRitualClick = onNavigateToDailyRitual
-            )
+            StaggeredEntranceItem(index = 7, isVisible = isVisible) {
+                ExploreSection(
+                    onMeditationClick = onNavigateToMeditation,
+                    onChallengesClick = onNavigateToChallenges,
+                    onMissionsClick = onNavigateToMissions,
+                    onLearningClick = onNavigateToLearning,
+                    onDeepDiveClick = onNavigateToDeepDive,
+                    onVocabularyClick = onNavigateToVocabulary,
+                    onMicroJournalClick = onNavigateToMicroJournal,
+                    onDailyRitualClick = onNavigateToDailyRitual
+                )
+            }
         }
 
         // Recent Activity - show today's journal status
         item(key = "recent_activity") {
-            RecentActivitySection(
-                journaledToday = uiState.journaledToday,
-                todayMood = uiState.todayEntryMood,
-                todayPreview = uiState.todayEntryPreview,
-                onClick = onNavigateToJournal
+            StaggeredEntranceItem(index = 8, isVisible = isVisible) {
+                RecentActivitySection(
+                    journaledToday = uiState.journaledToday,
+                    todayMood = uiState.todayEntryMood,
+                    todayPreview = uiState.todayEntryPreview,
+                    onClick = onNavigateToJournal
+                )
+            }
+            }
+        }
+    }
+}
+
+/**
+ * Premium staggered entrance animation for dashboard items.
+ * Uses Modifier.graphicsLayer for 60fps performance without recomposition.
+ */
+@Composable
+private fun StaggeredEntranceItem(
+    index: Int,
+    isVisible: Boolean,
+    content: @Composable () -> Unit
+) {
+    val animatable = remember { Animatable(0f) }
+
+    LaunchedEffect(isVisible) {
+        if (isVisible) {
+            kotlinx.coroutines.delay(index * 100L)
+            animatable.animateTo(
+                targetValue = 1f,
+                animationSpec = tween(600, easing = CubicBezierEasing(0.2f, 0.8f, 0.2f, 1f))
             )
         }
+    }
+
+    Box(
+        modifier = Modifier.graphicsLayer {
+            alpha = animatable.value
+            translationY = (1f - animatable.value) * 50.dp.toPx()
+            scaleX = 0.95f + (animatable.value * 0.05f)
+            scaleY = 0.95f + (animatable.value * 0.05f)
+        }
+    ) {
+        content()
     }
 }
 
@@ -293,23 +342,28 @@ fun DashboardHeader(
                 tint = ProdyTextPrimaryLight
             )
             // Avatar / Profile
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .background(ProdyForestGreen)
-                    .clickable { onProfileClick() }
-                    .semantics {
-                        role = Role.Button
-                        contentDescription = profileContentDescription
-                    },
-                contentAlignment = Alignment.Center
+            MoodBreathingHalo(
+                mood = AmbientMood.Calm, // Defaulting to Calm for now
+                size = 40.dp
             ) {
-                Text(
-                    text = userName.firstOrNull()?.toString() ?: "P",
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold
-                )
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(ProdyForestGreen)
+                        .clickable { onProfileClick() }
+                        .semantics {
+                            role = Role.Button
+                            contentDescription = profileContentDescription
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = userName.firstOrNull()?.toString() ?: "P",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
         }
     }

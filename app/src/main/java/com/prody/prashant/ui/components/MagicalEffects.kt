@@ -3,6 +3,7 @@ package com.prody.prashant.ui.components
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -1178,6 +1179,68 @@ fun getCurrentTimeOfDay(): EffectTimeOfDay {
         hour in 12..16 -> EffectTimeOfDay.Day
         hour in 17..20 -> EffectTimeOfDay.Evening
         else -> EffectTimeOfDay.Night
+    }
+}
+
+/**
+ * Special Haven FAB Icon with breathing pulse animation.
+ * Optimized with graphicsLayer to prevent parent recomposition.
+ */
+@Composable
+fun HavenFabIcon(
+    isActive: Boolean,
+    selected: Boolean,
+    icon: ImageVector,
+    contentDescription: String?
+) {
+    val infiniteTransition = rememberInfiniteTransition(label = "HavenPulse")
+
+    val animatedAlpha = infiniteTransition.animateFloat(
+        initialValue = 0.6f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2000, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "HavenAlpha"
+    )
+
+    val scaleFactor = infiniteTransition.animateFloat(
+        initialValue = 0.95f,
+        targetValue = 1.05f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2000, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "HavenScale"
+    )
+
+    Box(
+        modifier = Modifier
+            .size(56.dp)
+            .graphicsLayer {
+                val s = scaleFactor.value
+                scaleX = s
+                scaleY = s
+                alpha = if (selected) 1f else animatedAlpha.value
+            }
+            .clip(CircleShape)
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        com.prody.prashant.ui.theme.HavenBubbleLight,
+                        com.prody.prashant.ui.theme.HavenBubbleLight.copy(alpha = 0.8f)
+                    )
+                )
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        androidx.compose.material3.Icon(
+            imageVector = icon,
+            contentDescription = contentDescription,
+            tint = com.prody.prashant.ui.theme.HavenTextLight,
+            modifier = Modifier.size(28.dp)
+        )
     }
 }
 

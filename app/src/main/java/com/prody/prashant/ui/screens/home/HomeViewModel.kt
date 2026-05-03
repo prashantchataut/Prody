@@ -26,6 +26,10 @@ import com.prody.prashant.domain.progress.TodayProgress
 import com.prody.prashant.domain.repository.SoulLayerRepository
 import com.prody.prashant.domain.streak.DualStreakManager
 import com.prody.prashant.domain.streak.DualStreakStatus
+import com.prody.prashant.ui.icons.ProdyIcons
+import com.prody.prashant.ui.theme.ProdyForestGreen
+import com.prody.prashant.ui.theme.ProdyInfo
+import com.prody.prashant.ui.theme.ProdyWarmAmber
 import com.prody.prashant.util.BuddhaWisdom
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
@@ -137,7 +141,12 @@ data class HomeUiState(
     val personalizedPatternSuggestion: String = "",
     // Intelligence Insights
     val intelligenceInsights: List<IntelligenceInsight> = emptyList(),
-    val isPremiumIntelligenceEnabled: Boolean = false
+    val isPremiumIntelligenceEnabled: Boolean = false,
+    // Mood Trend Data (7-day history)
+    val moodTrendData: List<Float> = emptyList(),
+    // Optimized UI State
+    val greeting: String = "",
+    val badges: List<BadgeData> = emptyList()
 )
 
 private data class DailyContent(
@@ -248,34 +257,66 @@ class HomeViewModel @Inject constructor(
                     Triple(false, "", "")
                 }
 
-                // 3. Atomically update the UI state with all the loaded data.
-                _uiState.value.copy(
-                    userName = profile?.displayName ?: "Growth Seeker",
-                    currentStreak = profile?.currentStreak ?: 0,
-                    totalPoints = profile?.totalPoints ?: 0,
-                    dailyQuote = dailyContent.quote?.content ?: _uiState.value.dailyQuote,
-                    dailyQuoteAuthor = dailyContent.quote?.author ?: _uiState.value.dailyQuoteAuthor,
-                    wordOfTheDay = dailyContent.word?.word ?: _uiState.value.wordOfTheDay,
-                    wordDefinition = dailyContent.word?.definition ?: _uiState.value.wordDefinition,
-                    wordPronunciation = dailyContent.word?.pronunciation ?: _uiState.value.wordPronunciation,
-                    wordId = dailyContent.word?.id ?: _uiState.value.wordId,
-                    dailyProverb = dailyContent.proverb?.content ?: _uiState.value.dailyProverb,
-                    proverbMeaning = dailyContent.proverb?.meaning ?: _uiState.value.proverbMeaning,
-                    proverbOrigin = dailyContent.proverb?.origin ?: _uiState.value.proverbOrigin,
-                    dailyIdiom = dailyContent.idiom?.phrase ?: _uiState.value.dailyIdiom,
-                    idiomMeaning = dailyContent.idiom?.meaning ?: _uiState.value.idiomMeaning,
-                    idiomExample = dailyContent.idiom?.exampleSentence ?: _uiState.value.idiomExample,
-                    idiomId = dailyContent.idiom?.id ?: _uiState.value.idiomId,
-                    journalEntriesThisWeek = weeklyJournalEntries.size,
-                    wordsLearnedThisWeek = weeklyLearnedWords,
-                    daysActiveThisWeek = daysActiveThisWeek,
-                    journaledToday = journaledToday,
-                    todayEntryMood = todayMood,
-                    todayEntryPreview = todayPreview,
-                    dualStreakStatus = dualStreak,
-                    buddhaWisdomProofInfo = _uiState.value.buddhaWisdomProofInfo.copy(isEnabled = aiProofMode),
-                    isLoading = false // <-- Critical: Signal that loading is complete.
+                // Calculate 7-day mood trend
+                val moodTrend = calculateMoodTrend(weeklyJournalEntries)
+
+                // Calculate greeting
+                val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+                val intelligentGreeting = _uiState.value.intelligentGreeting
+                val greeting = if (intelligentGreeting.isNotEmpty()) {
+                    intelligentGreeting
+                } else {
+                    when {
+                        hour < 12 -> "Good Morning,"
+                        hour < 17 -> "Good Afternoon,"
+                        else -> "Good Evening,"
+                    }
+                }
+
+                // Build badges
+                val pointsProgress = (profile?.totalPoints?.coerceAtMost(1000)?.toFloat() ?: 0f) / 1000f
+                val journalProgress = (weeklyJournalEntries.size.coerceAtMost(7).toFloat()) / 7f
+                val activityProgress = (daysActiveThisWeek.coerceAtMost(7).toFloat()) / 7f
+
+                val badges = listOf(
+                    BadgeData(ProdyIcons.EmojiEvents, pointsProgress.coerceIn(0f, 1f), ProdyWarmAmber),
+                    BadgeData(ProdyIcons.Edit, journalProgress.coerceIn(0f, 1f), ProdyForestGreen),
+                    BadgeData(ProdyIcons.Psychology, activityProgress.coerceIn(0f, 1f), ProdyInfo)
                 )
+
+                // 3. Atomically update the UI state with all the loaded data.
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        userName = profile?.displayName ?: "Growth Seeker",
+                        currentStreak = profile?.currentStreak ?: 0,
+                        totalPoints = profile?.totalPoints ?: 0,
+                        dailyQuote = dailyContent.quote?.content ?: currentState.dailyQuote,
+                        dailyQuoteAuthor = dailyContent.quote?.author ?: currentState.dailyQuoteAuthor,
+                        wordOfTheDay = dailyContent.word?.word ?: currentState.wordOfTheDay,
+                        wordDefinition = dailyContent.word?.definition ?: currentState.wordDefinition,
+                        wordPronunciation = dailyContent.word?.pronunciation ?: currentState.wordPronunciation,
+                        wordId = dailyContent.word?.id ?: currentState.wordId,
+                        dailyProverb = dailyContent.proverb?.content ?: currentState.dailyProverb,
+                        proverbMeaning = dailyContent.proverb?.meaning ?: currentState.proverbMeaning,
+                        proverbOrigin = dailyContent.proverb?.origin ?: currentState.proverbOrigin,
+                        dailyIdiom = dailyContent.idiom?.phrase ?: currentState.dailyIdiom,
+                        idiomMeaning = dailyContent.idiom?.meaning ?: currentState.idiomMeaning,
+                        idiomExample = dailyContent.idiom?.exampleSentence ?: currentState.idiomExample,
+                        idiomId = dailyContent.idiom?.id ?: currentState.idiomId,
+                        journalEntriesThisWeek = weeklyJournalEntries.size,
+                        wordsLearnedThisWeek = weeklyLearnedWords,
+                        daysActiveThisWeek = daysActiveThisWeek,
+                        journaledToday = journaledToday,
+                        todayEntryMood = todayMood,
+                        todayEntryPreview = todayPreview,
+                        dualStreakStatus = dualStreak,
+                        buddhaWisdomProofInfo = currentState.buddhaWisdomProofInfo.copy(isEnabled = aiProofMode),
+                        moodTrendData = moodTrend,
+                        greeting = greeting,
+                        badges = badges,
+                        isLoading = false // <-- Critical: Signal that loading is complete.
+                    )
+                }
             }.catch { e ->
                 android.util.Log.e(TAG, "Error in combined home data flow", e)
                 _uiState.update {
@@ -285,9 +326,7 @@ class HomeViewModel @Inject constructor(
                         error = "Failed to load home data. Please check your connection."
                     )
                 }
-            }.collect { newState ->
-                _uiState.value = newState
-            }
+            }.collect()
 
             // 4. Launch non-essential and secondary data loading tasks.
             // These run independently and update the UI state as they complete.
@@ -298,6 +337,34 @@ class HomeViewModel @Inject constructor(
             launch { checkAiConfiguration() }
             launch { loadSoulLayerContent() }
         }
+    }
+
+    /**
+     * Performance Optimization: Calculates a 7-day mood trend from journal entries.
+     * Groups entries by day, averages mood intensity, and normalizes to a 1-5 scale.
+     * Returns exactly 7 data points, filling gaps with neutral values (3.0f).
+     */
+    private fun calculateMoodTrend(entries: List<JournalEntryEntity>): List<Float> {
+        val calendar = Calendar.getInstance()
+        val trend = mutableListOf<Float>()
+
+        // Create a map of day -> average intensity
+        val dailyAverages = entries.groupBy { entry ->
+            calendar.timeInMillis = entry.createdAt
+            calendar.get(Calendar.YEAR) * 1000 + calendar.get(Calendar.DAY_OF_YEAR)
+        }.mapValues { (_, dayEntries) ->
+            dayEntries.map { it.moodIntensity }.average().toFloat() / 2f // Normalize 1-10 to 0.5-5.0
+        }
+
+        // Generate points for the last 7 days
+        for (i in 6 downTo 0) {
+            calendar.timeInMillis = System.currentTimeMillis()
+            calendar.add(Calendar.DAY_OF_YEAR, -i)
+            val dayKey = calendar.get(Calendar.YEAR) * 1000 + calendar.get(Calendar.DAY_OF_YEAR)
+            trend.add(dailyAverages[dayKey] ?: 3.0f) // Fallback to neutral (3.0)
+        }
+
+        return trend
     }
 
     private suspend fun fetchDailyContentConcurrently(): DailyContent = coroutineScope {
