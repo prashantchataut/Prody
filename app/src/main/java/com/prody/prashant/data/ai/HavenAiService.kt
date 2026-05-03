@@ -254,12 +254,12 @@ I am here to listen, but I cannot provide the emergency care you might need. Ple
     
     /**
      * Returns detailed configuration status for debugging.
+     *
+     * Security: Avoids leaking API key lengths as per Prody's security policy.
      */
     fun getConfigurationStatus(): String {
-        val therapistKeyStatus = if (BuildConfig.THERAPIST_API_KEY.isNotBlank()) 
-            "present (${BuildConfig.THERAPIST_API_KEY.length} chars)" else "missing"
-        val aiKeyStatus = if (BuildConfig.AI_API_KEY.isNotBlank()) 
-            "present (${BuildConfig.AI_API_KEY.length} chars)" else "missing"
+        val therapistKeyStatus = if (BuildConfig.THERAPIST_API_KEY.isNotBlank()) "configured" else "missing"
+        val aiKeyStatus = if (BuildConfig.AI_API_KEY.isNotBlank()) "configured" else "missing"
             
         return when {
             isOfflineMode -> buildString {

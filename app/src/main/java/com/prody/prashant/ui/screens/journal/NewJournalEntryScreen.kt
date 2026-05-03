@@ -1,8 +1,6 @@
 package com.prody.prashant.ui.screens.journal
 import com.prody.prashant.ui.icons.ProdyIcons
 
-import android.app.Activity
-import android.view.WindowManager
 import android.Manifest
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -90,6 +88,7 @@ import com.prody.prashant.domain.validation.ContentValidation
 import com.prody.prashant.domain.validation.ContentValidator
 import com.prody.prashant.ui.components.AmbientBackground
 import com.prody.prashant.ui.components.MoodSuggestionHint
+import com.prody.prashant.ui.components.SecureScreen
 import com.prody.prashant.ui.components.SessionResultCard
 import com.prody.prashant.ui.components.rememberMoodSuggestionState
 import com.prody.prashant.ui.components.getCurrentTimeOfDay
@@ -119,13 +118,7 @@ fun NewJournalEntryScreen(
     }
 
     // Security: Prevent screenshots and screen recordings while writing a private journal entry
-    DisposableEffect(Unit) {
-        val window = (context as? Activity)?.window
-        window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
-        onDispose {
-            window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
-        }
-    }
+    SecureScreen()
 
     // Photo/Video picker launcher
     val mediaPickerLauncher = rememberLauncherForActivityResult(

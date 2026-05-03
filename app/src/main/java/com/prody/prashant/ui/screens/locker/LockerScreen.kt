@@ -74,6 +74,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.prody.prashant.ui.components.SecureScreen
 import com.prody.prashant.data.local.entity.EvidenceEntity
 import com.prody.prashant.data.local.entity.EvidenceRarity
 import com.prody.prashant.data.local.entity.EvidenceType
@@ -117,6 +118,9 @@ fun LockerScreen(
     val selectedEvidence by viewModel.selectedEvidence.collectAsStateWithLifecycle()
     val totalCount by viewModel.totalCount.collectAsStateWithLifecycle()
     val unviewedCount by viewModel.unviewedCount.collectAsStateWithLifecycle()
+
+    // Security: Prevent screenshots and screen recordings of private locker content
+    SecureScreen()
     val typeCounts by viewModel.typeCounts.collectAsStateWithLifecycle()
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
 
