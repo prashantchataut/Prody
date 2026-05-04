@@ -66,6 +66,7 @@ fun HomeScreen(
     onNavigateToMicroJournal: () -> Unit = {},
     onNavigateToDailyRitual: () -> Unit = {},
     onNavigateToWeeklyDigest: () -> Unit = {},
+    onNavigateToProfile: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -152,7 +153,7 @@ fun HomeScreen(
             DashboardHeader(
                 userName = uiState.userName,
                 greeting = greeting,
-                onProfileClick = {},
+                onProfileClick = onNavigateToProfile,
                 onNotificationClick = onNavigateToSearch
             )
         }
@@ -181,16 +182,16 @@ fun HomeScreen(
                 Spacer(modifier = Modifier.height(24.dp))
                 IntelligenceInsightCard(
                     insight = uiState.intelligenceInsights.first(),
-                    onActionClick = {}
+                    onActionClick = onNavigateToDeepDive
                 )
             }
         }
 
         // Mood Trend Chart - only show if there's real data
-        if (uiState.journalEntriesThisWeek > 0) {
+        if (uiState.journalEntriesThisWeek > 0 && uiState.moodTrend.isNotEmpty()) {
             item(key = "mood_trend") {
                 MoodTrendSection(
-                    moodData = emptyList() // Mood trend requires historical mood data not exposed yet
+                    moodData = uiState.moodTrend
                 )
             }
         }

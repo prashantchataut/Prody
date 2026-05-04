@@ -343,6 +343,9 @@ fun ProdyNavHost(
                 },
                 onNavigateToWeeklyDigest = {
                     navController.navigate(Screen.WeeklyDigest.route)
+                },
+                onNavigateToProfile = {
+                    navController.navigate(Screen.Profile.route)
                 }
             )
         }
