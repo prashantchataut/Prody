@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -26,49 +27,35 @@ class MainViewModel @Inject constructor(
     val uiState: StateFlow<MainActivityUiState> = _uiState.asStateFlow()
 
     init {
-        // --- CRITICAL PATH ---
-        // Immediately determine the start destination to unblock the UI.
-        viewModelScope.launch {
-            val onboardingCompleted = preferencesManager.onboardingCompleted
-                .catch {
-                    // In case of error, default to showing onboarding
-                    emit(false)
-                }
-                .first() // We only need the initial value
-
-            val startDestination = if (onboardingCompleted) {
-                Screen.Home.route
-            } else {
-                Screen.Onboarding.route
-            }
-
-            // Use atomic update to set initial state and dismiss splash screen
-            _uiState.update {
-                it.copy(
-                    isLoading = false,
-                    startDestination = startDestination
-                )
-            }
-        }
-
-        // --- NON-CRITICAL PATH ---
-        // Asynchronously load user preferences and apply them.
+        // Performance Optimization: Consolidate all startup logic into a single, efficient flow.
+        // This avoids multiple staggered UI state emissions and ensures a smoother splash-to-home transition.
         viewModelScope.launch {
             combine(
-                preferencesManager.themeMode.catch { emit("system") },
-                preferencesManager.hapticFeedbackEnabled.catch { emit(true) }
-            ) { themeModeString, hapticEnabled ->
+                preferencesManager.onboardingCompleted.distinctUntilChanged().catch { emit(false) },
+                preferencesManager.themeMode.distinctUntilChanged().catch { emit("system") },
+                preferencesManager.hapticFeedbackEnabled.distinctUntilChanged().catch { emit(true) }
+            ) { onboardingCompleted, themeModeString, hapticEnabled ->
+                // 1. Determine Start Destination
+                val startDestination = if (onboardingCompleted) {
+                    Screen.Home.route
+                } else {
+                    Screen.Onboarding.route
+                }
+
+                // 2. Map Theme Mode
                 val themeMode = when (themeModeString.lowercase()) {
                     "light" -> ThemeMode.LIGHT
                     "dark" -> ThemeMode.DARK
                     else -> ThemeMode.SYSTEM
                 }
-                // Return a pair of the loaded preferences
-                themeMode to hapticEnabled
-            }.collectLatest { (themeMode, hapticEnabled) ->
-                // Use atomic update to apply non-critical preferences
+
+                Triple(startDestination, themeMode, hapticEnabled)
+            }.collectLatest { (startDestination, themeMode, hapticEnabled) ->
+                // Atomic update to unblock UI and apply preferences simultaneously
                 _uiState.update {
                     it.copy(
+                        isLoading = false,
+                        startDestination = startDestination,
                         themeMode = themeMode,
                         hapticFeedbackEnabled = hapticEnabled
                     )
