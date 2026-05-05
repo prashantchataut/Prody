@@ -118,7 +118,8 @@ fun HomeScreen(
         return
     }
 
-    // Determine greeting based on ViewModel state or time-based fallback
+    // Performance Optimization: Use remember(keys) for computed UI states to minimize re-allocations
+    // while maintaining correct reactivity for data-class-based state.
     val greeting = remember(uiState.intelligentGreeting) {
         if (uiState.intelligentGreeting.isNotEmpty()) {
             uiState.intelligentGreeting
@@ -132,7 +133,6 @@ fun HomeScreen(
         }
     }
 
-    // Build badge data from real achievement progress
     val badges = remember(uiState.totalPoints, uiState.journalEntriesThisWeek, uiState.daysActiveThisWeek) {
         listOf(
             BadgeData(ProdyIcons.EmojiEvents, (uiState.totalPoints.coerceAtMost(1000) / 1000f).coerceIn(0f, 1f), ProdyWarmAmber),
@@ -162,6 +162,42 @@ fun HomeScreen(
             OverviewSection(
                 streakDays = uiState.currentStreak,
                 badges = badges
+            )
+        }
+
+        // First Week Progress (Soul Layer)
+        if (uiState.isInFirstWeek) {
+            item(key = "first_week_progress") {
+                FirstWeekProgressCard(
+                    dayNumber = uiState.firstWeekDayNumber,
+                    progress = uiState.firstWeekProgress,
+                    dayContent = uiState.firstWeekDayContent,
+                    onContinue = { /* Navigation handled via specific actions in card */ },
+                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
+                )
+            }
+        }
+
+        // Surfaced Memory (Soul Layer)
+        val surfacedMemory = uiState.surfacedMemory
+        if (uiState.showMemoryCard && surfacedMemory != null) {
+            item(key = "surfaced_memory") {
+                SurfacedMemoryCard(
+                    memory = surfacedMemory,
+                    onExpand = { viewModel.expandMemoryCard() },
+                    onDismiss = { viewModel.dismissMemoryCard() },
+                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
+                )
+            }
+        }
+
+        // Anniversary Memories (Soul Layer)
+        items(uiState.anniversaryMemories, key = { "anniversary_${it.memory.id}" }) { anniversary ->
+            AnniversaryMemoryCard(
+                anniversary = anniversary,
+                onView = { /* Navigate to memory detail */ },
+                onDismiss = { /* Handle dismiss */ },
+                modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
             )
         }
 
@@ -237,6 +273,14 @@ fun HomeScreen(
                 onClick = onNavigateToJournal
             )
         }
+    }
+
+    // Celebration Overlay (Soul Layer)
+    if (uiState.showFirstWeekCelebration && uiState.firstWeekCelebration != null) {
+        CelebrationDialog(
+            celebration = uiState.firstWeekCelebration!!,
+            onDismiss = { viewModel.dismissFirstWeekCelebration() }
+        )
     }
 }
 
