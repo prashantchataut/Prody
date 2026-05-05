@@ -137,7 +137,8 @@ data class HomeUiState(
     val personalizedPatternSuggestion: String = "",
     // Intelligence Insights
     val intelligenceInsights: List<IntelligenceInsight> = emptyList(),
-    val isPremiumIntelligenceEnabled: Boolean = false
+    val isPremiumIntelligenceEnabled: Boolean = false,
+    val moodTrend: List<Float> = emptyList()
 )
 
 private data class DailyContent(
@@ -240,6 +241,9 @@ class HomeViewModel @Inject constructor(
                 // Calculate weekly active days.
                 val daysActiveThisWeek = streakHistory.count { it.date >= weekStart }
 
+                // Calculate mood trend for the week
+                val moodTrend = calculateMoodTrend(weeklyJournalEntries)
+
                 // Determine today's journaling status.
                 val (journaledToday, todayMood, todayPreview) = if (todayJournalEntries.isNotEmpty()) {
                     val latestEntry = todayJournalEntries.maxByOrNull { it.createdAt }
@@ -274,6 +278,7 @@ class HomeViewModel @Inject constructor(
                     todayEntryPreview = todayPreview,
                     dualStreakStatus = dualStreak,
                     buddhaWisdomProofInfo = _uiState.value.buddhaWisdomProofInfo.copy(isEnabled = aiProofMode),
+                    moodTrend = moodTrend,
                     isLoading = false // <-- Critical: Signal that loading is complete.
                 )
             }.catch { e ->
@@ -297,6 +302,34 @@ class HomeViewModel @Inject constructor(
             launch { loadDailySeed() }
             launch { checkAiConfiguration() }
             launch { loadSoulLayerContent() }
+        }
+    }
+
+    /**
+     * Calculate a 7-day mood trend from journal entries.
+     * Normalizes moodIntensity (1-10) to a 1.0-5.0 scale.
+     * Uses 3.0f (neutral) for days without entries.
+     */
+    private fun calculateMoodTrend(entries: List<JournalEntryEntity>): List<Float> {
+        val calendar = Calendar.getInstance()
+        val today = calendar.get(Calendar.DAY_OF_YEAR)
+        val currentYear = calendar.get(Calendar.YEAR)
+
+        // Group entries by day
+        val dayMoods = entries.groupBy { entry ->
+            val entryCal = Calendar.getInstance().apply { timeInMillis = entry.createdAt }
+            entryCal.get(Calendar.YEAR) * 1000 + entryCal.get(Calendar.DAY_OF_YEAR)
+        }.mapValues { (_, dayEntries) ->
+            dayEntries.map { (it.moodIntensity / 2f).coerceIn(1f, 5f) }.average().toFloat()
+        }
+
+        // Generate trend for last 7 days
+        return (6 downTo 0).map { daysAgo ->
+            val targetCal = Calendar.getInstance().apply {
+                add(Calendar.DAY_OF_YEAR, -daysAgo)
+            }
+            val key = targetCal.get(Calendar.YEAR) * 1000 + targetCal.get(Calendar.DAY_OF_YEAR)
+            dayMoods[key] ?: 3.0f // Neutral fallback
         }
     }
 

@@ -132,15 +132,6 @@ fun HomeScreen(
         }
     }
 
-    // Build badge data from real achievement progress
-    val badges = remember(uiState.totalPoints, uiState.journalEntriesThisWeek, uiState.daysActiveThisWeek) {
-        listOf(
-            BadgeData(ProdyIcons.EmojiEvents, (uiState.totalPoints.coerceAtMost(1000) / 1000f).coerceIn(0f, 1f), ProdyWarmAmber),
-            BadgeData(ProdyIcons.Edit, (uiState.journalEntriesThisWeek.coerceAtMost(7) / 7f).coerceIn(0f, 1f), ProdyForestGreen),
-            BadgeData(ProdyIcons.Psychology, (uiState.daysActiveThisWeek.coerceAtMost(7) / 7f).coerceIn(0f, 1f), ProdyInfo)
-        )
-    }
-
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -157,11 +148,92 @@ fun HomeScreen(
             )
         }
 
-        // Overview Section (Consistency & Badges)
-        item(key = "overview") {
-            OverviewSection(
-                streakDays = uiState.currentStreak,
-                badges = badges
+        // Active Progress Layer
+        item(key = "active_progress") {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                uiState.nextAction?.let { action ->
+                    NextActionCard(
+                        nextAction = action,
+                        onClick = { route ->
+                            // Simple route matcher for onboarding demo
+                            when {
+                                route.startsWith("journal") -> onNavigateToJournal()
+                                route.startsWith("vocabulary") -> onNavigateToVocabulary()
+                                route.startsWith("future_message") -> onNavigateToFutureMessage()
+                                route.startsWith("quotes") -> onNavigateToQuotes()
+                                else -> {}
+                            }
+                        }
+                    )
+                }
+
+                TodayProgressCard(progress = uiState.todayProgress)
+            }
+        }
+
+        // Dual Streak Card (Real consistency tracking)
+        item(key = "dual_streak") {
+            Spacer(modifier = Modifier.height(24.dp))
+            DualStreakCard(
+                dualStreakStatus = uiState.dualStreakStatus,
+                onTapForDetails = {}
+            )
+        }
+
+        // Soul Layer: First Week Journey
+        if (uiState.isInFirstWeek) {
+            item(key = "first_week_journey") {
+                Spacer(modifier = Modifier.height(24.dp))
+                FirstWeekProgressCard(
+                    dayNumber = uiState.firstWeekDayNumber,
+                    progress = uiState.firstWeekProgress,
+                    dayContent = uiState.firstWeekDayContent,
+                    onContinue = {
+                        val route = uiState.firstWeekDayContent?.primaryAction?.route
+                        if (route != null) {
+                            when {
+                                route.startsWith("journal") -> onNavigateToJournal()
+                                route.startsWith("vocabulary") -> onNavigateToVocabulary()
+                                route.startsWith("haven") -> onNavigateToHaven()
+                                route.startsWith("meditation") -> onNavigateToMeditation()
+                                else -> onNavigateToJournal()
+                            }
+                        }
+                    },
+                    modifier = Modifier.padding(horizontal = 24.dp)
+                )
+            }
+        }
+
+        // Soul Layer: Surfaced Memory
+        uiState.surfacedMemory?.let { memory ->
+            item(key = "surfaced_memory_${memory.memory.id}") {
+                Spacer(modifier = Modifier.height(24.dp))
+                SurfacedMemoryCard(
+                    memory = memory,
+                    onExpand = { viewModel.expandMemoryCard() },
+                    onDismiss = { viewModel.dismissMemoryCard() },
+                    modifier = Modifier.padding(horizontal = 24.dp)
+                )
+            }
+        }
+
+        // Soul Layer: Anniversary Memories
+        items(
+            items = uiState.anniversaryMemories,
+            key = { "anniversary_${it.memory.id}" }
+        ) { anniversary ->
+            Spacer(modifier = Modifier.height(24.dp))
+            AnniversaryMemoryCard(
+                anniversary = anniversary,
+                onView = { onNavigateToWeeklyDigest() }, // Anniversary details usually in digest or journal
+                onDismiss = { /* Local dismiss logic */ },
+                modifier = Modifier.padding(horizontal = 24.dp)
             )
         }
 
@@ -190,7 +262,7 @@ fun HomeScreen(
         if (uiState.journalEntriesThisWeek > 0) {
             item(key = "mood_trend") {
                 MoodTrendSection(
-                    moodData = emptyList() // Mood trend requires historical mood data not exposed yet
+                    moodData = uiState.moodTrend
                 )
             }
         }
@@ -312,106 +384,6 @@ fun DashboardHeader(
                 )
             }
         }
-    }
-}
-
-@Composable
-fun OverviewSection(
-    streakDays: Int,
-    badges: List<BadgeData>
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        // Streak Card
-        ProdyCard(
-            modifier = Modifier.weight(1f),
-            backgroundColor = ProdySurfaceLight
-        ) {
-            Column(
-                modifier = Modifier.padding(16.dp).fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = streakDays.toString(),
-                    style = TextStyle(
-                        fontFamily = PoppinsFamily,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 48.sp,
-                        color = ProdyForestGreen
-                    )
-                )
-                Text(
-                    text = "Consistency Score",
-                    style = TextStyle(
-                        fontFamily = PoppinsFamily,
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 14.sp,
-                        color = ProdyTextSecondaryLight
-                    )
-                )
-            }
-        }
-
-        // Badges Card
-        ProdyCard(
-            modifier = Modifier.weight(1f),
-            backgroundColor = ProdySurfaceLight
-        ) {
-            Column(
-                modifier = Modifier.padding(16.dp).fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    badges.forEach { badge ->
-                        BadgeItem(badge)
-                    }
-                }
-                Spacer(modifier = Modifier.height(12.dp))
-                Text(
-                    text = "Points to Grow",
-                    style = TextStyle(
-                        fontFamily = PoppinsFamily,
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 14.sp,
-                        color = ProdyTextSecondaryLight
-                    )
-                )
-            }
-        }
-    }
-}
-
-data class BadgeData(val icon: androidx.compose.ui.graphics.vector.ImageVector, val progress: Float, val color: Color)
-
-@Composable
-fun BadgeItem(badge: BadgeData) {
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = Modifier
-            .size(32.dp)
-            .graphicsLayer {
-                // Deferring any potential transformations to drawing layer
-            }
-    ) {
-        CircularProgressIndicator(
-            progress = { badge.progress },
-            modifier = Modifier.fillMaxSize(),
-            color = badge.color,
-            trackColor = badge.color.copy(alpha = 0.2f),
-            strokeWidth = 3.dp,
-        )
-        Icon(
-            imageVector = badge.icon,
-            contentDescription = stringResource(R.string.cd_badge_icon, badge.icon.name),
-            tint = badge.color,
-            modifier = Modifier.size(16.dp)
-        )
     }
 }
 
