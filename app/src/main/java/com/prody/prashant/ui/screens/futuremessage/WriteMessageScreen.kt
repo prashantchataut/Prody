@@ -72,6 +72,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.prody.prashant.R
+import com.prody.prashant.ui.components.SecureScreen
 import com.prody.prashant.ui.components.TimeCapsuleSealAnimation
 import com.prody.prashant.ui.components.rememberTimeCapsuleSealState
 import com.prody.prashant.ui.theme.*
@@ -161,6 +162,9 @@ fun WriteMessageScreen(
 
     // Magical sealing animation state
     val sealState = rememberTimeCapsuleSealState()
+
+    // Security: Prevent screenshots and screen recordings of private future message
+    SecureScreen()
 
     // Theme-aware colors
     val backgroundColor = if (isDark) TimeCapsuleBackgroundDark else TimeCapsuleBackgroundLight
