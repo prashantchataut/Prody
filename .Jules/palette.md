@@ -5,3 +5,7 @@
 ## 2025-01-26 - Dynamic Form Validation Feedback
 **Learning:** Providing real-time, visual feedback as users approach form constraints (like character limits) significantly reduces friction and errors. Semantic color shifts (warning at 80%, error at 100%) are more intuitive than simple counters.
 **Action:** Implement dynamic character counters in all high-priority input forms. Use `ProdyDesignTokens.SemanticColors.warning` for the cautionary state to provide a consistent cross-app language for constraints.
+
+## 2025-01-26 - Contextual Semantic Feedback for Input Validation
+**Learning:** Real-time visual feedback using semantic colors significantly improves user confidence during data entry. Mapping validation states (Error, Warning, Success) to a single indicator (like word count) creates an intuitive "quality meter" that guides users toward higher-quality content without needing complex error messages.
+**Action:** Use `ProdyDesignTokens.SemanticColors` to color-code metrics like word counts or character limits based on validation thresholds (e.g., Green for AI-ready content, Red for too short).
