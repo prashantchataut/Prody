@@ -137,7 +137,8 @@ data class HomeUiState(
     val personalizedPatternSuggestion: String = "",
     // Intelligence Insights
     val intelligenceInsights: List<IntelligenceInsight> = emptyList(),
-    val isPremiumIntelligenceEnabled: Boolean = false
+    val isPremiumIntelligenceEnabled: Boolean = false,
+    val moodTrend: List<Float> = emptyList()
 )
 
 private data class DailyContent(
@@ -240,6 +241,23 @@ class HomeViewModel @Inject constructor(
                 // Calculate weekly active days.
                 val daysActiveThisWeek = streakHistory.count { it.date >= weekStart }
 
+                // Calculate 7-day mood trend
+                val calendar = Calendar.getInstance()
+                val moodDataMap = weeklyJournalEntries.groupBy { entry ->
+                    calendar.timeInMillis = entry.createdAt
+                    calendar.get(Calendar.YEAR) * 1000 + calendar.get(Calendar.DAY_OF_YEAR)
+                }.mapValues { (_, entries) ->
+                    // Average intensity and normalize 1-10 scale to 1-5 for UI
+                    entries.map { it.moodIntensity.toFloat() / 2f }.average().toFloat()
+                }
+
+                val moodTrend = (6 downTo 0).map { daysAgo ->
+                    val cal = Calendar.getInstance()
+                    cal.add(Calendar.DAY_OF_YEAR, -daysAgo)
+                    val key = cal.get(Calendar.YEAR) * 1000 + cal.get(Calendar.DAY_OF_YEAR)
+                    moodDataMap[key] ?: 3.0f // Fallback to neutral 3.0
+                }
+
                 // Determine today's journaling status.
                 val (journaledToday, todayMood, todayPreview) = if (todayJournalEntries.isNotEmpty()) {
                     val latestEntry = todayJournalEntries.maxByOrNull { it.createdAt }
@@ -273,6 +291,7 @@ class HomeViewModel @Inject constructor(
                     todayEntryMood = todayMood,
                     todayEntryPreview = todayPreview,
                     dualStreakStatus = dualStreak,
+                    moodTrend = moodTrend,
                     buddhaWisdomProofInfo = _uiState.value.buddhaWisdomProofInfo.copy(isEnabled = aiProofMode),
                     isLoading = false // <-- Critical: Signal that loading is complete.
                 )
