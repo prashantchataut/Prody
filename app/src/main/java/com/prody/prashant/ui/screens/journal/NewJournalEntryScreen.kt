@@ -90,6 +90,8 @@ import com.prody.prashant.domain.validation.ContentValidation
 import com.prody.prashant.domain.validation.ContentValidator
 import com.prody.prashant.ui.components.AmbientBackground
 import com.prody.prashant.ui.components.MoodSuggestionHint
+import com.prody.prashant.ui.components.ProdyIconButton
+import com.prody.prashant.ui.theme.ProdyDesignTokens
 import com.prody.prashant.ui.components.SessionResultCard
 import com.prody.prashant.ui.components.rememberMoodSuggestionState
 import com.prody.prashant.ui.components.getCurrentTimeOfDay
@@ -565,18 +567,26 @@ private fun TitleInputField(title: String, onTitleChanged: (String) -> Unit, onN
 
 @Composable
 private fun JournalInputField(content: String, wordCount: Int, onContentChanged: (String) -> Unit, onMediaClick: () -> Unit, onVoiceClick: () -> Unit, onListClick: () -> Unit, isRecording: Boolean, recordingTimeElapsed: Long, contentValidation: ContentValidation, completionProgress: Float, colors: JournalThemeColors, focusRequester: FocusRequester) {
+    val wordCountColor = when (contentValidation) {
+        is ContentValidation.Valid -> ProdyDesignTokens.SemanticColors.success
+        is ContentValidation.MinimalContent -> ProdyDesignTokens.SemanticColors.warning
+        is ContentValidation.TooShort -> if (wordCount > 0) ProdyDesignTokens.SemanticColors.error else colors.secondaryText
+        is ContentValidation.TooVague -> ProdyDesignTokens.SemanticColors.warning
+        is ContentValidation.Empty -> colors.secondaryText
+    }
+
     Column(modifier = Modifier.padding(horizontal = 16.dp)) {
         Box(modifier = Modifier.fillMaxWidth().heightIn(min = 200.dp).clip(RoundedCornerShape(16.dp)).background(colors.surface).padding(16.dp)) {
             Column {
                 BasicTextField(value = content, onValueChange = onContentChanged, modifier = Modifier.fillMaxWidth().heightIn(min = 120.dp).focusRequester(focusRequester), textStyle = TextStyle(fontFamily = PoppinsFamily, fontSize = 16.sp, color = colors.primaryText), cursorBrush = SolidColor(colors.accent), decorationBox = { inner -> Box { if (content.isEmpty()) Text("What's on your mind?", style = TextStyle(fontFamily = PoppinsFamily, fontSize = 16.sp, color = colors.placeholderText)) ; inner() } })
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                        IconButton(onClick = onMediaClick) { Icon(imageVector = ProdyIcons.Image, contentDescription = null, tint = colors.primaryText) }
-                        IconButton(onClick = onVoiceClick) { Icon(imageVector = if (isRecording) ProdyIcons.Stop else ProdyIcons.Mic, contentDescription = null, tint = if (isRecording) colors.accent else colors.primaryText) }
-                        IconButton(onClick = onListClick) { Icon(imageVector = Icons.Filled.Menu, contentDescription = null, tint = colors.primaryText) }
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        ProdyIconButton(icon = ProdyIcons.Image, onClick = onMediaClick, contentDescription = stringResource(R.string.cd_add_media), tint = colors.primaryText)
+                        ProdyIconButton(icon = if (isRecording) ProdyIcons.Stop else ProdyIcons.Mic, onClick = onVoiceClick, contentDescription = stringResource(R.string.cd_voice_record), tint = if (isRecording) colors.accent else colors.primaryText)
+                        ProdyIconButton(icon = ProdyIcons.List, onClick = onListClick, contentDescription = stringResource(R.string.cd_bullet_list), tint = colors.primaryText)
                     }
-                    Text(text = "$wordCount WORDS", style = MaterialTheme.typography.labelSmall, color = colors.secondaryText)
+                    Text(text = stringResource(R.string.journal_word_count, wordCount).uppercase(), style = MaterialTheme.typography.labelSmall, color = wordCountColor, fontWeight = FontWeight.Bold)
                 }
             }
         }
