@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -132,15 +133,6 @@ fun HomeScreen(
         }
     }
 
-    // Build badge data from real achievement progress
-    val badges = remember(uiState.totalPoints, uiState.journalEntriesThisWeek, uiState.daysActiveThisWeek) {
-        listOf(
-            BadgeData(ProdyIcons.EmojiEvents, (uiState.totalPoints.coerceAtMost(1000) / 1000f).coerceIn(0f, 1f), ProdyWarmAmber),
-            BadgeData(ProdyIcons.Edit, (uiState.journalEntriesThisWeek.coerceAtMost(7) / 7f).coerceIn(0f, 1f), ProdyForestGreen),
-            BadgeData(ProdyIcons.Psychology, (uiState.daysActiveThisWeek.coerceAtMost(7) / 7f).coerceIn(0f, 1f), ProdyInfo)
-        )
-    }
-
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -149,93 +141,188 @@ fun HomeScreen(
     ) {
         // Header with Greeting
         item(key = "header") {
-            DashboardHeader(
-                userName = uiState.userName,
-                greeting = greeting,
-                onProfileClick = {},
-                onNotificationClick = onNavigateToSearch
-            )
+            StaggeredEntrance(index = 0) {
+                DashboardHeader(
+                    userName = uiState.userName,
+                    greeting = greeting,
+                    onProfileClick = {},
+                    onNotificationClick = onNavigateToSearch
+                )
+            }
         }
 
-        // Overview Section (Consistency & Badges)
-        item(key = "overview") {
-            OverviewSection(
-                streakDays = uiState.currentStreak,
-                badges = badges
-            )
+        // Dual Streak Card (Replacing basic overview)
+        item(key = "dual_streak") {
+            StaggeredEntrance(index = 1) {
+                DualStreakCard(
+                    dualStreakStatus = uiState.dualStreakStatus,
+                    onTapForDetails = {}
+                )
+            }
+        }
+
+        // Active Progress Layer: Next Action
+        uiState.nextAction?.let { action ->
+            item(key = "next_action") {
+                StaggeredEntrance(index = 2) {
+                    NextActionCard(
+                        nextAction = action,
+                        onClick = {
+                            // Navigate based on route
+                            when (action.actionRoute) {
+                                "journal/new" -> onNavigateToJournal()
+                                "vocabulary" -> onNavigateToVocabulary()
+                                "future_message/write" -> onNavigateToFutureMessage()
+                                "quotes" -> onNavigateToQuotes()
+                                else -> {}
+                            }
+                        },
+                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
+                    )
+                }
+            }
+        }
+
+        // Active Progress Layer: Today's Progress
+        item(key = "today_progress") {
+            StaggeredEntrance(index = 3) {
+                TodayProgressCard(
+                    progress = uiState.todayProgress,
+                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
+                )
+            }
+        }
+
+        // First Week Progress (Soul Layer)
+        if (uiState.isInFirstWeek && uiState.firstWeekProgress != null) {
+            item(key = "first_week_progress") {
+                StaggeredEntrance(index = 4) {
+                    FirstWeekProgressCard(
+                        dayNumber = uiState.firstWeekDayNumber,
+                        progress = uiState.firstWeekProgress,
+                        dayContent = uiState.firstWeekDayContent,
+                        onContinue = {},
+                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
+                    )
+                }
+            }
+        }
+
+        // Surfaced Memory (Soul Layer)
+        val memory = uiState.surfacedMemory
+        if (uiState.showMemoryCard && memory != null) {
+            item(key = "surfaced_memory") {
+                StaggeredEntrance(index = 5) {
+                    SurfacedMemoryCard(
+                        memory = memory,
+                        onExpand = { viewModel.expandMemoryCard() },
+                        onDismiss = { viewModel.dismissMemoryCard() },
+                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
+                    )
+                }
+            }
+        }
+
+        // Anniversary Memories (Soul Layer)
+        itemsIndexed(
+            items = uiState.anniversaryMemories,
+            key = { _, it -> "anniversary_${it.memory.id}" }
+        ) { i, anniversary ->
+            StaggeredEntrance(index = 6 + i) {
+                AnniversaryMemoryCard(
+                    anniversary = anniversary,
+                    onView = {},
+                    onDismiss = {},
+                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
+                )
+            }
         }
 
         // Personalized Pattern Card (opt-in, only shown when data exists)
         if (uiState.personalizedPatternText.isNotEmpty()) {
             item(key = "personalized_pattern") {
-                PersonalizedPatternCard(
-                    patternText = uiState.personalizedPatternText,
-                    patternSuggestion = uiState.personalizedPatternSuggestion
-                )
+                StaggeredEntrance(index = 7) {
+                    PersonalizedPatternCard(
+                        patternText = uiState.personalizedPatternText,
+                        patternSuggestion = uiState.personalizedPatternSuggestion
+                    )
+                }
             }
         }
 
         // Premium Intelligence Insights (Opt-in)
         if (uiState.isPremiumIntelligenceEnabled && uiState.intelligenceInsights.isNotEmpty()) {
             item(key = "intelligence_insight") {
-                Spacer(modifier = Modifier.height(24.dp))
-                IntelligenceInsightCard(
-                    insight = uiState.intelligenceInsights.first(),
-                    onActionClick = {}
-                )
+                StaggeredEntrance(index = 8) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    IntelligenceInsightCard(
+                        insight = uiState.intelligenceInsights.first(),
+                        onActionClick = {}
+                    )
+                }
             }
         }
 
         // Mood Trend Chart - only show if there's real data
-        if (uiState.journalEntriesThisWeek > 0) {
+        if (uiState.moodTrend.any { it != 3.0f }) {
             item(key = "mood_trend") {
-                MoodTrendSection(
-                    moodData = emptyList() // Mood trend requires historical mood data not exposed yet
-                )
+                StaggeredEntrance(index = 9) {
+                    MoodTrendSection(
+                        moodData = uiState.moodTrend
+                    )
+                }
             }
         }
 
         // Weekly Summary from real data
         item(key = "weekly_summary") {
-            WeeklySummarySection(
-                journalEntries = uiState.journalEntriesThisWeek,
-                wordsLearned = uiState.wordsLearnedThisWeek,
-                mindfulMinutes = uiState.daysActiveThisWeek * 15 // Approximate based on active days
-            )
+            StaggeredEntrance(index = 10) {
+                WeeklySummarySection(
+                    journalEntries = uiState.journalEntriesThisWeek,
+                    wordsLearned = uiState.wordsLearnedThisWeek,
+                    mindfulMinutes = uiState.daysActiveThisWeek * 15 // Approximate based on active days
+                )
+            }
         }
 
         // Quick Actions (Navigation)
         item(key = "quick_actions") {
-            QuickActionsGrid(
-                onJournalClick = onNavigateToJournal,
-                onHavenClick = onNavigateToHaven,
-                onWisdomClick = onNavigateToQuotes,
-                onFutureClick = onNavigateToFutureMessage
-            )
+            StaggeredEntrance(index = 11) {
+                QuickActionsGrid(
+                    onJournalClick = onNavigateToJournal,
+                    onHavenClick = onNavigateToHaven,
+                    onWisdomClick = onNavigateToQuotes,
+                    onFutureClick = onNavigateToFutureMessage
+                )
+            }
         }
 
         // Explore Section - routes to additional features
         item(key = "explore") {
-            ExploreSection(
-                onMeditationClick = onNavigateToMeditation,
-                onChallengesClick = onNavigateToChallenges,
-                onMissionsClick = onNavigateToMissions,
-                onLearningClick = onNavigateToLearning,
-                onDeepDiveClick = onNavigateToDeepDive,
-                onVocabularyClick = onNavigateToVocabulary,
-                onMicroJournalClick = onNavigateToMicroJournal,
-                onDailyRitualClick = onNavigateToDailyRitual
-            )
+            StaggeredEntrance(index = 12) {
+                ExploreSection(
+                    onMeditationClick = onNavigateToMeditation,
+                    onChallengesClick = onNavigateToChallenges,
+                    onMissionsClick = onNavigateToMissions,
+                    onLearningClick = onNavigateToLearning,
+                    onDeepDiveClick = onNavigateToDeepDive,
+                    onVocabularyClick = onNavigateToVocabulary,
+                    onMicroJournalClick = onNavigateToMicroJournal,
+                    onDailyRitualClick = onNavigateToDailyRitual
+                )
+            }
         }
 
         // Recent Activity - show today's journal status
         item(key = "recent_activity") {
-            RecentActivitySection(
-                journaledToday = uiState.journaledToday,
-                todayMood = uiState.todayEntryMood,
-                todayPreview = uiState.todayEntryPreview,
-                onClick = onNavigateToJournal
-            )
+            StaggeredEntrance(index = 13) {
+                RecentActivitySection(
+                    journaledToday = uiState.journaledToday,
+                    todayMood = uiState.todayEntryMood,
+                    todayPreview = uiState.todayEntryPreview,
+                    onClick = onNavigateToJournal
+                )
+            }
         }
     }
 }
