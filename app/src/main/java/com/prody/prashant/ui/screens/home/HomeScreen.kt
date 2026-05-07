@@ -132,110 +132,188 @@ fun HomeScreen(
         }
     }
 
-    // Build badge data from real achievement progress
-    val badges = remember(uiState.totalPoints, uiState.journalEntriesThisWeek, uiState.daysActiveThisWeek) {
-        listOf(
-            BadgeData(ProdyIcons.EmojiEvents, (uiState.totalPoints.coerceAtMost(1000) / 1000f).coerceIn(0f, 1f), ProdyWarmAmber),
-            BadgeData(ProdyIcons.Edit, (uiState.journalEntriesThisWeek.coerceAtMost(7) / 7f).coerceIn(0f, 1f), ProdyForestGreen),
-            BadgeData(ProdyIcons.Psychology, (uiState.daysActiveThisWeek.coerceAtMost(7) / 7f).coerceIn(0f, 1f), ProdyInfo)
-        )
-    }
-
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .background(backgroundColor),
-        contentPadding = PaddingValues(bottom = 80.dp)
+        contentPadding = PaddingValues(bottom = 80.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         // Header with Greeting
         item(key = "header") {
-            DashboardHeader(
-                userName = uiState.userName,
-                greeting = greeting,
-                onProfileClick = {},
-                onNotificationClick = onNavigateToSearch
-            )
+            StaggeredEntrance(index = 0) {
+                DashboardHeader(
+                    userName = uiState.userName,
+                    greeting = greeting,
+                    onProfileClick = {
+                        // Profile navigation handled by bottom nav but we can add secondary click here
+                    },
+                    onNotificationClick = onNavigateToSearch
+                )
+            }
         }
 
-        // Overview Section (Consistency & Badges)
-        item(key = "overview") {
-            OverviewSection(
-                streakDays = uiState.currentStreak,
-                badges = badges
-            )
+        // SURFACED SOUL LAYER CONTENT
+        if (uiState.showMemoryCard && uiState.surfacedMemory != null) {
+            item(key = "surfaced_memory") {
+                StaggeredEntrance(index = 1) {
+                    SurfacedMemoryCard(
+                        memory = uiState.surfacedMemory!!,
+                        onExpand = {
+                            viewModel.expandMemoryCard()
+                            onNavigateToJournal()
+                        },
+                        onDismiss = { viewModel.dismissMemoryCard() },
+                        modifier = Modifier.padding(horizontal = 24.dp)
+                    )
+                }
+            }
+        }
+
+        // SURFACED ANNIVERSARY MEMORY
+        if (uiState.anniversaryMemories.isNotEmpty()) {
+            item(key = "anniversary_memory") {
+                StaggeredEntrance(index = 2) {
+                    AnniversaryMemoryCard(
+                        anniversary = uiState.anniversaryMemories.first(),
+                        onView = { onNavigateToJournal() },
+                        onDismiss = { viewModel.dismissMemoryCard() },
+                        modifier = Modifier.padding(horizontal = 24.dp)
+                    )
+                }
+            }
+        }
+
+        // FIRST WEEK PROGRESS
+        if (uiState.isInFirstWeek && uiState.firstWeekProgress != null) {
+            item(key = "first_week_progress") {
+                StaggeredEntrance(index = 3) {
+                    FirstWeekProgressCard(
+                        dayNumber = uiState.firstWeekDayNumber,
+                        progress = uiState.firstWeekProgress,
+                        dayContent = uiState.firstWeekDayContent,
+                        onContinue = { onNavigateToJournal() },
+                        modifier = Modifier.padding(horizontal = 24.dp)
+                    )
+                }
+            }
+        }
+
+        // ACTIVE PROGRESS: Next Action Card
+        val nextAction = uiState.nextAction
+        if (nextAction != null) {
+            item(key = "next_action") {
+                StaggeredEntrance(index = 4) {
+                    NextActionCard(
+                        nextAction = nextAction,
+                        onClick = {
+                            // Map action route to navigation callback
+                            when (nextAction.actionRoute) {
+                                "journal/new" -> onNavigateToJournal()
+                                "vocabulary" -> onNavigateToVocabulary()
+                                "future_message/write" -> onNavigateToFutureMessage()
+                                "quotes" -> onNavigateToQuotes()
+                                else -> onNavigateToJournal()
+                            }
+                        },
+                        modifier = Modifier.padding(horizontal = 24.dp)
+                    )
+                }
+            }
+        }
+
+        // STREAK & PROGRESS
+        item(key = "dual_streak") {
+            StaggeredEntrance(index = 5) {
+                DualStreakCard(
+                    dualStreakStatus = uiState.dualStreakStatus,
+                    onTapForDetails = {}
+                )
+            }
+        }
+
+        item(key = "today_progress") {
+            StaggeredEntrance(index = 6) {
+                TodayProgressCard(
+                    progress = uiState.todayProgress,
+                    modifier = Modifier.padding(horizontal = 24.dp)
+                )
+            }
         }
 
         // Personalized Pattern Card (opt-in, only shown when data exists)
         if (uiState.personalizedPatternText.isNotEmpty()) {
             item(key = "personalized_pattern") {
-                PersonalizedPatternCard(
-                    patternText = uiState.personalizedPatternText,
-                    patternSuggestion = uiState.personalizedPatternSuggestion
-                )
+                StaggeredEntrance(index = 7) {
+                    PersonalizedPatternCard(
+                        patternText = uiState.personalizedPatternText,
+                        patternSuggestion = uiState.personalizedPatternSuggestion
+                    )
+                }
             }
         }
 
         // Premium Intelligence Insights (Opt-in)
         if (uiState.isPremiumIntelligenceEnabled && uiState.intelligenceInsights.isNotEmpty()) {
             item(key = "intelligence_insight") {
-                Spacer(modifier = Modifier.height(24.dp))
-                IntelligenceInsightCard(
-                    insight = uiState.intelligenceInsights.first(),
-                    onActionClick = {}
-                )
+                StaggeredEntrance(index = 8) {
+                    IntelligenceInsightCard(
+                        insight = uiState.intelligenceInsights.first(),
+                        onActionClick = {}
+                    )
+                }
             }
         }
 
         // Mood Trend Chart - only show if there's real data
-        if (uiState.journalEntriesThisWeek > 0) {
+        if (uiState.journalEntriesThisWeek > 0 && uiState.moodTrendData.isNotEmpty()) {
             item(key = "mood_trend") {
-                MoodTrendSection(
-                    moodData = emptyList() // Mood trend requires historical mood data not exposed yet
-                )
+                StaggeredEntrance(index = 9) {
+                    MoodTrendSection(
+                        moodData = uiState.moodTrendData
+                    )
+                }
             }
-        }
-
-        // Weekly Summary from real data
-        item(key = "weekly_summary") {
-            WeeklySummarySection(
-                journalEntries = uiState.journalEntriesThisWeek,
-                wordsLearned = uiState.wordsLearnedThisWeek,
-                mindfulMinutes = uiState.daysActiveThisWeek * 15 // Approximate based on active days
-            )
         }
 
         // Quick Actions (Navigation)
         item(key = "quick_actions") {
-            QuickActionsGrid(
-                onJournalClick = onNavigateToJournal,
-                onHavenClick = onNavigateToHaven,
-                onWisdomClick = onNavigateToQuotes,
-                onFutureClick = onNavigateToFutureMessage
-            )
+            StaggeredEntrance(index = 10) {
+                QuickActionsGrid(
+                    onJournalClick = onNavigateToJournal,
+                    onHavenClick = onNavigateToHaven,
+                    onWisdomClick = onNavigateToQuotes,
+                    onFutureClick = onNavigateToFutureMessage
+                )
+            }
         }
 
         // Explore Section - routes to additional features
         item(key = "explore") {
-            ExploreSection(
-                onMeditationClick = onNavigateToMeditation,
-                onChallengesClick = onNavigateToChallenges,
-                onMissionsClick = onNavigateToMissions,
-                onLearningClick = onNavigateToLearning,
-                onDeepDiveClick = onNavigateToDeepDive,
-                onVocabularyClick = onNavigateToVocabulary,
-                onMicroJournalClick = onNavigateToMicroJournal,
-                onDailyRitualClick = onNavigateToDailyRitual
-            )
+            StaggeredEntrance(index = 11) {
+                ExploreSection(
+                    onMeditationClick = onNavigateToMeditation,
+                    onChallengesClick = onNavigateToChallenges,
+                    onMissionsClick = onNavigateToMissions,
+                    onLearningClick = onNavigateToLearning,
+                    onDeepDiveClick = onNavigateToDeepDive,
+                    onVocabularyClick = onNavigateToVocabulary,
+                    onMicroJournalClick = onNavigateToMicroJournal,
+                    onDailyRitualClick = onNavigateToDailyRitual
+                )
+            }
         }
 
         // Recent Activity - show today's journal status
         item(key = "recent_activity") {
-            RecentActivitySection(
-                journaledToday = uiState.journaledToday,
-                todayMood = uiState.todayEntryMood,
-                todayPreview = uiState.todayEntryPreview,
-                onClick = onNavigateToJournal
-            )
+            StaggeredEntrance(index = 12) {
+                RecentActivitySection(
+                    journaledToday = uiState.journaledToday,
+                    todayMood = uiState.todayEntryMood,
+                    todayPreview = uiState.todayEntryPreview,
+                    onClick = onNavigateToJournal
+                )
+            }
         }
     }
 }
@@ -309,78 +387,6 @@ fun DashboardHeader(
                     text = userName.firstOrNull()?.toString() ?: "P",
                     color = Color.White,
                     fontWeight = FontWeight.Bold
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun OverviewSection(
-    streakDays: Int,
-    badges: List<BadgeData>
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        // Streak Card
-        ProdyCard(
-            modifier = Modifier.weight(1f),
-            backgroundColor = ProdySurfaceLight
-        ) {
-            Column(
-                modifier = Modifier.padding(16.dp).fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = streakDays.toString(),
-                    style = TextStyle(
-                        fontFamily = PoppinsFamily,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 48.sp,
-                        color = ProdyForestGreen
-                    )
-                )
-                Text(
-                    text = "Consistency Score",
-                    style = TextStyle(
-                        fontFamily = PoppinsFamily,
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 14.sp,
-                        color = ProdyTextSecondaryLight
-                    )
-                )
-            }
-        }
-
-        // Badges Card
-        ProdyCard(
-            modifier = Modifier.weight(1f),
-            backgroundColor = ProdySurfaceLight
-        ) {
-            Column(
-                modifier = Modifier.padding(16.dp).fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    badges.forEach { badge ->
-                        BadgeItem(badge)
-                    }
-                }
-                Spacer(modifier = Modifier.height(12.dp))
-                Text(
-                    text = "Points to Grow",
-                    style = TextStyle(
-                        fontFamily = PoppinsFamily,
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 14.sp,
-                        color = ProdyTextSecondaryLight
-                    )
                 )
             }
         }
@@ -509,50 +515,6 @@ fun MoodChart(data: List<Float>, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun WeeklySummarySection(journalEntries: Int, wordsLearned: Int, mindfulMinutes: Int) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp)
-    ) {
-        Text(
-            text = "This Week",
-            style = TextStyle(
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 18.sp,
-                color = ProdyTextPrimaryLight
-            )
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            SummaryCard(
-                label = "Entries",
-                value = journalEntries.toString(),
-                icon = ProdyIcons.Edit,
-                color = ProdyForestGreen,
-                modifier = Modifier.weight(1f)
-            )
-            SummaryCard(
-                label = "Words",
-                value = wordsLearned.toString(),
-                icon = ProdyIcons.School,
-                color = ProdyWarmAmber,
-                modifier = Modifier.weight(1f)
-            )
-            SummaryCard(
-                label = "Minutes",
-                value = mindfulMinutes.toString(),
-                icon = ProdyIcons.SelfImprovement,
-                color = ProdyInfo,
-                modifier = Modifier.weight(1f)
-            )
-        }
-    }
-}
-
-@Composable
 fun SummaryCard(label: String, value: String, icon: androidx.compose.ui.graphics.vector.ImageVector, color: Color, modifier: Modifier) {
     ProdyCard(
         modifier = modifier,
@@ -652,7 +614,7 @@ fun QuickActionsGrid(
             QuickActionTile(
                 title = "Future",
                 icon = ProdyIcons.Send,
-                color = Color(0xFF9C27B0),
+                color = NotificationAchievement,
                 onClick = onFutureClick,
                 modifier = Modifier.weight(1f)
             )
