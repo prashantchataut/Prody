@@ -368,6 +368,7 @@ fun ProdyErrorEmptyState(
  * @param getStartedLabel Label for the get started button
  * @param onGetStartedClick Callback when get started is clicked
  * @param modifier Modifier for the component
+ * @param iconContentDescription Optional accessibility description for the icon
  */
 @Composable
 fun ProdyWelcomeEmptyState(
@@ -376,7 +377,8 @@ fun ProdyWelcomeEmptyState(
     message: String,
     getStartedLabel: String,
     onGetStartedClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    iconContentDescription: String? = null
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "welcome_state")
 
@@ -399,7 +401,7 @@ fun ProdyWelcomeEmptyState(
     ) {
         Icon(
             imageVector = icon,
-            contentDescription = "Welcome",
+            contentDescription = iconContentDescription ?: "Welcome",
             modifier = Modifier
                 .size(96.dp)
                 .alpha(0.9f),
