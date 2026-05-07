@@ -28,10 +28,12 @@ import com.prody.prashant.domain.streak.DualStreakManager
 import com.prody.prashant.domain.streak.DualStreakStatus
 import com.prody.prashant.util.BuddhaWisdom
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.Calendar
 import javax.inject.Inject
 
@@ -137,7 +139,9 @@ data class HomeUiState(
     val personalizedPatternSuggestion: String = "",
     // Intelligence Insights
     val intelligenceInsights: List<IntelligenceInsight> = emptyList(),
-    val isPremiumIntelligenceEnabled: Boolean = false
+    val isPremiumIntelligenceEnabled: Boolean = false,
+    // Mood Trend
+    val moodTrendData: List<Float> = emptyList()
 )
 
 private data class DailyContent(
@@ -248,6 +252,11 @@ class HomeViewModel @Inject constructor(
                     Triple(false, "", "")
                 }
 
+                // Calculate mood trend for the UI
+                val moodTrend = withContext(Dispatchers.Default) {
+                    calculateMoodTrend(weeklyJournalEntries)
+                }
+
                 // 3. Atomically update the UI state with all the loaded data.
                 _uiState.value.copy(
                     userName = profile?.displayName ?: "Growth Seeker",
@@ -274,6 +283,7 @@ class HomeViewModel @Inject constructor(
                     todayEntryPreview = todayPreview,
                     dualStreakStatus = dualStreak,
                     buddhaWisdomProofInfo = _uiState.value.buddhaWisdomProofInfo.copy(isEnabled = aiProofMode),
+                    moodTrendData = moodTrend,
                     isLoading = false // <-- Critical: Signal that loading is complete.
                 )
             }.catch { e ->
@@ -450,7 +460,9 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 // Load user context first - it's the foundation
-                val context = soulLayerRepository.getCurrentContext()
+                val context = withContext(Dispatchers.Default) {
+                    soulLayerRepository.getCurrentContext()
+                }
 
                 // Update basic context info
                 _uiState.update { state ->
@@ -937,10 +949,44 @@ class HomeViewModel @Inject constructor(
      * Load personalized pattern from the local PatternAnalysisEngine.
      * Only shows data when the user has opted in via Settings and has enough entries.
      */
+    /**
+     * Logic Pattern: Processes the last 7 days of journal entries into a normalized trend.
+     * Normalized from 1-10 intensity to 1-5 for the chart, with neutral fallback (3.0f).
+     * Correctly handles year boundaries and multi-year grouping.
+     */
+    private fun calculateMoodTrend(entries: List<JournalEntryEntity>): List<Float> {
+        val calendar = Calendar.getInstance()
+
+        // Group entries by a unique key (Year + Day of Year)
+        val dayGroups = entries.groupBy {
+            val entryCal = Calendar.getInstance()
+            entryCal.timeInMillis = it.createdAt
+            entryCal.get(Calendar.YEAR) * 1000 + entryCal.get(Calendar.DAY_OF_YEAR)
+        }
+
+        return (6 downTo 0).map { offset ->
+            val targetCal = Calendar.getInstance()
+            targetCal.add(Calendar.DAY_OF_YEAR, -offset)
+            val dayKey = targetCal.get(Calendar.YEAR) * 1000 + targetCal.get(Calendar.DAY_OF_YEAR)
+
+            val entriesForDay = dayGroups[dayKey]
+
+            if (entriesForDay != null && entriesForDay.isNotEmpty()) {
+                // Average intensity for the day, normalized to 1-5 scale
+                val avgIntensity = entriesForDay.map { it.moodIntensity.toFloat() }.average().toFloat()
+                (avgIntensity / 2f).coerceIn(1f, 5f)
+            } else {
+                3.0f // Neutral fallback
+            }
+        }
+    }
+
     private fun loadPersonalizedPattern() {
         viewModelScope.launch {
             try {
-                val topPattern = patternAnalysisEngine.getTopPatternForHome()
+                val topPattern = withContext(Dispatchers.Default) {
+                    patternAnalysisEngine.getTopPatternForHome()
+                }
                 if (topPattern != null) {
                     _uiState.update {
                         it.copy(
