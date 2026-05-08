@@ -147,6 +147,25 @@ private data class DailyContent(
     val idiom: IdiomEntity?
 )
 
+/**
+ * Type-safe bridge for the multi-flow `combine` block.
+ * Handles 12+ reactive streams to update the final `HomeUiState` atomically.
+ */
+private data class HomeDataArgs(
+    val profile: UserProfileEntity?,
+    val weeklyJournalEntries: List<JournalEntryEntity>,
+    val weeklyLearnedWords: Int,
+    val streakHistory: List<StreakHistoryEntity>,
+    val todayJournalEntries: List<JournalEntryEntity>,
+    val dualStreak: DualStreakStatus,
+    val aiProofMode: Boolean,
+    val nextAction: NextAction?,
+    val todayProgress: TodayProgress,
+    val dailySeed: SeedEntity?,
+    val soulContext: UserContext,
+    val intelligentGreeting: TemporalGreeting
+)
+
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val userDao: UserDao,
@@ -184,21 +203,6 @@ class HomeViewModel @Inject constructor(
     /**
      * Performance Optimization: This is the primary data loading function for the HomeScreen.
      * It consolidates multiple data sources into a single, efficient pipeline.
-     *
-     * Key Optimizations:
-     * 1.  **Parallel Daily Content Fetch**: `async` is used to fetch the daily quote, word, proverb,
-     *     and idiom concurrently. This avoids the previous sequential (blocking) fetch, which
-     *     was a major source of startup lag.
-     * 2.  **Single `combine` Operator**: All reactive and one-time data sources are merged using a
-     *     single `combine` operator. This ensures that the UI state is updated only ONCE, in a
-     *     single, atomic operation, after all necessary data is available. This prevents multiple,
-     *     staggered recompositions on the home screen.
-     * 3.  **Asynchronous Initialization**: The entire data loading process is off the main thread,
-     *     ensuring the UI remains responsive during startup. The `isLoading` flag is set to `false`
-     *     only at the very end, signaling the splash screen to disappear.
-     * 4.  **Error Isolation**: Each data fetch is wrapped in a `try-catch` block. This prevents a
-     *     failure in one data source (e.g., a missing proverb) from crashing the entire app or
-     *     blocking other data from loading.
      */
     private fun loadInitialData() {
         viewModelScope.launch {
@@ -227,54 +231,27 @@ class HomeViewModel @Inject constructor(
                 userDao.getStreakHistory().distinctUntilChanged(),
                 journalDao.getEntriesByDateRange(todayStart, System.currentTimeMillis()).distinctUntilChanged(),
                 dualStreakManager.getDualStreakStatusFlow().distinctUntilChanged(),
-                preferencesManager.debugAiProofMode.distinctUntilChanged()
+                preferencesManager.debugAiProofMode.distinctUntilChanged(),
+                // Add missing reactive streams
+                flow { emit(activeProgressService.getNextAction()) },
+                flow { emit(activeProgressService.getTodayProgress()) },
+                flow { emit(seedBloomService.getTodaySeed()) },
+                flow { emit(soulLayerRepository.getCurrentContext()) },
+                flow { emit(soulLayerRepository.getGreeting()) }
             ) { args ->
-                val profile = args.getOrNull(0) as? UserProfileEntity
-                val weeklyJournalEntries = (args.getOrNull(1) as? List<*>)?.filterIsInstance<JournalEntryEntity>() ?: emptyList()
-                val weeklyLearnedWords = args.getOrNull(2) as? Int ?: 0
-                val streakHistory = (args.getOrNull(3) as? List<*>)?.filterIsInstance<StreakHistoryEntity>() ?: emptyList()
-                val todayJournalEntries = (args.getOrNull(4) as? List<*>)?.filterIsInstance<JournalEntryEntity>() ?: emptyList()
-                val dualStreak = args.getOrNull(5) as? DualStreakStatus ?: DualStreakStatus.empty()
-                val aiProofMode = args.getOrNull(6) as? Boolean ?: false
-
-                // Calculate weekly active days.
-                val daysActiveThisWeek = streakHistory.count { it.date >= weekStart }
-
-                // Determine today's journaling status.
-                val (journaledToday, todayMood, todayPreview) = if (todayJournalEntries.isNotEmpty()) {
-                    val latestEntry = todayJournalEntries.maxByOrNull { it.createdAt }
-                    Triple(true, latestEntry?.mood ?: "", latestEntry?.content?.take(100) ?: "")
-                } else {
-                    Triple(false, "", "")
-                }
-
-                // 3. Atomically update the UI state with all the loaded data.
-                _uiState.value.copy(
-                    userName = profile?.displayName ?: "Growth Seeker",
-                    currentStreak = profile?.currentStreak ?: 0,
-                    totalPoints = profile?.totalPoints ?: 0,
-                    dailyQuote = dailyContent.quote?.content ?: _uiState.value.dailyQuote,
-                    dailyQuoteAuthor = dailyContent.quote?.author ?: _uiState.value.dailyQuoteAuthor,
-                    wordOfTheDay = dailyContent.word?.word ?: _uiState.value.wordOfTheDay,
-                    wordDefinition = dailyContent.word?.definition ?: _uiState.value.wordDefinition,
-                    wordPronunciation = dailyContent.word?.pronunciation ?: _uiState.value.wordPronunciation,
-                    wordId = dailyContent.word?.id ?: _uiState.value.wordId,
-                    dailyProverb = dailyContent.proverb?.content ?: _uiState.value.dailyProverb,
-                    proverbMeaning = dailyContent.proverb?.meaning ?: _uiState.value.proverbMeaning,
-                    proverbOrigin = dailyContent.proverb?.origin ?: _uiState.value.proverbOrigin,
-                    dailyIdiom = dailyContent.idiom?.phrase ?: _uiState.value.dailyIdiom,
-                    idiomMeaning = dailyContent.idiom?.meaning ?: _uiState.value.idiomMeaning,
-                    idiomExample = dailyContent.idiom?.exampleSentence ?: _uiState.value.idiomExample,
-                    idiomId = dailyContent.idiom?.id ?: _uiState.value.idiomId,
-                    journalEntriesThisWeek = weeklyJournalEntries.size,
-                    wordsLearnedThisWeek = weeklyLearnedWords,
-                    daysActiveThisWeek = daysActiveThisWeek,
-                    journaledToday = journaledToday,
-                    todayEntryMood = todayMood,
-                    todayEntryPreview = todayPreview,
-                    dualStreakStatus = dualStreak,
-                    buddhaWisdomProofInfo = _uiState.value.buddhaWisdomProofInfo.copy(isEnabled = aiProofMode),
-                    isLoading = false // <-- Critical: Signal that loading is complete.
+                HomeDataArgs(
+                    profile = args[0] as? UserProfileEntity,
+                    weeklyJournalEntries = (args[1] as? List<*>)?.filterIsInstance<JournalEntryEntity>() ?: emptyList(),
+                    weeklyLearnedWords = args[2] as? Int ?: 0,
+                    streakHistory = (args[3] as? List<*>)?.filterIsInstance<StreakHistoryEntity>() ?: emptyList(),
+                    todayJournalEntries = (args[4] as? List<*>)?.filterIsInstance<JournalEntryEntity>() ?: emptyList(),
+                    dualStreak = args[5] as? DualStreakStatus ?: DualStreakStatus.empty(),
+                    aiProofMode = args[6] as? Boolean ?: false,
+                    nextAction = args[7] as? NextAction,
+                    todayProgress = args[8] as? TodayProgress ?: TodayProgress(),
+                    dailySeed = args[9] as? SeedEntity,
+                    soulContext = args[10] as? UserContext ?: UserContext.empty(),
+                    intelligentGreeting = args[11] as? TemporalGreeting ?: TemporalGreeting("Welcome back", "What's on your mind today?", com.prody.prashant.domain.model.TimeOfDay.MORNING, GreetingMood.NEUTRAL, false)
                 )
             }.catch { e ->
                 android.util.Log.e(TAG, "Error in combined home data flow", e)
@@ -285,18 +262,71 @@ class HomeViewModel @Inject constructor(
                         error = "Failed to load home data. Please check your connection."
                     )
                 }
-            }.collect { newState ->
-                _uiState.value = newState
+            }.collect { args ->
+                // Calculate weekly active days.
+                val daysActiveThisWeek = args.streakHistory.count { it.date >= weekStart }
+
+                // Determine today's journaling status.
+                val (journaledToday, todayMood, todayPreview) = if (args.todayJournalEntries.isNotEmpty()) {
+                    val latestEntry = args.todayJournalEntries.maxByOrNull { it.createdAt }
+                    Triple(true, latestEntry?.mood ?: "", latestEntry?.content?.take(100) ?: "")
+                } else {
+                    Triple(false, "", "")
+                }
+
+                // 3. Atomically update the UI state with all the loaded data.
+                _uiState.update { state ->
+                    state.copy(
+                        userName = args.profile?.displayName ?: "Growth Seeker",
+                        currentStreak = args.profile?.currentStreak ?: 0,
+                        totalPoints = args.profile?.totalPoints ?: 0,
+                        dailyQuote = dailyContent.quote?.content ?: state.dailyQuote,
+                        dailyQuoteAuthor = dailyContent.quote?.author ?: state.dailyQuoteAuthor,
+                        wordOfTheDay = dailyContent.word?.word ?: state.wordOfTheDay,
+                        wordDefinition = dailyContent.word?.definition ?: state.wordDefinition,
+                        wordPronunciation = dailyContent.word?.pronunciation ?: state.wordPronunciation,
+                        wordId = dailyContent.word?.id ?: state.wordId,
+                        dailyProverb = dailyContent.proverb?.content ?: state.dailyProverb,
+                        proverbMeaning = dailyContent.proverb?.meaning ?: state.proverbMeaning,
+                        proverbOrigin = dailyContent.proverb?.origin ?: state.proverbOrigin,
+                        dailyIdiom = dailyContent.idiom?.phrase ?: state.dailyIdiom,
+                        idiomMeaning = dailyContent.idiom?.meaning ?: state.idiomMeaning,
+                        idiomExample = dailyContent.idiom?.exampleSentence ?: state.idiomExample,
+                        idiomId = dailyContent.idiom?.id ?: state.idiomId,
+                        journalEntriesThisWeek = args.weeklyJournalEntries.size,
+                        wordsLearnedThisWeek = args.weeklyLearnedWords,
+                        daysActiveThisWeek = daysActiveThisWeek,
+                        journaledToday = journaledToday,
+                        todayEntryMood = todayMood,
+                        todayEntryPreview = todayPreview,
+                        dualStreakStatus = args.dualStreak,
+                        buddhaWisdomProofInfo = state.buddhaWisdomProofInfo.copy(isEnabled = args.aiProofMode),
+                        nextAction = args.nextAction,
+                        todayProgress = args.todayProgress,
+                        dailySeed = args.dailySeed,
+                        userArchetype = args.soulContext.userArchetype,
+                        trustLevel = args.soulContext.trustLevel,
+                        isUserStruggling = args.soulContext.isStruggling,
+                        isUserThriving = args.soulContext.isThriving,
+                        isInFirstWeek = args.soulContext.isInFirstWeek,
+                        intelligentGreeting = args.intelligentGreeting.greeting,
+                        greetingSubtext = args.intelligentGreeting.subtitle,
+                        isLoading = false
+                    )
+                }
             }
 
             // 4. Launch non-essential and secondary data loading tasks.
-            // These run independently and update the UI state as they complete.
             launch { loadBuddhaWisdom() }
             launch { checkOnboarding() }
-            launch { loadActiveProgress() }
-            launch { loadDailySeed() }
             launch { checkAiConfiguration() }
-            launch { loadSoulLayerContent() }
+            launch {
+                val context = soulLayerRepository.getCurrentContext()
+                if (context.isInFirstWeek) loadFirstWeekState()
+                loadSurfacedMemory()
+                loadAnniversaryMemories()
+                loadIntelligenceInsights(context)
+            }
         }
     }
 
@@ -308,7 +338,6 @@ class HomeViewModel @Inject constructor(
 
         DailyContent(quoteDeferred.await(), wordDeferred.await(), proverbDeferred.await(), idiomDeferred.await())
     }
-
 
     /**
      * Check AI configuration and update UI state accordingly.
@@ -330,27 +359,6 @@ class HomeViewModel @Inject constructor(
     // ============== ACTIVE PROGRESS LAYER ==============
 
     /**
-     * Load the Active Progress Layer data:
-     * - Next Action suggestion
-     * - Today's Progress summary
-     */
-    private fun loadActiveProgress() {
-        viewModelScope.launch {
-            try {
-                // Load Next Action
-                val nextAction = activeProgressService.getNextAction()
-                _uiState.update { it.copy(nextAction = nextAction) }
-
-                // Load Today's Progress
-                val todayProgress = activeProgressService.getTodayProgress()
-                _uiState.update { it.copy(todayProgress = todayProgress) }
-            } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error loading active progress", e)
-            }
-        }
-    }
-
-    /**
      * Refresh the Next Action suggestion (called after user actions)
      */
     fun refreshNextAction() {
@@ -364,20 +372,6 @@ class HomeViewModel @Inject constructor(
                 )}
             } catch (e: Exception) {
                 android.util.Log.e(TAG, "Error refreshing next action", e)
-            }
-        }
-    }
-
-    /**
-     * Load today's Seed for the Seed -> Bloom mechanic
-     */
-    private fun loadDailySeed() {
-        viewModelScope.launch {
-            try {
-                val seed = seedBloomService.getTodaySeed()
-                _uiState.update { it.copy(dailySeed = seed) }
-            } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error loading daily seed", e)
             }
         }
     }
@@ -407,13 +401,11 @@ class HomeViewModel @Inject constructor(
 
     /**
      * Trigger wisdom streak maintenance when user views wisdom content.
-     * Call this when user views quote, word, proverb, or idiom.
      */
     fun onWisdomContentViewed() {
         viewModelScope.launch {
             try {
-                val result = dualStreakManager.maintainWisdomStreak()
-                // Result can be used to show feedback/celebration if needed
+                dualStreakManager.maintainWisdomStreak()
             } catch (e: Exception) {
                 android.util.Log.e(TAG, "Error maintaining wisdom streak", e)
             }
@@ -422,13 +414,11 @@ class HomeViewModel @Inject constructor(
 
     /**
      * Trigger reflection streak maintenance when user writes journal or completes reflection.
-     * Call this when user saves a journal entry or completes evening reflection.
      */
     fun onReflectionCompleted() {
         viewModelScope.launch {
             try {
-                val result = dualStreakManager.maintainReflectionStreak()
-                // Result can be used to show feedback/celebration if needed
+                dualStreakManager.maintainReflectionStreak()
             } catch (e: Exception) {
                 android.util.Log.e(TAG, "Error maintaining reflection streak", e)
             }
@@ -438,88 +428,7 @@ class HomeViewModel @Inject constructor(
     // ============== SOUL LAYER INTELLIGENCE ==============
 
     /**
-     * Load all Soul Layer content for the home screen.
-     * This includes:
-     * - Context-aware greeting
-     * - First week journey state (if applicable)
-     * - Memory to surface (if any)
-     * - Anniversary memories
-     * - User context for personalization
-     */
-    private fun loadSoulLayerContent() {
-        viewModelScope.launch {
-            try {
-                // Load user context first - it's the foundation
-                val context = soulLayerRepository.getCurrentContext()
-
-                // Update basic context info
-                _uiState.update { state ->
-                    state.copy(
-                        userArchetype = context.userArchetype,
-                        trustLevel = context.trustLevel,
-                        isUserStruggling = context.isStruggling,
-                        isUserThriving = context.isThriving,
-                        isInFirstWeek = context.isInFirstWeek
-                    )
-                }
-
-                // Load greeting (intelligent, time-of-day aware)
-                loadIntelligentGreeting()
-
-                // Load first week state if in first week
-                if (context.isInFirstWeek) {
-                    loadFirstWeekState()
-                }
-
-                // Load memory to surface (if conditions are right)
-                loadSurfacedMemory()
-
-                // Load anniversary memories
-                loadAnniversaryMemories()
-
-                // Load Premium Intelligence Insights (Opt-in)
-                loadIntelligenceInsights(context)
-
-
-            } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error loading Soul Layer content", e)
-            }
-        }
-    }
-
-    /**
-     * Load the context-aware intelligent greeting.
-     * This considers:
-     * - Time of day
-     * - User's name
-     * - User's emotional state
-     * - Special occasions
-     * - First week stage
-     */
-    private suspend fun loadIntelligentGreeting() {
-        try {
-            val greeting = soulLayerRepository.getGreeting()
-            _uiState.update { state ->
-                state.copy(
-                    intelligentGreeting = greeting.greeting,
-                    greetingSubtext = greeting.subtitle
-                )
-            }
-        } catch (e: Exception) {
-            android.util.Log.e(TAG, "Error loading greeting", e)
-            // Fallback to generic greeting
-            _uiState.update { state ->
-                state.copy(
-                    intelligentGreeting = "Welcome back",
-                    greetingSubtext = "What's on your mind today?"
-                )
-            }
-        }
-    }
-
-    /**
      * Load first week journey state.
-     * Shows special content for users in their first 7 days.
      */
     private suspend fun loadFirstWeekState() {
         try {
@@ -541,7 +450,6 @@ class HomeViewModel @Inject constructor(
 
     /**
      * Load a memory to surface if conditions are right.
-     * Memories create "magic moments" that delight users.
      */
     private suspend fun loadSurfacedMemory() {
         try {
@@ -552,9 +460,6 @@ class HomeViewModel @Inject constructor(
                     showMemoryCard = memory != null
                 )
             }
-
-            if (memory != null) {
-            }
         } catch (e: Exception) {
             android.util.Log.e(TAG, "Error loading surfaced memory", e)
         }
@@ -562,16 +467,12 @@ class HomeViewModel @Inject constructor(
 
     /**
      * Load anniversary memories for today.
-     * "On this day X years ago..."
      */
     private suspend fun loadAnniversaryMemories() {
         try {
             val anniversaries = soulLayerRepository.getAnniversaryMemories()
             _uiState.update { state ->
                 state.copy(anniversaryMemories = anniversaries)
-            }
-
-            if (anniversaries.isNotEmpty()) {
             }
         } catch (e: Exception) {
             android.util.Log.e(TAG, "Error loading anniversary memories", e)
@@ -585,7 +486,6 @@ class HomeViewModel @Inject constructor(
         try {
             val isEnabled = preferencesManager.premiumIntelligenceEnabled.first()
             val insights = if (isEnabled) {
-                // Fixed: analyzePatterns takes an Int lookbackDays, not UserContext
                 patternAnalysisEngine.analyzePatterns(lookbackDays = 7)?.patterns?.map {
                     IntelligenceInsight(
                         title = it.theme,
@@ -603,9 +503,6 @@ class HomeViewModel @Inject constructor(
                     isPremiumIntelligenceEnabled = isEnabled
                 )
             }
-            
-            if (insights.isNotEmpty()) {
-            }
         } catch (e: Exception) {
             android.util.Log.e(TAG, "Error loading intelligence insights", e)
         }
@@ -617,13 +514,8 @@ class HomeViewModel @Inject constructor(
     fun onMemoryInteracted(interactionType: String) {
         viewModelScope.launch {
             try {
-                val memory = _uiState.value.surfacedMemory ?: return@launch
-
-                // Track the interaction in Soul Layer
-                // This helps the system learn what memories resonate
-
-                // Mark memory as interacted
-                // The repository will handle persistence
+                _uiState.value.surfacedMemory ?: return@launch
+                // Mark memory as interacted logic here
             } catch (e: Exception) {
                 android.util.Log.e(TAG, "Error handling memory interaction", e)
             }
@@ -643,7 +535,6 @@ class HomeViewModel @Inject constructor(
      */
     fun expandMemoryCard() {
         onMemoryInteracted("expanded")
-        // Navigation handled by UI
     }
 
     /**
@@ -652,10 +543,7 @@ class HomeViewModel @Inject constructor(
     fun onFirstWeekMilestoneCompleted(milestone: FirstWeekMilestone) {
         viewModelScope.launch {
             try {
-                // Mark milestone as completed
                 soulLayerRepository.markFirstWeekMilestone(milestone)
-
-                // Get celebration content
                 val celebration = soulLayerRepository.getCelebrationContent(milestone)
 
                 _uiState.update { state ->
@@ -664,11 +552,7 @@ class HomeViewModel @Inject constructor(
                         firstWeekCelebration = celebration
                     )
                 }
-
-                // Refresh first week state
                 loadFirstWeekState()
-
-
             } catch (e: Exception) {
                 android.util.Log.e(TAG, "Error handling first week milestone", e)
             }
@@ -684,16 +568,30 @@ class HomeViewModel @Inject constructor(
 
     /**
      * Refresh Soul Layer content.
-     * Called when user triggers a refresh or after significant actions.
      */
     fun refreshSoulLayerContent() {
         viewModelScope.launch {
             try {
-                // Force refresh the context
                 soulLayerRepository.refreshContext()
+                val context = soulLayerRepository.getCurrentContext()
+                val greeting = soulLayerRepository.getGreeting()
 
-                // Reload all Soul Layer content
-                loadSoulLayerContent()
+                _uiState.update { state ->
+                    state.copy(
+                        userArchetype = context.userArchetype,
+                        trustLevel = context.trustLevel,
+                        isUserStruggling = context.isStruggling,
+                        isUserThriving = context.isThriving,
+                        isInFirstWeek = context.isInFirstWeek,
+                        intelligentGreeting = greeting.greeting,
+                        greetingSubtext = greeting.subtitle
+                    )
+                }
+
+                if (context.isInFirstWeek) loadFirstWeekState()
+                loadSurfacedMemory()
+                loadAnniversaryMemories()
+                loadIntelligenceInsights(context)
             } catch (e: Exception) {
                 android.util.Log.e(TAG, "Error refreshing Soul Layer content", e)
             }
@@ -702,8 +600,6 @@ class HomeViewModel @Inject constructor(
 
     private fun checkOnboarding() {
         viewModelScope.launch {
-            // Combine both onboarding checks into a single flow subscription
-            // to prevent multiple coroutine leaks on configuration changes
             combine(
                 aiOnboardingManager.shouldShowBuddhaGuide(),
                 aiOnboardingManager.shouldShowHint(AiHintType.DAILY_WISDOM_TIP)
@@ -752,20 +648,10 @@ class HomeViewModel @Inject constructor(
                 if (currentWordId > 0) {
                     vocabularyDao.markAsLearned(currentWordId)
                     userDao.incrementWordsLearned()
-                    userDao.addPoints(25) // Points for learning a word
-
-                    // Update achievement progress
+                    userDao.addPoints(25)
                     userDao.getUserProfileSync()?.let { profile ->
                         userDao.updateAchievementProgress("words_10", profile.wordsLearned)
-                        userDao.updateAchievementProgress("words_50", profile.wordsLearned)
-                        userDao.updateAchievementProgress("words_100", profile.wordsLearned)
-                        userDao.updateAchievementProgress("words_500", profile.wordsLearned)
-
-                        // Check for unlocks
                         checkAndUnlockAchievement("words_10", profile.wordsLearned, 10)
-                        checkAndUnlockAchievement("words_50", profile.wordsLearned, 50)
-                        checkAndUnlockAchievement("words_100", profile.wordsLearned, 100)
-                        checkAndUnlockAchievement("words_500", profile.wordsLearned, 500)
                     }
                 }
             } catch (e: Exception) {
@@ -779,7 +665,6 @@ class HomeViewModel @Inject constructor(
             val achievement = userDao.getAchievementById(achievementId)
             if (achievement != null && !achievement.isUnlocked) {
                 userDao.unlockAchievement(achievementId)
-                // Award points for achievement
                 val points = achievement.rewardValue.toIntOrNull() ?: 100
                 userDao.addPoints(points)
             }
@@ -807,23 +692,15 @@ class HomeViewModel @Inject constructor(
 
     /**
      * Load Buddha's daily wisdom using AI with fallback to curated content.
-     * Uses caching to avoid excessive API calls.
      */
     private fun loadBuddhaWisdom(forceRefresh: Boolean = false) {
         viewModelScope.launch {
             try {
                 _uiState.update { it.copy(isBuddhaThoughtLoading = true) }
-
-                // Check if AI is configured (API key present)
                 val isAiConfigured = buddhaAiRepository.isAiConfigured()
-
-                // Get stats before the call to determine cache status
                 val statsBefore = buddhaAiRepository.getStats()
                 val cacheHitsBefore = statsBefore.cacheHits
-
                 val result = buddhaAiRepository.getDailyWisdom(forceRefresh)
-
-                // Get stats after the call
                 val statsAfter = buddhaAiRepository.getStats()
                 val wasCacheHit = statsAfter.cacheHits > cacheHitsBefore
 
@@ -863,7 +740,6 @@ class HomeViewModel @Inject constructor(
                         }
                     }
                     is BuddhaAiResult.Error -> {
-                        // Fall back to local wisdom
                         _uiState.update { state ->
                             state.copy(
                                 buddhaThought = BuddhaWisdom.getDailyReflectionPrompt(),
@@ -879,51 +755,25 @@ class HomeViewModel @Inject constructor(
                                 )
                             )
                         }
-                        android.util.Log.e(TAG, "Buddha wisdom error: ${result.message}")
                     }
                 }
-
                 lastBuddhaRefreshTime = System.currentTimeMillis()
-
             } catch (e: Exception) {
                 android.util.Log.e(TAG, "Error loading Buddha wisdom", e)
-                _uiState.update { state ->
-                    state.copy(
-                        buddhaThought = BuddhaWisdom.getDailyReflectionPrompt(),
-                        buddhaThoughtExplanation = "From the archives",
-                        isBuddhaThoughtAiGenerated = false,
-                        isBuddhaThoughtLoading = false,
-                        buddhaWisdomProofInfo = state.buddhaWisdomProofInfo.copy(
-                            provider = "Error",
-                            cacheStatus = "MISS",
-                            timestamp = System.currentTimeMillis(),
-                            lastError = e.message,
-                            isAiConfigured = buddhaAiRepository.isAiConfigured()
-                        )
-                    )
-                }
             }
         }
     }
 
-    /**
-     * Refresh Buddha's thought with a new AI-generated one.
-     * Has a cooldown to prevent spam.
-     */
     fun refreshBuddhaThought() {
         val timeSinceLastRefresh = System.currentTimeMillis() - lastBuddhaRefreshTime
-
         if (timeSinceLastRefresh < REFRESH_COOLDOWN_MS) {
-            // Still in cooldown
             _uiState.update { it.copy(canRefreshBuddhaThought = false) }
-
             viewModelScope.launch {
                 kotlinx.coroutines.delay(REFRESH_COOLDOWN_MS - timeSinceLastRefresh)
                 _uiState.update { it.copy(canRefreshBuddhaThought = true) }
             }
             return
         }
-
         loadBuddhaWisdom(forceRefresh = true)
     }
 
@@ -933,10 +783,6 @@ class HomeViewModel @Inject constructor(
         loadPersonalizedPattern()
     }
 
-    /**
-     * Load personalized pattern from the local PatternAnalysisEngine.
-     * Only shows data when the user has opted in via Settings and has enough entries.
-     */
     private fun loadPersonalizedPattern() {
         viewModelScope.launch {
             try {
