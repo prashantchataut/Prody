@@ -1,6 +1,8 @@
 package com.prody.prashant.ui.screens.digest
 import com.prody.prashant.ui.icons.ProdyIcons
 
+import android.app.Activity
+import android.view.WindowManager
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -49,6 +51,15 @@ fun WeeklyDigestScreen(
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+
+    // Security: Prevent screenshots and screen recordings of weekly digest
+    DisposableEffect(Unit) {
+        val window = (context as? Activity)?.window
+        window?.addFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)
+        onDispose {
+            window?.clearFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)
+        }
+    }
 
     /**
      * Share weekly digest content

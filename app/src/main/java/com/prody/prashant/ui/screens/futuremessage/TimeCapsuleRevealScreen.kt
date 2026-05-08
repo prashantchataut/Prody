@@ -1,6 +1,8 @@
 package com.prody.prashant.ui.screens.futuremessage
 import com.prody.prashant.ui.icons.ProdyIcons
 
+import android.app.Activity
+import android.view.WindowManager
 import android.view.HapticFeedbackConstants
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
@@ -51,6 +53,16 @@ fun TimeCapsuleRevealScreen(
     viewModel: TimeCapsuleRevealViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = androidx.compose.ui.platform.LocalContext.current
+
+    // Security: Prevent screenshots and screen recordings during time capsule reveal
+    DisposableEffect(Unit) {
+        val window = (context as? Activity)?.window
+        window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        onDispose {
+            window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        }
+    }
     val view = LocalView.current
     val scrollState = rememberScrollState()
     val coroutineScope = androidx.compose.runtime.rememberCoroutineScope()
