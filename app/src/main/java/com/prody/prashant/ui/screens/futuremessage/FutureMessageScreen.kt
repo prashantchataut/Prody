@@ -1,6 +1,8 @@
 package com.prody.prashant.ui.screens.futuremessage
 import com.prody.prashant.ui.icons.ProdyIcons
 
+import android.app.Activity
+import android.view.WindowManager
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.EaseInOutCubic
 import androidx.compose.animation.core.EaseOutCubic
@@ -72,6 +74,16 @@ fun FutureMessageListScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var selectedTab by remember { mutableIntStateOf(0) }
+    val context = androidx.compose.ui.platform.LocalContext.current
+
+    // Security: Prevent screenshots and screen recordings of private future messages
+    DisposableEffect(Unit) {
+        val window = (context as? Activity)?.window
+        window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        onDispose {
+            window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        }
+    }
     var showFilterDialog by remember { mutableStateOf(false) }
     val isDark = isDarkTheme()
 

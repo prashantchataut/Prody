@@ -1,6 +1,8 @@
 package com.prody.prashant.ui.screens.futuremessage
 import com.prody.prashant.ui.icons.ProdyIcons
 
+import android.app.Activity
+import android.view.WindowManager
 import android.Manifest
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -96,8 +98,17 @@ fun WriteMessageScreen(
     viewModel: WriteMessageViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = androidx.compose.ui.platform.LocalContext.current
+
+    // Security: Prevent screenshots and screen recordings while writing future messages
+    DisposableEffect(Unit) {
+        val window = (context as? Activity)?.window
+        window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        onDispose {
+            window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        }
+    }
     val isDark = isDarkTheme()
-    val context = LocalContext.current
 
     // Media picker launcher
     val mediaPickerLauncher = rememberLauncherForActivityResult(

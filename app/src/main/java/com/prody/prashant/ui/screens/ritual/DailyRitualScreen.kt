@@ -1,6 +1,8 @@
 package com.prody.prashant.ui.screens.ritual
 import com.prody.prashant.ui.icons.ProdyIcons
 
+import android.app.Activity
+import android.view.WindowManager
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -48,6 +50,16 @@ fun DailyRitualScreen(
     viewModel: DailyRitualViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = androidx.compose.ui.platform.LocalContext.current
+
+    // Security: Prevent screenshots and screen recordings of daily ritual content
+    DisposableEffect(Unit) {
+        val window = (context as? Activity)?.window
+        window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        onDispose {
+            window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        }
+    }
 
     // Handle navigation
     LaunchedEffect(uiState.shouldNavigateToJournal) {

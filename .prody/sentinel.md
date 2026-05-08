@@ -7,3 +7,8 @@
 **Vulnerability:** Leaking API keys in Logcat via OkHttp interceptors and debug logs, and missing UI protection for therapeutic chats.
 **Learning:** Prody's `OpenRouterService` used `HttpLoggingInterceptor.Level.BODY` in debug mode without redacting the `Authorization` header, exposing API keys to anybody with ADB access. Additionally, Haven't therapeutic screens lacked `FLAG_SECURE`, risking user privacy.
 **Prevention:** Always use `redactHeader("Authorization")` in network interceptors. Remove logs that print partial secrets. Enforce `FLAG_SECURE` on all therapeutic and reflection screens by default.
+
+## 2026-02-15 - Systematic Privacy Hardening for Reflection Content
+**Vulnerability:** Fragmented application of `FLAG_SECURE` across the app's reflection-based features.
+**Learning:** While some primary detail screens were protected, secondary screens showing snippets of the same sensitive data (Journal List, History, Weekly Digest, Micro-Journal) were left exposed. This allowed private user data to be captured via screenshots/recordings and visible in the Android recents switcher.
+**Prevention:** Enforce a "Secure by Default" policy for all user-generated reflection content. Any screen displaying journals, future messages, or intentions must implement `FLAG_SECURE` using a standard `DisposableEffect` pattern to ensure consistent data protection.
