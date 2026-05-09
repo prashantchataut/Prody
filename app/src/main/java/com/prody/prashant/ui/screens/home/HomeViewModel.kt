@@ -147,6 +147,33 @@ private data class DailyContent(
     val idiom: IdiomEntity?
 )
 
+/**
+ * Type-safe argument holder for the multi-flow combine block in loadInitialData.
+ */
+private data class HomeDataArgs(
+    val profile: UserProfileEntity?,
+    val weeklyJournalEntries: List<JournalEntryEntity>,
+    val weeklyLearnedWords: Int,
+    val streakHistory: List<StreakHistoryEntity>,
+    val todayJournalEntries: List<JournalEntryEntity>,
+    val dualStreak: DualStreakStatus,
+    val aiProofMode: Boolean,
+    val nextAction: NextAction?,
+    val todayProgress: TodayProgress,
+    val dailySeed: SeedEntity?,
+    val aiConfigStatus: AiConfigurationStatus,
+    val greeting: String,
+    val greetingSubtext: String,
+    val surfacedMemory: SurfacedMemory?,
+    val anniversaries: List<AnniversaryMemory>,
+    val premiumIntelligenceEnabled: Boolean,
+    val userContext: UserContext,
+    val firstWeekProgress: FirstWeekProgress?,
+    val firstWeekDayContent: FirstWeekDayContent?,
+    val firstWeekDayNumber: Int,
+    val insights: List<IntelligenceInsight>
+)
+
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val userDao: UserDao,
@@ -167,6 +194,21 @@ class HomeViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
+
+    // Reactive streams for one-shot data to ensure atomic UI state updates via combine
+    private val _nextAction = MutableStateFlow<NextAction?>(null)
+    private val _todayProgress = MutableStateFlow(TodayProgress())
+    private val _dailySeed = MutableStateFlow<SeedEntity?>(null)
+    private val _aiConfigurationStatus = MutableStateFlow(AiConfigurationStatus.CONFIGURED)
+    private val _intelligentGreeting = MutableStateFlow("")
+    private val _greetingSubtext = MutableStateFlow("")
+    private val _surfacedMemory = MutableStateFlow<SurfacedMemory?>(null)
+    private val _anniversaryMemories = MutableStateFlow<List<AnniversaryMemory>>(emptyList())
+    private val _userContext = MutableStateFlow(UserContext.empty())
+    private val _firstWeekProgress = MutableStateFlow<FirstWeekProgress?>(null)
+    private val _firstWeekDayContent = MutableStateFlow<FirstWeekDayContent?>(null)
+    private val _firstWeekDayNumber = MutableStateFlow(0)
+    private val _intelligenceInsights = MutableStateFlow<List<IntelligenceInsight>>(emptyList())
 
     private var currentWordId: Long = 0
     private var lastBuddhaRefreshTime: Long = 0
@@ -219,7 +261,9 @@ class HomeViewModel @Inject constructor(
                 dailyContent.idiom?.let { idiomDao.markAsShownDaily(it.id) }
             }
 
-            // 2. Combine all reactive flows and the results of the one-time fetch.
+            // 2. Consolidate all 12+ reactive data streams into a single combine block.
+            // This ensures atomic UI state updates and avoids feature-gap bugs where
+            // state was previously being overwritten by staggered one-shot updates.
             combine(
                 userDao.getUserProfile().distinctUntilChanged(),
                 journalDao.getEntriesByDateRange(weekStart, System.currentTimeMillis()).distinctUntilChanged(),
@@ -227,32 +271,71 @@ class HomeViewModel @Inject constructor(
                 userDao.getStreakHistory().distinctUntilChanged(),
                 journalDao.getEntriesByDateRange(todayStart, System.currentTimeMillis()).distinctUntilChanged(),
                 dualStreakManager.getDualStreakStatusFlow().distinctUntilChanged(),
-                preferencesManager.debugAiProofMode.distinctUntilChanged()
+                preferencesManager.debugAiProofMode.distinctUntilChanged(),
+                _nextAction,
+                _todayProgress,
+                _dailySeed,
+                _aiConfigurationStatus,
+                _intelligentGreeting,
+                _greetingSubtext,
+                _surfacedMemory,
+                _anniversaryMemories,
+                preferencesManager.premiumIntelligenceEnabled.distinctUntilChanged(),
+                _userContext,
+                _firstWeekProgress,
+                _firstWeekDayContent,
+                _firstWeekDayNumber,
+                _intelligenceInsights
             ) { args ->
-                val profile = args.getOrNull(0) as? UserProfileEntity
-                val weeklyJournalEntries = (args.getOrNull(1) as? List<*>)?.filterIsInstance<JournalEntryEntity>() ?: emptyList()
-                val weeklyLearnedWords = args.getOrNull(2) as? Int ?: 0
-                val streakHistory = (args.getOrNull(3) as? List<*>)?.filterIsInstance<StreakHistoryEntity>() ?: emptyList()
-                val todayJournalEntries = (args.getOrNull(4) as? List<*>)?.filterIsInstance<JournalEntryEntity>() ?: emptyList()
-                val dualStreak = args.getOrNull(5) as? DualStreakStatus ?: DualStreakStatus.empty()
-                val aiProofMode = args.getOrNull(6) as? Boolean ?: false
-
+                HomeDataArgs(
+                    profile = args[0] as? UserProfileEntity,
+                    weeklyJournalEntries = (args[1] as? List<*>)?.filterIsInstance<JournalEntryEntity>() ?: emptyList(),
+                    weeklyLearnedWords = args[2] as? Int ?: 0,
+                    streakHistory = (args[3] as? List<*>)?.filterIsInstance<StreakHistoryEntity>() ?: emptyList(),
+                    todayJournalEntries = (args[4] as? List<*>)?.filterIsInstance<JournalEntryEntity>() ?: emptyList(),
+                    dualStreak = args[5] as? DualStreakStatus ?: DualStreakStatus.empty(),
+                    aiProofMode = args[6] as? Boolean ?: false,
+                    nextAction = args[7] as? NextAction,
+                    todayProgress = args[8] as? TodayProgress ?: TodayProgress(),
+                    dailySeed = args[9] as? SeedEntity,
+                    aiConfigStatus = args[10] as? AiConfigurationStatus ?: AiConfigurationStatus.CONFIGURED,
+                    greeting = args[11] as? String ?: "",
+                    greetingSubtext = args[12] as? String ?: "",
+                    surfacedMemory = args[13] as? SurfacedMemory,
+                    anniversaries = (args[14] as? List<*>)?.filterIsInstance<AnniversaryMemory>() ?: emptyList(),
+                    premiumIntelligenceEnabled = args[15] as? Boolean ?: false,
+                    userContext = args[16] as? UserContext ?: UserContext.empty(),
+                    firstWeekProgress = args[17] as? FirstWeekProgress,
+                    firstWeekDayContent = args[18] as? FirstWeekDayContent,
+                    firstWeekDayNumber = args[19] as? Int ?: 0,
+                    insights = (args[20] as? List<*>)?.filterIsInstance<IntelligenceInsight>() ?: emptyList()
+                )
+            }.catch { e ->
+                android.util.Log.e(TAG, "Error in consolidated home data flow", e)
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        hasLoadError = true,
+                        error = "Failed to load home data. Please check your connection."
+                    )
+                }
+            }.collect { data ->
                 // Calculate weekly active days.
-                val daysActiveThisWeek = streakHistory.count { it.date >= weekStart }
+                val daysActiveThisWeek = data.streakHistory.count { it.date >= weekStart }
 
                 // Determine today's journaling status.
-                val (journaledToday, todayMood, todayPreview) = if (todayJournalEntries.isNotEmpty()) {
-                    val latestEntry = todayJournalEntries.maxByOrNull { it.createdAt }
+                val (journaledToday, todayMood, todayPreview) = if (data.todayJournalEntries.isNotEmpty()) {
+                    val latestEntry = data.todayJournalEntries.maxByOrNull { it.createdAt }
                     Triple(true, latestEntry?.mood ?: "", latestEntry?.content?.take(100) ?: "")
                 } else {
                     Triple(false, "", "")
                 }
 
-                // 3. Atomically update the UI state with all the loaded data.
-                _uiState.value.copy(
-                    userName = profile?.displayName ?: "Growth Seeker",
-                    currentStreak = profile?.currentStreak ?: 0,
-                    totalPoints = profile?.totalPoints ?: 0,
+                // 3. Update the UI state atomically with all loaded data.
+                _uiState.value = _uiState.value.copy(
+                    userName = data.profile?.displayName ?: "Growth Seeker",
+                    currentStreak = data.profile?.currentStreak ?: 0,
+                    totalPoints = data.profile?.totalPoints ?: 0,
                     dailyQuote = dailyContent.quote?.content ?: _uiState.value.dailyQuote,
                     dailyQuoteAuthor = dailyContent.quote?.author ?: _uiState.value.dailyQuoteAuthor,
                     wordOfTheDay = dailyContent.word?.word ?: _uiState.value.wordOfTheDay,
@@ -266,31 +349,39 @@ class HomeViewModel @Inject constructor(
                     idiomMeaning = dailyContent.idiom?.meaning ?: _uiState.value.idiomMeaning,
                     idiomExample = dailyContent.idiom?.exampleSentence ?: _uiState.value.idiomExample,
                     idiomId = dailyContent.idiom?.id ?: _uiState.value.idiomId,
-                    journalEntriesThisWeek = weeklyJournalEntries.size,
-                    wordsLearnedThisWeek = weeklyLearnedWords,
+                    journalEntriesThisWeek = data.weeklyJournalEntries.size,
+                    wordsLearnedThisWeek = data.weeklyLearnedWords,
                     daysActiveThisWeek = daysActiveThisWeek,
                     journaledToday = journaledToday,
                     todayEntryMood = todayMood,
                     todayEntryPreview = todayPreview,
-                    dualStreakStatus = dualStreak,
-                    buddhaWisdomProofInfo = _uiState.value.buddhaWisdomProofInfo.copy(isEnabled = aiProofMode),
-                    isLoading = false // <-- Critical: Signal that loading is complete.
+                    dualStreakStatus = data.dualStreak,
+                    buddhaWisdomProofInfo = _uiState.value.buddhaWisdomProofInfo.copy(isEnabled = data.aiProofMode),
+                    nextAction = data.nextAction,
+                    todayProgress = data.todayProgress,
+                    dailySeed = data.dailySeed,
+                    aiConfigurationStatus = data.aiConfigStatus,
+                    intelligentGreeting = data.greeting,
+                    greetingSubtext = data.greetingSubtext,
+                    surfacedMemory = data.surfacedMemory,
+                    showMemoryCard = data.surfacedMemory != null,
+                    anniversaryMemories = data.anniversaries,
+                    isPremiumIntelligenceEnabled = data.premiumIntelligenceEnabled,
+                    userArchetype = data.userContext.userArchetype,
+                    trustLevel = data.userContext.trustLevel,
+                    isUserStruggling = data.userContext.isStruggling,
+                    isUserThriving = data.userContext.isThriving,
+                    isInFirstWeek = data.userContext.isInFirstWeek,
+                    firstWeekProgress = data.firstWeekProgress,
+                    firstWeekDayContent = data.firstWeekDayContent,
+                    firstWeekDayNumber = data.firstWeekDayNumber,
+                    intelligenceInsights = data.insights,
+                    isLoading = false
                 )
-            }.catch { e ->
-                android.util.Log.e(TAG, "Error in combined home data flow", e)
-                _uiState.update {
-                    it.copy(
-                        isLoading = false,
-                        hasLoadError = true,
-                        error = "Failed to load home data. Please check your connection."
-                    )
-                }
-            }.collect { newState ->
-                _uiState.value = newState
             }
 
-            // 4. Launch non-essential and secondary data loading tasks.
-            // These run independently and update the UI state as they complete.
+            // 4. Launch secondary data loading tasks.
+            // These update the dedicated flows, which are combined into the UI state.
             launch { loadBuddhaWisdom() }
             launch { checkOnboarding() }
             launch { loadActiveProgress() }
@@ -316,7 +407,7 @@ class HomeViewModel @Inject constructor(
     private fun checkAiConfiguration() {
         val isConfigured = buddhaAiRepository.isAiConfigured()
         val status = if (isConfigured) AiConfigurationStatus.CONFIGURED else AiConfigurationStatus.MISSING
-        _uiState.update { it.copy(aiConfigurationStatus = status) }
+        _aiConfigurationStatus.value = status
     }
 
     /**
@@ -339,11 +430,11 @@ class HomeViewModel @Inject constructor(
             try {
                 // Load Next Action
                 val nextAction = activeProgressService.getNextAction()
-                _uiState.update { it.copy(nextAction = nextAction) }
+                _nextAction.value = nextAction
 
                 // Load Today's Progress
                 val todayProgress = activeProgressService.getTodayProgress()
-                _uiState.update { it.copy(todayProgress = todayProgress) }
+                _todayProgress.value = todayProgress
             } catch (e: Exception) {
                 android.util.Log.e(TAG, "Error loading active progress", e)
             }
@@ -358,10 +449,8 @@ class HomeViewModel @Inject constructor(
             try {
                 val nextAction = activeProgressService.getNextAction()
                 val todayProgress = activeProgressService.getTodayProgress()
-                _uiState.update { it.copy(
-                    nextAction = nextAction,
-                    todayProgress = todayProgress
-                )}
+                _nextAction.value = nextAction
+                _todayProgress.value = todayProgress
             } catch (e: Exception) {
                 android.util.Log.e(TAG, "Error refreshing next action", e)
             }
@@ -375,7 +464,7 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val seed = seedBloomService.getTodaySeed()
-                _uiState.update { it.copy(dailySeed = seed) }
+                _dailySeed.value = seed
             } catch (e: Exception) {
                 android.util.Log.e(TAG, "Error loading daily seed", e)
             }
@@ -450,18 +539,13 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 // Load user context first - it's the foundation
-                val context = soulLayerRepository.getCurrentContext()
-
-                // Update basic context info
-                _uiState.update { state ->
-                    state.copy(
-                        userArchetype = context.userArchetype,
-                        trustLevel = context.trustLevel,
-                        isUserStruggling = context.isStruggling,
-                        isUserThriving = context.isThriving,
-                        isInFirstWeek = context.isInFirstWeek
-                    )
+                // Performance Optimization: Moved to Default dispatcher as it involves computational logic
+                val context = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) {
+                    soulLayerRepository.getCurrentContext()
                 }
+
+                // Update basic context info flow
+                _userContext.value = context
 
                 // Load greeting (intelligent, time-of-day aware)
                 loadIntelligentGreeting()
@@ -499,21 +583,13 @@ class HomeViewModel @Inject constructor(
     private suspend fun loadIntelligentGreeting() {
         try {
             val greeting = soulLayerRepository.getGreeting()
-            _uiState.update { state ->
-                state.copy(
-                    intelligentGreeting = greeting.greeting,
-                    greetingSubtext = greeting.subtitle
-                )
-            }
+            _intelligentGreeting.value = greeting.greeting
+            _greetingSubtext.value = greeting.subtitle
         } catch (e: Exception) {
             android.util.Log.e(TAG, "Error loading greeting", e)
             // Fallback to generic greeting
-            _uiState.update { state ->
-                state.copy(
-                    intelligentGreeting = "Welcome back",
-                    greetingSubtext = "What's on your mind today?"
-                )
-            }
+            _intelligentGreeting.value = "Welcome back"
+            _greetingSubtext.value = "What's on your mind today?"
         }
     }
 
@@ -527,13 +603,9 @@ class HomeViewModel @Inject constructor(
             val dayContent = soulLayerRepository.getFirstWeekDayContent()
             val progress = soulLayerRepository.getFirstWeekProgress()
 
-            _uiState.update { uiState ->
-                uiState.copy(
-                    firstWeekDayNumber = state?.dayNumber ?: 1,
-                    firstWeekProgress = progress,
-                    firstWeekDayContent = dayContent
-                )
-            }
+            _firstWeekDayNumber.value = state?.dayNumber ?: 1
+            _firstWeekProgress.value = progress
+            _firstWeekDayContent.value = dayContent
         } catch (e: Exception) {
             android.util.Log.e(TAG, "Error loading first week state", e)
         }
@@ -546,15 +618,7 @@ class HomeViewModel @Inject constructor(
     private suspend fun loadSurfacedMemory() {
         try {
             val memory = soulLayerRepository.getMemoryToSurface(MemorySurfaceContext.APP_OPEN)
-            _uiState.update { state ->
-                state.copy(
-                    surfacedMemory = memory,
-                    showMemoryCard = memory != null
-                )
-            }
-
-            if (memory != null) {
-            }
+            _surfacedMemory.value = memory
         } catch (e: Exception) {
             android.util.Log.e(TAG, "Error loading surfaced memory", e)
         }
@@ -567,12 +631,7 @@ class HomeViewModel @Inject constructor(
     private suspend fun loadAnniversaryMemories() {
         try {
             val anniversaries = soulLayerRepository.getAnniversaryMemories()
-            _uiState.update { state ->
-                state.copy(anniversaryMemories = anniversaries)
-            }
-
-            if (anniversaries.isNotEmpty()) {
-            }
+            _anniversaryMemories.value = anniversaries
         } catch (e: Exception) {
             android.util.Log.e(TAG, "Error loading anniversary memories", e)
         }
@@ -585,27 +644,21 @@ class HomeViewModel @Inject constructor(
         try {
             val isEnabled = preferencesManager.premiumIntelligenceEnabled.first()
             val insights = if (isEnabled) {
-                // Fixed: analyzePatterns takes an Int lookbackDays, not UserContext
-                patternAnalysisEngine.analyzePatterns(lookbackDays = 7)?.patterns?.map {
-                    IntelligenceInsight(
-                        title = it.theme,
-                        description = it.sampleSnippet,
-                        actionable = it.suggestion
-                    )
-                } ?: emptyList()
+                // Performance Optimization: Run computation on Default dispatcher
+                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) {
+                    patternAnalysisEngine.analyzePatterns(lookbackDays = 7)?.patterns?.map {
+                        IntelligenceInsight(
+                            title = it.theme,
+                            description = it.sampleSnippet,
+                            actionable = it.suggestion
+                        )
+                    } ?: emptyList()
+                }
             } else {
                 emptyList()
             }
 
-            _uiState.update { state ->
-                state.copy(
-                    intelligenceInsights = insights,
-                    isPremiumIntelligenceEnabled = isEnabled
-                )
-            }
-            
-            if (insights.isNotEmpty()) {
-            }
+            _intelligenceInsights.value = insights
         } catch (e: Exception) {
             android.util.Log.e(TAG, "Error loading intelligence insights", e)
         }
