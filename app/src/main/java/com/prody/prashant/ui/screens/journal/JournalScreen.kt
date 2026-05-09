@@ -54,6 +54,9 @@ fun JournalListScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+    // Security: Prevent screenshots and screen recordings of private journal snippets
+    com.prody.prashant.ui.components.SecureScreen()
+
     Scaffold(
         topBar = {
             TopAppBar(

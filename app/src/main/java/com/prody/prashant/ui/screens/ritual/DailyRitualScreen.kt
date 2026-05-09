@@ -1,6 +1,8 @@
 package com.prody.prashant.ui.screens.ritual
 import com.prody.prashant.ui.icons.ProdyIcons
 
+import android.app.Activity
+import android.view.WindowManager
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -27,6 +29,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -48,6 +51,9 @@ fun DailyRitualScreen(
     viewModel: DailyRitualViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    // Security: Prevent screenshots and screen recordings of private morning/evening rituals
+    com.prody.prashant.ui.components.SecureScreen()
 
     // Handle navigation
     LaunchedEffect(uiState.shouldNavigateToJournal) {

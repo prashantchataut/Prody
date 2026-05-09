@@ -7,3 +7,8 @@
 **Vulnerability:** Leaking API keys in Logcat via OkHttp interceptors and debug logs, and missing UI protection for therapeutic chats.
 **Learning:** Prody's `OpenRouterService` used `HttpLoggingInterceptor.Level.BODY` in debug mode without redacting the `Authorization` header, exposing API keys to anybody with ADB access. Additionally, Haven't therapeutic screens lacked `FLAG_SECURE`, risking user privacy.
 **Prevention:** Always use `redactHeader("Authorization")` in network interceptors. Remove logs that print partial secrets. Enforce `FLAG_SECURE` on all therapeutic and reflection screens by default.
+
+## 2026-05-09 - Comprehensive Privacy Hardening with SecureScreen
+**Vulnerability:** Fragmented and missing screenshot protection (`FLAG_SECURE`) across sensitive journaling, reflection, and future message screens.
+**Learning:** In a single-activity Compose architecture, applying and clearing `FLAG_SECURE` in `DisposableEffect` without coordination leads to "protection leaks" during navigation. If screen A (secure) navigates to screen B (secure), screen B's entry adds the flag, but screen A's disposal (on a transition) might clear it prematurely, or vice versa when going back.
+**Prevention:** Use a centralized reference-counted utility like `SecureScreen` to manage activity-wide window flags. This ensures the protection remains active as long as at least one secure component is visible, preventing race conditions during navigation transitions.

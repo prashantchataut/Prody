@@ -1,6 +1,8 @@
 package com.prody.prashant.ui.screens.futuremessage
 import com.prody.prashant.ui.icons.ProdyIcons
 
+import android.app.Activity
+import android.view.WindowManager
 import android.Manifest
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -98,6 +100,9 @@ fun WriteMessageScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isDark = isDarkTheme()
     val context = LocalContext.current
+
+    // Security: Prevent screenshots and screen recordings while writing a future message
+    com.prody.prashant.ui.components.SecureScreen()
 
     // Media picker launcher
     val mediaPickerLauncher = rememberLauncherForActivityResult(
