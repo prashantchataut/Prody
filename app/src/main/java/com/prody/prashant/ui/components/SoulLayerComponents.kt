@@ -131,17 +131,12 @@ fun SurfacedMemoryCard(
                 }
 
                 // Dismiss button
-                IconButton(
+                ProdyIconButton(
+                    icon = ProdyIcons.Rounded.Close,
                     onClick = onDismiss,
-                    modifier = Modifier.size(32.dp)
-                ) {
-                    Icon(
-                        imageVector = ProdyIcons.Rounded.Close,
-                        contentDescription = "Dismiss memory",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                        modifier = Modifier.size(18.dp)
-                    )
-                }
+                    contentDescription = "Dismiss memory",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                )
             }
 
             Spacer(modifier = Modifier.height(ProdyTokens.Spacing.md))
@@ -292,17 +287,12 @@ fun AnniversaryMemoryCard(
                         }
                     }
 
-                    IconButton(
+                    ProdyIconButton(
+                        icon = ProdyIcons.Rounded.Close,
                         onClick = onDismiss,
-                        modifier = Modifier.size(32.dp)
-                    ) {
-                        Icon(
-                            imageVector = ProdyIcons.Rounded.Close,
-                            contentDescription = "Dismiss",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
+                        contentDescription = "Dismiss",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(ProdyTokens.Spacing.md))

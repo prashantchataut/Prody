@@ -21,3 +21,13 @@ This journal contains CRITICAL performance learnings specific to the Prody codeb
 **Context:** `ProgressIndicators.kt` and `OnboardingScreen.kt`.
 **Learning:** Using a `Row` of multiple `Box` composables for page indicators creates unnecessary layout nodes and triggers expensive layout passes during page swipes as dot widths animate. A single `Canvas` drawing all dots based on an animated float index is significantly more performant and smoother.
 **Action:** Prefer `Canvas`-based drawing for multi-state UI indicators like page dots or segmented progress bars to maintain 60fps during complex interactions.
+
+## 2024-05-28 - Atomic UI State via Multi-Flow Combine
+**Context:** HomeViewModel.kt and dashboard data loading.
+**Learning:** Consolidating 20+ reactive data streams into a single 'combine' block prevents the "staggered loading" effect and UI flickering. Previously, individual 'update' calls to _uiState would overwrite each other or trigger redundant recompositions. An atomic update ensures all features (Active Progress, Soul Layer, etc.) are synchronized on the first render.
+**Action:** Use a single consolidated combine block for complex screens with many reactive sources. Map results to a type-safe argument holder (HomeDataArgs) to maintain readability.
+
+## 2024-05-28 - Animation Performance in LazyColumn
+**Context:** StaggeredEntrance animation in HomeDashboardComponents.kt.
+**Learning:** Using 'by' delegated state for animations inside LazyColumn items can trigger recomposition of the item on every frame. By accessing the '.value' property of the Animatable/State object directly inside a graphicsLayer { ... } block, we defer the state read to the draw phase, keeping recomposition counts at zero during the animation.
+**Action:** Isolate high-frequency animations into dedicated components and always use the '.value' direct access pattern within graphicsLayer to maintain 60fps.
