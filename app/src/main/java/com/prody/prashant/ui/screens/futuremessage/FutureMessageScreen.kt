@@ -1,6 +1,8 @@
 package com.prody.prashant.ui.screens.futuremessage
 import com.prody.prashant.ui.icons.ProdyIcons
 
+import android.app.Activity
+import android.view.WindowManager
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.EaseInOutCubic
 import androidx.compose.animation.core.EaseOutCubic
@@ -30,6 +32,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
@@ -72,6 +75,9 @@ fun FutureMessageListScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var selectedTab by remember { mutableIntStateOf(0) }
+
+    // Security: Prevent screenshots and screen recordings of future messages
+    com.prody.prashant.ui.components.SecureScreen()
     var showFilterDialog by remember { mutableStateOf(false) }
     val isDark = isDarkTheme()
 

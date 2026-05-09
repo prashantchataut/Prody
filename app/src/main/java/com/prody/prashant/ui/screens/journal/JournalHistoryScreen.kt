@@ -78,6 +78,9 @@ fun JournalHistoryScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isDark = isDarkTheme()
 
+    // Security: Prevent screenshots and screen recordings of historical journal content
+    com.prody.prashant.ui.components.SecureScreen()
+
     // Premium theme-aware colors using MaterialTheme
     val backgroundColor = MaterialTheme.colorScheme.background
     val surfaceColor = MaterialTheme.colorScheme.surface

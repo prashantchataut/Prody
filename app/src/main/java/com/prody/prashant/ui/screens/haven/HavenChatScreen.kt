@@ -91,16 +91,8 @@ fun HavenChatScreen(
     var showCompletionDialog by remember { mutableStateOf(false) }
     var showSoftMenu by remember { mutableStateOf(false) }
 
-    val context = LocalContext.current
-
     // Security: Prevent screenshots and screen recordings while in a therapeutic chat
-    DisposableEffect(Unit) {
-        val window = (context as? android.app.Activity)?.window
-        window?.addFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)
-        onDispose {
-            window?.clearFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)
-        }
-    }
+    com.prody.prashant.ui.components.SecureScreen()
 
     // Haven Theme Colors
     val havenBackground = if (isDark) HavenBackgroundDark else HavenBackgroundLight
