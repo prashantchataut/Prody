@@ -15,7 +15,7 @@ import androidx.room.PrimaryKey
 @Entity(
     tableName = "haven_sessions",
     indices = [
-        androidx.room.Index(value = ["userId"]),
+        androidx.room.Index(value = ["userId"], name = "idx_haven_sessions_user"),
         androidx.room.Index(value = ["startedAt"]),
         androidx.room.Index(value = ["sessionType"]),
         androidx.room.Index(value = ["userId", "startedAt"]),
@@ -73,7 +73,7 @@ data class HavenSessionEntity(
 @Entity(
     tableName = "haven_exercises",
     indices = [
-        androidx.room.Index(value = ["userId"]),
+        androidx.room.Index(value = ["userId"], name = "idx_haven_exercises_user"),
         androidx.room.Index(value = ["completedAt"]),
         androidx.room.Index(value = ["exerciseType"]),
         androidx.room.Index(value = ["fromSessionId"]),

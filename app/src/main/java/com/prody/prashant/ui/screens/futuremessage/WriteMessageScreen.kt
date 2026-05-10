@@ -4,6 +4,7 @@ import com.prody.prashant.ui.icons.ProdyIcons
 import android.Manifest
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.view.WindowManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -96,8 +97,18 @@ fun WriteMessageScreen(
     viewModel: WriteMessageViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val isDark = isDarkTheme()
+
+    // Privacy Protection: Apply FLAG_SECURE to prevent screenshots of sensitive future messages being written
     val context = LocalContext.current
+    val window = remember(context) { (context as? android.app.Activity)?.window }
+
+    DisposableEffect(window) {
+        window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        onDispose {
+            window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        }
+    }
+    val isDark = isDarkTheme()
 
     // Media picker launcher
     val mediaPickerLauncher = rememberLauncherForActivityResult(
