@@ -285,9 +285,9 @@ class HomeViewModel @Inject constructor(
                         error = "Failed to load home data. Please check your connection."
                     )
                 }
-            }.collect { newState ->
+            }.onEach { newState ->
                 _uiState.value = newState
-            }
+            }.launchIn(this)
 
             // 4. Launch non-essential and secondary data loading tasks.
             // These run independently and update the UI state as they complete.
