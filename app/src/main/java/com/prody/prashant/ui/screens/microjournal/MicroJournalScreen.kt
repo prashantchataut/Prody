@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.screens.microjournal
+import android.view.WindowManager
 import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.foundation.background
@@ -44,6 +45,17 @@ fun MicroJournalScreen(
     viewModel: MicroJournalViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    // Privacy Protection: Apply FLAG_SECURE to prevent screenshots of sensitive micro-journal entries
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val window = remember(context) { (context as? android.app.Activity)?.window }
+
+    DisposableEffect(window) {
+        window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        onDispose {
+            window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        }
+    }
     val snackbarHostState = remember { SnackbarHostState() }
 
     // Handle success/error messages

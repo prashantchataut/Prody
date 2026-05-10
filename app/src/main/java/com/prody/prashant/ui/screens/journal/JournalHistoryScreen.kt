@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.screens.journal
+import android.view.WindowManager
 import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.AnimatedVisibility
@@ -88,6 +89,17 @@ fun JournalHistoryScreen(
     val timelineColor = accentColor.copy(alpha = 0.4f)
 
     var showFilterSheet by remember { mutableStateOf(false) }
+
+    // Privacy Protection: Apply FLAG_SECURE to prevent screenshots of sensitive journal history
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val window = remember(context) { (context as? android.app.Activity)?.window }
+
+    DisposableEffect(window) {
+        window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        onDispose {
+            window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        }
+    }
 
     Scaffold(
         containerColor = backgroundColor,

@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.screens.futuremessage
+import android.view.WindowManager
 import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.compose.animation.AnimatedVisibility
@@ -71,6 +72,17 @@ fun FutureMessageListScreen(
     viewModel: FutureMessageViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    // Privacy Protection: Apply FLAG_SECURE to prevent screenshots of sensitive future messages
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val window = remember(context) { (context as? android.app.Activity)?.window }
+
+    DisposableEffect(window) {
+        window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        onDispose {
+            window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        }
+    }
     var selectedTab by remember { mutableIntStateOf(0) }
     var showFilterDialog by remember { mutableStateOf(false) }
     val isDark = isDarkTheme()

@@ -1,4 +1,5 @@
 package com.prody.prashant.ui.screens.futuremessage
+import android.view.WindowManager
 import com.prody.prashant.ui.icons.ProdyIcons
 
 import android.view.HapticFeedbackConstants
@@ -51,6 +52,17 @@ fun TimeCapsuleRevealScreen(
     viewModel: TimeCapsuleRevealViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    // Privacy Protection: Apply FLAG_SECURE to prevent screenshots of revealed future messages
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val window = remember(context) { (context as? android.app.Activity)?.window }
+
+    DisposableEffect(window) {
+        window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        onDispose {
+            window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        }
+    }
     val view = LocalView.current
     val scrollState = rememberScrollState()
     val coroutineScope = androidx.compose.runtime.rememberCoroutineScope()
