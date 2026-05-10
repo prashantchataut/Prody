@@ -26,49 +26,33 @@ class MainViewModel @Inject constructor(
     val uiState: StateFlow<MainActivityUiState> = _uiState.asStateFlow()
 
     init {
-        // --- CRITICAL PATH ---
-        // Immediately determine the start destination to unblock the UI.
-        viewModelScope.launch {
-            val onboardingCompleted = preferencesManager.onboardingCompleted
-                .catch {
-                    // In case of error, default to showing onboarding
-                    emit(false)
-                }
-                .first() // We only need the initial value
-
-            val startDestination = if (onboardingCompleted) {
-                Screen.Home.route
-            } else {
-                Screen.Onboarding.route
-            }
-
-            // Use atomic update to set initial state and dismiss splash screen
-            _uiState.update {
-                it.copy(
-                    isLoading = false,
-                    startDestination = startDestination
-                )
-            }
-        }
-
-        // --- NON-CRITICAL PATH ---
-        // Asynchronously load user preferences and apply them.
+        // Optimized Startup Path: Consolidate critical and non-critical preferences
+        // into a single flow to ensure atomic UI state updates and prevent flickers.
         viewModelScope.launch {
             combine(
+                preferencesManager.onboardingCompleted.catch { emit(false) },
                 preferencesManager.themeMode.catch { emit("system") },
                 preferencesManager.hapticFeedbackEnabled.catch { emit(true) }
-            ) { themeModeString, hapticEnabled ->
+            ) { onboardingCompleted, themeModeString, hapticEnabled ->
+                val startDestination = if (onboardingCompleted) {
+                    Screen.Home.route
+                } else {
+                    Screen.Onboarding.route
+                }
+
                 val themeMode = when (themeModeString.lowercase()) {
                     "light" -> ThemeMode.LIGHT
                     "dark" -> ThemeMode.DARK
                     else -> ThemeMode.SYSTEM
                 }
-                // Return a pair of the loaded preferences
-                themeMode to hapticEnabled
-            }.collectLatest { (themeMode, hapticEnabled) ->
-                // Use atomic update to apply non-critical preferences
+
+                // Return all configuration details together
+                Triple(startDestination, themeMode, hapticEnabled)
+            }.collectLatest { (startDestination, themeMode, hapticEnabled) ->
                 _uiState.update {
                     it.copy(
+                        isLoading = false,
+                        startDestination = startDestination,
                         themeMode = themeMode,
                         hapticFeedbackEnabled = hapticEnabled
                     )

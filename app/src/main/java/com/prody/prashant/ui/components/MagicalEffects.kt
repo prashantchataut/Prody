@@ -65,7 +65,7 @@ fun AmbientBackground(
     val infiniteTransition = rememberInfiniteTransition(label = "ambient_bg")
 
     // Slow, organic breathing animation
-    val breathingScale by infiniteTransition.animateFloat(
+    val breathingScaleState = infiniteTransition.animateFloat(
         initialValue = 1f,
         targetValue = 1.02f,
         animationSpec = infiniteRepeatable(
@@ -76,7 +76,7 @@ fun AmbientBackground(
     )
 
     // Gentle rotation for organic feel
-    val rotation by infiniteTransition.animateFloat(
+    val rotationState = infiniteTransition.animateFloat(
         initialValue = 0f,
         targetValue = 360f,
         animationSpec = infiniteRepeatable(
@@ -87,7 +87,7 @@ fun AmbientBackground(
     )
 
     // Shifting ambient glow position
-    val glowOffset by infiniteTransition.animateFloat(
+    val glowOffsetState = infiniteTransition.animateFloat(
         initialValue = 0f,
         targetValue = 1f,
         animationSpec = infiniteRepeatable(
@@ -101,7 +101,13 @@ fun AmbientBackground(
         getAmbientColors(timeOfDay, mood)
     }
 
+    // Performance Optimization: Moving animation state reads into DrawScope via drawBehind or Canvas
+    // or using graphicsLayer. For Canvas, we just use the state objects directly.
     Canvas(modifier = modifier.fillMaxSize()) {
+        val breathingScale = breathingScaleState.value
+        val rotation = rotationState.value
+        val glowOffset = glowOffsetState.value
+
         val centerX = size.width / 2
         val centerY = size.height / 2
         val maxRadius = maxOf(size.width, size.height) * 0.8f
@@ -1059,8 +1065,8 @@ fun NavigationBreathingGlow(
         contentAlignment = Alignment.Center
     ) {
         // Breathing glow behind active item
-        // Note: Using a fixed scale for the Box size and graphicsLayer for animated scale
-        // to prevent layout shifts/recompositions
+        // Performance Optimization: Using graphicsLayer and accessing .value inside the block
+        // to defer state reads to the draw phase and prevent recomposition of the Box or its parent.
         Box(
             modifier = Modifier
                 .size(48.dp)

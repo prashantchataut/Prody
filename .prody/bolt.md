@@ -21,3 +21,13 @@ This journal contains CRITICAL performance learnings specific to the Prody codeb
 **Context:** `ProgressIndicators.kt` and `OnboardingScreen.kt`.
 **Learning:** Using a `Row` of multiple `Box` composables for page indicators creates unnecessary layout nodes and triggers expensive layout passes during page swipes as dot widths animate. A single `Canvas` drawing all dots based on an animated float index is significantly more performant and smoother.
 **Action:** Prefer `Canvas`-based drawing for multi-state UI indicators like page dots or segmented progress bars to maintain 60fps during complex interactions.
+
+## 2024-05-25 - High-Frequency Animation Performance
+**Context:** Haven FAB in `MainActivity.kt` and breathing glows in `MagicalEffects.kt`.
+**Learning:** Using property delegation (`by animatedFloat`) for high-frequency animations causes the entire composable scope to recompose every frame because the state read is happening at the top level.
+**Action:** Isolate animations into small, dedicated Composables. Access the `.value` property of the `State` object directly inside a `graphicsLayer { ... }` block or a `Canvas { ... }` drawing block. This defers the state read to the draw phase, completely bypassing recomposition and ensuring a solid 60fps even with multiple concurrent animations.
+
+## 2024-05-25 - Non-Blocking Flow Collection in ViewModels
+**Context:** `HomeViewModel.kt` initialization.
+**Learning:** Using a terminal operator like `collect` inside a `viewModelScope.launch` block is a blocking operation for that coroutine. Any secondary tasks (like loading Buddha wisdom or Soul Layer content) placed after the `collect` block will NEVER execute because the flow remains active.
+**Action:** Use `onEach { ... }.launchIn(this)` for persistent flow collections in ViewModels. This ensures the collection runs in its own job, allowing the rest of the `launch` block to continue and execute secondary data-loading tasks, preventing "broken" features or empty UI states.
