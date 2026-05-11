@@ -38,6 +38,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import android.view.WindowManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.data.local.entity.JournalEntryEntity
@@ -75,6 +77,16 @@ fun JournalHistoryScreen(
     onNavigateToDetail: (Long) -> Unit,
     viewModel: JournalHistoryViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
+    val window = (context as? android.app.Activity)?.window
+
+    // Privacy protection: Prevent screenshots of sensitive content
+    DisposableEffect(Unit) {
+        window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        onDispose {
+            window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        }
+    }
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isDark = isDarkTheme()
 

@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import android.content.Intent
+import android.view.WindowManager
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.data.local.entity.WeeklyDigestEntity
@@ -47,6 +48,15 @@ fun WeeklyDigestScreen(
     viewModel: WeeklyDigestViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
+    val window = (context as? android.app.Activity)?.window
+
+    // Privacy protection: Prevent screenshots of sensitive content
+    DisposableEffect(Unit) {
+        window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        onDispose {
+            window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        }
+    }
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 
