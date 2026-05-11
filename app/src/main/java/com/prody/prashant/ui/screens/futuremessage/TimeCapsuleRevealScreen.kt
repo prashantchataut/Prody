@@ -18,6 +18,8 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import android.view.WindowManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -50,6 +52,16 @@ fun TimeCapsuleRevealScreen(
     onNavigateToJournal: (String) -> Unit = {},
     viewModel: TimeCapsuleRevealViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
+    val window = (context as? android.app.Activity)?.window
+
+    // Privacy protection: Prevent screenshots of sensitive content
+    DisposableEffect(Unit) {
+        window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        onDispose {
+            window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        }
+    }
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val view = LocalView.current
     val scrollState = rememberScrollState()

@@ -28,6 +28,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import android.view.WindowManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.data.local.entity.MicroEntryEntity
@@ -43,6 +45,16 @@ fun MicroJournalScreen(
     onNavigateToJournalWithContent: (String, Long) -> Unit,
     viewModel: MicroJournalViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
+    val window = (context as? android.app.Activity)?.window
+
+    // Privacy protection: Prevent screenshots of sensitive content
+    DisposableEffect(Unit) {
+        window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        onDispose {
+            window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        }
+    }
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 

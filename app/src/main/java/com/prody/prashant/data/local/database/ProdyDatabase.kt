@@ -223,7 +223,7 @@ import net.sqlcipher.database.SupportFactory
         // Mirror Evolution: Evidence Locker
         EvidenceEntity::class
     ],
-    version = 21,
+    version = 22,
     exportSchema = true // Enable for migration verification
 )
 abstract class ProdyDatabase : RoomDatabase() {
@@ -1709,6 +1709,53 @@ abstract class ProdyDatabase : RoomDatabase() {
                 // Add indices to haven_exercises
                 db.execSQL("CREATE INDEX IF NOT EXISTS index_haven_exercises_wasCompleted ON haven_exercises(wasCompleted)")
                 db.execSQL("CREATE INDEX IF NOT EXISTS index_haven_exercises_isDeleted ON haven_exercises(isDeleted)")
+            }
+        }
+
+        /**
+         * Migration 21 -> 22: Index Name Standardization
+         *
+         * Changes:
+         * - Recreates indices for haven_sessions and haven_exercises with standardized names
+         *   to match manual SQL expectations and stabilize Room's identity hash.
+         */
+        val MIGRATION_21_22: Migration = object : Migration(21, 22) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Drop old indices for haven_sessions
+                db.execSQL("DROP INDEX IF EXISTS index_haven_sessions_userId")
+                db.execSQL("DROP INDEX IF EXISTS index_haven_sessions_startedAt")
+                db.execSQL("DROP INDEX IF EXISTS index_haven_sessions_sessionType")
+                db.execSQL("DROP INDEX IF EXISTS index_haven_sessions_userId_startedAt")
+                db.execSQL("DROP INDEX IF EXISTS index_haven_sessions_isCompleted")
+                db.execSQL("DROP INDEX IF EXISTS index_haven_sessions_containedCrisisDetection")
+                db.execSQL("DROP INDEX IF EXISTS index_haven_sessions_isDeleted")
+
+                // Create standardized indices for haven_sessions
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_haven_sessions_user ON haven_sessions(userId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_haven_sessions_started ON haven_sessions(startedAt)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_haven_sessions_type ON haven_sessions(sessionType)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_haven_sessions_user_started ON haven_sessions(userId, startedAt)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_haven_sessions_completed ON haven_sessions(isCompleted)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_haven_sessions_crisis ON haven_sessions(containedCrisisDetection)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_haven_sessions_deleted ON haven_sessions(isDeleted)")
+
+                // Drop old indices for haven_exercises
+                db.execSQL("DROP INDEX IF EXISTS index_haven_exercises_userId")
+                db.execSQL("DROP INDEX IF EXISTS index_haven_exercises_completedAt")
+                db.execSQL("DROP INDEX IF EXISTS index_haven_exercises_exerciseType")
+                db.execSQL("DROP INDEX IF EXISTS index_haven_exercises_fromSessionId")
+                db.execSQL("DROP INDEX IF EXISTS index_haven_exercises_userId_completedAt")
+                db.execSQL("DROP INDEX IF EXISTS index_haven_exercises_wasCompleted")
+                db.execSQL("DROP INDEX IF EXISTS index_haven_exercises_isDeleted")
+
+                // Create standardized indices for haven_exercises
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_haven_exercises_user ON haven_exercises(userId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_haven_exercises_completed_at ON haven_exercises(completedAt)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_haven_exercises_type ON haven_exercises(exerciseType)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_haven_exercises_session ON haven_exercises(fromSessionId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_haven_exercises_user_completed ON haven_exercises(userId, completedAt)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_haven_exercises_completed ON haven_exercises(wasCompleted)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS idx_haven_exercises_deleted ON haven_exercises(isDeleted)")
             }
         }
 
