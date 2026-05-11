@@ -493,6 +493,14 @@
     <string name="cd_menu_button">Open menu</string>
     <string name="cd_share_button">Share</string>
     <string name="cd_save_button">Save</string>
+    <string name="cd_add_media">Add media</string>
+    <string name="cd_voice_record">Start voice recording</string>
+    <string name="cd_stop_recording">Stop voice recording</string>
+    <string name="cd_bullet_list">Bullet list</string>
+    <string name="cd_use_template">Use template</string>
+    <string name="cd_remove_media">Remove media</string>
+    <string name="cd_pause_audio">Pause audio</string>
+    <string name="cd_delete_action">Delete</string>
     <string name="cd_profile_picture">Profile picture</string>
     <string name="cd_badge_icon">Badge: %s</string>
     <string name="cd_loading">Loading content</string>
