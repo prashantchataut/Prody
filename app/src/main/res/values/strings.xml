@@ -499,8 +499,18 @@
     <string name="cd_streak_fire">Streak fire icon</string>
     <string name="cd_leaderboard_rank">Rank %d</string>
     <string name="cd_mood_selector">Select your mood</string>
-    <string name="cd_play_audio">Play pronunciation</string>
+    <string name="cd_play_audio">Play audio</string>
+    <string name="cd_pause_audio">Pause audio</string>
     <string name="cd_navigation_item">Navigate to %s</string>
+    <string name="cd_add_media">Add media</string>
+    <string name="cd_voice_record">Start voice recording</string>
+    <string name="cd_stop_recording">Stop voice recording</string>
+    <string name="cd_bullet_list">Add bullet list</string>
+    <string name="cd_remove_media">Remove media</string>
+    <string name="cd_use_template">Use template</string>
+    <string name="cd_delete_action">Delete</string>
+    <string name="journal_use_template">Use Template</string>
+    <string name="journal_entry_placeholder">What\'s on your mind?</string>
 
     <!-- ==================== -->
     <!-- ONBOARDING -->
