@@ -247,7 +247,7 @@ object ProdyIcons {
     val SearchOff: ImageVector = Icons.Filled.Search
     val Clear: ImageVector = Icons.Filled.Close
     val Create: ImageVector = Icons.Filled.Edit
-    val OpenInFull: ImageVector = Icons.Filled.ExitToApp // Fallback
+    val OpenInFull: ImageVector = Icons.AutoMirrored.Filled.ExitToApp // Fallback
     val NoteAlt: ImageVector = Icons.Filled.Edit
     val NoteAdd: ImageVector = Icons.Filled.Edit
     val BookmarkRemove: ImageVector = Icons.Filled.Bookmark
