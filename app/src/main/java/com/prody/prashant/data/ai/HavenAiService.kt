@@ -14,7 +14,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -45,7 +44,8 @@ class HavenAiService @Inject constructor(
         // Crisis keywords for detection (case-insensitive matching)
         private val CRISIS_KEYWORDS_SEVERE = listOf(
             "kill myself", "end my life", "suicide", "want to die",
-            "hurt myself", "self harm", "overdose", "end it all"
+            "hurt myself", "self harm", "overdose", "end it all",
+            "giving away my things", "saying goodbye"
         )
 
         private val CRISIS_KEYWORDS_MODERATE = listOf(
