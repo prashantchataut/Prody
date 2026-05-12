@@ -247,7 +247,7 @@ fun ProdyApp(
                                 icon = {
                                     // Breathing Pulse Animation
                                     val infiniteTransition = rememberInfiniteTransition(label = "HavenPulse")
-                                    val animatedAlpha by infiniteTransition.animateFloat(
+                                    val alphaState = infiniteTransition.animateFloat(
                                         initialValue = 0.6f,
                                         targetValue = 1f,
                                         animationSpec = infiniteRepeatable(
@@ -256,7 +256,7 @@ fun ProdyApp(
                                         ),
                                         label = "HavenAlpha"
                                     )
-                                    val scale by infiniteTransition.animateFloat(
+                                    val scaleState = infiniteTransition.animateFloat(
                                         initialValue = 0.95f,
                                         targetValue = 1.05f,
                                         animationSpec = infiniteRepeatable(
@@ -270,9 +270,13 @@ fun ProdyApp(
                                         modifier = Modifier
                                             .size(56.dp) // Larger than standard icon
                                             .graphicsLayer {
-                                                scaleX = scale
-                                                scaleY = scale
-                                                alpha = if (selected) 1f else animatedAlpha
+                                                // Accessing .value directly inside graphicsLayer dears state read
+                                                // to the draw phase, preventing parent recomposition.
+                                                val s = scaleState.value
+                                                val a = alphaState.value
+                                                scaleX = s
+                                                scaleY = s
+                                                alpha = if (selected) 1f else a
                                             }
                                             .clip(CircleShape)
                                             .background(
