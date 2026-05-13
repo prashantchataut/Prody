@@ -682,8 +682,23 @@ fun ProdyInputField(
 
 @Composable
 fun ProdyLogo(modifier: Modifier = Modifier) {
+    val infiniteTransition = rememberInfiniteTransition(label = "ProdyLogoBreathing")
+    val scaleState = infiniteTransition.animateFloat(
+        initialValue = 0.95f,
+        targetValue = 1.05f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(3000, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "LogoScale"
+    )
+
     Box(
         modifier = modifier
+            .graphicsLayer {
+                scaleX = scaleState.value
+                scaleY = scaleState.value
+            }
             .clip(RoundedCornerShape(24.dp))
             .background(Color.White)
             .border(1.dp, ProdyOutlineLight, RoundedCornerShape(24.dp)),
