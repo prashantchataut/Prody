@@ -104,14 +104,14 @@ jobs:
         ./gradlew assembleRelease --stacktrace --no-configuration-cache
 
     - name: Upload Debug APK
-      uses: actions/upload-artifact@6f51ac03b9356f520e9daec5da45d0305a01374d # v4.5.0
+      uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
       with:
         name: prody-debug
         path: app/build/outputs/apk/debug/*.apk
         retention-days: 10
 
     - name: Upload Release APK
-      uses: actions/upload-artifact@6f51ac03b9356f520e9daec5da45d0305a01374d # v4.5.0
+      uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
       with:
         name: prody-release
         path: app/build/outputs/apk/release/*.apk
@@ -203,7 +203,7 @@ jobs:
         JAVA_OPTS: "-Xmx4g"
 
     - name: Upload Lint Report
-      uses: actions/upload-artifact@6f51ac03b9356f520e9daec5da45d0305a01374d # v4.5.0
+      uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
       if: always()
       with:
         name: lint-report
@@ -257,7 +257,7 @@ jobs:
         JAVA_OPTS: "-Xmx4g"
 
     - name: Upload Test Reports
-      uses: actions/upload-artifact@6f51ac03b9356f520e9daec5da45d0305a01374d # v4.5.0
+      uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
       if: always()
       with:
         name: test-reports
