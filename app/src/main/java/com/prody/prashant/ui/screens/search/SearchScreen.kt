@@ -1,5 +1,8 @@
 package com.prody.prashant.ui.screens.search
 import com.prody.prashant.ui.icons.ProdyIcons
+import com.prody.prashant.ui.components.ProdyClickableCard
+import com.prody.prashant.ui.components.ProdySelectionChip
+import com.prody.prashant.ui.components.ProdyEmptyState
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -130,9 +133,7 @@ fun SearchScreen(
                 uiState.hasSearched && uiState.results.isEmpty() -> {
                     // No results
                     EmptySearchResults(
-                        query = uiState.query,
-                        primaryText = primaryText,
-                        secondaryText = secondaryText
+                        query = uiState.query
                     )
                 }
                 uiState.hasSearched -> {
@@ -162,9 +163,7 @@ fun SearchScreen(
                                 is SearchResult.FutureMessageResult -> onNavigateToFutureMessage(result.id)
                             }
                         },
-                        isDark = isDark,
-                        primaryText = primaryText,
-                        secondaryText = secondaryText
+                        isDark = isDark
                     )
                 }
             }
@@ -322,39 +321,14 @@ private fun CategoryChip(
     onClick: () -> Unit,
     isDark: Boolean
 ) {
-    val selectedBg = AccentGreen
-    val unselectedBg = if (isDark) Color(0xFF2A4240) else Color(0xFFE0E7E6)
-    val selectedText = Color(0xFF0D2826)
-    val unselectedText = if (isDark) DarkPrimaryText else LightPrimaryText
-
-    Surface(
-        modifier = Modifier
-            .clip(RoundedCornerShape(20.dp))
-            .clickable(onClick = onClick),
-        shape = RoundedCornerShape(20.dp),
-        color = if (isSelected) selectedBg else unselectedBg
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(6.dp)
-        ) {
-            Icon(
-                imageVector = getCategoryIcon(category),
-                contentDescription = null,
-                tint = if (isSelected) selectedText else unselectedText,
-                modifier = Modifier.size(16.dp)
-            )
-            Text(
-                text = category.displayName,
-                style = MaterialTheme.typography.labelMedium.copy(
-                    fontFamily = PoppinsFamily,
-                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
-                ),
-                color = if (isSelected) selectedText else unselectedText
-            )
-        }
-    }
+    ProdySelectionChip(
+        label = category.displayName,
+        selected = isSelected,
+        onClick = onClick,
+        leadingIcon = getCategoryIcon(category),
+        selectedBackgroundColor = AccentGreen,
+        selectedContentColor = Color(0xFF0D2826)
+    )
 }
 
 @Composable
@@ -394,13 +368,13 @@ private fun SearchResultItem(
     val categoryColor = getCategoryColor(result.category)
     val dateFormatter = remember { SimpleDateFormat("MMM d, yyyy", Locale.getDefault()) }
 
-    Surface(
+    ProdyClickableCard(
+        onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp)
-            .clickable(onClick = onClick),
+            .padding(horizontal = 16.dp, vertical = 4.dp),
         shape = RoundedCornerShape(12.dp),
-        color = cardBackground
+        backgroundColor = cardBackground
     ) {
         Row(
             modifier = Modifier
@@ -550,43 +524,16 @@ private fun SearchResultItem(
 
 @Composable
 private fun EmptySearchResults(
-    query: String,
-    primaryText: Color,
-    secondaryText: Color
+    query: String
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
     ) {
-        Icon(
-            imageVector = ProdyIcons.SearchOff,
-            contentDescription = null,
-            tint = secondaryText,
-            modifier = Modifier.size(64.dp)
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text(
-            text = "No results found",
-            style = MaterialTheme.typography.titleMedium.copy(
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.SemiBold
-            ),
-            color = primaryText
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text(
-            text = "No matches for \"$query\"",
-            style = MaterialTheme.typography.bodyMedium.copy(
-                fontFamily = PoppinsFamily
-            ),
-            color = secondaryText
+        ProdyEmptyState(
+            icon = ProdyIcons.SearchOff,
+            title = "No results found",
+            message = "No matches for \"$query\""
         )
     }
 }
@@ -595,46 +542,18 @@ private fun EmptySearchResults(
 private fun RecentContentSection(
     recentContent: List<SearchResult>,
     onResultClick: (SearchResult) -> Unit,
-    isDark: Boolean,
-    primaryText: Color,
-    secondaryText: Color
+    isDark: Boolean
 ) {
     if (recentContent.isEmpty()) {
         // Empty state
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
         ) {
-            Icon(
-                imageVector = ProdyIcons.Search,
-                contentDescription = null,
-                tint = secondaryText.copy(alpha = 0.5f),
-                modifier = Modifier.size(64.dp)
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                text = "Search your content",
-                style = MaterialTheme.typography.titleMedium.copy(
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.SemiBold
-                ),
-                color = primaryText
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = "Find journal entries, quotes, vocabulary, and future messages",
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    fontFamily = PoppinsFamily
-                ),
-                color = secondaryText,
-                modifier = Modifier.padding(horizontal = 24.dp)
+            ProdyEmptyState(
+                icon = ProdyIcons.Search,
+                title = "Search your content",
+                message = "Find journal entries, quotes, vocabulary, and future messages"
             )
         }
     } else {
