@@ -22,6 +22,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -402,7 +403,11 @@ fun ProdyWelcomeEmptyState(
             contentDescription = "Welcome",
             modifier = Modifier
                 .size(96.dp)
-                .alpha(0.9f),
+                .graphicsLayer {
+                    this.scaleX = iconScale
+                    this.scaleY = iconScale
+                    this.alpha = 0.9f
+                },
             tint = MaterialTheme.colorScheme.primary
         )
 
