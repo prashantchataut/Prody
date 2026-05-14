@@ -45,12 +45,14 @@ class HavenAiService @Inject constructor(
         private val CRISIS_KEYWORDS_SEVERE = listOf(
             "kill myself", "end my life", "suicide", "want to die",
             "hurt myself", "self harm", "overdose", "end it all",
-            "giving away my things", "saying goodbye"
+            "giving away my things", "saying goodbye", "final goodbye",
+            "not wanting to wake up", "don't want to be here anymore"
         )
 
         private val CRISIS_KEYWORDS_MODERATE = listOf(
             "don't want to live", "better off dead", "can't go on",
-            "no reason to live", "worthless", "hopeless"
+            "no reason to live", "worthless", "hopeless", "feeling trapped",
+            "nothing matters anymore", "deep dark hole"
         )
 
         /**

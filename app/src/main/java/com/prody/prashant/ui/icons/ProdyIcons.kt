@@ -108,24 +108,24 @@ object ProdyIcons {
     val Quiz: ImageVector = Icons.AutoMirrored.Outlined.Help 
     val TextFields: ImageVector = Icons.AutoMirrored.Filled.List 
     val Inventory2: ImageVector = Icons.Filled.Home 
-    val SwapHoriz: ImageVector = Icons.AutoMirrored.Filled.List 
+    val SwapHoriz: ImageVector = Icons.AutoMirrored.Filled.CompareArrows
     val Analytics: ImageVector = Icons.Filled.DateRange
     val AlternateEmail: ImageVector = Icons.Filled.Email
     val Contacts: ImageVector = Icons.Filled.Person
     val MoreHoriz: ImageVector = Icons.Filled.MoreVert
     val CalendarMonth: ImageVector = Icons.Filled.DateRange
-    val Assignment: ImageVector = Icons.AutoMirrored.Filled.List
+    val Assignment: ImageVector = Icons.AutoMirrored.Filled.Assignment
     val Token: ImageVector = Icons.Filled.Star
     val HelpOutline: ImageVector = Icons.AutoMirrored.Filled.Help
     val Loop: ImageVector = Icons.Filled.Refresh
-    val Tag: ImageVector = Icons.AutoMirrored.Filled.List
+    val Tag: ImageVector = Icons.AutoMirrored.Filled.Label
     val Circle: ImageVector = Icons.Filled.Star
-    val OpenInNew: ImageVector = Icons.AutoMirrored.Filled.ExitToApp
-    val Summarize: ImageVector = Icons.AutoMirrored.Filled.List
+    val OpenInNew: ImageVector = Icons.AutoMirrored.Filled.OpenInNew
+    val Summarize: ImageVector = Icons.AutoMirrored.Filled.Assignment
     val StickyNote2: ImageVector = Icons.Filled.Edit
-    val Article: ImageVector = Icons.Filled.Description
+    val Article: ImageVector = Icons.AutoMirrored.Filled.Article
     val CalendarToday: ImageVector = Icons.Filled.DateRange
-    val TrendingFlat: ImageVector = Icons.AutoMirrored.Filled.ArrowForward
+    val TrendingFlat: ImageVector = Icons.AutoMirrored.Filled.TrendingFlat
 
     // === NESTED OBJECTS FOR STYLE VARIANTS ===
     
@@ -247,7 +247,6 @@ object ProdyIcons {
     val SearchOff: ImageVector = Icons.Filled.Search
     val Clear: ImageVector = Icons.Filled.Close
     val Create: ImageVector = Icons.Filled.Edit
-    val OpenInFull: ImageVector = Icons.AutoMirrored.Filled.ExitToApp // Fallback
     val NoteAlt: ImageVector = Icons.Filled.Edit
     val NoteAdd: ImageVector = Icons.Filled.Edit
     val BookmarkRemove: ImageVector = Icons.Filled.Bookmark
@@ -322,6 +321,7 @@ object ProdyIcons {
     val Tune: ImageVector = Settings
     val Help: ImageVector = Info
     val ExitToApp: ImageVector = Icons.AutoMirrored.Filled.ExitToApp
+    val OpenInFull: ImageVector = Icons.AutoMirrored.Filled.OpenInNew
     val ArrowUpward: ImageVector = ExpandLess
     val ArrowDownward: ImageVector = ExpandMore
     val ArrowDropDown: ImageVector = ExpandMore
