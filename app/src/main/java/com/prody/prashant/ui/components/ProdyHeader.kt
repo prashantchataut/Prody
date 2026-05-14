@@ -224,16 +224,13 @@ private fun MinimalHeader(
                     modifier = Modifier.weight(1f)
                 ) {
                     if (navigationIcon != null && onNavigationClick != null) {
-                        IconButton(
+                        ProdyIconButton(
+                            icon = navigationIcon,
                             onClick = onNavigationClick,
-                            modifier = Modifier.padding(end = ProdyTokens.Spacing.xs)
-                        ) {
-                            Icon(
-                                imageVector = navigationIcon,
-                                contentDescription = "Navigate back",
-                                tint = contentColor
-                            )
-                        }
+                            modifier = Modifier.padding(end = ProdyTokens.Spacing.xs),
+                            contentDescription = "Navigate back",
+                            tint = contentColor
+                        )
                     }
 
                     Column(modifier = Modifier.weight(1f)) {
@@ -321,16 +318,13 @@ private fun ContextualHeader(
                     modifier = Modifier.weight(1f)
                 ) {
                     if (navigationIcon != null && onNavigationClick != null) {
-                        IconButton(
+                        ProdyIconButton(
+                            icon = navigationIcon,
                             onClick = onNavigationClick,
-                            modifier = Modifier.padding(end = ProdyTokens.Spacing.xs)
-                        ) {
-                            Icon(
-                                imageVector = navigationIcon,
-                                contentDescription = "Navigate back",
-                                tint = contentColor
-                            )
-                        }
+                            modifier = Modifier.padding(end = ProdyTokens.Spacing.xs),
+                            contentDescription = "Navigate back",
+                            tint = contentColor
+                        )
                     }
 
                     Column(modifier = Modifier.weight(1f)) {
@@ -437,16 +431,13 @@ private fun ScrollAwareHeader(
                     modifier = Modifier.weight(1f)
                 ) {
                     if (navigationIcon != null && onNavigationClick != null) {
-                        IconButton(
+                        ProdyIconButton(
+                            icon = navigationIcon,
                             onClick = onNavigationClick,
-                            modifier = Modifier.padding(end = ProdyTokens.Spacing.xs)
-                        ) {
-                            Icon(
-                                imageVector = navigationIcon,
-                                contentDescription = "Navigate back",
-                                tint = contentColor
-                            )
-                        }
+                            modifier = Modifier.padding(end = ProdyTokens.Spacing.xs),
+                            contentDescription = "Navigate back",
+                            tint = contentColor
+                        )
                     }
 
                     Column(
