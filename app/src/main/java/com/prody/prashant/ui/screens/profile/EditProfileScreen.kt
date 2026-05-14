@@ -282,18 +282,14 @@ private fun EditProfileHeader(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        IconButton(
+        ProdyIconButton(
+            icon = ProdyIcons.ArrowBack,
             onClick = onBackClick,
-            modifier = Modifier.size(48.dp)
-        ) {
-            Icon(
-                imageVector = ProdyIcons.ArrowBack,
-                contentDescription = stringResource(R.string.back),
-                tint = if (isDarkMode) EditProfileColors.TextPrimaryDark
-                       else EditProfileColors.TextPrimaryLight,
-                modifier = Modifier.size(24.dp)
-            )
-        }
+            contentDescription = stringResource(R.string.back),
+            tooltip = stringResource(R.string.back),
+            tint = if (isDarkMode) EditProfileColors.TextPrimaryDark
+                   else EditProfileColors.TextPrimaryLight
+        )
 
         Text(
             text = "Edit Profile",
