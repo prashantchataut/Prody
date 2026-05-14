@@ -62,6 +62,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -95,6 +96,7 @@ import com.prody.prashant.ui.components.rememberMoodSuggestionState
 import com.prody.prashant.ui.components.getCurrentTimeOfDay
 import com.prody.prashant.ui.components.mapMoodToAmbient
 import com.prody.prashant.ui.theme.*
+import com.prody.prashant.util.rememberProdyHaptic
 
 /**
  * Journal New Entry Screen - Premium Minimalist Design
@@ -489,11 +491,23 @@ private fun Color.luminance(): Float = 0.2126f * red + 0.7152f * green + 0.0722f
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun JournalTopBar(onBackClick: () -> Unit, onSaveClick: () -> Unit, isSaveEnabled: Boolean, isSaving: Boolean, isGeneratingAi: Boolean, colors: JournalThemeColors) {
+    val haptic = rememberProdyHaptic()
     CenterAlignedTopAppBar(
         title = { Text(text = stringResource(R.string.new_entry), style = MaterialTheme.typography.titleMedium.copy(fontFamily = PoppinsFamily, fontWeight = FontWeight.SemiBold), color = colors.primaryText) },
         navigationIcon = { IconButton(onClick = onBackClick) { Icon(imageVector = ProdyIcons.ArrowBack, contentDescription = stringResource(R.string.back), tint = colors.primaryText) } },
         actions = {
-            Box(modifier = Modifier.padding(end = 8.dp).clip(RoundedCornerShape(20.dp)).background(colors.saveButtonBg).clickable(enabled = isSaveEnabled) { onSaveClick() }.padding(horizontal = 16.dp, vertical = 8.dp), contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier
+                    .padding(end = 8.dp)
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(colors.saveButtonBg)
+                    .clickable(enabled = isSaveEnabled) {
+                        haptic.click()
+                        onSaveClick()
+                    }
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                contentAlignment = Alignment.Center
+            ) {
                 if (isSaving) {
                     CircularProgressIndicator(modifier = Modifier.size(14.dp), strokeWidth = 2.dp, color = colors.accent)
                 } else {
@@ -550,7 +564,23 @@ private fun MoodSelectionSection(selectedMood: Mood, onMoodSelected: (Mood) -> U
 
 @Composable
 private fun MoodButton(mood: Mood, isSelected: Boolean, onClick: () -> Unit, colors: JournalThemeColors) {
-    Box(modifier = Modifier.height(48.dp).clip(RoundedCornerShape(24.dp)).background(if (isSelected) colors.accent else colors.surface).clickable(onClick = onClick).padding(horizontal = 16.dp), contentAlignment = Alignment.Center) {
+    val haptic = rememberProdyHaptic()
+    Box(
+        modifier = Modifier
+            .height(48.dp)
+            .clip(RoundedCornerShape(24.dp))
+            .background(if (isSelected) colors.accent else colors.surface)
+            .clickable(onClick = {
+                haptic.selection()
+                onClick()
+            })
+            .padding(horizontal = 16.dp)
+            .semantics {
+                role = Role.RadioButton
+                selected = isSelected
+            },
+        contentAlignment = Alignment.Center
+    ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Icon(imageVector = mood.icon, contentDescription = null, tint = if (isSelected) Color.White else colors.primaryText, modifier = Modifier.size(20.dp))
             Text(text = mood.displayName, style = MaterialTheme.typography.labelLarge.copy(fontFamily = PoppinsFamily, fontWeight = FontWeight.Bold), color = if (isSelected) Color.White else colors.primaryText)
@@ -565,6 +595,16 @@ private fun TitleInputField(title: String, onTitleChanged: (String) -> Unit, onN
 
 @Composable
 private fun JournalInputField(content: String, wordCount: Int, onContentChanged: (String) -> Unit, onMediaClick: () -> Unit, onVoiceClick: () -> Unit, onListClick: () -> Unit, isRecording: Boolean, recordingTimeElapsed: Long, contentValidation: ContentValidation, completionProgress: Float, colors: JournalThemeColors, focusRequester: FocusRequester) {
+    val haptic = rememberProdyHaptic()
+
+    val counterColor = when (contentValidation) {
+        is ContentValidation.Valid -> colors.accent
+        is ContentValidation.MinimalContent -> ProdyDesignTokens.SemanticColors.warning
+        is ContentValidation.TooVague -> ProdyDesignTokens.SemanticColors.warning
+        is ContentValidation.TooShort -> MaterialTheme.colorScheme.error
+        else -> colors.secondaryText
+    }
+
     Column(modifier = Modifier.padding(horizontal = 16.dp)) {
         Box(modifier = Modifier.fillMaxWidth().heightIn(min = 200.dp).clip(RoundedCornerShape(16.dp)).background(colors.surface).padding(16.dp)) {
             Column {
@@ -572,11 +612,26 @@ private fun JournalInputField(content: String, wordCount: Int, onContentChanged:
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                     Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                        IconButton(onClick = onMediaClick) { Icon(imageVector = ProdyIcons.Image, contentDescription = null, tint = colors.primaryText) }
-                        IconButton(onClick = onVoiceClick) { Icon(imageVector = if (isRecording) ProdyIcons.Stop else ProdyIcons.Mic, contentDescription = null, tint = if (isRecording) colors.accent else colors.primaryText) }
-                        IconButton(onClick = onListClick) { Icon(imageVector = Icons.Filled.Menu, contentDescription = null, tint = colors.primaryText) }
+                        IconButton(onClick = {
+                            haptic.click()
+                            onMediaClick()
+                        }) {
+                            Icon(imageVector = ProdyIcons.Image, contentDescription = stringResource(R.string.cd_add_media), tint = colors.primaryText)
+                        }
+                        IconButton(onClick = {
+                            haptic.click()
+                            onVoiceClick()
+                        }) {
+                            Icon(imageVector = if (isRecording) ProdyIcons.Stop else ProdyIcons.Mic, contentDescription = stringResource(if (isRecording) R.string.cd_stop_recording else R.string.cd_voice_record), tint = if (isRecording) colors.accent else colors.primaryText)
+                        }
+                        IconButton(onClick = {
+                            haptic.click()
+                            onListClick()
+                        }) {
+                            Icon(imageVector = Icons.AutoMirrored.Filled.List, contentDescription = stringResource(R.string.cd_bullet_list), tint = colors.primaryText)
+                        }
                     }
-                    Text(text = "$wordCount WORDS", style = MaterialTheme.typography.labelSmall, color = colors.secondaryText)
+                    Text(text = "$wordCount WORDS", style = MaterialTheme.typography.labelSmall, color = counterColor, fontWeight = if (contentValidation !is ContentValidation.Empty && contentValidation !is ContentValidation.Valid) FontWeight.Bold else FontWeight.Normal)
                 }
             }
         }
