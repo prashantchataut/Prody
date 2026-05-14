@@ -36,6 +36,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.prody.prashant.R
+import com.prody.prashant.ui.animation.shimmerEffect
 
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -73,14 +74,7 @@ fun HomeScreen(
     val backgroundColor = MaterialTheme.colorScheme.background
 
     if (uiState.isLoading) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(backgroundColor),
-            contentAlignment = Alignment.Center
-        ) {
-            CircularProgressIndicator(color = ProdyForestGreen)
-        }
+        HomeSkeletonLoader(backgroundColor = backgroundColor)
         return
     }
 
@@ -360,6 +354,81 @@ fun HomeScreen(
 // =============================================================================
 
 @Composable
+private fun HomeSkeletonLoader(backgroundColor: Color) {
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(backgroundColor),
+        contentPadding = PaddingValues(bottom = 80.dp),
+        userScrollEnabled = false
+    ) {
+        // Header Skeleton
+        item {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp, vertical = 24.dp)
+                    .statusBarsPadding(),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .shimmerEffect()
+                        .background(ProdyOutlineLight)
+                )
+                Spacer(modifier = Modifier.width(16.dp))
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .shimmerEffect()
+                        .background(ProdyOutlineLight)
+                )
+            }
+        }
+
+        // Greeting Skeleton
+        item {
+            Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp)) {
+                Box(
+                    modifier = Modifier
+                        .width(160.dp)
+                        .height(24.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .shimmerEffect()
+                        .background(ProdyOutlineLight)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Box(
+                    modifier = Modifier
+                        .width(240.dp)
+                        .height(16.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .shimmerEffect()
+                        .background(ProdyOutlineLight)
+                )
+            }
+        }
+
+        // Cards Skeletons
+        items(5) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(120.dp)
+                    .padding(horizontal = 24.dp, vertical = 8.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .shimmerEffect()
+                    .background(ProdyOutlineLight)
+            )
+        }
+    }
+}
+
+@Composable
 fun DashboardHeader(
     userName: String,
     onProfileClick: () -> Unit,
@@ -480,6 +549,7 @@ fun OverviewSection(
     }
 }
 
+@androidx.compose.runtime.Immutable
 data class BadgeData(val icon: androidx.compose.ui.graphics.vector.ImageVector, val progress: Float, val color: Color)
 
 @Composable
@@ -488,13 +558,14 @@ fun BadgeItem(badge: BadgeData) {
         contentAlignment = Alignment.Center,
         modifier = Modifier
             .size(32.dp)
-            .graphicsLayer {
-                // Deferring any potential transformations to drawing layer
-            }
     ) {
         CircularProgressIndicator(
             progress = { badge.progress },
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .graphicsLayer {
+                    // Defer any transformations to drawing layer
+                },
             color = badge.color,
             trackColor = badge.color.copy(alpha = 0.2f),
             strokeWidth = 3.dp,
