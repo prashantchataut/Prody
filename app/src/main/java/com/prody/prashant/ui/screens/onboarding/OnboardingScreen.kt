@@ -453,13 +453,16 @@ private fun LoginSignupScreen(
     var password by remember { mutableStateOf("") }
     val scrollState = rememberScrollState()
     val density = LocalDensity.current
-    val imeVisible = WindowInsets.ime.getBottom(density) > 0
 
-    // Auto-scroll when keyboard appears
-    LaunchedEffect(imeVisible) {
-        if (imeVisible) {
-            scrollState.animateScrollTo(scrollState.maxValue)
-        }
+    // Auto-scroll when keyboard appears - Optimized to avoid recomposition
+    val ime = WindowInsets.ime
+    LaunchedEffect(ime, density) {
+        snapshotFlow { ime.getBottom(density) }
+            .collect { imeHeight ->
+                if (imeHeight > 0) {
+                    scrollState.animateScrollTo(scrollState.maxValue)
+                }
+            }
     }
 
     Column(
@@ -682,8 +685,35 @@ fun ProdyInputField(
 
 @Composable
 fun ProdyLogo(modifier: Modifier = Modifier) {
+    val infiniteTransition = rememberInfiniteTransition(label = "logo_breathing")
+
+    val scale = infiniteTransition.animateFloat(
+        initialValue = 0.95f,
+        targetValue = 1.05f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2000, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "logo_scale"
+    )
+
+    val alpha = infiniteTransition.animateFloat(
+        initialValue = 0.8f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2000, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "logo_alpha"
+    )
+
     Box(
         modifier = modifier
+            .graphicsLayer {
+                scaleX = scale.value
+                scaleY = scale.value
+                this.alpha = alpha.value
+            }
             .clip(RoundedCornerShape(24.dp))
             .background(Color.White)
             .border(1.dp, ProdyOutlineLight, RoundedCornerShape(24.dp)),
