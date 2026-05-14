@@ -6,12 +6,19 @@ import androidx.room.Room
 import com.prody.prashant.data.security.SecureDatabaseManager
 
 object DatabaseFactory {
+    /**
+     * Creates a Room database with mandatory SQLCipher encryption.
+     *
+     * Security Policy: FAIL SECURE.
+     * If encryption cannot be established, this method throws a SecurityException
+     * rather than falling back to an unencrypted database.
+     */
     fun create(
         context: Context,
         databaseName: String,
         instanceProvider: () -> ProdyDatabase?
     ): ProdyDatabase {
-        return try {
+        try {
             val masterKey = androidx.security.crypto.MasterKey.Builder(context)
                 .setKeyScheme(androidx.security.crypto.MasterKey.KeyScheme.AES256_GCM)
                 .build()
@@ -27,7 +34,7 @@ object DatabaseFactory {
             val secureDbManager = SecureDatabaseManager(context, encryptedPrefs)
             val supportFactory = secureDbManager.createSQLCipherSupportFactorySync()
 
-            Room.databaseBuilder(context.applicationContext, ProdyDatabase::class.java, databaseName)
+            return Room.databaseBuilder(context.applicationContext, ProdyDatabase::class.java, databaseName)
                 .openHelperFactory(supportFactory)
                 .addMigrations(*DatabaseMigrations.all)
                 .fallbackToDestructiveMigration()
@@ -42,12 +49,9 @@ object DatabaseFactory {
                 )
                 .build()
         } catch (e: Exception) {
-            Log.e("ProdyDatabase", "Failed to create secure database, falling back to unencrypted", e)
-            Room.databaseBuilder(context.applicationContext, ProdyDatabase::class.java, databaseName)
-                .addMigrations(*DatabaseMigrations.all)
-                .fallbackToDestructiveMigration()
-                .addCallback(DatabaseLifecycleCallback(tag = "ProdyDatabase", databaseProvider = instanceProvider))
-                .build()
+            Log.e("ProdyDatabase", "CRITICAL SECURITY FAILURE: Could not create secure database", e)
+            // Propagate security failure to prevent cleartext data exposure
+            throw SecurityException("Database security initialization failed. Prody cannot run without encryption.", e)
         }
     }
 }
