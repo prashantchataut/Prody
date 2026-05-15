@@ -50,6 +50,7 @@ import java.util.*
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import com.prody.prashant.util.AccessibilityUtils
+import com.prody.prashant.util.SecureScreen
 
 @Composable
 fun JournalDetailScreen(
@@ -61,13 +62,7 @@ fun JournalDetailScreen(
     val context = LocalContext.current
 
     // Security: Prevent screenshots and screen recordings of private journal content
-    DisposableEffect(Unit) {
-        val window = (context as? Activity)?.window
-        window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
-        onDispose {
-            window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
-        }
-    }
+    SecureScreen()
 
     LaunchedEffect(entryId) {
         viewModel.loadEntry(entryId)
