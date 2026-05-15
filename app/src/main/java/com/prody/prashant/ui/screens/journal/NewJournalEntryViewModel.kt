@@ -680,16 +680,17 @@ class NewJournalEntryViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            _uiState.update {
-                it.copy(
-                    isTranscribing = true,
-                    transcriptionText = "",
-                    transcriptionPartial = ""
-                )
-            }
+            try {
+                _uiState.update {
+                    it.copy(
+                        isTranscribing = true,
+                        transcriptionText = "",
+                        transcriptionPartial = ""
+                    )
+                }
 
-            voiceTranscriptionService.transcribe()
-                .collect { result ->
+                voiceTranscriptionService.transcribe()
+                    .collect { result ->
                     when (result) {
                         is TranscriptionResult.Ready -> {
                         }
@@ -730,6 +731,15 @@ class NewJournalEntryViewModel @Inject constructor(
                         }
                     }
                 }
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Critical transcription error", e)
+                _uiState.update {
+                    it.copy(
+                        isTranscribing = false,
+                        error = "Voice recognition failed: ${e.message}"
+                    )
+                }
+            }
         }
     }
 

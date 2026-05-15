@@ -72,6 +72,50 @@ fun HomeScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val backgroundColor = MaterialTheme.colorScheme.background
 
+    // Wrap click handlers in rememberUpdatedState and memoize to prevent unnecessary recompositions
+    // while ensuring they always trigger the latest provided lambda.
+    val currentOnNavigateToSearch by rememberUpdatedState(onNavigateToSearch)
+    val currentOnNavigateToJournal by rememberUpdatedState(onNavigateToJournal)
+    val currentOnNavigateToHaven by rememberUpdatedState(onNavigateToHaven)
+    val currentOnNavigateToQuotes by rememberUpdatedState(onNavigateToQuotes)
+    val currentOnNavigateToFutureMessage by rememberUpdatedState(onNavigateToFutureMessage)
+    val currentOnNavigateToMeditation by rememberUpdatedState(onNavigateToMeditation)
+    val currentOnNavigateToChallenges by rememberUpdatedState(onNavigateToChallenges)
+    val currentOnNavigateToMissions by rememberUpdatedState(onNavigateToMissions)
+    val currentOnNavigateToLearning by rememberUpdatedState(onNavigateToLearning)
+    val currentOnNavigateToDeepDive by rememberUpdatedState(onNavigateToDeepDive)
+    val currentOnNavigateToVocabulary by rememberUpdatedState(onNavigateToVocabulary)
+    val currentOnNavigateToMicroJournal by rememberUpdatedState(onNavigateToMicroJournal)
+    val currentOnNavigateToDailyRitual by rememberUpdatedState(onNavigateToDailyRitual)
+
+    val onProfileClick = remember { { } }
+    val onNotificationClick = remember { { currentOnNavigateToSearch() } }
+    val onJournalClick = remember { { currentOnNavigateToJournal() } }
+    val onHavenClick = remember { { currentOnNavigateToHaven() } }
+    val onWisdomClick = remember { { currentOnNavigateToQuotes() } }
+    val onFutureClick = remember { { currentOnNavigateToFutureMessage() } }
+
+    val onMeditationClick = remember { { currentOnNavigateToMeditation() } }
+    val onChallengesClick = remember { { currentOnNavigateToChallenges() } }
+    val onMissionsClick = remember { { currentOnNavigateToMissions() } }
+    val onLearningClick = remember { { currentOnNavigateToLearning() } }
+    val onDeepDiveClick = remember { { currentOnNavigateToDeepDive() } }
+    val onVocabularyClick = remember { { currentOnNavigateToVocabulary() } }
+    val onMicroJournalClick = remember { { currentOnNavigateToMicroJournal() } }
+    val onDailyRitualClick = remember { { currentOnNavigateToDailyRitual() } }
+
+    val onNextActionClick: (com.prody.prashant.domain.progress.NextAction) -> Unit = remember {
+        { action ->
+            when (action.type) {
+                NextActionType.START_JOURNAL, NextActionType.FOLLOW_UP_JOURNAL -> currentOnNavigateToJournal()
+                NextActionType.REVIEW_WORDS, NextActionType.LEARN_WORD -> currentOnNavigateToVocabulary()
+                NextActionType.WRITE_FUTURE_MESSAGE -> currentOnNavigateToFutureMessage()
+                NextActionType.REFLECT_ON_QUOTE -> currentOnNavigateToQuotes()
+                NextActionType.COMPLETE_CHALLENGE -> currentOnNavigateToChallenges()
+            }
+        }
+    }
+
     if (uiState.isLoading) {
         Box(
             modifier = Modifier
@@ -128,6 +172,15 @@ fun HomeScreen(
         )
     }
 
+    var showStreakDetail by remember { mutableStateOf(false) }
+
+    if (showStreakDetail) {
+        DualStreakDetailDialog(
+            dualStreakStatus = uiState.dualStreakStatus,
+            onDismiss = { showStreakDetail = false }
+        )
+    }
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -138,8 +191,8 @@ fun HomeScreen(
         item(key = "header") {
             DashboardHeader(
                 userName = uiState.userName,
-                onProfileClick = {},
-                onNotificationClick = onNavigateToSearch
+                onProfileClick = onProfileClick,
+                onNotificationClick = onNotificationClick
             )
         }
 
@@ -172,7 +225,7 @@ fun HomeScreen(
                 Box(modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)) {
                     DualStreakCard(
                         dualStreakStatus = uiState.dualStreakStatus,
-                        onTapForDetails = { /* Handle streak detail view */ }
+                        onTapForDetails = { showStreakDetail = true }
                     )
                 }
             }
@@ -185,15 +238,7 @@ fun HomeScreen(
                     Box(modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)) {
                         NextActionCard(
                             nextAction = action,
-                            onClick = {
-                                when (action.type) {
-                                    NextActionType.START_JOURNAL, NextActionType.FOLLOW_UP_JOURNAL -> onNavigateToJournal()
-                                    NextActionType.REVIEW_WORDS, NextActionType.LEARN_WORD -> onNavigateToVocabulary()
-                                    NextActionType.WRITE_FUTURE_MESSAGE -> onNavigateToFutureMessage()
-                                    NextActionType.REFLECT_ON_QUOTE -> onNavigateToQuotes()
-                                    NextActionType.COMPLETE_CHALLENGE -> onNavigateToChallenges()
-                                }
-                            }
+                            onClick = { onNextActionClick(action) }
                         )
                     }
                 }
@@ -252,7 +297,10 @@ fun HomeScreen(
         }
 
         // Anniversary Memories
-        items(uiState.anniversaryMemories, key = { "anniversary_${it.memory.id}" }) { memory ->
+        items(
+            items = uiState.anniversaryMemories,
+            key = { memory -> "anniversary_${memory.memory.id}_${memory.yearsAgo}" }
+        ) { memory ->
             StaggeredEntrance(index = 8) {
                 Box(modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)) {
                     AnniversaryMemoryCard(
@@ -317,10 +365,10 @@ fun HomeScreen(
         item(key = "quick_actions") {
             StaggeredEntrance(index = 13) {
                 QuickActionsGrid(
-                    onJournalClick = onNavigateToJournal,
-                    onHavenClick = onNavigateToHaven,
-                    onWisdomClick = onNavigateToQuotes,
-                    onFutureClick = onNavigateToFutureMessage
+                    onJournalClick = onJournalClick,
+                    onHavenClick = onHavenClick,
+                    onWisdomClick = onWisdomClick,
+                    onFutureClick = onFutureClick
                 )
             }
         }
@@ -329,14 +377,14 @@ fun HomeScreen(
         item(key = "explore") {
             StaggeredEntrance(index = 14) {
                 ExploreSection(
-                    onMeditationClick = onNavigateToMeditation,
-                    onChallengesClick = onNavigateToChallenges,
-                    onMissionsClick = onNavigateToMissions,
-                    onLearningClick = onNavigateToLearning,
-                    onDeepDiveClick = onNavigateToDeepDive,
-                    onVocabularyClick = onNavigateToVocabulary,
-                    onMicroJournalClick = onNavigateToMicroJournal,
-                    onDailyRitualClick = onNavigateToDailyRitual
+                    onMeditationClick = onMeditationClick,
+                    onChallengesClick = onChallengesClick,
+                    onMissionsClick = onMissionsClick,
+                    onLearningClick = onLearningClick,
+                    onDeepDiveClick = onDeepDiveClick,
+                    onVocabularyClick = onVocabularyClick,
+                    onMicroJournalClick = onMicroJournalClick,
+                    onDailyRitualClick = onDailyRitualClick
                 )
             }
         }
@@ -348,7 +396,7 @@ fun HomeScreen(
                     journaledToday = uiState.journaledToday,
                     todayMood = uiState.todayEntryMood,
                     todayPreview = uiState.todayEntryPreview,
-                    onClick = onNavigateToJournal
+                    onClick = onJournalClick
                 )
             }
         }
@@ -479,8 +527,6 @@ fun OverviewSection(
         }
     }
 }
-
-data class BadgeData(val icon: androidx.compose.ui.graphics.vector.ImageVector, val progress: Float, val color: Color)
 
 @Composable
 fun BadgeItem(badge: BadgeData) {

@@ -452,14 +452,17 @@ private fun LoginSignupScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     val scrollState = rememberScrollState()
-    val density = LocalDensity.current
-    val imeVisible = WindowInsets.ime.getBottom(density) > 0
+    val imeInsets = WindowInsets.ime
 
-    // Auto-scroll when keyboard appears
-    LaunchedEffect(imeVisible) {
-        if (imeVisible) {
-            scrollState.animateScrollTo(scrollState.maxValue)
-        }
+    val density = LocalDensity.current
+    // Auto-scroll when keyboard appears using snapshotFlow to defer state reads
+    LaunchedEffect(imeInsets) {
+        snapshotFlow { imeInsets.getBottom(density) > 0 }
+            .collect { visible ->
+                if (visible) {
+                    scrollState.animateScrollTo(scrollState.maxValue)
+                }
+            }
     }
 
     Column(
