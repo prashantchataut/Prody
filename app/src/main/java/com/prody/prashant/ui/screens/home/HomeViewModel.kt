@@ -25,6 +25,7 @@ import com.prody.prashant.domain.progress.SeedBloomService
 import com.prody.prashant.domain.progress.TodayProgress
 import com.prody.prashant.domain.repository.SoulLayerRepository
 import com.prody.prashant.domain.streak.DualStreakManager
+import androidx.compose.runtime.Stable
 import com.prody.prashant.domain.streak.DualStreakStatus
 import com.prody.prashant.util.BuddhaWisdom
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -57,6 +58,7 @@ enum class AiConfigurationStatus {
     ERROR
 }
 
+@Stable
 data class HomeUiState(
     val userName: String = "Growth Seeker",
     val currentStreak: Int = 0,
