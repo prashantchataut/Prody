@@ -26,6 +26,7 @@ import com.prody.prashant.data.local.entity.JournalEntryEntity
 import com.prody.prashant.domain.model.Mood
 import com.prody.prashant.ui.components.ProdyCard
 import com.prody.prashant.ui.theme.*
+import com.prody.prashant.util.SecureScreen
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -53,6 +54,9 @@ fun JournalListScreen(
     viewModel: JournalViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    // Security: Prevent screenshots of private journal list
+    SecureScreen()
 
     Scaffold(
         topBar = {
