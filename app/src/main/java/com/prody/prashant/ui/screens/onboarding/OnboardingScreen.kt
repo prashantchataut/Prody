@@ -453,13 +453,17 @@ private fun LoginSignupScreen(
     var password by remember { mutableStateOf("") }
     val scrollState = rememberScrollState()
     val density = LocalDensity.current
-    val imeVisible = WindowInsets.ime.getBottom(density) > 0
 
-    // Auto-scroll when keyboard appears
-    LaunchedEffect(imeVisible) {
-        if (imeVisible) {
-            scrollState.animateScrollTo(scrollState.maxValue)
-        }
+    // Performance: Monitor keyboard visibility via snapshotFlow to avoid high-frequency recomposition
+    val imeInsets = WindowInsets.ime
+
+    LaunchedEffect(imeInsets) {
+        snapshotFlow { imeInsets.getBottom(density) > 0 }
+            .collect { isVisible ->
+                if (isVisible) {
+                    scrollState.animateScrollTo(scrollState.maxValue)
+                }
+            }
     }
 
     Column(
@@ -680,6 +684,11 @@ fun ProdyInputField(
     }
 }
 
+/**
+ * Optimized Prody Logo with breathing animation.
+ * Uses graphicsLayer to defer state reads to the draw phase,
+ * preventing unnecessary recompositions of the parent scope.
+ */
 @Composable
 fun ProdyLogo(modifier: Modifier = Modifier) {
     val infiniteTransition = rememberInfiniteTransition(label = "ProdyLogoBreathing")
@@ -696,6 +705,7 @@ fun ProdyLogo(modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .graphicsLayer {
+                // Accessing .value directly inside graphicsLayer defers state read to draw phase
                 scaleX = scaleState.value
                 scaleY = scaleState.value
             }

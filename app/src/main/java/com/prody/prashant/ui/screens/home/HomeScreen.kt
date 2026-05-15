@@ -71,16 +71,10 @@ fun HomeScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val backgroundColor = MaterialTheme.colorScheme.background
+    var showStreakDetail by remember { mutableStateOf(false) }
 
     if (uiState.isLoading) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(backgroundColor),
-            contentAlignment = Alignment.Center
-        ) {
-            CircularProgressIndicator(color = ProdyForestGreen)
-        }
+        HomeSkeletonLoader()
         return
     }
 
@@ -172,7 +166,7 @@ fun HomeScreen(
                 Box(modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)) {
                     DualStreakCard(
                         dualStreakStatus = uiState.dualStreakStatus,
-                        onTapForDetails = { /* Handle streak detail view */ }
+                        onTapForDetails = { showStreakDetail = true }
                     )
                 }
             }
@@ -252,11 +246,15 @@ fun HomeScreen(
         }
 
         // Anniversary Memories
-        items(uiState.anniversaryMemories, key = { "anniversary_${it.memory.id}" }) { memory ->
+        // Use composite keys for anniversary memories to ensure stability across historical data sets
+        items(
+            uiState.anniversaryMemories,
+            key = { anniversary -> "anniversary_${anniversary.memory.id}_${anniversary.yearsAgo}" }
+        ) { anniversary ->
             StaggeredEntrance(index = 8) {
                 Box(modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)) {
                     AnniversaryMemoryCard(
-                        anniversary = memory,
+                        anniversary = anniversary,
                         onView = { /* Navigate to memory detail */ },
                         onDismiss = { /* Handle dismiss */ }
                     )
@@ -352,6 +350,14 @@ fun HomeScreen(
                 )
             }
         }
+    }
+
+    // Dual Streak Detail Dialog
+    if (showStreakDetail) {
+        DualStreakDetailDialog(
+            dualStreakStatus = uiState.dualStreakStatus,
+            onDismiss = { showStreakDetail = false }
+        )
     }
 }
 
@@ -508,98 +514,6 @@ fun BadgeItem(badge: BadgeData) {
     }
 }
 
-@Composable
-fun MoodTrendSection(moodData: List<Float>) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(24.dp)
-    ) {
-        Text(
-            text = "Mood Trend",
-            style = TextStyle(
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 18.sp,
-                color = ProdyTextPrimaryLight
-            )
-        )
-        
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Chart Card
-        ProdyCard(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp),
-            backgroundColor = ProdySurfaceLight
-        ) {
-            MoodChart(data = moodData, modifier = Modifier.padding(24.dp))
-        }
-    }
-}
-
-@Composable
-fun MoodChart(data: List<Float>, modifier: Modifier = Modifier) {
-    Spacer(
-        modifier = modifier
-            .fillMaxSize()
-            .drawWithCache {
-                val path = Path()
-
-                val width = size.width
-                val height = size.height
-                val stepX = if (data.size > 1) width / (data.size - 1) else 0f
-
-                // Normalize data to height (1-5 scale)
-                val points = data.mapIndexed { index, value ->
-                    val x = index * stepX
-                    val y = height - ((value - 1) / 4f) * height
-                    Offset(x, y)
-                }
-
-                path.reset()
-                if (points.isNotEmpty()) {
-                    path.moveTo(points.first().x, points.first().y)
-                    for (i in 1 until points.size) {
-                        val p0 = points[i - 1]
-                        val p1 = points[i]
-                        val controlPoint1 = Offset(p0.x + (p1.x - p0.x) / 2, p0.y)
-                        val controlPoint2 = Offset(p0.x + (p1.x - p0.x) / 2, p1.y)
-                        path.cubicTo(
-                            controlPoint1.x, controlPoint1.y,
-                            controlPoint2.x, controlPoint2.y,
-                            p1.x, p1.y
-                        )
-                    }
-                }
-
-                onDrawBehind {
-                    if (data.isEmpty()) return@onDrawBehind
-
-                    drawPath(
-                        path = path,
-                        color = ProdyForestGreen,
-                        style = Stroke(width = 4.dp.toPx(), cap = StrokeCap.Round)
-                    )
-
-                    // Draw Points
-                    points.forEach { point ->
-                        drawCircle(
-                            color = Color.White,
-                            radius = 6.dp.toPx(),
-                            center = point
-                        )
-                        drawCircle(
-                            color = ProdyForestGreen,
-                            radius = 4.dp.toPx(),
-                            center = point
-                        )
-                    }
-                }
-            }
-    )
-}
 
 @Composable
 fun WeeklySummarySection(journalEntries: Int, wordsLearned: Int, mindfulMinutes: Int) {

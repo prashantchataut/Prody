@@ -147,6 +147,20 @@ private data class DailyContent(
     val idiom: IdiomEntity?
 )
 
+/**
+ * Type-safe bridge for the home screen's multi-flow combine block.
+ * Consolidates all reactive data sources before updating the UI state.
+ */
+internal data class HomeDataArgs(
+    val profile: UserProfileEntity?,
+    val weeklyJournalEntries: List<JournalEntryEntity>,
+    val weeklyLearnedWords: Int,
+    val streakHistory: List<StreakHistoryEntity>,
+    val todayJournalEntries: List<JournalEntryEntity>,
+    val dualStreak: DualStreakStatus,
+    val aiProofMode: Boolean
+)
+
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val userDao: UserDao,
@@ -228,53 +242,15 @@ class HomeViewModel @Inject constructor(
                 journalDao.getEntriesByDateRange(todayStart, System.currentTimeMillis()).distinctUntilChanged(),
                 dualStreakManager.getDualStreakStatusFlow().distinctUntilChanged(),
                 preferencesManager.debugAiProofMode.distinctUntilChanged()
-            ) { args ->
-                val profile = args.getOrNull(0) as? UserProfileEntity
-                val weeklyJournalEntries = (args.getOrNull(1) as? List<*>)?.filterIsInstance<JournalEntryEntity>() ?: emptyList()
-                val weeklyLearnedWords = args.getOrNull(2) as? Int ?: 0
-                val streakHistory = (args.getOrNull(3) as? List<*>)?.filterIsInstance<StreakHistoryEntity>() ?: emptyList()
-                val todayJournalEntries = (args.getOrNull(4) as? List<*>)?.filterIsInstance<JournalEntryEntity>() ?: emptyList()
-                val dualStreak = args.getOrNull(5) as? DualStreakStatus ?: DualStreakStatus.empty()
-                val aiProofMode = args.getOrNull(6) as? Boolean ?: false
-
-                // Calculate weekly active days.
-                val daysActiveThisWeek = streakHistory.count { it.date >= weekStart }
-
-                // Determine today's journaling status.
-                val (journaledToday, todayMood, todayPreview) = if (todayJournalEntries.isNotEmpty()) {
-                    val latestEntry = todayJournalEntries.maxByOrNull { it.createdAt }
-                    Triple(true, latestEntry?.mood ?: "", latestEntry?.content?.take(100) ?: "")
-                } else {
-                    Triple(false, "", "")
-                }
-
-                // 3. Atomically update the UI state with all the loaded data.
-                _uiState.value.copy(
-                    userName = profile?.displayName ?: "Growth Seeker",
-                    currentStreak = profile?.currentStreak ?: 0,
-                    totalPoints = profile?.totalPoints ?: 0,
-                    dailyQuote = dailyContent.quote?.content ?: _uiState.value.dailyQuote,
-                    dailyQuoteAuthor = dailyContent.quote?.author ?: _uiState.value.dailyQuoteAuthor,
-                    wordOfTheDay = dailyContent.word?.word ?: _uiState.value.wordOfTheDay,
-                    wordDefinition = dailyContent.word?.definition ?: _uiState.value.wordDefinition,
-                    wordPronunciation = dailyContent.word?.pronunciation ?: _uiState.value.wordPronunciation,
-                    wordId = dailyContent.word?.id ?: _uiState.value.wordId,
-                    dailyProverb = dailyContent.proverb?.content ?: _uiState.value.dailyProverb,
-                    proverbMeaning = dailyContent.proverb?.meaning ?: _uiState.value.proverbMeaning,
-                    proverbOrigin = dailyContent.proverb?.origin ?: _uiState.value.proverbOrigin,
-                    dailyIdiom = dailyContent.idiom?.phrase ?: _uiState.value.dailyIdiom,
-                    idiomMeaning = dailyContent.idiom?.meaning ?: _uiState.value.idiomMeaning,
-                    idiomExample = dailyContent.idiom?.exampleSentence ?: _uiState.value.idiomExample,
-                    idiomId = dailyContent.idiom?.id ?: _uiState.value.idiomId,
-                    journalEntriesThisWeek = weeklyJournalEntries.size,
-                    wordsLearnedThisWeek = weeklyLearnedWords,
-                    daysActiveThisWeek = daysActiveThisWeek,
-                    journaledToday = journaledToday,
-                    todayEntryMood = todayMood,
-                    todayEntryPreview = todayPreview,
-                    dualStreakStatus = dualStreak,
-                    buddhaWisdomProofInfo = _uiState.value.buddhaWisdomProofInfo.copy(isEnabled = aiProofMode),
-                    isLoading = false // <-- Critical: Signal that loading is complete.
+            ) { flowArray ->
+                HomeDataArgs(
+                    profile = flowArray[0] as? UserProfileEntity,
+                    weeklyJournalEntries = (flowArray[1] as? List<*>)?.filterIsInstance<JournalEntryEntity>() ?: emptyList(),
+                    weeklyLearnedWords = flowArray[2] as? Int ?: 0,
+                    streakHistory = (flowArray[3] as? List<*>)?.filterIsInstance<StreakHistoryEntity>() ?: emptyList(),
+                    todayJournalEntries = (flowArray[4] as? List<*>)?.filterIsInstance<JournalEntryEntity>() ?: emptyList(),
+                    dualStreak = flowArray[5] as? DualStreakStatus ?: DualStreakStatus.empty(),
+                    aiProofMode = flowArray[6] as? Boolean ?: false
                 )
             }.catch { e ->
                 android.util.Log.e(TAG, "Error in combined home data flow", e)
@@ -285,8 +261,50 @@ class HomeViewModel @Inject constructor(
                         error = "Failed to load home data. Please check your connection."
                     )
                 }
-            }.collect { newState ->
-                _uiState.value = newState
+            }.collect { args ->
+                val currentWeekStart = getWeekStartTimestamp()
+
+                // Calculate weekly active days.
+                val daysActiveThisWeek = args.streakHistory.count { it.date >= currentWeekStart }
+
+                // Determine today's journaling status.
+                val (journaledToday, todayMood, todayPreview) = if (args.todayJournalEntries.isNotEmpty()) {
+                    val latestEntry = args.todayJournalEntries.maxByOrNull { it.createdAt }
+                    Triple(true, latestEntry?.mood ?: "", latestEntry?.content?.take(100) ?: "")
+                } else {
+                    Triple(false, "", "")
+                }
+
+                // 3. Atomically update the UI state with all the loaded data.
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        userName = args.profile?.displayName ?: "Growth Seeker",
+                        currentStreak = args.profile?.currentStreak ?: 0,
+                        totalPoints = args.profile?.totalPoints ?: 0,
+                        dailyQuote = dailyContent.quote?.content ?: currentState.dailyQuote,
+                        dailyQuoteAuthor = dailyContent.quote?.author ?: currentState.dailyQuoteAuthor,
+                        wordOfTheDay = dailyContent.word?.word ?: currentState.wordOfTheDay,
+                        wordDefinition = dailyContent.word?.definition ?: currentState.wordDefinition,
+                        wordPronunciation = dailyContent.word?.pronunciation ?: currentState.wordPronunciation,
+                        wordId = dailyContent.word?.id ?: currentState.wordId,
+                        dailyProverb = dailyContent.proverb?.content ?: currentState.dailyProverb,
+                        proverbMeaning = dailyContent.proverb?.meaning ?: currentState.proverbMeaning,
+                        proverbOrigin = dailyContent.proverb?.origin ?: currentState.proverbOrigin,
+                        dailyIdiom = dailyContent.idiom?.phrase ?: currentState.dailyIdiom,
+                        idiomMeaning = dailyContent.idiom?.meaning ?: currentState.idiomMeaning,
+                        idiomExample = dailyContent.idiom?.exampleSentence ?: currentState.idiomExample,
+                        idiomId = dailyContent.idiom?.id ?: currentState.idiomId,
+                        journalEntriesThisWeek = args.weeklyJournalEntries.size,
+                        wordsLearnedThisWeek = args.weeklyLearnedWords,
+                        daysActiveThisWeek = daysActiveThisWeek,
+                        journaledToday = journaledToday,
+                        todayEntryMood = todayMood,
+                        todayEntryPreview = todayPreview,
+                        dualStreakStatus = args.dualStreak,
+                        buddhaWisdomProofInfo = currentState.buddhaWisdomProofInfo.copy(isEnabled = args.aiProofMode),
+                        isLoading = false // <-- Critical: Signal that loading is complete.
+                    )
+                }
             }
 
             // 4. Launch non-essential and secondary data loading tasks.
