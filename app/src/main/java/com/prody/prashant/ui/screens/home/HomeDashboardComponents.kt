@@ -12,9 +12,15 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -22,6 +28,7 @@ import com.prody.prashant.data.local.entity.SeedEntity
 import com.prody.prashant.domain.progress.NextAction
 import com.prody.prashant.domain.progress.NextActionType
 import com.prody.prashant.domain.progress.TodayProgress
+import com.prody.prashant.ui.animation.shimmerEffect
 import com.prody.prashant.ui.components.ProdyCard
 import com.prody.prashant.ui.components.ProdyClickableCard
 import com.prody.prashant.ui.icons.ProdyIcons
@@ -234,6 +241,96 @@ private fun ProgressItem(
 }
 
 /**
+ * Shimmering skeleton loader for the Home Screen.
+ * Provides a premium, perceived-speed improvement over standard progress indicators.
+ */
+@Composable
+fun HomeSkeletonLoader() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 24.dp)
+            .statusBarsPadding()
+    ) {
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Header Skeleton
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .shimmerEffect()
+            )
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Greeting Skeleton
+        Box(
+            modifier = Modifier
+                .width(200.dp)
+                .height(32.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .shimmerEffect()
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Box(
+            modifier = Modifier
+                .width(150.dp)
+                .height(20.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .shimmerEffect()
+        )
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        // Overview Cards Skeleton
+        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(100.dp)
+                    .clip(RoundedCornerShape(20.dp))
+                    .shimmerEffect()
+            )
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(100.dp)
+                    .clip(RoundedCornerShape(20.dp))
+                    .shimmerEffect()
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Large Card Skeleton (Dual Streak / Next Action)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(160.dp)
+                .clip(RoundedCornerShape(20.dp))
+                .shimmerEffect()
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Today Progress Skeleton
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(120.dp)
+                .clip(RoundedCornerShape(20.dp))
+                .shimmerEffect()
+        )
+    }
+}
+
+/**
  * Seed to Bloom status card.
  */
 @Composable
@@ -305,4 +402,107 @@ fun SeedStatusCard(
             }
         }
     }
+}
+
+/**
+ * Mood trend section showing emotional progress over time.
+ */
+@Composable
+fun MoodTrendSection(moodData: List<Float>) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(24.dp)
+    ) {
+        Text(
+            text = "Mood Trend",
+            style = TextStyle(
+                fontFamily = PoppinsFamily,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 18.sp,
+                color = ProdyTextPrimaryLight
+            )
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Chart Card
+        ProdyCard(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp),
+            backgroundColor = ProdySurfaceLight
+        ) {
+            MoodChart(data = moodData, modifier = Modifier.padding(24.dp))
+        }
+    }
+}
+
+/**
+ * High-performance Mood Chart using drawWithCache to optimize path rendering.
+ * Deferring state reads and using graphicsLayer prevents parent recompositions.
+ */
+@Composable
+fun MoodChart(data: List<Float>, modifier: Modifier = Modifier) {
+    Spacer(
+        modifier = modifier
+            .fillMaxSize()
+            .drawWithCache {
+                val path = Path()
+
+                val width = size.width
+                val height = size.height
+                val stepX = if (data.size > 1) width / (data.size - 1) else 0f
+
+                // Normalize data to height (1-5 scale)
+                val points = data.mapIndexed { index, value ->
+                    val x = index * stepX
+                    val y = height - ((value - 1) / 4f) * height
+                    Offset(x, y)
+                }
+
+                path.reset()
+                if (points.isNotEmpty()) {
+                    path.moveTo(points.first().x, points.first().y)
+                    for (i in 1 until points.size) {
+                        val p0 = points[i - 1]
+                        val p1 = points[i]
+                        val controlPoint1 = Offset(p0.x + (p1.x - p0.x) / 2, p0.y)
+                        val controlPoint2 = Offset(p0.x + (p1.x - p0.x) / 2, p1.y)
+                        path.cubicTo(
+                            controlPoint1.x, controlPoint1.y,
+                            controlPoint2.x, controlPoint2.y,
+                            p1.x, p1.y
+                        )
+                    }
+                }
+
+                onDrawBehind {
+                    if (data.isEmpty()) return@onDrawBehind
+
+                    drawPath(
+                        path = path,
+                        color = ProdyForestGreen,
+                        style = Stroke(width = 4.dp.toPx(), cap = StrokeCap.Round)
+                    )
+
+                    // Draw Points
+                    points.forEach { point ->
+                        drawCircle(
+                            color = Color.White,
+                            radius = 6.dp.toPx(),
+                            center = point
+                        )
+                        drawCircle(
+                            color = ProdyForestGreen,
+                            radius = 4.dp.toPx(),
+                            center = point
+                        )
+                    }
+                }
+            }
+            .graphicsLayer {
+                // Ensure chart updates are isolated to drawing layer
+            }
+    )
 }

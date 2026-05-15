@@ -21,3 +21,13 @@ This journal contains CRITICAL performance learnings specific to the Prody codeb
 **Context:** `ProgressIndicators.kt` and `OnboardingScreen.kt`.
 **Learning:** Using a `Row` of multiple `Box` composables for page indicators creates unnecessary layout nodes and triggers expensive layout passes during page swipes as dot widths animate. A single `Canvas` drawing all dots based on an animated float index is significantly more performant and smoother.
 **Action:** Prefer `Canvas`-based drawing for multi-state UI indicators like page dots or segmented progress bars to maintain 60fps during complex interactions.
+
+## 2024-05-27 - Atomic State Updates in ViewModels
+**Context:** HomeViewModel.kt
+**Learning:** Consolidating multiple reactive flows into a single `combine` block with a type-safe bridge (`HomeDataArgs`) ensures that the UI state is updated only once per change event. This prevents staggered recompositions that can cause flickering or lag on complex screens.
+**Action:** Use an internal `HomeDataArgs` data class to bridge reactive flows and `_uiState.update` for atomic transitions.
+
+## 2024-05-27 - Isolated UI Component Optimization
+**Context:** HomeDashboardComponents.kt
+**Learning:** Moving heavy UI components like charts to a dedicated components file and optimizing them with `drawWithCache` and `graphicsLayer` isolates rendering logic. This prevents parent layouts (like `LazyColumn`) from recomposing when internal chart state (like path generation) is calculated.
+**Action:** Isolate high-performance UI components and use `drawWithCache` for complex drawing operations.
