@@ -5,3 +5,7 @@
 ## 2025-01-26 - Dynamic Form Validation Feedback
 **Learning:** Providing real-time, visual feedback as users approach form constraints (like character limits) significantly reduces friction and errors. Semantic color shifts (warning at 80%, error at 100%) are more intuitive than simple counters.
 **Action:** Implement dynamic character counters in all high-priority input forms. Use `ProdyDesignTokens.SemanticColors.warning` for the cautionary state to provide a consistent cross-app language for constraints.
+
+## 2025-01-28 - Design System Standardization for Search UI
+**Learning:** Migrating legacy custom components (like custom chips and surfaces) to standardized design system components (`ProdySelectionChip`, `ProdyClickableCard`, `ProdyEmptyState`) instantly improves app-wide consistency, haptic feedback, and accessibility without changing business logic.
+**Action:** Prioritize identifying "orphaned" custom UI components in older screens and migrate them to the Prody Design System to maintain a cohesive, high-quality user experience.
