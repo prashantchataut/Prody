@@ -5,3 +5,6 @@
 ## 2025-01-26 - Dynamic Form Validation Feedback
 **Learning:** Providing real-time, visual feedback as users approach form constraints (like character limits) significantly reduces friction and errors. Semantic color shifts (warning at 80%, error at 100%) are more intuitive than simple counters.
 **Action:** Implement dynamic character counters in all high-priority input forms. Use `ProdyDesignTokens.SemanticColors.warning` for the cautionary state to provide a consistent cross-app language for constraints.
+## 2025-01-30 - Standardized Icon Button Tooltips
+**Learning:** Icon-only buttons (like back buttons or action icons) are often ambiguous for new users or screen reader users if not properly labeled. Enhancing the base 'ProdyIconButton' with a 'tooltip' parameter that utilizes 'TooltipBox' and 'PlainTooltip' provides a consistent way to offer visual and accessible hints without cluttering the UI. Consolidating accessibility semantics on the container rather than the internal icon prevents redundant announcements.
+**Action:** When creating icon-only buttons, always use 'ProdyIconButton' and provide both 'contentDescription' (for screen readers) and 'tooltip' (for visual guidance). Ensure the internal 'Icon' has a 'null' content description to avoid double announcements.
