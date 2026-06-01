@@ -112,7 +112,7 @@ val ProdyTertiaryDark = ProdyTextSecondaryDark
 val ProdyOnTertiaryDark = Color(0xFF000000)
 val ProdyTertiaryContainerDark = ProdySurfaceVariantDark
 
-val ProdyPrimaryVariant = ProdyAccentGreenDark
+
 
 // Moods
 val MoodHappy = Color(0xFFFFC107)
@@ -329,29 +329,10 @@ val ProfileAvatarRing = ProdyForestGreen
 val FutureCategoryGoal = ProdyForestGreen
 val FutureCategoryMotivation = ProdyWarmAmber
 val FutureMessageArrived = Color(0xFFFFD700)
-val JournalAccent = ProdyForestGreen
 val JournalAccentGreen = ProdyForestGreen
 val XpBarFill = ProdyAccentGreen
 val XpBarGlow = ProdyAccentGreen.copy(alpha = 0.5f)
 val LevelUpGlow = ProdyAccentGreen
-val JournalSaveButtonBgLight = ProdySurfaceVariantLight
-val JournalIconCircleBorderLight = ProdyOutlineLight
-val JournalCardCornerDetailLight = ProdySurfaceContainerLight
-val JournalBackgroundLight = ProdyBackgroundLight
-val JournalSurfaceLight = ProdySurfaceLight
-val JournalTextPrimaryLight = ProdyTextPrimaryLight
-val JournalTextSecondaryLight = ProdyTextSecondaryLight
-val JournalPlaceholderLight = ProdyTextSecondaryLight
-val JournalSliderInactiveLight = ProdyOutlineLight
-val JournalSaveButtonBgDark = ProdySurfaceVariantDark
-val JournalIconCircleBorderDark = ProdyOutlineDark
-val JournalCardCornerDetailDark = ProdySurfaceContainerDark
-val JournalBackgroundDark = ProdyBackgroundDark
-val JournalSurfaceDark = ProdySurfaceDark
-val JournalTextPrimaryDark = ProdyTextPrimaryDark
-val JournalTextSecondaryDark = ProdyTextSecondaryDark
-val JournalPlaceholderDark = ProdyTextSecondaryDark
-val JournalSliderInactiveDark = ProdyOutlineDark
 
 // Time Capsule Colors
 val TimeCapsuleTextPrimaryLight = Color(0xFF1A1C1E)

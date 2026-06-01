@@ -136,7 +136,7 @@ fun PulsingGlow(
 @Composable
 fun AnimatedGradientBackground(
     modifier: Modifier = Modifier,
-    colors: List<Color> = listOf(ProdyPrimary, ProdyPrimaryVariant, ProdyTertiary),
+    colors: List<Color> = listOf(ProdyPrimary, ProdyAccentGreenDark, ProdyTertiary),
     content: @Composable BoxScope.() -> Unit
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "gradient")
