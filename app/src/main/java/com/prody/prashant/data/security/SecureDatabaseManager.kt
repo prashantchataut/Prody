@@ -143,24 +143,31 @@ class SecureDatabaseManager @Inject constructor(
     }
 
     /**
-     * Generate a deterministic fallback passphrase in case of errors.
+     * Generate a fallback passphrase using a cryptographically random key
+     * stored in EncryptedSharedPreferences. This is a LAST RESORT — the
+     * primary path through EncryptedSharedPreferences should always succeed.
      */
     private fun generateFallbackPassphrase(): String {
         try {
-            val deviceId = android.provider.Settings.Secure.getString(
-                context.contentResolver,
-                android.provider.Settings.Secure.ANDROID_ID
-            ) ?: "unknown_device"
+            val fallbackKey = encryptedPrefs.getString(DB_PASSPHRASE_KEY + "_fallback", null)
+            if (fallbackKey != null) {
+                return fallbackKey
+            }
 
-            val appData = "${context.packageName}_${BuildConfig.VERSION_CODE}"
-            val combined = "${deviceId}_${appData}_prody_secure_fallback"
+            val random = java.security.SecureRandom()
+            val bytes = ByteArray(32)
+            random.nextBytes(bytes)
+            val newFallback = android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP)
 
-            val digest = java.security.MessageDigest.getInstance("SHA-256")
-            val hash = digest.digest(combined.toByteArray(Charsets.UTF_8))
-            return android.util.Base64.encodeToString(hash, android.util.Base64.NO_WRAP)
+            val saved = encryptedPrefs.edit().putString(DB_PASSPHRASE_KEY + "_fallback", newFallback).commit()
+            if (saved) {
+                return newFallback
+            }
         } catch (e: Exception) {
-            return "prody_ultimate_fallback_${BuildConfig.VERSION_CODE}"
+            Log.e(TAG, "Failed to generate secure fallback passphrase", e)
         }
+
+        throw SecurityException("Database encryption initialization failed. Cannot store passphrase securely.")
     }
 
     /**

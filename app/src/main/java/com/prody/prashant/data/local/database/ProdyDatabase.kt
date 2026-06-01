@@ -28,8 +28,9 @@ import net.sqlcipher.database.SupportFactory
  * - Enhanced streak system with Mindful Breaks
  *
  * Migration Strategy:
- * - For development: Uses fallbackToDestructiveMigration()
- * - For production: Implement proper migrations before release
+ * - All migrations must be explicit — no destructive fallback
+ * - DatabaseFactory throws on encryption failure instead of falling back to plaintext
+ * - New schema changes require a Migration object in the companion object
  *
  * Schema Version History:
  * - Version 1: Initial schema with all core entities

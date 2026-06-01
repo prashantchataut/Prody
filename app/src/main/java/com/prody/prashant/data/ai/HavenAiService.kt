@@ -218,12 +218,12 @@ I am here to listen, but I cannot provide the emergency care you might need. Ple
 
             val keySource = if (BuildConfig.THERAPIST_API_KEY.isNotBlank()) "THERAPIST_API_KEY" else "AI_API_KEY"
 
-            // Safety settings - less restrictive for mental health content
+            // Safety settings - appropriate thresholds for mental health context
             val safetySettings = listOf(
-                SafetySetting(HarmCategory.HARASSMENT, BlockThreshold.ONLY_HIGH),
-                SafetySetting(HarmCategory.HATE_SPEECH, BlockThreshold.ONLY_HIGH),
+                SafetySetting(HarmCategory.HARASSMENT, BlockThreshold.MEDIUM_AND_ABOVE),
+                SafetySetting(HarmCategory.HATE_SPEECH, BlockThreshold.MEDIUM_AND_ABOVE),
                 SafetySetting(HarmCategory.SEXUALLY_EXPLICIT, BlockThreshold.MEDIUM_AND_ABOVE),
-                SafetySetting(HarmCategory.DANGEROUS_CONTENT, BlockThreshold.ONLY_HIGH)
+                SafetySetting(HarmCategory.DANGEROUS_CONTENT, BlockThreshold.MEDIUM_AND_ABOVE)
             )
 
             val config = generationConfig {
@@ -257,9 +257,9 @@ I am here to listen, but I cannot provide the emergency care you might need. Ple
      */
     fun getConfigurationStatus(): String {
         val therapistKeyStatus = if (BuildConfig.THERAPIST_API_KEY.isNotBlank()) 
-            "present (${BuildConfig.THERAPIST_API_KEY.length} chars)" else "missing"
+            "present" else "missing"
         val aiKeyStatus = if (BuildConfig.AI_API_KEY.isNotBlank()) 
-            "present (${BuildConfig.AI_API_KEY.length} chars)" else "missing"
+            "present" else "missing"
             
         return when {
             isOfflineMode -> buildString {

@@ -8,6 +8,7 @@ import android.os.Build
 import android.util.Log
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
+import com.prody.prashant.data.security.SecureApiKeyManager
 import com.prody.prashant.debug.CrashHandler
 import com.prody.prashant.domain.gamification.GamificationService
 import com.prody.prashant.domain.haven.WitnessModeManager
@@ -31,6 +32,9 @@ class ProdyApplication : Application(), Configuration.Provider {
 
     @Inject
     lateinit var witnessModeManager: WitnessModeManager
+
+    @Inject
+    lateinit var secureApiKeyManager: SecureApiKeyManager
 
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
@@ -189,6 +193,22 @@ class ProdyApplication : Application(), Configuration.Provider {
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to initialize gamification data", e)
+            }
+        }
+
+        // Migrate API keys from BuildConfig to SecureApiKeyManager (one-time migration)
+        applicationScope.launch {
+            try {
+                @Suppress("DEPRECATION")
+                secureApiKeyManager.initializeApiKeys(
+                    geminiKey = BuildConfig.AI_API_KEY,
+                    openrouterKey = BuildConfig.OPENROUTER_API_KEY,
+                    therapistKey = BuildConfig.THERAPIST_API_KEY,
+                    ttsKey = BuildConfig.TTS_API_KEY
+                )
+                Log.d(TAG, "API keys migrated to secure storage")
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to migrate API keys to secure storage", e)
             }
         }
 

@@ -113,9 +113,8 @@ class EncryptionManager @Inject constructor(
             // Prefix with marker to identify encrypted content
             "ENC:" + Base64.encodeToString(combined, Base64.NO_WRAP)
         } catch (e: Exception) {
-            Log.e(TAG, "Encryption failed", e)
-            // Return original text if encryption fails (fallback for safety)
-            plaintext
+            Log.e(TAG, "Encryption failed — storing as marked-failed instead of plaintext", e)
+            "ENC_FAIL:" + Base64.encodeToString(plaintext.toByteArray(Charsets.UTF_8), Base64.NO_WRAP)
         }
     }
 
@@ -128,20 +127,23 @@ class EncryptionManager @Inject constructor(
     fun decryptText(encryptedText: String): String {
         if (encryptedText.isBlank()) return encryptedText
 
-        // Check if this is encrypted content
         if (!encryptedText.startsWith("ENC:")) {
-            // Not encrypted, return as-is (backwards compatibility)
             return encryptedText
+        }
+
+        val actualContent = if (encryptedText.startsWith("ENC_FAIL:")) {
+            Log.w(TAG, "Decrypting content that was stored after encryption failure — data was not encrypted")
+            return String(Base64.decode(encryptedText.substring(9), Base64.NO_WRAP), Charsets.UTF_8)
+        } else {
+            encryptedText.substring(4)
         }
 
         return try {
             val key = getOrCreateJournalKey()
             val cipher = Cipher.getInstance(ALGORITHM)
 
-            // Remove prefix and decode
-            val combined = Base64.decode(encryptedText.substring(4), Base64.NO_WRAP)
+            val combined = Base64.decode(actualContent, Base64.NO_WRAP)
 
-            // Extract IV and ciphertext
             val iv = ByteArray(IV_SIZE)
             val ciphertext = ByteArray(combined.size - IV_SIZE)
             System.arraycopy(combined, 0, iv, 0, IV_SIZE)
@@ -152,9 +154,8 @@ class EncryptionManager @Inject constructor(
 
             String(cipher.doFinal(ciphertext), Charsets.UTF_8)
         } catch (e: Exception) {
-            Log.e(TAG, "Decryption failed", e)
-            // Return original text if decryption fails
-            encryptedText
+            Log.e(TAG, "Decryption failed — data may be corrupted or key changed", e)
+            throw SecurityException("Failed to decrypt data. The encryption key may have changed or data is corrupted.", e)
         }
     }
 
@@ -191,7 +192,7 @@ class EncryptionManager @Inject constructor(
      * Use this for API keys, tokens, etc.
      */
     fun storeSecurely(key: String, value: String) {
-        encryptedPrefs.edit().putString(key, value).apply()
+        encryptedPrefs.edit().putString(key, value).commit()
     }
 
     /**

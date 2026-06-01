@@ -364,6 +364,7 @@ object AppModule {
         return ContentModerationManager(context)
     }
 
+    @Deprecated("Use SecureApiKeyManager instead. SecurityPreferences reads from local.properties which doesn't exist on user devices.")
     @Provides
     @Singleton
     fun provideSecurityPreferences(

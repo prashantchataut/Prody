@@ -182,7 +182,7 @@ class AiOnboardingManager @Inject constructor(
             AiHintType.FIRST_JOURNAL_INSIGHT -> AiHint(
                 type = hintType,
                 title = "AI-Powered Insights",
-                message = "Buddha will analyze your journal for insights. Your data stays private and is only processed locally on your device.",
+                message = "Buddha will analyze your journal for insights. Journal content is processed securely via AI to provide personalized reflections.",
                 actionLabel = "Understood"
             )
             AiHintType.FIRST_QUOTE_EXPLANATION -> AiHint(
@@ -230,7 +230,7 @@ class AiOnboardingManager @Inject constructor(
             ),
             BuddhaGuideCard(
                 title = "Privacy First",
-                description = "Your journal data never leaves your device. All AI processing is done locally and securely.",
+                description = "Your journal data is encrypted on-device and processed securely via AI to provide insights. See our privacy policy for details.",
                 iconName = "lock"
             ),
             BuddhaGuideCard(
