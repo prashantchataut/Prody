@@ -9,15 +9,11 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 
 /**
@@ -30,6 +26,7 @@ import androidx.core.view.WindowCompat
  * - Backgrounds: Clean White / Soft Gray
  * - Typography: Poppins (handled in Type.kt)
  * - Shapes: Rounded (12dp/16dp) (handled in Shape.kt)
+ * - Spacing/Elevation: ProdyTokens.Spacing / ProdyTokens.Elevation
  */
 
 private val LightColorScheme = lightColorScheme(
@@ -75,7 +72,7 @@ private val DarkColorScheme = darkColorScheme(
     secondary = ProdySecondaryDark,
     onSecondary = ProdyOnSecondaryDark,
     secondaryContainer = ProdyWarningContainerDark,
-    onSecondaryContainer = ProdyOnWarning, // Warning text usually black on amber
+    onSecondaryContainer = ProdyOnWarning,
 
     tertiary = ProdyTextSecondaryDark,
     onTertiary = ProdyTextOnPrimaryDark,
@@ -104,48 +101,13 @@ enum class ThemeMode {
     LIGHT, DARK, SYSTEM
 }
 
-// =============================================================================
-// SPACING & ELEVATION SYSTEM
-// =============================================================================
-
-data class ProdySpacing(
-    val none: Dp = 0.dp,
-    val extraSmall: Dp = 4.dp,
-    val small: Dp = 8.dp,
-    val medium: Dp = 12.dp,
-    val default: Dp = 16.dp,
-    val large: Dp = 20.dp,
-    val extraLarge: Dp = 24.dp,
-    val xxl: Dp = 32.dp,
-    val xxxl: Dp = 40.dp,
-    val huge: Dp = 48.dp,
-    val massive: Dp = 64.dp
-)
-
-data class ProdyElevation(
-    val none: Dp = 0.dp,
-    val extraLow: Dp = 1.dp,
-    val low: Dp = 2.dp,
-    val medium: Dp = 4.dp,
-    val high: Dp = 8.dp,
-    val extraHigh: Dp = 12.dp,
-    val overlay: Dp = 16.dp
-)
-
-/**
- * Helper to determine if the theme is dark.
- */
 @Composable
 fun isDarkTheme(): Boolean = isSystemInDarkTheme()
-
-// Re-export composition locals
-val LocalProdySpacing = staticCompositionLocalOf { ProdySpacing() }
-val LocalProdyElevation = staticCompositionLocalOf { ProdyElevation() }
 
 @Composable
 fun ProdyTheme(
     themeMode: ThemeMode = ThemeMode.SYSTEM,
-    dynamicColor: Boolean = false, // We stick to our brand colors
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val darkTheme = when (themeMode) {
@@ -170,11 +132,9 @@ fun ProdyTheme(
             activity?.let {
                 val window = it.window
                 WindowCompat.setDecorFitsSystemWindows(window, false)
-                
+
                 val statusBarColor = if (darkTheme) ProdyBackgroundDark.toArgb() else ProdyBackgroundLight.toArgb()
-                
-                // We rely on WindowCompat for handling status bar appearance
-                // but setting color is still good for fallback
+
                 @Suppress("DEPRECATION")
                 window.statusBarColor = statusBarColor
                 @Suppress("DEPRECATION")
@@ -187,27 +147,12 @@ fun ProdyTheme(
         }
     }
 
-    CompositionLocalProvider(
-        LocalProdySpacing provides ProdySpacing(),
-        LocalProdyElevation provides ProdyElevation()
-    ) {
-        MaterialTheme(
-            colorScheme = colorScheme,
-            typography = ProdyTypography,
-            shapes = ProdyShapes,
-            content = content
-        )
-    }
-}
-
-object ProdyTheme {
-    val spacing: ProdySpacing
-        @Composable
-        get() = LocalProdySpacing.current
-
-    val elevation: ProdyElevation
-        @Composable
-        get() = LocalProdyElevation.current
+    MaterialTheme(
+        colorScheme = colorScheme,
+        typography = ProdyTypography,
+        shapes = ProdyShapes,
+        content = content
+    )
 }
 
 @Composable
