@@ -216,7 +216,7 @@ class GamificationRepositoryImpl @Inject constructor(
         )
     }
 
-    override suspend fun recordDailyActivity(activityType: ActivityType): Result<StreakUpdateResult> =
+    override suspend fun recordDailyActivity(activityType: StreakActivityType): Result<StreakUpdateResult> =
         runSuspendCatching(ErrorType.DATABASE, "Failed to record activity") {
             val profile = userDao.getUserProfileSync() ?: throw IllegalStateException("No user profile")
             val today = LocalDate.now()

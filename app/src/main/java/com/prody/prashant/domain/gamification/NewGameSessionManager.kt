@@ -3,7 +3,7 @@ package com.prody.prashant.domain.gamification
 import android.util.Log
 import com.prody.prashant.domain.common.Result
 import com.prody.prashant.domain.common.fold
-import com.prody.prashant.domain.repository.ActivityType
+import com.prody.prashant.domain.repository.StreakActivityType
 import com.prody.prashant.domain.repository.GamificationRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -122,7 +122,7 @@ class NewGameSessionManager @Inject constructor(
         )
 
         // Record activity for streak
-        recordActivityAndUpdateStreak(builder, ActivityType.JOURNAL)
+        recordActivityAndUpdateStreak(builder, StreakActivityType.JOURNAL)
 
         // Check for rank up
         checkForRankUp(builder)
@@ -196,7 +196,7 @@ class NewGameSessionManager @Inject constructor(
             onError = { /* Bloom failure is not critical */ }
         )
 
-        recordActivityAndUpdateStreak(builder, ActivityType.MICRO_ENTRY)
+        recordActivityAndUpdateStreak(builder, StreakActivityType.MICRO_ENTRY)
 
         val skillsState = gamificationRepository.getPlayerSkillsSync()
         builder.currentSkillsState(skillsState)
@@ -260,7 +260,7 @@ class NewGameSessionManager @Inject constructor(
             }
         )
 
-        recordActivityAndUpdateStreak(builder, ActivityType.FLASHCARD_SESSION)
+        recordActivityAndUpdateStreak(builder, StreakActivityType.FLASHCARD_SESSION)
         checkForRankUp(builder)
 
         val skillsState = gamificationRepository.getPlayerSkillsSync()
@@ -404,7 +404,7 @@ class NewGameSessionManager @Inject constructor(
             onError = { /* Bloom failure is not critical */ }
         )
 
-        recordActivityAndUpdateStreak(builder, ActivityType.FUTURE_MESSAGE)
+        recordActivityAndUpdateStreak(builder, StreakActivityType.FUTURE_MESSAGE)
         checkForRankUp(builder)
 
         val skillsState = gamificationRepository.getPlayerSkillsSync()
@@ -448,7 +448,7 @@ class NewGameSessionManager @Inject constructor(
             onError = { /* Log error */ }
         )
 
-        recordActivityAndUpdateStreak(builder, ActivityType.OPENED_MESSAGE)
+        recordActivityAndUpdateStreak(builder, StreakActivityType.OPENED_MESSAGE)
 
         val skillsState = gamificationRepository.getPlayerSkillsSync()
         builder.currentSkillsState(skillsState)
@@ -572,7 +572,7 @@ class NewGameSessionManager @Inject constructor(
 
     private suspend fun recordActivityAndUpdateStreak(
         builder: SessionCompletionResultBuilder,
-        activityType: ActivityType
+        activityType: StreakActivityType
     ) {
         val streakResult = gamificationRepository.recordDailyActivity(activityType)
         streakResult.fold(

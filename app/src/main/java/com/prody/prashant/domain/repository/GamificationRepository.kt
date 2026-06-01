@@ -96,7 +96,7 @@ interface GamificationRepository {
      * @param activityType Type of activity performed
      * @return Result of the streak update (maintained, incremented, broken, etc.)
      */
-    suspend fun recordDailyActivity(activityType: ActivityType): Result<StreakUpdateResult>
+    suspend fun recordDailyActivity(activityType: StreakActivityType): Result<StreakUpdateResult>
 
     /**
      * Use a Mindful Break (streak freeze) to preserve streak.
@@ -319,7 +319,7 @@ data class SkillXpAwardResult(
 /**
  * Types of daily activities that contribute to streaks.
  */
-enum class ActivityType {
+enum class StreakActivityType {
     /** Full journal entry */
     JOURNAL,
     /** Full journal entry (alias) */
