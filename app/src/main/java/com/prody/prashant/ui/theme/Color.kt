@@ -6,6 +6,10 @@ import androidx.compose.ui.graphics.Color
  * Prody Design System - Color Palette (Revamp 2026)
  *
  * A polished, intuitive color system for the Prody mental wellness companion.
+ *
+ * Design philosophy: Warm-tinted neutrals that feel like a calm evening.
+ * All grays are shifted toward the brand hue (green) for cohesion.
+ * No pure grays (#808080) or pure blacks/whites — everything breathes.
  */
 
 // =============================================================================
@@ -19,65 +23,67 @@ val ProdyPrimary = ProdyForestGreen
 val ProdySecondary = ProdyWarmAmber
 
 // =============================================================================
-// LIGHT THEME COLORS
+// LIGHT THEME COLORS — Warm-tinted neutrals
+// Pure grays replaced with green-tinted grays for cohesion
 // =============================================================================
 
-val ProdyBackgroundLight = Color(0xFFFAFAFA)          // Soft gray
-val ProdySurfaceLight = Color(0xFFFFFFFF)             // Clean white
-val ProdySurfaceVariantLight = Color(0xFFF5F5F5)      // Slightly darker gray
-val ProdySurfaceContainerLight = Color(0xFFEEEEEE)    // Container
+val ProdyBackgroundLight = Color(0xFFFAFAF5)          // Warm off-white (green tint)
+val ProdySurfaceLight = Color(0xFFFFFEFA)             // Warm white
+val ProdySurfaceVariantLight = Color(0xFFF3F3EE)      // Warm light gray
+val ProdySurfaceContainerLight = Color(0xFFEBEBE6)     // Warm container gray
 
-val ProdyTextPrimaryLight = Color(0xFF1A1A1A)         // Near black
-val ProdyTextSecondaryLight = Color(0xFF6C757D)       // Medium gray
-val ProdyTextTertiaryLight = Color(0xFFA0A8AD)        // Light gray
-val ProdyTextOnPrimaryLight = Color(0xFFFFFFFF)       // White on green
-val ProdyTextOnAccentLight = Color(0xFFFFFFFF)        // White on accent
+val ProdyTextPrimaryLight = Color(0xFF1C1C18)         // Warm near-black (olive undertone)
+val ProdyTextSecondaryLight = Color(0xFF6B7368)         // Warm medium gray (green-gray)
+val ProdyTextTertiaryLight = Color(0xFF9EA39A)         // Warm light gray
+val ProdyTextOnPrimaryLight = Color(0xFFFFFFFF)        // White on green
+val ProdyTextOnAccentLight = Color(0xFFFFFFFF)         // White on accent
 
-val ProdyOutlineLight = Color(0xFFE0E0E0)
-val ProdyDividerLight = Color(0xFFEEEEEE)
+val ProdyOutlineLight = Color(0xFFDDDDE0)              // Warm outline
+val ProdyDividerLight = Color(0xFFEBEBE6)              // Warm divider
 
 // =============================================================================
-// DARK THEME COLORS
+// DARK THEME COLORS — Warm-tinted darks
+// No cold blue-blacks — warm darks that feel like a dimly lit room
 // =============================================================================
 
-val ProdyBackgroundDark = Color(0xFF121212)           // Standard Dark Background
-val ProdySurfaceDark = Color(0xFF1E1E1E)              // Surface
-val ProdySurfaceVariantDark = Color(0xFF2C2C2C)       // Surface Variant
-val ProdySurfaceContainerDark = Color(0xFF333333)     // Container
+val ProdyBackgroundDark = Color(0xFF141210)             // Warm deep dark
+val ProdySurfaceDark = Color(0xFF201E1C)               // Warm dark surface
+val ProdySurfaceVariantDark = Color(0xFF2E2C2A)        // Warm dark variant
+val ProdySurfaceContainerDark = Color(0xFF353330)      // Warm container dark
 
-val ProdyTextPrimaryDark = Color(0xFFFFFFFF)
-val ProdyTextSecondaryDark = Color(0xFFB0B0B0)
-val ProdyTextTertiaryDark = Color(0xFF808080)
+val ProdyTextPrimaryDark = Color(0xFFF5F3EF)            // Warm white
+val ProdyTextSecondaryDark = Color(0xFFB3B0AC)           // Warm medium gray
+val ProdyTextTertiaryDark = Color(0xFF838078)           // Warm dark gray
 val ProdyTextOnPrimaryDark = Color(0xFFFFFFFF)
 
-val ProdyOutlineDark = Color(0xFF424242)
-val ProdyDividerDark = Color(0xFF303030)
+val ProdyOutlineDark = Color(0xFF444240)                // Warm outline dark
+val ProdyDividerDark = Color(0xFF32302E)                // Warm divider dark
 
 // =============================================================================
-// SEMANTIC COLORS
+// SEMANTIC COLORS — Warm-tinted for cohesion with brand
 // =============================================================================
 
-val ProdyError = Color(0xFFD32F2F)                    // Subtle red
-val ProdySuccess = Color(0xFF388E3C)                  // Muted green
-val ProdyWarning = Color(0xFFFFA000)                  // Warm amber
-val ProdyInfo = Color(0xFF1976D2)                     // Info Blue
+val ProdyError = Color(0xFFD32F2F)                    // Clear red (unchanged — needs clarity)
+val ProdySuccess = Color(0xFF2E8B3E)                  // Richer forest green (slightly warmer)
+val ProdyWarning = Color(0xFFFFA000)                  // Warm amber (unchanged)
+val ProdyInfo = Color(0xFF1565C0)                     // Deeper blue (more serious, less cold)
 
 val ProdyOnError = Color(0xFFFFFFFF)
 val ProdyOnSuccess = Color(0xFFFFFFFF)
 val ProdyOnWarning = Color(0xFF000000)
 val ProdyOnInfo = Color(0xFFFFFFFF)
 
-// Containers (Light)
-val ProdyErrorContainer = Color(0xFFFFEBEE)
-val ProdySuccessContainer = Color(0xFFE8F5E9)
-val ProdyWarningContainer = Color(0xFFFFF8E1)
-val ProdyInfoContainer = Color(0xFFE3F2FD)
+// Containers (Light) — warm-tinted
+val ProdyErrorContainer = Color(0xFFFDECEA)              // Warm red tint
+val ProdySuccessContainer = Color(0xFFE8F5E9)            // Green tint (unchanged)
+val ProdyWarningContainer = Color(0xFFFFF8E1)            // Amber tint
+val ProdyInfoContainer = Color(0xFFE3F2FD)               // Blue tint
 
-// Containers (Dark)
+// Containers (Dark) — warm-tinted darks
 val ProdyErrorContainerDark = Color(0xFF4A2525)
 val ProdySuccessContainerDark = Color(0xFF1B3320)
 val ProdyWarningContainerDark = Color(0xFF3E2723)
-val ProdyInfoContainerDark = Color(0xFF0D47A1)
+val ProdyInfoContainerDark = Color(0xFF0D3B6E)
 
 // =============================================================================
 // LEGACY / COMPATIBILITY COLORS (Mapped to New System)
@@ -127,17 +133,17 @@ val MoodEnergetic = Color(0xFFFFB74D)
 val MoodInspired = Color(0xFF7986CB)
 val MoodNostalgic = Color(0xFFA1887F)
 
-// Haven — Warm Reddish-Cream Palette
-val HavenBackgroundLight = Color(0xFFFFF8F5)          // Warm cream
-val HavenBubbleLight = Color(0xFFF5DDD0)              // Soft blush/rose
-val HavenUserBubbleLight = Color(0xFFFFF0EB)           // Lighter cream user
-val HavenTextLight = Color(0xFF2D2424)                 // Warm dark text
-val HavenBackgroundDark = Color(0xFF1A1214)            // Deep warm dark
-val HavenBubbleDark = Color(0xFF3D2A2A)                // Dark rose bubble
-val HavenUserBubbleDark = Color(0xFF2A1E1E)            // Dark user bubble
-val HavenTextDark = Color(0xFFF0EAE2)                  // Warm light text
-val HavenAccentRose = Color(0xFFD4736B)                // Muted dusty rose
-val HavenAccentGold = Color(0xFFD4A574)                // Warm caramel gold
+// Haven — Warm Reddish-Cream Palette (slightly warmer for coziness)
+val HavenBackgroundLight = Color(0xFFFFF8F4)              // Warmer cream
+val HavenBubbleLight = Color(0xFFF5DDD0)                 // Soft blush/rose
+val HavenUserBubbleLight = Color(0xFFFFF0EB)              // Lighter cream user
+val HavenTextLight = Color(0xFF2D2424)                   // Warm dark text
+val HavenBackgroundDark = Color(0xFF1A1214)              // Deep warm dark
+val HavenBubbleDark = Color(0xFF3D2A2A)                   // Dark rose bubble
+val HavenUserBubbleDark = Color(0xFF2A1E1E)               // Dark user bubble
+val HavenTextDark = Color(0xFFF0EAE2)                    // Warm light text
+val HavenAccentRose = Color(0xFFD4736B)                   // Muted dusty rose
+val HavenAccentGold = Color(0xFFD4A574)                   // Warm caramel gold
 
 // Scrim
 val Scrim = Color(0x52000000)

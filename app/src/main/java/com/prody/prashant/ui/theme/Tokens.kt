@@ -360,21 +360,21 @@ object ProdyTokens {
      * Migrated from ProdyDesignTokens.SemanticColors.
      */
     object SemanticColors {
-        val success = Color(0xFF4CAF50)
+        val success = Color(0xFF2E8B3E)
         val successLight = Color(0xFF81C784)
-        val successDark = Color(0xFF388E3C)
+        val successDark = Color(0xFF1B5E20)
 
         val warning = Color(0xFFFFA000)
         val warningLight = Color(0xFFFFCA28)
         val warningDark = Color(0xFFFF8F00)
 
-        val error = Color(0xFFE53935)
+        val error = Color(0xFFD32F2F)
         val errorLight = Color(0xFFEF5350)
-        val errorDark = Color(0xFFC62828)
+        val errorDark = Color(0xFFB71C1C)
 
-        val info = Color(0xFF2196F3)
+        val info = Color(0xFF1565C0)
         val infoLight = Color(0xFF64B5F6)
-        val infoDark = Color(0xFF1976D2)
+        val infoDark = Color(0xFF0D47A1)
 
         val streakPrimary = Color(0xFFFF6B6B)
         val streakSecondary = Color(0xFFFFAB76)
