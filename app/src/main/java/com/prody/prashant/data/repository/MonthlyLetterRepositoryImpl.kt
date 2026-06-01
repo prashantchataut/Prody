@@ -28,7 +28,7 @@ class MonthlyLetterRepositoryImpl @Inject constructor(
 
     override fun getAllLetters(userId: String): Flow<List<MonthlyLetter>> {
         return monthlyLetterDao.getAllLetters(userId).map { entities ->
-            entities.map { MonthlyLetter.fromEntity(it) }
+            entities.map { MonthlyLetterMapper.fromEntity(it) }
         }
     }
 
@@ -36,7 +36,7 @@ class MonthlyLetterRepositoryImpl @Inject constructor(
         return try {
             val entity = monthlyLetterDao.getLetterById(letterId)
             if (entity != null) {
-                Result.Success(MonthlyLetter.fromEntity(entity))
+                Result.Success(MonthlyLetterMapper.fromEntity(entity))
             } else {
                 Result.error(NoSuchElementException("Letter not found"), "Letter not found", ErrorType.NOT_FOUND)
             }
@@ -83,7 +83,7 @@ class MonthlyLetterRepositoryImpl @Inject constructor(
 
     override fun getUnreadLetters(userId: String): Flow<List<MonthlyLetter>> {
         return monthlyLetterDao.getUnreadLetters(userId).map { entities ->
-            entities.map { MonthlyLetter.fromEntity(it) }
+            entities.map { MonthlyLetterMapper.fromEntity(it) }
         }
     }
 
@@ -93,19 +93,19 @@ class MonthlyLetterRepositoryImpl @Inject constructor(
 
     override fun getFavoriteLetters(userId: String): Flow<List<MonthlyLetter>> {
         return monthlyLetterDao.getFavoriteLetters(userId).map { entities ->
-            entities.map { MonthlyLetter.fromEntity(it) }
+            entities.map { MonthlyLetterMapper.fromEntity(it) }
         }
     }
 
     override fun getRecentLetters(userId: String, limit: Int): Flow<List<MonthlyLetter>> {
         return monthlyLetterDao.getRecentLetters(userId, limit).map { entities ->
-            entities.map { MonthlyLetter.fromEntity(it) }
+            entities.map { MonthlyLetterMapper.fromEntity(it) }
         }
     }
 
     override fun getLettersForYear(userId: String, year: Int): Flow<List<MonthlyLetter>> {
         return monthlyLetterDao.getLettersForYear(userId, year).map { entities ->
-            entities.map { MonthlyLetter.fromEntity(it) }
+            entities.map { MonthlyLetterMapper.fromEntity(it) }
         }
     }
 
@@ -113,7 +113,7 @@ class MonthlyLetterRepositoryImpl @Inject constructor(
 
     override suspend fun saveLetter(letter: MonthlyLetter): Result<Long> {
         return try {
-            val id = monthlyLetterDao.insertLetter(letter.toEntity())
+            val id = monthlyLetterDao.insertLetter(MonthlyLetterMapper.toEntity(letter))
             Result.Success(id)
         } catch (e: Exception) {
             Result.error(e, "Failed to save letter: ${e.message}", ErrorType.DATABASE)
@@ -154,7 +154,7 @@ class MonthlyLetterRepositoryImpl @Inject constructor(
             // Check if letter already exists
             val existing = monthlyLetterDao.getLetterForMonth(userId, monthYear.monthValue, monthYear.year)
             if (existing != null) {
-                return Result.Success(MonthlyLetter.fromEntity(existing))
+                return Result.Success(MonthlyLetterMapper.fromEntity(existing))
             }
 
             // Check if there's enough data
@@ -170,7 +170,7 @@ class MonthlyLetterRepositoryImpl @Inject constructor(
             val letter = letterGenerator.generateLetter(userId, monthYear)
 
             // Save it
-            val id = monthlyLetterDao.insertLetter(letter.toEntity())
+            val id = monthlyLetterDao.insertLetter(MonthlyLetterMapper.toEntity(letter))
 
             // Return the saved letter with ID
             Result.Success(letter.copy(id = id))
@@ -186,7 +186,7 @@ class MonthlyLetterRepositoryImpl @Inject constructor(
             // Check if already exists
             val existing = monthlyLetterDao.getLetterForMonth(userId, previousMonth.monthValue, previousMonth.year)
             if (existing != null) {
-                return Result.Success(MonthlyLetter.fromEntity(existing))
+                return Result.Success(MonthlyLetterMapper.fromEntity(existing))
             }
 
             // Check if there's enough data
@@ -196,7 +196,7 @@ class MonthlyLetterRepositoryImpl @Inject constructor(
 
             // Generate and save
             val letter = letterGenerator.generateLetter(userId, previousMonth)
-            val id = monthlyLetterDao.insertLetter(letter.toEntity())
+            val id = monthlyLetterDao.insertLetter(MonthlyLetterMapper.toEntity(letter))
 
             Result.Success(letter.copy(id = id))
         } catch (e: Exception) {
