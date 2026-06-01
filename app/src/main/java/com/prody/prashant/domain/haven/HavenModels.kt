@@ -1,10 +1,5 @@
 package com.prody.prashant.domain.haven
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.Chat
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
-import androidx.compose.ui.graphics.vector.ImageVector
 import java.util.UUID
 
 /**
@@ -51,21 +46,6 @@ enum class SessionType(
         "You're not alone. Let's get you help",
         0xFFE24A8D
     );
-
-    /**
-     * Get the Material Icon for this session type.
-     * Use this instead of the old emoji icon property.
-     */
-    val icon: ImageVector
-        get() = when (this) {
-            CHECK_IN -> Icons.Outlined.WavingHand
-            ANXIETY -> Icons.Outlined.Waves
-            STRESS -> Icons.Outlined.Terrain
-            SADNESS -> Icons.Outlined.Favorite
-            ANGER -> Icons.Outlined.LocalFireDepartment
-            GENERAL -> Icons.AutoMirrored.Outlined.Chat
-            CRISIS_SUPPORT -> Icons.Outlined.Handshake
-        }
 
     companion object {
         fun fromString(value: String): SessionType {
@@ -204,23 +184,6 @@ enum class ExerciseType(
         600, // 10 minutes
         "Cultivate compassion for yourself and others"
     );
-
-    /**
-     * Get the Material Icon for this exercise type.
-     * Use this instead of the old emoji icon property.
-     */
-    val icon: ImageVector
-        get() = when (this) {
-            BOX_BREATHING -> Icons.Outlined.Square
-            FOUR_SEVEN_EIGHT_BREATHING -> Icons.Outlined.Air
-            GROUNDING_54321 -> Icons.Outlined.Public
-            BODY_SCAN -> Icons.Outlined.SelfImprovement
-            THOUGHT_RECORD -> Icons.Outlined.EditNote
-            EMOTION_WHEEL -> Icons.Outlined.EmojiEmotions
-            GRATITUDE_MOMENT -> Icons.Outlined.VolunteerActivism
-            PROGRESSIVE_RELAXATION -> Icons.Outlined.FitnessCenter
-            LOVING_KINDNESS -> Icons.Outlined.Favorite
-        }
 
     companion object {
         fun fromString(value: String): ExerciseType? {

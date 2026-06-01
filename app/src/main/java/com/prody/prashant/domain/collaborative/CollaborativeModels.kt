@@ -1,7 +1,6 @@
 package com.prody.prashant.domain.collaborative
 
-import androidx.compose.ui.graphics.Color
-import com.prody.prashant.data.local.entity.*
+import com.prody.prashant.data.local.entity.CollaborativeMessageEntity
 import org.json.JSONArray
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -129,9 +128,9 @@ enum class CardTheme(
     LAVENDER("lavender", "Lavender Dreams", "🦋", 0xFFE1BEE7, 0xFF9C27B0, 0xFFE1BEE7, 0xFF4A148C, 0xFF4A148C),
     MINT("mint", "Mint Fresh", "🍃", 0xFFB2DFDB, 0xFF009688, 0xFFB2DFDB, 0xFF004D40, 0xFF004D40);
 
-    fun getPrimaryColor(): Color = Color(primaryColor)
-    fun getSecondaryColor(): Color = Color(secondaryColor)
-    fun getTextColor(): Color = Color(textColor)
+    fun getPrimaryColorArgb(): Long = primaryColor
+    fun getSecondaryColorArgb(): Long = secondaryColor
+    fun getTextColorArgb(): Long = textColor
 
     companion object {
         fun fromString(value: String?): CardTheme {
@@ -204,7 +203,7 @@ data class CollaborativeMessage(
             voiceRecordingUri = attachments.voiceRecordingUri,
             voiceRecordingDuration = attachments.voiceRecordingDuration,
             cardTheme = cardDesign.theme.name.lowercase(),
-            cardBackgroundColor = cardDesign.customBackgroundColor?.toString(),
+            cardBackgroundColor = cardDesign.customBackgroundColorArgb?.toString(),
             status = status.name.lowercase(),
             deliveryMethod = recipient.method.name.lowercase(),
             retryCount = retryCount
@@ -238,7 +237,7 @@ data class CollaborativeMessage(
                 occasion = Occasion.fromString(entity.occasion),
                 cardDesign = CardDesign(
                     theme = CardTheme.fromString(entity.cardTheme),
-                    customBackgroundColor = entity.cardBackgroundColor?.let { Color(it.toLong()) }
+                    customBackgroundColorArgb = entity.cardBackgroundColor?.toLongOrNull()
                 ),
                 attachments = MessageAttachments(
                     photoUris = photoUris,
@@ -285,18 +284,18 @@ data class MessageRecipient(
  */
 data class CardDesign(
     val theme: CardTheme,
-    val customBackgroundColor: Color? = null
+    val customBackgroundColorArgb: Long? = null
 ) {
-    fun getBackgroundColor(): Color {
-        return customBackgroundColor ?: theme.getPrimaryColor()
+    fun getBackgroundColorArgb(): Long {
+        return customBackgroundColorArgb ?: theme.getPrimaryColorArgb()
     }
 
-    fun getAccentColor(): Color {
-        return theme.getSecondaryColor()
+    fun getAccentColorArgb(): Long {
+        return theme.getSecondaryColorArgb()
     }
 
-    fun getTextColor(): Color {
-        return theme.getTextColor()
+    fun getTextColorArgb(): Long {
+        return theme.getTextColorArgb()
     }
 }
 
