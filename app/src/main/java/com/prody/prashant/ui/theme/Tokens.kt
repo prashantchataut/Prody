@@ -1,5 +1,6 @@
 package com.prody.prashant.ui.theme
 
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -348,5 +349,39 @@ object ProdyTokens {
         const val modal = 1000f
         const val toast = 1100f
         const val tooltip = 1200f
+    }
+
+    // =========================================================================
+    // SEMANTIC COLORS
+    // =========================================================================
+
+    /**
+     * Semantic colors for consistent meaning across the app.
+     * Migrated from ProdyDesignTokens.SemanticColors.
+     */
+    object SemanticColors {
+        val success = Color(0xFF4CAF50)
+        val successLight = Color(0xFF81C784)
+        val successDark = Color(0xFF388E3C)
+
+        val warning = Color(0xFFFFA000)
+        val warningLight = Color(0xFFFFCA28)
+        val warningDark = Color(0xFFFF8F00)
+
+        val error = Color(0xFFE53935)
+        val errorLight = Color(0xFFEF5350)
+        val errorDark = Color(0xFFC62828)
+
+        val info = Color(0xFF2196F3)
+        val infoLight = Color(0xFF64B5F6)
+        val infoDark = Color(0xFF1976D2)
+
+        val streakPrimary = Color(0xFFFF6B6B)
+        val streakSecondary = Color(0xFFFFAB76)
+        val streakTertiary = Color(0xFFFFC371)
+
+        val goldPrimary = Color(0xFFD4AF37)
+        val goldSecondary = Color(0xFFF4D03F)
+        val goldLight = Color(0xFFFFE5B4)
     }
 }

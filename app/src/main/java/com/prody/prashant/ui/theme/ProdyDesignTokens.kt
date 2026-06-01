@@ -30,6 +30,13 @@ import com.prody.prashant.domain.identity.ProdyBanners
  * )
  * ```
  */
+/**
+ * @Deprecated Use ProdyTokens for all design tokens.
+ * ProdyDesignTokens is superseded by the ProdyTokens design token system.
+ * For AchievementColors, BannerColors, SemanticColors, Card, Profile, BottomNav,
+ * use ProdyTokens.Achievement, ProdyTokens.Streak, ProdyTokens.Notification etc.
+ */
+@Deprecated("Use ProdyTokens for all design tokens instead")
 object ProdyDesignTokens {
 
     // ===== ELEVATION =====

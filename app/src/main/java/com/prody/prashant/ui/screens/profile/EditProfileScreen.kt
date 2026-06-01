@@ -61,7 +61,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.R
 import com.prody.prashant.ui.components.ProdyIconButton
 import com.prody.prashant.ui.theme.*
-import com.prody.prashant.ui.theme.ProdyDesignTokens
+
 import kotlinx.coroutines.delay
 
 /**
@@ -574,7 +574,7 @@ private fun DisplayNameSection(
             fontSize = 12.sp,
             color = when {
                 displayName.length >= 30 -> MaterialTheme.colorScheme.error
-                displayName.length >= 24 -> ProdyDesignTokens.SemanticColors.warning
+                displayName.length >= 24 -> ProdyTokens.SemanticColors.warning
                 else -> if (isDarkMode) EditProfileColors.TextTertiaryDark
                         else EditProfileColors.TextTertiaryLight
             },
@@ -666,7 +666,7 @@ private fun BioSection(
             fontSize = 12.sp,
             color = when {
                 bio.length >= 150 -> MaterialTheme.colorScheme.error
-                bio.length >= 120 -> ProdyDesignTokens.SemanticColors.warning
+                bio.length >= 120 -> ProdyTokens.SemanticColors.warning
                 else -> if (isDarkMode) EditProfileColors.TextTertiaryDark
                         else EditProfileColors.TextTertiaryLight
             },

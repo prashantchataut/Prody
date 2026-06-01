@@ -15,6 +15,11 @@ import androidx.compose.ui.unit.dp
  * - Component sizes are proportional and scalable
  * - All dimensions are multiples of 4dp for pixel-perfect alignment
  */
+/**
+ * @Deprecated Use ProdyTokens.Spacing and ProdyTokens directly.
+ * ProddyDimens is superseded by the ProdyTokens design token system.
+ */
+@Deprecated("Use ProdyTokens.Spacing and ProdyTokens dimension properties instead")
 object ProddyDimens {
 
     // =============================================================================
@@ -398,6 +403,10 @@ object ProddyDimens {
 /**
  * Extension object for common spacing combinations
  */
+/**
+ * @Deprecated Use ProdyTokens.Spacing semantic properties instead.
+ */
+@Deprecated("Use ProdyTokens.Spacing semantic properties instead")
 object ProdySpacingCombinations {
 
     /** Card internal spacing */
