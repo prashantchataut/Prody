@@ -131,6 +131,10 @@ import net.sqlcipher.database.SupportFactory
  * - Version 20: Mirror Evolution - Sealed Pods (Future Message Prophecy)
  *              Added prediction, predictionVerified, predictionVerifiedAt to FutureMessageEntity
  *              Enables "Prophecy" evidence drops when predictions are verified
+ * - Version 23: FTS4 Full-Text Search for Journal Entries
+ *              Added journal_entries_fts FTS4 virtual table
+ *              Enables fast, tokenized search with MATCH operator
+ *              Replaces slow LIKE queries with stemming, prefix matching, and phrase queries
  */
 @Database(
     entities = [
@@ -220,9 +224,11 @@ import net.sqlcipher.database.SupportFactory
         // Mirror Evolution: Haven Memory (THE VAULT) for Witness Mode
         HavenMemoryEntity::class,
         // Mirror Evolution: Evidence Locker
-        EvidenceEntity::class
+        EvidenceEntity::class,
+        // FTS4 full-text search for journal entries
+        JournalEntryFtsEntity::class
     ],
-    version = 22,
+    version = 23,
     exportSchema = true // Enable for migration verification
 )
 abstract class ProdyDatabase : RoomDatabase() {
@@ -1753,6 +1759,31 @@ abstract class ProdyDatabase : RoomDatabase() {
                 db.execSQL("CREATE INDEX IF NOT EXISTS idx_haven_exercises_user_completed ON haven_exercises(userId, completedAt)")
                 db.execSQL("CREATE INDEX IF NOT EXISTS idx_haven_exercises_completed_status ON haven_exercises(wasCompleted)")
                 db.execSQL("CREATE INDEX IF NOT EXISTS idx_haven_exercises_deleted ON haven_exercises(isDeleted)")
+            }
+        }
+
+        /**
+         * Migration 22 -> 23: FTS4 Full-Text Search for Journal Entries
+         *
+         * Changes:
+         * - Create journal_entries_fts FTS4 virtual table for fast text search
+         * - Populates the FTS table from existing journal entries data
+         * - Enables MATCH-based search with stemming, prefix matching, and phrase queries
+         */
+        val MIGRATION_22_23: Migration = object : Migration(22, 23) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("""
+                    CREATE VIRTUAL TABLE IF NOT EXISTS journal_entries_fts USING fts4(
+                        title, content, tags, aiThemes,
+                        content=journal_entries
+                    )
+                """.trimIndent())
+
+                db.execSQL("""
+                    INSERT INTO journal_entries_fts (docid, title, content, tags, aiThemes)
+                    SELECT id, COALESCE(title, ''), content, COALESCE(tags, ''), COALESCE(aiThemes, '')
+                    FROM journal_entries WHERE isDeleted = 0
+                """.trimIndent())
             }
         }
 

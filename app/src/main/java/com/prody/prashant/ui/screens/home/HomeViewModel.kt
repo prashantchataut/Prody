@@ -2,6 +2,7 @@ package com.prody.prashant.ui.screens.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.prody.prashant.data.auth.AuthRepository
 import com.prody.prashant.data.ai.BuddhaAiRepository
 import com.prody.prashant.data.ai.BuddhaAiResult
 import com.prody.prashant.data.local.dao.*
@@ -147,6 +148,26 @@ private data class DailyContent(
     val idiom: IdiomEntity?
 )
 
+private data class HomeDataArgs(
+    val profile: UserProfileEntity?,
+    val weeklyJournalEntries: List<JournalEntryEntity>,
+    val weeklyLearnedWords: Int,
+    val streakHistory: List<StreakHistoryEntity>,
+    val todayJournalEntries: List<JournalEntryEntity>,
+    val dualStreak: DualStreakStatus,
+    val aiProofMode: Boolean
+)
+
+private fun toHomeDataArgs(args: Array<Any?>): HomeDataArgs = HomeDataArgs(
+    profile = args.getOrNull(0) as? UserProfileEntity,
+    weeklyJournalEntries = (args.getOrNull(1) as? List<*>)?.filterIsInstance<JournalEntryEntity>() ?: emptyList(),
+    weeklyLearnedWords = args.getOrNull(2) as? Int ?: 0,
+    streakHistory = (args.getOrNull(3) as? List<*>)?.filterIsInstance<StreakHistoryEntity>() ?: emptyList(),
+    todayJournalEntries = (args.getOrNull(4) as? List<*>)?.filterIsInstance<JournalEntryEntity>() ?: emptyList(),
+    dualStreak = args.getOrNull(5) as? DualStreakStatus ?: DualStreakStatus.empty(),
+    aiProofMode = args.getOrNull(6) as? Boolean ?: false
+)
+
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val userDao: UserDao,
@@ -162,7 +183,8 @@ class HomeViewModel @Inject constructor(
     private val seedBloomService: SeedBloomService,
     private val dualStreakManager: DualStreakManager,
     private val soulLayerRepository: SoulLayerRepository,
-    private val patternAnalysisEngine: PatternAnalysisEngine
+    private val patternAnalysisEngine: PatternAnalysisEngine,
+    private val authRepository: AuthRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -229,20 +251,13 @@ class HomeViewModel @Inject constructor(
                 dualStreakManager.getDualStreakStatusFlow().distinctUntilChanged(),
                 preferencesManager.debugAiProofMode.distinctUntilChanged()
             ) { args ->
-                val profile = args.getOrNull(0) as? UserProfileEntity
-                val weeklyJournalEntries = (args.getOrNull(1) as? List<*>)?.filterIsInstance<JournalEntryEntity>() ?: emptyList()
-                val weeklyLearnedWords = args.getOrNull(2) as? Int ?: 0
-                val streakHistory = (args.getOrNull(3) as? List<*>)?.filterIsInstance<StreakHistoryEntity>() ?: emptyList()
-                val todayJournalEntries = (args.getOrNull(4) as? List<*>)?.filterIsInstance<JournalEntryEntity>() ?: emptyList()
-                val dualStreak = args.getOrNull(5) as? DualStreakStatus ?: DualStreakStatus.empty()
-                val aiProofMode = args.getOrNull(6) as? Boolean ?: false
+                val data = toHomeDataArgs(args)
 
-                // Calculate weekly active days.
-                val daysActiveThisWeek = streakHistory.count { it.date >= weekStart }
+                val daysActiveThisWeek = data.streakHistory.count { it.date >= weekStart }
 
                 // Determine today's journaling status.
-                val (journaledToday, todayMood, todayPreview) = if (todayJournalEntries.isNotEmpty()) {
-                    val latestEntry = todayJournalEntries.maxByOrNull { it.createdAt }
+                val (journaledToday, todayMood, todayPreview) = if (data.todayJournalEntries.isNotEmpty()) {
+                    val latestEntry = data.todayJournalEntries.maxByOrNull { it.createdAt }
                     Triple(true, latestEntry?.mood ?: "", latestEntry?.content?.take(100) ?: "")
                 } else {
                     Triple(false, "", "")
@@ -250,9 +265,11 @@ class HomeViewModel @Inject constructor(
 
                 // 3. Atomically update the UI state with all the loaded data.
                 _uiState.value.copy(
-                    userName = profile?.displayName ?: "Growth Seeker",
-                    currentStreak = profile?.currentStreak ?: 0,
-                    totalPoints = profile?.totalPoints ?: 0,
+                    userName = data.profile?.displayName?.takeIf {
+                        it != "Growth Seeker" && it.isNotBlank()
+                    } ?: authRepository.currentUser?.displayName ?: "Growth Seeker",
+                    currentStreak = data.profile?.currentStreak ?: 0,
+                    totalPoints = data.profile?.totalPoints ?: 0,
                     dailyQuote = dailyContent.quote?.content ?: _uiState.value.dailyQuote,
                     dailyQuoteAuthor = dailyContent.quote?.author ?: _uiState.value.dailyQuoteAuthor,
                     wordOfTheDay = dailyContent.word?.word ?: _uiState.value.wordOfTheDay,
@@ -266,14 +283,14 @@ class HomeViewModel @Inject constructor(
                     idiomMeaning = dailyContent.idiom?.meaning ?: _uiState.value.idiomMeaning,
                     idiomExample = dailyContent.idiom?.exampleSentence ?: _uiState.value.idiomExample,
                     idiomId = dailyContent.idiom?.id ?: _uiState.value.idiomId,
-                    journalEntriesThisWeek = weeklyJournalEntries.size,
-                    wordsLearnedThisWeek = weeklyLearnedWords,
+                    journalEntriesThisWeek = data.weeklyJournalEntries.size,
+                    wordsLearnedThisWeek = data.weeklyLearnedWords,
                     daysActiveThisWeek = daysActiveThisWeek,
                     journaledToday = journaledToday,
                     todayEntryMood = todayMood,
                     todayEntryPreview = todayPreview,
-                    dualStreakStatus = dualStreak,
-                    buddhaWisdomProofInfo = _uiState.value.buddhaWisdomProofInfo.copy(isEnabled = aiProofMode),
+                    dualStreakStatus = data.dualStreak,
+                    buddhaWisdomProofInfo = _uiState.value.buddhaWisdomProofInfo.copy(isEnabled = data.aiProofMode),
                     isLoading = false // <-- Critical: Signal that loading is complete.
                 )
             }.catch { e ->

@@ -58,12 +58,15 @@ import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.prody.prashant.data.auth.AuthRepository
+import com.prody.prashant.data.auth.AuthState
 import com.prody.prashant.notification.NotificationScheduler
 import com.prody.prashant.ui.components.NavigationBreathingGlow
 import com.prody.prashant.ui.main.MainViewModel
 import com.prody.prashant.ui.navigation.BottomNavItem
 import com.prody.prashant.ui.navigation.ProdyNavHost
 import com.prody.prashant.ui.navigation.Screen
+import com.prody.prashant.ui.screens.auth.AuthScreen
 import com.prody.prashant.ui.theme.ProdyPrimary
 import com.prody.prashant.ui.theme.ProdyTheme
 import com.prody.prashant.util.LocalHapticEnabled
@@ -78,6 +81,9 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var notificationScheduler: NotificationScheduler
+
+    @Inject
+    lateinit var authRepository: AuthRepository
 
     private val viewModel: MainViewModel by viewModels()
 
@@ -117,6 +123,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+            val authState by authRepository.authState.collectAsStateWithLifecycle()
 
             if (!uiState.isLoading) {
                 ProdyTheme(
@@ -125,15 +132,34 @@ class MainActivity : ComponentActivity() {
                     CompositionLocalProvider(
                         LocalHapticEnabled provides uiState.hapticFeedbackEnabled
                     ) {
-                        uiState.startDestination?.let { startDestination ->
-                            ProdyApp(
-                                startDestination = startDestination
-                            )
+                        when (authState) {
+                            is AuthState.Authenticated -> {
+                                uiState.startDestination?.let { startDestination ->
+                                    ProdyApp(
+                                        startDestination = startDestination
+                                    )
+                                }
+                            }
+                            is AuthState.Unauthenticated, is AuthState.Error -> {
+                                AuthScreen(
+                                    onAuthSuccess = {
+                                        // Auth state change will trigger recomposition
+                                    }
+                                )
+                            }
+                            AuthState.Idle, AuthState.Loading -> {
+                                // Show nothing or a loading indicator while determining auth state
+                            }
                         }
                     }
                 }
             }
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        authRepository.removeListener()
     }
 
     private fun requestNotificationPermission() {

@@ -47,6 +47,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -67,6 +68,8 @@ import com.prody.prashant.ui.components.MoodBreathingHalo
 import com.prody.prashant.ui.components.PlayerSkillsCard
 import com.prody.prashant.ui.components.getCurrentTimeOfDay
 import com.prody.prashant.ui.theme.*
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import kotlinx.coroutines.delay
 
 /**
@@ -199,7 +202,10 @@ fun ProfileScreen(
                     context = context,
                     level = uiState.level,
                     isDarkMode = isDarkMode,
-                    onEditClick = onNavigateToEditProfile
+                    onEditClick = onNavigateToEditProfile,
+                    authDisplayName = uiState.authDisplayName,
+                    authEmail = uiState.authEmail,
+                    authPhotoUrl = uiState.authPhotoUrl
                 )
             }
 
@@ -298,6 +304,20 @@ fun ProfileScreen(
                         textPrimary = textPrimary,
                         textSecondary = textSecondary,
                         textTertiary = textTertiary
+                    )
+                }
+            }
+
+            // Sign Out
+            item {
+                AnimatedVisibility(
+                    visible = isVisible,
+                    enter = fadeIn(tween(400, delayMillis = 450))
+                ) {
+                    SignOutSection(
+                        onSignOut = { viewModel.signOut() },
+                        accentColor = accentColor,
+                        textSecondary = textSecondary
                     )
                 }
             }
@@ -1548,6 +1568,100 @@ private fun PremiumGrowthQuoteCard(
 }
 
 // ============================================================================
+// SIGN OUT SECTION
+// ============================================================================
+
+@Composable
+private fun SignOutSection(
+    onSignOut: () -> Unit,
+    accentColor: Color,
+    textSecondary: Color
+) {
+    var showConfirmDialog by remember { mutableStateOf(false) }
+
+    if (showConfirmDialog) {
+        AlertDialog(
+            onDismissRequest = { showConfirmDialog = false },
+            title = {
+                Text(
+                    text = "Sign Out",
+                    fontFamily = PoppinsFamily,
+                    fontWeight = FontWeight.SemiBold
+                )
+            },
+            text = {
+                Text(
+                    text = "Are you sure you want to sign out of your account?",
+                    fontFamily = PoppinsFamily
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showConfirmDialog = false
+                        onSignOut()
+                    }
+                ) {
+                    Text(
+                        text = "Sign Out",
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color(0xFFE53935)
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showConfirmDialog = false }) {
+                    Text(
+                        text = "Cancel",
+                        fontFamily = PoppinsFamily
+                    )
+                }
+            }
+        )
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp, vertical = 16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        OutlinedButton(
+            onClick = { showConfirmDialog = true },
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp),
+            colors = ButtonDefaults.outlinedButtonColors(
+                contentColor = Color(0xFFE53935)
+            ),
+            border = BorderStroke(1.dp, Color(0xFFE53935).copy(alpha = 0.3f))
+        ) {
+            Icon(
+                imageVector = Icons.Default.Logout,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "Sign Out",
+                fontFamily = PoppinsFamily,
+                fontWeight = FontWeight.Medium,
+                fontSize = 14.sp
+            )
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = "You can always sign back in",
+            fontFamily = PoppinsFamily,
+            fontSize = 12.sp,
+            color = textSecondary.copy(alpha = 0.6f)
+        )
+    }
+}
+
+// ============================================================================
 // HELPER FUNCTIONS
 // ============================================================================
 
@@ -1716,12 +1830,17 @@ fun SoulIdentityCard(
     context: com.prody.prashant.domain.intelligence.UserContext,
     level: Int,
     isDarkMode: Boolean,
-    onEditClick: () -> Unit
+    onEditClick: () -> Unit,
+    authDisplayName: String? = null,
+    authEmail: String? = null,
+    authPhotoUrl: String? = null
 ) {
     val cardBg = if (isDarkMode) IdentityRoomColors.CardBackgroundDark else IdentityRoomColors.CardBackgroundLight
     val accent = IdentityRoomColors.AccentGreen
     val textPrimary = if (isDarkMode) IdentityRoomColors.TextPrimaryDark else IdentityRoomColors.TextPrimaryLight
     val textSecondary = if (isDarkMode) IdentityRoomColors.TextSecondaryDark else IdentityRoomColors.TextSecondaryLight
+
+    val displayName = authDisplayName ?: context.displayName
 
     Surface(
         modifier = Modifier
@@ -1760,12 +1879,26 @@ fun SoulIdentityCard(
                         .background(textPrimary.copy(alpha = 0.05f)),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = null,
-                        modifier = Modifier.size(48.dp),
-                        tint = textSecondary
-                    )
+                    if (authPhotoUrl != null) {
+                        AsyncImage(
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data(authPhotoUrl)
+                                .crossfade(true)
+                                .build(),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(100.dp)
+                                .clip(CircleShape),
+                            contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = null,
+                            modifier = Modifier.size(48.dp),
+                            tint = textSecondary
+                        )
+                    }
                 }
                 
                 // Level Badge (Floating Neon)
@@ -1803,7 +1936,7 @@ fun SoulIdentityCard(
             )
             
             Text(
-                text = context.displayName,
+                text = displayName,
                 style = TextStyle(
                     fontFamily = PoppinsFamily,
                     fontWeight = FontWeight.Bold,
@@ -1811,6 +1944,19 @@ fun SoulIdentityCard(
                     color = textPrimary
                 )
             )
+
+            if (!authEmail.isNullOrBlank()) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = authEmail,
+                    style = TextStyle(
+                        fontFamily = PoppinsFamily,
+                        fontWeight = FontWeight.Normal,
+                        fontSize = 14.sp,
+                        color = textSecondary
+                    )
+                )
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 

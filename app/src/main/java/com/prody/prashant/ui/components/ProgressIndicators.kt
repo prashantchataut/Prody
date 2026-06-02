@@ -174,17 +174,19 @@ fun ProdyProgressIndicator(
     dotHeight: Dp = 4.dp,
     spacing: Dp = 4.dp
 ) {
-    val animatedIndex by animateFloatAsState(
-        targetValue = currentPage.toFloat(),
-        animationSpec = spring(stiffness = Spring.StiffnessLow),
-        label = "progress_indicator_index"
-    )
+    val animatedIndex = remember(currentPage) {
+        Animatable(currentPage.toFloat())
+    }
+    LaunchedEffect(currentPage) {
+        animatedIndex.animateTo(
+            targetValue = currentPage.toFloat(),
+            animationSpec = spring(stiffness = Spring.StiffnessLow)
+        )
+    }
 
     val dotHeightPx = with(androidx.compose.ui.platform.LocalDensity.current) { dotHeight.toPx() }
     val spacingPx = with(androidx.compose.ui.platform.LocalDensity.current) { spacing.toPx() }
 
-    // Calculate total width based on dots (1 active dot is wider)
-    // Inactive dots: 8dp, Active dot: 24dp
     val inactiveDotWidth = 8.dp
     val activeDotWidth = 24.dp
 
@@ -197,15 +199,12 @@ fun ProdyProgressIndicator(
             .fillMaxWidth()
     ) {
         val yOffset = size.height / 2
-
-        // Total width calculation for centering if needed
-        // For now we follow the original Row behavior (left-aligned or parent controlled)
+        val currentIndex = animatedIndex.value
 
         var currentX = 0f
 
         for (i in 0 until totalPages) {
-            // Calculate distance from animated index to determine width and color
-            val distance = kotlin.math.abs(i - animatedIndex)
+            val distance = kotlin.math.abs(i - currentIndex)
             val selectionProgress = (1f - distance).coerceIn(0f, 1f)
 
             val dotWidth = inactiveDotWidthPx + (activeDotWidthPx - inactiveDotWidthPx) * selectionProgress

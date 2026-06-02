@@ -21,6 +21,7 @@ object DatabaseMigrations {
         ProdyDatabase.MIGRATION_18_19,
         ProdyDatabase.MIGRATION_19_20,
         ProdyDatabase.MIGRATION_20_21,
-        ProdyDatabase.MIGRATION_21_22
+        ProdyDatabase.MIGRATION_21_22,
+        ProdyDatabase.MIGRATION_22_23
     )
 }

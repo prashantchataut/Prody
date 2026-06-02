@@ -1,6 +1,9 @@
 package com.prody.prashant.domain.collaborative
 
 import com.prody.prashant.data.local.entity.CollaborativeMessageEntity
+import com.prody.prashant.data.local.entity.ReceivedCollaborativeMessageEntity
+import com.prody.prashant.data.local.entity.MessageContactEntity
+import com.prody.prashant.data.local.entity.MessageOccasionEntity
 import org.json.JSONArray
 import java.time.LocalDateTime
 import java.time.ZoneId

@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.prody.prashant.data.ai.BuddhaAiRepository
 import com.prody.prashant.data.ai.WeeklyPatternResult
+import com.prody.prashant.data.auth.AuthRepository
+import com.prody.prashant.data.auth.AuthState
 import com.prody.prashant.data.local.dao.JournalDao
 import com.prody.prashant.data.local.dao.UserDao
 import com.prody.prashant.data.local.entity.AchievementEntity
@@ -29,6 +31,9 @@ data class ProfileUiState(
     val journalEntries: Int = 0,
     val achievementsUnlocked: Int = 0,
     val daysOnPrody: Int = 0,
+    val authDisplayName: String? = null,
+    val authEmail: String? = null,
+    val authPhotoUrl: String? = null,
     val unlockedAchievements: List<AchievementEntity> = emptyList(),
     val lockedAchievements: List<AchievementEntity> = emptyList(),
     val isLoading: Boolean = true,
@@ -60,7 +65,8 @@ class ProfileViewModel @Inject constructor(
     private val journalDao: JournalDao,
     private val buddhaAiRepository: BuddhaAiRepository,
     private val preferencesManager: PreferencesManager,
-    private val soulLayerRepository: com.prody.prashant.domain.repository.SoulLayerRepository
+    private val soulLayerRepository: com.prody.prashant.domain.repository.SoulLayerRepository,
+    private val authRepository: AuthRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProfileUiState())
@@ -77,6 +83,21 @@ class ProfileViewModel @Inject constructor(
         loadBadgePreferences()
         loadPlayerSkills()
         loadSoulContext()
+        observeAuthState()
+    }
+
+    private fun observeAuthState() {
+        viewModelScope.launch {
+            authRepository.authState.collect { state ->
+                if (state is AuthState.Authenticated) {
+                    _uiState.update { it.copy(
+                        authDisplayName = state.displayName,
+                        authEmail = state.email,
+                        authPhotoUrl = state.photoUrl
+                    )}
+                }
+            }
+        }
     }
 
     private fun loadSoulContext() {
@@ -117,9 +138,13 @@ class ProfileViewModel @Inject constructor(
                             System.currentTimeMillis() - it.joinedAt
                         ).toInt().coerceAtLeast(1)
 
+                        val resolvedDisplayName = it.displayName.takeIf { name ->
+                            name != "Growth Seeker" && name.isNotBlank()
+                        } ?: authRepository.currentUser?.displayName
+
                         _uiState.update { state ->
                             state.copy(
-                                displayName = it.displayName,
+                                displayName = resolvedDisplayName ?: it.displayName,
                                 bio = it.bio,
                                 title = getTitleFromId(it.titleId),
                                 avatarId = it.avatarId,
@@ -322,6 +347,12 @@ class ProfileViewModel @Inject constructor(
         calendar.set(Calendar.SECOND, 0)
         calendar.set(Calendar.MILLISECOND, 0)
         return calendar.timeInMillis
+    }
+
+    fun signOut() {
+        viewModelScope.launch {
+            authRepository.signOut()
+        }
     }
 
     fun clearError() {

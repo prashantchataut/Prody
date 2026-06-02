@@ -28,6 +28,15 @@ interface JournalDao {
     @Query("SELECT * FROM journal_entries WHERE content LIKE '%' || :query || '%' OR tags LIKE '%' || :query || '%' ORDER BY createdAt DESC")
     fun searchEntries(query: String): Flow<List<JournalEntryEntity>>
 
+    @Query("""
+        SELECT je.* FROM journal_entries je
+        INNER JOIN journal_entries_fts fts ON je.id = fts.rowid
+        WHERE journal_entries_fts MATCH :query
+        AND je.isDeleted = 0
+        ORDER BY je.createdAt DESC
+    """)
+    fun searchEntriesFts(query: String): Flow<List<JournalEntryEntity>>
+
     @Query("SELECT COUNT(*) FROM journal_entries")
     fun getEntryCount(): Flow<Int>
 

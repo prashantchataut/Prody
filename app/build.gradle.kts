@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.google.services)
 }
 
 // Load local.properties for API key configuration
@@ -43,26 +44,21 @@ android {
 // SECURITY: API keys in BuildConfig are extractable from APKs via decompilation.
         // These are being migrated to SecureApiKeyManager for runtime-only storage.
         // See: SecureApiKeyManager.kt for the secure alternative.
-        @Deprecated("Use SecureApiKeyManager instead. BuildConfig keys are extractable from APKs.")
         buildConfigField(
             "String",
             "AI_API_KEY",
             "\"${localProperties.getProperty("AI_API_KEY", "").trim()}\""
         )
-        @Deprecated("Use SecureApiKeyManager instead. BuildConfig keys are extractable from APKs.")
         buildConfigField(
             "String",
             "OPENROUTER_API_KEY",
             "\"${localProperties.getProperty("OPENROUTER_API_KEY", "").trim()}\""
         )
-        // Haven Therapist API Key - separate key for therapeutic AI
-        @Deprecated("Use SecureApiKeyManager instead. BuildConfig keys are extractable from APKs.")
         buildConfigField(
             "String",
             "THERAPIST_API_KEY",
             "\"${localProperties.getProperty("THERAPIST_API_KEY", "").trim()}\""
         )
-        @Deprecated("Use SecureApiKeyManager instead. BuildConfig keys are extractable from APKs.")
         buildConfigField(
             "String",
             "TTS_API_KEY",
@@ -219,6 +215,11 @@ dependencies {
 
     // Gemini AI
     implementation(libs.generativeai)
+
+    // Firebase Auth
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
+    implementation(libs.play.services.auth)
 
     // WorkManager
     implementation(libs.androidx.work.runtime.ktx)

@@ -1,6 +1,5 @@
 package com.prody.prashant.ui.theme
 
-import android.util.Log
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
@@ -31,7 +30,48 @@ import com.prody.prashant.R
  * - Light: Subtle secondary content
  */
 
-private const val TAG = "ProdyTypography"
+/**
+ * Lora serif accent font family for wisdom, letter, and reflective content.
+ *
+ * Provides visual contrast against Poppins for literary, contemplative text.
+ * Lora is a well-balanced contemporary serif with moderate contrast,
+ * optimized for screen reading — perfect for wisdom quotes, monthly letters,
+ * and Buddha insights.
+ *
+ * REQUIRES: Download Lora .ttf files from Google Fonts and place in res/font/:
+ *   - lora_regular.ttf
+ *   - lora_bold.ttf
+ *   - lora_italic.ttf
+ *   - lora_bold_italic.ttf
+ *   - lora_medium.ttf (500 weight, may not exist — uses regular as fallback)
+ *   - lora_semibold.ttf (600 weight, may not exist — uses bold as fallback)
+ *
+ * Falls back to system serif if Lora fonts are unavailable.
+ */
+val LoraFamily: FontFamily = try {
+    val fonts = listOfNotNull(
+        safeFont(R.font.lora_regular, FontWeight.Normal),
+        safeFont(R.font.lora_bold, FontWeight.Bold),
+        safeFont(R.font.lora_italic, FontWeight.Normal, FontStyle.Italic),
+        safeFont(R.font.lora_bold_italic, FontWeight.Bold, FontStyle.Italic),
+        safeFont(R.font.lora_medium, FontWeight.Medium),
+        safeFont(R.font.lora_semibold, FontWeight.SemiBold)
+    )
+
+    if (fonts.isEmpty()) {
+        FontFamily.Serif
+    } else {
+        FontFamily(fonts)
+    }
+} catch (_: Exception) {
+    FontFamily.Serif
+}
+
+/**
+ * Serif accent font family — Lora with system serif fallback.
+ * Used for wisdom quotes, monthly letters, and reflective content.
+ */
+val SerifFamily: FontFamily = LoraFamily
 
 /**
  * Creates a safe Font instance with proper error handling.
@@ -49,8 +89,7 @@ private fun safeFont(
             style = style,
             loadingStrategy = FontLoadingStrategy.Async
         )
-    } catch (e: Exception) {
-        Log.w(TAG, "Failed to load font resource $resId with weight $weight", e)
+    } catch (_: Exception) {
         null
     }
 }
@@ -75,16 +114,11 @@ val PoppinsFamily: FontFamily = try {
     )
 
     if (fonts.isEmpty()) {
-        Log.e(TAG, "All Poppins fonts failed to load, falling back to system sans-serif")
         FontFamily.SansSerif
     } else {
-        if (fonts.size < 9) {
-            Log.w(TAG, "Only ${fonts.size}/9 Poppins fonts loaded successfully")
-        }
         FontFamily(fonts)
     }
-} catch (e: Exception) {
-    Log.e(TAG, "Failed to initialize Poppins font family", e)
+} catch (_: Exception) {
     FontFamily.SansSerif
 }
 
@@ -289,7 +323,7 @@ val OverlineTextStyle = TextStyle(
  * Hero wisdom quote - For Buddha's Thought and featured wisdom cards
  */
 val WisdomHeroStyle = TextStyle(
-    fontFamily = PoppinsFamily,
+    fontFamily = SerifFamily,
     fontWeight = FontWeight.Light,
     fontSize = 24.sp,
     lineHeight = 34.sp,
@@ -301,7 +335,7 @@ val WisdomHeroStyle = TextStyle(
  * Large wisdom quote - For quote of the day and prominent wisdom
  */
 val WisdomLargeStyle = TextStyle(
-    fontFamily = PoppinsFamily,
+    fontFamily = SerifFamily,
     fontWeight = FontWeight.Light,
     fontSize = 20.sp,
     lineHeight = 30.sp,
@@ -736,7 +770,7 @@ val StatsLabelStyle = TextStyle(
  * Letter greeting - warm, personal opening
  */
 val LetterGreetingStyle = TextStyle(
-    fontFamily = PoppinsFamily,
+    fontFamily = LoraFamily,
     fontWeight = FontWeight.Light,
     fontSize = 20.sp,
     lineHeight = 32.sp,
@@ -770,7 +804,7 @@ val LetterSectionHeaderStyle = TextStyle(
  * Letter highlight quote - for featured quotes from user's entries
  */
 val LetterQuoteStyle = TextStyle(
-    fontFamily = PoppinsFamily,
+    fontFamily = LoraFamily,
     fontWeight = FontWeight.Light,
     fontSize = 18.sp,
     lineHeight = 30.sp,
@@ -809,7 +843,7 @@ val LetterMetadataStyle = TextStyle(
  * Uses default Serif as a fallback for a handwritten aesthetic
  */
 val HavenMessageStyle = TextStyle(
-    fontFamily = PoppinsFamily, // Switched to Poppins for a cleaner, premium look
+    fontFamily = LoraFamily,
     fontWeight = FontWeight.Normal,
     fontSize = 16.sp,
     lineHeight = 24.sp,

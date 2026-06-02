@@ -175,9 +175,6 @@ interface UserDao {
     suspend fun getStreakDaysInRange(startDate: Long): Int
 
     // Leaderboard
-    @Query("SELECT COUNT(*) FROM leaderboard")
-    suspend fun getLeaderboardCount(): Int
-
     @Query("SELECT * FROM leaderboard ORDER BY totalPoints DESC")
     fun getLeaderboard(): Flow<List<LeaderboardEntryEntity>>
 
@@ -190,17 +187,8 @@ interface UserDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertLeaderboardEntry(entry: LeaderboardEntryEntity)
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertLeaderboardEntries(entries: List<LeaderboardEntryEntity>)
-
-    @Update
-    suspend fun updateLeaderboardEntry(entry: LeaderboardEntryEntity)
-
     @Query("UPDATE leaderboard SET boostsReceived = boostsReceived + 1 WHERE odId = :odId")
     suspend fun incrementBoosts(odId: String)
-
-    @Query("UPDATE leaderboard SET congratsReceived = congratsReceived + 1 WHERE odId = :odId")
-    suspend fun incrementCongrats(odId: String)
 
     @Query("UPDATE leaderboard SET respectsReceived = respectsReceived + 1 WHERE odId = :odId")
     suspend fun incrementRespects(odId: String)

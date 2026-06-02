@@ -47,14 +47,14 @@ class MonthlyLetterRepositoryImpl @Inject constructor(
 
     override fun observeLetterById(letterId: Long): Flow<MonthlyLetter?> {
         return monthlyLetterDao.observeLetterById(letterId).map { entity ->
-            entity?.let { MonthlyLetter.fromEntity(it) }
+            entity?.let { MonthlyLetterMapper.fromEntity(it) }
         }
     }
 
     override suspend fun getLetterForMonth(userId: String, monthYear: YearMonth): Result<MonthlyLetter?> {
         return try {
             val entity = monthlyLetterDao.getLetterForMonth(userId, monthYear.monthValue, monthYear.year)
-            Result.Success(entity?.let { MonthlyLetter.fromEntity(it) })
+            Result.Success(entity?.let { MonthlyLetterMapper.fromEntity(it) })
         } catch (e: Exception) {
             Result.error(e, "Failed to get letter for month: ${e.message}", ErrorType.DATABASE)
         }
@@ -62,14 +62,14 @@ class MonthlyLetterRepositoryImpl @Inject constructor(
 
     override fun observeLetterForMonth(userId: String, monthYear: YearMonth): Flow<MonthlyLetter?> {
         return monthlyLetterDao.observeLetterForMonth(userId, monthYear.monthValue, monthYear.year).map { entity ->
-            entity?.let { MonthlyLetter.fromEntity(it) }
+            entity?.let { MonthlyLetterMapper.fromEntity(it) }
         }
     }
 
     override suspend fun getMostRecentLetter(userId: String): Result<MonthlyLetter?> {
         return try {
             val entity = monthlyLetterDao.getMostRecentLetter(userId)
-            Result.Success(entity?.let { MonthlyLetter.fromEntity(it) })
+            Result.Success(entity?.let { MonthlyLetterMapper.fromEntity(it) })
         } catch (e: Exception) {
             Result.error(e, "Failed to get most recent letter: ${e.message}", ErrorType.DATABASE)
         }
@@ -77,7 +77,7 @@ class MonthlyLetterRepositoryImpl @Inject constructor(
 
     override fun observeMostRecentLetter(userId: String): Flow<MonthlyLetter?> {
         return monthlyLetterDao.observeMostRecentLetter(userId).map { entity ->
-            entity?.let { MonthlyLetter.fromEntity(it) }
+            entity?.let { MonthlyLetterMapper.fromEntity(it) }
         }
     }
 

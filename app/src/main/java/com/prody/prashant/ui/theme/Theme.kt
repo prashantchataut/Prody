@@ -9,9 +9,10 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
+
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
@@ -130,29 +131,27 @@ fun ProdyTheme(
         SideEffect {
             val activity = view.context as? Activity
             activity?.let {
-                val window = it.window
-                WindowCompat.setDecorFitsSystemWindows(window, false)
-
-                val statusBarColor = if (darkTheme) ProdyBackgroundDark.toArgb() else ProdyBackgroundLight.toArgb()
-
-                @Suppress("DEPRECATION")
-                window.statusBarColor = statusBarColor
-                @Suppress("DEPRECATION")
-                window.navigationBarColor = statusBarColor
-
-                val insetsController = WindowCompat.getInsetsController(window, view)
+                val insetsController = WindowCompat.getInsetsController(it.window, view)
                 insetsController.isAppearanceLightStatusBars = !darkTheme
                 insetsController.isAppearanceLightNavigationBars = !darkTheme
             }
         }
     }
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = ProdyTypography,
-        shapes = ProdyShapes,
-        content = content
-    )
+    val havenColors = if (darkTheme) DarkHavenColors else LightHavenColors
+
+    CompositionLocalProvider(
+        LocalHavenColors provides havenColors,
+        LocalStreakColors provides LightStreakColors,
+        LocalMoodColors provides LightMoodColors
+    ) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = ProdyTypography,
+            shapes = ProdyShapes,
+            content = content
+        )
+    }
 }
 
 @Composable

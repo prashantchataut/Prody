@@ -252,7 +252,7 @@ fun HomeScreen(
         }
 
         // Anniversary Memories
-        items(uiState.anniversaryMemories, key = { "anniversary_${it.memory.id}" }) { memory ->
+        items(uiState.anniversaryMemories, key = { "anniversary_${it.memory.id}_${it.yearsAgo}_${it.monthsAgo}" }) { memory ->
             StaggeredEntrance(index = 8) {
                 Box(modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)) {
                     AnniversaryMemoryCard(

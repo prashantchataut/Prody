@@ -1,5 +1,9 @@
 package com.prody.prashant.di
 
+import com.prody.prashant.data.auth.AuthRepository
+import com.prody.prashant.data.auth.UserIdProvider
+import com.prody.prashant.data.auth.GoogleSignInHelper
+import com.google.firebase.auth.FirebaseAuth
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
@@ -335,9 +339,11 @@ object AppModule {
         @ApplicationContext context: Context,
         networkManager: NetworkConnectivityManager,
         preferencesManager: PreferencesManager,
-        @Named("SyncDataStore") syncDataStore: DataStore<Preferences>
+        @Named("SyncDataStore") syncDataStore: DataStore<Preferences>,
+        journalDao: JournalDao,
+        vocabularyDao: VocabularyDao
     ): SyncManager {
-        return SyncManager(context, networkManager, preferencesManager, syncDataStore)
+        return SyncManager(context, networkManager, preferencesManager, syncDataStore, journalDao, vocabularyDao)
     }
 
     @Provides
@@ -398,5 +404,30 @@ object AppModule {
             .setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
             .serializeNulls()
             .create()
+    }
+
+    // ============================================================================
+    // FIREBASE AUTH PROVIDERS
+    // ============================================================================
+
+    @Provides
+    @Singleton
+    fun provideFirebaseAuth(): FirebaseAuth {
+        return FirebaseAuth.getInstance()
+    }
+
+    @Provides
+    @Singleton
+    fun provideAuthRepository(firebaseAuth: FirebaseAuth): AuthRepository {
+        return AuthRepository(firebaseAuth)
+    }
+
+    @Provides
+    @Singleton
+    fun provideUserIdProvider(
+        authRepository: AuthRepository,
+        preferencesManager: PreferencesManager
+    ): UserIdProvider {
+        return UserIdProvider(authRepository, preferencesManager)
     }
 }

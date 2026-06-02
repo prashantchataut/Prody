@@ -93,6 +93,58 @@ class PackageDependencyRulesTest {
         assertTrue("Data layer has forbidden imports:\n${violations.joinToString("\n")}", violations.isEmpty())
     }
 
+    @Test
+    fun `data layer must not depend on domain layer`() {
+        val violations = kotlinFilesIn("data")
+            .flatMap { file ->
+                forbiddenImports(file, listOf("com.prody.prashant.domain"))
+            }
+
+        assertTrue(
+            "Data layer has forbidden imports of domain layer:\n${violations.joinToString("\n")}",
+            violations.isEmpty()
+        )
+    }
+
+    @Test
+    fun `ui layer must not depend on data layer directly`() {
+        val allowedDataImports = listOf(
+            "com.prody.prashant.data.local.preferences",
+            "com.prody.prashant.data.network"
+        )
+
+        val violations = kotlinFilesIn("ui")
+            .flatMap { file ->
+                file.readLines()
+                    .mapIndexedNotNull { index, line ->
+                        val trimmed = line.trim()
+                        if (trimmed.startsWith("import com.prody.prashant.data.") &&
+                            allowedDataImports.none { trimmed.startsWith("import $it") }) {
+                            "${file.path}:${index + 1} imports data layer: $trimmed"
+                        } else null
+                    }
+            }
+
+        assertTrue(
+            "UI layer has forbidden direct data imports:\n${violations.joinToString("\n")}\n" +
+            "UI should access data only through ViewModel → Repository → Data pattern",
+            violations.isEmpty()
+        )
+    }
+
+    @Test
+    fun `sync layer does not depend on ui layer`() {
+        val violations = kotlinFilesIn("data/sync")
+            .flatMap { file ->
+                forbiddenImports(file, listOf("com.prody.prashant.ui"))
+            }
+
+        assertTrue(
+            "Sync layer has forbidden UI imports:\n${violations.joinToString("\n")}",
+            violations.isEmpty()
+        )
+    }
+
     private fun kotlinFilesIn(relativePath: String): List<File> {
         val directory = File(sourceRoot, relativePath)
         if (!directory.exists()) return emptyList()
