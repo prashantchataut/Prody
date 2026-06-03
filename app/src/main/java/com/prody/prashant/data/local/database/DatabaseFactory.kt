@@ -81,6 +81,6 @@ object DatabaseFactory {
                 "Database encryption initialization failed. " +
                 "Clear app data or reinstall. Original error: ${e.message}", e
             )
-}
-}
+        }
+    }
 }
