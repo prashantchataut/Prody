@@ -13,21 +13,20 @@ import com.prody.prashant.R
 /**
  * Prody Design System - Typography (Redesigned)
  *
- * A clean, modern typography system using EXCLUSIVELY Poppins font family
- * for all text elements throughout the entire application.
+ * A dual-font typography system using:
+ * - Poppins (sans-serif): Primary UI font for all interface elements
+ * - Lora (serif): Accent font for wisdom, quotes, letters, and reflective content
  *
  * Design Principles:
- * - Single font family (Poppins) for visual consistency
- * - Clear weight distinctions for visual hierarchy
+ * - Poppins for UI, Lora for literary/reflective content
+ * - Serif/sans-serif contrast creates visual hierarchy without relying on color
  * - Generous line heights for comfortable reading
  * - Optimized letter spacing for mobile readability
  * - WCAG AA contrast compliance for all text sizes
  *
  * Typography Hierarchy:
- * - Bold: Titles and important numbers
- * - Medium/SemiBold: Section headers
- * - Regular: Body text
- * - Light: Subtle secondary content
+ * - Serif (Lora): Wisdom quotes, letter greetings, journal prompts, haven messages
+ * - Sans-serif (Poppins): Everything else — titles, body, labels, stats
  */
 
 /**
@@ -255,14 +254,14 @@ val ProdyTypography = Typography(
 
 // =============================================================================
 // EXTENDED TYPOGRAPHY - Custom text styles for special use cases
-// All using Poppins exclusively
+// Serif for reflective content, Poppins sans-serif for UI
 // =============================================================================
 
 /**
  * Quote style - For displaying wisdom quotes and inspirational text
  */
 val QuoteTextStyle = TextStyle(
-    fontFamily = PoppinsFamily,
+    fontFamily = SerifFamily,
     fontWeight = FontWeight.Light,
     fontSize = 18.sp,
     lineHeight = 28.sp,
@@ -316,7 +315,8 @@ val OverlineTextStyle = TextStyle(
 )
 
 // =============================================================================
-// WISDOM TYPOGRAPHY - Using Poppins (replacing Playfair)
+// WISDOM TYPOGRAPHY - Serif accent for reflective content
+// Primary quotes use Lora serif; attribution/metadata stays Poppins sans-serif
 // =============================================================================
 
 /**
@@ -380,7 +380,7 @@ val WisdomAttributionStyle = TextStyle(
  * Wisdom caption - For small wisdom-related metadata
  */
 val WisdomCaptionStyle = TextStyle(
-    fontFamily = PoppinsFamily,
+    fontFamily = SerifFamily,
     fontWeight = FontWeight.Normal,
     fontSize = 12.sp,
     lineHeight = 16.sp,
@@ -392,7 +392,7 @@ val WisdomCaptionStyle = TextStyle(
  * Journal prompt style - For reflective questions and prompts
  */
 val JournalPromptStyle = TextStyle(
-    fontFamily = PoppinsFamily,
+    fontFamily = SerifFamily,
     fontWeight = FontWeight.Light,
     fontSize = 18.sp,
     lineHeight = 28.sp,
