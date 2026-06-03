@@ -20,8 +20,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+
 import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Named
@@ -458,6 +459,13 @@ class PreferencesManager @Inject constructor(
         }
     }
 
+    /**
+     * Cached user ID updated by the userId Flow.
+     * Safe to access from any thread without runBlocking.
+     */
+    @Volatile
+    private var cachedUserId: String? = null
+
     val userId: Flow<String> = dataStore.data
         .catch { exception ->
             if (exception is IOException) emit(emptyPreferences())
@@ -466,6 +474,7 @@ class PreferencesManager @Inject constructor(
         .map { preferences ->
             preferences[PreferencesKeys.USER_ID] ?: ""
         }
+        .onEach { id -> cachedUserId = id.ifBlank { null } }
 
     suspend fun setUserId(id: String) {
         dataStore.edit { preferences ->
@@ -474,11 +483,11 @@ class PreferencesManager @Inject constructor(
     }
 
     /**
-     * Synchronous access to current user ID (using runBlocking for simplicity in this legacy call)
+     * Synchronous access to current user ID.
+     * Returns cached value from the userId Flow — no runBlocking deadlock risk.
+     * Returns null if the Flow hasn't emitted yet (app startup).
      */
-    fun getCurrentUserId(): String? = runBlocking {
-        dataStore.data.map { it[PreferencesKeys.USER_ID] }.first()
-    }
+    fun getCurrentUserId(): String? = cachedUserId
 
     // Gamification Initialized Flag
     val gamificationInitialized: Flow<Boolean> = dataStore.data

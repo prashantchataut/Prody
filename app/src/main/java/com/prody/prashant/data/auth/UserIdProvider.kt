@@ -49,8 +49,8 @@ class UserIdProvider @Inject constructor(
             return firebaseUserId
         }
 
-        val storedUserId = preferencesManager.getCurrentUserId()
-        return storedUserId ?: LOCAL_USER_ID
+        val storedUserId = preferencesManager.userId.first()
+        return storedUserId.ifBlank { LOCAL_USER_ID }
     }
 
     /**
