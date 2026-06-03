@@ -26,7 +26,6 @@ import com.prody.prashant.data.monitoring.PerformanceMonitor
 import com.prody.prashant.data.network.NetworkConnectivityManager
 import com.prody.prashant.data.onboarding.AiOnboardingManager
 import com.prody.prashant.data.security.EncryptionManager
-import com.prody.prashant.data.security.SecurityPreferences
 import com.prody.prashant.data.sync.SyncManager
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
@@ -370,15 +369,6 @@ object AppModule {
         return ContentModerationManager(context)
     }
 
-    @Deprecated("Use SecureApiKeyManager instead. SecurityPreferences reads from local.properties which doesn't exist on user devices.")
-    @Provides
-    @Singleton
-    fun provideSecurityPreferences(
-        @ApplicationContext context: Context
-    ): SecurityPreferences {
-        return SecurityPreferences(context)
-    }
-
     // ============================================================================
     // LEARNING PATH PROVIDERS
     // ============================================================================
@@ -413,7 +403,14 @@ object AppModule {
     @Provides
     @Singleton
     fun provideFirebaseAuth(): FirebaseAuth {
-        return FirebaseAuth.getInstance()
+        return try {
+            FirebaseAuth.getInstance()
+        } catch (e: Exception) {
+            android.util.Log.e("AppModule", "FirebaseAuth initialization failed", e)
+            throw IllegalStateException(
+                "Firebase Auth unavailable. Ensure google-services.json is configured. Error: ${e.message}", e
+            )
+        }
     }
 
     @Provides

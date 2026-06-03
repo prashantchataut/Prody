@@ -1,19 +1,18 @@
 package com.prody.prashant.data.local.database
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.util.Log
 import androidx.room.Room
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
 import com.prody.prashant.data.security.SecureDatabaseManager
+import javax.inject.Named
 
 object DatabaseFactory {
     private const val TAG = "ProdyDatabase"
+    private const val PRODY_ENCRYPTED_SHARED_PREFS = "prody_encrypted_shared_prefs"
 
-    /**
-     * Schema versions that lack explicit migrations.
-     * These are early versions (1-3) from before the migration framework was established.
-     * Users on these versions will have their data destructively migrated as a last resort.
-     * Version 4+ all have explicit migrations and will never be destructively migrated.
-     */
     private val DESTRUCTIVE_MIGRATION_FLOOR_VERSIONS = intArrayOf(1, 2, 3)
 
     fun create(
@@ -21,44 +20,69 @@ object DatabaseFactory {
         databaseName: String,
         instanceProvider: () -> ProdyDatabase?
     ): ProdyDatabase {
-        try {
-            val masterKey = androidx.security.crypto.MasterKey.Builder(context)
-                .setKeyScheme(androidx.security.crypto.MasterKey.KeyScheme.AES256_GCM)
-                .build()
+        val encryptedPrefs = createOrRecoverEncryptedPrefs(context)
+        val secureDbManager = SecureDatabaseManager(context, encryptedPrefs)
+        val supportFactory = secureDbManager.createSQLCipherSupportFactorySync()
 
-            val encryptedPrefs = androidx.security.crypto.EncryptedSharedPreferences.create(
-                context,
-                "prody_encrypted_shared_prefs",
-                masterKey,
-                androidx.security.crypto.EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-                androidx.security.crypto.EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-            )
-
-            val secureDbManager = SecureDatabaseManager(context, encryptedPrefs)
-            val supportFactory = secureDbManager.createSQLCipherSupportFactorySync()
-
-            return Room.databaseBuilder(context.applicationContext, ProdyDatabase::class.java, databaseName)
-                .openHelperFactory(supportFactory)
-                .addMigrations(*DatabaseMigrations.all)
-                .fallbackToDestructiveMigrationFrom(*DESTRUCTIVE_MIGRATION_FLOOR_VERSIONS)
-                .addCallback(
-                    SecureDatabaseLifecycleCallback(
-                        context = context,
-                        secureDbManager = secureDbManager,
-                        databaseName = databaseName,
-                        tag = TAG,
-                        databaseProvider = instanceProvider
-                    )
+        return Room.databaseBuilder(context.applicationContext, ProdyDatabase::class.java, databaseName)
+            .openHelperFactory(supportFactory)
+            .addMigrations(*DatabaseMigrations.all)
+            .fallbackToDestructiveMigrationFrom(*DESTRUCTIVE_MIGRATION_FLOOR_VERSIONS)
+            .addCallback(
+                SecureDatabaseLifecycleCallback(
+                    context = context,
+                    secureDbManager = secureDbManager,
+                    databaseName = databaseName,
+                    tag = TAG,
+                    databaseProvider = instanceProvider
                 )
+            )
+            .build()
+    }
+
+    private fun createOrRecoverEncryptedPrefs(context: Context): SharedPreferences {
+        try {
+            val masterKey = MasterKey.Builder(context)
+                .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
                 .build()
+
+            return EncryptedSharedPreferences.create(
+                context,
+                PRODY_ENCRYPTED_SHARED_PREFS,
+                masterKey,
+                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+            )
         } catch (e: Exception) {
-            Log.e(TAG, "CRITICAL: Failed to create encrypted database. " +
-                "Refusing to fall back to unencrypted storage for user data safety.", e)
+            Log.w(TAG, "EncryptedSharedPreferences init failed, attempting recovery", e)
+            return recoverEncryptedPrefs(context)
+        }
+    }
+
+    private fun recoverEncryptedPrefs(context: Context): SharedPreferences {
+        try {
+            context.deleteSharedPreferences(PRODY_ENCRYPTED_SHARED_PREFS)
+            Log.i(TAG, "Deleted corrupted encrypted prefs, recreating with fresh keys")
+
+            val masterKey = MasterKey.Builder(context)
+                .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                .build()
+
+            return EncryptedSharedPreferences.create(
+                context,
+                PRODY_ENCRYPTED_SHARED_PREFS,
+                masterKey,
+                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+            )
+        } catch (e: Exception) {
+            Log.e(TAG, "CRITICAL: EncryptedSharedPreferences recovery failed. Database encryption will use fallback.", e)
             throw IllegalStateException(
                 "Database encryption initialization failed. " +
-                "User data cannot be stored without encryption. " +
-                "Original error: ${e.message}", e
+                "Clear app data or reinstall. Original error: ${e.message}", e
             )
         }
+    }
+}
     }
 }

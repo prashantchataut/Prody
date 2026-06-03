@@ -199,14 +199,18 @@ class ProdyApplication : Application(), Configuration.Provider {
         // Migrate API keys from BuildConfig to SecureApiKeyManager (one-time migration)
         applicationScope.launch {
             try {
-                @Suppress("DEPRECATION")
-                secureApiKeyManager.initializeApiKeys(
-                    geminiKey = BuildConfig.AI_API_KEY,
-                    openrouterKey = BuildConfig.OPENROUTER_API_KEY,
-                    therapistKey = BuildConfig.THERAPIST_API_KEY,
-                    ttsKey = BuildConfig.TTS_API_KEY
-                )
-                Log.d(TAG, "API keys migrated to secure storage")
+                if (::secureApiKeyManager.isInitialized) {
+                    @Suppress("DEPRECATION")
+                    secureApiKeyManager.initializeApiKeys(
+                        geminiKey = BuildConfig.AI_API_KEY,
+                        openrouterKey = BuildConfig.OPENROUTER_API_KEY,
+                        therapistKey = BuildConfig.THERAPIST_API_KEY,
+                        ttsKey = BuildConfig.TTS_API_KEY
+                    )
+                    Log.d(TAG, "API keys migrated to secure storage")
+                } else {
+                    Log.w(TAG, "SecureApiKeyManager not initialized, skipping API key migration")
+                }
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to migrate API keys to secure storage", e)
             }

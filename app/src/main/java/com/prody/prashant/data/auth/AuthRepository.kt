@@ -32,19 +32,7 @@ class AuthRepository @Inject constructor(
     val isSignedIn: Boolean get() = currentUser != null
 
     private var googleSignInClient: GoogleSignInClient? = null
-
-    fun getGoogleSignInClient(context: android.content.Context): GoogleSignInClient {
-        return googleSignInClient ?: GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(WEB_CLIENT_ID)
-            .requestEmail()
-            .build()
-            .let { GoogleSignIn.getClient(context, it) }
-            .also { googleSignInClient = it }
-    }
-
-    fun getGoogleSignInIntent(context: android.content.Context): Intent? {
-        return getGoogleSignInClient(context).signInIntent
-    }
+    private var isListenerAttached = false
 
     private val authStateListener = FirebaseAuth.AuthStateListener { auth ->
         val user = auth.currentUser
@@ -62,11 +50,37 @@ class AuthRepository @Inject constructor(
     }
 
     init {
-        firebaseAuth.addAuthStateListener(authStateListener)
+        try {
+            firebaseAuth.addAuthStateListener(authStateListener)
+            isListenerAttached = true
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to attach auth state listener", e)
+            _authState.value = AuthState.Error(e.message ?: "Firebase init failed")
+        }
     }
 
     fun removeListener() {
-        firebaseAuth.removeAuthStateListener(authStateListener)
+        if (isListenerAttached) {
+            try {
+                firebaseAuth.removeAuthStateListener(authStateListener)
+                isListenerAttached = false
+            } catch (e: Exception) {
+                Log.w(TAG, "Failed to remove auth state listener", e)
+            }
+        }
+    }
+
+    fun getGoogleSignInClient(context: android.content.Context): GoogleSignInClient {
+        return googleSignInClient ?: GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(WEB_CLIENT_ID)
+            .requestEmail()
+            .build()
+            .let { GoogleSignIn.getClient(context, it) }
+            .also { googleSignInClient = it }
+    }
+
+    fun getGoogleSignInIntent(context: android.content.Context): Intent? {
+        return getGoogleSignInClient(context).signInIntent
     }
 
     suspend fun signInWithGoogle(idToken: String): Result<String> {
