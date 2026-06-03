@@ -71,7 +71,7 @@ class ContextAwareHavenService @Inject constructor(
         val soulLayerContext = userContextEngine.getContextForHaven()
 
         // Enrich the base context with Soul Layer intelligence
-        val enrichedContext = enrichHavenContext(baseContext, soulLayerContext)
+        val enrichedContext = enrichSessionContext(baseContext, soulLayerContext)
 
         // Start session with enriched context
         havenAiService.startSession(sessionType, userName, enrichedContext)
