@@ -87,7 +87,7 @@ class ContextAwareHavenService @Inject constructor(
     ): Result<HavenAiResponse> = withContext(Dispatchers.IO) {
 
         val soulLayerContext = userContextEngine.getContextForHaven()
-        val enrichedContext = enrichHavenContext(baseContext, soulLayerContext)
+        val enrichedContext = enrichSessionContext(baseContext, soulLayerContext)
 
         havenAiService.continueConversation(sessionType, enrichedContext, userMessage)
     }
@@ -102,7 +102,7 @@ class ContextAwareHavenService @Inject constructor(
     ): Flow<Result<HavenAiResponse>> = flow {
 
         val soulLayerContext = userContextEngine.getContextForHaven()
-        val enrichedContext = enrichHavenContext(baseContext, soulLayerContext)
+        val enrichedContext = enrichSessionContext(baseContext, soulLayerContext)
 
         havenAiService.continueConversationStream(sessionType, enrichedContext, userMessage)
             .collect { result ->
@@ -300,7 +300,7 @@ class ContextAwareHavenService @Inject constructor(
     /**
      * Enriches base HavenContext with Soul Layer intelligence.
      */
-    private fun enrichHavenContext(
+    private fun enrichSessionContext(
         baseContext: HavenSessionContext,
         soulLayerContext: SoulLayerHavenContext
     ): HavenSessionContext {
