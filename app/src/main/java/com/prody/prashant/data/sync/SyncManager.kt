@@ -280,7 +280,10 @@ class SyncManager @Inject constructor(
                 operation.entityId?.let { syncVocabulary(it) }
                     ?: SyncResult.Skipped(operation.id, "No entity ID")
             }
-            else -> SyncResult.Skipped(operation.id, "Operation type ${operation.type} not yet implemented")
+            else -> {
+                Log.w(TAG, "Unknown sync operation type: ${operation.type}, skipping")
+                SyncResult.Skipped(operation.id, "Operation type ${operation.type} not yet implemented")
+            }
         }
     }
 

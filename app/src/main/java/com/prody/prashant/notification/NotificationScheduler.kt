@@ -36,6 +36,7 @@ class NotificationScheduler @Inject constructor(
         private const val REQUEST_WORD = 102
         private const val REQUEST_STREAK = 103
         private const val REQUEST_JOURNAL = 104
+        private const val REQUEST_WEEKLY_SUMMARY = 105
         private const val REQUEST_FUTURE_BASE = 1000
     }
 
@@ -188,6 +189,25 @@ class NotificationScheduler @Inject constructor(
             requestCode = REQUEST_JOURNAL,
             triggerTime = calendar.timeInMillis,
             intervalMillis = AlarmManager.INTERVAL_DAY
+        )
+    }
+
+    fun scheduleWeeklySummaryNotification() {
+        val calendar = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 9)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY)
+            if (timeInMillis <= System.currentTimeMillis()) {
+                add(Calendar.WEEK_OF_YEAR, 1)
+            }
+        }
+
+        scheduleRepeatingAlarm(
+            action = NotificationReceiver.ACTION_WEEKLY_SUMMARY,
+            requestCode = REQUEST_WEEKLY_SUMMARY,
+            triggerTime = calendar.timeInMillis,
+            intervalMillis = AlarmManager.INTERVAL_DAY * 7
         )
     }
 

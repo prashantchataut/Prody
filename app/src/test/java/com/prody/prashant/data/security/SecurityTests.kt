@@ -298,8 +298,8 @@ class SecureHttpClientTest {
 
         interceptor.intercept(chain)
 
-        verify(atLeast = 1) { newBuilder.addHeader("Accept", "application/json") }
-        verify(atLeast = 1) { newBuilder.addHeader("Referrer-Policy", "strict-origin-when-cross-origin") }
+        verify(atLeast = 1) { newRequest.addHeader("Accept", "application/json") }
+        verify(atLeast = 1) { newRequest.addHeader("Referrer-Policy", "strict-origin-when-cross-origin") }
     }
 
     @Test
@@ -351,11 +351,11 @@ class SecureHttpClientTest {
         val newRequest = mockk<okhttp3.Request.Builder>(relaxed = true)
         val response = mockk<okhttp3.Response>(relaxed = true)
 
-        val headersSlot = mutableListOf<Pair<String, String>>()
+        val headerNames = mutableListOf<String>()
+        val headerValues = mutableListOf<String>()
         every { chain.request() } returns request
         every { request.newBuilder() } returns newRequest
-        every { newRequest.addHeader(capture(), capture()) } answers {
-            headersSlot.add(Pair(firstArg(), secondArg()))
+        every { newRequest.addHeader(capture(headerNames), capture(headerValues)) } answers {
             newRequest
         }
         every { newRequest.build() } returns request
@@ -363,7 +363,7 @@ class SecureHttpClientTest {
 
         securityHeadersInterceptor.intercept(chain)
 
-        for ((name, _) in headersSlot) {
+        for ((name, _ ) in headerNames.zip(headerValues)) {
             assertFalse(
                 "Header $name should not contain 'Authorization'",
                 name.equals("Authorization", ignoreCase = true)

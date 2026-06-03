@@ -145,22 +145,20 @@ class WeeklySummaryWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted params: WorkerParameters,
     private val weeklyDigestRepository: WeeklyDigestRepository,
-    private val preferencesManager: PreferencesManager
+    private val preferencesManager: PreferencesManager,
+    private val notificationScheduler: com.prody.prashant.notification.NotificationScheduler
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
         return try {
-            // Check if enabled
             val isEnabled = preferencesManager.weeklySummaryEnabled.first()
             if (!isEnabled) {
                 return Result.success()
             }
 
-            // Generate weekly digest for previous week
             val userId = preferencesManager.userId.first().ifBlank { "local" }
             weeklyDigestRepository.generateWeeklyDigest(userId)
 
-            // Schedule notification if enabled
             val notificationsEnabled = preferencesManager.weeklySummaryNotifications.first()
             if (notificationsEnabled) {
                 scheduleNotification()
@@ -174,11 +172,9 @@ class WeeklySummaryWorker @AssistedInject constructor(
     }
 
     private fun scheduleNotification() {
-        // Implement notification scheduling for weekly summary
-        // This creates a notification to remind user to check their weekly summary
-        // Note: WeeklySummaryNotificationWorker needs to be implemented separately
         try {
-            // For now, we'll skip the notification worker as it's not yet implemented
+            notificationScheduler.scheduleWeeklySummaryNotification()
+            Log.i("WeeklySummaryWorker", "Weekly summary notification scheduled")
         } catch (e: Exception) {
             Log.e("WeeklySummaryWorker", "Failed to schedule weekly summary notification", e)
         }

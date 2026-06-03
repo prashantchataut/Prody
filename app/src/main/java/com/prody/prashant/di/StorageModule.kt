@@ -25,7 +25,6 @@ object StorageModule {
     private const val TAG = "StorageModule"
     private const val PRODY_SHARED_PREFS = "prody_shared_prefs"
     private const val PRODY_ENCRYPTED_SHARED_PREFS = "prody_encrypted_shared_prefs"
-    private const val PRODY_ENCRYPTED_SHARED_PREFS_LEGACY = "prody_encrypted_shared_prefs_legacy"
 
     @Provides
     @Singleton
@@ -80,8 +79,11 @@ object StorageModule {
                 EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
             )
         } catch (e: Exception) {
-            Log.e(TAG, "CRITICAL: EncryptedSharedPreferences recovery failed, falling back to unencrypted", e)
-            return context.getSharedPreferences(PRODY_ENCRYPTED_SHARED_PREFS_LEGACY, Context.MODE_PRIVATE)
+            Log.e(TAG, "CRITICAL: EncryptedSharedPreferences recovery failed — refusing to store secrets in plaintext", e)
+            throw IllegalStateException(
+                "EncryptedSharedPreferences is unavailable. Cannot store credentials securely. " +
+                "Clear app data and retry. Original error: ${e.message}", e
+            )
         }
     }
 

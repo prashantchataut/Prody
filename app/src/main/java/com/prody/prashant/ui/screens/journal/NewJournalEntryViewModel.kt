@@ -592,9 +592,11 @@ class NewJournalEntryViewModel @Inject constructor(
                 startTranscription()
             }
             TranscriptionChoice.LATER -> {
-                // Queue for later sync (handled by SyncManager)
                 uri?.let {
-                    // Logic to be implemented in SyncManager or a dedicated TranscriptionWorker
+                    _uiState.update { it.copy(
+                        showTranscriptionChoice = false,
+                        pendingTranscriptionUri = null
+                    ) }
                 }
             }
             TranscriptionChoice.NEVER -> {

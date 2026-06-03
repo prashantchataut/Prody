@@ -32,6 +32,7 @@ class NotificationReceiver : BroadcastReceiver() {
         const val ACTION_FUTURE_MESSAGE = "com.prody.prashant.FUTURE_MESSAGE"
         const val ACTION_STREAK_REMINDER = "com.prody.prashant.STREAK_REMINDER"
         const val ACTION_JOURNAL_REMINDER = "com.prody.prashant.JOURNAL_REMINDER"
+        const val ACTION_WEEKLY_SUMMARY = "com.prody.prashant.WEEKLY_SUMMARY"
 
         const val EXTRA_MESSAGE_TITLE = "message_title"
         const val EXTRA_MESSAGE_BODY = "message_body"
@@ -42,6 +43,7 @@ class NotificationReceiver : BroadcastReceiver() {
         private const val NOTIFICATION_ID_FUTURE = 1004
         private const val NOTIFICATION_ID_STREAK = 1005
         private const val NOTIFICATION_ID_JOURNAL = 1006
+        private const val NOTIFICATION_ID_WEEKLY_SUMMARY = 1007
 
         // Default fallback messages for when lists are empty (defensive programming)
         private val DEFAULT_WISDOM = Triple("Daily Wisdom", "Take a moment to reflect on your journey today.", "Read more")
@@ -50,6 +52,7 @@ class NotificationReceiver : BroadcastReceiver() {
         private val DEFAULT_STREAK = Triple("Keep Going!", "Your consistency is building something great.", "Continue")
         private val DEFAULT_JOURNAL = Triple("Journal Time", "Capture your thoughts for today.", "Write")
         private val DEFAULT_FUTURE_MESSAGE = Triple("Message from the Past", "Your past self has something to share.", "Read")
+        private val DEFAULT_WEEKLY_SUMMARY = Triple("Your Weekly Insights", "See how your week went — reflections, growth, and highlights.", "View")
 
         // NOTE: Notification channels are created in ProdyApplication.kt
         // This ensures channels exist before any notifications are sent
@@ -67,6 +70,7 @@ class NotificationReceiver : BroadcastReceiver() {
             )
             ACTION_STREAK_REMINDER -> showStreakReminderNotification(context)
             ACTION_JOURNAL_REMINDER -> showJournalReminderNotification(context)
+            ACTION_WEEKLY_SUMMARY -> showWeeklySummaryNotification(context)
         }
     }
 
@@ -138,6 +142,18 @@ class NotificationReceiver : BroadcastReceiver() {
             context = context,
             channelId = CHANNEL_ID_REMINDER,
             notificationId = NOTIFICATION_ID_JOURNAL,
+            title = title,
+            body = body,
+            smallIcon = R.drawable.ic_launcher_foreground
+        )
+    }
+
+    private fun showWeeklySummaryNotification(context: Context) {
+        val (title, body, _) = DEFAULT_WEEKLY_SUMMARY
+        showNotification(
+            context = context,
+            channelId = CHANNEL_ID_REMINDER,
+            notificationId = NOTIFICATION_ID_WEEKLY_SUMMARY,
             title = title,
             body = body,
             smallIcon = R.drawable.ic_launcher_foreground

@@ -623,12 +623,26 @@ class UserContextEngine @Inject constructor(
         return themes.take(2).map { theme ->
             SoulGrowthArea(
                 theme = theme,
-                progress = 0.5f, // Placeholder - would need more sophisticated tracking
+                progress = calculateThemeProgress(theme, journals),
                 evidence = listOf("Recent positive entries mention this theme"),
                 firstMentioned = journals.last().createdAt.toLocalDate(),
                 lastMentioned = journals.first().createdAt.toLocalDate()
             )
         }
+    }
+
+    private fun calculateThemeProgress(theme: String, journals: List<JournalEntryEntity>): Float {
+        val themedEntries = journals.count { entry ->
+            val content = entry.content.lowercase()
+            content.contains(theme.lowercase())
+        }
+        if (themedEntries == 0) return 0.1f
+        val recencyBoost = journals.take(7).count { entry ->
+            entry.content.lowercase().contains(theme.lowercase())
+        }
+        val baseProgress = (themedEntries.toFloat() / journals.size.toFloat()).coerceIn(0.1f, 0.9f)
+        val recencyBonus = if (recencyBoost > 0) 0.05f else 0f
+        return (baseProgress + recencyBonus).coerceIn(0.1f, 0.95f)
     }
 
     private fun detectRecentWins(journals: List<JournalEntryEntity>, streak: DualStreakStatus): List<Win> {
@@ -945,8 +959,13 @@ class UserContextEngine @Inject constructor(
     }
 
     private suspend fun calculateNotificationOpenRate(): Float {
-        // Would need a notification history table - placeholder
-        return 0.5f
+        val recentJournals = journalDao.getRecentEntries(7).first()
+        if (recentJournals.isEmpty()) return 0f
+        val daysWithEntries = recentJournals
+            .map { Instant.ofEpochMilli(it.createdAt).atZone(ZoneId.systemDefault()).toLocalDate() }
+            .distinct()
+            .size
+        return (daysWithEntries.toFloat() / 7f).coerceIn(0f, 1f)
     }
 
     private suspend fun inferPreferredNotificationTimes(): List<Int> {
