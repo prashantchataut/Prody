@@ -8,7 +8,6 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.prody.prashant.data.local.dao.*
 import com.prody.prashant.data.local.entity.*
-import kotlinx.coroutines.runBlocking
 import net.sqlcipher.database.SupportFactory
 
 /**
