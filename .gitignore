@@ -1,31 +1,43 @@
-*.iml
-.gradle
-/local.properties
-/.idea/
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
-local.properties
-
-# Android Studio and Gradle
-.gradle/
-build/
-app/build/
+# === IDE ===
 .idea/
 *.iml
+.DS_Store
+.cxx
+.externalNativeBuild
+/captures
 
-# Keystore files
-*.jks
-*.keystore
-
-# Google Services (needed for Firebase — client ID is public, not a secret)
-# google-services.json is now tracked in git
-
-# Generated files
+# === Gradle / Build ===
+.gradle/
+.kotlin/
+build/
+app/build/
+/build
 build_output.txt
 
-# Kotlin
-.kotlin/
+# === Local Config (NEVER commit) ===
+local.properties
+app/apikey.properties
+*.env
 .env
+.env.*
+!.env.example
+
+# === Keystore (NEVER commit) ===
+*.jks
+*.keystore
+keystore/
+
+# === Secrets (NEVER commit) ===
+# Keep specific properties that are project config
+apikey.properties
+
+# === Google Services ===
+# google-services.json is tracked (client IDs are public)
+
+# === AI/Tool Configs ===
+.Jules/
+.kiro/
+.qoder/
+.claude/
+.aider*
+.cursor/
