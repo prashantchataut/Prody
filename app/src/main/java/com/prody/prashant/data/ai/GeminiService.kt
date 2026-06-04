@@ -442,6 +442,12 @@ class GeminiService @Inject constructor() {
     private var isAutoInitialized: Boolean = false
 
     companion object {
+        private const val TAG = "GeminiService"
+        private const val MAX_RETRY_ATTEMPTS = 3
+        private const val INITIAL_RETRY_DELAY_MS = 1000L
+        private const val MAX_RETRY_DELAY_MS = 8000L
+        private const val RETRY_MULTIPLIER = 2.0
+
         /**
          * Gets the API key from BuildConfig (set via local.properties).
          * This is the recommended way to configure the API key for security.
@@ -577,7 +583,7 @@ class GeminiService @Inject constructor() {
 
         try {
             val prompt = BuddhaSystemPrompt.getJournalResponsePrompt(mood, moodIntensity, content, wordCount)
-            val response = model.generateContent(prompt)
+            val response = withRetry("generateJournalResponse") { model.generateContent(prompt) }
             val text = response.text
 
             if (text.isNullOrBlank()) {
@@ -638,7 +644,7 @@ class GeminiService @Inject constructor() {
         val model = generativeModel ?: return@withContext GeminiResult.ApiKeyNotSet
 
         try {
-            val response = model.generateContent(BuddhaSystemPrompt.DAILY_WISDOM_PROMPT)
+            val response = withRetry("generateDailyWisdom") { model.generateContent(BuddhaSystemPrompt.DAILY_WISDOM_PROMPT) }
             val text = response.text
 
             if (text.isNullOrBlank()) {
@@ -680,7 +686,7 @@ USER'S WEEKLY ACTIVITY:
 Provide an encouraging, personalized weekly reflection based on this activity.
 """
 
-            val response = model.generateContent(contextPrompt)
+            val response = withRetry("generateWeeklySummary") { model.generateContent(contextPrompt) }
             val text = response.text
 
             if (text.isNullOrBlank()) {
@@ -703,7 +709,7 @@ Provide an encouraging, personalized weekly reflection based on this activity.
         val model = generativeModel ?: return@withContext GeminiResult.ApiKeyNotSet
 
         try {
-            val response = model.generateContent("Respond with exactly: 'Connection successful'")
+            val response = withRetry("testConnection") { model.generateContent("Respond with exactly: 'Connection successful'") }
             val text = response.text
 
             if (text.isNullOrBlank()) {
@@ -727,7 +733,7 @@ Provide an encouraging, personalized weekly reflection based on this activity.
 
         try {
             val prompt = BuddhaSystemPrompt.getJournalPromptForMood(mood)
-            val response = model.generateContent(prompt)
+            val response = withRetry("generateJournalPrompt") { model.generateContent(prompt) }
             val text = response.text
 
             if (text.isNullOrBlank()) {
@@ -754,7 +760,7 @@ Provide an encouraging, personalized weekly reflection based on this activity.
 
         try {
             val prompt = BuddhaSystemPrompt.getQuoteExplanationPrompt(quote, author)
-            val response = model.generateContent(prompt)
+            val response = withRetry("generateQuoteExplanation") { model.generateContent(prompt) }
             val text = response.text
 
             if (text.isNullOrBlank()) {
@@ -781,7 +787,7 @@ Provide an encouraging, personalized weekly reflection based on this activity.
 
         try {
             val prompt = BuddhaSystemPrompt.getVocabularyContextPrompt(word, definition)
-            val response = model.generateContent(prompt)
+            val response = withRetry("generateVocabularyContext") { model.generateContent(prompt) }
             val text = response.text
 
             if (text.isNullOrBlank()) {
@@ -808,7 +814,7 @@ Provide an encouraging, personalized weekly reflection based on this activity.
 
         try {
             val prompt = BuddhaSystemPrompt.getStreakCelebrationPrompt(streakCount, previousBest)
-            val response = model.generateContent(prompt)
+            val response = withRetry("generateStreakCelebration") { model.generateContent(prompt) }
             val text = response.text
 
             if (text.isNullOrBlank()) {
@@ -840,7 +846,7 @@ Provide an encouraging, personalized weekly reflection based on this activity.
                 moodDistribution,
                 journalCount
             )
-            val response = model.generateContent(prompt)
+            val response = withRetry("generateMoodPatternInsight") { model.generateContent(prompt) }
             val text = response.text
 
             if (text.isNullOrBlank()) {
@@ -874,7 +880,7 @@ Provide an encouraging, personalized weekly reflection based on this activity.
 
         try {
             val prompt = BuddhaSystemPrompt.getJournalAnalysisPrompt(entries, dateRange)
-            val response = model.generateContent(prompt)
+            val response = withRetry("analyzeJournalEntries") { model.generateContent(prompt) }
             val text = response.text
 
             if (text.isNullOrBlank()) {
@@ -897,7 +903,7 @@ Provide an encouraging, personalized weekly reflection based on this activity.
         val model = generativeModel ?: return@withContext GeminiResult.ApiKeyNotSet
 
         try {
-            val response = model.generateContent(BuddhaSystemPrompt.MORNING_REFLECTION_PROMPT)
+            val response = withRetry("generateMorningReflection") { model.generateContent(BuddhaSystemPrompt.MORNING_REFLECTION_PROMPT) }
             val text = response.text
 
             if (text.isNullOrBlank()) {
@@ -920,7 +926,7 @@ Provide an encouraging, personalized weekly reflection based on this activity.
         val model = generativeModel ?: return@withContext GeminiResult.ApiKeyNotSet
 
         try {
-            val response = model.generateContent(BuddhaSystemPrompt.EVENING_REFLECTION_PROMPT)
+            val response = withRetry("generateEveningReflection") { model.generateContent(BuddhaSystemPrompt.EVENING_REFLECTION_PROMPT) }
             val text = response.text
 
             if (text.isNullOrBlank()) {
@@ -952,7 +958,7 @@ Provide an encouraging, personalized weekly reflection based on this activity.
                 prompt
             }
 
-            val response = model.generateContent(fullPrompt)
+            val response = withRetry("generateCustomResponse") { model.generateContent(fullPrompt) }
             val text = response.text
 
             if (text.isNullOrBlank()) {
@@ -1035,7 +1041,7 @@ Provide an encouraging, personalized weekly reflection based on this activity.
                 currentDate = currentDate,
                 pastEntry = pastEntry
             )
-            val response = model.generateContent(prompt)
+            val response = withRetry("generateMirrorResponse") { model.generateContent(prompt) }
             val text = response.text
 
             if (text.isNullOrBlank()) {
@@ -1139,7 +1145,7 @@ difficulty should be 1-5 where:
 Respond ONLY with the JSON object, nothing else.
 """
 
-            val response = model.generateContent(prompt)
+            val response = withRetry("generateVocabularyWord") { model.generateContent(prompt) }
             val text = response.text
 
             if (text.isNullOrBlank()) {
@@ -1159,6 +1165,58 @@ Respond ONLY with the JSON object, nothing else.
         } catch (e: Exception) {
             GeminiResult.Error(e, getErrorMessage(e))
         }
+    }
+
+    /**
+     * Execute an API call with exponential backoff retry logic.
+     * Retries on transient failures (429, 500, 503, network errors, timeouts).
+     * Non-retryable errors (auth, safety blocks) fail immediately.
+     */
+    private suspend fun <T> withRetry(
+        operation: String,
+        block: suspend () -> T
+    ): T {
+        var lastException: Exception? = null
+        var delayMs = INITIAL_RETRY_DELAY_MS
+
+        repeat(MAX_RETRY_ATTEMPTS) { attempt ->
+            try {
+                return block()
+            } catch (e: Exception) {
+                lastException = e
+                val isRetryable = isRetryableError(e)
+
+                android.util.Log.w(
+                    TAG,
+                    "$operation failed (attempt ${attempt + 1}/$MAX_RETRY_ATTEMPTS): ${e.message}"
+                )
+
+                if (!isRetryable || attempt == MAX_RETRY_ATTEMPTS - 1) {
+                    throw e
+                }
+
+                kotlinx.coroutines.delay(delayMs)
+                delayMs = (delayMs * RETRY_MULTIPLIER).toLong().coerceAtMost(MAX_RETRY_DELAY_MS)
+            }
+        }
+
+        throw lastException ?: Exception("$operation failed after $MAX_RETRY_ATTEMPTS attempts")
+    }
+
+    /**
+     * Determine if an error is retryable (network issues, rate limits, server errors).
+     * Auth errors and safety blocks are NOT retryable.
+     */
+    private fun isRetryableError(e: Exception): Boolean {
+        val message = e.message?.lowercase() ?: ""
+        return message.contains("network") ||
+                message.contains("timeout") ||
+                message.contains("connection") ||
+                message.contains("429") ||
+                message.contains("503") ||
+                message.contains("500") ||
+                message.contains("unavailable") ||
+                e is java.io.IOException
     }
 
     private fun getErrorMessage(e: Exception): String {
