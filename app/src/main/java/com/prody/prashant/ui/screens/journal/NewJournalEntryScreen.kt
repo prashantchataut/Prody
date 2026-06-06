@@ -88,13 +88,41 @@ import com.prody.prashant.R
 import com.prody.prashant.domain.model.Mood
 import com.prody.prashant.domain.validation.ContentValidation
 import com.prody.prashant.domain.validation.ContentValidator
-import com.prody.prashant.ui.components.AmbientBackground
 import com.prody.prashant.ui.components.MoodSuggestionHint
+import com.prody.prashant.ui.components.ProdyIconButton
 import com.prody.prashant.ui.components.SessionResultCard
 import com.prody.prashant.ui.components.rememberMoodSuggestionState
-import com.prody.prashant.ui.components.getCurrentTimeOfDay
-import com.prody.prashant.ui.components.mapMoodToAmbient
-import com.prody.prashant.ui.theme.*
+import com.prody.prashant.ui.theme.JournalTemplate
+import com.prody.prashant.ui.theme.MoodHappy
+import com.prody.prashant.ui.theme.MoodCalm
+import com.prody.prashant.ui.theme.MoodAnxious
+import com.prody.prashant.ui.theme.MoodSad
+import com.prody.prashant.ui.theme.MoodMotivated
+import com.prody.prashant.ui.theme.MoodGrateful
+import com.prody.prashant.ui.theme.MoodConfused
+import com.prody.prashant.ui.theme.MoodExcited
+import com.prody.prashant.ui.theme.MoodNostalgic
+import com.prody.prashant.ui.theme.icon
+import com.prody.prashant.ui.theme.PoppinsFamily
+import com.prody.prashant.ui.theme.ProdyBackgroundDark
+import com.prody.prashant.ui.theme.ProdyBackgroundLight
+import com.prody.prashant.ui.theme.ProdyDesignTokens
+import com.prody.prashant.ui.theme.ProdyForestGreen
+import com.prody.prashant.ui.theme.ProdyOutlineDark
+import com.prody.prashant.ui.theme.ProdyOutlineLight
+import com.prody.prashant.ui.theme.ProdySuccessContainer
+import com.prody.prashant.ui.theme.ProdySuccessContainerDark
+import com.prody.prashant.ui.theme.ProdySurfaceDark
+import com.prody.prashant.ui.theme.ProdySurfaceLight
+import com.prody.prashant.ui.theme.ProdySurfaceVariantDark
+import com.prody.prashant.ui.theme.ProdySurfaceVariantLight
+import com.prody.prashant.ui.theme.ProdyTextPrimaryDark
+import com.prody.prashant.ui.theme.ProdyTextPrimaryLight
+import com.prody.prashant.ui.theme.ProdyTextSecondaryDark
+import com.prody.prashant.ui.theme.ProdyTextSecondaryLight
+import com.prody.prashant.ui.theme.ProdyTextTertiaryDark
+import com.prody.prashant.ui.theme.ProdyTextTertiaryLight
+import com.prody.prashant.util.rememberProdyHaptic
 
 /**
  * Journal New Entry Screen - Premium Minimalist Design
@@ -491,9 +519,29 @@ private fun Color.luminance(): Float = 0.2126f * red + 0.7152f * green + 0.0722f
 private fun JournalTopBar(onBackClick: () -> Unit, onSaveClick: () -> Unit, isSaveEnabled: Boolean, isSaving: Boolean, isGeneratingAi: Boolean, colors: JournalThemeColors) {
     CenterAlignedTopAppBar(
         title = { Text(text = stringResource(R.string.new_entry), style = MaterialTheme.typography.titleMedium.copy(fontFamily = PoppinsFamily, fontWeight = FontWeight.SemiBold), color = colors.primaryText) },
-        navigationIcon = { IconButton(onClick = onBackClick) { Icon(imageVector = ProdyIcons.ArrowBack, contentDescription = stringResource(R.string.back), tint = colors.primaryText) } },
+        navigationIcon = {
+            ProdyIconButton(
+                icon = ProdyIcons.ArrowBack,
+                onClick = onBackClick,
+                contentDescription = stringResource(R.string.cd_back_button),
+                tint = colors.primaryText
+            )
+        },
         actions = {
-            Box(modifier = Modifier.padding(end = 8.dp).clip(RoundedCornerShape(20.dp)).background(colors.saveButtonBg).clickable(enabled = isSaveEnabled) { onSaveClick() }.padding(horizontal = 16.dp, vertical = 8.dp), contentAlignment = Alignment.Center) {
+            val saveDesc = stringResource(R.string.cd_save_button)
+            Box(
+                modifier = Modifier
+                    .padding(end = 8.dp)
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(colors.saveButtonBg)
+                    .clickable(enabled = isSaveEnabled) { onSaveClick() }
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .semantics {
+                        role = Role.Button
+                        contentDescription = saveDesc
+                    },
+                contentAlignment = Alignment.Center
+            ) {
                 if (isSaving) {
                     CircularProgressIndicator(modifier = Modifier.size(14.dp), strokeWidth = 2.dp, color = colors.accent)
                 } else {
@@ -522,7 +570,19 @@ private fun UseTemplateSection(onTemplateSelected: (JournalTemplate) -> Unit, co
 
 @Composable
 private fun TemplateCard(title: String, description: String, icon: ImageVector, onClick: () -> Unit, colors: JournalThemeColors) {
-    Box(modifier = Modifier.width(160.dp).height(180.dp).clip(RoundedCornerShape(16.dp)).background(colors.surface).clickable(onClick = onClick)) {
+    val templateDesc = stringResource(R.string.cd_use_template, title)
+    Box(
+        modifier = Modifier
+            .width(160.dp)
+            .height(180.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .background(colors.surface)
+            .clickable(onClick = onClick)
+            .semantics {
+                role = Role.Button
+                contentDescription = templateDesc
+            }
+    ) {
         Icon(imageVector = icon, contentDescription = null, tint = colors.cardCornerDetail, modifier = Modifier.size(80.dp).align(Alignment.TopEnd).offset(20.dp, (-20).dp))
         Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
             Box(modifier = Modifier.size(40.dp).clip(CircleShape).background(colors.surface).border(1.dp, colors.iconCircleBorder, CircleShape), contentAlignment = Alignment.Center) {
@@ -550,7 +610,23 @@ private fun MoodSelectionSection(selectedMood: Mood, onMoodSelected: (Mood) -> U
 
 @Composable
 private fun MoodButton(mood: Mood, isSelected: Boolean, onClick: () -> Unit, colors: JournalThemeColors) {
-    Box(modifier = Modifier.height(48.dp).clip(RoundedCornerShape(24.dp)).background(if (isSelected) colors.accent else colors.surface).clickable(onClick = onClick).padding(horizontal = 16.dp), contentAlignment = Alignment.Center) {
+    val haptic = rememberProdyHaptic()
+    Box(
+        modifier = Modifier
+            .height(48.dp)
+            .clip(RoundedCornerShape(24.dp))
+            .background(if (isSelected) colors.accent else colors.surface)
+            .clickable {
+                haptic.selection()
+                onClick()
+            }
+            .padding(horizontal = 16.dp)
+            .semantics {
+                role = Role.Button
+                contentDescription = mood.displayName
+            },
+        contentAlignment = Alignment.Center
+    ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Icon(imageVector = mood.icon, contentDescription = null, tint = if (isSelected) Color.White else colors.primaryText, modifier = Modifier.size(20.dp))
             Text(text = mood.displayName, style = MaterialTheme.typography.labelLarge.copy(fontFamily = PoppinsFamily, fontWeight = FontWeight.Bold), color = if (isSelected) Color.White else colors.primaryText)
@@ -571,12 +647,36 @@ private fun JournalInputField(content: String, wordCount: Int, onContentChanged:
                 BasicTextField(value = content, onValueChange = onContentChanged, modifier = Modifier.fillMaxWidth().heightIn(min = 120.dp).focusRequester(focusRequester), textStyle = TextStyle(fontFamily = PoppinsFamily, fontSize = 16.sp, color = colors.primaryText), cursorBrush = SolidColor(colors.accent), decorationBox = { inner -> Box { if (content.isEmpty()) Text("What's on your mind?", style = TextStyle(fontFamily = PoppinsFamily, fontSize = 16.sp, color = colors.placeholderText)) ; inner() } })
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                        IconButton(onClick = onMediaClick) { Icon(imageVector = ProdyIcons.Image, contentDescription = null, tint = colors.primaryText) }
-                        IconButton(onClick = onVoiceClick) { Icon(imageVector = if (isRecording) ProdyIcons.Stop else ProdyIcons.Mic, contentDescription = null, tint = if (isRecording) colors.accent else colors.primaryText) }
-                        IconButton(onClick = onListClick) { Icon(imageVector = Icons.Filled.Menu, contentDescription = null, tint = colors.primaryText) }
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        ProdyIconButton(
+                            icon = ProdyIcons.Image,
+                            onClick = onMediaClick,
+                            contentDescription = stringResource(R.string.cd_add_media),
+                            tint = colors.primaryText
+                        )
+                        ProdyIconButton(
+                            icon = if (isRecording) ProdyIcons.Stop else ProdyIcons.Mic,
+                            onClick = onVoiceClick,
+                            contentDescription = stringResource(if (isRecording) R.string.cd_stop_recording else R.string.cd_voice_record),
+                            tint = if (isRecording) colors.accent else colors.primaryText
+                        )
+                        ProdyIconButton(
+                            icon = ProdyIcons.List,
+                            onClick = onListClick,
+                            contentDescription = stringResource(R.string.cd_bullet_list),
+                            tint = colors.primaryText
+                        )
                     }
-                    Text(text = "$wordCount WORDS", style = MaterialTheme.typography.labelSmall, color = colors.secondaryText)
+                    val wordCountColor = when {
+                        wordCount < 5 -> ProdyDesignTokens.SemanticColors.error
+                        wordCount < 20 -> ProdyDesignTokens.SemanticColors.warning
+                        else -> ProdyDesignTokens.SemanticColors.success
+                    }
+                    Text(
+                        text = stringResource(R.string.word_count, wordCount).uppercase(),
+                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                        color = wordCountColor
+                    )
                 }
             }
         }
@@ -602,26 +702,45 @@ private fun AttachedMediaSection(photos: List<String>, videos: List<String>, onR
 private fun MediaThumbnail(uri: String, isVideo: Boolean, onRemove: () -> Unit, colors: JournalThemeColors) {
     Box(modifier = Modifier.size(72.dp).clip(RoundedCornerShape(12.dp))) {
         AsyncImage(model = uri, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
-        IconButton(onClick = onRemove, modifier = Modifier.align(Alignment.TopEnd).size(24.dp)) { Icon(imageVector = ProdyIcons.Close, contentDescription = null, tint = Color.White) }
+        IconButton(onClick = onRemove, modifier = Modifier.align(Alignment.TopEnd).size(24.dp)) {
+            Icon(imageVector = ProdyIcons.Close, contentDescription = stringResource(R.string.cd_remove_media), tint = Color.White)
+        }
     }
 }
 
 @Composable
 private fun VoiceRecordingPreview(duration: Long, isPlaying: Boolean, onPlayToggle: () -> Unit, onRemove: () -> Unit, colors: JournalThemeColors) {
     Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).clip(RoundedCornerShape(12.dp)).background(colors.surface).padding(12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        IconButton(onClick = onPlayToggle, modifier = Modifier.size(40.dp).clip(CircleShape).background(colors.accent)) { Icon(imageVector = if (isPlaying) ProdyIcons.Pause else ProdyIcons.PlayArrow, contentDescription = null, tint = Color.White) }
+        IconButton(
+            onClick = onPlayToggle,
+            modifier = Modifier.size(40.dp).clip(CircleShape).background(colors.accent)
+        ) {
+            Icon(
+                imageVector = if (isPlaying) ProdyIcons.Pause else ProdyIcons.PlayArrow,
+                contentDescription = stringResource(if (isPlaying) R.string.cd_pause_audio else R.string.cd_play_audio),
+                tint = Color.White
+            )
+        }
         Text(text = formatDuration(duration), modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodySmall, color = colors.secondaryText)
-        IconButton(onClick = onRemove) { Icon(imageVector = ProdyIcons.Delete, contentDescription = null, tint = Color.Red) }
+        IconButton(onClick = onRemove) {
+            Icon(imageVector = ProdyIcons.Delete, contentDescription = stringResource(R.string.cd_remove_media), tint = Color.Red)
+        }
     }
 }
 
 @Composable
 private fun RecordingIndicator(timeElapsed: Long, onStop: () -> Unit, onCancel: () -> Unit, colors: JournalThemeColors) {
+    val stopDesc = stringResource(R.string.cd_stop_recording)
     Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).clip(RoundedCornerShape(12.dp)).background(colors.surface).padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
         Box(modifier = Modifier.size(12.dp).clip(CircleShape).background(Color.Red))
         Text(text = formatDuration(timeElapsed), modifier = Modifier.weight(1f).padding(start = 12.dp), color = colors.primaryText)
-        TextButton(onClick = onCancel) { Text("Cancel", color = colors.secondaryText) }
-        TextButton(onClick = onStop) { Text("Stop", color = colors.accent) }
+        TextButton(onClick = onCancel) { Text(stringResource(R.string.action_cancel), color = colors.secondaryText) }
+        TextButton(
+            onClick = onStop,
+            modifier = Modifier.semantics { contentDescription = stopDesc }
+        ) {
+            Text(stringResource(R.string.action_done), color = colors.accent)
+        }
     }
 }
 
