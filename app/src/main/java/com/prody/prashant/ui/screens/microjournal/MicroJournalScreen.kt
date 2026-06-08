@@ -32,7 +32,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.data.local.entity.MicroEntryEntity
 import com.prody.prashant.domain.model.Mood
-import com.prody.prashant.ui.components.ProdyCard
+import com.prody.prashant.ui.components.*
+import com.prody.prashant.util.rememberProdyHaptic
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -75,12 +76,11 @@ fun MicroJournalScreen(
                     }
                 },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(
-                            imageVector = ProdyIcons.ArrowBack,
-                            contentDescription = "Back"
-                        )
-                    }
+                    ProdyIconButton(
+                        icon = ProdyIcons.ArrowBack,
+                        onClick = onNavigateBack,
+                        contentDescription = "Back"
+                    )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.background
@@ -147,6 +147,8 @@ fun MicroJournalScreen(
     }
 
     // Expansion confirmation dialog
+    val haptic = rememberProdyHaptic()
+
     if (uiState.showExpandConfirmation && uiState.entryToExpand != null) {
         AlertDialog(
             onDismissRequest = viewModel::dismissExpandConfirmation,
@@ -157,6 +159,7 @@ fun MicroJournalScreen(
             confirmButton = {
                 TextButton(
                     onClick = {
+                        haptic.click()
                         viewModel.getExpansionContent()?.let { (entry, content) ->
                             onNavigateToJournalWithContent(content, entry.id)
                         }
@@ -256,23 +259,14 @@ private fun QuickCaptureSheet(
             Spacer(modifier = Modifier.height(24.dp))
 
             // Save button
-            Button(
+            ProdyPrimaryButton(
+                text = "Save",
                 onClick = onSave,
                 modifier = Modifier.fillMaxWidth(),
-                enabled = content.isNotBlank() && !isSaving
-            ) {
-                if (isSaving) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(20.dp),
-                        strokeWidth = 2.dp,
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-                } else {
-                    Icon(ProdyIcons.Check, contentDescription = null)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Save")
-                }
-            }
+                enabled = content.isNotBlank(),
+                loading = isSaving,
+                leadingIcon = ProdyIcons.Check
+            )
 
             Spacer(modifier = Modifier.height(32.dp))
         }
@@ -288,6 +282,7 @@ private fun MoodSelector(
         Mood.HAPPY, Mood.CALM, Mood.GRATEFUL,
         Mood.ANXIOUS, Mood.SAD, Mood.CONFUSED
     )
+    val haptic = rememberProdyHaptic()
 
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -297,7 +292,10 @@ private fun MoodSelector(
 
             FilterChip(
                 selected = isSelected,
-                onClick = { onMoodSelected(if (isSelected) null else mood) },
+                onClick = {
+                    haptic.selection()
+                    onMoodSelected(if (isSelected) null else mood)
+                },
                 label = {
                     Text(
                         text = "${mood.emoji} ${mood.displayName}",
@@ -459,22 +457,13 @@ private fun MicroEntryCard(
             // Expand button if not already expanded
             if (entry.expandedToEntryId == null) {
                 Spacer(modifier = Modifier.height(12.dp))
-                TextButton(
+                ProdyGhostButton(
+                    text = "Expand",
                     onClick = onExpandClick,
                     modifier = Modifier.align(Alignment.End),
-                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
-                ) {
-                    Icon(
-                        imageVector = ProdyIcons.OpenInFull,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = "Expand",
-                        style = MaterialTheme.typography.labelMedium
-                    )
-                }
+                    size = ProdyButtonSize.SMALL,
+                    leadingIcon = ProdyIcons.OpenInFull
+                )
             } else {
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(
@@ -587,41 +576,31 @@ private fun MicroEntryDetailSheet(
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            val haptic = rememberProdyHaptic()
             // Action buttons
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 if (entry.expandedToEntryId == null) {
-                    OutlinedButton(
+                    ProdyOutlinedButton(
+                        text = "Expand",
                         onClick = onExpand,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(
-                            imageVector = ProdyIcons.OpenInFull,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Expand")
-                    }
+                        modifier = Modifier.weight(1f),
+                        leadingIcon = ProdyIcons.OpenInFull
+                    )
                 }
 
-                OutlinedButton(
-                    onClick = { showDeleteConfirmation = true },
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = MaterialTheme.colorScheme.error
-                    ),
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Icon(
-                        imageVector = ProdyIcons.Delete,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Delete")
-                }
+                ProdyOutlinedButton(
+                    text = "Delete",
+                    onClick = {
+                        haptic.error()
+                        showDeleteConfirmation = true
+                    },
+                    modifier = Modifier.weight(1f),
+                    leadingIcon = ProdyIcons.Delete,
+                    borderColor = MaterialTheme.colorScheme.error
+                )
             }
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -630,6 +609,7 @@ private fun MicroEntryDetailSheet(
 
     // Delete confirmation
     if (showDeleteConfirmation) {
+        val haptic = rememberProdyHaptic()
         AlertDialog(
             onDismissRequest = { showDeleteConfirmation = false },
             title = { Text("Delete Thought?") },
@@ -637,6 +617,7 @@ private fun MicroEntryDetailSheet(
             confirmButton = {
                 TextButton(
                     onClick = {
+                        haptic.click()
                         showDeleteConfirmation = false
                         onDelete()
                     },
@@ -686,11 +667,11 @@ private fun EmptyMicroJournal(onCaptureClick: () -> Unit) {
                 textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(24.dp))
-            Button(onClick = onCaptureClick) {
-                Icon(ProdyIcons.Add, contentDescription = null)
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Capture First Thought")
-            }
+            ProdyPrimaryButton(
+                text = "Capture First Thought",
+                onClick = onCaptureClick,
+                leadingIcon = ProdyIcons.Add
+            )
         }
     }
 }
