@@ -194,7 +194,6 @@ private fun CrashScreen(
             Text(text = "$timestamp • $threadName", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(modifier = Modifier.height(20.dp))
             
-            // Simplified for brevity and compilation safety
             Text(text = exceptionType, color = Color(0xFFE65C5C), fontWeight = FontWeight.Bold)
             Text(text = exceptionMessage, color = MaterialTheme.colorScheme.onSurface)
             
