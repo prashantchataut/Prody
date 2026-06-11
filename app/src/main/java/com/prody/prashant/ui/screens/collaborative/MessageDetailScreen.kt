@@ -26,6 +26,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.R
 import com.prody.prashant.domain.collaborative.*
+import com.prody.prashant.ui.components.SecureScreen
 import com.prody.prashant.ui.theme.*
 import java.time.format.DateTimeFormatter
 
@@ -63,6 +64,9 @@ fun MessageDetailScreen(
     val receivedMessage = uiState.receivedMessage
     val theme = sentMessage?.cardDesign?.theme ?: receivedMessage?.cardDesign?.theme ?: CardTheme.DEFAULT
     val themeColor = Color(theme.colorDark)
+
+    // Security: Collaborative messages are personal and sensitive
+    SecureScreen()
 
     Scaffold(
         topBar = {

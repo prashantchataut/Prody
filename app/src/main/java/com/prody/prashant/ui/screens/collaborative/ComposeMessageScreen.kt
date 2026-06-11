@@ -31,6 +31,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.R
 import com.prody.prashant.domain.collaborative.*
+import com.prody.prashant.ui.components.SecureScreen
 import com.prody.prashant.ui.theme.*
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -70,6 +71,9 @@ fun ComposeMessageScreen(
         val occasion = preSelectedOccasion?.let { Occasion.fromId(it) }
         viewModel.startComposing(contact, occasion)
     }
+
+    // Security: Collaborative messages are personal and sensitive
+    SecureScreen()
 
     // Handle successful send
     LaunchedEffect(uiState.messageSent) {
