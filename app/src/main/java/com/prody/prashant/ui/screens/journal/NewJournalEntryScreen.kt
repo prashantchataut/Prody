@@ -88,6 +88,7 @@ import com.prody.prashant.R
 import com.prody.prashant.domain.model.Mood
 import com.prody.prashant.domain.validation.ContentValidation
 import com.prody.prashant.domain.validation.ContentValidator
+import com.prody.prashant.ui.components.*
 import com.prody.prashant.ui.components.AmbientBackground
 import com.prody.prashant.ui.components.MoodSuggestionHint
 import com.prody.prashant.ui.components.SessionResultCard
@@ -571,13 +572,16 @@ private fun JournalInputField(content: String, wordCount: Int, onContentChanged:
                 BasicTextField(value = content, onValueChange = onContentChanged, modifier = Modifier.fillMaxWidth().heightIn(min = 120.dp).focusRequester(focusRequester), textStyle = TextStyle(fontFamily = PoppinsFamily, fontSize = 16.sp, color = colors.primaryText), cursorBrush = SolidColor(colors.accent), decorationBox = { inner -> Box { if (content.isEmpty()) Text("What's on your mind?", style = TextStyle(fontFamily = PoppinsFamily, fontSize = 16.sp, color = colors.placeholderText)) ; inner() } })
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                        IconButton(onClick = onMediaClick) { Icon(imageVector = ProdyIcons.Image, contentDescription = null, tint = colors.primaryText) }
-                        IconButton(onClick = onVoiceClick) { Icon(imageVector = if (isRecording) ProdyIcons.Stop else ProdyIcons.Mic, contentDescription = null, tint = if (isRecording) colors.accent else colors.primaryText) }
-                        IconButton(onClick = onListClick) { Icon(imageVector = Icons.Filled.Menu, contentDescription = null, tint = colors.primaryText) }
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        ProdyIconButton(icon = ProdyIcons.Image, onClick = onMediaClick, tint = colors.primaryText, contentDescription = stringResource(R.string.cd_attach_media), size = 40.dp)
+                        ProdyIconButton(icon = if (isRecording) ProdyIcons.Stop else ProdyIcons.Mic, onClick = onVoiceClick, tint = if (isRecording) colors.accent else colors.primaryText, contentDescription = stringResource(R.string.cd_voice_note), size = 40.dp)
+                        ProdyIconButton(icon = Icons.Filled.Menu, onClick = onListClick, tint = colors.primaryText, contentDescription = stringResource(R.string.cd_bullet_list), size = 40.dp)
                     }
-                    Text(text = "$wordCount WORDS", style = MaterialTheme.typography.labelSmall, color = colors.secondaryText)
+                    val wordCountColor = if (contentValidation is ContentValidation.TooShort || contentValidation is ContentValidation.TooVague) ProdyWarning else colors.secondaryText
+                    Text(text = "$wordCount WORDS", style = MaterialTheme.typography.labelSmall, color = wordCountColor)
                 }
+                Spacer(modifier = Modifier.height(8.dp))
+                LinearProgressIndicator(progress = { completionProgress }, modifier = Modifier.fillMaxWidth().height(4.dp).clip(RoundedCornerShape(2.dp)), color = colors.accent, trackColor = colors.sliderInactive)
             }
         }
     }
