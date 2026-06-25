@@ -152,6 +152,23 @@ android {
     }
 }
 
+// Workaround for Hilt + KSP duplicate class issue:
+// KSP generates Hilt _GeneratedInjector files in both hilt_aggregated_deps/ and
+// byRounds/2/hilt_aggregated_deps/, causing "duplicate class" Java compilation errors.
+// Delete the byRounds directory before Java compilation to prevent this.
+tasks.matching { it.name.startsWith("compileDebugJavaWithJavac") || it.name.startsWith("compileReleaseJavaWithJavac") }.configureEach {
+    doFirst {
+        val byRoundsDir = file("build/generated/ksp/debug/java/byRounds")
+        if (byRoundsDir.exists()) {
+            byRoundsDir.deleteRecursively()
+        }
+        val byRoundsDirRelease = file("build/generated/ksp/release/java/byRounds")
+        if (byRoundsDirRelease.exists()) {
+            byRoundsDirRelease.deleteRecursively()
+        }
+    }
+}
+
 dependencies {
     // Core
     implementation(libs.androidx.core.ktx)

@@ -9,6 +9,7 @@ import com.prody.prashant.domain.repository.MonthlyLetterRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import android.util.Log
 import java.time.YearMonth
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -23,6 +24,10 @@ class MonthlyLetterRepositoryImpl @Inject constructor(
     private val monthlyLetterDao: MonthlyLetterDao,
     private val letterGenerator: MonthlyLetterGenerator
 ) : MonthlyLetterRepository {
+
+    companion object {
+        private const val TAG = "MonthlyLetterRepo"
+    }
 
     // ==================== RETRIEVAL ====================
 
@@ -208,6 +213,7 @@ class MonthlyLetterRepositoryImpl @Inject constructor(
         return try {
             monthlyLetterDao.letterExistsForMonth(userId, monthYear.monthValue, monthYear.year) > 0
         } catch (e: Exception) {
+            Log.w(TAG, "letterExistsForMonth failed for $userId/${monthYear}", e)
             false
         }
     }
@@ -216,6 +222,7 @@ class MonthlyLetterRepositoryImpl @Inject constructor(
         return try {
             letterGenerator.canGenerate(userId, monthYear)
         } catch (e: Exception) {
+            Log.w(TAG, "canGenerateLetter failed for $userId/${monthYear}", e)
             false
         }
     }
