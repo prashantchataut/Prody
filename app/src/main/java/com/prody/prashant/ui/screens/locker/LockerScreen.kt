@@ -79,6 +79,7 @@ import com.prody.prashant.data.local.entity.EvidenceRarity
 import com.prody.prashant.data.local.entity.EvidenceType
 import com.prody.prashant.ui.theme.ProdyAccentGreen
 import com.prody.prashant.ui.theme.isDarkTheme
+import com.prody.prashant.util.SecureScreen
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -126,6 +127,9 @@ fun LockerScreen(
 
     val backgroundColor = if (isDark) Color(0xFF0D1B19) else Color(0xFFF5F9F8)
     val cardColor = if (isDark) Color(0xFF1A2E2A) else Color(0xFFFFFFFF)
+
+    // Security: Prevent screenshots of growth evidence and receipts
+    SecureScreen()
 
     Scaffold(
         containerColor = backgroundColor

@@ -39,6 +39,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.data.local.entity.SavedWisdomEntity
 import com.prody.prashant.domain.model.Mood
 import com.prody.prashant.ui.components.ProdyCard
+import com.prody.prashant.util.SecureScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,6 +49,9 @@ fun DailyRitualScreen(
     viewModel: DailyRitualViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    // Security: Prevent screenshots of daily ritual reflections
+    SecureScreen()
 
     // Handle navigation
     LaunchedEffect(uiState.shouldNavigateToJournal) {
