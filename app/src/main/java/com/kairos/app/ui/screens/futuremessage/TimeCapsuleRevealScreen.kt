@@ -1,7 +1,6 @@
 package com.kairos.app.ui.screens.futuremessage
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -135,14 +134,12 @@ fun TimeCapsuleRevealScreen(
                     targetState = state.hasBeenRevealed,
                     modifier = Modifier.weight(1f),
                     transitionSpec = {
-                        val transform = if (reduceMotion) {
+                        if (reduceMotion) {
                             fadeIn(tween(KairosDurations.Micro)) togetherWith fadeOut(tween(KairosDurations.Micro))
                         } else {
                             (fadeIn(tween(KairosDurations.Page)) + scaleIn(initialScale = 0.97f, animationSpec = tween(KairosDurations.Page, easing = KairosEasing.EaseOutExpo))) togetherWith
                                 (fadeOut(tween(KairosDurations.State)) + scaleOut(targetScale = 1.03f, animationSpec = tween(KairosDurations.State)))
                         }
-                        transform.sizeTransform = SizeTransform(clip = false)
-                        transform
                     },
                     label = "future_letter_reveal"
                 ) { revealed ->
