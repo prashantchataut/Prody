@@ -12,7 +12,6 @@ import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import dagger.hilt.android.qualifiers.ApplicationContext
 import com.prody.prashant.data.ai.BuddhaAiService
 import com.prody.prashant.data.ai.GeminiService
 import com.prody.prashant.data.ai.OpenRouterService
