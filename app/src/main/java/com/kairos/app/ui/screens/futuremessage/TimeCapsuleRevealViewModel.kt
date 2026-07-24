@@ -1,12 +1,17 @@
-﻿package com.kairos.app.ui.screens.futuremessage
+package com.kairos.app.ui.screens.futuremessage
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.kairos.app.data.local.dao.FutureMessageDao
-import com.kairos.app.data.local.dao.FutureMessageReplyDao
-import com.kairos.app.data.local.dao.JournalDao
+import com.kairos.app.data.auth.UserIdProvider
 import com.kairos.app.data.local.entity.FutureMessageEntity
 import com.kairos.app.data.local.entity.JournalEntryEntity
+import com.kairos.app.domain.gamification.PointCalculator
+import com.kairos.app.domain.gamification.Skill
+import com.kairos.app.domain.repository.FutureMessageReplyRepository
+import com.kairos.app.domain.repository.FutureMessageRepository
+import com.kairos.app.domain.repository.GamificationRepository
+import com.kairos.app.domain.repository.JournalRepository
+import com.kairos.app.domain.repository.StreakActivityType
 import com.kairos.app.notification.TimeCapsuleNotifications
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -35,9 +40,11 @@ data class TimeCapsuleRevealUiState(
  */
 @HiltViewModel
 class TimeCapsuleRevealViewModel @Inject constructor(
-    private val futureMessageDao: FutureMessageDao,
-    private val futureMessageReplyDao: FutureMessageReplyDao,
-    private val journalDao: JournalDao
+    private val futureMessageRepository: FutureMessageRepository,
+    private val futureMessageReplyRepository: FutureMessageReplyRepository,
+    private val journalRepository: JournalRepository,
+    private val gamificationRepository: GamificationRepository,
+    private val userIdProvider: UserIdProvider
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(TimeCapsuleRevealUiState())
@@ -55,7 +62,7 @@ class TimeCapsuleRevealViewModel @Inject constructor(
             try {
                 _uiState.update { it.copy(isLoading = true, error = null) }
 
-                val message = futureMessageDao.getMessageById(messageId)
+                val message = futureMessageRepository.getMessage(messageId).getOrNull()
                 if (message == null) {
                     _uiState.update {
                         it.copy(
@@ -67,7 +74,7 @@ class TimeCapsuleRevealViewModel @Inject constructor(
                 }
 
                 // Check if there's a reply
-                val hasReply = futureMessageReplyDao.hasReplyForMessage(messageId)
+                val hasReply = futureMessageReplyRepository.hasReplyForMessage(messageId)
 
                 // Calculate time ago
                 val timeAgo = TimeCapsuleNotifications.getDurationText(
@@ -86,10 +93,6 @@ class TimeCapsuleRevealViewModel @Inject constructor(
                     )
                 }
 
-                // Mark as read with timestamp if not already read
-                if (!message.isRead) {
-                    futureMessageDao.markAsReadWithTimestamp(messageId)
-                }
 
             } catch (e: Exception) {
                 android.util.Log.e(TAG, "Error loading message: $messageId", e)
@@ -107,7 +110,34 @@ class TimeCapsuleRevealViewModel @Inject constructor(
      * Trigger the reveal animation (called after initial load)
      */
     fun reveal() {
+        val state = _uiState.value
+        if (state.hasBeenRevealed) return
+        val message = state.message ?: return
         _uiState.update { it.copy(hasBeenRevealed = true) }
+        viewModelScope.launch {
+            // Reading state changes only when the user deliberately opens the sealed message.
+            // Navigation alone must never consume the reveal experience.
+            futureMessageRepository.markRevealed(message.id).onError { error ->
+                android.util.Log.w(
+                    TAG,
+                    "Letter revealed but read state could not be persisted",
+                    error.exception
+                )
+            }
+
+            runCatching {
+                gamificationRepository.awardSkillXp(
+                    skill = Skill.COURAGE,
+                    amount = PointCalculator.Courage.OPEN_DELIVERED_MESSAGE,
+                    rewardKey = "future_message_opened_${message.id}",
+                    respectDailyCap = true
+                )
+                gamificationRepository.recordDailyActivity(StreakActivityType.OPENED_MESSAGE)
+                gamificationRepository.checkAndUpdateAchievements()
+            }.onFailure {
+                android.util.Log.w(TAG, "Letter opened but progression could not be updated", it)
+            }
+        }
     }
 
     /**
@@ -119,8 +149,13 @@ class TimeCapsuleRevealViewModel @Inject constructor(
                 val message = _uiState.value.message ?: return@launch
                 val newFavoriteState = !_uiState.value.isFavorite
 
-                futureMessageDao.setFavorite(message.id, newFavoriteState)
-                _uiState.update { it.copy(isFavorite = newFavoriteState) }
+                futureMessageRepository.setFavorite(message.id, newFavoriteState)
+                    .onSuccess {
+                        _uiState.update { it.copy(isFavorite = newFavoriteState) }
+                    }
+                    .onError { error ->
+                        _uiState.update { it.copy(error = error.userMessage) }
+                    }
 
             } catch (e: Exception) {
                 android.util.Log.e(TAG, "Error toggling favorite", e)
@@ -135,8 +170,13 @@ class TimeCapsuleRevealViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val message = _uiState.value.message ?: return@launch
-                futureMessageDao.setFavorite(message.id, true)
-                _uiState.update { it.copy(isFavorite = true) }
+                futureMessageRepository.setFavorite(message.id, true)
+                    .onSuccess {
+                        _uiState.update { it.copy(isFavorite = true) }
+                    }
+                    .onError { error ->
+                        _uiState.update { it.copy(error = error.userMessage) }
+                    }
             } catch (e: Exception) {
                 android.util.Log.e(TAG, "Error saving to favorites", e)
             }
@@ -157,6 +197,7 @@ class TimeCapsuleRevealViewModel @Inject constructor(
 
             // Create journal entry with context
             val journalEntry = JournalEntryEntity(
+                userId = userIdProvider.getUserId(),
                 title = "Reply to Past Self",
                 content = buildReplyContent(message, reflectionText),
                 mood = "reflective",
@@ -165,10 +206,20 @@ class TimeCapsuleRevealViewModel @Inject constructor(
                 createdAt = System.currentTimeMillis()
             )
 
-            val journalId = journalDao.insertEntry(journalEntry)
+            val journalResult = journalRepository.saveEntry(journalEntry)
+            val journalId = journalResult.getOrNull()
+            if (journalId == null) {
+                val messageText = (journalResult as? com.kairos.app.domain.common.Result.Error)
+                    ?.userMessage
+                    ?: "Kairos could not save this reflection."
+                _uiState.update { it.copy(isSavingReply = false, error = messageText) }
+                return null
+            }
 
-            // Link the journal entry to the message
-            futureMessageDao.setReplyJournalEntry(message.id, journalId)
+            // Linkage is secondary; the private journal entry is already safe.
+            futureMessageRepository.linkReplyJournal(message.id, journalId).onError { error ->
+                android.util.Log.w(TAG, "Reflection saved but letter linkage failed", error.exception)
+            }
 
             _uiState.update {
                 it.copy(

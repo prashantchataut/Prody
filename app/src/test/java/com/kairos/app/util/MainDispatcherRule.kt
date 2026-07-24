@@ -1,4 +1,4 @@
-﻿package com.kairos.app.util
+package com.kairos.app.util
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi

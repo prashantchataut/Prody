@@ -1,4 +1,4 @@
-﻿package com.kairos.app.data.local.preferences
+package com.kairos.app.data.local.preferences
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences

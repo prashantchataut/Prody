@@ -1,4 +1,4 @@
-﻿package com.kairos.app.domain.gamification
+package com.kairos.app.domain.gamification
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector

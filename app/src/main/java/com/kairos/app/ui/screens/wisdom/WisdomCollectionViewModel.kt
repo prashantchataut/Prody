@@ -1,4 +1,4 @@
-﻿package com.kairos.app.ui.screens.wisdom
+package com.kairos.app.ui.screens.wisdom
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

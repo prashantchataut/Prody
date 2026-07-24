@@ -1,4 +1,4 @@
-﻿package com.kairos.app.ui.browse
+package com.kairos.app.ui.browse
 
 import com.kairos.app.data.local.entity.JournalEntryEntity
 import com.kairos.app.data.local.entity.VocabularyEntity

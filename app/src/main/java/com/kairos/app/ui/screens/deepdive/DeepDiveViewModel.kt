@@ -1,4 +1,4 @@
-﻿package com.kairos.app.ui.screens.deepdive
+package com.kairos.app.ui.screens.deepdive
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

@@ -1,4 +1,4 @@
-﻿package com.kairos.app.data.repository
+package com.kairos.app.data.repository
 
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken

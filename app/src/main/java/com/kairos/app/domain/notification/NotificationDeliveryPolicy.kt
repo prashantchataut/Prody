@@ -1,4 +1,4 @@
-﻿package com.kairos.app.domain.notification
+package com.kairos.app.domain.notification
 
 /** The small set of notification jobs allowed in the simplified product. */
 enum class NotificationIntentType {

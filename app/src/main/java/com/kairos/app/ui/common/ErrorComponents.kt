@@ -1,4 +1,4 @@
-﻿package com.kairos.app.ui.common
+package com.kairos.app.ui.common
 import com.kairos.app.ui.icons.KairosIcons
 
 import androidx.compose.foundation.layout.Arrangement

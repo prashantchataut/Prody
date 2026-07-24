@@ -1,4 +1,4 @@
-﻿package com.kairos.app.data.ai
+package com.kairos.app.data.ai
 
 import android.util.Log
 import com.kairos.app.domain.haven.ExerciseType

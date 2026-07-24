@@ -1,4 +1,4 @@
-﻿package com.kairos.app.domain.recommendation
+package com.kairos.app.domain.recommendation
 
 import android.content.Context
 import com.kairos.app.data.local.dao.JournalDao

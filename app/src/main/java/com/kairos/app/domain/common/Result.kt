@@ -1,4 +1,4 @@
-﻿package com.kairos.app.domain.common
+package com.kairos.app.domain.common
 
 /**
  * A sealed class representing the result of an operation.

@@ -1,15 +1,18 @@
-﻿package com.kairos.app.di
+package com.kairos.app.di
 
+import com.kairos.app.data.repository.AchievementRepositoryImpl
 import com.kairos.app.data.repository.CollaborativeMessageRepositoryImpl
 import com.kairos.app.data.repository.DailyRitualRepositoryImpl
 import com.kairos.app.data.repository.DeepDiveRepositoryImpl
 import com.kairos.app.data.repository.EvidenceRepositoryImpl
 import com.kairos.app.data.repository.FutureMessageReplyRepositoryImpl
+import com.kairos.app.data.repository.FutureMessageRepositoryImpl
 import com.kairos.app.data.repository.GamificationRepositoryImpl
 import com.kairos.app.data.repository.JournalRepositoryImpl
 import com.kairos.app.data.repository.MicroEntryRepositoryImpl
 import com.kairos.app.data.repository.MonthlyLetterRepositoryImpl
 import com.kairos.app.data.repository.OnboardingRepositoryImpl
+import com.kairos.app.data.repository.ProfileRepositoryImpl
 import com.kairos.app.data.repository.SocialRepositoryImpl
 import com.kairos.app.data.repository.SoulLayerRepositoryImpl
 import com.kairos.app.data.repository.TodayProgressRepositoryImpl
@@ -18,16 +21,19 @@ import com.kairos.app.data.repository.WeeklyDigestRepositoryImpl
 import com.kairos.app.data.repository.WisdomCollectionRepositoryImpl
 import com.kairos.app.data.repository.WisdomLibraryRepositoryImpl
 import com.kairos.app.data.repository.YearlyWrappedRepositoryImpl
+import com.kairos.app.domain.repository.AchievementRepository
 import com.kairos.app.domain.repository.CollaborativeMessageRepository
 import com.kairos.app.domain.repository.DailyRitualRepository
 import com.kairos.app.domain.repository.DeepDiveRepository
 import com.kairos.app.domain.repository.EvidenceRepository
 import com.kairos.app.domain.repository.FutureMessageReplyRepository
+import com.kairos.app.domain.repository.FutureMessageRepository
 import com.kairos.app.domain.repository.GamificationRepository
 import com.kairos.app.domain.repository.JournalRepository
 import com.kairos.app.domain.repository.MicroEntryRepository
 import com.kairos.app.domain.repository.MonthlyLetterRepository
 import com.kairos.app.domain.repository.OnboardingRepository
+import com.kairos.app.domain.repository.ProfileRepository
 import com.kairos.app.domain.repository.SocialRepository
 import com.kairos.app.domain.repository.SoulLayerRepository
 import com.kairos.app.domain.repository.TodayProgressRepository
@@ -51,6 +57,19 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class RepositoryModule {
+
+
+    @Binds
+    @Singleton
+    abstract fun bindAchievementRepository(
+        impl: AchievementRepositoryImpl
+    ): AchievementRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindProfileRepository(
+        impl: ProfileRepositoryImpl
+    ): ProfileRepository
 
     @Binds
     @Singleton
@@ -153,6 +172,12 @@ abstract class RepositoryModule {
     abstract fun bindDeepDiveRepository(
         impl: DeepDiveRepositoryImpl
     ): DeepDiveRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindFutureMessageRepository(
+        impl: FutureMessageRepositoryImpl
+    ): FutureMessageRepository
 
     @Binds
     @Singleton

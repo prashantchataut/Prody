@@ -1,4 +1,4 @@
-﻿package com.kairos.app.ui.screens.vocabulary
+package com.kairos.app.ui.screens.vocabulary
 import com.kairos.app.ui.icons.KairosIcons
 
 import androidx.compose.animation.AnimatedContent

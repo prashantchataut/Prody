@@ -1,4 +1,4 @@
-﻿package com.kairos.app.ui.icons
+package com.kairos.app.ui.icons
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.*

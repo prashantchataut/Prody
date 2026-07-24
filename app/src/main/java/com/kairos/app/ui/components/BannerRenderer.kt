@@ -1,4 +1,4 @@
-﻿package com.kairos.app.ui.components
+package com.kairos.app.ui.components
 import com.kairos.app.ui.icons.KairosIcons
 
 import androidx.compose.animation.core.*
@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kairos.app.domain.identity.KairosBanners
 import com.kairos.app.domain.identity.KairosBanners.PatternType
+import com.kairos.app.ui.animation.rememberKairosReducedMotion
 import com.kairos.app.ui.theme.KairosAccentGreen
 import com.kairos.app.ui.theme.KairosBackgroundDark
 import com.kairos.app.ui.theme.KairosPremiumViolet
@@ -77,53 +78,17 @@ fun BannerRenderer(
     val gradientColors = remember(banner.gradientColors) {
         banner.gradientColors.map { Color(it) }
     }
+    val reducedMotion = rememberKairosReducedMotion()
+    val shouldAnimate = showAnimation && banner.hasAnimation && !reducedMotion
+    val bannerShape = remember(banner.patternType, cornerRadius) {
+        bannerShapeFor(banner.patternType, cornerRadius)
+    }
 
-    val infiniteTransition = rememberInfiniteTransition(label = "banner_animation")
-
-    // Animation values for different patterns
-    val wavePhase by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 2 * PI.toFloat(),
-        animationSpec = infiniteRepeatable(
-            animation = tween(4000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "wave_phase"
-    )
-
-    val rotationAngle by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 360f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(20000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "rotation"
-    )
-
-    val constellationPulse by infiniteTransition.animateFloat(
-        initialValue = 0.5f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(2000, easing = EaseInOutCubic),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "constellation_pulse"
-    )
-
-    val auroraOffset by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(6000, easing = EaseInOutCubic),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "aurora_offset"
-    )
+    val motion = rememberBannerMotion(shouldAnimate)
 
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(cornerRadius))
+            .clip(bannerShape)
             .background(
                 Brush.linearGradient(
                     colors = gradientColors,
@@ -138,14 +103,14 @@ fun BannerRenderer(
                 .fillMaxSize()
                 .alpha(0.3f)
         ) {
-            val animatedWavePhase = if (showAnimation) wavePhase else 0f
-            val animatedRotation = if (showAnimation) rotationAngle else 0f
-            val animatedPulse = if (showAnimation) constellationPulse else 0.75f
-            val animatedAurora = if (showAnimation) auroraOffset else 0.5f
+            val animatedWavePhase = motion.wavePhase
+            val animatedRotation = motion.rotationAngle
+            val animatedPulse = motion.constellationPulse
+            val animatedAurora = motion.auroraOffset
 
             when (banner.patternType) {
                 PatternType.SOLID -> {
-                    // No pattern overlay for solid
+                    drawPaperCutPattern()
                 }
                 PatternType.GEOMETRIC -> {
                     drawGeometricPattern(animatedRotation)
@@ -181,6 +146,68 @@ fun BannerRenderer(
             }
         }
     }
+}
+
+
+private data class BannerMotionFrame(
+    val wavePhase: Float = 0f,
+    val rotationAngle: Float = 0f,
+    val constellationPulse: Float = 0.75f,
+    val auroraOffset: Float = 0.5f
+)
+
+/**
+ * Infinite transitions are created only for the single active preview/header.
+ * Static grid cells therefore do not consume animation clocks or trigger
+ * unnecessary recomposition while still preserving premium motion on focus.
+ */
+@Composable
+private fun rememberBannerMotion(enabled: Boolean): BannerMotionFrame {
+    if (!enabled) return BannerMotionFrame()
+
+    val transition = rememberInfiniteTransition(label = "banner_animation")
+    val wavePhase by transition.animateFloat(
+        initialValue = 0f,
+        targetValue = 2 * PI.toFloat(),
+        animationSpec = infiniteRepeatable(
+            animation = tween(4000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "wave_phase"
+    )
+    val rotationAngle by transition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(20000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "rotation"
+    )
+    val constellationPulse by transition.animateFloat(
+        initialValue = 0.5f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2000, easing = EaseInOutCubic),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "constellation_pulse"
+    )
+    val auroraOffset by transition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(6000, easing = EaseInOutCubic),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "aurora_offset"
+    )
+    return BannerMotionFrame(
+        wavePhase = wavePhase,
+        rotationAngle = rotationAngle,
+        constellationPulse = constellationPulse,
+        auroraOffset = auroraOffset
+    )
 }
 
 /**
@@ -534,6 +561,60 @@ fun SpecialBadgeDisplay(
         SpecialBadgeType.FOUNDER -> BetaBadge(modifier = modifier) // Founder uses similar style
         null -> { /* No badge */ }
     }
+}
+
+
+private fun bannerShapeFor(patternType: PatternType, radius: Dp): androidx.compose.ui.graphics.Shape = when (patternType) {
+    PatternType.GEOMETRIC, PatternType.FOCUS -> RoundedCornerShape(
+        topStart = radius * 1.7f,
+        topEnd = radius,
+        bottomEnd = 2.dp,
+        bottomStart = radius
+    )
+    PatternType.AURORA, PatternType.FLOW, PatternType.WAVES -> RoundedCornerShape(
+        topStart = radius * 2f,
+        topEnd = radius,
+        bottomEnd = radius * 1.8f,
+        bottomStart = radius
+    )
+    PatternType.MANDALA, PatternType.ZEN -> RoundedCornerShape(
+        topStart = radius * 2f,
+        topEnd = radius * 2f,
+        bottomEnd = radius,
+        bottomStart = radius
+    )
+    PatternType.CONSTELLATION, PatternType.NEBULA, PatternType.NIGHT -> RoundedCornerShape(
+        topStart = radius,
+        topEnd = radius * 2.2f,
+        bottomEnd = radius,
+        bottomStart = radius * 1.8f
+    )
+    PatternType.SOLID -> RoundedCornerShape(radius)
+}
+
+private fun DrawScope.drawPaperCutPattern() {
+    val large = Path().apply {
+        moveTo(-size.width * 0.12f, size.height * 0.2f)
+        cubicTo(
+            size.width * 0.24f, -size.height * 0.2f,
+            size.width * 0.52f, size.height * 0.58f,
+            size.width * 0.88f, size.height * 0.06f
+        )
+        lineTo(size.width * 1.1f, -size.height * 0.15f)
+        lineTo(-size.width * 0.1f, -size.height * 0.15f)
+        close()
+    }
+    drawPath(large, Color.White.copy(alpha = 0.12f))
+    drawCircle(
+        color = Color.White.copy(alpha = 0.09f),
+        radius = size.minDimension * 0.45f,
+        center = Offset(size.width * 0.86f, size.height * 1.02f)
+    )
+    drawCircle(
+        color = Color.Black.copy(alpha = 0.08f),
+        radius = size.minDimension * 0.24f,
+        center = Offset(size.width * 0.08f, size.height * 0.84f)
+    )
 }
 
 // =============================================================================

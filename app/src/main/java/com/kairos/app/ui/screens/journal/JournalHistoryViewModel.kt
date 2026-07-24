@@ -1,9 +1,9 @@
-﻿package com.kairos.app.ui.screens.journal
+package com.kairos.app.ui.screens.journal
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.kairos.app.data.local.dao.JournalDao
 import com.kairos.app.data.local.entity.JournalEntryEntity
+import com.kairos.app.domain.repository.JournalRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -60,7 +60,7 @@ private const val LOAD_MORE_INCREMENT = 5
 
 @HiltViewModel
 class JournalHistoryViewModel @Inject constructor(
-    private val journalDao: JournalDao
+    private val journalRepository: JournalRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(JournalHistoryUiState())
@@ -79,7 +79,7 @@ class JournalHistoryViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 combine(
-                    journalDao.getAllEntries(),
+                    journalRepository.getAllEntries(),
                     _selectedFilterMood,
                     _showBookmarkedOnly,
                     _dateRangeFilter,

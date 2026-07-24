@@ -1,4 +1,4 @@
-﻿package com.kairos.app.ui.screens.auth
+package com.kairos.app.ui.screens.auth
 
 import android.content.Context
 import android.content.Intent

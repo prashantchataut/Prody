@@ -18,7 +18,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.graphics.drawscope.rotate as rotateCanvas
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -334,7 +334,7 @@ private fun ConfettiCelebration(
                 val x = (particle.x + sway).coerceIn(0f, 1f)
                 val currentRotation = particle.rotation + time * particle.rotationSpeed * 360f
 
-                rotate(currentRotation, pivot = Offset(x * size.width, y * size.height)) {
+                rotateCanvas(currentRotation, pivot = Offset(x * size.width, y * size.height)) {
                     when (particle.shape) {
                         ConfettiShape.RECTANGLE -> drawRect(
                             color = particle.color,
@@ -554,7 +554,7 @@ private fun SparkleAnimation(sparkle: SparkleState) {
         val centerY = sparkle.y * size.height
         val currentSize = sparkle.size * scale
 
-        rotate(rotation, pivot = Offset(centerX, centerY)) {
+        rotateCanvas(rotation, pivot = Offset(centerX, centerY)) {
             // Draw 4-point star
             val starPath = Path().apply {
                 moveTo(centerX, centerY - currentSize)
@@ -857,7 +857,7 @@ fun BadgeShine(
         val radius = minOf(size.width, size.height) / 2
 
         // Rotating shine highlight
-        rotate(shineRotation, pivot = center) {
+        rotateCanvas(shineRotation, pivot = center) {
             drawArc(
                 brush = Brush.sweepGradient(
                     colors = listOf(

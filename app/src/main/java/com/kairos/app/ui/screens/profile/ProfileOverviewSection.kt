@@ -1,4 +1,4 @@
-﻿package com.kairos.app.ui.screens.profile
+package com.kairos.app.ui.screens.profile
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn

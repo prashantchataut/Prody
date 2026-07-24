@@ -1,4 +1,4 @@
-﻿package com.kairos.app.ui.screens.profile
+package com.kairos.app.ui.screens.profile
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.SizeTransform
@@ -78,6 +78,8 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.kairos.app.ui.animation.KairosDurations
 import com.kairos.app.ui.animation.KairosReveal
+import com.kairos.app.domain.identity.KairosBanners
+import com.kairos.app.ui.components.BannerRenderer
 import com.kairos.app.ui.components.kairos.KairosGlassSurface
 import com.kairos.app.ui.components.kairos.KairosIconButton
 import com.kairos.app.ui.components.kairos.KairosMark
@@ -101,6 +103,7 @@ fun FocusedProfileScreen(
     onNavigateToSettings: () -> Unit,
     onNavigateToEditProfile: () -> Unit,
     onNavigateToAchievements: () -> Unit,
+    onNavigateToCosmetics: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -135,7 +138,8 @@ fun FocusedProfileScreen(
                     scrollOffset = heroScrollOffset,
                     onBack = onNavigateBack,
                     onSettings = onNavigateToSettings,
-                    onEdit = onNavigateToEditProfile
+                    onEdit = onNavigateToEditProfile,
+                    onCustomize = onNavigateToCosmetics
                 )
             }
             item(key = "profile-rhythm") {
@@ -183,7 +187,8 @@ private fun ProfileHero(
     scrollOffset: Int,
     onBack: () -> Unit,
     onSettings: () -> Unit,
-    onEdit: () -> Unit
+    onEdit: () -> Unit,
+    onCustomize: () -> Unit
 ) {
     Box(
         modifier = Modifier
@@ -191,14 +196,33 @@ private fun ProfileHero(
             .heightIn(min = 640.dp)
             .background(ProfileInk)
     ) {
-        ProfileBackdrop(
+        val activeBanner = remember(state.bannerId) {
+            KairosBanners.findById(state.bannerId) ?: KairosBanners.getDefaultBanner()
+        }
+        BannerRenderer(
+            banner = activeBanner,
             modifier = Modifier
                 .fillMaxSize()
                 .graphicsLayer {
                     translationY = scrollOffset * 0.14f
                     scaleX = 1.035f
                     scaleY = 1.035f
-                }
+                },
+            showAnimation = true,
+            cornerRadius = 0.dp
+        )
+        Box(
+            Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        listOf(
+                            Color.Black.copy(alpha = 0.18f),
+                            ProfileInk.copy(alpha = 0.42f),
+                            ProfileInk.copy(alpha = 0.88f)
+                        )
+                    )
+                )
         )
 
         Column(
@@ -252,7 +276,8 @@ private fun ProfileHero(
             ) {
                 ProfileIdentityPanel(
                     state = state,
-                    onEdit = onEdit
+                    onEdit = onEdit,
+                    onCustomize = onCustomize
                 )
             }
         }
@@ -263,7 +288,8 @@ private fun ProfileHero(
 @Composable
 private fun ProfileIdentityPanel(
     state: ProfileUiState,
-    onEdit: () -> Unit
+    onEdit: () -> Unit,
+    onCustomize: () -> Unit
 ) {
     val name = resolvedName(state)
     val themes = state.userContext.recentThemes
@@ -355,6 +381,41 @@ private fun ProfileIdentityPanel(
                 ProfileTag(state.title)
                 ProfileTag("Level ${state.level}")
                 themes.forEach { ProfileTag(it) }
+            }
+
+            Surface(
+                onClick = onCustomize,
+                shape = RoundedCornerShape(18.dp),
+                color = Color.White.copy(alpha = 0.10f),
+                border = androidx.compose.foundation.BorderStroke(
+                    1.dp,
+                    Color.White.copy(alpha = 0.14f)
+                )
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 15.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Edit,
+                        contentDescription = null,
+                        tint = ProfilePaper,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Text(
+                        text = "Customize earned identity",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = ProfilePaper,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Outlined.ArrowForward,
+                        contentDescription = null,
+                        tint = ProfilePaper.copy(alpha = 0.7f),
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
             }
         }
     }
@@ -804,7 +865,8 @@ private fun FocusedProfilePreview() {
             scrollOffset = 0,
             onBack = {},
             onSettings = {},
-            onEdit = {}
+            onEdit = {},
+            onCustomize = {}
         )
     }
 }

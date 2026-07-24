@@ -1,4 +1,4 @@
-﻿package com.kairos.app.domain.identity
+package com.kairos.app.domain.identity
 
 /**
  * [KairosBanners] - Profile banner system for Kairos

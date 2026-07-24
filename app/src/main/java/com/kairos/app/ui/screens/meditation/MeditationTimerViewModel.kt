@@ -1,4 +1,4 @@
-﻿package com.kairos.app.ui.screens.meditation
+package com.kairos.app.ui.screens.meditation
 
 import android.media.AudioAttributes
 import android.media.MediaPlayer

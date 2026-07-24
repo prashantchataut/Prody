@@ -1,4 +1,4 @@
-﻿package com.kairos.app.domain.gamification
+package com.kairos.app.domain.gamification
 
 import android.util.Log
 import com.kairos.app.data.local.dao.UserDao
@@ -40,9 +40,9 @@ class GameSkillSystem @Inject constructor(
         const val MAX_SKILL_LEVEL = 30
 
         // Daily XP caps per skill type (anti-exploit)
-        const val DAILY_CLARITY_CAP = 300
-        const val DAILY_DISCIPLINE_CAP = 300
-        const val DAILY_COURAGE_CAP = 200
+        const val DAILY_CLARITY_CAP = PointCalculator.DailyCaps.CLARITY
+        const val DAILY_DISCIPLINE_CAP = PointCalculator.DailyCaps.DISCIPLINE
+        const val DAILY_COURAGE_CAP = PointCalculator.DailyCaps.COURAGE
     }
 
     /**
@@ -80,6 +80,13 @@ class GameSkillSystem @Inject constructor(
             val actualXp = baseXp.coerceAtMost(remainingCap)
 
             if (actualXp <= 0) {
+                // The event is still consumed so replaying the same completed
+                // session tomorrow cannot mint a second reward after the cap
+                // resets. Durable evidence is recorded separately by the
+                // session coordinator.
+                if (idempotencyKey != null) {
+                    userDao.markRewardKeyProcessed(idempotencyKey)
+                }
                 return SkillXpResult.DailyCapReached
             }
 

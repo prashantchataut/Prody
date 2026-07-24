@@ -1,4 +1,4 @@
-﻿package com.kairos.app.domain.vocabulary
+package com.kairos.app.domain.vocabulary
 
 import com.kairos.app.data.local.entity.VocabularyEntity
 import java.time.Instant

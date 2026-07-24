@@ -1,4 +1,4 @@
-﻿package com.kairos.app.ui.screens.ritual
+package com.kairos.app.ui.screens.ritual
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

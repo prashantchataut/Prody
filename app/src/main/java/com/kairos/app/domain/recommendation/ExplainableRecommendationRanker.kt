@@ -1,4 +1,4 @@
-﻿package com.kairos.app.domain.recommendation
+package com.kairos.app.domain.recommendation
 
 import java.security.MessageDigest
 import kotlin.math.abs

@@ -1,4 +1,4 @@
-﻿package com.kairos.app.domain.learning
+package com.kairos.app.domain.learning
 
 import com.kairos.app.data.local.entity.JournalEntryEntity
 import com.kairos.app.data.local.entity.PathRecommendationEntity

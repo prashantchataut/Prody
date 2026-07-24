@@ -1,4 +1,4 @@
-﻿package com.kairos.app
+package com.kairos.app
 
 import android.Manifest
 import android.content.pm.PackageManager

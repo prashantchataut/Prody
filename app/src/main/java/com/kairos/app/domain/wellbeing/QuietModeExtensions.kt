@@ -1,4 +1,4 @@
-﻿package com.kairos.app.domain.wellbeing
+package com.kairos.app.domain.wellbeing
 
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.compose.collectAsStateWithLifecycle

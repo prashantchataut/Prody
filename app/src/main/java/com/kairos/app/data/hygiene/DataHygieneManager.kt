@@ -1,4 +1,4 @@
-﻿package com.kairos.app.data.hygiene
+package com.kairos.app.data.hygiene
 
 import android.content.Context
 import android.util.Log

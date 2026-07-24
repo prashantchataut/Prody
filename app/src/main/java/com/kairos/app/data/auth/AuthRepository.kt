@@ -1,4 +1,4 @@
-﻿package com.kairos.app.data.auth
+package com.kairos.app.data.auth
 
 import android.content.Context
 import android.content.Intent

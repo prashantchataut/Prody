@@ -1,4 +1,4 @@
-﻿package com.kairos.app.data.network
+package com.kairos.app.data.network
 
 import android.content.Context
 import android.net.ConnectivityManager

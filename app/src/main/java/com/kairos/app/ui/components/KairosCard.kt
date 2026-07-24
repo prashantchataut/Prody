@@ -1,4 +1,4 @@
-﻿package com.kairos.app.ui.components
+package com.kairos.app.ui.components
 
 import androidx.compose.animation.core.Spring
 // animateDpAsState removed - no longer needed for flat design

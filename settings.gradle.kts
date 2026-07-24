@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Prody"
+rootProject.name = "Kairos"
 include(":app")

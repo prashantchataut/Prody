@@ -369,22 +369,16 @@ fun KairosSkeletonList(
     modifier: Modifier = Modifier,
     rows: Int = 4
 ) {
-    val reducedMotion = com.kairos.app.ui.animation.rememberKairosReducedMotion()
-    val alpha = if (reducedMotion) {
-        0.56f
-    } else {
-        val transition = rememberInfiniteTransition(label = "kairos-skeleton")
-        val animatedAlpha by transition.animateFloat(
-            initialValue = 0.36f,
-            targetValue = 0.72f,
-            animationSpec = infiniteRepeatable(
-                animation = tween(900, easing = FastOutSlowInEasing),
-                repeatMode = RepeatMode.Reverse
-            ),
-            label = "skeleton-alpha"
-        )
-        animatedAlpha
-    }
+    val transition = rememberInfiniteTransition(label = "kairos-skeleton")
+    val alpha by transition.animateFloat(
+        initialValue = 0.36f,
+        targetValue = 0.72f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(900, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "skeleton-alpha"
+    )
     Column(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(18.dp)

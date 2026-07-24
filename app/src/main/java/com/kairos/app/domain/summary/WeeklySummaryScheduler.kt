@@ -1,4 +1,4 @@
-﻿package com.kairos.app.domain.summary
+package com.kairos.app.domain.summary
 
 import android.content.Context
 import android.util.Log

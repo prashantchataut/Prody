@@ -1,4 +1,4 @@
-﻿package com.kairos.app.widget
+package com.kairos.app.widget
 
 import android.appwidget.AppWidgetManager
 import android.content.Context

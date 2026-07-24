@@ -5,6 +5,7 @@ import android.content.Context
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.kairos.app.data.local.dao.*
+import com.kairos.app.data.local.database.DatabaseSeeder
 import com.kairos.app.data.local.database.KairosDatabase
 import com.kairos.app.data.repository.DailyPlanRepositoryImpl
 import com.kairos.app.domain.recommendation.ExplainableRecommendationRanker
@@ -20,6 +21,8 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
+
+    private const val TAG = "AppModule"
 
     @Provides
     @Singleton
@@ -244,8 +247,10 @@ object AppModule {
     fun provideEvidenceDao(database: KairosDatabase): EvidenceDao {
         return database.evidenceDao()
     }
-
+// ============================================================================
+    // PRIVACY, SECURITY & MONITORING PROVIDERS
     // ============================================================================
+// ============================================================================
     // LEARNING PATH PROVIDERS
     // ============================================================================
 
@@ -288,5 +293,4 @@ object AppModule {
             )
         }
     }
-
 }

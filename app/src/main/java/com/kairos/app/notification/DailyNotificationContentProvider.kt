@@ -1,4 +1,4 @@
-﻿package com.kairos.app.notification
+package com.kairos.app.notification
 
 import com.kairos.app.data.auth.UserIdProvider
 import com.kairos.app.domain.repository.DailyPlanRepository

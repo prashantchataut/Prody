@@ -1,4 +1,4 @@
-﻿package com.kairos.app.notification
+package com.kairos.app.notification
 
 import android.app.AlarmManager
 import android.app.PendingIntent

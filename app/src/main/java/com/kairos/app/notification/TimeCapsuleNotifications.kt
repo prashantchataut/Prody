@@ -1,4 +1,4 @@
-﻿package com.kairos.app.notification
+package com.kairos.app.notification
 
 import com.kairos.app.data.local.entity.FutureMessageEntity
 import com.kairos.app.data.local.entity.MessageAnniversaryEntity

@@ -1,4 +1,4 @@
-﻿package com.kairos.app.domain.collaborative
+package com.kairos.app.domain.collaborative
 
 import android.app.AlarmManager
 import android.app.PendingIntent

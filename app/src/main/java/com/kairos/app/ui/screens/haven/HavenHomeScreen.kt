@@ -1,4 +1,4 @@
-﻿package com.kairos.app.ui.screens.haven
+package com.kairos.app.ui.screens.haven
 import com.kairos.app.ui.icons.KairosIcons
 
 import androidx.compose.animation.AnimatedVisibility

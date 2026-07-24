@@ -1,4 +1,4 @@
-﻿package com.kairos.app.data.sync
+package com.kairos.app.data.sync
 
 import android.content.Context
 import android.util.Log

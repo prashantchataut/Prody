@@ -1,4 +1,4 @@
-﻿package com.kairos.app.data.repository
+package com.kairos.app.data.repository
 
 import com.kairos.app.data.local.dao.IdiomDao
 import com.kairos.app.data.local.dao.PhraseDao

@@ -1,4 +1,4 @@
-﻿package com.kairos.app.data.sync
+package com.kairos.app.data.sync
 
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.*

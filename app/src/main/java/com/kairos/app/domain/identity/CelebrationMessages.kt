@@ -1,4 +1,4 @@
-﻿package com.kairos.app.domain.identity
+package com.kairos.app.domain.identity
 
 import java.util.Calendar
 

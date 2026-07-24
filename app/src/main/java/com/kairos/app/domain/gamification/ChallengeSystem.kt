@@ -1,4 +1,4 @@
-﻿package com.kairos.app.domain.gamification
+package com.kairos.app.domain.gamification
 
 import java.time.DayOfWeek
 import java.time.LocalDate

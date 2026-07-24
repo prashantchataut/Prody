@@ -1,4 +1,4 @@
-﻿package com.kairos.app.data.auth
+package com.kairos.app.data.auth
 
 sealed class AuthState {
     data object Idle : AuthState()

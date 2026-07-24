@@ -1,4 +1,4 @@
-﻿package com.kairos.app.ui.screens.letter
+package com.kairos.app.ui.screens.letter
 import com.kairos.app.ui.icons.KairosIcons
 
 import androidx.compose.animation.core.*

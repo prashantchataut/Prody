@@ -1,4 +1,4 @@
-﻿package com.kairos.app.ui.screens.journal
+package com.kairos.app.ui.screens.journal
 import com.kairos.app.ui.icons.KairosIcons
 
 import androidx.compose.foundation.background

@@ -20,7 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.drawscope.rotate as rotateDrawScope
+import androidx.compose.ui.graphics.drawscope.rotate as rotateCanvas
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -213,7 +213,7 @@ fun ConfettiAnimation(
             val y = (particle.startY + time * particle.speed) % 1.2f
             if (y > 0f && y < 1f) {
                 val x = particle.x + sin(y * PI * 3).toFloat() * 0.1f
-                rotateDrawScope(particle.rotation + time * particle.rotationSpeed * 360f) {
+                rotateCanvas(particle.rotation + time * particle.rotationSpeed * 360f) {
                     drawRect(
                         color = particle.color,
                         topLeft = Offset(x * size.width - particle.size / 2, y * size.height),

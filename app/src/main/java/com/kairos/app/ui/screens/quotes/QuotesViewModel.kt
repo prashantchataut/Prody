@@ -1,4 +1,4 @@
-﻿package com.kairos.app.ui.screens.quotes
+package com.kairos.app.ui.screens.quotes
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

@@ -1,4 +1,4 @@
-﻿package com.kairos.app.ui.navigation
+package com.kairos.app.ui.navigation
 
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -390,7 +390,10 @@ fun KairosNavHost(
                 onNavigateToWrite = {
                     navController.navigate(Screen.WriteMessage.route)
                 },
-                onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToMessage = { messageId ->
+                    navController.navigate(Screen.TimeCapsuleReveal.createRoute(messageId))
+                }
             )
         }
 
@@ -437,6 +440,9 @@ fun KairosNavHost(
                 },
                 onNavigateToAchievements = {
                     navController.navigate(Screen.AchievementsCollection.route)
+                },
+                onNavigateToCosmetics = {
+                    navController.navigate(Screen.BannerSelection.route)
                 }
             )
         }
@@ -725,6 +731,9 @@ fun KairosNavHost(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToJournal = { prefilledContent ->
                     navController.navigate(Screen.NewJournalEntry.createRoute(prefilledContent))
+                },
+                onNavigateToReply = {
+                    navController.navigate(Screen.FutureMessageReply.createRoute(messageId))
                 }
             )
         }

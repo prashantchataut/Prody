@@ -1,4 +1,4 @@
-﻿package com.kairos.app.ui.screens.social
+package com.kairos.app.ui.screens.social
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

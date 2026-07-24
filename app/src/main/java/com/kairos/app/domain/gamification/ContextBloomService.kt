@@ -1,4 +1,4 @@
-﻿package com.kairos.app.domain.gamification
+package com.kairos.app.domain.gamification
 
 import android.util.Log
 import com.kairos.app.data.local.dao.VocabularyDao

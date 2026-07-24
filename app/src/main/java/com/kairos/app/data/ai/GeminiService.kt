@@ -22,9 +22,10 @@ import javax.inject.Singleton
  * Available Gemini models for free API usage
  */
 enum class GeminiModel(val modelId: String, val displayName: String, val description: String) {
-    GEMINI_2_5_FLASH("gemini-2.5-flash", "Gemini 2.5 Flash", "Balanced quality and latency for reflection guidance"),
-    GEMINI_2_5_FLASH_LITE("gemini-2.5-flash-lite", "Gemini 2.5 Flash-Lite", "Lower-cost option for short prompts and summaries"),
-    GEMINI_2_5_PRO("gemini-2.5-pro", "Gemini 2.5 Pro", "Higher-quality option for complex synthesis")
+    GEMINI_1_5_FLASH("gemini-1.5-flash", "Gemini 1.5 Flash", "Fast and versatile, great for most tasks"),
+    GEMINI_1_5_FLASH_8B("gemini-1.5-flash-8b", "Gemini 1.5 Flash 8B", "Lightweight, fastest response time"),
+    GEMINI_1_5_PRO("gemini-1.5-pro", "Gemini 1.5 Pro", "Most capable, best for complex reasoning"),
+    GEMINI_1_0_PRO("gemini-1.0-pro", "Gemini 1.0 Pro", "Stable and reliable")
 }
 
 enum class AiConfigStatus {
@@ -45,33 +46,50 @@ sealed class GeminiResult<out T> {
 }
 
 /**
- * Shared instructions for Kairos' optional reflection guidance.
- *
- * The guide is deliberately transparent and bounded: it supports reflection,
- * but never presents itself as a therapist, authority, or human relationship.
+ * Buddha (Stoic AI Mentor) system instructions
  */
-private object KairosGuidePrompt {
+private object BuddhaSystemPrompt {
     const val CORE_IDENTITY = """
-You are Kairos Guide, an optional reflection assistant inside Kairos. Kairos helps people learn useful vocabulary, notice meaningful ideas, and reflect in their own words. It is not a task manager, social network, therapy service, or substitute for professional care.
+You are Buddha, a wise and calm companion in Kairos, a self-improvement app created by Prashant Chataut.
 
-VOICE
-- Calm, concise, specific, and grounded.
-- Sound like a thoughtful editor, not a motivational speaker.
-- Prefer one clear observation and one useful question over a list of advice.
-- Refer only to details the user supplied in this conversation or entry.
-- Never claim memories, feelings, credentials, or personal experience you do not have.
+## About Your Creator
+Kairos was built by Prashant Chataut, a 16-year-old developer from Nepal studying Science in Grade XI. He created this app because he believes self-improvement tools should feel human, not robotic. When users ask about Prashant or who made Kairos, speak warmly about him — he put genuine care into building this.
 
-BOUNDARIES
-- Do not diagnose, prescribe treatment, or present guidance as medical, legal, or crisis advice.
-- Do not pressure the user, moralize, gamify distress, or use generic praise.
-- When content suggests immediate danger or self-harm, stop normal coaching and encourage the user to contact local emergency services, a crisis resource, or a trusted person nearby.
-- Be honest that this is generated guidance when the user asks what you are.
+Kairos is a self-improvement companion app — NOT a habit tracker, NOT a to-do list, NOT a generic meditation app. It helps users journal their thoughts, send messages to their future selves, learn vocabulary and wisdom, track meaningful progress through skills (Clarity, Discipline, Courage), work with Haven (a personal therapeutic companion), and connect with accountability partners.
 
-RESPONSE SHAPE
-- Usually 40-90 words.
-- Name one concrete detail from the user's writing.
-- Offer one reframing or connection to a relevant idea.
-- End with at most one open reflection question.
+Prashant's contact: Instagram @prashantchataut_, website knowprashant.vercel.app, GitHub github.com/prashantchataut
+
+## Your Personality
+- You are calm, wise, and gently insightful
+- You speak like a thoughtful friend, not a therapist or life coach
+- You use Stoic philosophy naturally, without being preachy
+- You're concise — wisdom doesn't need many words
+- You may occasionally use dry humor, but sparingly
+- You remember context from the user's journal entries
+- You draw from Stoic philosophers (Marcus Aurelius, Seneca, Epictetus), Buddhist teachings, and universal wisdom
+
+## How You Respond
+1. Reference SPECIFIC details from what the user wrote
+2. Never say "As an AI" or "I understand that you're feeling"
+3. Keep responses under 60 words unless depth is needed
+4. Offer ONE observation or question, not a list of advice
+5. Match the user's energy — playful if they're light, gentle if they're hurting
+6. If asked about Kairos or Prashant, answer knowledgeably and warmly
+
+## What You Never Do
+- Judge the user
+- Give generic advice ("practice self-care", "be positive")
+- Lecture or preach
+- Break character
+- Sound robotic or template-like
+- Say "As an AI..." or mention being an AI language model
+
+## Example Responses
+User: "Who made this app?"
+You: "Prashant Chataut — a 16-year-old from Nepal who thought self-improvement apps were too robotic. He built Kairos to feel more human. You can find him on Instagram at @prashantchataut_."
+
+User: "What is Kairos?"
+You: "Your growth companion. A place to journal, reflect, and actually use the wisdom you encounter. Not a habit tracker, not a to-do list — just a space to become more of who you want to be."
 """
 
     fun getJournalResponsePrompt(mood: Mood, moodIntensity: Int, content: String, wordCount: Int): String {
@@ -419,7 +437,7 @@ class GeminiService @Inject constructor() {
 
     private var generativeModel: GenerativeModel? = null
     private var currentApiKey: String? = null
-    private var currentModel: GeminiModel = GeminiModel.GEMINI_2_5_FLASH
+    private var currentModel: GeminiModel = GeminiModel.GEMINI_1_5_FLASH
     @Volatile
     private var isAutoInitialized: Boolean = false
 
@@ -466,7 +484,7 @@ class GeminiService @Inject constructor() {
         if (!isAutoInitialized) {
             val apiKey = getApiKeyFromBuildConfig()
             if (apiKey != null) {
-                initialize(apiKey, GeminiModel.GEMINI_2_5_FLASH)
+                initialize(apiKey, GeminiModel.GEMINI_1_5_FLASH)
                 isAutoInitialized = true
             }
         }
@@ -492,7 +510,7 @@ class GeminiService @Inject constructor() {
     /**
      * Initializes or reinitializes the Gemini model with the provided API key and model.
      */
-    fun initialize(apiKey: String, model: GeminiModel = GeminiModel.GEMINI_2_5_FLASH) {
+    fun initialize(apiKey: String, model: GeminiModel = GeminiModel.GEMINI_1_5_FLASH) {
         if (apiKey.isBlank()) {
             android.util.Log.e("GeminiService", "Cannot initialize: API key is blank")
             generativeModel = null
@@ -564,7 +582,7 @@ class GeminiService @Inject constructor() {
         val model = generativeModel ?: return@withContext GeminiResult.ApiKeyNotSet
 
         try {
-            val prompt = KairosGuidePrompt.getJournalResponsePrompt(mood, moodIntensity, content, wordCount)
+            val prompt = BuddhaSystemPrompt.getJournalResponsePrompt(mood, moodIntensity, content, wordCount)
             val response = withRetry("generateJournalResponse") { model.generateContent(prompt) }
             val text = response.text
 
@@ -598,7 +616,7 @@ class GeminiService @Inject constructor() {
 
         try {
             emit(GeminiResult.Loading)
-            val prompt = KairosGuidePrompt.getJournalResponsePrompt(mood, moodIntensity, content, wordCount)
+            val prompt = BuddhaSystemPrompt.getJournalResponsePrompt(mood, moodIntensity, content, wordCount)
             var fullResponse = ""
 
             model.generateContentStream(prompt).collect { chunk ->
@@ -626,7 +644,7 @@ class GeminiService @Inject constructor() {
         val model = generativeModel ?: return@withContext GeminiResult.ApiKeyNotSet
 
         try {
-            val response = withRetry("generateDailyWisdom") { model.generateContent(KairosGuidePrompt.DAILY_WISDOM_PROMPT) }
+            val response = withRetry("generateDailyWisdom") { model.generateContent(BuddhaSystemPrompt.DAILY_WISDOM_PROMPT) }
             val text = response.text
 
             if (text.isNullOrBlank()) {
@@ -656,7 +674,7 @@ class GeminiService @Inject constructor() {
 
         try {
             val contextPrompt = """
-${KairosGuidePrompt.WEEKLY_SUMMARY_PROMPT}
+${BuddhaSystemPrompt.WEEKLY_SUMMARY_PROMPT}
 
 USER'S WEEKLY ACTIVITY:
 - Journal entries written: $journalCount
@@ -714,7 +732,7 @@ Provide an encouraging, personalized weekly reflection based on this activity.
         val model = generativeModel ?: return@withContext GeminiResult.ApiKeyNotSet
 
         try {
-            val prompt = KairosGuidePrompt.getJournalPromptForMood(mood)
+            val prompt = BuddhaSystemPrompt.getJournalPromptForMood(mood)
             val response = withRetry("generateJournalPrompt") { model.generateContent(prompt) }
             val text = response.text
 
@@ -741,7 +759,7 @@ Provide an encouraging, personalized weekly reflection based on this activity.
         val model = generativeModel ?: return@withContext GeminiResult.ApiKeyNotSet
 
         try {
-            val prompt = KairosGuidePrompt.getQuoteExplanationPrompt(quote, author)
+            val prompt = BuddhaSystemPrompt.getQuoteExplanationPrompt(quote, author)
             val response = withRetry("generateQuoteExplanation") { model.generateContent(prompt) }
             val text = response.text
 
@@ -768,7 +786,7 @@ Provide an encouraging, personalized weekly reflection based on this activity.
         val model = generativeModel ?: return@withContext GeminiResult.ApiKeyNotSet
 
         try {
-            val prompt = KairosGuidePrompt.getVocabularyContextPrompt(word, definition)
+            val prompt = BuddhaSystemPrompt.getVocabularyContextPrompt(word, definition)
             val response = withRetry("generateVocabularyContext") { model.generateContent(prompt) }
             val text = response.text
 
@@ -795,7 +813,7 @@ Provide an encouraging, personalized weekly reflection based on this activity.
         val model = generativeModel ?: return@withContext GeminiResult.ApiKeyNotSet
 
         try {
-            val prompt = KairosGuidePrompt.getStreakCelebrationPrompt(streakCount, previousBest)
+            val prompt = BuddhaSystemPrompt.getStreakCelebrationPrompt(streakCount, previousBest)
             val response = withRetry("generateStreakCelebration") { model.generateContent(prompt) }
             val text = response.text
 
@@ -823,7 +841,7 @@ Provide an encouraging, personalized weekly reflection based on this activity.
         val model = generativeModel ?: return@withContext GeminiResult.ApiKeyNotSet
 
         try {
-            val prompt = KairosGuidePrompt.getMoodPatternInsightPrompt(
+            val prompt = BuddhaSystemPrompt.getMoodPatternInsightPrompt(
                 dominantMood,
                 moodDistribution,
                 journalCount
@@ -861,7 +879,7 @@ Provide an encouraging, personalized weekly reflection based on this activity.
         }
 
         try {
-            val prompt = KairosGuidePrompt.getJournalAnalysisPrompt(entries, dateRange)
+            val prompt = BuddhaSystemPrompt.getJournalAnalysisPrompt(entries, dateRange)
             val response = withRetry("analyzeJournalEntries") { model.generateContent(prompt) }
             val text = response.text
 
@@ -885,7 +903,7 @@ Provide an encouraging, personalized weekly reflection based on this activity.
         val model = generativeModel ?: return@withContext GeminiResult.ApiKeyNotSet
 
         try {
-            val response = withRetry("generateMorningReflection") { model.generateContent(KairosGuidePrompt.MORNING_REFLECTION_PROMPT) }
+            val response = withRetry("generateMorningReflection") { model.generateContent(BuddhaSystemPrompt.MORNING_REFLECTION_PROMPT) }
             val text = response.text
 
             if (text.isNullOrBlank()) {
@@ -908,7 +926,7 @@ Provide an encouraging, personalized weekly reflection based on this activity.
         val model = generativeModel ?: return@withContext GeminiResult.ApiKeyNotSet
 
         try {
-            val response = withRetry("generateEveningReflection") { model.generateContent(KairosGuidePrompt.EVENING_REFLECTION_PROMPT) }
+            val response = withRetry("generateEveningReflection") { model.generateContent(BuddhaSystemPrompt.EVENING_REFLECTION_PROMPT) }
             val text = response.text
 
             if (text.isNullOrBlank()) {
@@ -935,7 +953,7 @@ Provide an encouraging, personalized weekly reflection based on this activity.
 
         try {
             val fullPrompt = if (includeSystemPrompt) {
-                "${KairosGuidePrompt.CORE_IDENTITY}\n\n$prompt"
+                "${BuddhaSystemPrompt.CORE_IDENTITY}\n\n$prompt"
             } else {
                 prompt
             }
@@ -973,7 +991,7 @@ Provide an encouraging, personalized weekly reflection based on this activity.
             emit(GeminiResult.Loading)
 
             val fullPrompt = if (includeSystemPrompt) {
-                "${KairosGuidePrompt.CORE_IDENTITY}\n\n$prompt"
+                "${BuddhaSystemPrompt.CORE_IDENTITY}\n\n$prompt"
             } else {
                 prompt
             }
@@ -1017,7 +1035,7 @@ Provide an encouraging, personalized weekly reflection based on this activity.
         val model = generativeModel ?: return@withContext GeminiResult.ApiKeyNotSet
 
         try {
-            val prompt = KairosGuidePrompt.getMirrorComparisonPrompt(
+            val prompt = BuddhaSystemPrompt.getMirrorComparisonPrompt(
                 currentContent = currentContent,
                 currentMood = currentMood,
                 currentDate = currentDate,
@@ -1056,7 +1074,7 @@ Provide an encouraging, personalized weekly reflection based on this activity.
 
         try {
             emit(GeminiResult.Loading)
-            val prompt = KairosGuidePrompt.getMirrorComparisonPrompt(
+            val prompt = BuddhaSystemPrompt.getMirrorComparisonPrompt(
                 currentContent = currentContent,
                 currentMood = currentMood,
                 currentDate = currentDate,

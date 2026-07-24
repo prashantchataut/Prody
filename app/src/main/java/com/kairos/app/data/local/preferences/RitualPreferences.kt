@@ -1,4 +1,4 @@
-﻿package com.kairos.app.data.local.preferences
+package com.kairos.app.data.local.preferences
 
 import androidx.datastore.preferences.core.Preferences
 import kotlinx.coroutines.flow.Flow

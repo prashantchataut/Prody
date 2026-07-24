@@ -1,4 +1,4 @@
-﻿package com.kairos.app.domain.analytics
+package com.kairos.app.domain.analytics
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue

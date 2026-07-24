@@ -1,4 +1,4 @@
-﻿package com.kairos.app.ui.components.identity
+package com.kairos.app.ui.components.identity
 import com.kairos.app.ui.icons.KairosIcons
 
 import androidx.compose.animation.animateColorAsState

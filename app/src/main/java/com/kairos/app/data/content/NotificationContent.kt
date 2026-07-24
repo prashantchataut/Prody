@@ -1,4 +1,4 @@
-﻿package com.kairos.app.data.content
+package com.kairos.app.data.content
 
 import kotlin.random.Random
 

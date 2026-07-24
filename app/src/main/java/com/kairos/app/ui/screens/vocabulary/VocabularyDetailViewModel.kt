@@ -1,4 +1,4 @@
-﻿package com.kairos.app.ui.screens.vocabulary
+package com.kairos.app.ui.screens.vocabulary
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

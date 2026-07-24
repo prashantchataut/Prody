@@ -1,6 +1,4 @@
-﻿package com.kairos.app.domain.gamification
-
-import androidx.compose.ui.graphics.Color
+package com.kairos.app.domain.gamification
 
 /**
  * The three core skills that map to app activities.
@@ -32,30 +30,30 @@ import androidx.compose.ui.graphics.Color
 enum class Skill(
     val displayName: String,
     val description: String,
-    val color: Color,
-    val secondaryColor: Color,
+    val colorArgb: Long,
+    val secondaryColorArgb: Long,
     val iconName: String,
-    val maxLevel: Int = MAX_LEVEL
+    val maxLevel: Int = 20
 ) {
     CLARITY(
         displayName = "Clarity",
         description = "The depth of your reflection",
-        color = Color(0xFF4A90D9),
-        secondaryColor = Color(0xFF7EB8FF),
+        colorArgb = 0xFF4A90D9,
+        secondaryColorArgb = 0xFF7EB8FF,
         iconName = "ic_clarity"
     ),
     DISCIPLINE(
         displayName = "Discipline",
         description = "Your commitment to learning",
-        color = Color(0xFF7B68EE),
-        secondaryColor = Color(0xFFA594FF),
+        colorArgb = 0xFF7B68EE,
+        secondaryColorArgb = 0xFFA594FF,
         iconName = "ic_discipline"
     ),
     COURAGE(
         displayName = "Courage",
         description = "Your willingness to face the future",
-        color = Color(0xFFE57373),
-        secondaryColor = Color(0xFFFF9E9E),
+        colorArgb = 0xFFE57373,
+        secondaryColorArgb = 0xFFFF9E9E,
         iconName = "ic_courage"
     );
 

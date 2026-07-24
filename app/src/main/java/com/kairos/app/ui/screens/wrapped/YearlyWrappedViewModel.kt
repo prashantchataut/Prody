@@ -1,4 +1,4 @@
-﻿package com.kairos.app.ui.screens.wrapped
+package com.kairos.app.ui.screens.wrapped
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

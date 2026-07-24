@@ -1,4 +1,4 @@
-﻿package com.kairos.app.ui.screens.haven
+package com.kairos.app.ui.screens.haven
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

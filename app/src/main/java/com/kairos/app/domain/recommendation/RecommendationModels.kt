@@ -1,4 +1,4 @@
-﻿package com.kairos.app.domain.recommendation
+package com.kairos.app.domain.recommendation
 
 /** Content families that participate in the daily recommendation plan. */
 enum class DailyContentType {

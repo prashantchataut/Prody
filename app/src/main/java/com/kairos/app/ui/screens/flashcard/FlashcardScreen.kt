@@ -1,4 +1,4 @@
-﻿package com.kairos.app.ui.screens.flashcard
+package com.kairos.app.ui.screens.flashcard
 import com.kairos.app.ui.icons.KairosIcons
 
 import androidx.compose.animation.AnimatedVisibility

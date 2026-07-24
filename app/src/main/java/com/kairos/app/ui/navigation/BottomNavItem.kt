@@ -1,4 +1,4 @@
-﻿package com.kairos.app.ui.navigation
+package com.kairos.app.ui.navigation
 
 import androidx.annotation.StringRes
 import androidx.compose.ui.graphics.vector.ImageVector

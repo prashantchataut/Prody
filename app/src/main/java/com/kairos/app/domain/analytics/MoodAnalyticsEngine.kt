@@ -1,4 +1,4 @@
-﻿package com.kairos.app.domain.analytics
+package com.kairos.app.domain.analytics
 
 import com.kairos.app.data.local.entity.JournalEntryEntity
 import com.kairos.app.domain.model.AnalyticsPeriod

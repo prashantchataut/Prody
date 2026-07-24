@@ -1,4 +1,4 @@
-﻿package com.kairos.app.domain.model
+package com.kairos.app.domain.model
 
 /**
  * Difficulty levels for challenges.

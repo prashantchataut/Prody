@@ -1,4 +1,4 @@
-﻿package com.kairos.app.domain.summary
+package com.kairos.app.domain.summary
 
 import com.kairos.app.data.local.entity.JournalEntryEntity
 import com.kairos.app.domain.model.Mood

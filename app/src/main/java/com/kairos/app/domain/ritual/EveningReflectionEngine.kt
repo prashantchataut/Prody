@@ -1,4 +1,4 @@
-﻿package com.kairos.app.domain.ritual
+package com.kairos.app.domain.ritual
 
 import com.kairos.app.data.local.dao.DailyRitualDao
 import com.kairos.app.data.local.entity.DailyRitualEntity

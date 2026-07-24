@@ -1,333 +1,273 @@
-﻿package com.kairos.app.ui.screens.profile
-import com.kairos.app.ui.icons.KairosIcons
+package com.kairos.app.ui.screens.profile
 
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.slideInVertically
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
-import com.kairos.app.ui.theme.isDarkTheme
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.weight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.kairos.app.R
-import com.kairos.app.data.local.entity.AchievementEntity
-import com.kairos.app.ui.theme.*
-import kotlinx.coroutines.delay
+import com.kairos.app.domain.model.AchievementProgress
+import com.kairos.app.ui.animation.KairosDurations
+import com.kairos.app.ui.animation.KairosReveal
+import com.kairos.app.ui.animation.rememberKairosReducedMotion
+import com.kairos.app.ui.components.kairos.KairosAppBackground
+import com.kairos.app.ui.components.kairos.KairosEmptyState
+import com.kairos.app.ui.components.kairos.KairosGlassSurface
+import com.kairos.app.ui.components.kairos.KairosIconButton
+import com.kairos.app.ui.components.kairos.KairosReadingSurface
+import com.kairos.app.ui.icons.KairosIcons
+import com.kairos.app.ui.theme.KairosRadius
+import com.kairos.app.ui.theme.KairosSpacing
+import com.kairos.app.ui.theme.SerifFamily
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 /**
- * Achievements Collection Screen
- *
- * Full achievements view with:
- * - Category filtering
- * - Progress tracking
- * - Unlocked/locked achievements
- * - Rarity indicators
+ * Milestones are evidence of practice, not a second home-screen dashboard.
+ * Locked items explain what meaningful behaviour remains; they never reward
+ * opening the app, tapping repeatedly, or maintaining artificial engagement.
  */
-
-// Design System Colors for Achievements
-private object AchievementColors {
-    // Dark Mode
-    val BackgroundDark = Color(0xFF0D2826)
-    val CardBackgroundDark = Color(0xFF1A3331)
-    val CardBackgroundElevatedDark = Color(0xFF223D3A)
-    val AccentGreen = Color(0xFF36F97F)
-    val TextPrimaryDark = Color(0xFFFFFFFF)
-    val TextSecondaryDark = Color(0xFFB8C5C3)
-    val TextTertiaryDark = Color(0xFF6B7F7C)
-    val BorderDark = Color(0xFF2A4744)
-
-    // Light Mode
-    val BackgroundLight = Color(0xFFF5F8F7)
-    val CardBackgroundLight = Color(0xFFFFFFFF)
-    val CardBackgroundElevatedLight = Color(0xFFF0F5F4)
-    val AccentGreenLight = Color(0xFF2ECC71)
-    val TextPrimaryLight = Color(0xFF1A2B23)
-    val TextSecondaryLight = Color(0xFF5A6B63)
-    val TextTertiaryLight = Color(0xFF8A9B93)
-    val BorderLight = Color(0xFFE0E8E4)
-
-    // Rarity Colors (6 tiers)
-    val RarityCommon = Color(0xFF78909C)      // Slate gray
-    val RarityUncommon = Color(0xFF66BB6A)    // Fresh green
-    val RarityRare = Color(0xFF42A5F5)        // Bright blue
-    val RarityEpic = Color(0xFFAB47BC)        // Rich purple
-    val RarityLegendary = Color(0xFFD4AF37)   // Gold
-    val RarityMythic = Color(0xFFFFD700)      // Brilliant gold - rarest tier
-
-    // Locked state
-    val LockedOverlay = Color(0xFF3A4F4D)
-}
-
-enum class AchievementFilter(val displayName: String) {
-    ALL("All"),
-    UNLOCKED("Unlocked"),
-    LOCKED("Locked"),
-    WISDOM("Wisdom"),
-    REFLECTION("Reflection"),
-    CONSISTENCY("Consistency"),
-    PRESENCE("Presence"),
-    TEMPORAL("Temporal"),
-    MASTERY("Mastery")
-}
-
 @Composable
 fun AchievementsCollectionScreen(
     onNavigateBack: () -> Unit,
     viewModel: AchievementsCollectionViewModel = hiltViewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val isDarkMode = isDarkTheme()
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                if (isDarkMode) AchievementColors.BackgroundDark
-                else AchievementColors.BackgroundLight
-            )
-    ) {
-        if (uiState.isLoading) {
-            CircularProgressIndicator(
-                modifier = Modifier.align(Alignment.Center),
-                color = if (isDarkMode) AchievementColors.AccentGreen
-                        else AchievementColors.AccentGreenLight
-            )
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(bottom = 32.dp)
+    KairosAppBackground {
+        Column(Modifier.fillMaxSize()) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .statusBarsPadding()
+                    .padding(horizontal = KairosSpacing.screen, vertical = KairosSpacing.md),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                // Header
-                item {
-                    AchievementsHeader(
-                        onBackClick = onNavigateBack,
-                        unlockedCount = uiState.unlockedCount,
-                        totalCount = uiState.totalCount,
-                        isDarkMode = isDarkMode
+                KairosIconButton(KairosIcons.ArrowBack, "Back", onNavigateBack)
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("Milestones", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                    Text(
+                        "Evidence of learning and reflection",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
+                Box(Modifier.size(48.dp))
+            }
 
-                // Progress Overview
-                item {
-                    ProgressOverviewCard(
-                        unlockedCount = uiState.unlockedCount,
-                        totalCount = uiState.totalCount,
-                        totalPoints = uiState.totalPointsFromAchievements,
-                        isDarkMode = isDarkMode
-                    )
+            when {
+                state.isLoading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
                 }
+                state.error != null && state.allAchievements.isEmpty() -> KairosEmptyState(
+                    icon = KairosIcons.ErrorOutline,
+                    title = "Milestones unavailable",
+                    body = state.error ?: "Kairos could not read your progress.",
+                    actionLabel = "Return",
+                    onAction = onNavigateBack
+                )
+                else -> AchievementCollectionContent(
+                    state = state,
+                    onFilter = viewModel::selectFilter,
+                    onSelect = viewModel::selectAchievement
+                )
+            }
+        }
+    }
 
-                // Filter Tabs
-                item {
-                    FilterTabs(
-                        selectedFilter = uiState.selectedFilter,
-                        onFilterSelected = { viewModel.selectFilter(it) },
-                        isDarkMode = isDarkMode
-                    )
-                }
+    state.selectedAchievement?.let { achievement ->
+        AchievementDetailSheet(
+            achievement = achievement,
+            onDismiss = viewModel::clearSelectedAchievement
+        )
+    }
+}
 
-                // Achievements List
-                items(uiState.filteredAchievements) { achievement ->
-                    AchievementCard(
-                        achievement = achievement,
-                        isDarkMode = isDarkMode,
-                        onClick = { viewModel.selectAchievement(achievement) }
-                    )
-                }
-
-                // Empty State
-                if (uiState.filteredAchievements.isEmpty()) {
-                    item {
-                        EmptyAchievementsState(
-                            filter = uiState.selectedFilter,
-                            isDarkMode = isDarkMode
-                        )
-                    }
-                }
+@Composable
+private fun AchievementCollectionContent(
+    state: AchievementsCollectionUiState,
+    onFilter: (AchievementFilter) -> Unit,
+    onSelect: (AchievementProgress) -> Unit
+) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(
+            start = KairosSpacing.screen,
+            end = KairosSpacing.screen,
+            bottom = 48.dp
+        ),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        item {
+            KairosReveal(visible = true, delayMillis = 20) {
+                MilestoneOverview(state)
             }
         }
 
-        // Achievement Detail Dialog
-        uiState.selectedAchievement?.let { achievement ->
-            AchievementDetailDialog(
-                achievement = achievement,
-                onDismiss = { viewModel.clearSelectedAchievement() },
-                isDarkMode = isDarkMode
-            )
-        }
-    }
-}
-
-@Composable
-private fun AchievementsHeader(
-    onBackClick: () -> Unit,
-    unlockedCount: Int,
-    totalCount: Int,
-    isDarkMode: Boolean
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .statusBarsPadding()
-            .padding(horizontal = 16.dp, vertical = 16.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        IconButton(
-            onClick = onBackClick,
-            modifier = Modifier.size(48.dp)
-        ) {
-            Icon(
-                imageVector = KairosIcons.ArrowBack,
-                contentDescription = stringResource(R.string.back),
-                tint = if (isDarkMode) AchievementColors.TextPrimaryDark
-                       else AchievementColors.TextPrimaryLight,
-                modifier = Modifier.size(24.dp)
-            )
+        if (state.closestMilestones.isNotEmpty()) {
+            item {
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    "Within reach",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontFamily = SerifFamily,
+                    modifier = Modifier.padding(vertical = 4.dp)
+                )
+            }
+            items(state.closestMilestones, key = { "near_${it.id}" }) { milestone ->
+                NearMilestoneCard(milestone, onClick = { onSelect(milestone) })
+            }
         }
 
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = "Trophy Room",
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 18.sp,
-                color = if (isDarkMode) AchievementColors.TextPrimaryDark
-                        else AchievementColors.TextPrimaryLight
-            )
-            Text(
-                text = "$unlockedCount / $totalCount Unlocked",
-                fontFamily = PoppinsFamily,
-                fontSize = 12.sp,
-                color = if (isDarkMode) AchievementColors.TextTertiaryDark
-                        else AchievementColors.TextTertiaryLight
-            )
+        item {
+            Spacer(Modifier.height(6.dp))
+            AchievementFilterRow(selected = state.selectedFilter, onSelected = onFilter)
         }
 
-        // Spacer for alignment
-        Spacer(modifier = Modifier.size(48.dp))
-    }
-}
-
-@Composable
-private fun ProgressOverviewCard(
-    unlockedCount: Int,
-    totalCount: Int,
-    totalPoints: Int,
-    isDarkMode: Boolean
-) {
-    val progress = if (totalCount > 0) unlockedCount.toFloat() / totalCount else 0f
-
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 8.dp),
-        color = if (isDarkMode) AchievementColors.CardBackgroundDark
-                else AchievementColors.CardBackgroundLight,
-        shape = RoundedCornerShape(20.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(20.dp)
-        ) {
+        item {
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 2.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column {
-                    Text(
-                        text = "Collection Progress",
-                        fontFamily = PoppinsFamily,
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 14.sp,
-                        color = if (isDarkMode) AchievementColors.TextSecondaryDark
-                                else AchievementColors.TextSecondaryLight
+                Text(
+                    state.selectedFilter.displayName,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontFamily = SerifFamily
+                )
+                Text(
+                    "${state.filteredAchievements.size}",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+
+        if (state.filteredAchievements.isEmpty()) {
+            item {
+                KairosEmptyState(
+                    icon = KairosIcons.EmojiEvents,
+                    title = "No milestones here yet",
+                    body = "Try another collection filter.",
+                    actionLabel = "Show all",
+                    onAction = { onFilter(AchievementFilter.ALL) }
+                )
+            }
+        } else {
+            items(state.filteredAchievements, key = AchievementProgress::id) { achievement ->
+                AchievementRow(achievement = achievement, onClick = { onSelect(achievement) })
+            }
+        }
+    }
+}
+
+@Composable
+private fun MilestoneOverview(state: AchievementsCollectionUiState) {
+    val reduceMotion = rememberKairosReducedMotion()
+    val animatedProgress by animateFloatAsState(
+        targetValue = state.completionFraction,
+        animationSpec = tween(if (reduceMotion) 1 else 700),
+        label = "achievement_completion"
+    )
+    val scheme = MaterialTheme.colorScheme
+
+    KairosReadingSurface(
+        modifier = Modifier.fillMaxWidth(),
+        accent = Color(0xFF7C70D9),
+        contentPadding = PaddingValues(22.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(20.dp)
+        ) {
+            Box(Modifier.size(104.dp), contentAlignment = Alignment.Center) {
+                Canvas(Modifier.fillMaxSize().semantics { contentDescription = "${(animatedProgress * 100).toInt()} percent of milestones earned" }) {
+                    val stroke = 9.dp.toPx()
+                    drawArc(
+                        color = scheme.outlineVariant,
+                        startAngle = -90f,
+                        sweepAngle = 360f,
+                        useCenter = false,
+                        style = Stroke(stroke)
                     )
-                    Text(
-                        text = "${(progress * 100).toInt()}%",
-                        fontFamily = PoppinsFamily,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 28.sp,
-                        color = if (isDarkMode) AchievementColors.AccentGreen
-                                else AchievementColors.AccentGreenLight
+                    drawArc(
+                        brush = Brush.sweepGradient(listOf(scheme.primary, Color(0xFF3E9B85), scheme.primary)),
+                        startAngle = -90f,
+                        sweepAngle = animatedProgress * 360f,
+                        useCenter = false,
+                        style = Stroke(stroke)
                     )
                 }
-
-                Column(
-                    horizontalAlignment = Alignment.End
-                ) {
-                    Text(
-                        text = "Points Earned",
-                        fontFamily = PoppinsFamily,
-                        fontSize = 12.sp,
-                        color = if (isDarkMode) AchievementColors.TextTertiaryDark
-                                else AchievementColors.TextTertiaryLight
-                    )
-                    Text(
-                        text = "$totalPoints XP",
-                        fontFamily = PoppinsFamily,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 18.sp,
-                        color = if (isDarkMode) AchievementColors.TextPrimaryDark
-                                else AchievementColors.TextPrimaryLight
-                    )
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("${state.unlockedCount}", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                    Text("of ${state.totalCount}", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Progress Bar
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(8.dp)
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(
-                        if (isDarkMode) AchievementColors.BorderDark
-                        else AchievementColors.BorderLight
-                    )
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .fillMaxWidth(progress)
-                        .clip(RoundedCornerShape(4.dp))
-                        .background(
-                            if (isDarkMode) AchievementColors.AccentGreen
-                            else AchievementColors.AccentGreenLight
-                        )
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("A record of real practice", style = MaterialTheme.typography.headlineSmall, fontFamily = SerifFamily)
+                Text(
+                    "Milestones unlock through recall, reflection, consistency, and promises kept—not passive screen time.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    "${state.totalPointsFromAchievements} milestone XP earned",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.SemiBold
                 )
             }
         }
@@ -335,507 +275,290 @@ private fun ProgressOverviewCard(
 }
 
 @Composable
-private fun FilterTabs(
-    selectedFilter: AchievementFilter,
-    onFilterSelected: (AchievementFilter) -> Unit,
-    isDarkMode: Boolean
+private fun NearMilestoneCard(achievement: AchievementProgress, onClick: () -> Unit) {
+    val accent = rarityColor(achievement.rarity)
+    KairosGlassSurface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = achievementShape(achievement),
+        onClick = onClick,
+        contentPadding = PaddingValues(17.dp)
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(11.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                AchievementGlyph(achievement, accent, modifier = Modifier.size(46.dp))
+                Column(Modifier.weight(1f)) {
+                    Text(visibleName(achievement), fontWeight = FontWeight.SemiBold)
+                    Text(
+                        "${achievement.remaining} ${progressUnit(achievement)} to go",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Text("${(achievement.progressFraction * 100).toInt()}%", style = MaterialTheme.typography.labelLarge, color = accent)
+            }
+            LinearProgressIndicator(
+                progress = { achievement.progressFraction.coerceIn(0f, 1f) },
+                modifier = Modifier.fillMaxWidth().height(6.dp),
+                color = accent,
+                trackColor = MaterialTheme.colorScheme.surfaceContainerHighest
+            )
+        }
+    }
+}
+
+@Composable
+private fun AchievementFilterRow(
+    selected: AchievementFilter,
+    onSelected: (AchievementFilter) -> Unit
 ) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .horizontalScroll(rememberScrollState())
-            .padding(horizontal = 20.dp, vertical = 12.dp),
+        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         AchievementFilter.entries.forEach { filter ->
-            FilterChip(
-                filter = filter,
-                isSelected = filter == selectedFilter,
-                onClick = { onFilterSelected(filter) },
-                isDarkMode = isDarkMode
-            )
+            val active = filter == selected
+            Surface(
+                onClick = { onSelected(filter) },
+                shape = RoundedCornerShape(18.dp),
+                color = if (active) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
+                contentColor = if (active) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                border = BorderStroke(1.dp, if (active) Color.Transparent else MaterialTheme.colorScheme.outlineVariant),
+                modifier = Modifier.semantics {
+                    this.selected = active
+                    role = Role.RadioButton
+                }
+            ) {
+                Text(
+                    filter.displayName,
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                    style = MaterialTheme.typography.labelLarge
+                )
+            }
         }
     }
 }
 
 @Composable
-private fun FilterChip(
-    filter: AchievementFilter,
-    isSelected: Boolean,
-    onClick: () -> Unit,
-    isDarkMode: Boolean
-) {
-    val backgroundColor by animateColorAsState(
-        targetValue = if (isSelected) {
-            if (isDarkMode) AchievementColors.AccentGreen
-            else AchievementColors.AccentGreenLight
-        } else {
-            if (isDarkMode) AchievementColors.CardBackgroundDark
-            else AchievementColors.CardBackgroundLight
-        },
-        animationSpec = tween(200),
-        label = "filter_bg"
-    )
-
-    val textColor by animateColorAsState(
-        targetValue = if (isSelected) {
-            Color.Black
-        } else {
-            if (isDarkMode) AchievementColors.TextSecondaryDark
-            else AchievementColors.TextSecondaryLight
-        },
-        animationSpec = tween(200),
-        label = "filter_text"
-    )
-
-    Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(16.dp))
-            .background(backgroundColor)
-            .clickable { onClick() }
-            .padding(horizontal = 14.dp, vertical = 8.dp)
-    ) {
-        Text(
-            text = filter.displayName,
-            fontFamily = PoppinsFamily,
-            fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal,
-            fontSize = 13.sp,
-            color = textColor
-        )
-    }
-}
-
-@Composable
-private fun AchievementCard(
-    achievement: AchievementEntity,
-    isDarkMode: Boolean,
-    onClick: () -> Unit
-) {
-    val rarity = getRarityColor(achievement.rarity)
-    val isUnlocked = achievement.isUnlocked
-
-    // Hidden achievements show "???" until unlocked
-    // Secret achievements are filtered out in ViewModel (won't reach here unless unlocked)
-    val showMystery = achievement.isHidden && !isUnlocked
-    val displayName = if (showMystery) "???" else achievement.name
-    val displayDescription = if (showMystery) "This achievement is hidden. Keep exploring to discover it!" else achievement.description
-
-    var isAnimated by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) {
-        delay(100)
-        isAnimated = true
-    }
-
-    val scale by animateFloatAsState(
-        targetValue = if (isAnimated) 1f else 0.95f,
-        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
-        label = "achievement_scale"
-    )
-
+private fun AchievementRow(achievement: AchievementProgress, onClick: () -> Unit) {
+    val accent = rarityColor(achievement.rarity)
+    val mystery = achievement.isHidden && !achievement.isUnlocked
     Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 6.dp)
-            .scale(scale)
-            .clickable { onClick() },
-        color = if (isDarkMode) AchievementColors.CardBackgroundDark
-                else AchievementColors.CardBackgroundLight,
-        shape = RoundedCornerShape(16.dp)
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth(),
+        shape = achievementShape(achievement),
+        color = if (achievement.isUnlocked) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.surfaceContainerLow,
+        border = BorderStroke(
+            1.dp,
+            if (achievement.isUnlocked) accent.copy(alpha = 0.45f) else MaterialTheme.colorScheme.outlineVariant
+        )
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            // Achievement Icon
-            Box(
-                modifier = Modifier
-                    .size(56.dp)
-                    .clip(CircleShape)
-                    .background(
-                        if (isUnlocked) rarity.copy(alpha = 0.15f)
-                        else AchievementColors.LockedOverlay.copy(alpha = 0.3f)
-                    )
-                    .border(
-                        width = 2.dp,
-                        color = if (isUnlocked) rarity else AchievementColors.LockedOverlay,
-                        shape = CircleShape
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                if (isUnlocked) {
-                    Icon(
-                        imageVector = getAchievementIcon(achievement.iconId),
-                        contentDescription = null,
-                        tint = rarity,
-                        modifier = Modifier.size(28.dp)
-                    )
-                } else if (showMystery) {
-                    // Mystery icon for hidden achievements
-                    Icon(
-                        imageVector = KairosIcons.Help,
-                        contentDescription = "Hidden achievement",
-                        tint = AchievementColors.LockedOverlay,
-                        modifier = Modifier.size(24.dp)
-                    )
-                } else {
-                    Icon(
-                        imageVector = KairosIcons.Lock,
-                        contentDescription = "Locked",
-                        tint = AchievementColors.LockedOverlay,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-            }
-
-            // Achievement Info
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
+        Column(modifier = Modifier.padding(17.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(13.dp)) {
+                AchievementGlyph(achievement, accent, modifier = Modifier.size(52.dp))
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(
+                            if (mystery) "Undiscovered" else achievement.name,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        if (achievement.isUnlocked) {
+                            Icon(KairosIcons.CheckCircle, contentDescription = "Earned", tint = accent, modifier = Modifier.size(17.dp))
+                        }
+                    }
                     Text(
-                        text = displayName,
-                        fontFamily = PoppinsFamily,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 15.sp,
-                        color = if (isUnlocked) {
-                            if (isDarkMode) AchievementColors.TextPrimaryDark
-                            else AchievementColors.TextPrimaryLight
-                        } else {
-                            if (isDarkMode) AchievementColors.TextTertiaryDark
-                            else AchievementColors.TextTertiaryLight
-                        },
-                        maxLines = 1,
+                        if (mystery) "Keep exploring meaningful practices to reveal this milestone." else achievement.description,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 2,
                         overflow = TextOverflow.Ellipsis
                     )
-
-                    // Rarity Badge (hide for mystery achievements)
-                    if (!showMystery) {
-                        RarityBadge(
-                            rarity = achievement.rarity,
-                            isDarkMode = isDarkMode
-                        )
-                    }
                 }
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                Text(
-                    text = displayDescription,
-                    fontFamily = PoppinsFamily,
-                    fontSize = 12.sp,
-                    color = if (isDarkMode) AchievementColors.TextTertiaryDark
-                            else AchievementColors.TextTertiaryLight,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-
-                // Progress Bar for locked achievements
-                if (!isUnlocked && achievement.requirement > 0) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(4.dp)
-                                .clip(RoundedCornerShape(2.dp))
-                                .background(
-                                    if (isDarkMode) AchievementColors.BorderDark
-                                    else AchievementColors.BorderLight
-                                )
-                        ) {
-                            val progress = (achievement.currentProgress.toFloat() / achievement.requirement).coerceIn(0f, 1f)
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxHeight()
-                                    .fillMaxWidth(progress)
-                                    .clip(RoundedCornerShape(2.dp))
-                                    .background(rarity)
-                            )
-                        }
-                        Text(
-                            text = "${achievement.currentProgress}/${achievement.requirement}",
-                            fontFamily = PoppinsFamily,
-                            fontSize = 10.sp,
-                            color = if (isDarkMode) AchievementColors.TextTertiaryDark
-                                    else AchievementColors.TextTertiaryLight
-                        )
-                    }
-                }
+                RarityPill(achievement.rarity, accent)
             }
 
-            // Points/Status
-            Column(
-                horizontalAlignment = Alignment.End
-            ) {
-                if (isUnlocked) {
-                    Icon(
-                        imageVector = KairosIcons.CheckCircle,
-                        contentDescription = "Unlocked",
-                        tint = if (isDarkMode) AchievementColors.AccentGreen
-                               else AchievementColors.AccentGreenLight,
-                        modifier = Modifier.size(20.dp)
-                    )
-                } else {
+            if (!achievement.isUnlocked && !mystery) {
+                LinearProgressIndicator(
+                    progress = { achievement.progressFraction.coerceIn(0f, 1f) },
+                    modifier = Modifier.fillMaxWidth().height(5.dp),
+                    color = accent,
+                    trackColor = MaterialTheme.colorScheme.surfaceContainerHighest
+                )
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     Text(
-                        text = "+${achievement.rewardValue} XP",
-                        fontFamily = PoppinsFamily,
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 12.sp,
-                        color = rarity
+                        "${achievement.currentProgress} / ${achievement.requirement}",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        "+${achievement.rewardPoints} XP",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = accent,
+                        fontWeight = FontWeight.SemiBold
                     )
                 }
+            } else if (achievement.isUnlocked) {
+                Text(
+                    achievement.unlockedAt?.let { "Earned ${formatAchievementDate(it)} · +${achievement.rewardPoints} XP" }
+                        ?: "Earned · +${achievement.rewardPoints} XP",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = accent,
+                    fontWeight = FontWeight.Medium
+                )
             }
         }
     }
 }
 
 @Composable
-private fun RarityBadge(
-    rarity: String,
-    isDarkMode: Boolean
+private fun AchievementGlyph(
+    achievement: AchievementProgress,
+    accent: Color,
+    modifier: Modifier = Modifier
 ) {
-    val rarityColor = getRarityColor(rarity)
-    val rarityName = rarity.replaceFirstChar { it.uppercase() }
-
+    val scheme = MaterialTheme.colorScheme
     Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(4.dp))
-            .background(rarityColor.copy(alpha = 0.15f))
-            .padding(horizontal = 6.dp, vertical = 2.dp)
+        modifier = modifier
+            .background(
+                if (achievement.isUnlocked) accent.copy(alpha = 0.16f) else scheme.surfaceContainerHighest,
+                glyphShape(achievement.rarity)
+            ),
+        contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = rarityName,
-            fontFamily = PoppinsFamily,
-            fontWeight = FontWeight.Medium,
-            fontSize = 9.sp,
-            color = rarityColor
+        Icon(
+            imageVector = achievementIcon(achievement),
+            contentDescription = null,
+            tint = if (achievement.isUnlocked) accent else scheme.onSurfaceVariant.copy(alpha = 0.65f),
+            modifier = Modifier.size(25.dp)
         )
     }
 }
 
 @Composable
-private fun EmptyAchievementsState(
-    filter: AchievementFilter,
-    isDarkMode: Boolean
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(48.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Icon(
-            imageVector = KairosIcons.EmojiEvents,
-            contentDescription = null,
-            tint = if (isDarkMode) AchievementColors.TextTertiaryDark
-                   else AchievementColors.TextTertiaryLight,
-            modifier = Modifier.size(64.dp)
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
+private fun RarityPill(rarity: String, accent: Color) {
+    Surface(shape = RoundedCornerShape(12.dp), color = accent.copy(alpha = 0.12f)) {
         Text(
-            text = when (filter) {
-                AchievementFilter.UNLOCKED -> "No achievements unlocked yet"
-                AchievementFilter.LOCKED -> "All achievements unlocked!"
-                else -> "No achievements in this category"
-            },
-            fontFamily = PoppinsFamily,
-            fontWeight = FontWeight.Medium,
-            fontSize = 16.sp,
-            color = if (isDarkMode) AchievementColors.TextSecondaryDark
-                    else AchievementColors.TextSecondaryLight,
-            textAlign = TextAlign.Center
+            rarity.replaceFirstChar { it.uppercase() },
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp),
+            style = MaterialTheme.typography.labelSmall,
+            color = accent,
+            fontWeight = FontWeight.SemiBold
         )
+    }
+}
 
-        if (filter == AchievementFilter.UNLOCKED) {
-            Spacer(modifier = Modifier.height(8.dp))
+@Composable
+private fun AchievementDetailSheet(
+    achievement: AchievementProgress,
+    onDismiss: () -> Unit
+) {
+    val accent = rarityColor(achievement.rarity)
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .navigationBarsPadding()
+                .padding(horizontal = KairosSpacing.screen)
+                .padding(bottom = 28.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            AchievementGlyph(achievement, accent, modifier = Modifier.size(88.dp))
             Text(
-                text = "Keep using Kairos to earn achievements!",
-                fontFamily = PoppinsFamily,
-                fontSize = 14.sp,
-                color = if (isDarkMode) AchievementColors.TextTertiaryDark
-                        else AchievementColors.TextTertiaryLight,
-                textAlign = TextAlign.Center
+                visibleName(achievement),
+                style = MaterialTheme.typography.headlineMedium,
+                fontFamily = SerifFamily,
+                fontWeight = FontWeight.SemiBold
+            )
+            RarityPill(achievement.rarity, accent)
+            Text(
+                if (achievement.isHidden && !achievement.isUnlocked) {
+                    "This milestone reveals itself only after the underlying practice is completed."
+                } else achievement.description,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            HorizontalDivider()
+            if (achievement.isUnlocked) {
+                Text(
+                    achievement.celebrationMessage.ifBlank { "This milestone records a practice you genuinely completed." },
+                    style = MaterialTheme.typography.titleMedium,
+                    fontFamily = SerifFamily
+                )
+                Text(
+                    achievement.unlockedAt?.let { "Earned ${formatAchievementDate(it)}" } ?: "Earned",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            } else {
+                LinearProgressIndicator(
+                    progress = { achievement.progressFraction.coerceIn(0f, 1f) },
+                    modifier = Modifier.fillMaxWidth().height(8.dp),
+                    color = accent,
+                    trackColor = MaterialTheme.colorScheme.surfaceContainerHighest
+                )
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text("${achievement.currentProgress} of ${achievement.requirement}")
+                    Text("${achievement.remaining} remaining", color = accent, fontWeight = FontWeight.SemiBold)
+                }
+            }
+            Text(
+                "Reward: ${achievement.rewardPoints} XP",
+                style = MaterialTheme.typography.labelLarge,
+                color = accent
             )
         }
     }
 }
 
-@Composable
-private fun AchievementDetailDialog(
-    achievement: AchievementEntity,
-    onDismiss: () -> Unit,
-    isDarkMode: Boolean
-) {
-    val rarity = getRarityColor(achievement.rarity)
-    val isUnlocked = achievement.isUnlocked
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        containerColor = if (isDarkMode) AchievementColors.CardBackgroundDark
-                         else AchievementColors.CardBackgroundLight,
-        title = {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(CircleShape)
-                        .background(rarity.copy(alpha = 0.15f))
-                        .border(2.dp, rarity, CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = if (isUnlocked) getAchievementIcon(achievement.iconId)
-                                      else KairosIcons.Lock,
-                        contentDescription = null,
-                        tint = if (isUnlocked) rarity else AchievementColors.LockedOverlay,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-                Column {
-                    Text(
-                        text = achievement.name,
-                        fontFamily = PoppinsFamily,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp
-                    )
-                    RarityBadge(rarity = achievement.rarity, isDarkMode = isDarkMode)
-                }
-            }
-        },
-        text = {
-            Column {
-                Text(
-                    text = achievement.description,
-                    fontFamily = PoppinsFamily,
-                    fontSize = 14.sp,
-                    color = if (isDarkMode) AchievementColors.TextSecondaryDark
-                            else AchievementColors.TextSecondaryLight
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                if (isUnlocked) {
-                    // Show celebration message
-                    if (achievement.celebrationMessage.isNotEmpty()) {
-                        Text(
-                            text = "\"${achievement.celebrationMessage}\"",
-                            fontFamily = PoppinsFamily,
-                            fontSize = 13.sp,
-                            fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
-                            color = rarity
-                        )
-                    }
-                } else {
-                    // Show progress
-                    Text(
-                        text = "Progress: ${achievement.currentProgress}/${achievement.requirement}",
-                        fontFamily = PoppinsFamily,
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 14.sp,
-                        color = if (isDarkMode) AchievementColors.TextPrimaryDark
-                                else AchievementColors.TextPrimaryLight
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(8.dp)
-                            .clip(RoundedCornerShape(4.dp))
-                            .background(
-                                if (isDarkMode) AchievementColors.BorderDark
-                                else AchievementColors.BorderLight
-                            )
-                    ) {
-                        val progress = (achievement.currentProgress.toFloat() / achievement.requirement).coerceIn(0f, 1f)
-                        Box(
-                            modifier = Modifier
-                                .fillMaxHeight()
-                                .fillMaxWidth(progress)
-                                .clip(RoundedCornerShape(4.dp))
-                                .background(rarity)
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = "Category: ${achievement.category.replaceFirstChar { it.uppercase() }}",
-                        fontFamily = PoppinsFamily,
-                        fontSize = 12.sp,
-                        color = if (isDarkMode) AchievementColors.TextTertiaryDark
-                                else AchievementColors.TextTertiaryLight
-                    )
-                    Text(
-                        text = "+${achievement.rewardValue} XP",
-                        fontFamily = PoppinsFamily,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 12.sp,
-                        color = rarity
-                    )
-                }
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = onDismiss) {
-                Text(
-                    text = "Close",
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Medium,
-                    color = if (isDarkMode) AchievementColors.AccentGreen
-                            else AchievementColors.AccentGreenLight
-                )
-            }
-        }
-    )
+private fun achievementShape(achievement: AchievementProgress): RoundedCornerShape = when (achievement.category.lowercase()) {
+    "reflection" -> RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp, bottomStart = 28.dp, bottomEnd = 8.dp)
+    "temporal" -> RoundedCornerShape(topStart = 8.dp, topEnd = 28.dp, bottomStart = 28.dp, bottomEnd = 28.dp)
+    "mastery" -> RoundedCornerShape(topStart = 30.dp, topEnd = 10.dp, bottomStart = 22.dp, bottomEnd = 30.dp)
+    else -> RoundedCornerShape(24.dp)
 }
 
-private fun getRarityColor(rarity: String): Color {
-    return when (rarity.lowercase()) {
-        "common" -> AchievementColors.RarityCommon
-        "uncommon" -> AchievementColors.RarityUncommon
-        "rare" -> AchievementColors.RarityRare
-        "epic" -> AchievementColors.RarityEpic
-        "legendary" -> AchievementColors.RarityLegendary
-        "mythic" -> AchievementColors.RarityMythic
-        else -> AchievementColors.RarityCommon
-    }
+private fun glyphShape(rarity: String): RoundedCornerShape = when (rarity.lowercase()) {
+    "mythic" -> RoundedCornerShape(topStart = 22.dp, topEnd = 6.dp, bottomStart = 22.dp, bottomEnd = 6.dp)
+    "legendary" -> RoundedCornerShape(topStart = 6.dp, topEnd = 22.dp, bottomStart = 22.dp, bottomEnd = 6.dp)
+    "epic" -> RoundedCornerShape(18.dp)
+    else -> RoundedCornerShape(16.dp)
 }
 
-private fun getAchievementIcon(iconId: String): ImageVector {
-    return when (iconId.lowercase()) {
-        "journal" -> KairosIcons.Book
-        "streak" -> KairosIcons.LocalFireDepartment
-        "wisdom" -> KairosIcons.Psychology
-        "meditation" -> KairosIcons.SelfImprovement
-        "vocabulary" -> KairosIcons.School
-        "future" -> KairosIcons.Schedule
-        "star" -> KairosIcons.Star
-        "trophy" -> KairosIcons.EmojiEvents
-        "heart" -> KairosIcons.Favorite
-        "sparkle" -> KairosIcons.AutoAwesome
-        "sunrise" -> KairosIcons.WbSunny
-        "moon" -> KairosIcons.DarkMode
+private fun rarityColor(rarity: String): Color = when (rarity.lowercase()) {
+    "mythic" -> Color(0xFFB56A22)
+    "legendary" -> Color(0xFFAD7A15)
+    "epic" -> Color(0xFF8A64C5)
+    "rare" -> Color(0xFF497FC6)
+    "uncommon" -> Color(0xFF3E9B85)
+    else -> Color(0xFF74828D)
+}
+
+private fun achievementIcon(achievement: AchievementProgress): ImageVector {
+    val source = "${achievement.iconId} ${achievement.category}".lowercase()
+    return when {
+        "streak" in source || "consistency" in source -> KairosIcons.LocalFireDepartment
+        "word" in source || "wisdom" in source || "learn" in source -> KairosIcons.MenuBook
+        "journal" in source || "reflection" in source -> KairosIcons.Edit
+        "future" in source || "temporal" in source || "letter" in source -> KairosIcons.Mail
+        "presence" in source || "calm" in source -> KairosIcons.SelfImprovement
+        "master" in source -> KairosIcons.WorkspacePremium
         else -> KairosIcons.EmojiEvents
     }
 }
+
+private fun visibleName(achievement: AchievementProgress): String =
+    if (achievement.isHidden && !achievement.isUnlocked) "Undiscovered milestone" else achievement.name
+
+private fun progressUnit(achievement: AchievementProgress): String = when (achievement.category.lowercase()) {
+    "wisdom" -> "learning actions"
+    "reflection" -> "reflections"
+    "consistency" -> "days of practice"
+    "temporal" -> "future letters"
+    else -> "meaningful actions"
+}
+
+private fun formatAchievementDate(timestamp: Long): String =
+    SimpleDateFormat("MMM d, yyyy", Locale.getDefault()).format(Date(timestamp))

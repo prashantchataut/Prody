@@ -3,64 +3,50 @@ package com.kairos.app.ui.theme
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
 /**
  * Kairos Design System - Typography (Redesigned)
  *
- * A dual-font typography system using:
- * - Poppins (sans-serif): Primary UI font for all interface elements
- * - Lora (serif): Accent font for wisdom, quotes, letters, and reflective content
+ * A dependency-free dual-family typography system using:
+ * - Android system sans-serif for interface elements
+ * - Android system serif for quotes, letters, and reflective content
  *
  * Design Principles:
- * - Poppins for UI, Lora for literary/reflective content
+ * - Sans-serif for UI, serif for literary/reflective content
  * - Serif/sans-serif contrast creates visual hierarchy without relying on color
  * - Generous line heights for comfortable reading
  * - Optimized letter spacing for mobile readability
  * - WCAG AA contrast compliance for all text sizes
  *
  * Typography Hierarchy:
- * - Serif (Lora): Wisdom quotes, letter greetings, journal prompts, haven messages
- * - Sans-serif (Poppins): Everything else — titles, body, labels, stats
+ * - Serif: Wisdom quotes, letter greetings, journal prompts, guide messages
+ * - Sans-serif: Titles, body, labels, controls, and stats
  */
 
 /**
- * Lora serif accent font family for wisdom, letter, and reflective content.
+ * Platform serif accent family for quotes, letters, and reflective content.
  *
- * Provides visual contrast against Poppins for literary, contemplative text.
- * Lora is a well-balanced contemporary serif with moderate contrast,
- * optimized for screen reading — perfect for wisdom quotes, monthly letters,
- * and Buddha insights.
- *
- * REQUIRES: Download Lora .ttf files from Google Fonts and place in res/font/:
- *   - lora_regular.ttf
- *   - lora_bold.ttf
- *   - lora_italic.ttf
- *   - lora_bold_italic.ttf
- *   - lora_medium.ttf (500 weight, may not exist — uses regular as fallback)
- *   - lora_semibold.ttf (600 weight, may not exist — uses bold as fallback)
- *
- * Falls back to system serif if Lora fonts are unavailable.
+ * Kairos deliberately uses system families until licensed font resources are
+ * bundled and verified. Referencing optional `R.font` entries does not provide
+ * a runtime fallback—it prevents compilation when the resources are absent.
  */
 val LoraFamily: FontFamily = FontFamily.Serif
 
-/** Serif accent family used for quotes, definitions, and reflective writing. */
-val SerifFamily: FontFamily = FontFamily.Serif
+/** Serif accent family used throughout reflective surfaces. */
+val SerifFamily: FontFamily = LoraFamily
 
-/** Native Android sans-serif used by the focused Kairos interface. */
+/** Native Android sans-serif for interface text and dense controls. */
 val KairosSansFamily: FontFamily = FontFamily.SansSerif
 
-/**
- * Compatibility alias retained for legacy secondary screens.
- * New Kairos UI uses the native platform family to avoid bundled font weight,
- * rendering inconsistencies, and missing-resource build failures.
- */
-val PoppinsFamily: FontFamily = FontFamily.SansSerif
+/** Compatibility alias for legacy UI styles. */
+val PoppinsFamily: FontFamily = KairosSansFamily
 
 /**
  * Main Typography configuration following Material Design 3 guidelines
- * with Poppins as the exclusive font family.
+ * with the native Android sans-serif family for reliable rendering.
  */
 val KairosTypography = Typography(
     // ==========================================================================
@@ -194,7 +180,7 @@ val KairosTypography = KairosTypography
 
 // =============================================================================
 // EXTENDED TYPOGRAPHY - Custom text styles for special use cases
-// Serif for reflective content, Poppins sans-serif for UI
+// Serif for reflective content, native sans-serif for UI
 // =============================================================================
 
 /**
@@ -256,7 +242,7 @@ val OverlineTextStyle = TextStyle(
 
 // =============================================================================
 // WISDOM TYPOGRAPHY - Serif accent for reflective content
-// Primary quotes use Lora serif; attribution/metadata stays Poppins sans-serif
+// Primary quotes use serif; attribution and metadata stay sans-serif
 // =============================================================================
 
 /**

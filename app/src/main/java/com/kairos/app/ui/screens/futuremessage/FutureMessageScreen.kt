@@ -1,982 +1,426 @@
 package com.kairos.app.ui.screens.futuremessage
-import com.kairos.app.ui.icons.KairosIcons
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.EaseInOutCubic
-import androidx.compose.animation.core.EaseOutCubic
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import com.kairos.app.ui.theme.isDarkTheme
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.PathEffect
-import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.kairos.app.R
 import com.kairos.app.data.local.entity.FutureMessageEntity
-import com.kairos.app.ui.components.DeliveryCountdownAura
-import com.kairos.app.ui.components.PodGrid
-import com.kairos.app.ui.theme.*
+import com.kairos.app.ui.animation.rememberKairosReducedMotion
+import com.kairos.app.ui.components.kairos.KairosAppBackground
+import com.kairos.app.ui.components.kairos.KairosEmptyState
+import com.kairos.app.ui.components.kairos.KairosGlassSurface
+import com.kairos.app.ui.components.kairos.KairosIconButton
+import com.kairos.app.ui.components.kairos.KairosPrimaryButton
+import com.kairos.app.ui.components.kairos.KairosSegmentedControl
+import com.kairos.app.ui.icons.KairosIcons
+import com.kairos.app.ui.theme.KairosRadius
+import com.kairos.app.ui.theme.KairosSpacing
+import com.kairos.app.ui.theme.SerifFamily
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 import java.util.concurrent.TimeUnit
-import kotlin.math.cos
-import kotlin.math.sin
 
-/**
- * Time Capsule Overview Screen
- *
- * A premium, minimalist redesign featuring:
- * - Custom tab switch with animated pill indicator
- * - Immersive empty state with hourglass illustration
- * - Support for both dark and light themes
- * - Flat design with no shadows or gradients
- */
 @Composable
 fun FutureMessageListScreen(
     onNavigateBack: () -> Unit,
     onNavigateToWrite: () -> Unit,
+    onNavigateToMessage: (Long) -> Unit = {},
     viewModel: FutureMessageViewModel = hiltViewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    var selectedTab by remember { mutableIntStateOf(0) }
-    var showFilterDialog by remember { mutableStateOf(false) }
-    val isDark = isDarkTheme()
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    var selectedTab by remember { mutableIntStateOf(if (state.unreadCount > 0) 0 else 1) }
 
-    // Theme-aware colors
-    val backgroundColor = if (isDark) TimeCapsuleBackgroundDark else TimeCapsuleBackgroundLight
-    val primaryTextColor = if (isDark) TimeCapsuleTextPrimaryDark else TimeCapsuleTextPrimaryLight
-    val secondaryTextColor = if (isDark) TimeCapsuleTextSecondaryDark else TimeCapsuleTextSecondaryLight
-    val iconColor = if (isDark) TimeCapsuleIconDark else TimeCapsuleIconLight
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(backgroundColor)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .statusBarsPadding()
-        ) {
-            // Top Header Bar
-            TimeCapsuleHeader(
-                onNavigateBack = onNavigateBack,
-                onFilterClick = { showFilterDialog = true },
-                iconColor = iconColor,
-                titleColor = primaryTextColor
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Custom Tab Switch
-            TimeCapsuleTabSwitch(
-                selectedTab = selectedTab,
-                onTabSelected = { selectedTab = it },
-                isDarkTheme = isDark
-            )
-
-            // Content based on selected tab with loading/error states
-            Box(
+    KairosAppBackground {
+        Column(Modifier.fillMaxSize()) {
+            Row(
                 modifier = Modifier
-                    .weight(1f)
                     .fillMaxWidth()
+                    .statusBarsPadding()
+                    .padding(horizontal = KairosSpacing.screen, vertical = KairosSpacing.md),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                when (selectedTab) {
-                    0 -> DeliveredMessagesTab(
-                        messages = uiState.deliveredMessages,
-                        onMessageClick = { viewModel.markAsRead(it.id) },
-                        onShareClick = { viewModel.shareMessage(it) },
-                        isDarkTheme = isDark
+                KairosIconButton(KairosIcons.ArrowBack, "Back", onNavigateBack)
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("Future letters", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                    Text(
+                        "Write across time, not for a feed",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    1 -> PendingMessagesTab(
-                        messages = uiState.pendingMessages,
-                        onPodClick = { message ->
-                            // Navigate to pod detail or show pod info
-                            // For now, this is a placeholder for future pod interaction
+                }
+                KairosIconButton(KairosIcons.Add, "Write a future letter", onNavigateToWrite)
+            }
+
+            KairosSegmentedControl(
+                items = listOf(
+                    "Arrived${if (state.unreadCount > 0) " · ${state.unreadCount}" else ""}",
+                    "Sealed · ${state.pendingMessages.size}"
+                ),
+                selectedIndex = selectedTab,
+                onSelected = { selectedTab = it },
+                modifier = Modifier.padding(horizontal = KairosSpacing.screen)
+            )
+
+            AnimatedContent(
+                targetState = selectedTab,
+                modifier = Modifier.weight(1f),
+                label = "future_letter_tabs"
+            ) { tab ->
+                when {
+                    state.isLoading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+                    state.error != null -> KairosEmptyState(
+                        icon = KairosIcons.ErrorOutline,
+                        title = "Letters unavailable",
+                        body = state.error ?: "Future letters could not be loaded.",
+                        actionLabel = "Try again",
+                        onAction = viewModel::retry
+                    )
+                    tab == 0 -> ArrivedLetters(
+                        messages = state.deliveredMessages,
+                        onOpen = { message ->
+                            viewModel.markAsRead(message.id)
+                            onNavigateToMessage(message.id)
                         },
-                        isDarkTheme = isDark
+                        onWrite = onNavigateToWrite
+                    )
+                    else -> SealedLetters(
+                        messages = state.pendingMessages,
+                        onWrite = onNavigateToWrite
                     )
                 }
             }
         }
 
-        // Bottom CTA Button
-        TimeCapsuleCTAButton(
-            onClick = onNavigateToWrite,
-            isDarkTheme = isDark,
+        KairosGlassSurface(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(horizontal = 24.dp)
-                .padding(bottom = 32.dp)
-                .navigationBarsPadding()
-        )
-
-        // Filter Dialog
-        if (showFilterDialog) {
-            TimeCapsuleFilterDialog(
-                onDismiss = { showFilterDialog = false },
-                isDarkTheme = isDark
-            )
-        }
-    }
-}
-
-/**
- * Custom header bar with back arrow, centered title, and filter icon
- */
-@Composable
-private fun TimeCapsuleHeader(
-    onNavigateBack: () -> Unit,
-    onFilterClick: () -> Unit,
-    iconColor: Color,
-    titleColor: Color
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        // Back button
-        IconButton(
-            onClick = onNavigateBack,
-            modifier = Modifier.size(48.dp)
-        ) {
-            Icon(
-                imageVector = KairosIcons.ArrowBack,
-                contentDescription = "Back",
-                tint = iconColor,
-                modifier = Modifier.size(24.dp)
-            )
-        }
-
-        // Centered title
-        Text(
-            text = stringResource(R.string.time_capsule),
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold,
-            color = titleColor
-        )
-
-        // Filter icon
-        IconButton(
-            onClick = onFilterClick,
-            modifier = Modifier.size(48.dp)
-        ) {
-            Icon(
-                imageVector = KairosIcons.FilterList,
-                contentDescription = "Filter",
-                tint = iconColor,
-                modifier = Modifier.size(24.dp)
-            )
-        }
-    }
-}
-
-/**
- * Custom tab switch with animated pill indicator
- */
-@Composable
-private fun TimeCapsuleTabSwitch(
-    selectedTab: Int,
-    onTabSelected: (Int) -> Unit,
-    isDarkTheme: Boolean
-) {
-    val tabContainerColor = if (isDarkTheme) TimeCapsuleTabContainerDark else TimeCapsuleTabContainerLight
-    val activeTabTextColor = if (isDarkTheme) TimeCapsuleActiveTabTextDark else TimeCapsuleActiveTabTextLight
-    val inactiveTabTextColor = if (isDarkTheme) TimeCapsuleTextSecondaryDark else TimeCapsuleTextSecondaryLight
-
-    // Animated pill position using fraction for responsive sizing
-    val animatedOffsetFraction by animateFloatAsState(
-        targetValue = if (selectedTab == 0) 0f else 1f,
-        animationSpec = tween(durationMillis = 250, easing = FastOutSlowInEasing),
-        label = "tab_pill_offset"
-    )
-
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp)
-    ) {
-        // Tab container background
-        BoxWithConstraints(
-            modifier = Modifier
                 .fillMaxWidth()
-                .height(50.dp)
-                .clip(RoundedCornerShape(25.dp))
-                .background(tabContainerColor)
+                .navigationBarsPadding()
+                .padding(horizontal = KairosSpacing.screen, vertical = KairosSpacing.lg),
+            strong = true,
+            shape = RoundedCornerShape(KairosRadius.floating),
+            contentPadding = PaddingValues(8.dp)
         ) {
-            val containerWidth = maxWidth
-            val pillPadding = 4.dp
-            val pillWidth = (containerWidth - pillPadding * 2) / 2
-            val pillOffset = pillPadding + (pillWidth * animatedOffsetFraction)
-
-            // Animated active tab pill
-            Box(
-                modifier = Modifier
-                    .offset(x = pillOffset)
-                    .padding(vertical = 4.dp)
-                    .width(pillWidth)
-                    .fillMaxHeight()
-                    .clip(RoundedCornerShape(21.dp))
-                    .background(TimeCapsuleAccent)
+            KairosPrimaryButton(
+                text = "Write to future me",
+                onClick = onNavigateToWrite,
+                icon = KairosIcons.Edit,
+                modifier = Modifier.fillMaxWidth()
             )
-
-            // Tab labels
-            Row(
-                modifier = Modifier.fillMaxSize(),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Delivered tab
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight()
-                        .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null
-                        ) { onTabSelected(0) },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = stringResource(R.string.time_capsule_tab_delivered),
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = if (selectedTab == 0) FontWeight.Medium else FontWeight.Normal,
-                        color = if (selectedTab == 0) activeTabTextColor else inactiveTabTextColor
-                    )
-                }
-
-                // Pending tab
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight()
-                        .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null
-                        ) { onTabSelected(1) },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = stringResource(R.string.time_capsule_tab_pending),
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = if (selectedTab == 1) FontWeight.Medium else FontWeight.Normal,
-                        color = if (selectedTab == 1) activeTabTextColor else inactiveTabTextColor
-                    )
-                }
-            }
         }
     }
 }
 
-/**
- * Primary CTA button at the bottom of the screen
- */
 @Composable
-private fun TimeCapsuleCTAButton(
-    onClick: () -> Unit,
-    isDarkTheme: Boolean,
-    modifier: Modifier = Modifier
-) {
-    Button(
-        onClick = onClick,
-        modifier = modifier
-            .fillMaxWidth()
-            .height(55.dp),
-        shape = RoundedCornerShape(27.5.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = TimeCapsuleAccent,
-            contentColor = Color.Black
-        ),
-        contentPadding = PaddingValues(horizontal = 24.dp)
-    ) {
-        Icon(
-            imageVector = KairosIcons.Edit,
-            contentDescription = null,
-            tint = Color.Black,
-            modifier = Modifier.size(20.dp)
-        )
-        Spacer(modifier = Modifier.width(12.dp))
-        Text(
-            text = stringResource(R.string.time_capsule_write_cta),
-            style = MaterialTheme.typography.bodyLarge,
-            fontWeight = FontWeight.SemiBold,
-            color = Color.Black
-        )
-    }
-}
-
-/**
- * Delivered messages tab content
- */
-@Composable
-private fun DeliveredMessagesTab(
+private fun ArrivedLetters(
     messages: List<FutureMessageEntity>,
-    onMessageClick: (FutureMessageEntity) -> Unit,
-    onShareClick: (FutureMessageEntity) -> Unit,
-    isDarkTheme: Boolean
+    onOpen: (FutureMessageEntity) -> Unit,
+    onWrite: () -> Unit
 ) {
     if (messages.isEmpty()) {
-        TimeCapsuleEmptyState(
-            isDarkTheme = isDarkTheme
+        KairosEmptyState(
+            icon = KairosIcons.Mail,
+            title = "Nothing has arrived yet",
+            body = "Sealed letters stay quiet until the date you chose. Kairos will not tease their contents early.",
+            actionLabel = "Write a letter",
+            onAction = onWrite
         )
-    } else {
-        LazyColumn(
-            contentPadding = PaddingValues(
-                start = 24.dp,
-                end = 24.dp,
-                top = 24.dp,
-                bottom = 140.dp
-            ),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            items(messages, key = { it.id }) { message ->
-                DeliveredMessageCard(
-                    message = message,
-                    onClick = { onMessageClick(message) },
-                    onShareClick = { onShareClick(message) },
-                    isDarkTheme = isDarkTheme
-                )
-            }
+        return
+    }
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(
+            start = KairosSpacing.screen,
+            end = KairosSpacing.screen,
+            top = KairosSpacing.lg,
+            bottom = 112.dp
+        ),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        item {
+            Text(
+                "Messages from an earlier version of you",
+                style = MaterialTheme.typography.headlineSmall,
+                fontFamily = SerifFamily,
+                modifier = Modifier.padding(bottom = 4.dp)
+            )
+        }
+        items(messages, key = { it.id }) { message ->
+            ArrivedLetterCard(message, onClick = { onOpen(message) })
         }
     }
 }
 
-/**
- * Pending messages tab content - THE SEALED PODS
- *
- * Mirror Evolution: Replaced list view with mysterious sealed pods grid.
- * Each pod is a sealed container holding a message to future self.
- */
 @Composable
-private fun PendingMessagesTab(
-    messages: List<FutureMessageEntity>,
-    onPodClick: (FutureMessageEntity) -> Unit,
-    isDarkTheme: Boolean
-) {
-    // Use the new PodGrid component for sealed pods visualization
-    PodGrid(
-        pods = messages,
-        onPodClick = onPodClick,
-        isDarkTheme = isDarkTheme,
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(bottom = 100.dp) // Account for CTA button
-    )
-}
-
-/**
- * Empty state illustration with hourglass icon, dashed circle, and progress indicators
- */
-@Composable
-private fun TimeCapsuleEmptyState(
-    isDarkTheme: Boolean,
-    isPending: Boolean = false
-) {
-    val primaryTextColor = if (isDarkTheme) TimeCapsuleTextPrimaryDark else TimeCapsuleTextPrimaryLight
-    val secondaryTextColor = if (isDarkTheme) TimeCapsuleTextSecondaryDark else TimeCapsuleTextSecondaryLight
-    val innerCircleColor = if (isDarkTheme) TimeCapsuleEmptyCircleBgDark else TimeCapsuleEmptyCircleBgLight
-    val dashedCircleColor = if (isDarkTheme) TimeCapsuleDashedCircleDark else TimeCapsuleDashedCircleLight
-
-    // Animation for the progress arcs
-    val infiniteTransition = rememberInfiniteTransition(label = "empty_state_animation")
-    val rotationAngle by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 360f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 20000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "rotation"
-    )
-
-    // Pulsating glow for dots
-    val pulseScale by infiniteTransition.animateFloat(
-        initialValue = 0.8f,
-        targetValue = 1.2f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 1500, easing = EaseInOutCubic),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "pulse"
-    )
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+private fun ArrivedLetterCard(message: FutureMessageEntity, onClick: () -> Unit) {
+    val unread = !message.isRead
+    val accent = categoryColor(message.category)
+    Surface(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(26.dp),
+        color = MaterialTheme.colorScheme.surface,
+        border = BorderStroke(
+            if (unread) 1.5.dp else 1.dp,
+            if (unread) accent.copy(alpha = 0.72f) else MaterialTheme.colorScheme.outlineVariant
+        )
     ) {
-        // Empty state illustration
-        Box(
-            modifier = Modifier.size(200.dp),
-            contentAlignment = Alignment.Center
+        Row(
+            modifier = Modifier.padding(18.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(15.dp)
         ) {
-            // Outer dashed circle with progress indicators
-            Canvas(
-                modifier = Modifier.size(180.dp)
-            ) {
-                val radius = size.minDimension / 2
-                val center = Offset(size.width / 2, size.height / 2)
-
-                // Draw dashed outer circle
-                val dashPathEffect = PathEffect.dashPathEffect(
-                    floatArrayOf(8f, 12f),
-                    phase = 0f
-                )
-                drawCircle(
-                    color = dashedCircleColor,
-                    radius = radius,
-                    center = center,
-                    style = Stroke(
-                        width = 2.dp.toPx(),
-                        pathEffect = dashPathEffect
-                    )
-                )
-
-                // Draw progress arc segments (neon green)
-                val arcAngles = listOf(30f, 120f, 210f, 300f)
-                arcAngles.forEach { startAngle ->
-                    rotate(rotationAngle, pivot = center) {
-                        drawArc(
-                            color = TimeCapsuleAccent,
-                            startAngle = startAngle,
-                            sweepAngle = 25f,
-                            useCenter = false,
-                            style = Stroke(
-                                width = 3.dp.toPx(),
-                                cap = StrokeCap.Round
-                            ),
-                            size = size
-                        )
-                    }
-                }
-
-                // Draw small dots at various positions
-                val dotAngles = listOf(75f, 165f, 255f, 345f)
-                dotAngles.forEach { angle ->
-                    val adjustedAngle = angle + rotationAngle
-                    val radians = Math.toRadians(adjustedAngle.toDouble())
-                    val dotX = center.x + (radius - 2.dp.toPx()) * cos(radians).toFloat()
-                    val dotY = center.y + (radius - 2.dp.toPx()) * sin(radians).toFloat()
-                    drawCircle(
-                        color = TimeCapsuleAccent,
-                        radius = 3.dp.toPx() * pulseScale,
-                        center = Offset(dotX, dotY)
-                    )
-                }
-            }
-
-            // Inner solid circle with hourglass
             Box(
-                modifier = Modifier
-                    .size(100.dp)
-                    .clip(CircleShape)
-                    .background(innerCircleColor),
+                Modifier
+                    .size(54.dp)
+                    .background(accent.copy(alpha = 0.15f), RoundedCornerShape(19.dp)),
                 contentAlignment = Alignment.Center
             ) {
-                // Custom Hourglass Icon
-                HourglassIcon(
-                    modifier = Modifier.size(48.dp),
-                    color = TimeCapsuleAccent
+                Icon(KairosIcons.Mail, contentDescription = null, tint = accent)
+                if (unread) {
+                    Box(
+                        Modifier
+                            .align(Alignment.TopEnd)
+                            .size(10.dp)
+                            .background(accent, CircleShape)
+                    )
+                }
+            }
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(
+                    message.title.ifBlank { "A letter from your past" },
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    if (unread) "Ready to open" else message.content.replace('\n', ' '),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = if (unread) 1 else 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    "Written ${formatLetterDate(message.createdAt)}",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.75f)
+                )
+            }
+            Icon(KairosIcons.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}
+
+@Composable
+private fun SealedLetters(messages: List<FutureMessageEntity>, onWrite: () -> Unit) {
+    if (messages.isEmpty()) {
+        KairosEmptyState(
+            icon = KairosIcons.Schedule,
+            title = "No letters are waiting",
+            body = "Write a promise, prediction, question, or honest snapshot for a date that matters.",
+            actionLabel = "Seal a letter",
+            onAction = onWrite
+        )
+        return
+    }
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(
+            start = KairosSpacing.screen,
+            end = KairosSpacing.screen,
+            top = KairosSpacing.lg,
+            bottom = 112.dp
+        ),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        item { SealedOverview(messages) }
+        items(messages, key = { it.id }) { message ->
+            SealedLetterCard(message)
+        }
+    }
+}
+
+@Composable
+private fun SealedOverview(messages: List<FutureMessageEntity>) {
+    val nearest = messages.minByOrNull { it.deliveryDate }
+    KairosGlassSurface(
+        modifier = Modifier.fillMaxWidth(),
+        strong = true,
+        shape = RoundedCornerShape(30.dp),
+        contentPadding = PaddingValues(20.dp)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            SealedOrbit(Modifier.size(72.dp))
+            Column {
+                Text("${messages.size} sealed letter${if (messages.size == 1) "" else "s"}", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
+                Text(
+                    nearest?.let { "Next arrival ${relativeDelivery(it.deliveryDate)}" } ?: "Waiting for their dates",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
-
-        Spacer(modifier = Modifier.height(40.dp))
-
-        // Empty state text
-        Text(
-            text = stringResource(R.string.future_empty_title),
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold,
-            color = primaryTextColor,
-            textAlign = TextAlign.Center
-        )
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        Text(
-            text = stringResource(
-                if (isPending) R.string.future_empty_pending_message
-                else R.string.future_empty_message
-            ),
-            style = MaterialTheme.typography.bodyMedium,
-            color = secondaryTextColor,
-            textAlign = TextAlign.Center,
-            lineHeight = 22.sp
-        )
-
-        // Add bottom padding to account for the CTA button
-        Spacer(modifier = Modifier.height(100.dp))
     }
 }
 
-/**
- * Custom Hourglass icon drawn with Canvas
- */
 @Composable
-private fun HourglassIcon(
-    modifier: Modifier = Modifier,
-    color: Color
-) {
-    Canvas(modifier = modifier) {
-        val width = size.width
-        val height = size.height
-        val strokeWidth = 3.dp.toPx()
-
-        // Top horizontal line
-        drawLine(
-            color = color,
-            start = Offset(width * 0.2f, height * 0.1f),
-            end = Offset(width * 0.8f, height * 0.1f),
-            strokeWidth = strokeWidth,
-            cap = StrokeCap.Round
-        )
-
-        // Bottom horizontal line
-        drawLine(
-            color = color,
-            start = Offset(width * 0.2f, height * 0.9f),
-            end = Offset(width * 0.8f, height * 0.9f),
-            strokeWidth = strokeWidth,
-            cap = StrokeCap.Round
-        )
-
-        // Left top diagonal
-        drawLine(
-            color = color,
-            start = Offset(width * 0.25f, height * 0.15f),
-            end = Offset(width * 0.5f, height * 0.5f),
-            strokeWidth = strokeWidth,
-            cap = StrokeCap.Round
-        )
-
-        // Right top diagonal
-        drawLine(
-            color = color,
-            start = Offset(width * 0.75f, height * 0.15f),
-            end = Offset(width * 0.5f, height * 0.5f),
-            strokeWidth = strokeWidth,
-            cap = StrokeCap.Round
-        )
-
-        // Left bottom diagonal
-        drawLine(
-            color = color,
-            start = Offset(width * 0.25f, height * 0.85f),
-            end = Offset(width * 0.5f, height * 0.5f),
-            strokeWidth = strokeWidth,
-            cap = StrokeCap.Round
-        )
-
-        // Right bottom diagonal
-        drawLine(
-            color = color,
-            start = Offset(width * 0.75f, height * 0.85f),
-            end = Offset(width * 0.5f, height * 0.5f),
-            strokeWidth = strokeWidth,
-            cap = StrokeCap.Round
-        )
-
-        // Left top vertical
-        drawLine(
-            color = color,
-            start = Offset(width * 0.2f, height * 0.1f),
-            end = Offset(width * 0.25f, height * 0.15f),
-            strokeWidth = strokeWidth,
-            cap = StrokeCap.Round
-        )
-
-        // Right top vertical
-        drawLine(
-            color = color,
-            start = Offset(width * 0.8f, height * 0.1f),
-            end = Offset(width * 0.75f, height * 0.15f),
-            strokeWidth = strokeWidth,
-            cap = StrokeCap.Round
-        )
-
-        // Left bottom vertical
-        drawLine(
-            color = color,
-            start = Offset(width * 0.2f, height * 0.9f),
-            end = Offset(width * 0.25f, height * 0.85f),
-            strokeWidth = strokeWidth,
-            cap = StrokeCap.Round
-        )
-
-        // Right bottom vertical
-        drawLine(
-            color = color,
-            start = Offset(width * 0.8f, height * 0.9f),
-            end = Offset(width * 0.75f, height * 0.85f),
-            strokeWidth = strokeWidth,
-            cap = StrokeCap.Round
-        )
-    }
-}
-
-/**
- * Filter dialog for time capsule messages
- */
-@Composable
-private fun TimeCapsuleFilterDialog(
-    onDismiss: () -> Unit,
-    isDarkTheme: Boolean
-) {
-    val dialogBgColor = if (isDarkTheme) TimeCapsuleBackgroundDark else TimeCapsuleBackgroundLight
-    val textPrimaryColor = if (isDarkTheme) TimeCapsuleTextPrimaryDark else TimeCapsuleTextPrimaryLight
-    val textSecondaryColor = if (isDarkTheme) TimeCapsuleTextSecondaryDark else TimeCapsuleTextSecondaryLight
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        containerColor = dialogBgColor,
-        title = {
-            Text(
-                text = "Filter Messages",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = textPrimaryColor
-            )
-        },
-        text = {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
+private fun SealedLetterCard(message: FutureMessageEntity) {
+    val accent = categoryColor(message.category)
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(topStart = 26.dp, topEnd = 26.dp, bottomStart = 26.dp, bottomEnd = 8.dp),
+        color = MaterialTheme.colorScheme.surface,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+    ) {
+        Row(
+            modifier = Modifier.padding(18.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            Box(
+                Modifier
+                    .size(48.dp)
+                    .background(accent.copy(alpha = 0.14f), RoundedCornerShape(17.dp)),
+                contentAlignment = Alignment.Center
+            ) { Icon(KairosIcons.Lock, contentDescription = null, tint = accent) }
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(message.title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Text(
-                    text = "Filter options for time capsule messages will be available in a future update.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = textSecondaryColor
-                )
-                Text(
-                    text = "Planned filters:\n• By date range\n• By read/unread status\n• By delivery date",
+                    "Sealed until ${formatLetterDate(message.deliveryDate)}",
                     style = MaterialTheme.typography.bodySmall,
-                    color = textSecondaryColor.copy(alpha = 0.8f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = onDismiss) {
                 Text(
-                    text = "Got it",
-                    color = TimeCapsuleAccent,
+                    relativeDelivery(message.deliveryDate),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = accent,
                     fontWeight = FontWeight.SemiBold
                 )
             }
         }
+    }
+}
+
+
+@Composable
+private fun rememberSealedOrbitPhase(enabled: Boolean): Float {
+    if (!enabled) return 0.15f
+    val transition = rememberInfiniteTransition(label = "sealed_orbit")
+    val phase by transition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(tween(7000, easing = FastOutSlowInEasing)),
+        label = "sealed_orbit_phase"
     )
+    return phase
 }
 
-/**
- * Card for delivered messages with share functionality
- */
 @Composable
-private fun DeliveredMessageCard(
-    message: FutureMessageEntity,
-    onClick: () -> Unit,
-    onShareClick: () -> Unit,
-    isDarkTheme: Boolean
-) {
-    val dateFormat = remember { SimpleDateFormat("MMM d, yyyy", Locale.getDefault()) }
-    var expanded by remember { mutableStateOf(false) }
-
-    val cardBgColor = if (isDarkTheme) {
-        if (!message.isRead) TimeCapsuleTabContainerDark else TimeCapsuleEmptyCircleBgDark
-    } else {
-        if (!message.isRead) TimeCapsuleAccent.copy(alpha = 0.1f) else TimeCapsuleTabContainerLight
-    }
-
-    val primaryTextColor = if (isDarkTheme) TimeCapsuleTextPrimaryDark else TimeCapsuleTextPrimaryLight
-    val secondaryTextColor = if (isDarkTheme) TimeCapsuleTextSecondaryDark else TimeCapsuleTextSecondaryLight
-
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable {
-                expanded = !expanded
-                if (!message.isRead) onClick()
-            },
-        shape = RoundedCornerShape(16.dp),
-        color = cardBgColor
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    // Icon circle
-                    Box(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(CircleShape)
-                            .background(TimeCapsuleAccent.copy(alpha = 0.2f)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = if (message.isRead) KairosIcons.MarkEmailRead
-                            else KairosIcons.Mail,
-                            contentDescription = null,
-                            tint = TimeCapsuleAccent,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-
-                    Column {
-                        Text(
-                            text = message.title,
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = if (!message.isRead) FontWeight.Bold else FontWeight.Medium,
-                            color = primaryTextColor
-                        )
-                        Text(
-                            text = "Written ${dateFormat.format(Date(message.createdAt))}",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = secondaryTextColor
-                        )
-                    }
-                }
-
-                if (!message.isRead) {
-                    Surface(
-                        shape = RoundedCornerShape(8.dp),
-                        color = TimeCapsuleAccent
-                    ) {
-                        Text(
-                            text = "New",
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.SemiBold,
-                            color = Color.Black,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                        )
-                    }
-                }
-            }
-
-            AnimatedVisibility(visible = expanded) {
-                Column {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    HorizontalDivider(color = secondaryTextColor.copy(alpha = 0.2f))
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Text(
-                        text = message.content,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = primaryTextColor
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Delivered ${dateFormat.format(Date(message.deliveredAt ?: message.deliveryDate))}",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = TimeCapsuleAccent
-                        )
-
-                        // Share button
-                        Surface(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(8.dp))
-                                .clickable(onClick = onShareClick),
-                            shape = RoundedCornerShape(8.dp),
-                            color = TimeCapsuleAccent.copy(alpha = 0.15f)
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(6.dp)
-                            ) {
-                                Icon(
-                                    imageVector = KairosIcons.Share,
-                                    contentDescription = "Share",
-                                    tint = TimeCapsuleAccent,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Text(
-                                    text = "Share",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = TimeCapsuleAccent
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (!expanded) {
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = message.content,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = secondaryTextColor,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-        }
-    }
-}
-
-/**
- * Card for pending messages with magical countdown aura
- */
-@Composable
-private fun PendingMessageCard(
-    message: FutureMessageEntity,
-    isDarkTheme: Boolean
-) {
-    val dateFormat = remember { SimpleDateFormat("MMM d, yyyy", Locale.getDefault()) }
-    val daysRemaining = remember(message.deliveryDate) {
-        val diff = message.deliveryDate - System.currentTimeMillis()
-        TimeUnit.MILLISECONDS.toDays(diff).coerceAtLeast(0)
-    }
-
-    val cardBgColor = if (isDarkTheme) TimeCapsuleEmptyCircleBgDark else TimeCapsuleTabContainerLight
-    val primaryTextColor = if (isDarkTheme) TimeCapsuleTextPrimaryDark else TimeCapsuleTextPrimaryLight
-    val secondaryTextColor = if (isDarkTheme) TimeCapsuleTextSecondaryDark else TimeCapsuleTextSecondaryLight
-
-    // Wrap with countdown aura for messages close to delivery
-    Box {
-        // Magical countdown aura effect for messages close to delivery
-        DeliveryCountdownAura(
-            daysUntilDelivery = daysRemaining.toInt()
+private fun SealedOrbit(modifier: Modifier = Modifier) {
+    val reducedMotion = rememberKairosReducedMotion()
+    val phase = rememberSealedOrbitPhase(enabled = !reducedMotion)
+    val scheme = MaterialTheme.colorScheme
+    Canvas(modifier.semantics { contentDescription = "Sealed letters waiting" }) {
+        val center = Offset(size.width / 2, size.height / 2)
+        drawCircle(scheme.primary.copy(alpha = 0.12f), radius = size.minDimension * 0.44f, center = center)
+        drawCircle(scheme.primary.copy(alpha = 0.35f), radius = size.minDimension * 0.34f, center = center, style = Stroke(width = 2.dp.toPx()))
+        val angle = (phase * Math.PI * 2).toFloat()
+        val orbit = size.minDimension * 0.34f
+        drawCircle(
+            scheme.primary,
+            radius = 4.dp.toPx(),
+            center = Offset(center.x + kotlin.math.cos(angle) * orbit, center.y + kotlin.math.sin(angle) * orbit)
         )
-
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
-            color = cardBgColor
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        // Icon circle
-                        Box(
-                            modifier = Modifier
-                                .size(40.dp)
-                                .clip(CircleShape)
-                                .background(TimeCapsuleAccent.copy(alpha = 0.2f)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = KairosIcons.HourglassBottom,
-                                contentDescription = null,
-                                tint = TimeCapsuleAccent,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-
-                        Column {
-                            Text(
-                                text = message.title,
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.Medium,
-                                color = primaryTextColor
-                            )
-                            Text(
-                                text = "Delivers ${dateFormat.format(Date(message.deliveryDate))}",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = secondaryTextColor
-                            )
-                        }
-                    }
-
-                    // Days remaining badge with enhanced styling for close deliveries
-                    Surface(
-                        shape = RoundedCornerShape(8.dp),
-                        color = if (daysRemaining <= 7)
-                            TimeCapsuleAccent.copy(alpha = 0.25f)
-                        else
-                            TimeCapsuleAccent.copy(alpha = 0.15f)
-                    ) {
-                        Text(
-                            text = when {
-                                daysRemaining == 0L -> "Today!"
-                                daysRemaining == 1L -> "Tomorrow!"
-                                else -> "$daysRemaining days"
-                            },
-                            style = MaterialTheme.typography.labelMedium,
-                            color = TimeCapsuleAccent,
-                            fontWeight = if (daysRemaining <= 3) FontWeight.Bold else FontWeight.SemiBold,
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                // Sealed content indicator
-                Surface(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    color = if (isDarkTheme) TimeCapsuleDashedCircleDark.copy(alpha = 0.5f)
-                    else TimeCapsuleDashedCircleLight
-                ) {
-                    Text(
-                        text = if (daysRemaining <= 1)
-                            "Almost time to reveal your message..."
-                        else
-                            "Content sealed until delivery...",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = secondaryTextColor.copy(alpha = 0.7f),
-                        modifier = Modifier.padding(12.dp)
-                    )
-                }
-            }
+        val envelope = Path().apply {
+            moveTo(center.x - 13.dp.toPx(), center.y - 8.dp.toPx())
+            lineTo(center.x + 13.dp.toPx(), center.y - 8.dp.toPx())
+            lineTo(center.x + 13.dp.toPx(), center.y + 9.dp.toPx())
+            lineTo(center.x - 13.dp.toPx(), center.y + 9.dp.toPx())
+            close()
         }
+        drawPath(envelope, scheme.onSurface.copy(alpha = 0.85f), style = Stroke(width = 2.dp.toPx()))
+        drawLine(
+            scheme.onSurface.copy(alpha = 0.85f),
+            Offset(center.x - 13.dp.toPx(), center.y - 8.dp.toPx()),
+            Offset(center.x, center.y + 1.dp.toPx()),
+            2.dp.toPx()
+        )
+        drawLine(
+            scheme.onSurface.copy(alpha = 0.85f),
+            Offset(center.x + 13.dp.toPx(), center.y - 8.dp.toPx()),
+            Offset(center.x, center.y + 1.dp.toPx()),
+            2.dp.toPx()
+        )
+    }
+}
+
+private fun categoryColor(category: String): Color = when (category.lowercase(Locale.getDefault())) {
+    "goal" -> Color(0xFF7C70D9)
+    "promise" -> Color(0xFF3E9B85)
+    "motivation" -> Color(0xFFD8755C)
+    else -> Color(0xFF5577B8)
+}
+
+private fun formatLetterDate(timestamp: Long): String =
+    SimpleDateFormat("MMM d, yyyy", Locale.getDefault()).format(Date(timestamp))
+
+private fun relativeDelivery(timestamp: Long): String {
+    val days = TimeUnit.MILLISECONDS.toDays((timestamp - System.currentTimeMillis()).coerceAtLeast(0L))
+    return when {
+        days == 0L -> "arrives today"
+        days == 1L -> "arrives tomorrow"
+        days < 30 -> "arrives in $days days"
+        days < 365 -> "arrives in ${days / 30} months"
+        else -> "arrives in ${days / 365} years"
     }
 }

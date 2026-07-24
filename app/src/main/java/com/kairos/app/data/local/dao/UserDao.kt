@@ -1,4 +1,4 @@
-﻿package com.kairos.app.data.local.dao
+package com.kairos.app.data.local.dao
 
 import androidx.room.*
 import com.kairos.app.data.local.entity.AchievementEntity
@@ -157,6 +157,16 @@ interface UserDao {
 
     @Query("UPDATE achievements SET isUnlocked = 1, unlockedAt = :unlockedAt WHERE id = :id")
     suspend fun unlockAchievement(id: String, unlockedAt: Long = System.currentTimeMillis())
+
+    /**
+     * Atomically unlocks once. The affected-row count prevents duplicate rewards
+     * when two completion flows finish at nearly the same time.
+     */
+    @Query("UPDATE achievements SET isUnlocked = 1, unlockedAt = :unlockedAt WHERE id = :id AND isUnlocked = 0")
+    suspend fun unlockAchievementIfLocked(
+        id: String,
+        unlockedAt: Long = System.currentTimeMillis()
+    ): Int
 
     // Streak History
     @Query("SELECT * FROM streak_history ORDER BY date DESC")

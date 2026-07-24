@@ -1,4 +1,4 @@
-﻿package com.kairos.app.domain.repository
+package com.kairos.app.domain.repository
 
 import com.kairos.app.domain.model.DailyPlan
 import com.kairos.app.domain.recommendation.ContentInteractionType

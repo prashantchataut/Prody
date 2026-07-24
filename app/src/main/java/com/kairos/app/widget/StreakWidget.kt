@@ -1,4 +1,4 @@
-﻿package com.kairos.app.widget
+package com.kairos.app.widget
 
 import android.content.Context
 import androidx.compose.runtime.Composable

@@ -1,4 +1,4 @@
-﻿package com.kairos.app.ui.screens.social
+package com.kairos.app.ui.screens.social
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel

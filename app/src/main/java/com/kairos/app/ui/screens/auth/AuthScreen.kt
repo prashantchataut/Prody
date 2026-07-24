@@ -1,4 +1,4 @@
-﻿package com.kairos.app.ui.screens.auth
+package com.kairos.app.ui.screens.auth
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts

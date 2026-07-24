@@ -1,4 +1,4 @@
-﻿package com.kairos.app.data.repository
+package com.kairos.app.data.repository
 
 import androidx.room.withTransaction
 import com.kairos.app.data.InitialContentData
@@ -16,7 +16,7 @@ import com.kairos.app.data.local.preferences.PreferencesManager
 import com.kairos.app.domain.common.ErrorType
 import com.kairos.app.domain.common.Result
 import com.kairos.app.domain.common.runSuspendCatching
-import com.kairos.app.domain.gamification.Achievements
+import com.kairos.app.domain.identity.KairosAchievements
 import com.kairos.app.domain.repository.OnboardingPreferences
 import com.kairos.app.domain.repository.OnboardingRepository
 import javax.inject.Inject
@@ -61,19 +61,17 @@ class OnboardingRepositoryImpl @Inject constructor(
                     )
                 )
                 userDao.insertAchievements(
-                    Achievements.allAchievements.map { achievement ->
-                        AchievementEntity(
+                    KairosAchievements.allAchievements.map { achievement ->
+                        AchievementEntity.fromDomain(
                             id = achievement.id,
                             name = achievement.name,
                             description = achievement.description,
-                            iconId = achievement.id,
-                            category = achievement.category.name.lowercase(),
-                            requirement = achievement.getRequirementTarget(),
-                            currentProgress = 0,
-                            isUnlocked = false,
-                            rewardType = "points",
-                            rewardValue = achievement.xpReward.toString(),
-                            rarity = achievement.rarity.name.lowercase()
+                            category = achievement.category.id,
+                            rarity = achievement.rarity.id,
+                            iconName = achievement.iconName,
+                            requirement = achievement.requirement,
+                            celebrationMessage = achievement.celebrationMessage,
+                            rewardPoints = achievement.rewardPoints
                         )
                     }
                 )

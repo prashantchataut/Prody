@@ -1,13 +1,19 @@
-﻿package com.kairos.app.ui.screens.futuremessage
+package com.kairos.app.ui.screens.futuremessage
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.kairos.app.data.local.dao.FutureMessageDao
+import com.kairos.app.data.auth.UserIdProvider
 import com.kairos.app.data.local.entity.FutureMessageEntity
 import com.kairos.app.data.local.entity.FutureMessageReplyEntity
+import com.kairos.app.domain.futuremessage.FutureReplyPromptPolicy
+import com.kairos.app.domain.gamification.PointCalculator
+import com.kairos.app.domain.gamification.Skill
 import com.kairos.app.domain.model.Mood
 import com.kairos.app.domain.repository.FutureMessageReplyRepository
+import com.kairos.app.domain.repository.FutureMessageRepository
+import com.kairos.app.domain.repository.GamificationRepository
+import com.kairos.app.domain.repository.StreakActivityType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -16,45 +22,6 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import javax.inject.Inject
-
-/**
- * Reply prompts to guide the user's response
- */
-object ReplyPrompts {
-    val reflective = listOf(
-        "How does it feel reading this now?",
-        "What has changed since you wrote this?",
-        "What would you tell your past self?",
-        "Did things turn out as you expected?",
-        "What wisdom would you share with who you were then?"
-    )
-
-    val growth = listOf(
-        "How have you grown since then?",
-        "What have you learned?",
-        "What are you proud of?",
-        "What still challenges you?"
-    )
-
-    val connection = listOf(
-        "What do you want your future self to know?",
-        "What message would you send forward?",
-        "What should you remember about this moment?"
-    )
-
-    fun getRandomPrompt(): String {
-        return (reflective + growth + connection).random()
-    }
-
-    fun getContextualPrompt(timePassed: Long): String {
-        return when {
-            timePassed < 30 -> reflective.random() // Less than 30 days
-            timePassed < 90 -> growth.random() // Less than 3 months
-            timePassed < 365 -> growth.random() // Less than 1 year
-            else -> connection.random() // More than 1 year - anniversary moment
-        }
-    }
-}
 
 /**
  * UI State for Future Message Reply
@@ -90,14 +57,15 @@ data class FutureMessageReplyUiState(
 @HiltViewModel
 class FutureMessageReplyViewModel @Inject constructor(
     private val futureMessageReplyRepository: FutureMessageReplyRepository,
-    private val futureMessageDao: FutureMessageDao,
+    private val futureMessageRepository: FutureMessageRepository,
+    private val gamificationRepository: GamificationRepository,
+    private val userIdProvider: UserIdProvider,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(FutureMessageReplyUiState())
     val uiState: StateFlow<FutureMessageReplyUiState> = _uiState.asStateFlow()
 
-    private val userId = "local"
     private val messageId: Long = savedStateHandle.get<Long>("messageId") ?: 0
 
     init {
@@ -112,7 +80,7 @@ class FutureMessageReplyViewModel @Inject constructor(
             _uiState.update { it.copy(isLoading = true) }
 
             try {
-                val message = futureMessageDao.getMessageById(messageId)
+                val message = futureMessageRepository.getMessage(messageId).getOrNull()
                 if (message != null) {
                     val daysSince = calculateDaysSince(message.createdAt)
                     val (isAnniversary, anniversaryType) = checkAnniversary(message.createdAt)
@@ -124,7 +92,7 @@ class FutureMessageReplyViewModel @Inject constructor(
                         timePassedFormatted = formatTimePassed(daysSince),
                         isAnniversary = isAnniversary,
                         anniversaryType = anniversaryType,
-                        currentPrompt = ReplyPrompts.getContextualPrompt(daysSince)
+                        currentPrompt = FutureReplyPromptPolicy.contextualPrompt(daysSince)
                     )}
                 } else {
                     _uiState.update { it.copy(
@@ -167,7 +135,7 @@ class FutureMessageReplyViewModel @Inject constructor(
 
     fun onNewPromptRequested() {
         _uiState.update { it.copy(
-            currentPrompt = ReplyPrompts.getRandomPrompt()
+            currentPrompt = FutureReplyPromptPolicy.nextPrompt(it.currentPrompt)
         )}
     }
 
@@ -185,6 +153,7 @@ class FutureMessageReplyViewModel @Inject constructor(
 
     fun saveReply() {
         val state = _uiState.value
+        if (state.isSaving || state.hasReplied) return
         if (state.replyContent.isBlank()) {
             _uiState.update { it.copy(errorMessage = "Please write a reply") }
             return
@@ -194,7 +163,7 @@ class FutureMessageReplyViewModel @Inject constructor(
             _uiState.update { it.copy(isSaving = true) }
 
             val reply = FutureMessageReplyEntity(
-                userId = userId,
+                userId = userIdProvider.getUserId(),
                 originalMessageId = messageId,
                 replyContent = state.replyContent.trim(),
                 promptShown = state.currentPrompt,
@@ -207,6 +176,19 @@ class FutureMessageReplyViewModel @Inject constructor(
                     // If user wants to create a chain, create the new future message
                     if (state.wantsToCreateChain && state.chainDeliveryDate != null) {
                         createChainMessage(replyId, state.chainDeliveryDate)
+                    }
+
+                    runCatching {
+                        gamificationRepository.awardSkillXp(
+                            skill = Skill.COURAGE,
+                            amount = PointCalculator.Courage.REPLY_TO_PAST_SELF,
+                            rewardKey = "future_message_reply_${messageId}",
+                            respectDailyCap = true
+                        )
+                        gamificationRepository.recordDailyActivity(StreakActivityType.FUTURE_MESSAGE)
+                        gamificationRepository.checkAndUpdateAchievements()
+                    }.onFailure {
+                        android.util.Log.w("FutureMessageReply", "Reply saved but progression could not be updated", it)
                     }
 
                     _uiState.update { it.copy(
@@ -228,7 +210,7 @@ class FutureMessageReplyViewModel @Inject constructor(
         val state = _uiState.value
 
         val chainMessage = FutureMessageEntity(
-            userId = userId,
+            userId = userIdProvider.getUserId(),
             title = "Time Capsule Chain",
             content = buildString {
                 appendLine("This is a continuation of your time capsule chain.")
@@ -244,7 +226,8 @@ class FutureMessageReplyViewModel @Inject constructor(
             createdAt = System.currentTimeMillis()
         )
 
-        val chainId = futureMessageDao.insertMessage(chainMessage)
+        val chainResult = futureMessageRepository.createMessage(chainMessage)
+        val chainId = chainResult.getOrNull() ?: return
         futureMessageReplyRepository.setChainedMessage(replyId, chainId)
     }
 

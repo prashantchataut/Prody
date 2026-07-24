@@ -1,4 +1,4 @@
-﻿package com.kairos.app.ui.components.kairos
+package com.kairos.app.ui.components.kairos
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

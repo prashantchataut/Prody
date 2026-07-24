@@ -1,4 +1,4 @@
-﻿package com.kairos.app.domain.progress
+package com.kairos.app.domain.progress
 
 import android.util.Log
 import com.kairos.app.data.local.dao.JournalDao

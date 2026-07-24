@@ -1,4 +1,4 @@
-﻿package com.kairos.app.data.ai
+package com.kairos.app.data.ai
 
 import android.content.Context
 import android.util.Log

@@ -158,10 +158,6 @@ android {
     }
 }
 
-hilt {
-    enableAggregatingTask = true
-}
-
 dependencies {
     // Core
     implementation(libs.androidx.core.ktx)
@@ -196,6 +192,10 @@ dependencies {
     implementation(libs.sqlcipher.android)
     implementation(libs.sqlite.ktx)
 
+    // Network Security
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+
     // Hilt
     implementation(libs.hilt.android)
     ksp(libs.hilt.android.compiler)
@@ -205,7 +205,6 @@ dependencies {
 
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)
-    implementation(libs.kotlinx.coroutines.play.services)
 
     // Serialization
     implementation(libs.kotlinx.serialization.json)
@@ -249,7 +248,6 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.test.espresso.core)
-    androidTestImplementation(libs.androidx.test.runner)
     androidTestImplementation(libs.mockk.android)
 
     // Debug

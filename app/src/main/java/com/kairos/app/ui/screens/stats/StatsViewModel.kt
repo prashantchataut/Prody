@@ -1,4 +1,4 @@
-﻿package com.kairos.app.ui.screens.stats
+package com.kairos.app.ui.screens.stats
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

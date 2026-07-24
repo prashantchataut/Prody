@@ -1,4 +1,4 @@
-﻿package com.kairos.app
+package com.kairos.app
 
 import android.app.Application
 import android.app.NotificationChannel

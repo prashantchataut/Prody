@@ -1,4 +1,4 @@
-﻿package com.kairos.app.domain.letter
+package com.kairos.app.domain.letter
 
 import com.kairos.app.data.local.dao.JournalDao
 import com.kairos.app.data.local.dao.MicroEntryDao

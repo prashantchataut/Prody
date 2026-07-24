@@ -1,4 +1,4 @@
-﻿package com.kairos.app.ui.screens.idiom
+package com.kairos.app.ui.screens.idiom
 import com.kairos.app.ui.icons.KairosIcons
 
 import androidx.compose.foundation.layout.*

@@ -47,6 +47,7 @@ class ShareManager @Inject constructor(
     companion object {
         private const val TAG = "ShareManager"
         private const val SHARE_FOLDER = "share_images"
+        private const val FILE_PROVIDER_AUTHORITY = "com.kairos.app.fileprovider"
 
         // Card dimensions (optimized for social media)
         private const val CARD_WIDTH = 1080
@@ -219,7 +220,7 @@ class ShareManager @Inject constructor(
                 bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
             }
 
-            FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
+            FileProvider.getUriForFile(context, FILE_PROVIDER_AUTHORITY, file)
         } catch (e: Exception) {
             Log.e(TAG, "Failed to save bitmap to cache", e)
             null

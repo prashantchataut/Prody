@@ -1,4 +1,4 @@
-﻿package com.kairos.app.ui.screens.profile
+package com.kairos.app.ui.screens.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -6,10 +6,11 @@ import com.kairos.app.data.ai.BuddhaAiRepository
 import com.kairos.app.data.ai.WeeklyPatternResult
 import com.kairos.app.data.auth.AuthRepository
 import com.kairos.app.data.auth.AuthState
-import com.kairos.app.data.local.dao.JournalDao
-import com.kairos.app.data.local.dao.UserDao
+import com.kairos.app.domain.repository.JournalRepository
+import com.kairos.app.domain.repository.ProfileRepository
 import com.kairos.app.data.local.entity.AchievementEntity
 import com.kairos.app.data.local.preferences.PreferencesManager
+import com.kairos.app.domain.gamification.KairosProgressionPolicy
 import com.kairos.app.domain.model.Mood
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -61,8 +62,8 @@ data class ProfileUiState(
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    private val userDao: UserDao,
-    private val journalDao: JournalDao,
+    private val profileRepository: ProfileRepository,
+    private val journalRepository: JournalRepository,
     private val buddhaAiRepository: BuddhaAiRepository,
     private val preferencesManager: PreferencesManager,
     private val soulLayerRepository: com.kairos.app.domain.repository.SoulLayerRepository,
@@ -132,7 +133,7 @@ class ProfileViewModel @Inject constructor(
     private fun loadProfile() {
         viewModelScope.launch {
             try {
-                userDao.getUserProfile().collect { profile ->
+                profileRepository.observeProfile().collect { profile ->
                     profile?.let {
                         val daysOnKairos = TimeUnit.MILLISECONDS.toDays(
                             System.currentTimeMillis() - it.joinedAt
@@ -174,8 +175,8 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 combine(
-                    userDao.getUnlockedAchievements(),
-                    userDao.getLockedAchievements()
+                    profileRepository.observeUnlockedAchievements(),
+                    profileRepository.observeLockedAchievements()
                 ) { unlocked, locked ->
                     Pair(unlocked, locked)
                 }.collect { (unlocked, locked) ->
@@ -196,7 +197,7 @@ class ProfileViewModel @Inject constructor(
     private fun loadPlayerSkills() {
         viewModelScope.launch {
             try {
-                userDao.observePlayerSkills().collect { skills ->
+                profileRepository.observePlayerSkills().collect { skills ->
                     skills?.let {
                         _uiState.update { state ->
                             state.copy(
@@ -217,20 +218,7 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-    private fun getLevelFromPoints(points: Int): Int {
-        return when {
-            points >= 10000 -> 10
-            points >= 7500 -> 9
-            points >= 5000 -> 8
-            points >= 3500 -> 7
-            points >= 2500 -> 6
-            points >= 1500 -> 5
-            points >= 1000 -> 4
-            points >= 500 -> 3
-            points >= 200 -> 2
-            else -> 1
-        }
-    }
+    private fun getLevelFromPoints(points: Int): Int = KairosProgressionPolicy.levelFor(points)
 
     private fun getTitleFromId(titleId: String): String {
         return when (titleId) {
@@ -254,50 +242,41 @@ class ProfileViewModel @Inject constructor(
             try {
                 _uiState.update { it.copy(isLoadingWeeklyPattern = true) }
 
-                // Get start of week
                 val weekStart = getWeekStartTimestamp()
-                val currentStreak = _uiState.value.currentStreak
+                val currentStreak = profileRepository.getProfile().getOrNull()?.currentStreak
+                    ?: _uiState.value.currentStreak
+                val entries = journalRepository.getEntriesForWeek(weekStart)
+                val journalCount = entries.size
 
-                // Gather journal data for the week
-                val journalCount = journalDao.getEntriesCountThisWeek(weekStart)
-
-                // Need at least 3 entries for meaningful patterns
+                // Pattern language without enough evidence feels fabricated.
                 if (journalCount < 3) {
                     _uiState.update {
                         it.copy(
                             isLoadingWeeklyPattern = false,
-                            hasEnoughDataForPattern = false
+                            hasEnoughDataForPattern = false,
+                            weeklyPattern = null
                         )
                     }
                     return@launch
                 }
 
-                // Get dominant mood
-                val dominantMoodData = journalDao.getDominantMoodThisWeek(weekStart)
-                val dominantMood = dominantMoodData?.mood?.let { moodName ->
-                    try { Mood.valueOf(moodName) } catch (e: Exception) { null }
-                }
-
-                // Get themes
-                val themesRaw = journalDao.getThemesThisWeek(weekStart)
-                val themes = themesRaw
-                    .flatMap { it.split(",") }
-                    .map { it.trim() }
-                    .filter { it.isNotEmpty() }
-                    .groupingBy { it }
+                val dominantMood = journalRepository.getDominantMood(entries)
+                val themes = entries.asSequence()
+                    .mapNotNull { it.aiThemes }
+                    .flatMap { it.split(',').asSequence() }
+                    .map(String::trim)
+                    .filter(String::isNotEmpty)
+                    .groupingBy { it.lowercase() }
                     .eachCount()
                     .entries
-                    .sortedByDescending { it.value }
+                    .sortedWith(compareByDescending<Map.Entry<String, Int>> { it.value }.thenBy { it.key })
                     .take(4)
-                    .map { it.key }
+                    .map { it.key.replaceFirstChar(Char::titlecase) }
 
-                // Get active time of day
-                val timeOfDay = journalDao.getMostActiveTimeOfDay(weekStart)?.timeOfDay ?: "varied"
-
-                // Calculate mood trend (simple)
-                val moodTrend = when {
-                    dominantMood == Mood.HAPPY || dominantMood == Mood.EXCITED -> "positive"
-                    dominantMood == Mood.SAD || dominantMood == Mood.ANXIOUS -> "challenging"
+                val timeOfDay = mostActiveTimeOfDay(entries.map { it.createdAt })
+                val moodTrend = when (dominantMood) {
+                    Mood.HAPPY, Mood.EXCITED -> "positive"
+                    Mood.SAD, Mood.ANXIOUS -> "challenging"
                     else -> "balanced"
                 }
 
@@ -330,6 +309,28 @@ class ProfileViewModel @Inject constructor(
                 _uiState.update { it.copy(isLoadingWeeklyPattern = false) }
             }
         }
+    }
+
+
+    private fun mostActiveTimeOfDay(timestamps: List<Long>): String {
+        if (timestamps.isEmpty()) return "varied"
+        return timestamps
+            .map { timestamp ->
+                Calendar.getInstance().apply { timeInMillis = timestamp }.get(Calendar.HOUR_OF_DAY)
+            }
+            .map { hour ->
+                when (hour) {
+                    in 5..11 -> "morning"
+                    in 12..16 -> "afternoon"
+                    in 17..21 -> "evening"
+                    else -> "night"
+                }
+            }
+            .groupingBy { it }
+            .eachCount()
+            .maxWithOrNull(compareBy<Map.Entry<String, Int>> { it.value }.thenByDescending { it.key })
+            ?.key
+            ?: "varied"
     }
 
     /**

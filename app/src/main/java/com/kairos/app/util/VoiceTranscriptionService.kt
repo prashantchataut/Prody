@@ -1,4 +1,4 @@
-﻿package com.kairos.app.util
+package com.kairos.app.util
 
 import android.content.Context
 import android.content.Intent

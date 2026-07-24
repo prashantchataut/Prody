@@ -1,4 +1,4 @@
-﻿package com.kairos.app.ui.theme
+package com.kairos.app.ui.theme
 
 import androidx.compose.ui.graphics.Color
 import com.kairos.app.domain.collaborative.CardDesign

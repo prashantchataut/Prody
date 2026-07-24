@@ -1,4 +1,4 @@
-﻿package com.kairos.app.ui.main
+package com.kairos.app.ui.main
 
 import com.kairos.app.ui.theme.ThemeMode
 

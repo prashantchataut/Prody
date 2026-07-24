@@ -1,4 +1,4 @@
-﻿package com.kairos.app.util
+package com.kairos.app.util
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider

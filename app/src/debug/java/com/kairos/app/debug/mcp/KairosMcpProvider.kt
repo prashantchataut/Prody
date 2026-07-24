@@ -1,4 +1,4 @@
-﻿package com.kairos.app.debug.mcp
+package com.kairos.app.debug.mcp
 
 import android.content.Context
 

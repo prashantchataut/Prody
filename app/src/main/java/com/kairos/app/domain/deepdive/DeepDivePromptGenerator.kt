@@ -1,4 +1,4 @@
-﻿package com.kairos.app.domain.deepdive
+package com.kairos.app.domain.deepdive
 
 import com.kairos.app.data.local.dao.DeepDiveDao
 import com.kairos.app.data.local.dao.JournalDao

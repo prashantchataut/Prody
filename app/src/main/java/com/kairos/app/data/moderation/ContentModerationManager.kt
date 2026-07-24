@@ -1,4 +1,4 @@
-﻿package com.kairos.app.data.moderation
+package com.kairos.app.data.moderation
 
 import android.content.Context
 import android.content.Intent

@@ -1,4 +1,4 @@
-﻿package com.kairos.app.ui.screens.profile
+package com.kairos.app.ui.screens.profile
 import com.kairos.app.ui.icons.KairosIcons
 
 import androidx.compose.animation.AnimatedVisibility

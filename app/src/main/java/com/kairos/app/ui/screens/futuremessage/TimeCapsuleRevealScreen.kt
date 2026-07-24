@@ -1,146 +1,176 @@
-﻿package com.kairos.app.ui.screens.futuremessage
-import com.kairos.app.ui.icons.KairosIcons
+package com.kairos.app.ui.screens.futuremessage
 
-import android.view.HapticFeedbackConstants
-import androidx.compose.animation.core.*
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.SizeTransform
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.animation.using
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import com.kairos.app.data.local.entity.FutureMessageEntity
+import com.kairos.app.ui.animation.KairosDurations
+import com.kairos.app.ui.animation.KairosEasing
+import com.kairos.app.ui.animation.KairosReveal
+import com.kairos.app.ui.animation.rememberKairosReducedMotion
+import com.kairos.app.ui.components.kairos.KairosAppBackground
+import com.kairos.app.ui.components.kairos.KairosEmptyState
+import com.kairos.app.ui.components.kairos.KairosGlassSurface
+import com.kairos.app.ui.components.kairos.KairosIconButton
+import com.kairos.app.ui.components.kairos.KairosPrimaryButton
+import com.kairos.app.ui.components.kairos.KairosReadingSurface
+import com.kairos.app.ui.components.kairos.KairosSecondaryButton
+import com.kairos.app.ui.icons.KairosIcons
+import com.kairos.app.ui.security.KairosSecureScreenEffect
+import com.kairos.app.ui.theme.KairosRadius
+import com.kairos.app.ui.theme.KairosSpacing
+import com.kairos.app.ui.theme.SerifFamily
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 
 /**
- * Time Capsule Reveal Screen
- *
- * An immersive, emotional experience for opening messages from your past self.
- * Features:
- * - Beautiful envelope unfold animation
- * - Haptic feedback on reveal
- * - Premium typography and spacing
- * - Warm, encouraging prompts
- * - Actions: Reply, Favorite, Share
- *
- * This is a special moment - make it feel magical.
+ * Opens a future letter without exposing its content before the user chooses to
+ * reveal it. The transition is ceremonial but short, skippable, and reduced-
+ * motion aware.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TimeCapsuleRevealScreen(
     messageId: Long,
     onNavigateBack: () -> Unit,
-    onNavigateToJournal: (String) -> Unit = {},
+    onNavigateToJournal: (String) -> Unit,
+    onNavigateToReply: () -> Unit = {},
     viewModel: TimeCapsuleRevealViewModel = hiltViewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val view = LocalView.current
-    val scrollState = rememberScrollState()
-    val coroutineScope = androidx.compose.runtime.rememberCoroutineScope()
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val reduceMotion = rememberKairosReducedMotion()
 
-    // Load message on first composition
-    LaunchedEffect(messageId) {
-        viewModel.loadMessage(messageId)
-        delay(500) // Brief pause before starting reveal
-        viewModel.reveal()
-        // Haptic feedback on reveal
-        view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
-    }
+    KairosSecureScreenEffect()
+    LaunchedEffect(messageId) { viewModel.loadMessage(messageId) }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(KairosIcons.Close, contentDescription = "Close")
-                    }
-                },
-                actions = {
-                    // Favorite button
-                    IconButton(
-                        onClick = {
-                            viewModel.toggleFavorite()
-                            view.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
-                        }
-                    ) {
-                        Icon(
-                            imageVector = if (uiState.isFavorite) KairosIcons.Favorite else KairosIcons.FavoriteBorder,
-                            contentDescription = if (uiState.isFavorite) "Remove from favorites" else "Add to favorites",
-                            tint = if (uiState.isFavorite) MaterialTheme.colorScheme.primary else LocalContentColor.current
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent
-                )
-            )
-        }
-    ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            MaterialTheme.colorScheme.surface,
-                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
-                        )
+    KairosAppBackground {
+        Column(Modifier.fillMaxSize()) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .statusBarsPadding()
+                    .padding(horizontal = KairosSpacing.screen, vertical = KairosSpacing.md),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                KairosIconButton(KairosIcons.ArrowBack, "Back", onNavigateBack)
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("A letter arrived", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                    Text(
+                        state.timeAgoText.takeIf { it.isNotBlank() }?.let { "written $it ago" } ?: "from your past self",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                }
+                KairosIconButton(
+                    icon = if (state.isFavorite) KairosIcons.Favorite else KairosIcons.FavoriteBorder,
+                    contentDescription = if (state.isFavorite) "Remove from favorites" else "Save to favorites",
+                    onClick = viewModel::toggleFavorite,
+                    selected = state.isFavorite
                 )
-                .padding(paddingValues)
-        ) {
+            }
+
             when {
-                uiState.isLoading -> {
-                    LoadingState()
+                state.isLoading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
                 }
-                uiState.error != null -> {
-                    ErrorState(
-                        error = uiState.error!!,
-                        onRetry = { viewModel.retry(messageId) },
-                        onBack = onNavigateBack
-                    )
-                }
-                uiState.message != null -> {
-                    RevealContent(
-                        message = uiState.message!!,
-                        isRevealed = uiState.hasBeenRevealed,
-                        isFavorite = uiState.isFavorite,
-                        hasReply = uiState.hasReply,
-                        timeAgoText = uiState.timeAgoText,
-                        onReply = { reflectionText ->
-                            // Create journal entry as reply
-                            coroutineScope.launch {
-                                val journalId = viewModel.replyToPastSelf(reflectionText)
-                                if (journalId != null) {
-                                    // Optionally navigate to the journal entry
-                                    view.performHapticFeedback(HapticFeedbackConstants.CONFIRM)
-                                }
+                state.error != null -> KairosEmptyState(
+                    icon = KairosIcons.ErrorOutline,
+                    title = "This letter is unavailable",
+                    body = state.error ?: "Kairos could not open the letter.",
+                    actionLabel = "Try again",
+                    onAction = { viewModel.retry(messageId) }
+                )
+                state.message != null -> AnimatedContent(
+                    targetState = state.hasBeenRevealed,
+                    modifier = Modifier.weight(1f),
+                    transitionSpec = {
+                        if (reduceMotion) {
+                            fadeIn(tween(KairosDurations.Micro)) togetherWith fadeOut(tween(KairosDurations.Micro))
+                        } else {
+                            (fadeIn(tween(KairosDurations.Page)) + scaleIn(initialScale = 0.97f, animationSpec = tween(KairosDurations.Page, easing = KairosEasing.EaseOutExpo))) togetherWith
+                                (fadeOut(tween(KairosDurations.State)) + scaleOut(targetScale = 1.03f, animationSpec = tween(KairosDurations.State)))
+                        }.using(SizeTransform(clip = false))
+                    },
+                    label = "future_letter_reveal"
+                ) { revealed ->
+                    if (revealed) {
+                        RevealedLetter(
+                            message = state.message!!,
+                            timeAgo = state.timeAgoText,
+                            hasReply = state.hasReply,
+                            onReply = onNavigateToReply,
+                            onJournal = {
+                                onNavigateToJournal(
+                                    buildString {
+                                        appendLine("# A letter from my past self")
+                                        appendLine()
+                                        appendLine("> ${state.message!!.content.replace("\n", "\n> ")}")
+                                        appendLine()
+                                        appendLine("## How it lands now")
+                                        appendLine()
+                                    }
+                                )
                             }
-                        },
-                        onSaveToFavorites = {
-                            viewModel.saveToFavorites()
-                            view.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
-                        },
-                        scrollState = scrollState
-                    )
+                        )
+                    } else {
+                        ClosedLetter(
+                            message = state.message!!,
+                            timeAgo = state.timeAgoText,
+                            onReveal = viewModel::reveal
+                        )
+                    }
                 }
             }
         }
@@ -148,19 +178,171 @@ fun TimeCapsuleRevealScreen(
 }
 
 @Composable
-private fun LoadingState() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+private fun ClosedLetter(
+    message: FutureMessageEntity,
+    timeAgo: String,
+    onReveal: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = KairosSpacing.screen, vertical = KairosSpacing.section),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+        KairosReveal(visible = true, delayMillis = 50) {
+            SealedEnvelope(
+                accent = futureCategoryColor(message.category),
+                modifier = Modifier
+                    .size(230.dp)
+                    .semantics {
+                        contentDescription = "Sealed future letter. Double tap to open."
+                        role = Role.Button
+                    }
+                    .clickable(onClick = onReveal)
+            )
+        }
+        Spacer(Modifier.height(30.dp))
+        Text(
+            message.title.ifBlank { "A letter to you" },
+            style = MaterialTheme.typography.headlineMedium,
+            fontFamily = SerifFamily,
+            fontWeight = FontWeight.SemiBold,
+            textAlign = TextAlign.Center
+        )
+        Spacer(Modifier.height(8.dp))
+        Text(
+            "You wrote this ${timeAgo.ifBlank { "some time" }} ago. Open it when you are ready—not because the app demands it.",
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth(0.86f)
+        )
+        Spacer(Modifier.height(28.dp))
+        KairosPrimaryButton(
+            text = "Open the letter",
+            onClick = onReveal,
+            icon = KairosIcons.LockOpen,
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
+}
+
+@Composable
+private fun RevealedLetter(
+    message: FutureMessageEntity,
+    timeAgo: String,
+    hasReply: Boolean,
+    onReply: () -> Unit,
+    onJournal: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = KairosSpacing.screen)
+            .padding(bottom = 40.dp),
+        verticalArrangement = Arrangement.spacedBy(KairosSpacing.lg)
+    ) {
+        KairosReveal(visible = true, delayMillis = 20) {
+            LetterProvenance(message = message, timeAgo = timeAgo)
+        }
+        KairosReveal(visible = true, delayMillis = 80) {
+            KairosReadingSurface(
+                modifier = Modifier.fillMaxWidth(),
+                accent = futureCategoryColor(message.category),
+                contentPadding = PaddingValues(horizontal = 24.dp, vertical = 28.dp)
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(18.dp)) {
+                    Text(
+                        message.title.ifBlank { "A letter from your past" },
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontFamily = SerifFamily,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        message.content,
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontFamily = SerifFamily,
+                        lineHeight = MaterialTheme.typography.headlineSmall.lineHeight
+                    )
+                    Text(
+                        "— You, ${formatDate(message.createdAt)}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontFamily = SerifFamily,
+                        fontStyle = FontStyle.Italic,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
+
+        if (message.attachedPhotos.isNotBlank() || message.attachedVideos.isNotBlank() || message.voiceRecordingUri != null) {
+            KairosReveal(visible = true, delayMillis = 130) {
+                AttachmentMemory(message)
+            }
+        }
+
+        KairosReveal(visible = true, delayMillis = 170) {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Text(
+                    if (hasReply) "You have already answered this letter." else "What would you tell the person who wrote this?",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontFamily = SerifFamily
+                )
+                Text(
+                    "Replying creates a private conversation across time. It is optional, and it earns progress only when you actually write.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+
+        KairosGlassSurface(
+            modifier = Modifier.fillMaxWidth(),
+            strong = true,
+            shape = RoundedCornerShape(KairosRadius.floating),
+            contentPadding = PaddingValues(8.dp)
         ) {
-            CircularProgressIndicator()
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                KairosPrimaryButton(
+                    text = if (hasReply) "Read my reply" else "Reply to my past self",
+                    onClick = onReply,
+                    icon = KairosIcons.Send,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                KairosSecondaryButton(
+                    text = "Begin a journal reflection",
+                    onClick = onJournal,
+                    icon = KairosIcons.Edit,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun LetterProvenance(message: FutureMessageEntity, timeAgo: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Surface(
+            modifier = Modifier.size(48.dp),
+            shape = RoundedCornerShape(17.dp),
+            color = futureCategoryColor(message.category).copy(alpha = 0.14f)
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Icon(KairosIcons.History, contentDescription = null, tint = futureCategoryColor(message.category))
+            }
+        }
+        Column(Modifier.weight(1f)) {
+            Text("Written ${timeAgo.ifBlank { "in the past" }} ago", fontWeight = FontWeight.SemiBold)
             Text(
-                text = "Opening your time capsule...",
-                style = MaterialTheme.typography.bodyLarge,
+                "Arrived ${formatDate(message.deliveryDate)} · ${message.category.replaceFirstChar { it.uppercase() }}",
+                style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
@@ -168,370 +350,76 @@ private fun LoadingState() {
 }
 
 @Composable
-private fun ErrorState(
-    error: String,
-    onRetry: () -> Unit,
-    onBack: () -> Unit
-) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier.padding(32.dp)
-        ) {
-            Icon(
-                imageVector = KairosIcons.ErrorOutline,
-                contentDescription = null,
-                modifier = Modifier.size(64.dp),
-                tint = MaterialTheme.colorScheme.error
-            )
-            Text(
-                text = error,
-                style = MaterialTheme.typography.bodyLarge,
-                textAlign = TextAlign.Center
-            )
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                OutlinedButton(onClick = onBack) {
-                    Text("Go Back")
-                }
-                Button(onClick = onRetry) {
-                    Text("Retry")
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun RevealContent(
-    message: com.kairos.app.data.local.entity.FutureMessageEntity,
-    isRevealed: Boolean,
-    isFavorite: Boolean,
-    hasReply: Boolean,
-    timeAgoText: String,
-    onReply: (String) -> Unit,
-    onSaveToFavorites: () -> Unit,
-    scrollState: androidx.compose.foundation.ScrollState
-) {
-    var showReplyDialog by remember { mutableStateOf(false) }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(scrollState)
-            .padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp)
-    ) {
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Envelope animation wrapper
-        EnvelopeReveal(isRevealed = isRevealed) {
-            // Header - Time capsule opened
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = "Time Capsule",
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Medium
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "From $timeAgoText ago",
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = formatDate(message.createdAt),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Category badge
-            CategoryBadge(category = message.category)
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Message title if exists
-            if (message.title.isNotBlank()) {
-                Text(
-                    text = message.title,
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-
-            // Message content - the heart of the reveal
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                ),
-                shape = RoundedCornerShape(16.dp)
-            ) {
-                Text(
-                    text = message.content,
-                    style = MaterialTheme.typography.bodyLarge.copy(
-                        lineHeight = MaterialTheme.typography.bodyLarge.lineHeight * 1.6f
-                    ),
-                    modifier = Modifier.padding(20.dp)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // Reflection prompt
-            ReflectionPrompt(category = message.category)
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Action buttons
-            ActionButtons(
-                hasReply = hasReply,
-                onReplyClick = { showReplyDialog = true },
-                onSaveToFavorites = onSaveToFavorites,
-                isFavorite = isFavorite
-            )
-
-            Spacer(modifier = Modifier.height(48.dp))
-        }
-    }
-
-    // Reply dialog
-    if (showReplyDialog) {
-        ReplyDialog(
-            onDismiss = { showReplyDialog = false },
-            onConfirm = { reflectionText ->
-                onReply(reflectionText)
-                showReplyDialog = false
-            }
-        )
-    }
-}
-
-@Composable
-private fun EnvelopeReveal(
-    isRevealed: Boolean,
-    content: @Composable () -> Unit
-) {
-    val scale by animateFloatAsState(
-        targetValue = if (isRevealed) 1f else 0.92f,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessLow
-        ),
-        label = "envelope_scale"
-    )
-
-    val alpha by animateFloatAsState(
-        targetValue = if (isRevealed) 1f else 0f,
-        animationSpec = tween(
-            durationMillis = 600,
-            easing = FastOutSlowInEasing
-        ),
-        label = "envelope_alpha"
-    )
-
-    Box(
-        modifier = Modifier
-            .scale(scale)
-            .alpha(alpha)
-    ) {
-        content()
-    }
-}
-
-@Composable
-private fun CategoryBadge(category: String) {
-    val (icon, label, color) = when (category) {
-        "goal" -> Triple(KairosIcons.Flag, "Goal", Color(0xFF4CAF50))
-        "promise" -> Triple(KairosIcons.Outlined.Handshake, "Promise", Color(0xFF2196F3))
-        "motivation" -> Triple(KairosIcons.LocalFireDepartment, "Motivation", Color(0xFFFF9800))
-        "reminder" -> Triple(KairosIcons.NotificationsActive, "Reminder", Color(0xFF9C27B0))
-        else -> Triple(KairosIcons.MailOutline, "Message", Color(0xFF607D8B))
-    }
-
-    Surface(
-        color = color.copy(alpha = 0.1f),
-        shape = RoundedCornerShape(12.dp)
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = color,
-                modifier = Modifier.size(18.dp)
-            )
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelLarge,
-                color = color,
-                fontWeight = FontWeight.SemiBold
-            )
-        }
-    }
-}
-
-@Composable
-private fun ReflectionPrompt(category: String) {
-    val prompt = when (category) {
-        "goal" -> "How does this goal look from where you are now?"
-        "promise" -> "Did you keep this promise to yourself?"
-        "motivation" -> "Do these words still move you?"
-        "reminder" -> "What memories does this bring back?"
-        else -> "How does this land now?"
-    }
-
-    Card(
+private fun AttachmentMemory(message: FutureMessageEntity) {
+    val photoCount = message.attachedPhotos.split(',').count { it.isNotBlank() }
+    val videoCount = message.attachedVideos.split(',').count { it.isNotBlank() }
+    KairosGlassSurface(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
-        ),
-        shape = RoundedCornerShape(12.dp)
+        shape = RoundedCornerShape(24.dp),
+        contentPadding = PaddingValues(18.dp)
     ) {
         Row(
-            modifier = Modifier.padding(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Icon(
-                imageVector = KairosIcons.Psychology,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(24.dp)
-            )
-            Text(
-                text = prompt,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-        }
-    }
-}
-
-@Composable
-private fun ActionButtons(
-    hasReply: Boolean,
-    onReplyClick: () -> Unit,
-    onSaveToFavorites: () -> Unit,
-    isFavorite: Boolean
-) {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        // Reply to past self button
-        Button(
-            onClick = onReplyClick,
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp),
-            contentPadding = PaddingValues(16.dp)
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            Icon(
-                imageVector = if (hasReply) KairosIcons.CheckCircle else KairosIcons.Edit,
-                contentDescription = null,
-                modifier = Modifier.size(20.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = if (hasReply) "Reply Saved" else "Reply to Past Self",
-                style = MaterialTheme.typography.labelLarge
-            )
-        }
-
-        // Save to favorites (if not already favorited)
-        if (!isFavorite) {
-            OutlinedButton(
-                onClick = onSaveToFavorites,
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                contentPadding = PaddingValues(16.dp)
-            ) {
-                Icon(
-                    imageVector = KairosIcons.BookmarkBorder,
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
+            Icon(KairosIcons.Image, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+            Column(Modifier.weight(1f)) {
+                Text("Memories attached", fontWeight = FontWeight.SemiBold)
                 Text(
-                    text = "Save to Favorites",
-                    style = MaterialTheme.typography.labelLarge
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun ReplyDialog(
-    onDismiss: () -> Unit,
-    onConfirm: (String) -> Unit
-) {
-    var reflectionText by remember { mutableStateOf("") }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = {
-            Text(
-                text = "Reply to Your Past Self",
-                style = MaterialTheme.typography.titleLarge
-            )
-        },
-        text = {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Text(
-                    text = "Take a moment to reflect. What would you say to who you were then?",
-                    style = MaterialTheme.typography.bodyMedium,
+                    listOfNotNull(
+                        photoCount.takeIf { it > 0 }?.let { "$it photo${if (it == 1) "" else "s"}" },
+                        videoCount.takeIf { it > 0 }?.let { "$it video${if (it == 1) "" else "s"}" },
+                        message.voiceRecordingUri?.let { "voice note" }
+                    ).joinToString(" · "),
+                    style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                OutlinedTextField(
-                    value = reflectionText,
-                    onValueChange = { reflectionText = it },
-                    label = { Text("Your reflection") },
-                    placeholder = { Text("How do these words land now?...") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(150.dp),
-                    maxLines = 6,
-                    textStyle = MaterialTheme.typography.bodyMedium
-                )
-            }
-        },
-        confirmButton = {
-            Button(
-                onClick = { onConfirm(reflectionText) },
-                enabled = reflectionText.isNotBlank()
-            ) {
-                Text("Save as Journal Entry")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Cancel")
             }
         }
-    )
+    }
 }
 
-private fun formatDate(timestamp: Long): String {
-    val format = SimpleDateFormat("MMMM d, yyyy 'at' h:mm a", Locale.getDefault())
-    return format.format(Date(timestamp))
+@Composable
+private fun SealedEnvelope(accent: Color, modifier: Modifier = Modifier) {
+    val scheme = MaterialTheme.colorScheme
+    Canvas(modifier) {
+        val centre = Offset(size.width / 2f, size.height / 2f)
+        val width = size.width * 0.74f
+        val height = size.height * 0.48f
+        val left = centre.x - width / 2f
+        val right = centre.x + width / 2f
+        val top = centre.y - height / 2f
+        val bottom = centre.y + height / 2f
+        val stroke = 3.dp.toPx()
+
+        drawCircle(accent.copy(alpha = 0.08f), radius = size.minDimension * 0.48f)
+        drawCircle(accent.copy(alpha = 0.18f), radius = size.minDimension * 0.38f, style = Stroke(width = 1.5.dp.toPx()))
+
+        val body = Path().apply {
+            moveTo(left, top)
+            lineTo(right, top)
+            lineTo(right, bottom)
+            lineTo(left, bottom)
+            close()
+        }
+        drawPath(body, scheme.onSurface.copy(alpha = 0.9f), style = Stroke(stroke))
+        drawLine(scheme.onSurface.copy(alpha = 0.9f), Offset(left, top), Offset(centre.x, centre.y + 8.dp.toPx()), stroke)
+        drawLine(scheme.onSurface.copy(alpha = 0.9f), Offset(right, top), Offset(centre.x, centre.y + 8.dp.toPx()), stroke)
+        drawLine(scheme.onSurface.copy(alpha = 0.42f), Offset(left, bottom), Offset(centre.x, centre.y), 1.5.dp.toPx())
+        drawLine(scheme.onSurface.copy(alpha = 0.42f), Offset(right, bottom), Offset(centre.x, centre.y), 1.5.dp.toPx())
+
+        drawCircle(accent, radius = 18.dp.toPx(), center = Offset(centre.x, centre.y + 8.dp.toPx()))
+        drawCircle(scheme.surface.copy(alpha = 0.75f), radius = 6.dp.toPx(), center = Offset(centre.x, centre.y + 8.dp.toPx()))
+    }
 }
+
+private fun futureCategoryColor(category: String): Color = when {
+    category.contains("goal", ignoreCase = true) -> Color(0xFF7C70D9)
+    category.contains("promise", ignoreCase = true) -> Color(0xFF3E9B85)
+    category.contains("motivation", ignoreCase = true) -> Color(0xFFD8755C)
+    else -> Color(0xFF5577B8)
+}
+
+private fun formatDate(timestamp: Long): String =
+    SimpleDateFormat("MMMM d, yyyy", Locale.getDefault()).format(Date(timestamp))

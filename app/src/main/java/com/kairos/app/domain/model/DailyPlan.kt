@@ -1,4 +1,4 @@
-﻿package com.kairos.app.domain.model
+package com.kairos.app.domain.model
 
 import com.kairos.app.domain.recommendation.DailyContentType
 import java.time.LocalDate

@@ -1,4 +1,4 @@
-﻿package com.kairos.app.di
+package com.kairos.app.di
 
 import com.kairos.app.domain.vocabulary.DetectionConfig
 import com.kairos.app.domain.vocabulary.VocabularyDetector

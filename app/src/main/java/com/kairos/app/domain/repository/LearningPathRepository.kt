@@ -1,4 +1,4 @@
-﻿package com.kairos.app.domain.repository
+package com.kairos.app.domain.repository
 
 import com.kairos.app.data.local.dao.LearningPathDao
 import com.kairos.app.data.local.dao.JournalDao

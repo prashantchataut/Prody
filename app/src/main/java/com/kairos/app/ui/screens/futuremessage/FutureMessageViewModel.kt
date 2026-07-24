@@ -1,9 +1,9 @@
-﻿package com.kairos.app.ui.screens.futuremessage
+package com.kairos.app.ui.screens.futuremessage
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.kairos.app.data.local.dao.FutureMessageDao
 import com.kairos.app.data.local.entity.FutureMessageEntity
+import com.kairos.app.domain.repository.FutureMessageRepository
 import com.kairos.app.util.ShareManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -21,7 +21,7 @@ data class FutureMessageUiState(
 
 @HiltViewModel
 class FutureMessageViewModel @Inject constructor(
-    private val futureMessageDao: FutureMessageDao,
+    private val futureMessageRepository: FutureMessageRepository,
     private val shareManager: ShareManager
 ) : ViewModel() {
 
@@ -41,9 +41,9 @@ class FutureMessageViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 combine(
-                    futureMessageDao.getDeliveredMessages(),
-                    futureMessageDao.getPendingMessages(),
-                    futureMessageDao.getUnreadCount()
+                    futureMessageRepository.observeDeliveredMessages(),
+                    futureMessageRepository.observePendingMessages(),
+                    futureMessageRepository.observeUnreadCount()
                 ) { delivered, pending, unread ->
                     FutureMessageUiState(
                         deliveredMessages = delivered,
@@ -64,12 +64,16 @@ class FutureMessageViewModel @Inject constructor(
     private fun checkForDeliveredMessages() {
         viewModelScope.launch {
             try {
-                val readyMessages = futureMessageDao.getMessagesReadyForDelivery(System.currentTimeMillis())
+                val readyMessages = futureMessageRepository
+                    .getMessagesReadyForDelivery(System.currentTimeMillis())
+                    .getOrDefault(emptyList())
                 readyMessages.forEach { message ->
-                    try {
-                        futureMessageDao.markAsDelivered(message.id)
-                    } catch (e: Exception) {
-                        android.util.Log.e(TAG, "Error marking message as delivered: ${message.id}", e)
+                    futureMessageRepository.markDelivered(message.id).onError { error ->
+                        android.util.Log.e(
+                            TAG,
+                            "Error marking message as delivered: ${message.id}",
+                            error.exception
+                        )
                     }
                 }
             } catch (e: Exception) {
@@ -80,10 +84,8 @@ class FutureMessageViewModel @Inject constructor(
 
     fun markAsRead(messageId: Long) {
         viewModelScope.launch {
-            try {
-                futureMessageDao.markAsRead(messageId)
-            } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error marking message as read: $messageId", e)
+            futureMessageRepository.markRead(messageId).onError { error ->
+                android.util.Log.e(TAG, "Error marking message as read: $messageId", error.exception)
             }
         }
     }

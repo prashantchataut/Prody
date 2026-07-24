@@ -1,4 +1,4 @@
-﻿package com.kairos.app.domain.wrapped
+package com.kairos.app.domain.wrapped
 
 import com.kairos.app.domain.model.MoodTrend
 import com.kairos.app.domain.model.TimeOfDay

@@ -1,4 +1,4 @@
-﻿package com.kairos.app.data.repository
+package com.kairos.app.data.repository
 
 import com.kairos.app.data.local.dao.SeedDao
 import com.kairos.app.data.local.dao.UserDao
@@ -7,6 +7,7 @@ import com.kairos.app.domain.common.ErrorType
 import com.kairos.app.domain.common.Result
 import com.kairos.app.domain.common.runSuspendCatching
 import com.kairos.app.domain.gamification.*
+import com.kairos.app.domain.identity.KairosAchievements
 import com.kairos.app.domain.repository.*
 import com.kairos.app.domain.summary.WeeklySummary
 import kotlinx.coroutines.flow.Flow
@@ -27,8 +28,13 @@ import javax.inject.Singleton
 @Singleton
 class GamificationRepositoryImpl @Inject constructor(
     private val userDao: UserDao,
-    private val seedDao: SeedDao
+    private val seedDao: SeedDao,
+    private val gamificationService: GamificationService
 ) : GamificationRepository {
+
+    private val canonicalAchievementIds: Set<String> by lazy {
+        KairosAchievements.allAchievements.mapTo(mutableSetOf()) { it.id }
+    }
 
     // =========================================================================
     // Skill Progression
@@ -83,6 +89,10 @@ class GamificationRepositoryImpl @Inject constructor(
         }
 
         if (actualAmount <= 0) {
+            // Consume the idempotency key even when the daily budget is full.
+            // Otherwise replaying today's completed action tomorrow could mint
+            // XP after the cap resets.
+            userDao.markRewardKeyProcessed(rewardKey)
             return@runSuspendCatching SkillXpAwardResult(
                 skill = skill,
                 requestedAmount = amount,
@@ -298,7 +308,7 @@ class GamificationRepositoryImpl @Inject constructor(
 
     override fun observeAllAchievements(): Flow<List<AchievementProgress>> {
         return userDao.getAllAchievements().map { entities ->
-            entities.map { entity ->
+            entities.filter { it.id in canonicalAchievementIds }.map { entity ->
                 val achievement = Achievements.findById(entity.id)
                 AchievementProgress(
                     achievement = achievement ?: createUnknownAchievement(entity),
@@ -315,7 +325,7 @@ class GamificationRepositoryImpl @Inject constructor(
 
     override fun observeUnlockedAchievements(): Flow<List<AchievementProgress>> {
         return userDao.getUnlockedAchievements().map { entities ->
-            entities.map { entity ->
+            entities.filter { it.id in canonicalAchievementIds }.map { entity ->
                 val achievement = Achievements.findById(entity.id)
                 AchievementProgress(
                     achievement = achievement ?: createUnknownAchievement(entity),
@@ -329,7 +339,8 @@ class GamificationRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getUnlockedAchievementIds(): Set<String> {
-        return userDao.getUnlockedAchievements().first().map { it.id }.toSet()
+        return userDao.getUnlockedAchievements().first()
+            .asSequence().map { it.id }.filter { it in canonicalAchievementIds }.toSet()
     }
 
     override suspend fun updateAchievementProgress(achievementId: String, progress: Int): Result<Boolean> =
@@ -349,8 +360,13 @@ class GamificationRepositoryImpl @Inject constructor(
         }
 
     override suspend fun checkAndUpdateAchievements(): List<Achievement> {
-        // Would check all achievement requirements against current stats
-        return emptyList()
+        val unlockedBefore = getUnlockedAchievementIds()
+        gamificationService.reconcileAchievementProgress()
+        return userDao.getUnlockedAchievements()
+            .first()
+            .filter { it.id in canonicalAchievementIds }
+            .filterNot { it.id in unlockedBefore }
+            .map { entity -> Achievements.findById(entity.id) ?: createUnknownAchievement(entity) }
     }
 
     // =========================================================================

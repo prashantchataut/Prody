@@ -1,4 +1,4 @@
-﻿package com.kairos.app.domain.recommendation
+package com.kairos.app.domain.recommendation
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue

@@ -9,7 +9,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:281162417181:android:836ff5dc91538f4310b2f4",
         "android_client_info": {
-          "package_name": "com.prody.prashant",
+          "package_name": "com.kairos.app",
           "certificate_hash": "7FF433B6AB8BBC74D00CD85AE687E4EAC25B249F"
         }
       },
@@ -39,7 +39,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:281162417181:android:836ff5dc91538f4310b2f4",
         "android_client_info": {
-          "package_name": "com.prody.prashant.debug",
+          "package_name": "com.kairos.app.debug",
           "certificate_hash": "7FF433B6AB8BBC74D00CD85AE687E4EAC25B249F"
         }
       },

@@ -1,4 +1,4 @@
-﻿package com.kairos.app.data.repository
+package com.kairos.app.data.repository
 
 import com.kairos.app.data.local.entity.MonthlyLetterEntity
 import com.kairos.app.domain.model.ActivitySummary

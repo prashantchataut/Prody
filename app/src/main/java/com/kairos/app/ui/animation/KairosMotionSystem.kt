@@ -1,4 +1,4 @@
-﻿package com.kairos.app.ui.animation
+package com.kairos.app.ui.animation
 
 import android.provider.Settings
 import androidx.compose.animation.AnimatedVisibility

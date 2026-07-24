@@ -1,4 +1,4 @@
-﻿package com.kairos.app.ui.theme
+package com.kairos.app.ui.theme
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.EditNote

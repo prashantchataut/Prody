@@ -1,4 +1,4 @@
-﻿package com.kairos.app.ui.screens.journal
+package com.kairos.app.ui.screens.journal
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

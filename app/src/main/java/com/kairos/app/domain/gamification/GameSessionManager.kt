@@ -1,4 +1,4 @@
-﻿package com.kairos.app.domain.gamification
+package com.kairos.app.domain.gamification
 
 import android.util.Log
 import com.kairos.app.data.local.dao.UserDao
@@ -11,6 +11,14 @@ import kotlinx.coroutines.flow.firstOrNull
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
+
+/**
+ * A capped session still represents genuine completed practice. The skill XP
+ * ledger consumes its idempotency key when the cap is reached, so this bridge
+ * can safely keep durable activity counters and achievements in sync.
+ */
+private fun SkillXpResult.shouldRecordEvidence(): Boolean =
+    this is SkillXpResult.Success || this is SkillXpResult.DailyCapReached
 
 /**
  * Game Session Manager - Orchestrates the core game loop.
@@ -43,18 +51,20 @@ class GameSessionManager @Inject constructor(
     private val seedBloomService: SeedBloomService,
     private val vocabularyDao: VocabularyDao,
     private val vocabularyDetector: VocabularyDetector,
-    private val userDao: UserDao
+    private val userDao: UserDao,
+    private val gamificationService: GamificationService
 ) {
     companion object {
         private const val TAG = "GameSessionManager"
 
-        // Base XP values for each activity
-        const val JOURNAL_ENTRY_BASE_XP = 40
-        const val JOURNAL_WORD_BONUS_PER_50 = 10 // Bonus per 50 words
-        const val FLASHCARD_SESSION_BASE_XP = 30
-        const val FLASHCARD_CARD_XP = 3 // Per card reviewed
-        const val WORD_LEARNED_XP = 15
-        const val FUTURE_MESSAGE_BASE_XP = 35
+        // Compatibility aliases. Calculation is delegated to PointCalculator
+        // so every screen uses the same anti-exploit progression rules.
+        const val JOURNAL_ENTRY_BASE_XP = PointCalculator.Clarity.JOURNAL_ENTRY_BASE
+        const val JOURNAL_WORD_BONUS_PER_50 = PointCalculator.Clarity.ENTRY_OVER_100_WORDS
+        const val FLASHCARD_SESSION_BASE_XP = 0
+        const val FLASHCARD_CARD_XP = PointCalculator.Discipline.FLASHCARD_REVIEWED
+        const val WORD_LEARNED_XP = 12
+        const val FUTURE_MESSAGE_BASE_XP = PointCalculator.Courage.CREATE_FUTURE_MESSAGE
         const val SEED_BLOOM_BONUS_TOKENS = 10
 
         // Context Bloom rewards (proving vocabulary usage in real writing)
@@ -81,9 +91,11 @@ class GameSessionManager @Inject constructor(
         val idempotencyKey = "journal_${entryId}"
         val builder = SessionResultBuilder(GameSessionType.REFLECT)
 
-        // Calculate XP based on word count
-        val wordBonus = (wordCount / 50) * JOURNAL_WORD_BONUS_PER_50
-        val totalXp = JOURNAL_ENTRY_BASE_XP + wordBonus
+        val totalXp = PointCalculator.Clarity.calculateJournalPoints(
+            wordCount = wordCount.coerceAtLeast(0),
+            includesReflection = PointCalculator.Clarity.detectReflection(content),
+            isMicroEntry = wordCount in 1..49
+        )
 
         // Award Clarity XP
         val xpResult = gameSkillSystem.awardSkillXp(
@@ -117,6 +129,13 @@ class GameSessionManager @Inject constructor(
             is SkillXpResult.Error -> {
                 Log.e(TAG, "Error awarding journal XP: ${xpResult.message}")
             }
+        }
+
+        if (xpResult.shouldRecordEvidence()) {
+            gamificationService.recordActivity(
+                GamificationService.ActivityType.JOURNAL_ENTRY,
+                updateLegacyStreak = false
+            )
         }
 
         // Record mission progress
@@ -213,10 +232,10 @@ class GameSessionManager @Inject constructor(
         val idempotencyKey = "flashcard_session_${sessionId}"
         val builder = SessionResultBuilder(GameSessionType.SHARPEN)
 
-        // Calculate XP based on performance
-        val baseXp = FLASHCARD_SESSION_BASE_XP + (cardsReviewed * FLASHCARD_CARD_XP)
-        val accuracyBonus = if (accuracy >= 0.8f) 20 else if (accuracy >= 0.6f) 10 else 0
-        val totalXp = baseXp + accuracyBonus
+        val totalXp = PointCalculator.Discipline.calculateFlashcardPoints(
+            cardsReviewed = cardsReviewed.coerceAtLeast(0),
+            accuracy = accuracy.coerceIn(0f, 1f)
+        )
 
         // Award Discipline XP
         val xpResult = gameSkillSystem.awardSkillXp(
@@ -253,6 +272,13 @@ class GameSessionManager @Inject constructor(
             }
         }
 
+        if (xpResult.shouldRecordEvidence()) {
+            gamificationService.recordActivity(
+                GamificationService.ActivityType.REVIEW_COMPLETED,
+                updateLegacyStreak = false
+            )
+        }
+
         // Record mission progress
         val missionResult = missionSystem.recordProgress(
             MissionSystem.MissionType.SHARPEN,
@@ -287,11 +313,18 @@ class GameSessionManager @Inject constructor(
      * Award XP for learning a new word (separate from flashcard sessions).
      */
     suspend fun recordWordLearned(wordId: Long): SkillXpResult {
-        return gameSkillSystem.awardSkillXp(
+        val result = gameSkillSystem.awardSkillXp(
             skillType = GameSkillSystem.SkillType.DISCIPLINE,
             baseXp = WORD_LEARNED_XP,
             idempotencyKey = "word_learned_${wordId}"
         )
+        if (result.shouldRecordEvidence()) {
+            gamificationService.recordActivity(
+                GamificationService.ActivityType.WORD_LEARNED,
+                updateLegacyStreak = false
+            )
+        }
+        return result
     }
 
     // =========================================================================
@@ -310,14 +343,14 @@ class GameSessionManager @Inject constructor(
         val idempotencyKey = "future_message_${messageId}"
         val builder = SessionResultBuilder(GameSessionType.COMMIT)
 
-        // Award Courage XP
+        val daysUntilDelivery = ((deliveryDate - System.currentTimeMillis()) / (24 * 60 * 60 * 1000))
+            .toInt()
+            .coerceAtLeast(1)
         val xpResult = gameSkillSystem.awardSkillXp(
             skillType = GameSkillSystem.SkillType.COURAGE,
-            baseXp = FUTURE_MESSAGE_BASE_XP,
+            baseXp = PointCalculator.Courage.calculateFutureMessagePoints(daysUntilDelivery),
             idempotencyKey = idempotencyKey
         )
-
-        val daysUntilDelivery = ((deliveryDate - System.currentTimeMillis()) / (24 * 60 * 60 * 1000)).toInt()
 
         builder.headline("Message scheduled")
         builder.addDetail("Delivery in $daysUntilDelivery days")
@@ -343,6 +376,13 @@ class GameSessionManager @Inject constructor(
             is SkillXpResult.Error -> {
                 Log.e(TAG, "Error awarding future message XP: ${xpResult.message}")
             }
+        }
+
+        if (xpResult.shouldRecordEvidence()) {
+            gamificationService.recordActivity(
+                GamificationService.ActivityType.FUTURE_LETTER_SENT,
+                updateLegacyStreak = false
+            )
         }
 
         // Record mission progress

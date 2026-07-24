@@ -1,4 +1,4 @@
-﻿package com.kairos.app.domain.gamification
+package com.kairos.app.domain.gamification
 
 import android.util.Log
 import com.kairos.app.data.local.dao.ChallengeDao
@@ -39,20 +39,21 @@ class GamificationService @Inject constructor(
     companion object {
         private const val TAG = "GamificationService"
 
-        // Point values for activities
-        const val POINTS_JOURNAL_ENTRY = 50
-        const val POINTS_WORD_LEARNED = 15
-        const val POINTS_QUOTE_READ = 5
-        const val POINTS_PROVERB_EXPLORED = 8
-        const val POINTS_FUTURE_LETTER_SENT = 50
-        const val POINTS_FUTURE_LETTER_RECEIVED = 30
-        const val POINTS_DAILY_CHECK_IN = 5
-        const val POINTS_STREAK_BONUS_PER_DAY = 2
-        const val POINTS_REVIEW_COMPLETED = 15
-        const val POINTS_BUDDHA_CONVERSATION = 15
+        // Legacy total-points bridge. Values are deliberately smaller than the
+        // skill XP system and only meaningful, completed actions earn points.
+        const val POINTS_JOURNAL_ENTRY = 28
+        const val POINTS_WORD_LEARNED = 12
+        const val POINTS_QUOTE_READ = 0
+        const val POINTS_PROVERB_EXPLORED = 0
+        const val POINTS_FUTURE_LETTER_SENT = 26
+        const val POINTS_FUTURE_LETTER_RECEIVED = 0
+        const val POINTS_DAILY_CHECK_IN = 0
+        const val POINTS_STREAK_BONUS_PER_DAY = 0
+        const val POINTS_REVIEW_COMPLETED = 12
+        const val POINTS_BUDDHA_CONVERSATION = 0
 
-        // Maximum daily points to prevent abuse
-        const val MAX_DAILY_POINTS = 500
+        // A bounded record of practice, not an infinite engagement counter.
+        const val MAX_DAILY_POINTS = 180
     }
 
     /**
@@ -77,6 +78,10 @@ class GamificationService @Inject constructor(
     suspend fun initializeUserData() = withContext(Dispatchers.IO) {
         // PERF: Check flag to ensure this heavy setup runs only once, ever.
         if (preferencesManager.gamificationInitialized.first()) {
+            // Old installs may already be marked initialized while their progress
+            // counters and achievement rows drifted apart. Reconcile at startup;
+            // unlocking remains idempotent because unlocked rows are skipped.
+            reconcileAchievementProgress()
             return@withContext
         }
 
@@ -94,10 +99,14 @@ class GamificationService @Inject constructor(
                 userDao.insertUserStats(UserStatsEntity())
             }
 
-            // Initialize achievements if needed
-            val existingAchievements = userDao.getAllAchievements().first()
-            if (existingAchievements.isEmpty()) {
-                val achievementEntities = KairosAchievements.allAchievements.map { achievement ->
+            // Upsert only missing canonical achievements. Older installs may
+            // contain a legacy catalogue; replacing every row would erase earned
+            // progress, while checking only for an empty table would never add the
+            // new Kairos milestone IDs.
+            val existingAchievementIds = userDao.getAllAchievements().first().mapTo(mutableSetOf()) { it.id }
+            val missingAchievements = KairosAchievements.allAchievements
+                .filterNot { it.id in existingAchievementIds }
+                .map { achievement ->
                     AchievementEntity.fromDomain(
                         id = achievement.id,
                         name = achievement.name,
@@ -110,8 +119,11 @@ class GamificationService @Inject constructor(
                         rewardPoints = achievement.rewardPoints
                     )
                 }
-                userDao.insertAchievements(achievementEntities)
+            if (missingAchievements.isNotEmpty()) {
+                userDao.insertAchievements(missingAchievements)
             }
+
+            reconcileAchievementProgress()
 
             // Set the flag to true after successful initialization
             preferencesManager.setGamificationInitialized(true)
@@ -129,16 +141,16 @@ class GamificationService @Inject constructor(
      * @param activityType The type of activity completed
      * @return The points awarded (may be 0 if daily cap reached)
      */
-    suspend fun recordActivity(activityType: ActivityType): Int = withContext(Dispatchers.IO) {
+    suspend fun recordActivity(
+        activityType: ActivityType,
+        updateLegacyStreak: Boolean = true
+    ): Int = withContext(Dispatchers.IO) {
         try {
             val profile = userDao.getUserProfileSync() ?: return@withContext 0
 
             // Check daily cap
             val stats = userDao.getUserStats().firstOrNull()
             val todayPoints = stats?.dailyPointsEarned ?: 0
-            if (todayPoints >= MAX_DAILY_POINTS) {
-                return@withContext 0
-            }
 
             val basePoints = when (activityType) {
                 ActivityType.JOURNAL_ENTRY -> POINTS_JOURNAL_ENTRY
@@ -152,13 +164,19 @@ class GamificationService @Inject constructor(
                 ActivityType.BUDDHA_CONVERSATION -> POINTS_BUDDHA_CONVERSATION
             }
 
-            // Apply streak bonus
-            val streakBonus = profile.currentStreak * POINTS_STREAK_BONUS_PER_DAY
-            val totalPoints = (basePoints + streakBonus).coerceAtMost(MAX_DAILY_POINTS - todayPoints)
+            // Passive actions intentionally do not alter points, streaks,
+            // challenges, or achievement progress.
+            if (basePoints <= 0) return@withContext 0
 
-            // Award points
-            userDao.addPoints(totalPoints)
-            userDao.addDailyPoints(totalPoints)
+            val totalPoints = basePoints
+                .coerceAtMost((MAX_DAILY_POINTS - todayPoints).coerceAtLeast(0))
+
+            // The cap limits currency, not evidence. A legitimate journal entry or
+            // review still advances milestones after the daily point budget is used.
+            if (totalPoints > 0) {
+                userDao.addPoints(totalPoints)
+                userDao.addDailyPoints(totalPoints)
+            }
 
             // Update activity-specific stats
             when (activityType) {
@@ -168,8 +186,11 @@ class GamificationService @Inject constructor(
                 else -> { /* Other activities don't have dedicated counters */ }
             }
 
-            // Update streak
-            updateStreak()
+            // The session coordinator owns the visible streak update. Legacy call
+            // sites can still request the profile bridge to update it directly.
+            if (updateLegacyStreak) {
+                updateStreak()
+            }
 
             // Update achievement progress
             updateAchievementProgress(activityType, profile)
@@ -244,7 +265,7 @@ class GamificationService @Inject constructor(
                 updateQuoteAchievements(count)
             }
             ActivityType.FUTURE_LETTER_SENT -> {
-                val count = profile.futureLettersSent + 1
+                val count = profile.futureMessagesCount + 1
                 updateFutureLetterAchievements(count, true)
             }
             ActivityType.FUTURE_LETTER_RECEIVED -> {
@@ -259,90 +280,65 @@ class GamificationService @Inject constructor(
         }
     }
 
-    private suspend fun updateJournalAchievements(count: Int) {
-        val milestones = listOf(
-            "first_journal" to 1,
-            "journal_5" to 5,
-            "journal_10" to 10,
-            "journal_30" to 30,
-            "journal_50" to 50,
-            "journal_100" to 100,
-            "journal_365" to 365
+    private suspend fun updateJournalAchievements(count: Int) =
+        checkMilestoneAchievements(
+            AchievementMilestonePolicy.milestonesFor(AchievementMilestonePolicy.Evidence.JOURNAL_ENTRY),
+            count
         )
-        checkMilestoneAchievements(milestones, count)
+
+    private suspend fun updateWordAchievements(count: Int) =
+        checkMilestoneAchievements(
+            AchievementMilestonePolicy.milestonesFor(AchievementMilestonePolicy.Evidence.WORD_LEARNED),
+            count
+        )
+
+    private suspend fun updateQuoteAchievements(count: Int) =
+        checkMilestoneAchievements(
+            AchievementMilestonePolicy.milestonesFor(AchievementMilestonePolicy.Evidence.QUOTE_REFLECTION),
+            count
+        )
+
+    private suspend fun updateFutureLetterAchievements(count: Int, isSent: Boolean) =
+        checkMilestoneAchievements(
+            AchievementMilestonePolicy.milestonesFor(
+                if (isSent) AchievementMilestonePolicy.Evidence.FUTURE_LETTER_SENT
+                else AchievementMilestonePolicy.Evidence.FUTURE_LETTER_RECEIVED
+            ),
+            count
+        )
+
+    private suspend fun updateBuddhaAchievements(count: Int) =
+        checkMilestoneAchievements(
+            AchievementMilestonePolicy.milestonesFor(AchievementMilestonePolicy.Evidence.GUIDE_CONVERSATION),
+            count
+        )
+
+    /**
+     * Rebuilds milestone progress from durable profile counters. This repairs
+     * upgrades and interrupted reward flows without inventing activity.
+     */
+    suspend fun reconcileAchievementProgress() = withContext(Dispatchers.IO) {
+        val profile = userDao.getUserProfileSync() ?: return@withContext
+        updateJournalAchievements(profile.journalEntriesCount.coerceAtLeast(0))
+        updateWordAchievements(profile.wordsLearned.coerceAtLeast(0))
+        checkStreakAchievements(profile.currentStreak.coerceAtLeast(0))
+        updateFutureLetterAchievements(profile.futureMessagesCount.coerceAtLeast(0), isSent = true)
+        updateFutureLetterAchievements(profile.futureLettersReceived.coerceAtLeast(0), isSent = false)
+        if (profile.quotesReflected > 0) updateQuoteAchievements(profile.quotesReflected)
+        if (profile.buddhaConversations > 0) updateBuddhaAchievements(profile.buddhaConversations)
     }
 
-    private suspend fun updateWordAchievements(count: Int) {
-        val milestones = listOf(
-            "first_word" to 1,
-            "word_collector_10" to 10,
-            "word_collector_25" to 25,
-            "word_collector_50" to 50,
-            "word_collector_100" to 100,
-            "word_collector_250" to 250,
-            "word_collector_500" to 500,
-            "word_collector_1000" to 1000
+    private suspend fun checkStreakAchievements(streakDays: Int) =
+        checkMilestoneAchievements(
+            AchievementMilestonePolicy.milestonesFor(AchievementMilestonePolicy.Evidence.ACTIVE_DAY),
+            streakDays
         )
-        checkMilestoneAchievements(milestones, count)
-    }
-
-    private suspend fun updateQuoteAchievements(count: Int) {
-        val milestones = listOf(
-            "quote_reader_10" to 10,
-            "quote_devotee" to 50,
-            "quote_collector_100" to 100
-        )
-        checkMilestoneAchievements(milestones, count)
-    }
-
-    private suspend fun updateFutureLetterAchievements(count: Int, isSent: Boolean) {
-        val milestones = if (isSent) {
-            listOf(
-                "first_future_letter" to 1,
-                "time_traveler" to 5,
-                "temporal_correspondent" to 10,
-                "chronicle_keeper" to 25
-            )
-        } else {
-            listOf(
-                "letter_received" to 1,
-                "message_from_past" to 5
-            )
-        }
-        checkMilestoneAchievements(milestones, count)
-    }
-
-    private suspend fun updateBuddhaAchievements(count: Int) {
-        val milestones = listOf(
-            "first_conversation" to 1,
-            "seeker_of_wisdom" to 10,
-            "student_of_buddha" to 25,
-            "mindful_dialoguer" to 50,
-            "enlightened_conversant" to 100
-        )
-        checkMilestoneAchievements(milestones, count)
-    }
-
-    private suspend fun checkStreakAchievements(streakDays: Int) {
-        val milestones = listOf(
-            "streak_3" to 3,
-            "streak_7" to 7,
-            "streak_14" to 14,
-            "streak_21" to 21,
-            "streak_30" to 30,
-            "streak_60" to 60,
-            "streak_90" to 90,
-            "streak_180" to 180,
-            "streak_365" to 365
-        )
-        checkMilestoneAchievements(milestones, streakDays)
-    }
 
     /**
      * Checks and unlocks milestone achievements.
      */
     private suspend fun checkMilestoneAchievements(
-        milestones: List<Pair<String, Int>>,
+        milestones: List<AchievementMilestonePolicy.Milestone>,
         currentValue: Int
     ) {
         for ((achievementId, requirement) in milestones) {
@@ -368,8 +364,10 @@ class GamificationService @Inject constructor(
      */
     private suspend fun unlockAchievement(achievementId: String, bonusPoints: Int) {
         try {
-            userDao.unlockAchievement(achievementId)
-            userDao.addPoints(bonusPoints)
+            val newlyUnlocked = userDao.unlockAchievementIfLocked(achievementId) > 0
+            if (newlyUnlocked && bonusPoints > 0) {
+                userDao.addPoints(bonusPoints)
+            }
         } catch (e: Exception) {
             Log.e(TAG, "Error unlocking achievement $achievementId", e)
         }

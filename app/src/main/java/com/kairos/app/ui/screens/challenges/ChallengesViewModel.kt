@@ -1,4 +1,4 @@
-﻿package com.kairos.app.ui.screens.challenges
+package com.kairos.app.ui.screens.challenges
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

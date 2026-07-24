@@ -1,4 +1,4 @@
-﻿package com.kairos.app.data.backup
+package com.kairos.app.data.backup
 
 import com.kairos.app.data.local.entity.*
 import kotlinx.serialization.Serializable

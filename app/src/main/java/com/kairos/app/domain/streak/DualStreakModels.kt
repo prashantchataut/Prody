@@ -1,4 +1,4 @@
-﻿package com.kairos.app.domain.streak
+package com.kairos.app.domain.streak
 
 import java.time.LocalDate
 import java.time.ZoneId

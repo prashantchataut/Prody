@@ -1,1477 +1,734 @@
-﻿package com.kairos.app.ui.screens.futuremessage
-import com.kairos.app.ui.icons.KairosIcons
+package com.kairos.app.ui.screens.futuremessage
 
 import android.Manifest
-import android.content.pm.PackageManager
 import android.net.Uri
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.ContextCompat
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
-import com.kairos.app.ui.theme.isDarkTheme
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.weight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
-import com.kairos.app.R
-import com.kairos.app.ui.components.TimeCapsuleSealAnimation
-import com.kairos.app.ui.components.rememberTimeCapsuleSealState
-import com.kairos.app.ui.theme.*
+import com.kairos.app.ui.animation.KairosDurations
+import com.kairos.app.ui.animation.KairosEasing
+import com.kairos.app.ui.animation.KairosReveal
+import com.kairos.app.ui.animation.rememberKairosReducedMotion
+import com.kairos.app.ui.components.kairos.KairosAppBackground
+import com.kairos.app.ui.components.kairos.KairosGlassSurface
+import com.kairos.app.ui.components.kairos.KairosIconButton
+import com.kairos.app.ui.components.kairos.KairosPrimaryButton
+import com.kairos.app.ui.components.kairos.KairosReadingSurface
+import com.kairos.app.ui.icons.KairosIcons
+import com.kairos.app.ui.security.KairosSecureScreenEffect
+import com.kairos.app.ui.theme.KairosRadius
+import com.kairos.app.ui.theme.KairosSpacing
+import com.kairos.app.ui.theme.SerifFamily
 import kotlinx.coroutines.delay
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import java.util.concurrent.TimeUnit
 
 /**
- * Write to Time Capsule Screen - Complete Redesign
+ * A private writing room for a future letter.
  *
- * Design Philosophy:
- * - Minimalism & Cleanliness: Flat, modern, compact, extremely clean
- * - No shadows, gradients, skeuomorphism, or unnecessary translucency
- * - Professional & Premium Feel with intentional design
- * - Typography: Exclusively Poppins font family
- * - Color Accents: Vibrant neon green (#36F97F) for interactive elements
- * - Accessibility: 48dp minimum touch targets, WCAG AA contrast compliance
+ * The screen intentionally treats scheduling, intention and attachments as
+ * secondary tools. The writing itself remains the visual centre of gravity.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WriteMessageScreen(
     onNavigateBack: () -> Unit,
     onMessageSaved: () -> Unit,
     viewModel: WriteMessageViewModel = hiltViewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val isDark = isDarkTheme()
-    val context = LocalContext.current
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val reduceMotion = rememberKairosReducedMotion()
 
-    // Media picker launcher
-    val mediaPickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.PickMultipleVisualMedia(maxItems = 5)
-    ) { uris: List<Uri> ->
-        if (uris.isNotEmpty()) {
-            val photos = uris.filter { uri ->
-                context.contentResolver.getType(uri)?.startsWith("image/") == true
-            }.map { it.toString() }
-            val videos = uris.filter { uri ->
-                context.contentResolver.getType(uri)?.startsWith("video/") == true
-            }.map { it.toString() }
-
-            if (photos.isNotEmpty()) viewModel.addPhotos(photos)
-            if (videos.isNotEmpty()) viewModel.addVideos(videos)
-        }
+    val photoPicker = rememberLauncherForActivityResult(
+        ActivityResultContracts.GetMultipleContents()
+    ) { uris: List<Uri> -> viewModel.addPhotos(uris.map(Uri::toString)) }
+    val videoPicker = rememberLauncherForActivityResult(
+        ActivityResultContracts.GetMultipleContents()
+    ) { uris: List<Uri> -> viewModel.addVideos(uris.map(Uri::toString)) }
+    val microphonePermission = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) viewModel.startRecording()
     }
 
-    // Audio recording permission state
-    var hasRecordingPermission by remember {
-        mutableStateOf(
-            ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.RECORD_AUDIO
-            ) == PackageManager.PERMISSION_GRANTED
-        )
+    KairosSecureScreenEffect()
+
+    val requestBack = {
+        if (viewModel.handleBackNavigation()) onNavigateBack()
     }
+    BackHandler(onBack = requestBack)
 
-    // Audio permission launcher
-    val audioPermissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        hasRecordingPermission = isGranted
-        if (isGranted) {
-            viewModel.startRecording()
-        }
-    }
-
-    // Function to handle voice button click with permission check
-    val handleVoiceClick: () -> Unit = {
-        if (uiState.isRecording) {
-            viewModel.stopRecording()
-        } else {
-            if (hasRecordingPermission) {
-                viewModel.startRecording()
-            } else {
-                audioPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
-            }
-        }
-    }
-
-    // Handle back navigation with unsaved changes check
-    val handleBack: () -> Unit = {
-        if (viewModel.handleBackNavigation()) {
-            onNavigateBack()
-        }
-    }
-
-    // Focus management for keyboard navigation
-    val contentFocusRequester = remember { FocusRequester() }
-
-    // Magical sealing animation state
-    val sealState = rememberTimeCapsuleSealState()
-
-    // Theme-aware colors
-    val backgroundColor = if (isDark) TimeCapsuleBackgroundDark else TimeCapsuleBackgroundLight
-    val titleTextColor = if (isDark) TimeCapsuleTitleTextDark else TimeCapsuleTitleTextLight
-    val discardTextColor = if (isDark) TimeCapsuleDiscardTextDark else TimeCapsuleDiscardTextLight
-    val placeholderColor = if (isDark) TimeCapsulePlaceholderDark else TimeCapsulePlaceholderLight
-    val activeTextColor = if (isDark) TimeCapsuleActiveTextDark else TimeCapsuleActiveTextLight
-    val multimediaIconColor = if (isDark) TimeCapsuleMultimediaIconDark else TimeCapsuleMultimediaIconLight
-    val attachTextColor = if (isDark) TimeCapsuleAttachTextDark else TimeCapsuleAttachTextLight
-    val dividerColor = if (isDark) TimeCapsuleDividerDark else TimeCapsuleDividerLight
-    val sectionTitleColor = if (isDark) TimeCapsuleSectionTitleDark else TimeCapsuleSectionTitleLight
-    val inactiveTagBgColor = if (isDark) TimeCapsuleInactiveTagBgDark else TimeCapsuleInactiveTagBgLight
-    val inactiveTagTextColor = if (isDark) TimeCapsuleInactiveTagTextDark else TimeCapsuleInactiveTagTextLight
-    val buttonTextColor = if (isDark) TimeCapsuleButtonTextDark else TimeCapsuleButtonTextLight
-
-    // Handle saved state with magical animation
-    LaunchedEffect(uiState.isSaved) {
-        if (uiState.isSaved) {
-            // Small delay for the animation to complete
-            delay(100)
+    LaunchedEffect(state.isSaved) {
+        if (state.isSaved) {
+            delay(if (reduceMotion) 100 else 620)
             onMessageSaved()
         }
     }
 
-    // Discard changes confirmation dialog
-    if (uiState.showDiscardDialog) {
-        DiscardChangesDialog(
-            onDismiss = { viewModel.hideDiscardDialog() },
-            onConfirm = {
-                viewModel.hideDiscardDialog()
-                onNavigateBack()
-            }
-        )
-    }
-
-    // Error snackbar
-    uiState.error?.let { error ->
-        LaunchedEffect(error) {
-            kotlinx.coroutines.delay(3000)
-            viewModel.clearError()
-        }
-    }
-
-    val density = LocalDensity.current
-    val scrollState = rememberScrollState()
-
-    // Auto-scroll when keyboard appears
-    val imeVisible = WindowInsets.ime.getBottom(density) > 0
-    LaunchedEffect(imeVisible) {
-        if (imeVisible) {
-            scrollState.animateScrollTo(scrollState.maxValue)
-        }
-    }
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(backgroundColor)
-            .imePadding() // Critical: Add IME padding to push content above keyboard
-    ) {
+    KairosAppBackground {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(scrollState)
-                .padding(bottom = 100.dp) // Space for bottom button
+                .imePadding()
         ) {
-            // Top Header Bar
-            TimeCapsuleTopBar(
-                titleTextColor = titleTextColor,
-                discardTextColor = discardTextColor,
-                onBackClick = handleBack,
-                onDiscardClick = handleBack
+            FutureLetterHeader(
+                isSaving = state.isSaving,
+                canSave = state.canSave,
+                onBack = requestBack,
+                onSeal = viewModel::saveMessage
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Capsule Title Input
-            TimeCapsuleTitleInput(
-                value = uiState.title,
-                onValueChange = { viewModel.updateTitle(it) },
-                onNext = { contentFocusRequester.requestFocus() },
-                placeholderColor = placeholderColor,
-                activeTextColor = activeTextColor,
-                modifier = Modifier.padding(horizontal = 24.dp)
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Message Body Input
-            TimeCapsuleMessageInput(
-                value = uiState.content,
-                onValueChange = { viewModel.updateContent(it) },
-                placeholderColor = placeholderColor,
-                activeTextColor = activeTextColor,
-                focusRequester = contentFocusRequester,
-                modifier = Modifier.padding(horizontal = 24.dp)
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Multimedia Attachment Row
-            MultimediaAttachmentRow(
-                iconColor = multimediaIconColor,
-                attachTextColor = attachTextColor,
-                dividerColor = dividerColor,
-                backgroundColor = inactiveTagBgColor,
-                isRecording = uiState.isRecording,
-                recordingTimeElapsed = uiState.recordingTimeElapsed,
-                onMediaClick = {
-                    mediaPickerLauncher.launch(
-                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageAndVideo)
-                    )
-                },
-                onVoiceClick = handleVoiceClick,
-                modifier = Modifier.padding(horizontal = 24.dp)
-            )
-
-            // Attached Media Preview
-            if (uiState.attachedPhotos.isNotEmpty() || uiState.attachedVideos.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(16.dp))
-                AttachedMediaSection(
-                    photos = uiState.attachedPhotos,
-                    videos = uiState.attachedVideos,
-                    onRemovePhoto = { viewModel.removePhoto(it) },
-                    onRemoveVideo = { viewModel.removeVideo(it) },
-                    modifier = Modifier.padding(horizontal = 24.dp)
-                )
-            }
-
-            // Voice Recording Preview
-            if (uiState.voiceRecordingUri != null) {
-                Spacer(modifier = Modifier.height(16.dp))
-                VoiceRecordingPreview(
-                    duration = uiState.voiceRecordingDuration,
-                    isPlaying = uiState.isPlayingVoice,
-                    onPlayPauseClick = { viewModel.toggleVoicePlayback() },
-                    onRemoveClick = { viewModel.removeVoiceRecording() },
-                    backgroundColor = inactiveTagBgColor,
-                    modifier = Modifier.padding(horizontal = 24.dp)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // TIME TRAVEL Section
-            TimeTravelSection(
-                sectionTitleColor = sectionTitleColor,
-                selectedPreset = uiState.selectedPreset,
-                onPresetSelected = { viewModel.selectDatePreset(it) },
-                inactiveTagBgColor = inactiveTagBgColor,
-                inactiveTagTextColor = inactiveTagTextColor,
-                onCustomDateClick = { viewModel.showDatePicker() },
-                modifier = Modifier.padding(start = 24.dp)
-            )
-
-            Spacer(modifier = Modifier.height(28.dp))
-
-            // ESSENCE Section - Multi-select categories
-            EssenceSectionMultiSelect(
-                sectionTitleColor = sectionTitleColor,
-                selectedCategories = uiState.selectedCategories,
-                onCategoryToggle = { viewModel.toggleCategory(it) },
-                inactiveTagBgColor = inactiveTagBgColor,
-                inactiveTagTextColor = inactiveTagTextColor,
-                modifier = Modifier.padding(start = 24.dp)
-            )
-
-            Spacer(modifier = Modifier.height(48.dp))
-        }
-
-        // Error message
-        AnimatedVisibility(
-            visible = uiState.error != null,
-            enter = fadeIn() + slideInVertically(),
-            exit = fadeOut() + slideOutVertically(),
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .padding(top = 80.dp)
-        ) {
-            uiState.error?.let { error ->
-                Card(
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.errorContainer
-                    ),
-                    modifier = Modifier.padding(horizontal = 24.dp)
-                ) {
-                    Text(
-                        text = error,
-                        color = MaterialTheme.colorScheme.onErrorContainer,
-                        modifier = Modifier.padding(16.dp),
-                        fontFamily = PoppinsFamily,
-                        fontSize = 14.sp
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = KairosSpacing.screen)
+                    .padding(bottom = 132.dp),
+                verticalArrangement = Arrangement.spacedBy(KairosSpacing.lg)
+            ) {
+                KairosReveal(visible = true, delayMillis = 20) {
+                    FutureHorizon(
+                        selectedPreset = state.selectedPreset,
+                        deliveryDate = state.deliveryDate,
+                        onPresetSelected = viewModel::selectDatePreset
                     )
                 }
+
+                KairosReveal(visible = true, delayMillis = 70) {
+                    LetterIntentionPicker(
+                        selected = state.selectedCategory,
+                        onSelected = viewModel::updateCategory
+                    )
+                }
+
+                KairosReveal(visible = true, delayMillis = 120) {
+                    FutureLetterEditor(
+                        title = state.title,
+                        content = state.content,
+                        onTitleChanged = viewModel::updateTitle,
+                        onContentChanged = viewModel::updateContent
+                    )
+                }
+
+                KairosReveal(visible = true, delayMillis = 170) {
+                    LetterAttachments(
+                        state = state,
+                        onPickPhotos = { photoPicker.launch("image/*") },
+                        onPickVideos = { videoPicker.launch("video/*") },
+                        onRecord = {
+                            if (state.isRecording) viewModel.stopRecording()
+                            else microphonePermission.launch(Manifest.permission.RECORD_AUDIO)
+                        },
+                        onPlayVoice = viewModel::toggleVoicePlayback,
+                        onRemoveVoice = viewModel::removeVoiceRecording
+                    )
+                }
+
+                Text(
+                    text = "Future letters are stored privately on this device. Their contents stay sealed in the list until the chosen date.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 4.dp)
+                )
             }
         }
 
-        // Seal & Schedule Button - Fixed at bottom
-        SealAndScheduleButton(
-            onClick = { viewModel.saveMessage() },
-            enabled = !uiState.isSaving && uiState.content.isNotBlank(),
-            isLoading = uiState.isSaving && !uiState.showSealingAnimation,
-            buttonTextColor = buttonTextColor,
+        KairosGlassSurface(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(horizontal = 24.dp, vertical = 32.dp)
-        )
-
-        // Magical Time Capsule Sealing Animation overlay
-        TimeCapsuleSealAnimation(
-            state = sealState,
-            onComplete = { /* Animation completed, message is being saved */ }
-        )
-
-        // Date Picker Dialog
-        if (uiState.showDatePicker) {
-            val datePickerState = rememberDatePickerState(
-                initialSelectedDateMillis = uiState.deliveryDate
+                .fillMaxWidth()
+                .navigationBarsPadding()
+                .padding(horizontal = KairosSpacing.screen, vertical = KairosSpacing.md),
+            strong = true,
+            shape = RoundedCornerShape(KairosRadius.floating),
+            contentPadding = PaddingValues(8.dp)
+        ) {
+            KairosPrimaryButton(
+                text = if (state.isSaving) "Sealing…" else "Seal until ${shortDate(state.deliveryDate)}",
+                onClick = viewModel::saveMessage,
+                enabled = state.canSave && !state.isSaving,
+                icon = if (state.isSaving) null else KairosIcons.Lock,
+                modifier = Modifier.fillMaxWidth()
             )
-
-            DatePickerDialog(
-                onDismissRequest = { viewModel.hideDatePicker() },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            datePickerState.selectedDateMillis?.let {
-                                viewModel.selectCustomDate(it)
-                            }
-                        }
-                    ) {
-                        Text("Confirm")
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { viewModel.hideDatePicker() }) {
-                        Text("Cancel")
-                    }
-                }
-            ) {
-                DatePicker(state = datePickerState)
-            }
         }
 
-        // Sealing Animation Overlay
         AnimatedVisibility(
-            visible = uiState.showSealingAnimation,
-            enter = fadeIn(animationSpec = tween(300)),
-            exit = fadeOut(animationSpec = tween(300)),
-            modifier = Modifier.fillMaxSize()
+            visible = state.isSaving || state.isSaved,
+            enter = fadeIn(tween(KairosDurations.State)),
+            exit = fadeOut(tween(KairosDurations.Micro))
         ) {
-            SealingAnimationOverlay(
-                backgroundColor = backgroundColor
-            )
+            SealingLetterOverlay(saved = state.isSaved)
         }
+    }
+
+    if (state.showDatePicker) {
+        FutureDatePicker(
+            initialDate = state.deliveryDate,
+            onDismiss = viewModel::hideDatePicker,
+            onConfirm = viewModel::selectCustomDate
+        )
+    }
+
+    if (state.showDiscardDialog) {
+        AlertDialog(
+            onDismissRequest = viewModel::hideDiscardDialog,
+            title = { Text("Discard this letter?") },
+            text = { Text("The draft and its attachments have not been saved.") },
+            confirmButton = {
+                TextButton(onClick = onNavigateBack) { Text("Discard") }
+            },
+            dismissButton = {
+                TextButton(onClick = viewModel::hideDiscardDialog) { Text("Keep writing") }
+            }
+        )
+    }
+
+    state.error?.let { message ->
+        AlertDialog(
+            onDismissRequest = viewModel::clearError,
+            title = { Text("Letter not sealed") },
+            text = { Text(message) },
+            confirmButton = {
+                TextButton(onClick = viewModel::clearError) { Text("Return to draft") }
+            }
+        )
     }
 }
 
-/**
- * Top Header Bar with back arrow, centered title, and discard text
- */
 @Composable
-private fun TimeCapsuleTopBar(
-    titleTextColor: Color,
-    discardTextColor: Color,
-    onBackClick: () -> Unit,
-    onDiscardClick: () -> Unit
+private fun FutureLetterHeader(
+    isSaving: Boolean,
+    canSave: Boolean,
+    onBack: () -> Unit,
+    onSeal: () -> Unit
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 16.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        // Back Arrow
-        IconButton(
-            onClick = onBackClick,
-            modifier = Modifier.size(48.dp)
-        ) {
-            Icon(
-                imageVector = KairosIcons.ArrowBack,
-                contentDescription = stringResource(R.string.back),
-                tint = titleTextColor,
-                modifier = Modifier.size(24.dp)
-            )
-        }
-
-        // Centered Title
-        Text(
-            text = stringResource(R.string.write_to_time_capsule),
-            fontFamily = PoppinsFamily,
-            fontWeight = FontWeight.Medium,
-            fontSize = 16.sp,
-            color = titleTextColor
-        )
-
-        // Discard Text
-        TextButton(
-            onClick = onDiscardClick,
-            modifier = Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp)
-        ) {
-            Text(
-                text = stringResource(R.string.discard),
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.Normal,
-                fontSize = 14.sp,
-                color = discardTextColor
-            )
-        }
-    }
-}
-
-/**
- * Large Capsule Title Input with placeholder
- */
-@Composable
-private fun TimeCapsuleTitleInput(
-    value: String,
-    onValueChange: (String) -> Unit,
-    onNext: () -> Unit,
-    placeholderColor: Color,
-    activeTextColor: Color,
-    modifier: Modifier = Modifier
-) {
-    BasicTextField(
-        value = value,
-        onValueChange = onValueChange,
-        modifier = modifier.fillMaxWidth(),
-        textStyle = TextStyle(
-            fontFamily = PoppinsFamily,
-            fontWeight = FontWeight.Normal,
-            fontSize = 28.sp,
-            color = activeTextColor
-        ),
-        singleLine = true,
-        cursorBrush = SolidColor(TimeCapsuleAccent),
-        keyboardOptions = KeyboardOptions(
-            capitalization = KeyboardCapitalization.Sentences,
-            imeAction = ImeAction.Next
-        ),
-        keyboardActions = KeyboardActions(
-            onNext = { onNext() }
-        ),
-        decorationBox = { innerTextField ->
-            Box {
-                if (value.isEmpty()) {
-                    Text(
-                        text = stringResource(R.string.capsule_title_placeholder),
-                        fontFamily = PoppinsFamily,
-                        fontWeight = FontWeight.Normal,
-                        fontSize = 28.sp,
-                        color = placeholderColor
-                    )
-                }
-                innerTextField()
-            }
-        }
-    )
-}
-
-/**
- * Multi-line Message Body Input with placeholder
- */
-@Composable
-private fun TimeCapsuleMessageInput(
-    value: String,
-    onValueChange: (String) -> Unit,
-    placeholderColor: Color,
-    activeTextColor: Color,
-    focusRequester: FocusRequester,
-    modifier: Modifier = Modifier
-) {
-    BasicTextField(
-        value = value,
-        onValueChange = onValueChange,
-        modifier = modifier
-            .fillMaxWidth()
-            .heightIn(min = 120.dp)
-            .focusRequester(focusRequester),
-        textStyle = TextStyle(
-            fontFamily = PoppinsFamily,
-            fontWeight = FontWeight.Normal,
-            fontSize = 16.sp,
-            color = activeTextColor,
-            lineHeight = 24.sp
-        ),
-        cursorBrush = SolidColor(TimeCapsuleAccent),
-        keyboardOptions = KeyboardOptions(
-            capitalization = KeyboardCapitalization.Sentences,
-            imeAction = ImeAction.Default // Multi-line, default behavior
-        ),
-        decorationBox = { innerTextField ->
-            Box {
-                if (value.isEmpty()) {
-                    Text(
-                        text = stringResource(R.string.capsule_message_placeholder),
-                        fontFamily = PoppinsFamily,
-                        fontWeight = FontWeight.Normal,
-                        fontSize = 16.sp,
-                        color = placeholderColor,
-                        lineHeight = 24.sp
-                    )
-                }
-                innerTextField()
-            }
-        }
-    )
-}
-
-/**
- * Multimedia Attachment Row with camera, mic icons and "Attach memories" text
- */
-@Composable
-private fun MultimediaAttachmentRow(
-    iconColor: Color,
-    attachTextColor: Color,
-    dividerColor: Color,
-    backgroundColor: Color,
-    isRecording: Boolean,
-    recordingTimeElapsed: Long,
-    onMediaClick: () -> Unit,
-    onVoiceClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    // Recording pulse animation
-    val infiniteTransition = rememberInfiniteTransition(label = "recording")
-    val pulseAlpha by infiniteTransition.animateFloat(
-        initialValue = 1f,
-        targetValue = 0.3f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(500),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "pulse"
-    )
-
-    Row(
-        modifier = modifier.fillMaxWidth(),
+            .statusBarsPadding()
+            .padding(horizontal = KairosSpacing.screen, vertical = KairosSpacing.md),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        // Camera Icon Button
-        Box(
-            modifier = Modifier
-                .size(48.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .background(backgroundColor)
-                .clickable(enabled = !isRecording) { onMediaClick() },
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = KairosIcons.Outlined.CameraAlt,
-                contentDescription = "Attach photo",
-                tint = if (isRecording) iconColor.copy(alpha = 0.3f) else iconColor,
-                modifier = Modifier.size(24.dp)
-            )
-        }
-
-        // Microphone Icon Button
-        Box(
-            modifier = Modifier
-                .size(48.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .background(if (isRecording) TimeCapsuleAccent.copy(alpha = pulseAlpha * 0.3f) else backgroundColor)
-                .clickable { onVoiceClick() },
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = if (isRecording) KairosIcons.Outlined.Stop else KairosIcons.Outlined.Mic,
-                contentDescription = if (isRecording) "Stop recording" else "Record voice",
-                tint = if (isRecording) TimeCapsuleAccent else iconColor,
-                modifier = Modifier.size(24.dp)
-            )
-        }
-
-        // Vertical Divider
-        Box(
-            modifier = Modifier
-                .width(1.dp)
-                .height(20.dp)
-                .background(dividerColor)
-        )
-
-        // Attach memories text or recording indicator
-        if (isRecording) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(8.dp)
-                        .clip(CircleShape)
-                        .background(TimeCapsuleAccent.copy(alpha = pulseAlpha))
-                )
-                Text(
-                    text = formatDuration(recordingTimeElapsed),
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 14.sp,
-                    color = TimeCapsuleAccent
-                )
-            }
-        } else {
+        KairosIconButton(KairosIcons.Close, "Close future letter", onBack)
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text("Future letter", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
             Text(
-                text = stringResource(R.string.attach_memories),
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.Normal,
-                fontSize = 14.sp,
-                color = attachTextColor
-            )
-        }
-    }
-}
-
-/**
- * Attached Media Section showing photo/video thumbnails
- */
-@Composable
-private fun AttachedMediaSection(
-    photos: List<String>,
-    videos: List<String>,
-    onRemovePhoto: (String) -> Unit,
-    onRemoveVideo: (String) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val context = LocalContext.current
-
-    LazyRow(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        items(photos) { photoUri ->
-            MediaThumbnail(
-                uri = photoUri,
-                isVideo = false,
-                onRemove = { onRemovePhoto(photoUri) }
-            )
-        }
-        items(videos) { videoUri ->
-            MediaThumbnail(
-                uri = videoUri,
-                isVideo = true,
-                onRemove = { onRemoveVideo(videoUri) }
-            )
-        }
-    }
-}
-
-/**
- * Media thumbnail with remove button
- */
-@Composable
-private fun MediaThumbnail(
-    uri: String,
-    isVideo: Boolean,
-    onRemove: () -> Unit
-) {
-    val context = LocalContext.current
-
-    Box(
-        modifier = Modifier
-            .size(72.dp)
-            .clip(RoundedCornerShape(12.dp))
-    ) {
-        AsyncImage(
-            model = ImageRequest.Builder(context)
-                .data(uri)
-                .crossfade(true)
-                .build(),
-            contentDescription = if (isVideo) "Video thumbnail" else "Photo thumbnail",
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize()
-        )
-
-        // Video indicator
-        if (isVideo) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .size(28.dp)
-                    .clip(CircleShape)
-                    .background(Color.Black.copy(alpha = 0.6f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = KairosIcons.PlayArrow,
-                    contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier.size(16.dp)
-                )
-            }
-        }
-
-        // Remove button
-        IconButton(
-            onClick = onRemove,
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .size(24.dp)
-                .padding(2.dp)
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clip(CircleShape)
-                    .background(Color.Black.copy(alpha = 0.6f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = KairosIcons.Close,
-                    contentDescription = "Remove",
-                    tint = Color.White,
-                    modifier = Modifier.size(14.dp)
-                )
-            }
-        }
-    }
-}
-
-/**
- * Voice Recording Preview with play/pause and remove
- */
-@Composable
-private fun VoiceRecordingPreview(
-    duration: Long,
-    isPlaying: Boolean,
-    onPlayPauseClick: () -> Unit,
-    onRemoveClick: () -> Unit,
-    backgroundColor: Color,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .background(backgroundColor)
-            .padding(12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        // Play/Pause button
-        IconButton(
-            onClick = onPlayPauseClick,
-            modifier = Modifier
-                .size(40.dp)
-                .clip(CircleShape)
-                .background(TimeCapsuleAccent)
-        ) {
-            Icon(
-                imageVector = if (isPlaying) KairosIcons.Outlined.Pause else KairosIcons.Outlined.PlayArrow,
-                contentDescription = if (isPlaying) "Pause" else "Play",
-                tint = Color.White,
-                modifier = Modifier.size(20.dp)
-            )
-        }
-
-        // Waveform placeholder and duration
-        Column(
-            modifier = Modifier.weight(1f)
-        ) {
-            // Waveform visualization placeholder
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(2.dp),
-                modifier = Modifier.height(24.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                repeat(20) { index ->
-                    val height = (8 + (index * 7) % 16).dp
-                    Box(
-                        modifier = Modifier
-                            .width(3.dp)
-                            .height(height)
-                            .clip(RoundedCornerShape(1.5.dp))
-                            .background(TimeCapsuleAccent.copy(alpha = 0.6f))
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = formatDuration(duration),
-                fontFamily = PoppinsFamily,
-                fontSize = 12.sp,
+                "A private note across time",
+                style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
-
-        // Remove button
-        IconButton(
-            onClick = onRemoveClick,
-            modifier = Modifier.size(32.dp)
-        ) {
-            Icon(
-                imageVector = KairosIcons.Delete,
-                contentDescription = "Remove recording",
-                tint = MaterialTheme.colorScheme.error,
-                modifier = Modifier.size(20.dp)
-            )
-        }
+        KairosIconButton(
+            icon = if (isSaving) KairosIcons.HourglassEmpty else KairosIcons.Check,
+            contentDescription = "Seal future letter",
+            onClick = onSeal,
+            selected = canSave && !isSaving
+        )
     }
 }
 
-/**
- * TIME TRAVEL Section with rocket icon and time selection tags
- */
 @Composable
-private fun TimeTravelSection(
-    sectionTitleColor: Color,
+private fun FutureHorizon(
     selectedPreset: DatePreset,
-    onPresetSelected: (DatePreset) -> Unit,
-    inactiveTagBgColor: Color,
-    inactiveTagTextColor: Color,
-    onCustomDateClick: () -> Unit,
-    modifier: Modifier = Modifier
+    deliveryDate: Long,
+    onPresetSelected: (DatePreset) -> Unit
 ) {
-    Column(modifier = modifier) {
-        // Section Header with Rocket Icon
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.Bottom,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Icon(
-                imageVector = KairosIcons.RocketLaunch,
-                contentDescription = null,
-                tint = TimeCapsuleAccent,
-                modifier = Modifier.size(16.dp)
-            )
+            Column {
+                Text("When should this arrive?", style = MaterialTheme.typography.titleLarge, fontFamily = SerifFamily)
+                Text(
+                    longDate(deliveryDate),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
             Text(
-                text = stringResource(R.string.time_travel),
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.Normal,
-                fontSize = 12.sp,
-                letterSpacing = 1.sp,
-                color = sectionTitleColor
+                relativeDate(deliveryDate),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.SemiBold
             )
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // Horizontal Scrolling Time Tags
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            TimeTag(
-                text = stringResource(R.string.one_week),
-                isSelected = selectedPreset == DatePreset.ONE_WEEK,
-                onClick = { onPresetSelected(DatePreset.ONE_WEEK) },
-                inactiveTagBgColor = inactiveTagBgColor,
-                inactiveTagTextColor = inactiveTagTextColor
-            )
-            TimeTag(
-                text = stringResource(R.string.one_month),
-                isSelected = selectedPreset == DatePreset.ONE_MONTH,
-                onClick = { onPresetSelected(DatePreset.ONE_MONTH) },
-                inactiveTagBgColor = inactiveTagBgColor,
-                inactiveTagTextColor = inactiveTagTextColor
-            )
-            TimeTag(
-                text = stringResource(R.string.six_months),
-                isSelected = selectedPreset == DatePreset.SIX_MONTHS,
-                onClick = { onPresetSelected(DatePreset.SIX_MONTHS) },
-                inactiveTagBgColor = inactiveTagBgColor,
-                inactiveTagTextColor = inactiveTagTextColor
-            )
-            TimeTag(
-                text = stringResource(R.string.one_year),
-                isSelected = selectedPreset == DatePreset.ONE_YEAR,
-                onClick = { onPresetSelected(DatePreset.ONE_YEAR) },
-                inactiveTagBgColor = inactiveTagBgColor,
-                inactiveTagTextColor = inactiveTagTextColor
-            )
-            TimeTag(
-                text = "Custom",
-                isSelected = selectedPreset == DatePreset.CUSTOM,
-                onClick = onCustomDateClick,
-                inactiveTagBgColor = inactiveTagBgColor,
-                inactiveTagTextColor = inactiveTagTextColor
-            )
-            // Right padding spacer
-            Spacer(modifier = Modifier.width(24.dp))
+            DatePreset.entries.forEach { preset ->
+                val selected = preset == selectedPreset
+                Surface(
+                    onClick = { onPresetSelected(preset) },
+                    shape = RoundedCornerShape(18.dp),
+                    color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
+                    contentColor = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                    border = BorderStroke(1.dp, if (selected) Color.Transparent else MaterialTheme.colorScheme.outlineVariant),
+                    modifier = Modifier.semantics {
+                        this.selected = selected
+                        role = Role.RadioButton
+                    }
+                ) {
+                    Text(
+                        preset.label,
+                        modifier = Modifier.padding(horizontal = 15.dp, vertical = 11.dp),
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
         }
     }
 }
 
-/**
- * ESSENCE Section with tag icon and category selection tags
- */
 @Composable
-private fun EssenceSection(
-    sectionTitleColor: Color,
-    selectedCategory: MessageCategory,
-    onCategorySelected: (MessageCategory) -> Unit,
-    inactiveTagBgColor: Color,
-    inactiveTagTextColor: Color,
-    modifier: Modifier = Modifier
+private fun LetterIntentionPicker(
+    selected: MessageCategory,
+    onSelected: (MessageCategory) -> Unit
 ) {
-    Column(modifier = modifier) {
-        // Section Header with Tag Icon
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Icon(
-                imageVector = KairosIcons.LocalOffer,
-                contentDescription = null,
-                tint = TimeCapsuleAccent,
-                modifier = Modifier.size(16.dp)
-            )
-            Text(
-                text = stringResource(R.string.essence),
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.Normal,
-                fontSize = 12.sp,
-                letterSpacing = 1.sp,
-                color = sectionTitleColor
-            )
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // Horizontal Scrolling Category Tags
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Text("What kind of letter is this?", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
+            horizontalArrangement = Arrangement.spacedBy(9.dp)
         ) {
-            CategoryTag(
-                text = stringResource(R.string.goal),
-                isSelected = selectedCategory == MessageCategory.GOAL,
-                onClick = { onCategorySelected(MessageCategory.GOAL) },
-                inactiveTagBgColor = inactiveTagBgColor,
-                inactiveTagTextColor = inactiveTagTextColor
-            )
-            CategoryTag(
-                text = stringResource(R.string.motivation),
-                isSelected = selectedCategory == MessageCategory.MOTIVATION,
-                onClick = { onCategorySelected(MessageCategory.MOTIVATION) },
-                inactiveTagBgColor = inactiveTagBgColor,
-                inactiveTagTextColor = inactiveTagTextColor
-            )
-            CategoryTag(
-                text = stringResource(R.string.promise),
-                isSelected = selectedCategory == MessageCategory.PROMISE,
-                onClick = { onCategorySelected(MessageCategory.PROMISE) },
-                inactiveTagBgColor = inactiveTagBgColor,
-                inactiveTagTextColor = inactiveTagTextColor
-            )
-            CategoryTag(
-                text = stringResource(R.string.prediction),
-                isSelected = selectedCategory == MessageCategory.GENERAL,
-                onClick = { onCategorySelected(MessageCategory.GENERAL) },
-                inactiveTagBgColor = inactiveTagBgColor,
-                inactiveTagTextColor = inactiveTagTextColor
-            )
-            // Right padding spacer
-            Spacer(modifier = Modifier.width(24.dp))
+            MessageCategory.entries.forEach { category ->
+                val isSelected = category == selected
+                val color = categoryColor(category)
+                KairosGlassSurface(
+                    modifier = Modifier
+                        .semantics {
+                            this.selected = isSelected
+                            role = Role.RadioButton
+                        },
+                    strong = isSelected,
+                    shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp, bottomStart = 20.dp, bottomEnd = if (category.ordinal % 2 == 0) 6.dp else 20.dp),
+                    onClick = { onSelected(category) },
+                    contentPadding = PaddingValues(horizontal = 14.dp, vertical = 11.dp)
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Box(Modifier.size(8.dp).background(color, CircleShape))
+                        Text(
+                            category.displayName,
+                            style = MaterialTheme.typography.labelLarge,
+                            color = if (isSelected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
         }
     }
 }
 
-/**
- * Reusable Time Tag component with animated selection state
- */
 @Composable
-private fun TimeTag(
-    text: String,
-    isSelected: Boolean,
-    onClick: () -> Unit,
-    inactiveTagBgColor: Color,
-    inactiveTagTextColor: Color
+private fun FutureLetterEditor(
+    title: String,
+    content: String,
+    onTitleChanged: (String) -> Unit,
+    onContentChanged: (String) -> Unit
 ) {
-    val backgroundColor by animateColorAsState(
-        if (isSelected) TimeCapsuleAccent else inactiveTagBgColor,
-        animationSpec = tween(200),
-        label = "time_tag_bg"
-    )
-    val textColor by animateColorAsState(
-        if (isSelected) Color.White else inactiveTagTextColor,
-        animationSpec = tween(200),
-        label = "time_tag_text"
-    )
-
-    Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(20.dp))
-            .background(backgroundColor)
-            .clickable(onClick = onClick)
-            .defaultMinSize(minWidth = 80.dp, minHeight = 48.dp)
-            .padding(horizontal = 20.dp, vertical = 12.dp),
-        contentAlignment = Alignment.Center
+    KairosReadingSurface(
+        modifier = Modifier.fillMaxWidth(),
+        accent = categoryColor(MessageCategory.GENERAL),
+        contentPadding = PaddingValues(horizontal = 22.dp, vertical = 24.dp)
     ) {
-        Text(
-            text = text,
-            fontFamily = PoppinsFamily,
-            fontWeight = FontWeight.Normal,
-            fontSize = 14.sp,
-            color = textColor
-        )
-    }
-}
-
-/**
- * Reusable Category Tag component with animated selection state
- */
-@Composable
-private fun CategoryTag(
-    text: String,
-    isSelected: Boolean,
-    onClick: () -> Unit,
-    inactiveTagBgColor: Color,
-    inactiveTagTextColor: Color
-) {
-    val backgroundColor by animateColorAsState(
-        if (isSelected) TimeCapsuleAccent else inactiveTagBgColor,
-        animationSpec = tween(200),
-        label = "category_tag_bg"
-    )
-    val textColor by animateColorAsState(
-        if (isSelected) Color.White else inactiveTagTextColor,
-        animationSpec = tween(200),
-        label = "category_tag_text"
-    )
-
-    Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(20.dp))
-            .background(backgroundColor)
-            .clickable(onClick = onClick)
-            .defaultMinSize(minWidth = 80.dp, minHeight = 48.dp)
-            .padding(horizontal = 20.dp, vertical = 12.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = text,
-            fontFamily = PoppinsFamily,
-            fontWeight = FontWeight.Normal,
-            fontSize = 14.sp,
-            color = textColor
-        )
-    }
-}
-
-/**
- * Seal & Schedule Button - Full width with lock icon
- */
-@Composable
-private fun SealAndScheduleButton(
-    onClick: () -> Unit,
-    enabled: Boolean,
-    isLoading: Boolean,
-    buttonTextColor: Color,
-    modifier: Modifier = Modifier
-) {
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(55.dp)
-            .clip(RoundedCornerShape(28.dp))
-            .background(
-                if (enabled) TimeCapsuleAccent else TimeCapsuleAccent.copy(alpha = 0.5f)
+        Column(verticalArrangement = Arrangement.spacedBy(18.dp)) {
+            BasicTextField(
+                value = title,
+                onValueChange = { if (it.length <= 90) onTitleChanged(it) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .semantics { contentDescription = "Future letter title" },
+                textStyle = MaterialTheme.typography.headlineSmall.copy(
+                    fontFamily = SerifFamily,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontWeight = FontWeight.SemiBold
+                ),
+                singleLine = true,
+                decorationBox = { inner ->
+                    if (title.isBlank()) {
+                        Text(
+                            "A title, promise, or question",
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontFamily = SerifFamily,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.55f)
+                        )
+                    }
+                    inner()
+                }
             )
-            .clickable(enabled = enabled && !isLoading) { onClick() },
-        contentAlignment = Alignment.Center
-    ) {
-        if (isLoading) {
-            CircularProgressIndicator(
-                modifier = Modifier.size(24.dp),
-                color = buttonTextColor,
-                strokeWidth = 2.dp
+
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.7f))
+
+            BasicTextField(
+                value = content,
+                onValueChange = { if (it.length <= 12_000) onContentChanged(it) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(260.dp)
+                    .semantics { contentDescription = "Future letter body" },
+                textStyle = TextStyle(
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontFamily = SerifFamily,
+                    fontSize = MaterialTheme.typography.bodyLarge.fontSize,
+                    lineHeight = MaterialTheme.typography.bodyLarge.lineHeight
+                ),
+                decorationBox = { inner ->
+                    if (content.isBlank()) {
+                        Text(
+                            "Write what is true now—not what sounds impressive. What do you hope changes? What deserves to remain?",
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontFamily = SerifFamily,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.58f)
+                        )
+                    }
+                    inner()
+                }
             )
-        } else {
+
             Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = KairosIcons.Lock,
-                    contentDescription = null,
-                    tint = buttonTextColor,
-                    modifier = Modifier.size(20.dp)
+                Text(
+                    "${wordCount(content)} words",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
-                    text = stringResource(R.string.seal_and_schedule),
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Normal,
-                    fontSize = 16.sp,
-                    color = buttonTextColor
+                    "${content.length}/12,000",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
     }
 }
 
-enum class DatePreset {
-    ONE_WEEK, ONE_MONTH, SIX_MONTHS, ONE_YEAR, CUSTOM
-}
-
-enum class MessageCategory(val displayName: String) {
-    GENERAL("General"),
-    GOAL("Goal"),
-    PROMISE("Promise"),
-    MOTIVATION("Motivation")
-}
-
-/**
- * ESSENCE Section with multi-select category tags
- */
 @Composable
-private fun EssenceSectionMultiSelect(
-    sectionTitleColor: Color,
-    selectedCategories: Set<MessageCategory>,
-    onCategoryToggle: (MessageCategory) -> Unit,
-    inactiveTagBgColor: Color,
-    inactiveTagTextColor: Color,
-    modifier: Modifier = Modifier
+private fun LetterAttachments(
+    state: WriteMessageUiState,
+    onPickPhotos: () -> Unit,
+    onPickVideos: () -> Unit,
+    onRecord: () -> Unit,
+    onPlayVoice: () -> Unit,
+    onRemoveVoice: () -> Unit
 ) {
-    Column(modifier = modifier) {
-        // Section Header with Tag Icon
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Icon(
-                imageVector = KairosIcons.LocalOffer,
-                contentDescription = null,
-                tint = TimeCapsuleAccent,
-                modifier = Modifier.size(16.dp)
+    Column(verticalArrangement = Arrangement.spacedBy(11.dp)) {
+        Text("Add a trace of this moment", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            AttachmentTool(
+                modifier = Modifier.weight(1f),
+                icon = KairosIcons.Image,
+                label = if (state.attachedPhotos.isEmpty()) "Photo" else "${state.attachedPhotos.size} photos",
+                onClick = onPickPhotos
             )
-            Text(
-                text = stringResource(R.string.essence),
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.Normal,
-                fontSize = 12.sp,
-                letterSpacing = 1.sp,
-                color = sectionTitleColor
+            AttachmentTool(
+                modifier = Modifier.weight(1f),
+                icon = KairosIcons.PlayCircle,
+                label = if (state.attachedVideos.isEmpty()) "Video" else "${state.attachedVideos.size} videos",
+                onClick = onPickVideos
             )
-            // Multi-select indicator
-            Text(
-                text = "(select multiple)",
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.Normal,
-                fontSize = 10.sp,
-                color = sectionTitleColor.copy(alpha = 0.6f)
+            AttachmentTool(
+                modifier = Modifier.weight(1f),
+                icon = if (state.isRecording) KairosIcons.Stop else KairosIcons.Mic,
+                label = if (state.isRecording) formatDuration(state.recordingTimeElapsed) else "Voice",
+                selected = state.isRecording,
+                onClick = onRecord
             )
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // Horizontal Scrolling Category Tags with multi-select
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            MultiSelectCategoryTag(
-                text = stringResource(R.string.goal),
-                isSelected = selectedCategories.contains(MessageCategory.GOAL),
-                onClick = { onCategoryToggle(MessageCategory.GOAL) },
-                inactiveTagBgColor = inactiveTagBgColor,
-                inactiveTagTextColor = inactiveTagTextColor
-            )
-            MultiSelectCategoryTag(
-                text = stringResource(R.string.motivation),
-                isSelected = selectedCategories.contains(MessageCategory.MOTIVATION),
-                onClick = { onCategoryToggle(MessageCategory.MOTIVATION) },
-                inactiveTagBgColor = inactiveTagBgColor,
-                inactiveTagTextColor = inactiveTagTextColor
-            )
-            MultiSelectCategoryTag(
-                text = stringResource(R.string.promise),
-                isSelected = selectedCategories.contains(MessageCategory.PROMISE),
-                onClick = { onCategoryToggle(MessageCategory.PROMISE) },
-                inactiveTagBgColor = inactiveTagBgColor,
-                inactiveTagTextColor = inactiveTagTextColor
-            )
-            MultiSelectCategoryTag(
-                text = stringResource(R.string.prediction),
-                isSelected = selectedCategories.contains(MessageCategory.GENERAL),
-                onClick = { onCategoryToggle(MessageCategory.GENERAL) },
-                inactiveTagBgColor = inactiveTagBgColor,
-                inactiveTagTextColor = inactiveTagTextColor
-            )
-            // Right padding spacer
-            Spacer(modifier = Modifier.width(24.dp))
-        }
-    }
-}
-
-/**
- * Multi-select Category Tag with checkmark indicator
- */
-@Composable
-private fun MultiSelectCategoryTag(
-    text: String,
-    isSelected: Boolean,
-    onClick: () -> Unit,
-    inactiveTagBgColor: Color,
-    inactiveTagTextColor: Color
-) {
-    val backgroundColor by animateColorAsState(
-        targetValue = if (isSelected) TimeCapsuleAccent else inactiveTagBgColor,
-        animationSpec = tween(200),
-        label = "multi_category_tag_bg"
-    )
-    val textColor by animateColorAsState(
-        targetValue = if (isSelected) Color.White else inactiveTagTextColor,
-        animationSpec = tween(200),
-        label = "multi_category_tag_text"
-    )
-
-    Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(20.dp))
-            .background(backgroundColor)
-            .clickable(onClick = onClick)
-            .defaultMinSize(minWidth = 80.dp, minHeight = 48.dp)
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(6.dp)
-        ) {
-            AnimatedVisibility(
-                visible = isSelected,
-                enter = fadeIn() + scaleIn(),
-                exit = fadeOut() + scaleOut()
+        AnimatedVisibility(visible = state.voiceRecordingUri != null) {
+            KairosGlassSurface(
+                modifier = Modifier.fillMaxWidth(),
+                strong = true,
+                shape = RoundedCornerShape(22.dp),
+                contentPadding = PaddingValues(12.dp)
             ) {
-                Icon(
-                    imageVector = KairosIcons.Check,
-                    contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier.size(14.dp)
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    KairosIconButton(
+                        icon = if (state.isPlayingVoice) KairosIcons.Pause else KairosIcons.PlayArrow,
+                        contentDescription = if (state.isPlayingVoice) "Pause voice note" else "Play voice note",
+                        onClick = onPlayVoice
+                    )
+                    Column(Modifier.weight(1f)) {
+                        Text("Voice note", fontWeight = FontWeight.SemiBold)
+                        Text(
+                            formatDuration(state.voiceRecordingDuration),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    KairosIconButton(KairosIcons.Delete, "Remove voice note", onRemoveVoice)
+                }
             }
-            Text(
-                text = text,
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.Normal,
-                fontSize = 14.sp,
-                color = textColor
-            )
         }
     }
 }
 
-/**
- * Sealing Animation Overlay - Shows lock sealing animation
- */
 @Composable
-private fun SealingAnimationOverlay(
-    backgroundColor: Color
+private fun AttachmentTool(
+    modifier: Modifier = Modifier,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    label: String,
+    selected: Boolean = false,
+    onClick: () -> Unit
 ) {
-    val infiniteTransition = rememberInfiniteTransition(label = "sealing")
+    KairosGlassSurface(
+        modifier = modifier,
+        strong = selected,
+        shape = RoundedCornerShape(20.dp),
+        onClick = onClick,
+        contentPadding = PaddingValues(vertical = 13.dp, horizontal = 8.dp)
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            Icon(icon, contentDescription = null, modifier = Modifier.size(21.dp), tint = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(label, style = MaterialTheme.typography.labelMedium, maxLines = 1)
+        }
+    }
+}
 
-    // Pulsing lock scale
-    val lockScale by infiniteTransition.animateFloat(
-        initialValue = 1f,
-        targetValue = 1.2f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(400, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "lock_scale"
-    )
+@Composable
+private fun FutureDatePicker(
+    initialDate: Long,
+    onDismiss: () -> Unit,
+    onConfirm: (Long) -> Unit
+) {
+    val state = androidx.compose.material3.rememberDatePickerState(initialSelectedDateMillis = initialDate)
+    DatePickerDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    state.selectedDateMillis?.let(onConfirm)
+                },
+                enabled = (state.selectedDateMillis ?: 0L) > System.currentTimeMillis()
+            ) { Text("Use date") }
+        },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } }
+    ) {
+        DatePicker(state = state, title = { Text("Choose when this letter arrives", modifier = Modifier.padding(24.dp)) })
+    }
+}
 
-    // Rotating particles
-    val rotation by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 360f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(2000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "rotation"
+@Composable
+private fun SealingLetterOverlay(saved: Boolean) {
+    val reduceMotion = rememberKairosReducedMotion()
+    val scale by animateFloatAsState(
+        targetValue = if (saved) 0.82f else 1f,
+        animationSpec = tween(if (reduceMotion) 1 else 520, easing = KairosEasing.EaseInQuart),
+        label = "letter_seal_scale"
     )
-
-    // Glow alpha
-    val glowAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.3f,
-        targetValue = 0.8f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(500),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "glow"
+    val alpha by animateFloatAsState(
+        targetValue = if (saved) 0.72f else 1f,
+        animationSpec = tween(if (reduceMotion) 1 else 480),
+        label = "letter_seal_alpha"
     )
+    val scheme = MaterialTheme.colorScheme
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(backgroundColor.copy(alpha = 0.95f)),
+            .background(scheme.scrim.copy(alpha = 0.58f)),
         contentAlignment = Alignment.Center
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(24.dp)
+        KairosGlassSurface(
+            modifier = Modifier
+                .padding(36.dp)
+                .fillMaxWidth()
+                .scale(scale)
+                .alpha(alpha),
+            strong = true,
+            shape = RoundedCornerShape(topStart = 38.dp, topEnd = 38.dp, bottomStart = 38.dp, bottomEnd = 12.dp),
+            contentPadding = PaddingValues(28.dp)
         ) {
-            // Animated lock icon with glow effect
-            Box(
-                contentAlignment = Alignment.Center
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(18.dp)
             ) {
-                // Outer glow
-                Box(
-                    modifier = Modifier
-                        .size(120.dp)
-                        .scale(lockScale * 1.2f)
-                        .alpha(glowAlpha)
-                        .clip(CircleShape)
-                        .background(TimeCapsuleAccent.copy(alpha = 0.2f))
+                SealingGlyph(saved = saved, modifier = Modifier.size(116.dp))
+                Text(
+                    if (saved) "Letter sealed" else "Sealing your words",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontFamily = SerifFamily,
+                    fontWeight = FontWeight.SemiBold
                 )
-
-                // Inner glow
-                Box(
-                    modifier = Modifier
-                        .size(90.dp)
-                        .scale(lockScale)
-                        .clip(CircleShape)
-                        .background(TimeCapsuleAccent.copy(alpha = 0.3f))
+                Text(
+                    if (saved) "It will stay quiet until its date." else "Keeping the writing intact…",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center
                 )
-
-                // Lock icon
-                Icon(
-                    imageVector = KairosIcons.Lock,
-                    contentDescription = "Sealing",
-                    tint = TimeCapsuleAccent,
-                    modifier = Modifier
-                        .size(48.dp)
-                        .scale(lockScale)
-                )
+                if (!saved) CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
             }
-
-            // Text
-            Text(
-                text = "Sealing your time capsule...",
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.Medium,
-                fontSize = 18.sp,
-                color = TimeCapsuleAccent,
-                textAlign = TextAlign.Center
-            )
-
-            Text(
-                text = "Your message is being locked away\nfor your future self",
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.Normal,
-                fontSize = 14.sp,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                textAlign = TextAlign.Center
-            )
         }
     }
 }
 
-/**
- * Discard Changes Confirmation Dialog
- */
 @Composable
-private fun DiscardChangesDialog(
-    onDismiss: () -> Unit,
-    onConfirm: () -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = {
-            Text(
-                text = "Discard Changes?",
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.SemiBold
-            )
-        },
-        text = {
-            Text(
-                text = "You have unsaved changes. Are you sure you want to discard them?",
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.Normal
-            )
-        },
-        confirmButton = {
-            TextButton(onClick = onConfirm) {
-                Text(
-                    text = "Discard",
-                    color = MaterialTheme.colorScheme.error,
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Medium
-                )
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(
-                    text = "Keep Editing",
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Medium
-                )
-            }
-        }
+private fun SealingGlyph(saved: Boolean, modifier: Modifier = Modifier) {
+    val progress by animateFloatAsState(
+        targetValue = if (saved) 1f else 0.35f,
+        animationSpec = tween(520, easing = KairosEasing.EaseOutExpo),
+        label = "sealing_glyph_progress"
     )
+    val scheme = MaterialTheme.colorScheme
+    Canvas(modifier.semantics { contentDescription = if (saved) "Letter sealed" else "Sealing letter" }) {
+        val center = Offset(size.width / 2f, size.height / 2f)
+        val envelopeWidth = size.width * 0.62f
+        val envelopeHeight = size.height * 0.42f
+        val left = center.x - envelopeWidth / 2f
+        val right = center.x + envelopeWidth / 2f
+        val top = center.y - envelopeHeight / 2f
+        val bottom = center.y + envelopeHeight / 2f
+        val stroke = 2.dp.toPx()
+
+        drawCircle(scheme.primary.copy(alpha = 0.10f + progress * 0.08f), size.minDimension * 0.46f)
+        drawCircle(scheme.primary.copy(alpha = 0.25f), size.minDimension * (0.31f + progress * 0.05f), style = Stroke(stroke))
+
+        val envelope = Path().apply {
+            moveTo(left, top)
+            lineTo(right, top)
+            lineTo(right, bottom)
+            lineTo(left, bottom)
+            close()
+        }
+        drawPath(envelope, scheme.onSurface.copy(alpha = 0.9f), style = Stroke(stroke))
+        drawLine(scheme.onSurface.copy(alpha = 0.9f), Offset(left, top), Offset(center.x, center.y + envelopeHeight * 0.08f), stroke)
+        drawLine(scheme.onSurface.copy(alpha = 0.9f), Offset(right, top), Offset(center.x, center.y + envelopeHeight * 0.08f), stroke)
+
+        if (saved) {
+            drawCircle(scheme.primary, radius = 12.dp.toPx(), center = Offset(center.x, bottom + 2.dp.toPx()))
+            drawLine(scheme.onPrimary, Offset(center.x - 5.dp.toPx(), bottom + 2.dp.toPx()), Offset(center.x - 1.dp.toPx(), bottom + 6.dp.toPx()), stroke)
+            drawLine(scheme.onPrimary, Offset(center.x - 1.dp.toPx(), bottom + 6.dp.toPx()), Offset(center.x + 6.dp.toPx(), bottom - 3.dp.toPx()), stroke)
+        }
+    }
 }
 
-/**
- * Format duration in milliseconds to mm:ss
- */
+enum class DatePreset(val label: String) {
+    ONE_WEEK("1 week"),
+    ONE_MONTH("1 month"),
+    SIX_MONTHS("6 months"),
+    ONE_YEAR("1 year"),
+    CUSTOM("Choose date")
+}
+
+enum class MessageCategory(val displayName: String) {
+    GENERAL("A snapshot"),
+    GOAL("A direction"),
+    PROMISE("A promise"),
+    MOTIVATION("Encouragement")
+}
+
+private fun categoryColor(category: MessageCategory): Color = when (category) {
+    MessageCategory.GENERAL -> Color(0xFF5577B8)
+    MessageCategory.GOAL -> Color(0xFF7C70D9)
+    MessageCategory.PROMISE -> Color(0xFF3E9B85)
+    MessageCategory.MOTIVATION -> Color(0xFFD8755C)
+}
+
+private fun longDate(timestamp: Long): String =
+    SimpleDateFormat("EEEE, MMMM d, yyyy", Locale.getDefault()).format(Date(timestamp))
+
+private fun shortDate(timestamp: Long): String =
+    SimpleDateFormat("MMM d", Locale.getDefault()).format(Date(timestamp))
+
+private fun relativeDate(timestamp: Long): String {
+    val days = TimeUnit.MILLISECONDS.toDays((timestamp - System.currentTimeMillis()).coerceAtLeast(0L))
+    return when {
+        days == 0L -> "today"
+        days == 1L -> "tomorrow"
+        days < 30 -> "in $days days"
+        days < 365 -> "in ${days / 30} months"
+        else -> "in ${days / 365} years"
+    }
+}
+
+private fun wordCount(text: String): Int =
+    text.trim().split(Regex("\\s+")).count { it.isNotBlank() }
+
 private fun formatDuration(millis: Long): String {
     val totalSeconds = millis / 1000
-    val minutes = totalSeconds / 60
-    val seconds = totalSeconds % 60
-    return String.format("%d:%02d", minutes, seconds)
+    return "%d:%02d".format(totalSeconds / 60, totalSeconds % 60)
 }

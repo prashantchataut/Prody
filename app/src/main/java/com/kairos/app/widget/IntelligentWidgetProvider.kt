@@ -1,4 +1,4 @@
-﻿package com.kairos.app.widget
+package com.kairos.app.widget
 
 import android.content.Context
 import com.kairos.app.data.local.dao.JournalDao

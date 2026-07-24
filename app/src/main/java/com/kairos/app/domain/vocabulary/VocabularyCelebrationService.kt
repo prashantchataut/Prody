@@ -1,4 +1,4 @@
-﻿package com.kairos.app.domain.vocabulary
+package com.kairos.app.domain.vocabulary
 
 import com.kairos.app.data.local.dao.VocabularyLearningDao
 import com.kairos.app.data.local.dao.WordUsageDao

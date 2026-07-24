@@ -1,4 +1,4 @@
-﻿package com.kairos.app.data.cache
+package com.kairos.app.data.cache
 
 import android.content.Context
 import android.util.Log

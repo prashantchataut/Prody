@@ -1,4 +1,4 @@
-﻿package com.kairos.app.ui.screens.profile
+package com.kairos.app.ui.screens.profile
 
 import androidx.compose.runtime.Composable
 import com.kairos.app.ui.icons.KairosIcons

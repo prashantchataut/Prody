@@ -1,4 +1,4 @@
-﻿package com.kairos.app.ui.animation
+package com.kairos.app.ui.animation
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background

@@ -1,4 +1,4 @@
-﻿package com.kairos.app.ui.screens.missions
+package com.kairos.app.ui.screens.missions
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

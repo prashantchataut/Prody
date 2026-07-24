@@ -1,368 +1,291 @@
-﻿package com.kairos.app.ui.screens.profile
-import com.kairos.app.ui.icons.KairosIcons
+package com.kairos.app.ui.screens.profile
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.EaseInOutCubic
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.scaleIn
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
-import com.kairos.app.ui.theme.isDarkTheme
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.kairos.app.R
-import com.kairos.app.ui.theme.*
+import com.kairos.app.domain.identity.KairosBanners
+import com.kairos.app.ui.animation.KairosReveal
+import com.kairos.app.ui.animation.rememberKairosReducedMotion
+import com.kairos.app.ui.components.BannerRenderer
+import com.kairos.app.ui.components.kairos.KairosAppBackground
+import com.kairos.app.ui.components.kairos.KairosGlassSurface
+import com.kairos.app.ui.components.kairos.KairosIconButton
+import com.kairos.app.ui.components.kairos.KairosPrimaryButton
+import com.kairos.app.ui.icons.KairosIcons
+import com.kairos.app.ui.theme.KairosRadius
+import com.kairos.app.ui.theme.KairosSpacing
 import kotlinx.coroutines.delay
-
-/**
- * Banner Selection Screen
- *
- * Allows users to select and customize their profile banner.
- * Features category tabs and locked/unlocked banner states.
- */
-
-// Design System Colors for Banner Selection
-private object BannerColors {
-    // Dark Mode
-    val BackgroundDark = Color(0xFF0D2826)
-    val CardBackgroundDark = Color(0xFF1A3331)
-    val CardBackgroundElevatedDark = Color(0xFF223D3A)
-    val AccentGreen = Color(0xFF36F97F)
-    val TextPrimaryDark = Color(0xFFFFFFFF)
-    val TextSecondaryDark = Color(0xFFB8C5C3)
-    val TextTertiaryDark = Color(0xFF6B7F7C)
-    val BorderDark = Color(0xFF2A4744)
-
-    // Light Mode
-    val BackgroundLight = Color(0xFFF5F8F7)
-    val CardBackgroundLight = Color(0xFFFFFFFF)
-    val CardBackgroundElevatedLight = Color(0xFFF0F5F4)
-    val AccentGreenLight = Color(0xFF2ECC71)
-    val TextPrimaryLight = Color(0xFF1A2B23)
-    val TextSecondaryLight = Color(0xFF5A6B63)
-    val TextTertiaryLight = Color(0xFF8A9B93)
-    val BorderLight = Color(0xFFE0E8E4)
-
-    // Locked state
-    val LockedOverlay = Color(0x99000000)
-    val LockedIcon = Color(0xFF6B7F7C)
-}
 
 @Composable
 fun BannerSelectionScreen(
     onNavigateBack: () -> Unit,
     viewModel: BannerSelectionViewModel = hiltViewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val isDarkMode = isDarkTheme()
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val snackbar = remember { SnackbarHostState() }
 
-    // Handle save success
-    LaunchedEffect(uiState.isSaved) {
-        if (uiState.isSaved) {
-            delay(300)
+    LaunchedEffect(state.isSaved) {
+        if (state.isSaved) {
+            delay(180)
             onNavigateBack()
         }
     }
-
-    // Error snackbar
-    uiState.error?.let { error ->
-        LaunchedEffect(error) {
-            delay(3000)
+    LaunchedEffect(state.error) {
+        state.error?.let {
+            snackbar.showSnackbar(it)
             viewModel.clearError()
         }
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                if (isDarkMode) BannerColors.BackgroundDark
-                else BannerColors.BackgroundLight
-            )
-    ) {
-        if (uiState.isLoading) {
-            CircularProgressIndicator(
-                modifier = Modifier.align(Alignment.Center),
-                color = if (isDarkMode) BannerColors.AccentGreen
-                        else BannerColors.AccentGreenLight
-            )
-        } else {
-            Column(
-                modifier = Modifier.fillMaxSize()
+    KairosAppBackground {
+        Column(Modifier.fillMaxSize()) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .statusBarsPadding()
+                    .padding(horizontal = KairosSpacing.screen, vertical = KairosSpacing.md),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                // Header
-                BannerSelectionHeader(
-                    onBackClick = onNavigateBack,
-                    isDarkMode = isDarkMode
+                KairosIconButton(
+                    icon = KairosIcons.ArrowBack,
+                    contentDescription = "Back",
+                    onClick = onNavigateBack
+                )
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = "Identity canvas",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        text = "Earned, not purchased",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Spacer(Modifier.size(48.dp))
+            }
+
+            if (state.isLoading) {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            } else {
+                val selected = state.banners.firstOrNull { it.id == state.selectedBannerId }
+                KairosReveal(visible = true, delayMillis = 40) {
+                    SelectedBannerPreview(selected)
+                }
+
+                CategorySelector(
+                    selected = state.selectedCategory,
+                    onSelected = viewModel::selectCategory
                 )
 
-                // Preview Banner
-                BannerPreview(
-                    banner = uiState.banners.find { it.id == uiState.selectedBannerId },
-                    isDarkMode = isDarkMode
-                )
-
-                // Category Tabs
-                CategoryTabs(
-                    selectedCategory = uiState.selectedCategory,
-                    onCategorySelected = { viewModel.selectCategory(it) },
-                    isDarkMode = isDarkMode
-                )
-
-                // Banner Grid
                 LazyVerticalGrid(
-                    columns = GridCells.Fixed(2),
+                    columns = GridCells.Adaptive(minSize = 156.dp),
+                    modifier = Modifier.weight(1f),
                     contentPadding = PaddingValues(
-                        start = 20.dp,
-                        end = 20.dp,
-                        top = 16.dp,
-                        bottom = 120.dp
+                        start = KairosSpacing.screen,
+                        end = KairosSpacing.screen,
+                        top = KairosSpacing.sm,
+                        bottom = 104.dp
                     ),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.weight(1f)
+                    horizontalArrangement = Arrangement.spacedBy(KairosSpacing.sm),
+                    verticalArrangement = Arrangement.spacedBy(KairosSpacing.sm)
                 ) {
-                    items(uiState.filteredBanners) { banner ->
+                    items(state.filteredBanners, key = { it.id }) { banner ->
                         BannerOptionCard(
                             banner = banner,
-                            isSelected = banner.id == uiState.selectedBannerId,
-                            onClick = { viewModel.selectBanner(banner.id) },
-                            isDarkMode = isDarkMode
+                            isSelected = state.selectedBannerId == banner.id,
+                            onClick = { viewModel.selectBanner(banner.id) }
                         )
                     }
                 }
             }
-
-            // Error message
-            AnimatedVisibility(
-                visible = uiState.error != null,
-                enter = fadeIn() + slideInVertically(),
-                exit = fadeOut() + slideOutVertically(),
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .padding(top = 80.dp)
-            ) {
-                uiState.error?.let { error ->
-                    Card(
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.errorContainer
-                        ),
-                        modifier = Modifier.padding(horizontal = 24.dp)
-                    ) {
-                        Text(
-                            text = error,
-                            color = MaterialTheme.colorScheme.onErrorContainer,
-                            modifier = Modifier.padding(16.dp),
-                            fontFamily = PoppinsFamily,
-                            fontSize = 14.sp
-                        )
-                    }
-                }
-            }
-
-            // Apply Button
-            ApplyBannerButton(
-                onClick = { viewModel.saveBanner() },
-                enabled = !uiState.isSaving && uiState.hasChanges,
-                isLoading = uiState.isSaving,
-                isDarkMode = isDarkMode,
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(horizontal = 24.dp, vertical = 24.dp)
-            )
         }
-    }
-}
 
-@Composable
-private fun BannerSelectionHeader(
-    onBackClick: () -> Unit,
-    isDarkMode: Boolean
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .statusBarsPadding()
-            .padding(horizontal = 16.dp, vertical = 16.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        IconButton(
-            onClick = onBackClick,
-            modifier = Modifier.size(48.dp)
+        KairosGlassSurface(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .padding(horizontal = KairosSpacing.screen, vertical = KairosSpacing.lg),
+            strong = true,
+            shape = RoundedCornerShape(KairosRadius.floating),
+            contentPadding = PaddingValues(KairosSpacing.xs)
         ) {
-            Icon(
-                imageVector = KairosIcons.ArrowBack,
-                contentDescription = stringResource(R.string.back),
-                tint = if (isDarkMode) BannerColors.TextPrimaryDark
-                       else BannerColors.TextPrimaryLight,
-                modifier = Modifier.size(24.dp)
+            KairosPrimaryButton(
+                text = if (state.isSaving) "Applying…" else "Use this banner",
+                onClick = viewModel::saveBanner,
+                enabled = !state.isSaving && state.hasChanges,
+                icon = KairosIcons.Check,
+                modifier = Modifier.fillMaxWidth()
             )
         }
 
-        Text(
-            text = "Profile Banner",
-            fontFamily = PoppinsFamily,
-            fontWeight = FontWeight.SemiBold,
-            fontSize = 18.sp,
-            color = if (isDarkMode) BannerColors.TextPrimaryDark
-                    else BannerColors.TextPrimaryLight
+        SnackbarHost(
+            hostState = snackbar,
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .statusBarsPadding()
+                .padding(top = 72.dp)
         )
-
-        // Spacer for alignment
-        Spacer(modifier = Modifier.size(48.dp))
     }
 }
 
 @Composable
-private fun BannerPreview(
-    banner: BannerOption?,
-    isDarkMode: Boolean
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 8.dp)
-            .height(120.dp)
-            .clip(RoundedCornerShape(16.dp))
-            .background(
-                brush = Brush.horizontalGradient(
-                    colors = listOf(
-                        banner?.primaryColor ?: Color.Gray,
-                        banner?.secondaryColor ?: Color.DarkGray
-                    )
-                )
-            ),
-        contentAlignment = Alignment.Center
+private fun SelectedBannerPreview(banner: BannerOption?) {
+    val canonical = banner?.let { KairosBanners.findById(it.id) }
+    Column(
+        modifier = Modifier.padding(horizontal = KairosSpacing.screen),
+        verticalArrangement = Arrangement.spacedBy(KairosSpacing.sm)
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally
+        Text(
+            text = "Selected",
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(164.dp)
+                .clip(RoundedCornerShape(30.dp))
         ) {
-            Text(
-                text = "Preview",
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.Medium,
-                fontSize = 12.sp,
-                color = Color.White.copy(alpha = 0.8f)
+            if (canonical != null) {
+                BannerRenderer(
+                    banner = canonical,
+                    modifier = Modifier.fillMaxSize(),
+                    showAnimation = true,
+                    cornerRadius = 30.dp
+                )
+            } else {
+                Box(
+                    Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.surfaceContainer)
+                )
+            }
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(
+                            listOf(Color.Transparent, Color.Black.copy(alpha = 0.62f))
+                        )
+                    )
             )
-            Text(
-                text = banner?.name ?: "Select Banner",
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.Bold,
-                fontSize = 18.sp,
-                color = Color.White
-            )
+            Column(
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(22.dp)
+            ) {
+                Text(
+                    banner?.name ?: "Choose a banner",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color.White
+                )
+                Text(
+                    banner?.description ?: "Your profile will carry the story of your practice.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.White.copy(alpha = 0.82f),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
         }
     }
 }
 
 @Composable
-private fun CategoryTabs(
-    selectedCategory: BannerCategory,
-    onCategorySelected: (BannerCategory) -> Unit,
-    isDarkMode: Boolean
+private fun CategorySelector(
+    selected: BannerCategory,
+    onSelected: (BannerCategory) -> Unit
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .horizontalScroll(rememberScrollState())
-            .padding(horizontal = 20.dp, vertical = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(10.dp)
+            .padding(horizontal = KairosSpacing.screen, vertical = KairosSpacing.lg),
+        horizontalArrangement = Arrangement.spacedBy(KairosSpacing.xs)
     ) {
         BannerCategory.entries.forEach { category ->
-            CategoryTab(
-                category = category,
-                isSelected = category == selectedCategory,
-                onClick = { onCategorySelected(category) },
-                isDarkMode = isDarkMode
-            )
+            val active = category == selected
+            Surface(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(46.dp)
+                    .semantics {
+                        role = Role.Tab
+                        this.selected = active
+                        contentDescription = "${category.displayName} banners"
+                    },
+                shape = RoundedCornerShape(16.dp),
+                color = if (active) MaterialTheme.colorScheme.onSurface else Color.Transparent,
+                contentColor = if (active) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.onSurfaceVariant,
+                border = if (active) null else BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+                onClick = { onSelected(category) }
+            ) {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(
+                        category.displayName,
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        maxLines = 1
+                    )
+                }
+            }
         }
-    }
-}
-
-@Composable
-private fun CategoryTab(
-    category: BannerCategory,
-    isSelected: Boolean,
-    onClick: () -> Unit,
-    isDarkMode: Boolean
-) {
-    val backgroundColor by animateColorAsState(
-        if (isSelected) {
-            if (isDarkMode) BannerColors.AccentGreen
-            else BannerColors.AccentGreenLight
-        } else {
-            if (isDarkMode) BannerColors.CardBackgroundDark
-            else BannerColors.CardBackgroundLight
-        },
-        animationSpec = tween(200),
-        label = "tab_bg"
-    )
-
-    val textColor by animateColorAsState(
-        if (isSelected) {
-            Color.Black
-        } else {
-            if (isDarkMode) BannerColors.TextSecondaryDark
-            else BannerColors.TextSecondaryLight
-        },
-        animationSpec = tween(200),
-        label = "tab_text"
-    )
-
-    Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(20.dp))
-            .background(backgroundColor)
-            .clickable { onClick() }
-            .padding(horizontal = 16.dp, vertical = 10.dp)
-    ) {
-        Text(
-            text = category.displayName,
-            fontFamily = PoppinsFamily,
-            fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal,
-            fontSize = 14.sp,
-            color = textColor
-        )
     }
 }
 
@@ -370,165 +293,121 @@ private fun CategoryTab(
 private fun BannerOptionCard(
     banner: BannerOption,
     isSelected: Boolean,
-    onClick: () -> Unit,
-    isDarkMode: Boolean
+    onClick: () -> Unit
 ) {
+    val reducedMotion = rememberKairosReducedMotion()
     val scale by animateFloatAsState(
-        targetValue = if (isSelected) 1.02f else 1f,
-        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
-        label = "banner_scale"
+        targetValue = if (isSelected && !reducedMotion) 1.025f else 1f,
+        label = "banner_selection_scale"
     )
-
-    val borderWidth by animateDpAsState(
-        targetValue = if (isSelected) 3.dp else 0.dp,
-        animationSpec = tween(200),
-        label = "banner_border"
+    val canonical = remember(banner.id) { KairosBanners.findById(banner.id) }
+    val shape = RoundedCornerShape(
+        topStart = if (banner.patternType == KairosBanners.PatternType.AURORA) 36.dp else 22.dp,
+        topEnd = 22.dp,
+        bottomEnd = if (banner.patternType == KairosBanners.PatternType.GEOMETRIC) 8.dp else 22.dp,
+        bottomStart = 22.dp
     )
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .aspectRatio(1.5f)
+            .aspectRatio(1.32f)
             .scale(scale)
-            .clip(RoundedCornerShape(16.dp))
+            .clip(shape)
             .border(
-                width = borderWidth,
-                color = if (isDarkMode) BannerColors.AccentGreen
-                        else BannerColors.AccentGreenLight,
-                shape = RoundedCornerShape(16.dp)
+                width = if (isSelected) 2.dp else 1.dp,
+                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
+                shape = shape
             )
-            .background(
-                brush = Brush.horizontalGradient(
-                    colors = listOf(banner.primaryColor, banner.secondaryColor)
-                )
-            )
-            .clickable(enabled = !banner.isLocked) { onClick() }
+            .clickable(enabled = !banner.isLocked, onClick = onClick)
+            .semantics {
+                role = Role.Button
+                selected = isSelected
+                contentDescription = buildString {
+                    append(banner.name)
+                    append(", ")
+                    append(banner.rarity.displayName)
+                    if (banner.isLocked) append(", locked: ${banner.unlockRequirement}")
+                }
+            }
     ) {
-        // Banner Name
+        if (canonical != null) {
+            BannerRenderer(
+                banner = canonical,
+                modifier = Modifier.fillMaxSize(),
+                showAnimation = banner.isAnimated && isSelected,
+                cornerRadius = 0.dp
+            )
+        } else {
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .background(Brush.linearGradient(listOf(banner.primaryColor, banner.secondaryColor)))
+            )
+        }
+
         Box(
+            Modifier
+                .fillMaxSize()
+                .background(Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.72f))))
+        )
+
+        Column(
             modifier = Modifier
                 .align(Alignment.BottomStart)
-                .fillMaxWidth()
-                .background(Color.Black.copy(alpha = 0.4f))
-                .padding(horizontal = 12.dp, vertical = 8.dp)
+                .padding(14.dp)
         ) {
             Text(
-                text = banner.name,
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.Medium,
-                fontSize = 12.sp,
+                banner.name,
+                style = MaterialTheme.typography.titleSmall,
                 color = Color.White,
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                if (banner.isLocked) banner.unlockRequirement.orEmpty() else banner.rarity.displayName,
+                style = MaterialTheme.typography.labelSmall,
+                color = Color.White.copy(alpha = 0.75f),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
         }
 
-        // Locked Overlay
-        if (banner.isLocked) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(BannerColors.LockedOverlay),
-                contentAlignment = Alignment.Center
+        AnimatedVisibility(
+            visible = banner.isLocked,
+            enter = fadeIn() + scaleIn(),
+            exit = fadeOut(),
+            modifier = Modifier.align(Alignment.TopEnd)
+        ) {
+            KairosGlassSurface(
+                modifier = Modifier.padding(10.dp).size(38.dp),
+                shape = RoundedCornerShape(14.dp),
+                strong = true,
+                elevation = 2.dp
             ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Icon(
-                        imageVector = KairosIcons.Lock,
-                        contentDescription = "Locked",
-                        tint = Color.White,
-                        modifier = Modifier.size(24.dp)
+                        KairosIcons.Lock,
+                        contentDescription = null,
+                        modifier = Modifier.size(17.dp)
                     )
-                    banner.unlockRequirement?.let { requirement ->
-                        Text(
-                            text = requirement,
-                            fontFamily = PoppinsFamily,
-                            fontSize = 10.sp,
-                            color = Color.White.copy(alpha = 0.8f),
-                            textAlign = TextAlign.Center
-                        )
-                    }
                 }
             }
         }
 
-        // Selected Checkmark
-        if (isSelected && !banner.isLocked) {
-            Box(
+        if (banner.isAnimated && !banner.isLocked) {
+            Text(
+                text = "MOTION",
                 modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(8.dp)
-                    .size(24.dp)
-                    .clip(CircleShape)
-                    .background(
-                        if (isDarkMode) BannerColors.AccentGreen
-                        else BannerColors.AccentGreenLight
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = KairosIcons.Check,
-                    contentDescription = "Selected",
-                    tint = Color.Black,
-                    modifier = Modifier.size(16.dp)
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun ApplyBannerButton(
-    onClick: () -> Unit,
-    enabled: Boolean,
-    isLoading: Boolean,
-    isDarkMode: Boolean,
-    modifier: Modifier = Modifier
-) {
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(55.dp)
-            .clip(RoundedCornerShape(28.dp))
-            .background(
-                if (enabled) {
-                    if (isDarkMode) BannerColors.AccentGreen
-                    else BannerColors.AccentGreenLight
-                } else {
-                    if (isDarkMode) BannerColors.AccentGreen.copy(alpha = 0.3f)
-                    else BannerColors.AccentGreenLight.copy(alpha = 0.3f)
-                }
+                    .align(Alignment.TopStart)
+                    .padding(12.dp)
+                    .background(Color.Black.copy(alpha = 0.4f), RoundedCornerShape(10.dp))
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                style = MaterialTheme.typography.labelSmall,
+                color = Color.White,
+                fontWeight = FontWeight.Bold
             )
-            .clickable(enabled = enabled && !isLoading) { onClick() },
-        contentAlignment = Alignment.Center
-    ) {
-        if (isLoading) {
-            CircularProgressIndicator(
-                modifier = Modifier.size(24.dp),
-                color = Color.Black,
-                strokeWidth = 2.dp
-            )
-        } else {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Icon(
-                    imageVector = KairosIcons.Wallpaper,
-                    contentDescription = null,
-                    tint = Color.Black,
-                    modifier = Modifier.size(20.dp)
-                )
-                Text(
-                    text = "Apply Banner",
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 16.sp,
-                    color = Color.Black
-                )
-            }
         }
     }
 }

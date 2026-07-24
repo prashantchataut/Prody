@@ -1,4 +1,4 @@
-﻿package com.kairos.app.data.repository
+package com.kairos.app.data.repository
 
 import com.kairos.app.data.ai.HavenAiService
 import com.kairos.app.data.local.dao.HavenDao

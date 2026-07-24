@@ -1,4 +1,4 @@
-﻿package com.kairos.app.ui.screens.home
+package com.kairos.app.ui.screens.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

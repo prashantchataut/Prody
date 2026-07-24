@@ -12,7 +12,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Legacy generated-guidance service that integrates GeminiService with AiCacheManager.
+ * High-level Buddha AI Service that integrates GeminiService with AiCacheManager.
  *
  * This service provides:
  * - Cached AI responses for frequently accessed content
@@ -20,7 +20,7 @@ import javax.inject.Singleton
  * - Fallback to fresh generation when cache misses
  * - Optimized API usage through intelligent caching
  *
- * Use this service instead of GeminiService directly for optional generated guidance.
+ * Use this service instead of GeminiService directly for most Buddha AI features.
  */
 @Singleton
 class BuddhaAiService @Inject constructor(
@@ -114,7 +114,7 @@ class BuddhaAiService @Inject constructor(
     // =========================================================================
 
     /**
-     * Generates an optional reflection response for a journal entry.
+     * Generates a Buddha response for a journal entry.
      * Not cached as each response is highly personalized.
      * 
      * Uses Gemini as primary, falls back to OpenRouter if Gemini fails.
@@ -453,7 +453,7 @@ class BuddhaAiService @Inject constructor(
     /**
      * Initializes the service with specific settings.
      */
-    fun initialize(apiKey: String, model: GeminiModel = GeminiModel.GEMINI_2_5_FLASH) {
+    fun initialize(apiKey: String, model: GeminiModel = GeminiModel.GEMINI_1_5_FLASH) {
         geminiService.initialize(apiKey, model)
     }
 

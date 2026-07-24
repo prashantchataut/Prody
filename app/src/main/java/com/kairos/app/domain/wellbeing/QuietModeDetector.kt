@@ -1,4 +1,4 @@
-﻿package com.kairos.app.domain.wellbeing
+package com.kairos.app.domain.wellbeing
 
 import com.kairos.app.data.local.entity.JournalEntryEntity
 import com.kairos.app.domain.model.Mood

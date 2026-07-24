@@ -1,4 +1,4 @@
-﻿package com.kairos.app.data
+package com.kairos.app.data
 
 import com.kairos.app.data.local.entity.*
 

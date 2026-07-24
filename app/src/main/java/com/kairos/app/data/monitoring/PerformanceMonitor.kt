@@ -1,4 +1,4 @@
-﻿package com.kairos.app.data.monitoring
+package com.kairos.app.data.monitoring
 
 import android.content.Context
 import android.os.Build

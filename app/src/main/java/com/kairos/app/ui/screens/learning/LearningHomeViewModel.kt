@@ -1,4 +1,4 @@
-﻿package com.kairos.app.ui.screens.learning
+package com.kairos.app.ui.screens.learning
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

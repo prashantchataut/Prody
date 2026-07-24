@@ -1,4 +1,4 @@
-﻿package com.kairos.app.domain.wrapped
+package com.kairos.app.domain.wrapped
 
 import android.util.Log
 import com.google.gson.Gson

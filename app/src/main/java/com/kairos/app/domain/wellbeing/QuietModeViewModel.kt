@@ -1,4 +1,4 @@
-﻿package com.kairos.app.domain.wellbeing
+package com.kairos.app.domain.wellbeing
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

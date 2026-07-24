@@ -1,4 +1,4 @@
-﻿package com.kairos.app.domain.intelligence
+package com.kairos.app.domain.intelligence
 
 import com.kairos.app.data.local.dao.HavenDao
 import com.kairos.app.data.local.dao.JournalDao

@@ -1,4 +1,4 @@
-﻿package com.kairos.app.ui.animation
+package com.kairos.app.ui.animation
 
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition

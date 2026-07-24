@@ -1,28 +1,57 @@
-﻿package com.kairos.app.ui.screens.futuremessage
-import com.kairos.app.ui.icons.KairosIcons
+package com.kairos.app.ui.screens.futuremessage
 
+import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.weight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material.icons.filled.Send
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -31,429 +60,360 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kairos.app.data.local.entity.FutureMessageEntity
 import com.kairos.app.domain.model.Mood
-import com.kairos.app.ui.components.KairosCard
+import com.kairos.app.ui.animation.KairosDurations
+import com.kairos.app.ui.animation.KairosReveal
+import com.kairos.app.ui.components.kairos.KairosAppBackground
+import com.kairos.app.ui.components.kairos.KairosEmptyState
+import com.kairos.app.ui.components.kairos.KairosGlassSurface
+import com.kairos.app.ui.components.kairos.KairosIconButton
+import com.kairos.app.ui.components.kairos.KairosPrimaryButton
+import com.kairos.app.ui.components.kairos.KairosReadingSurface
+import com.kairos.app.ui.components.kairos.KairosSecondaryButton
+import com.kairos.app.ui.icons.KairosIcons
+import com.kairos.app.ui.security.KairosSecureScreenEffect
+import com.kairos.app.ui.theme.KairosRadius
+import com.kairos.app.ui.theme.KairosSpacing
+import com.kairos.app.ui.theme.SerifFamily
 
-@OptIn(ExperimentalMaterial3Api::class)
+/**
+ * A two-column conversation in time, expressed as one calm vertical reading
+ * flow on compact screens. The original letter stays visible while replying so
+ * the user does not have to rely on memory or bounce between destinations.
+ */
 @Composable
 fun FutureMessageReplyScreen(
     onNavigateBack: () -> Unit,
     onNavigateToJournal: (String) -> Unit,
     viewModel: FutureMessageReplyViewModel = hiltViewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val snackbarHostState = remember { SnackbarHostState() }
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
 
-    // Handle navigation
-    LaunchedEffect(uiState.shouldNavigateToJournal) {
-        if (uiState.shouldNavigateToJournal) {
-            onNavigateToJournal(uiState.prefilledJournalContent)
+    KairosSecureScreenEffect()
+    BackHandler(onBack = onNavigateBack)
+
+    LaunchedEffect(state.shouldNavigateToJournal) {
+        if (state.shouldNavigateToJournal) {
+            onNavigateToJournal(state.prefilledJournalContent)
             viewModel.clearNavigation()
         }
     }
-
-    LaunchedEffect(uiState.shouldNavigateBack) {
-        if (uiState.shouldNavigateBack) {
+    LaunchedEffect(state.shouldNavigateBack) {
+        if (state.shouldNavigateBack) {
             onNavigateBack()
             viewModel.clearNavigation()
         }
     }
 
-    // Handle errors
-    LaunchedEffect(uiState.errorMessage) {
-        uiState.errorMessage?.let {
-            snackbarHostState.showSnackbar(it)
-            viewModel.dismissError()
-        }
-    }
-
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Column {
-                        Text("Message from Your Past Self")
-                        uiState.originalMessage?.let {
-                            Text(
-                                text = viewModel.getFormattedCreatedDate(),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-                },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(
-                            imageVector = KairosIcons.ArrowBack,
-                            contentDescription = "Back"
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
-                )
-            )
-        },
-        snackbarHost = { SnackbarHost(snackbarHostState) }
-    ) { padding ->
-        Box(
+    KairosAppBackground {
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
+                .imePadding()
         ) {
-            when {
-                uiState.isLoading -> {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-                }
-
-                uiState.originalMessage == null -> {
-                    ErrorState(
-                        message = "Message not found",
-                        onGoBack = onNavigateBack
-                    )
-                }
-
-                uiState.saveSuccess -> {
-                    SuccessState(
-                        message = uiState.originalMessage!!,
-                        timePassedFormatted = uiState.timePassedFormatted,
-                        isAnniversary = uiState.isAnniversary,
-                        anniversaryType = uiState.anniversaryType,
-                        onSaveToJournal = viewModel::saveReplyAsJournal,
-                        onClose = onNavigateBack
-                    )
-                }
-
-                else -> {
-                    ReplyContent(
-                        message = uiState.originalMessage!!,
-                        timePassedFormatted = uiState.timePassedFormatted,
-                        daysSinceWritten = uiState.daysSinceWritten,
-                        isAnniversary = uiState.isAnniversary,
-                        anniversaryType = uiState.anniversaryType,
-                        currentPrompt = uiState.currentPrompt,
-                        replyContent = uiState.replyContent,
-                        selectedMood = uiState.selectedMood,
-                        hasReplied = uiState.hasReplied,
-                        existingReply = uiState.existingReply?.replyContent,
-                        wantsToCreateChain = uiState.wantsToCreateChain,
-                        chainDeliveryDate = uiState.chainDeliveryDate,
-                        isSaving = uiState.isSaving,
-                        onReplyChanged = viewModel::onReplyContentChanged,
-                        onMoodSelected = viewModel::onMoodSelected,
-                        onNewPrompt = viewModel::onNewPromptRequested,
-                        onToggleChain = viewModel::toggleChainCreation,
-                        onSetChainDate = viewModel::setChainDeliveryDate,
-                        onSaveReply = viewModel::saveReply,
-                        deliverySuggestions = viewModel.getDeliveryDateSuggestions()
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun ReplyContent(
-    message: FutureMessageEntity,
-    timePassedFormatted: String,
-    daysSinceWritten: Long,
-    isAnniversary: Boolean,
-    anniversaryType: String?,
-    currentPrompt: String,
-    replyContent: String,
-    selectedMood: Mood?,
-    hasReplied: Boolean,
-    existingReply: String?,
-    wantsToCreateChain: Boolean,
-    chainDeliveryDate: Long?,
-    isSaving: Boolean,
-    onReplyChanged: (String) -> Unit,
-    onMoodSelected: (Mood?) -> Unit,
-    onNewPrompt: () -> Unit,
-    onToggleChain: () -> Unit,
-    onSetChainDate: (Long) -> Unit,
-    onSaveReply: () -> Unit,
-    deliverySuggestions: List<Pair<String, Long>>
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp)
-    ) {
-        // Anniversary banner
-        if (isAnniversary && anniversaryType != null) {
-            AnniversaryBanner(anniversaryType = anniversaryType)
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-
-        // Original message
-        OriginalMessageCard(
-            message = message,
-            timePassedFormatted = timePassedFormatted
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Existing reply indicator
-        if (hasReplied && existingReply != null) {
-            ExistingReplyCard(reply = existingReply)
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-
-        // Reply section
-        if (!hasReplied) {
-            ReplySection(
-                currentPrompt = currentPrompt,
-                replyContent = replyContent,
-                selectedMood = selectedMood,
-                onReplyChanged = onReplyChanged,
-                onMoodSelected = onMoodSelected,
-                onNewPrompt = onNewPrompt
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Time capsule chain option
-            ChainOption(
-                wantsToCreateChain = wantsToCreateChain,
-                chainDeliveryDate = chainDeliveryDate,
-                deliverySuggestions = deliverySuggestions,
-                onToggleChain = onToggleChain,
-                onSetChainDate = onSetChainDate
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Save button
-            Button(
-                onClick = onSaveReply,
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp),
-                enabled = replyContent.isNotBlank() && !isSaving
+                    .statusBarsPadding()
+                    .padding(horizontal = KairosSpacing.screen, vertical = KairosSpacing.md),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                if (isSaving) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
-                        strokeWidth = 2.dp,
-                        color = MaterialTheme.colorScheme.onPrimary
+                KairosIconButton(KairosIcons.ArrowBack, "Back", onNavigateBack)
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("Across time", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                    Text(
+                        state.timePassedFormatted.takeIf { it.isNotBlank() }?.let { "$it between these moments" } ?: "A private reply",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                } else {
-                    Icon(KairosIcons.Send, contentDescription = null)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Send Reply to Past Self")
                 }
+                Box(Modifier.size(48.dp))
+            }
+
+            when {
+                state.isLoading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+                state.originalMessage == null -> KairosEmptyState(
+                    icon = KairosIcons.ErrorOutline,
+                    title = "The original letter is missing",
+                    body = state.errorMessage ?: "This conversation cannot be opened.",
+                    actionLabel = "Go back",
+                    onAction = onNavigateBack
+                )
+                else -> AnimatedContent(
+                    targetState = state.saveSuccess,
+                    modifier = Modifier.weight(1f),
+                    transitionSpec = {
+                        (fadeIn(tween(KairosDurations.State)) + slideInVertically(tween(KairosDurations.State)) { it / 14 }) togetherWith
+                            fadeOut(tween(KairosDurations.Micro))
+                    },
+                    label = "future_reply_state"
+                ) { success ->
+                    if (success) {
+                        ReplySaved(
+                            message = state.originalMessage!!,
+                            reply = state.replyContent,
+                            onSaveToJournal = viewModel::saveReplyAsJournal,
+                            onClose = onNavigateBack
+                        )
+                    } else {
+                        ReplyComposer(
+                            state = state,
+                            formattedCreatedDate = viewModel.getFormattedCreatedDate(),
+                            deliverySuggestions = viewModel.getDeliveryDateSuggestions(),
+                            onReplyChanged = viewModel::onReplyContentChanged,
+                            onMoodSelected = viewModel::onMoodSelected,
+                            onNextPrompt = viewModel::onNewPromptRequested,
+                            onToggleChain = viewModel::toggleChainCreation,
+                            onChainDate = viewModel::setChainDeliveryDate,
+                            onSave = viewModel::saveReply,
+                            onSaveExistingToJournal = viewModel::saveReplyAsJournal
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    state.errorMessage?.let { message ->
+        AlertDialog(
+            onDismissRequest = viewModel::dismissError,
+            title = { Text("Reply not saved") },
+            text = { Text(message) },
+            confirmButton = { TextButton(onClick = viewModel::dismissError) { Text("Return") } }
+        )
+    }
+}
+
+@Composable
+private fun ReplyComposer(
+    state: FutureMessageReplyUiState,
+    formattedCreatedDate: String,
+    deliverySuggestions: List<Pair<String, Long>>,
+    onReplyChanged: (String) -> Unit,
+    onMoodSelected: (Mood?) -> Unit,
+    onNextPrompt: () -> Unit,
+    onToggleChain: () -> Unit,
+    onChainDate: (Long) -> Unit,
+    onSave: () -> Unit,
+    onSaveExistingToJournal: () -> Unit
+) {
+    val message = state.originalMessage ?: return
+    Column(Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = KairosSpacing.screen)
+                .padding(bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(KairosSpacing.lg)
+        ) {
+            if (state.isAnniversary && state.anniversaryType != null) {
+                AnniversaryMoment(state.anniversaryType)
+            }
+
+            KairosReveal(visible = true, delayMillis = 20) {
+                OriginalLetter(
+                    message = message,
+                    writtenDate = formattedCreatedDate,
+                    timePassed = state.timePassedFormatted
+                )
+            }
+
+            if (state.hasReplied && state.existingReply != null) {
+                KairosReveal(visible = true, delayMillis = 80) {
+                    ExistingConversation(
+                        reply = state.existingReply.replyContent,
+                        mood = state.existingReply.reactionMood?.let { Mood.fromString(it) },
+                        onSaveToJournal = onSaveExistingToJournal
+                    )
+                }
+            } else {
+                KairosReveal(visible = true, delayMillis = 80) {
+                    PromptCard(prompt = state.currentPrompt, onNext = onNextPrompt)
+                }
+
+                KairosReveal(visible = true, delayMillis = 120) {
+                    MoodAfterReading(selected = state.selectedMood, onSelected = onMoodSelected)
+                }
+
+                KairosReveal(visible = true, delayMillis = 160) {
+                    ReplyEditor(value = state.replyContent, onValueChange = onReplyChanged)
+                }
+
+                KairosReveal(visible = true, delayMillis = 200) {
+                    ChainForwardOption(
+                        enabled = state.wantsToCreateChain,
+                        selectedDate = state.chainDeliveryDate,
+                        suggestions = deliverySuggestions,
+                        onToggle = onToggleChain,
+                        onDateSelected = onChainDate
+                    )
+                }
+            }
+        }
+
+        if (!state.hasReplied) {
+            KairosGlassSurface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .navigationBarsPadding()
+                    .padding(horizontal = KairosSpacing.screen, vertical = KairosSpacing.md),
+                strong = true,
+                shape = RoundedCornerShape(KairosRadius.floating),
+                contentPadding = PaddingValues(8.dp)
+            ) {
+                KairosPrimaryButton(
+                    text = if (state.isSaving) "Saving conversation…" else "Save my reply",
+                    onClick = onSave,
+                    enabled = state.replyContent.isNotBlank() && !state.isSaving,
+                    icon = if (state.isSaving) null else KairosIcons.Send,
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
         }
     }
 }
 
 @Composable
-private fun AnniversaryBanner(anniversaryType: String) {
-    Surface(
-        color = MaterialTheme.colorScheme.primaryContainer,
-        shape = RoundedCornerShape(16.dp)
+private fun OriginalLetter(
+    message: FutureMessageEntity,
+    writtenDate: String,
+    timePassed: String
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Text("Then", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
+        KairosReadingSurface(
+            modifier = Modifier.fillMaxWidth(),
+            accent = Color(0xFF5577B8),
+            contentPadding = PaddingValues(22.dp)
+        ) {
+            Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                Text(
+                    message.title.ifBlank { "A letter from my past" },
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontFamily = SerifFamily,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Text(
+                    message.content,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontFamily = SerifFamily,
+                    lineHeight = MaterialTheme.typography.headlineSmall.lineHeight
+                )
+                Text(
+                    "Written $writtenDate${timePassed.takeIf { it.isNotBlank() }?.let { " · $it ago" } ?: ""}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontStyle = FontStyle.Italic
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun PromptCard(prompt: String, onNext: () -> Unit) {
+    KairosGlassSurface(
+        modifier = Modifier.fillMaxWidth(),
+        strong = true,
+        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp, bottomStart = 28.dp, bottomEnd = 8.dp),
+        contentPadding = PaddingValues(20.dp)
     ) {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("A place to begin", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
+                KairosIconButton(KairosIcons.Refresh, "Show another reflection prompt", onNext)
+            }
+            Text(prompt, style = MaterialTheme.typography.titleLarge, fontFamily = SerifFamily)
+        }
+    }
+}
+
+@Composable
+private fun MoodAfterReading(selected: Mood?, onSelected: (Mood?) -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Text("How did the letter land?", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Icon(
-                imageVector = KairosIcons.Celebration,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(32.dp)
-            )
-            Spacer(modifier = Modifier.width(16.dp))
-            Column {
-                Text(
-                    text = "$anniversaryType Anniversary!",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-                Text(
-                    text = "A special moment to reconnect with your past self",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun OriginalMessageCard(
-    message: FutureMessageEntity,
-    timePassedFormatted: String
-) {
-    KairosCard(
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Column(
-            modifier = Modifier.padding(20.dp)
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = KairosIcons.Mail,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "Written $timePassedFormatted ago",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                text = message.content,
-                style = MaterialTheme.typography.bodyLarge
-            )
-        }
-    }
-}
-
-@Composable
-private fun ExistingReplyCard(reply: String) {
-    Surface(
-        color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f),
-        shape = RoundedCornerShape(12.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = KairosIcons.CheckCircle,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.secondary,
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "Your reply",
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSecondaryContainer
-                )
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Text(
-                text = reply,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSecondaryContainer
-            )
-        }
-    }
-}
-
-@Composable
-private fun ReplySection(
-    currentPrompt: String,
-    replyContent: String,
-    selectedMood: Mood?,
-    onReplyChanged: (String) -> Unit,
-    onMoodSelected: (Mood?) -> Unit,
-    onNewPrompt: () -> Unit
-) {
-    Column {
-        // Prompt
-        Surface(
-            color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.3f),
-            shape = RoundedCornerShape(12.dp)
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = KairosIcons.Lightbulb,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.tertiary,
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = currentPrompt,
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontStyle = FontStyle.Italic,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.weight(1f)
-                )
-                IconButton(
-                    onClick = onNewPrompt,
-                    modifier = Modifier.size(24.dp)
+            Mood.entries.forEach { mood ->
+                val active = mood == selected
+                Surface(
+                    onClick = { onSelected(if (active) null else mood) },
+                    shape = RoundedCornerShape(18.dp),
+                    color = if (active) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
+                    border = BorderStroke(1.dp, if (active) MaterialTheme.colorScheme.primary.copy(alpha = 0.5f) else MaterialTheme.colorScheme.outlineVariant),
+                    modifier = Modifier.semantics {
+                        this.selected = active
+                        role = Role.Checkbox
+                    }
                 ) {
-                    Icon(
-                        imageVector = KairosIcons.Refresh,
-                        contentDescription = "New prompt",
-                        modifier = Modifier.size(18.dp)
-                    )
+                    Row(
+                        modifier = Modifier.padding(horizontal = 13.dp, vertical = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(7.dp)
+                    ) {
+                        Text(mood.emoji)
+                        Text(mood.displayName, style = MaterialTheme.typography.labelMedium)
+                    }
                 }
             }
         }
+    }
+}
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Reply text field
-        OutlinedTextField(
-            value = replyContent,
-            onValueChange = onReplyChanged,
-            placeholder = { Text("Write your reply...") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(160.dp),
-            maxLines = 8
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Mood selection
-        Text(
-            text = "How do you feel reading this?",
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        val moods = listOf(
-            Mood.HAPPY, Mood.GRATEFUL, Mood.SAD, Mood.NOSTALGIC,
-            Mood.MOTIVATED, Mood.CALM, Mood.CONFUSED
-        )
-
-        LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+@Composable
+private fun ReplyEditor(value: String, onValueChange: (String) -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Text("Now", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
+        KairosReadingSurface(
+            modifier = Modifier.fillMaxWidth(),
+            accent = Color(0xFF3E9B85),
+            contentPadding = PaddingValues(22.dp)
         ) {
-            items(moods) { mood ->
-                val isSelected = mood == selectedMood
-
-                FilterChip(
-                    selected = isSelected,
-                    onClick = { onMoodSelected(if (isSelected) null else mood) },
-                    label = {
-                        Text(
-                            text = "${mood.emoji} ${mood.displayName}",
-                            style = MaterialTheme.typography.bodySmall
-                        )
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                BasicTextField(
+                    value = value,
+                    onValueChange = { if (it.length <= 10_000) onValueChange(it) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(220.dp)
+                        .semantics { contentDescription = "Reply to past self" },
+                    textStyle = TextStyle(
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontFamily = SerifFamily,
+                        fontSize = MaterialTheme.typography.bodyLarge.fontSize,
+                        lineHeight = MaterialTheme.typography.bodyLarge.lineHeight
+                    ),
+                    decorationBox = { inner ->
+                        Box {
+                            if (value.isBlank()) {
+                                Text(
+                                    "Answer honestly. You do not need to turn the past into a lesson.",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontFamily = SerifFamily,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.58f)
+                                )
+                            }
+                            inner()
+                        }
                     }
+                )
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.65f))
+                Text(
+                    "${replyWordCount(value)} words",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.align(Alignment.End)
                 )
             }
         }
@@ -461,74 +421,53 @@ private fun ReplySection(
 }
 
 @Composable
-private fun ChainOption(
-    wantsToCreateChain: Boolean,
-    chainDeliveryDate: Long?,
-    deliverySuggestions: List<Pair<String, Long>>,
-    onToggleChain: () -> Unit,
-    onSetChainDate: (Long) -> Unit
+private fun ChainForwardOption(
+    enabled: Boolean,
+    selectedDate: Long?,
+    suggestions: List<Pair<String, Long>>,
+    onToggle: () -> Unit,
+    onDateSelected: (Long) -> Unit
 ) {
-    KairosCard(
-        modifier = Modifier.fillMaxWidth()
+    KairosGlassSurface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(26.dp),
+        strong = enabled,
+        contentPadding = PaddingValues(18.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
+        Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable(onClick = onToggleChain),
-                verticalAlignment = Alignment.CenterVertically
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Checkbox(
-                    checked = wantsToCreateChain,
-                    onCheckedChange = { onToggleChain() }
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Column(modifier = Modifier.weight(1f)) {
+                Column(Modifier.weight(1f)) {
+                    Text("Continue the conversation", fontWeight = FontWeight.SemiBold)
                     Text(
-                        text = "Continue the conversation",
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    Text(
-                        text = "Send this exchange to your future self",
+                        "Seal a short continuation for another future date.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-                Icon(
-                    imageVector = KairosIcons.Loop,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary
-                )
+                Switch(checked = enabled, onCheckedChange = { onToggle() })
             }
 
-            AnimatedVisibility(visible = wantsToCreateChain) {
-                Column {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    HorizontalDivider()
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Text(
-                        text = "When should your future self receive this?",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    LazyRow(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        items(deliverySuggestions) { (label, timestamp) ->
-                            val isSelected = chainDeliveryDate == timestamp
-
-                            FilterChip(
-                                selected = isSelected,
-                                onClick = { onSetChainDate(timestamp) },
-                                label = { Text(label) }
-                            )
+            AnimatedVisibility(visible = enabled) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    suggestions.forEach { (label, date) ->
+                        val selected = selectedDate == date
+                        Surface(
+                            onClick = { onDateSelected(date) },
+                            shape = RoundedCornerShape(16.dp),
+                            color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
+                            contentColor = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
+                            border = BorderStroke(1.dp, if (selected) Color.Transparent else MaterialTheme.colorScheme.outlineVariant)
+                        ) {
+                            Text(label, modifier = Modifier.padding(horizontal = 13.dp, vertical = 9.dp), style = MaterialTheme.typography.labelMedium)
                         }
                     }
                 }
@@ -538,129 +477,93 @@ private fun ChainOption(
 }
 
 @Composable
-private fun SuccessState(
+private fun ExistingConversation(
+    reply: String,
+    mood: Mood?,
+    onSaveToJournal: () -> Unit
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Text("Your reply", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
+        KairosReadingSurface(
+            modifier = Modifier.fillMaxWidth(),
+            accent = Color(0xFF3E9B85),
+            contentPadding = PaddingValues(22.dp)
+        ) {
+            Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                mood?.let {
+                    Text("${it.emoji} ${it.displayName}", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Text(reply, style = MaterialTheme.typography.bodyLarge, fontFamily = SerifFamily)
+                KairosSecondaryButton(
+                    text = "Save conversation to journal",
+                    onClick = onSaveToJournal,
+                    icon = KairosIcons.Bookmark,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun AnniversaryMoment(label: String) {
+    KairosGlassSurface(
+        modifier = Modifier.fillMaxWidth(),
+        strong = true,
+        shape = RoundedCornerShape(topStart = 8.dp, topEnd = 28.dp, bottomStart = 28.dp, bottomEnd = 28.dp),
+        contentPadding = PaddingValues(18.dp)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(13.dp)) {
+            Box(Modifier.size(46.dp).background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f), CircleShape), contentAlignment = Alignment.Center) {
+                Icon(KairosIcons.Celebration, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+            }
+            Column {
+                Text("$label since you wrote this", fontWeight = FontWeight.SemiBold)
+                Text("Notice what changed without forcing a success story.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+    }
+}
+
+@Composable
+private fun ReplySaved(
     message: FutureMessageEntity,
-    timePassedFormatted: String,
-    isAnniversary: Boolean,
-    anniversaryType: String?,
+    reply: String,
     onSaveToJournal: () -> Unit,
     onClose: () -> Unit
 ) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp),
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = KairosSpacing.screen, vertical = KairosSpacing.section),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         Surface(
-            shape = CircleShape,
-            color = MaterialTheme.colorScheme.primaryContainer,
-            modifier = Modifier.size(96.dp)
+            modifier = Modifier.size(88.dp),
+            shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp, bottomStart = 30.dp, bottomEnd = 8.dp),
+            color = MaterialTheme.colorScheme.primaryContainer
         ) {
             Box(contentAlignment = Alignment.Center) {
-                Icon(
-                    imageVector = KairosIcons.Check,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(48.dp)
-                )
+                Icon(KairosIcons.Check, contentDescription = null, modifier = Modifier.size(34.dp), tint = MaterialTheme.colorScheme.primary)
             }
         }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
+        Spacer(Modifier.height(24.dp))
+        Text("The conversation is saved", style = MaterialTheme.typography.headlineMedium, fontFamily = SerifFamily, textAlign = TextAlign.Center)
+        Spacer(Modifier.height(10.dp))
         Text(
-            text = "Reply Sent",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text(
-            text = "You've connected with yourself across time",
+            "You answered “${message.title.ifBlank { "a letter from your past" }}” with ${replyWordCount(reply)} thoughtful words.",
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center
         )
-
-        if (isAnniversary && anniversaryType != null) {
-            Spacer(modifier = Modifier.height(24.dp))
-            Surface(
-                color = MaterialTheme.colorScheme.secondaryContainer,
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Row(
-                    modifier = Modifier.padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = KairosIcons.Celebration,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.secondary
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "You celebrated a $anniversaryType anniversary reflection!",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer
-                    )
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(48.dp))
-
-        OutlinedButton(
-            onClick = onSaveToJournal,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Icon(KairosIcons.Book, contentDescription = null)
-            Spacer(modifier = Modifier.width(8.dp))
-            Text("Save as Journal Entry")
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        Button(
-            onClick = onClose,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Done")
-        }
+        Spacer(Modifier.height(28.dp))
+        KairosPrimaryButton("Save a copy to journal", onSaveToJournal, Modifier.fillMaxWidth(), icon = KairosIcons.Bookmark)
+        Spacer(Modifier.height(10.dp))
+        KairosSecondaryButton("Done", onClose, Modifier.fillMaxWidth())
     }
 }
 
-@Composable
-private fun ErrorState(
-    message: String,
-    onGoBack: () -> Unit
-) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(32.dp)
-        ) {
-            Icon(
-                imageVector = KairosIcons.Error,
-                contentDescription = null,
-                modifier = Modifier.size(64.dp),
-                tint = MaterialTheme.colorScheme.error
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = message,
-                style = MaterialTheme.typography.titleMedium,
-                textAlign = TextAlign.Center
-            )
-            Spacer(modifier = Modifier.height(24.dp))
-            Button(onClick = onGoBack) {
-                Text("Go Back")
-            }
-        }
-    }
-}
+private fun replyWordCount(text: String): Int =
+    text.trim().split(Regex("\\s+")).count { it.isNotBlank() }

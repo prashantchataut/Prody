@@ -1,4 +1,4 @@
-﻿package com.kairos.app.ui.screens.onboarding
+package com.kairos.app.ui.screens.onboarding
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

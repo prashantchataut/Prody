@@ -1,4 +1,4 @@
-﻿package com.kairos.app.data.repository
+package com.kairos.app.data.repository
 
 import android.util.Log
 import com.kairos.app.data.ai.GeminiResult

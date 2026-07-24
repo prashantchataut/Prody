@@ -1,4 +1,4 @@
-﻿package com.kairos.app.ui.screens.learning
+package com.kairos.app.ui.screens.learning
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel

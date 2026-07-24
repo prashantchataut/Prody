@@ -1,4 +1,4 @@
-﻿package com.kairos.app.ui.components
+package com.kairos.app.ui.components
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas

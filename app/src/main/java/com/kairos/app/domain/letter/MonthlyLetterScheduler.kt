@@ -1,6 +1,5 @@
 package com.kairos.app.domain.letter
 
-import com.kairos.app.MainActivity
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -109,7 +108,7 @@ class MonthlyLetterScheduler @Inject constructor(
 
         // Create intent to open the letter
         // Note: You'll need to replace this with your actual MainActivity intent
-        val intent = Intent(context, MainActivity::class.java).apply {
+        val intent = Intent(context, Class.forName("com.kairos.app.MainActivity")).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             putExtra("open_monthly_letter", true)
         }

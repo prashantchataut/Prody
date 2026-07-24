@@ -1,4 +1,4 @@
-﻿package com.kairos.app.domain.gamification
+package com.kairos.app.domain.gamification
 
 /**
  * Session Result - Clean feedback after completing any game mode.

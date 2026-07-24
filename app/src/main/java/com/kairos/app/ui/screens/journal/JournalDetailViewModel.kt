@@ -1,12 +1,12 @@
-﻿package com.kairos.app.ui.screens.journal
+package com.kairos.app.ui.screens.journal
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.kairos.app.data.local.dao.JournalDao
 import com.kairos.app.data.local.entity.JournalEntryEntity
 import com.kairos.app.data.onboarding.AiHint
 import com.kairos.app.data.onboarding.AiHintType
 import com.kairos.app.data.onboarding.AiOnboardingManager
+import com.kairos.app.domain.repository.JournalRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -22,7 +22,7 @@ data class JournalDetailUiState(
 
 @HiltViewModel
 class JournalDetailViewModel @Inject constructor(
-    private val journalDao: JournalDao,
+    private val journalRepository: JournalRepository,
     private val aiOnboardingManager: AiOnboardingManager
 ) : ViewModel() {
 
@@ -57,7 +57,7 @@ class JournalDetailViewModel @Inject constructor(
     fun loadEntry(entryId: Long) {
         viewModelScope.launch {
             try {
-                journalDao.observeEntryById(entryId).collect { entry ->
+                journalRepository.observeEntryById(entryId).collect { entry ->
                     _uiState.update {
                         it.copy(entry = entry, isLoading = false, error = null)
                     }
@@ -74,7 +74,10 @@ class JournalDetailViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 _uiState.value.entry?.let { entry ->
-                    journalDao.updateBookmarkStatus(entry.id, !entry.isBookmarked)
+                    val result = journalRepository.updateBookmarkStatus(entry.id, !entry.isBookmarked)
+                    if (result.isError) {
+                        _uiState.update { it.copy(error = "Failed to update bookmark") }
+                    }
                 }
             } catch (e: Exception) {
                 _uiState.update { it.copy(error = "Failed to update bookmark") }
@@ -94,7 +97,10 @@ class JournalDetailViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 _uiState.value.entry?.let { entry ->
-                    journalDao.deleteEntry(entry)
+                    val result = journalRepository.deleteEntry(entry)
+                    if (result.isError) {
+                        _uiState.update { it.copy(error = "Failed to delete entry") }
+                    }
                 }
             } catch (e: Exception) {
                 _uiState.update { it.copy(error = "Failed to delete entry") }

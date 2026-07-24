@@ -1,4 +1,4 @@
-﻿package com.kairos.app.ui.components
+package com.kairos.app.ui.components
 import com.kairos.app.ui.icons.KairosIcons
 
 import androidx.compose.animation.core.*
@@ -77,8 +77,8 @@ fun AchievementBadge(
         AchievementBadgeSize.Large -> AchievementDimensions(110.dp, 80.dp, 14.sp, 12.sp)
     }
 
-    val rarityColor = rarity.color
-    val glowColor = rarity.glowColor
+    val rarityColor = rarity.uiColor
+    val glowColor = rarity.uiGlowColor
 
     val infiniteTransition = rememberInfiniteTransition(label = "achievement_glow")
     val glowAlpha by infiniteTransition.animateFloat(
@@ -251,7 +251,7 @@ private data class AchievementDimensions(
  * - Legendary: Gold (0xFFD4AF37)
  * - Mythic: Golden Yellow (0xFFFFD700)
  */
-private fun getRarityBorderColor(rarity: AchievementRarity): Color = rarity.color
+private fun getRarityBorderColor(rarity: AchievementRarity): Color = rarity.uiColor
 
 @Composable
 fun AchievementCard(
@@ -267,7 +267,7 @@ fun AchievementCard(
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null
 ) {
-    val rarityColor = rarity.color
+    val rarityColor = rarity.uiColor
     val borderColor = getRarityBorderColor(rarity)
 
     Card(
@@ -492,7 +492,7 @@ fun AchievementCelebration(
         label = "celebration_alpha"
     )
 
-    val rarityColor = rarity.color
+    val rarityColor = rarity.uiColor
 
     Box(
         modifier = modifier
@@ -695,3 +695,10 @@ fun AchievementSummaryCard(
         }
     }
 }
+
+
+private val AchievementRarity.uiColor: Color
+    get() = Color(colorArgb)
+
+private val AchievementRarity.uiGlowColor: Color
+    get() = Color(glowColorArgb)

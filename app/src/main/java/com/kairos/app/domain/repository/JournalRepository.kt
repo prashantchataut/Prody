@@ -1,4 +1,4 @@
-﻿package com.kairos.app.domain.repository
+package com.kairos.app.domain.repository
 
 import com.kairos.app.data.local.dao.JournalEntrySummary
 import com.kairos.app.data.local.dao.MoodCount

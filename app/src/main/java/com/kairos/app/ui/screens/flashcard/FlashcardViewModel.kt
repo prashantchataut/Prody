@@ -1,4 +1,4 @@
-﻿package com.kairos.app.ui.screens.flashcard
+package com.kairos.app.ui.screens.flashcard
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

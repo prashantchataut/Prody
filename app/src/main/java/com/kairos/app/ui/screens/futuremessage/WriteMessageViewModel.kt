@@ -1,11 +1,11 @@
-﻿package com.kairos.app.ui.screens.futuremessage
+package com.kairos.app.ui.screens.futuremessage
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.kairos.app.data.local.dao.FutureMessageDao
-import com.kairos.app.data.local.dao.UserDao
+import com.kairos.app.data.auth.UserIdProvider
 import com.kairos.app.data.local.entity.FutureMessageEntity
 import com.kairos.app.domain.gamification.GameSessionManager
+import com.kairos.app.domain.repository.FutureMessageRepository
 import com.kairos.app.domain.gamification.SessionResult
 import com.kairos.app.util.AudioRecorderManager
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -44,7 +44,7 @@ data class WriteMessageUiState(
     val showSessionResult: Boolean = false
 ) {
     val canSave: Boolean
-        get() = title.isNotBlank() && content.isNotBlank()
+        get() = content.isNotBlank() && deliveryDate > System.currentTimeMillis()
 
     val hasContent: Boolean
         get() = title.isNotBlank() || content.isNotBlank() ||
@@ -60,8 +60,8 @@ private fun getDefaultDeliveryDate(): Long {
 
 @HiltViewModel
 class WriteMessageViewModel @Inject constructor(
-    private val futureMessageDao: FutureMessageDao,
-    private val userDao: UserDao,
+    private val futureMessageRepository: FutureMessageRepository,
+    private val userIdProvider: UserIdProvider,
     private val audioRecorderManager: AudioRecorderManager,
     private val gameSessionManager: GameSessionManager
 ) : ViewModel() {
@@ -115,32 +115,20 @@ class WriteMessageViewModel @Inject constructor(
     }
 
     fun updateCategory(category: MessageCategory) {
-        _uiState.update { it.copy(selectedCategory = category, hasUnsavedChanges = true) }
-    }
-
-    /**
-     * Toggle a category in the multi-select set.
-     */
-    fun toggleCategory(category: MessageCategory) {
-        _uiState.update { state ->
-            val currentCategories = state.selectedCategories
-            val newCategories = if (currentCategories.contains(category)) {
-                // Don't allow deselecting the last category
-                if (currentCategories.size > 1) {
-                    currentCategories - category
-                } else {
-                    currentCategories
-                }
-            } else {
-                currentCategories + category
-            }
-            state.copy(
-                selectedCategories = newCategories,
-                selectedCategory = newCategories.first(),
+        _uiState.update {
+            it.copy(
+                selectedCategory = category,
+                selectedCategories = setOf(category),
                 hasUnsavedChanges = true
             )
         }
     }
+
+    /**
+     * Kept for compatibility with older call sites. Future letters intentionally
+     * use one primary intention so filtering and recommendation signals stay clear.
+     */
+    fun toggleCategory(category: MessageCategory) = updateCategory(category)
 
     fun selectDatePreset(preset: DatePreset) {
         val calendar = Calendar.getInstance()
@@ -185,49 +173,56 @@ class WriteMessageViewModel @Inject constructor(
     }
 
     fun saveMessage() {
+        val state = _uiState.value
+        if (state.content.isBlank()) {
+            _uiState.update { it.copy(error = "Write something before sealing this letter.") }
+            return
+        }
+        if (state.deliveryDate <= System.currentTimeMillis()) {
+            _uiState.update { it.copy(error = "Choose a delivery date in the future.") }
+            return
+        }
+        if (state.isSaving || state.isSaved) return
+
         viewModelScope.launch {
-            val state = _uiState.value
+            _uiState.update { it.copy(showSealingAnimation = true, isSaving = true, error = null) }
 
-            // Validate content
-            if (state.content.isBlank()) {
-                _uiState.update { it.copy(error = "Please write a message before sealing") }
-                return@launch
-            }
-
-            // Show sealing animation
-            _uiState.update { it.copy(showSealingAnimation = true, isSaving = true) }
-
-            try {
-                // Simulate animation delay (animation runs in UI)
-                kotlinx.coroutines.delay(1500)
-
+            runCatching {
                 val message = FutureMessageEntity(
-                    title = state.title,
-                    content = state.content,
+                    userId = userIdProvider.getUserId(),
+                    title = state.title.trim().ifBlank { "A letter to my future self" },
+                    content = state.content.trim(),
                     deliveryDate = state.deliveryDate,
-                    category = state.selectedCategories.joinToString(",") { it.name.lowercase() },
+                    category = state.selectedCategory.name.lowercase(),
                     createdAt = System.currentTimeMillis(),
-                    attachedPhotos = state.attachedPhotos.joinToString(","),
-                    attachedVideos = state.attachedVideos.joinToString(","),
+                    attachedPhotos = state.attachedPhotos.distinct().joinToString(","),
+                    attachedVideos = state.attachedVideos.distinct().joinToString(","),
                     voiceRecordingUri = state.voiceRecordingUri,
                     voiceRecordingDuration = state.voiceRecordingDuration
                 )
 
-                val messageId = futureMessageDao.insertMessage(message)
+                val createResult = futureMessageRepository.createMessage(message)
+                val messageId = createResult.getOrNull()
+                    ?: throw IllegalStateException(
+                        (createResult as? com.kairos.app.domain.common.Result.Error)?.userMessage
+                            ?: "Kairos could not seal this letter."
+                    )
 
-                // Update user stats (legacy tracking)
-                userDao.incrementFutureMessages()
+                // Rewards are secondary to preserving the letter. A reward failure must
+                // never make the user believe their already-saved writing was lost.
+                val sessionResult = runCatching {
+                    val result = gameSessionManager.completeCommitSession(
+                        messageId = messageId,
+                        content = state.content,
+                        deliveryDate = state.deliveryDate
+                    )
+                    result
+                }.onFailure { error ->
+                    android.util.Log.w(TAG, "Letter saved, but reward processing failed", error)
+                }.getOrNull()
 
-                // Complete the Commit session via the game system
-                val sessionResult = gameSessionManager.completeCommitSession(
-                    messageId = messageId,
-                    content = state.content,
-                    deliveryDate = state.deliveryDate
-                )
-
-                // Update achievements
-                updateFutureMessageAchievements()
-
+                sessionResult
+            }.onSuccess { sessionResult ->
                 _uiState.update {
                     it.copy(
                         isSaving = false,
@@ -235,15 +230,16 @@ class WriteMessageViewModel @Inject constructor(
                         showSealingAnimation = false,
                         hasUnsavedChanges = false,
                         sessionResult = sessionResult,
-                        showSessionResult = true
+                        showSessionResult = sessionResult != null
                     )
                 }
-            } catch (e: Exception) {
+            }.onFailure { error ->
+                android.util.Log.e(TAG, "Unable to save future letter", error)
                 _uiState.update {
                     it.copy(
                         isSaving = false,
                         showSealingAnimation = false,
-                        error = e.message
+                        error = "Kairos could not seal this letter. Your draft is still here."
                     )
                 }
             }
@@ -259,28 +255,6 @@ class WriteMessageViewModel @Inject constructor(
      */
     fun dismissSessionResult() {
         _uiState.update { it.copy(showSessionResult = false) }
-    }
-
-    private suspend fun updateFutureMessageAchievements() {
-        val profile = userDao.getUserProfileSync() ?: return
-        val messagesCount = profile.futureMessagesCount
-
-        // Update progress
-        userDao.updateAchievementProgress("future_1", messagesCount)
-        userDao.updateAchievementProgress("future_10", messagesCount)
-
-        // Check unlocks
-        if (messagesCount >= 1) checkAndUnlockAchievement("future_1")
-        if (messagesCount >= 10) checkAndUnlockAchievement("future_10")
-    }
-
-    private suspend fun checkAndUnlockAchievement(achievementId: String) {
-        val achievement = userDao.getAchievementById(achievementId)
-        if (achievement != null && !achievement.isUnlocked) {
-            userDao.unlockAchievement(achievementId)
-            val points = achievement.rewardValue.toIntOrNull() ?: 100
-            userDao.addPoints(points)
-        }
     }
 
     // =========================================================================

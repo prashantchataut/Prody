@@ -1,4 +1,4 @@
-﻿package com.kairos.app.ui.screens.collaborative
+package com.kairos.app.ui.screens.collaborative
 
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel

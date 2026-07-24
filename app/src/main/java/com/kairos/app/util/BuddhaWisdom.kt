@@ -1,4 +1,4 @@
-﻿package com.kairos.app.util
+package com.kairos.app.util
 
 import com.kairos.app.domain.model.Mood
 import kotlin.random.Random

@@ -1,24 +1,21 @@
-﻿package com.kairos.app.ui.screens.journal
+package com.kairos.app.ui.screens.journal
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kairos.app.data.ai.BuddhaAiRepository
-import com.kairos.app.data.ai.BuddhaAiResult
-import com.kairos.app.data.ai.GeminiResult
 import com.kairos.app.data.ai.GeminiService
 import com.kairos.app.data.ai.JournalInsightResult
 import com.kairos.app.data.ai.OpenRouterService
-import com.kairos.app.data.local.dao.JournalDao
-import com.kairos.app.data.local.dao.UserDao
+import com.kairos.app.data.auth.UserIdProvider
 import com.kairos.app.data.local.entity.JournalEntryEntity
 import com.kairos.app.data.local.preferences.PreferencesManager
 import com.kairos.app.domain.gamification.GameSessionManager
 import com.kairos.app.domain.intelligence.PatternAnalysisEngine
 import com.kairos.app.domain.gamification.SessionResult
 import com.kairos.app.domain.model.Mood
+import com.kairos.app.domain.repository.JournalRepository
 import com.kairos.app.ui.theme.JournalTemplate
 import com.kairos.app.util.AudioRecorderManager
-import com.kairos.app.util.BuddhaWisdom
 import com.kairos.app.util.TranscriptionError
 import com.kairos.app.util.TranscriptionResult
 import com.kairos.app.util.VoiceTranscriptionService
@@ -94,9 +91,8 @@ data class NewJournalEntryUiState(
 
 @HiltViewModel
 class NewJournalEntryViewModel @Inject constructor(
-    private val journalDao: JournalDao,
-    private val userDao: UserDao,
-    private val geminiService: GeminiService,
+    private val journalRepository: JournalRepository,
+    private val userIdProvider: UserIdProvider,
     private val openRouterService: OpenRouterService,
     private val preferencesManager: PreferencesManager,
     private val gameSessionManager: GameSessionManager,
@@ -286,39 +282,44 @@ class NewJournalEntryViewModel @Inject constructor(
                 }
             }
 
-            _uiState.update { it.copy(isSaving = true, isGeneratingAiResponse = true, error = null) }
+            _uiState.update { it.copy(isSaving = true, isGeneratingAiResponse = false, error = null) }
 
             try {
-                // Generate Buddha's response - use Gemini if available, fallback to local
-                val buddhaResponse = generateBuddhaResponse(state)
-
-                _uiState.update { it.copy(isGeneratingAiResponse = false) }
-
+                // The private entry is committed before any network or gamification
+                // work. Optional intelligence must never hold a journal save hostage.
                 val entry = JournalEntryEntity(
-                    title = state.title,
-                    content = state.content,
+                    userId = userIdProvider.getUserId(),
+                    title = state.title.trim(),
+                    content = state.content.trim(),
                     mood = state.selectedMood.name,
                     moodIntensity = state.moodIntensity,
-                    buddhaResponse = buddhaResponse,
+                    buddhaResponse = "",
                     wordCount = state.wordCount,
                     createdAt = System.currentTimeMillis(),
                     updatedAt = System.currentTimeMillis(),
-                    attachedPhotos = state.attachedPhotos.joinToString(","),
-                    attachedVideos = state.attachedVideos.joinToString(","),
+                    attachedPhotos = state.attachedPhotos.distinct().joinToString(","),
+                    attachedVideos = state.attachedVideos.distinct().joinToString(","),
                     voiceRecordingUri = state.voiceRecordingUri,
                     voiceRecordingDuration = state.voiceRecordingDuration,
                     templateId = state.selectedTemplate?.id
                 )
 
-                val entryId = journalDao.insertEntry(entry)
-
-                // Use GameSessionManager for clean session result (no spam feedback)
-                val sessionResult = gameSessionManager.completeReflectSession(
-                    entryId = entryId,
-                    wordCount = state.wordCount,
-                    content = state.content,
-                    mood = state.selectedMood.name
-                )
+                val saveResult = journalRepository.saveEntry(entry)
+                val entryId = saveResult.getOrNull()
+                    ?: throw IllegalStateException(
+                        (saveResult as? com.kairos.app.domain.common.Result.Error)?.userMessage
+                            ?: "Kairos could not save this entry."
+                    )
+                val sessionResult = runCatching {
+                    gameSessionManager.completeReflectSession(
+                        entryId = entryId,
+                        wordCount = state.wordCount,
+                        content = state.content,
+                        mood = state.selectedMood.name
+                    )
+                }.onFailure {
+                    android.util.Log.w(TAG, "Journal saved but progression could not be updated", it)
+                }.getOrNull()
 
                 _uiState.update {
                     it.copy(
@@ -326,11 +327,12 @@ class NewJournalEntryViewModel @Inject constructor(
                         isSaved = true,
                         savedEntryId = entryId,
                         sessionResult = sessionResult,
-                        showSessionResult = true
+                        showSessionResult = sessionResult != null,
+                        hasUnsavedChanges = false
                     )
                 }
 
-                // Trigger non-blocking insight generation after save
+                // Optional analysis runs after the local transaction succeeds.
                 generateJournalInsight(entryId, state)
 
                 // Show personalized pattern context if available (non-blocking)
@@ -354,63 +356,6 @@ class NewJournalEntryViewModel @Inject constructor(
                 }
             }
         }
-    }
-
-    /**
-     * Generates Buddha's response using a multi-tier fallback strategy:
-     * 1. Primary: Google Gemini AI (if configured and enabled)
-     * 2. Secondary: OpenRouter (if configured, when Gemini fails)
-     * 3. Tertiary: Local BuddhaWisdom (always available, never fails)
-     *
-     * This ensures users always receive a meaningful response regardless of API availability.
-     */
-    private suspend fun generateBuddhaResponse(state: NewJournalEntryUiState): String {
-        // Tier 1: Try Gemini AI if enabled and configured
-        if (state.buddhaAiEnabled && geminiService.isConfigured()) {
-            val geminiResult = geminiService.generateJournalResponse(
-                content = state.content,
-                mood = state.selectedMood,
-                moodIntensity = state.moodIntensity,
-                wordCount = state.wordCount
-            )
-
-            when (geminiResult) {
-                is GeminiResult.Success -> {
-                    return geminiResult.data
-                }
-                is GeminiResult.Error -> {
-                    android.util.Log.w(TAG, "Gemini failed: ${geminiResult.message}, trying OpenRouter fallback")
-                }
-                is GeminiResult.ApiKeyNotSet -> {
-                }
-                is GeminiResult.Loading -> {
-                    // Shouldn't happen for non-streaming calls, but handle gracefully
-                }
-            }
-        }
-
-        // Tier 2: Try OpenRouter as fallback if Gemini failed or is not available
-        if (state.buddhaAiEnabled && openRouterService.isConfigured()) {
-            val openRouterResult = openRouterService.generateJournalResponse(
-                content = state.content,
-                mood = state.selectedMood,
-                moodIntensity = state.moodIntensity,
-                wordCount = state.wordCount
-            )
-
-            openRouterResult.onSuccess { response ->
-                return response
-            }.onFailure { e ->
-                android.util.Log.w(TAG, "OpenRouter fallback failed: ${e.message}, using local wisdom")
-            }
-        }
-
-        // Tier 3: Local BuddhaWisdom - always available, guaranteed response
-        return BuddhaWisdom.generateResponse(
-            content = state.content,
-            mood = state.selectedMood,
-            wordCount = state.wordCount
-        )
     }
 
     fun clearError() {
@@ -438,11 +383,11 @@ class NewJournalEntryViewModel @Inject constructor(
                 if (insight != null) {
                     // Update the journal entry with AI insights
                     try {
-                        val existingEntry = journalDao.getEntryById(entryId)
+                        val existingEntry = journalRepository.getEntryById(entryId).getOrNull()
                         existingEntry?.let { entry ->
                             // Compute content hash for cache invalidation
                             val contentHash = state.content.hashCode().toString(16)
-                            journalDao.updateEntry(
+                            journalRepository.updateEntry(
                                 entry.copy(
                                     aiEmotionLabel = insight.emotionLabel,
                                     aiThemes = insight.themes.joinToString(","),
@@ -586,9 +531,9 @@ class NewJournalEntryViewModel @Inject constructor(
         
         when (choice) {
             TranscriptionChoice.NOW -> {
-                // For now, we use the existing startTranscription method 
-                // which uses real-time transcription. 
-                // TODO: Implement file-based transcription if available in VoiceTranscriptionService
+                // Android SpeechRecognizer supports live dictation, not reliable
+                // transcription of an already recorded file. Keep the recording
+                // attached and begin a clearly labelled live dictation pass.
                 startTranscription()
             }
             TranscriptionChoice.LATER -> {

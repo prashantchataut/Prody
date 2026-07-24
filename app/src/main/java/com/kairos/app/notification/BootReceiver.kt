@@ -1,4 +1,4 @@
-﻿package com.kairos.app.notification
+package com.kairos.app.notification
 
 import android.content.BroadcastReceiver
 import android.content.Context

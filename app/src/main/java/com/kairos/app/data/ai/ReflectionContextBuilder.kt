@@ -1,4 +1,4 @@
-﻿package com.kairos.app.data.ai
+package com.kairos.app.data.ai
 
 import com.kairos.app.data.local.dao.JournalDao
 import com.kairos.app.data.local.dao.MicroEntryDao

@@ -1,4 +1,4 @@
-﻿package com.kairos.app.ui.screens.letter
+package com.kairos.app.ui.screens.letter
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

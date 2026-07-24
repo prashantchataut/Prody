@@ -1,4 +1,4 @@
-﻿package com.kairos.app.ui.theme
+package com.kairos.app.ui.theme
 
 import android.app.Activity
 import android.os.Build

@@ -1,4 +1,4 @@
-﻿package com.kairos.app.ui.screens.search
+package com.kairos.app.ui.screens.search
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

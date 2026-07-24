@@ -1,4 +1,4 @@
-﻿package com.kairos.app.domain.games
+package com.kairos.app.domain.games
 
 import com.kairos.app.data.local.entity.VocabularyEntity
 

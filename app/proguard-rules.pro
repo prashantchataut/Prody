@@ -3,19 +3,19 @@
 # proguardFiles setting in build.gradle.kts.
 
 # ========================================
-# Prody Application Classes
+# Kairos Application Classes
 # ========================================
 # Security: These rules are refined to allow for proper code obfuscation,
 # which is a critical security measure to prevent reverse engineering.
-# The previous rules were too broad (-keep class com.prody.prashant.**)
+# The previous rules were too broad (-keep class com.kairos.app.**)
 # and effectively disabled obfuscation for the entire app.
 
 # Keep application entry points and other classes referenced by the system.
 # Note: R8's default rules for Android are good, these are for safety.
 -keep public class * extends android.app.Application
 -keep public class * extends androidx.lifecycle.ViewModel
--keep public class com.prody.prashant.MainActivity
--keep public class com.prody.prashant.ProdyApplication
+-keep public class com.kairos.app.MainActivity
+-keep public class com.kairos.app.KairosApplication
 -keep public class * extends android.content.BroadcastReceiver
 -keep public class * extends android.app.Service
 -keep public class * extends androidx.glance.appwidget.GlanceAppWidgetReceiver
@@ -23,10 +23,10 @@
 
 # Keep all data, model, and entity classes to prevent issues with serialization or Room.
 # These classes often have their fields accessed via reflection.
--keep class com.prody.prashant.data.model.** { *; }
--keep class com.prody.prashant.domain.model.** { *; }
--keep class com.prody.prashant.domain.identity.** { *; }
--keep class com.prody.prashant.data.local.entity.** { *; }
+-keep class com.kairos.app.data.model.** { *; }
+-keep class com.kairos.app.domain.model.** { *; }
+-keep class com.kairos.app.domain.identity.** { *; }
+-keep class com.kairos.app.data.local.entity.** { *; }
 
 # Keep members of data classes used in serialization.
 -keepclassmembers,allowobfuscation class * {
@@ -67,11 +67,11 @@
     kotlinx.serialization.KSerializer serializer(...);
 }
 
--keep,includedescriptorclasses class com.prody.prashant.**$$serializer { *; }
--keepclassmembers class com.prody.prashant.** {
+-keep,includedescriptorclasses class com.kairos.app.**$$serializer { *; }
+-keepclassmembers class com.kairos.app.** {
     *** Companion;
 }
--keepclasseswithmembers class com.prody.prashant.** {
+-keepclasseswithmembers class com.kairos.app.** {
     kotlinx.serialization.KSerializer serializer(...);
 }
 

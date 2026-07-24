@@ -1,4 +1,4 @@
-﻿package com.kairos.app.domain.haven
+package com.kairos.app.domain.haven
 
 import java.util.UUID
 

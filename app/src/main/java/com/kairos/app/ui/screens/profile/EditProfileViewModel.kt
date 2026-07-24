@@ -1,8 +1,8 @@
-﻿package com.kairos.app.ui.screens.profile
+package com.kairos.app.ui.screens.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.kairos.app.data.local.dao.UserDao
+import com.kairos.app.domain.repository.ProfileRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -56,7 +56,7 @@ data class EditProfileUiState(
 
 @HiltViewModel
 class EditProfileViewModel @Inject constructor(
-    private val userDao: UserDao
+    private val profileRepository: ProfileRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(EditProfileUiState())
@@ -77,7 +77,7 @@ class EditProfileViewModel @Inject constructor(
     private fun loadProfile() {
         viewModelScope.launch {
             try {
-                userDao.getUserProfile().collect { profile ->
+                profileRepository.observeProfile().collect { profile ->
                     profile?.let {
                         _uiState.update { state ->
                             state.copy(
@@ -123,7 +123,7 @@ class EditProfileViewModel @Inject constructor(
     private fun loadTitleOptions() {
         viewModelScope.launch {
             try {
-                val profile = userDao.getUserProfileSync()
+                val profile = profileRepository.getProfile().getOrNull()
                 val totalPoints = profile?.totalPoints ?: 0
                 val currentStreak = profile?.currentStreak ?: 0
                 val longestStreak = profile?.longestStreak ?: 0
@@ -209,25 +209,29 @@ class EditProfileViewModel @Inject constructor(
             _uiState.update { it.copy(isSaving = true, error = null) }
 
             try {
-                // Use transactional update for consistency
-                userDao.updateProfileFields(
+                profileRepository.updateProfileFields(
                     displayName = if (state.displayName != state.originalDisplayName) state.displayName else null,
                     bio = if (state.bio != state.originalBio) state.bio else null,
                     avatarId = if (state.currentAvatarId != state.originalAvatarId) state.currentAvatarId else null,
                     titleId = if (state.currentTitleId != state.originalTitleId) state.currentTitleId else null
+                ).fold(
+                    onSuccess = {
+                        _uiState.update {
+                            it.copy(
+                                isSaving = false,
+                                isSaved = true,
+                                hasUnsavedChanges = false,
+                                originalDisplayName = state.displayName,
+                                originalBio = state.bio,
+                                originalAvatarId = state.currentAvatarId,
+                                originalTitleId = state.currentTitleId
+                            )
+                        }
+                    },
+                    onError = { error ->
+                        _uiState.update { it.copy(isSaving = false, error = error.userMessage) }
+                    }
                 )
-
-                _uiState.update {
-                    it.copy(
-                        isSaving = false,
-                        isSaved = true,
-                        hasUnsavedChanges = false,
-                        originalDisplayName = state.displayName,
-                        originalBio = state.bio,
-                        originalAvatarId = state.currentAvatarId,
-                        originalTitleId = state.currentTitleId
-                    )
-                }
             } catch (e: Exception) {
                 android.util.Log.e(TAG, "Error saving profile", e)
                 _uiState.update {

@@ -1,4 +1,4 @@
-﻿package com.kairos.app.ui.components
+package com.kairos.app.ui.components
 import com.kairos.app.ui.icons.KairosIcons
 
 import androidx.compose.animation.core.animateFloatAsState

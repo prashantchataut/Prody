@@ -1,4 +1,4 @@
-﻿package com.kairos.app.util
+package com.kairos.app.util
 
 import kotlin.random.Random
 

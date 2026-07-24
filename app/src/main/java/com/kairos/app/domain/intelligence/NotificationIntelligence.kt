@@ -1,4 +1,4 @@
-﻿package com.kairos.app.domain.intelligence
+package com.kairos.app.domain.intelligence
 
 import com.kairos.app.data.local.preferences.PreferencesManager
 import com.kairos.app.domain.model.TimeOfDay

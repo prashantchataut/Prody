@@ -1,4 +1,4 @@
-﻿package com.kairos.app.data.ai
+package com.kairos.app.data.ai
 
 import com.kairos.app.domain.model.Mood
 import java.util.Calendar

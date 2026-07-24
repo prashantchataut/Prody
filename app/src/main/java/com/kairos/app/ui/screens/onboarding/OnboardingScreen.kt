@@ -334,7 +334,7 @@ private fun DailyMomentPage(modifier: Modifier = Modifier) {
                         Text("2 min", style = MaterialTheme.typography.labelSmall, color = OnboardingMuted)
                     }
                     Text("lucid", style = MaterialTheme.typography.displaySmall, color = OnboardingPaper, fontWeight = FontWeight.Medium)
-                    Text("/ˈluː.sɪd/  ·  adjective", style = MaterialTheme.typography.labelMedium, color = OnboardingMuted)
+                    Text("/Ëˆluː.sÉªd/  ·  adjective", style = MaterialTheme.typography.labelMedium, color = OnboardingMuted)
                     Text("Clear and easy to understand.", style = MaterialTheme.typography.titleMedium, color = OnboardingPaper)
                     Text(
                         "She gave a lucid explanation of a difficult idea.",

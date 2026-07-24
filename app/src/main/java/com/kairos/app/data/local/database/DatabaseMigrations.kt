@@ -1,4 +1,4 @@
-﻿package com.kairos.app.data.local.database
+package com.kairos.app.data.local.database
 
 import androidx.room.migration.Migration
 

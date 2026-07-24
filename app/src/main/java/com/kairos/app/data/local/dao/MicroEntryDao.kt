@@ -1,4 +1,4 @@
-﻿package com.kairos.app.data.local.dao
+package com.kairos.app.data.local.dao
 
 import androidx.room.*
 import com.kairos.app.data.local.entity.MicroEntryEntity

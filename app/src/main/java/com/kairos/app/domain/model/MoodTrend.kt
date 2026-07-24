@@ -1,4 +1,4 @@
-﻿package com.kairos.app.domain.model
+package com.kairos.app.domain.model
 
 /**
  * Unified enumeration for mood trends over time.
