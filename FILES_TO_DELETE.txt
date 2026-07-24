@@ -1,0 +1,4 @@
+# Delete these repository-relative paths after applying the changed-files ZIP.
+# The full-project ZIP already omits them.
+
+.github/workflows/ci.yml

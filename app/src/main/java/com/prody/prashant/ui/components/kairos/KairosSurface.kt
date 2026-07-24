@@ -3,7 +3,6 @@ package com.prody.prashant.ui.components.kairos
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
@@ -12,7 +11,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -42,7 +40,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -57,6 +54,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.prody.prashant.ui.animation.kairosScale
+import com.prody.prashant.ui.animation.rememberKairosPressScale
 import com.prody.prashant.ui.theme.KairosElevation
 import com.prody.prashant.ui.theme.KairosMotion
 import com.prody.prashant.ui.theme.KairosRadius
@@ -109,11 +108,9 @@ fun KairosGlassSurface(
 ) {
     val glass = KairosTheme.glass
     val interactionSource = remember { MutableInteractionSource() }
-    val pressed by interactionSource.collectIsPressedAsState()
-    val pressScale by animateFloatAsState(
-        targetValue = if (onClick != null && pressed) 0.985f else 1f,
-        animationSpec = tween(KairosMotion.quick),
-        label = "glass-press-scale"
+    val pressScale = rememberKairosPressScale(
+        interactionSource = interactionSource,
+        pressedScale = if (onClick != null) 0.985f else 1f
     )
     val clickableModifier = if (onClick != null) {
         Modifier.clickable(
@@ -128,10 +125,7 @@ fun KairosGlassSurface(
 
     Box(
         modifier = modifier
-            .graphicsLayer {
-                scaleX = pressScale
-                scaleY = pressScale
-            }
+            .kairosScale(pressScale)
             .shadow(
                 elevation = elevation,
                 shape = shape,

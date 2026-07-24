@@ -31,7 +31,7 @@ import com.prody.prashant.ui.screens.onboarding.OnboardingScreen
 import com.prody.prashant.ui.screens.profile.AchievementsCollectionScreen
 import com.prody.prashant.ui.screens.profile.BannerSelectionScreen
 import com.prody.prashant.ui.screens.profile.EditProfileScreen
-import com.prody.prashant.ui.screens.profile.ProfileScreen
+import com.prody.prashant.ui.screens.profile.FocusedProfileScreen
 import com.prody.prashant.ui.screens.profile.SettingsScreen
 import com.prody.prashant.ui.screens.quotes.FocusedLibraryScreen
 import com.prody.prashant.ui.screens.quotes.WisdomTab
@@ -427,7 +427,8 @@ fun ProdyNavHost(
         // PROFILE & SETTINGS
         // =====================================================================
         composable(Screen.Profile.route) {
-            ProfileScreen(
+            FocusedProfileScreen(
+                onNavigateBack = { navController.popBackStack() },
                 onNavigateToSettings = {
                     navController.navigate(Screen.Settings.route)
                 },

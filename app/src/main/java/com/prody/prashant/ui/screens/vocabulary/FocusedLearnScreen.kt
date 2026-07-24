@@ -3,6 +3,8 @@ package com.prody.prashant.ui.screens.vocabulary
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,7 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material3.Icon
@@ -22,6 +24,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,6 +34,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.semantics.contentDescription
@@ -41,6 +45,10 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prody.prashant.data.local.entity.VocabularyEntity
+import com.prody.prashant.ui.animation.KairosDurations
+import com.prody.prashant.ui.animation.KairosEasing
+import com.prody.prashant.ui.animation.KairosReveal
+import com.prody.prashant.ui.animation.rememberKairosReducedMotion
 import com.prody.prashant.ui.components.kairos.KairosEmptyState
 import com.prody.prashant.ui.components.kairos.KairosIconButton
 import com.prody.prashant.ui.components.kairos.KairosReadingSurface
@@ -48,7 +56,10 @@ import com.prody.prashant.ui.components.kairos.KairosScreenHeader
 import com.prody.prashant.ui.components.kairos.KairosSegmentedControl
 import com.prody.prashant.ui.components.kairos.KairosSkeletonList
 import com.prody.prashant.ui.icons.ProdyIcons
+import com.prody.prashant.ui.theme.KairosClay
+import com.prody.prashant.ui.theme.KairosPeriwinkle
 import com.prody.prashant.ui.theme.KairosRadius
+import com.prody.prashant.ui.theme.KairosSeaGlass
 import com.prody.prashant.ui.theme.KairosSpacing
 
 @Composable
@@ -91,8 +102,13 @@ fun FocusedLearnScreen(
                 .widthIn(max = 840.dp)
                 .align(Alignment.CenterHorizontally)
                 .padding(horizontal = KairosSpacing.screen),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
+            if (!state.isLoading && state.totalCount > 0) {
+                KairosReveal(visible = true) {
+                    LearningOverview(state = state)
+                }
+            }
             AnimatedVisibility(
                 visible = searchVisible,
                 enter = fadeIn(),
@@ -161,15 +177,141 @@ fun FocusedLearnScreen(
                     ),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    items(state.words, key = { it.id }) { word ->
-                        VocabularyRow(
-                            word = word,
-                            onClick = { onNavigateToDetail(word.id) },
-                            onFavorite = { viewModel.toggleFavorite(word.id) }
-                        )
+                    itemsIndexed(state.words, key = { _, word -> word.id }) { index, word ->
+                        KairosReveal(
+                            visible = true,
+                            delayMillis = (index.coerceAtMost(7) * 24)
+                        ) {
+                            VocabularyRow(
+                                word = word,
+                                onClick = { onNavigateToDetail(word.id) },
+                                onFavorite = { viewModel.toggleFavorite(word.id) }
+                            )
+                        }
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun LearningOverview(state: VocabularyListUiState) {
+    val targetProgress = if (state.totalCount == 0) 0f else state.learnedCount.toFloat() / state.totalCount.toFloat()
+    val reducedMotion = rememberKairosReducedMotion()
+    val progress by animateFloatAsState(
+        targetValue = targetProgress.coerceIn(0f, 1f),
+        animationSpec = tween(
+            durationMillis = if (reducedMotion) KairosDurations.Micro else 640,
+            easing = KairosEasing.EaseOutExpo
+        ),
+        label = "vocabulary-progress"
+    )
+    val percentage = (progress * 100).toInt().coerceIn(0, 100)
+
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(28.dp),
+        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.82f),
+        border = androidx.compose.foundation.BorderStroke(
+            1.dp,
+            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.72f)
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(18.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Bottom
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                    Text(
+                        text = "Your vocabulary",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        text = "Progress without pressure",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Text(
+                    text = "$percentage%",
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+
+            LinearProgressIndicator(
+                progress = { progress },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(7.dp)
+                    .clip(RoundedCornerShape(50)),
+                color = MaterialTheme.colorScheme.primary,
+                trackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(9.dp)
+            ) {
+                LearningMetric(
+                    value = state.learnedCount.toString(),
+                    label = "Learned",
+                    accent = KairosSeaGlass,
+                    modifier = Modifier.weight(1f)
+                )
+                LearningMetric(
+                    value = (state.totalCount - state.learnedCount).coerceAtLeast(0).toString(),
+                    label = "Exploring",
+                    accent = KairosPeriwinkle,
+                    modifier = Modifier.weight(1f)
+                )
+                LearningMetric(
+                    value = state.totalCount.toString(),
+                    label = "Library",
+                    accent = KairosClay,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun LearningMetric(
+    value: String,
+    label: String,
+    accent: Color,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier.height(76.dp),
+        shape = RoundedCornerShape(20.dp),
+        color = accent.copy(alpha = 0.12f)
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = value,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.SemiBold,
+                color = accent
+            )
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1
+            )
         }
     }
 }

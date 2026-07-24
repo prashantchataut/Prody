@@ -4,6 +4,19 @@ set -eu
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT_DIR"
 
+# This script must remain runnable through `bash scripts/verify_kairos.sh`.
+# GitHub does not preserve executable bits when users copy files through some
+# archive-based workflows, so CI intentionally does not rely on mode 100755.
+bash -n scripts/verify_kairos.sh
+echo "Verifier shell syntax: OK"
+
+if ! grep -Fq 'run: bash ./scripts/verify_kairos.sh' .github/workflows/android.yml; then
+  echo "Android CI must invoke the verifier through bash, not depend on its executable bit." >&2
+  exit 1
+fi
+
+echo "CI verifier invocation: OK"
+
 FOCUSED_VIEW_MODELS=(
   app/src/main/java/com/prody/prashant/ui/screens/home/TodayViewModel.kt
   app/src/main/java/com/prody/prashant/ui/screens/vocabulary/VocabularyListViewModel.kt
@@ -66,6 +79,29 @@ for path in Path('app/src/main/res').rglob('*.xml'):
 print('Android XML parse: OK')
 PY
 
+if [ ! -f FILES_TO_DELETE.txt ]; then
+  echo "FILES_TO_DELETE.txt is required for archive-based updates." >&2
+  exit 1
+fi
+
+while IFS= read -r deletion_path; do
+  case "$deletion_path" in
+    ""|\#*) continue ;;
+  esac
+  case "$deletion_path" in
+    /*|*".."*)
+      echo "Deletion manifest contains an unsafe path: $deletion_path" >&2
+      exit 1
+      ;;
+  esac
+  if [ -e "$deletion_path" ]; then
+    echo "File listed for deletion is still present: $deletion_path" >&2
+    exit 1
+  fi
+done < FILES_TO_DELETE.txt
+
+echo "Deletion manifest: OK"
+
 if [ "${1:-}" = "--gradle" ]; then
-  ./gradlew :app:testDebugUnitTest :app:lintDebug --no-daemon
+  ./gradlew :app:testDebugUnitTest :app:lintDebug :app:assembleDebug --no-daemon --stacktrace
 fi

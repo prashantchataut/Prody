@@ -117,7 +117,7 @@ Prerequisites:
 Run the repository boundary and trust checks without Gradle:
 
 ```bash
-./scripts/verify_kairos.sh
+bash ./scripts/verify_kairos.sh
 ```
 
 ## CI and releases
@@ -152,7 +152,7 @@ The four primary destinations, local entry flow, onboarding, notification consen
 A complete verification run should include:
 
 ```bash
-./scripts/verify_kairos.sh --gradle
+bash ./scripts/verify_kairos.sh --gradle
 ```
 
 Then test on at least:

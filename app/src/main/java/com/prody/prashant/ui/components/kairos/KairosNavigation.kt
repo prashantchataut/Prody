@@ -1,6 +1,7 @@
 package com.prody.prashant.ui.components.kairos
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,6 +25,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
@@ -31,6 +33,9 @@ import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.prody.prashant.ui.animation.KairosDurations
+import com.prody.prashant.ui.animation.KairosEasing
+import com.prody.prashant.ui.animation.rememberKairosReducedMotion
 import com.prody.prashant.ui.navigation.BottomNavItem
 import com.prody.prashant.ui.theme.KairosMotion
 import com.prody.prashant.ui.theme.KairosRadius
@@ -139,6 +144,13 @@ private fun KairosNavigationItem(
         label = "navigation-content"
     )
 
+    val reducedMotion = rememberKairosReducedMotion()
+    val iconScale by animateFloatAsState(
+        targetValue = if (selected && !reducedMotion) 1.08f else 1f,
+        animationSpec = tween(KairosDurations.State, easing = KairosEasing.EaseOutQuart),
+        label = "navigation-icon-scale"
+    )
+
     Surface(
         onClick = onClick,
         modifier = modifier
@@ -159,7 +171,9 @@ private fun KairosNavigationItem(
                 Icon(
                     imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
                     contentDescription = null,
-                    modifier = Modifier.size(21.dp)
+                    modifier = Modifier
+                        .size(21.dp)
+                        .graphicsLayer { scaleX = iconScale; scaleY = iconScale }
                 )
                 Text(
                     text = stringResource(item.labelResId),
@@ -177,7 +191,9 @@ private fun KairosNavigationItem(
                 Icon(
                     imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
                     contentDescription = stringResource(item.contentDescriptionResId),
-                    modifier = Modifier.size(21.dp)
+                    modifier = Modifier
+                        .size(21.dp)
+                        .graphicsLayer { scaleX = iconScale; scaleY = iconScale }
                 )
                 Text(
                     text = stringResource(item.labelResId),

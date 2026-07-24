@@ -4,57 +4,24 @@
     android:height="288dp"
     android:viewportWidth="288"
     android:viewportHeight="288">
-
-    <!--
-    PRODY SPLASH LOGO: Extended "Ascent" design
-    Larger canvas with subtle environmental elements
-
-    Uses Deep Forest Green (#2D5A3D) to match the app's theme.
-    The abstract geometric design reveals an upward arrow
-    through negative space - symbolizing growth and progress.
-    -->
-
-    <!-- Outer atmosphere ring - barely visible -->
     <path
-        android:pathData="M144,144m-140,0a140,140 0,1 1,280 0a140,140 0,1 1,-280 0"
-        android:fillColor="#00000000"
-        android:strokeColor="#1AFFFFFF"
-        android:strokeWidth="0.5"/>
-
-    <!-- Secondary ring -->
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#F6F4EF"
+        android:strokeWidth="28"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M83,194C57,170 50,133 60,101C72,67 104,46 140,46C180,46 212,72 222,109C232,143 219,175 193,197" />
     <path
-        android:pathData="M144,144m-125,0a125,125 0,1 1,250 0a125,125 0,1 1,-250 0"
-        android:fillColor="#00000000"
-        android:strokeColor="#14FFFFFF"
-        android:strokeWidth="0.3"/>
-
-    <!-- Main circular container - Deep Forest Green -->
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#F6F4EF"
+        android:strokeWidth="28"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M143,177L143,232L197,232" />
     <path
-        android:pathData="M144,144m-100,0a100,100 0,1 1,200 0a100,100 0,1 1,-200 0"
-        android:fillColor="#2D5A3D"/>
-
-    <!-- Upper-left block -->
-    <path
-        android:pathData="M64,64L144,64L144,112L96,160L64,160Z"
-        android:fillColor="#FFFFFF"/>
-
-    <!-- Lower-right block -->
-    <path
-        android:pathData="M144,156L192,108L224,108L224,224L144,224Z"
-        android:fillColor="#FFFFFF"/>
-
-    <!-- Destination accent -->
-    <path
-        android:pathData="M200,72L216,72L216,88L200,88Z"
-        android:fillColor="#B3FFFFFF"/>
-
-    <!-- Trail elements - journey markers -->
-    <path
-        android:pathData="M212,96m-4,0a4,4 0,1 1,8 0a4,4 0,1 1,-8 0"
-        android:fillColor="#66FFFFFF"/>
-
-    <path
-        android:pathData="M220,104m-2.5,0a2.5,2.5 0,1 1,5 0a2.5,2.5 0,1 1,-5 0"
-        android:fillColor="#40FFFFFF"/>
-
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#AEB8FF"
+        android:strokeWidth="16"
+        android:strokeLineCap="round"
+        android:pathData="M143,82L143,150M113,98L173,137M113,137L173,98" />
 </vector>
