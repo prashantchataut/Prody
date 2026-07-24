@@ -1,4 +1,4 @@
-# Prody API Keys Template
+# Kairos API Keys Template
 # Copy this file to app/apikey.properties and fill in your values.
 # NEVER commit the real apikey.properties file.
 

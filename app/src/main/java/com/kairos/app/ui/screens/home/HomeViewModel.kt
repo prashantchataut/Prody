@@ -1,0 +1,974 @@
+﻿package com.kairos.app.ui.screens.home
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.kairos.app.data.auth.AuthRepository
+import com.kairos.app.data.ai.BuddhaAiRepository
+import com.kairos.app.data.ai.BuddhaAiResult
+import com.kairos.app.data.local.dao.*
+import com.kairos.app.data.local.entity.IdiomEntity
+import com.kairos.app.data.local.entity.ProverbEntity
+import com.kairos.app.data.local.entity.QuoteEntity
+import com.kairos.app.data.local.entity.SeedEntity
+import com.kairos.app.data.local.entity.VocabularyEntity
+import com.kairos.app.data.local.entity.UserProfileEntity
+import com.kairos.app.data.local.entity.JournalEntryEntity
+import com.kairos.app.data.local.entity.StreakHistoryEntity
+import com.kairos.app.data.local.preferences.PreferencesManager
+import com.kairos.app.data.onboarding.AiHint
+import com.kairos.app.data.onboarding.AiHintType
+import com.kairos.app.data.onboarding.AiOnboardingManager
+import com.kairos.app.data.onboarding.BuddhaGuideCard
+import com.kairos.app.domain.intelligence.*
+import com.kairos.app.domain.progress.ActiveProgressService
+import com.kairos.app.domain.progress.NextAction
+import com.kairos.app.domain.progress.SeedBloomService
+import com.kairos.app.domain.progress.TodayProgress
+import com.kairos.app.domain.repository.SoulLayerRepository
+import com.kairos.app.domain.streak.DualStreakManager
+import com.kairos.app.domain.streak.DualStreakStatus
+import com.kairos.app.util.BuddhaWisdom
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
+import java.util.Calendar
+import javax.inject.Inject
+
+/**
+ * AI Proof Mode debug info - shown on AI surfaces when enabled in Settings.
+ * Provides visibility into AI generation status for debugging.
+ */
+data class AiProofModeInfo(
+    val provider: String = "",           // Gemini, OpenRouter, Fallback
+    val cacheStatus: String = "",        // HIT, MISS, or empty if no call
+    val timestamp: Long = 0L,            // Last successful generation timestamp
+    val lastError: String? = null,       // Short error code/message if failed
+    val isEnabled: Boolean = false,      // Whether AI Proof Mode is enabled
+    val isAiConfigured: Boolean = true   // Whether API key is configured
+)
+
+/**
+ * AI configuration status for the home screen.
+ */
+enum class AiConfigurationStatus {
+    CONFIGURED,
+    MISSING,
+    ERROR
+}
+
+data class HomeUiState(
+    val userName: String = "Growth Seeker",
+    val currentStreak: Int = 0,
+    val totalPoints: Int = 0,
+    val dailyQuote: String = "The obstacle is the way.",
+    val dailyQuoteAuthor: String = "Marcus Aurelius",
+    val wordOfTheDay: String = "Serendipity",
+    val wordDefinition: String = "The occurrence of events by chance in a happy or beneficial way",
+    val wordPronunciation: String = "ser-uhn-DIP-i-tee",
+    val wordId: Long = 0,
+    val dailyProverb: String = "",
+    val proverbMeaning: String = "",
+    val proverbOrigin: String = "",
+    val dailyIdiom: String = "",
+    val idiomMeaning: String = "",
+    val idiomExample: String = "",
+    val idiomId: Long = 0,
+    val buddhaThought: String = BuddhaWisdom.getRandomEncouragement(),
+    val buddhaThoughtExplanation: String = "",
+    val isBuddhaThoughtAiGenerated: Boolean = false,
+    val isBuddhaThoughtLoading: Boolean = false,
+    val canRefreshBuddhaThought: Boolean = true,
+    val journalEntriesThisWeek: Int = 0,
+    val wordsLearnedThisWeek: Int = 0,
+    val daysActiveThisWeek: Int = 0,
+    val isLoading: Boolean = true,
+    val hasLoadError: Boolean = false,
+    val error: String? = null,
+    // AI configuration status for showing warning banner
+    val aiConfigurationStatus: AiConfigurationStatus = AiConfigurationStatus.CONFIGURED,
+    // Onboarding state
+    val showBuddhaGuide: Boolean = false,
+    val buddhaGuideCards: List<BuddhaGuideCard> = emptyList(),
+    val showDailyWisdomHint: Boolean = false,
+    // Reactive state - Did user journal today?
+    val journaledToday: Boolean = false,
+    val todayEntryMood: String = "",
+    val todayEntryPreview: String = "",
+    // ============== ACTIVE PROGRESS LAYER ==============
+    // Next Action - contextual suggestion based on user behavior
+    val nextAction: NextAction? = null,
+    // Today's Progress - summary of today's activity
+    val todayProgress: TodayProgress = TodayProgress(),
+    // Seed -> Bloom mechanic
+    val dailySeed: SeedEntity? = null,
+    val showProgressFeedback: Boolean = false,
+    val progressFeedbackTitle: String = "",
+    val progressFeedbackMessage: String = "",
+    // ============== AI PROOF MODE ==============
+    // Debug info for Buddha Wisdom (shown when AI Proof Mode is enabled)
+    val buddhaWisdomProofInfo: AiProofModeInfo = AiProofModeInfo(),
+    // ============== DUAL STREAK SYSTEM ==============
+    // Two independent streaks: Wisdom and Reflection
+    val dualStreakStatus: DualStreakStatus = DualStreakStatus.empty(),
+    // ============== SOUL LAYER INTELLIGENCE ==============
+    // Context-aware greeting from Soul Layer
+    val intelligentGreeting: String = "",
+    val greetingSubtext: String = "",
+    // First week journey state (null if graduated)
+    val isInFirstWeek: Boolean = false,
+    val firstWeekDayNumber: Int = 0,
+    val firstWeekProgress: FirstWeekProgress? = null,
+    val firstWeekDayContent: FirstWeekDayContent? = null,
+    val showFirstWeekCelebration: Boolean = false,
+    val firstWeekCelebration: CelebrationContent? = null,
+    // Surfaced memory (null if none to show)
+    val surfacedMemory: SurfacedMemory? = null,
+    val showMemoryCard: Boolean = false,
+    // Anniversary memories for today
+    val anniversaryMemories: List<AnniversaryMemory> = emptyList(),
+    // User context for personalization
+    val userArchetype: UserArchetype = UserArchetype.EXPLORER,
+    val trustLevel: TrustLevel = TrustLevel.NEW,
+    val isUserStruggling: Boolean = false,
+    val isUserThriving: Boolean = false,
+    // ============== PERSONALIZED PATTERN (local ML) ==============
+    val personalizedPatternText: String = "",
+    val personalizedPatternSuggestion: String = "",
+    // Intelligence Insights
+    val intelligenceInsights: List<IntelligenceInsight> = emptyList(),
+    val isPremiumIntelligenceEnabled: Boolean = false
+)
+
+private data class DailyContent(
+    val quote: QuoteEntity?,
+    val word: VocabularyEntity?,
+    val proverb: ProverbEntity?,
+    val idiom: IdiomEntity?
+)
+
+private data class HomeDataArgs(
+    val profile: UserProfileEntity?,
+    val weeklyJournalEntries: List<JournalEntryEntity>,
+    val weeklyLearnedWords: Int,
+    val streakHistory: List<StreakHistoryEntity>,
+    val todayJournalEntries: List<JournalEntryEntity>,
+    val dualStreak: DualStreakStatus,
+    val aiProofMode: Boolean
+)
+
+private fun toHomeDataArgs(args: Array<Any?>): HomeDataArgs = HomeDataArgs(
+    profile = args.getOrNull(0) as? UserProfileEntity,
+    weeklyJournalEntries = (args.getOrNull(1) as? List<*>)?.filterIsInstance<JournalEntryEntity>() ?: emptyList(),
+    weeklyLearnedWords = args.getOrNull(2) as? Int ?: 0,
+    streakHistory = (args.getOrNull(3) as? List<*>)?.filterIsInstance<StreakHistoryEntity>() ?: emptyList(),
+    todayJournalEntries = (args.getOrNull(4) as? List<*>)?.filterIsInstance<JournalEntryEntity>() ?: emptyList(),
+    dualStreak = args.getOrNull(5) as? DualStreakStatus ?: DualStreakStatus.empty(),
+    aiProofMode = args.getOrNull(6) as? Boolean ?: false
+)
+
+@HiltViewModel
+class HomeViewModel @Inject constructor(
+    private val userDao: UserDao,
+    private val vocabularyDao: VocabularyDao,
+    private val quoteDao: QuoteDao,
+    private val proverbDao: ProverbDao,
+    private val idiomDao: IdiomDao,
+    private val journalDao: JournalDao,
+    private val preferencesManager: PreferencesManager,
+    private val buddhaAiRepository: BuddhaAiRepository,
+    private val aiOnboardingManager: AiOnboardingManager,
+    private val activeProgressService: ActiveProgressService,
+    private val seedBloomService: SeedBloomService,
+    private val dualStreakManager: DualStreakManager,
+    private val soulLayerRepository: SoulLayerRepository,
+    private val patternAnalysisEngine: PatternAnalysisEngine,
+    private val authRepository: AuthRepository
+) : ViewModel() {
+
+    private val _uiState = MutableStateFlow(HomeUiState())
+    val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
+
+    private var currentWordId: Long = 0
+    private var lastBuddhaRefreshTime: Long = 0
+
+    companion object {
+        private const val TAG = "HomeViewModel"
+        private const val REFRESH_COOLDOWN_MS = 30_000L // 30 second cooldown between refreshes
+    }
+
+    init {
+        loadInitialData()
+        loadPersonalizedPattern()
+    }
+
+    /**
+     * Performance Optimization: This is the primary data loading function for the HomeScreen.
+     * It consolidates multiple data sources into a single, efficient pipeline.
+     *
+     * Key Optimizations:
+     * 1.  **Parallel Daily Content Fetch**: `async` is used to fetch the daily quote, word, proverb,
+     *     and idiom concurrently. This avoids the previous sequential (blocking) fetch, which
+     *     was a major source of startup lag.
+     * 2.  **Single `combine` Operator**: All reactive and one-time data sources are merged using a
+     *     single `combine` operator. This ensures that the UI state is updated only ONCE, in a
+     *     single, atomic operation, after all necessary data is available. This prevents multiple,
+     *     staggered recompositions on the home screen.
+     * 3.  **Asynchronous Initialization**: The entire data loading process is off the main thread,
+     *     ensuring the UI remains responsive during startup. The `isLoading` flag is set to `false`
+     *     only at the very end, signaling the splash screen to disappear.
+     * 4.  **Error Isolation**: Each data fetch is wrapped in a `try-catch` block. This prevents a
+     *     failure in one data source (e.g., a missing proverb) from crashing the entire app or
+     *     blocking other data from loading.
+     */
+    private fun loadInitialData() {
+        viewModelScope.launch {
+            val weekStart = getWeekStartTimestamp()
+            val todayStart = getTodayStartTimestamp()
+
+            // 1. Fetch one-time daily content in parallel to reduce I/O blocking.
+            val dailyContent = fetchDailyContentConcurrently()
+
+            // Mark the fetched content as "shown" for the day.
+            viewModelScope.launch {
+                dailyContent.quote?.let { quoteDao.markAsShownDaily(it.id) }
+                dailyContent.word?.let {
+                    currentWordId = it.id
+                    vocabularyDao.markAsShownDaily(it.id)
+                }
+                dailyContent.proverb?.let { proverbDao.markAsShownDaily(it.id) }
+                dailyContent.idiom?.let { idiomDao.markAsShownDaily(it.id) }
+            }
+
+            // 2. Combine all reactive flows and the results of the one-time fetch.
+            combine(
+                userDao.getUserProfile().distinctUntilChanged(),
+                journalDao.getEntriesByDateRange(weekStart, System.currentTimeMillis()).distinctUntilChanged(),
+                vocabularyDao.getLearnedCountSince(weekStart).distinctUntilChanged(),
+                userDao.getStreakHistory().distinctUntilChanged(),
+                journalDao.getEntriesByDateRange(todayStart, System.currentTimeMillis()).distinctUntilChanged(),
+                dualStreakManager.getDualStreakStatusFlow().distinctUntilChanged(),
+                preferencesManager.debugAiProofMode.distinctUntilChanged()
+            ) { args ->
+                val data = toHomeDataArgs(args)
+
+                val daysActiveThisWeek = data.streakHistory.count { it.date >= weekStart }
+
+                // Determine today's journaling status.
+                val (journaledToday, todayMood, todayPreview) = if (data.todayJournalEntries.isNotEmpty()) {
+                    val latestEntry = data.todayJournalEntries.maxByOrNull { it.createdAt }
+                    Triple(true, latestEntry?.mood ?: "", latestEntry?.content?.take(100) ?: "")
+                } else {
+                    Triple(false, "", "")
+                }
+
+                // 3. Atomically update the UI state with all the loaded data.
+                _uiState.value.copy(
+                    userName = data.profile?.displayName?.takeIf {
+                        it != "Growth Seeker" && it.isNotBlank()
+                    } ?: authRepository.currentUser?.displayName ?: "Growth Seeker",
+                    currentStreak = data.profile?.currentStreak ?: 0,
+                    totalPoints = data.profile?.totalPoints ?: 0,
+                    dailyQuote = dailyContent.quote?.content ?: _uiState.value.dailyQuote,
+                    dailyQuoteAuthor = dailyContent.quote?.author ?: _uiState.value.dailyQuoteAuthor,
+                    wordOfTheDay = dailyContent.word?.word ?: _uiState.value.wordOfTheDay,
+                    wordDefinition = dailyContent.word?.definition ?: _uiState.value.wordDefinition,
+                    wordPronunciation = dailyContent.word?.pronunciation ?: _uiState.value.wordPronunciation,
+                    wordId = dailyContent.word?.id ?: _uiState.value.wordId,
+                    dailyProverb = dailyContent.proverb?.content ?: _uiState.value.dailyProverb,
+                    proverbMeaning = dailyContent.proverb?.meaning ?: _uiState.value.proverbMeaning,
+                    proverbOrigin = dailyContent.proverb?.origin ?: _uiState.value.proverbOrigin,
+                    dailyIdiom = dailyContent.idiom?.phrase ?: _uiState.value.dailyIdiom,
+                    idiomMeaning = dailyContent.idiom?.meaning ?: _uiState.value.idiomMeaning,
+                    idiomExample = dailyContent.idiom?.exampleSentence ?: _uiState.value.idiomExample,
+                    idiomId = dailyContent.idiom?.id ?: _uiState.value.idiomId,
+                    journalEntriesThisWeek = data.weeklyJournalEntries.size,
+                    wordsLearnedThisWeek = data.weeklyLearnedWords,
+                    daysActiveThisWeek = daysActiveThisWeek,
+                    journaledToday = journaledToday,
+                    todayEntryMood = todayMood,
+                    todayEntryPreview = todayPreview,
+                    dualStreakStatus = data.dualStreak,
+                    buddhaWisdomProofInfo = _uiState.value.buddhaWisdomProofInfo.copy(isEnabled = data.aiProofMode),
+                    isLoading = false // <-- Critical: Signal that loading is complete.
+                )
+            }.catch { e ->
+                android.util.Log.e(TAG, "Error in combined home data flow", e)
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        hasLoadError = true,
+                        error = "Failed to load home data. Please check your connection."
+                    )
+                }
+            }.collect { newState ->
+                _uiState.value = newState
+            }
+
+            // 4. Launch non-essential and secondary data loading tasks.
+            // These run independently and update the UI state as they complete.
+            launch { loadBuddhaWisdom() }
+            launch { checkOnboarding() }
+            launch { loadActiveProgress() }
+            launch { loadDailySeed() }
+            launch { checkAiConfiguration() }
+            launch { loadSoulLayerContent() }
+        }
+    }
+
+    private suspend fun fetchDailyContentConcurrently(): DailyContent = coroutineScope {
+        val quoteDeferred = async { try { quoteDao.getQuoteOfTheDay() } catch (e: Exception) { android.util.Log.e(TAG, "Failed to load quote", e); null } }
+        val wordDeferred = async { try { vocabularyDao.getWordOfTheDay() } catch (e: Exception) { android.util.Log.e(TAG, "Failed to load word", e); null } }
+        val proverbDeferred = async { try { proverbDao.getProverbOfTheDay() } catch (e: Exception) { android.util.Log.e(TAG, "Failed to load proverb", e); null } }
+        val idiomDeferred = async { try { idiomDao.getIdiomOfTheDay() } catch (e: Exception) { android.util.Log.e(TAG, "Failed to load idiom", e); null } }
+
+        DailyContent(quoteDeferred.await(), wordDeferred.await(), proverbDeferred.await(), idiomDeferred.await())
+    }
+
+
+    /**
+     * Check AI configuration and update UI state accordingly.
+     */
+    private fun checkAiConfiguration() {
+        val isConfigured = buddhaAiRepository.isAiConfigured()
+        val status = if (isConfigured) AiConfigurationStatus.CONFIGURED else AiConfigurationStatus.MISSING
+        _uiState.update { it.copy(aiConfigurationStatus = status) }
+    }
+
+    /**
+     * Get the current AI configuration status.
+     * Called from UI to determine if warning banner should be shown.
+     */
+    fun getAiConfigurationStatus(): AiConfigurationStatus {
+        return _uiState.value.aiConfigurationStatus
+    }
+
+    // ============== ACTIVE PROGRESS LAYER ==============
+
+    /**
+     * Load the Active Progress Layer data:
+     * - Next Action suggestion
+     * - Today's Progress summary
+     */
+    private fun loadActiveProgress() {
+        viewModelScope.launch {
+            try {
+                // Load Next Action
+                val nextAction = activeProgressService.getNextAction()
+                _uiState.update { it.copy(nextAction = nextAction) }
+
+                // Load Today's Progress
+                val todayProgress = activeProgressService.getTodayProgress()
+                _uiState.update { it.copy(todayProgress = todayProgress) }
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error loading active progress", e)
+            }
+        }
+    }
+
+    /**
+     * Refresh the Next Action suggestion (called after user actions)
+     */
+    fun refreshNextAction() {
+        viewModelScope.launch {
+            try {
+                val nextAction = activeProgressService.getNextAction()
+                val todayProgress = activeProgressService.getTodayProgress()
+                _uiState.update { it.copy(
+                    nextAction = nextAction,
+                    todayProgress = todayProgress
+                )}
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error refreshing next action", e)
+            }
+        }
+    }
+
+    /**
+     * Load today's Seed for the Seed -> Bloom mechanic
+     */
+    private fun loadDailySeed() {
+        viewModelScope.launch {
+            try {
+                val seed = seedBloomService.getTodaySeed()
+                _uiState.update { it.copy(dailySeed = seed) }
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error loading daily seed", e)
+            }
+        }
+    }
+
+    /**
+     * Show a progress feedback toast/banner after an action
+     */
+    fun showProgressFeedback(title: String, message: String) {
+        _uiState.update { it.copy(
+            showProgressFeedback = true,
+            progressFeedbackTitle = title,
+            progressFeedbackMessage = message
+        )}
+
+        // Auto-dismiss after a few seconds
+        viewModelScope.launch {
+            kotlinx.coroutines.delay(3000)
+            dismissProgressFeedback()
+        }
+    }
+
+    fun dismissProgressFeedback() {
+        _uiState.update { it.copy(showProgressFeedback = false) }
+    }
+
+    // ============== DUAL STREAK SYSTEM ==============
+
+    /**
+     * Trigger wisdom streak maintenance when user views wisdom content.
+     * Call this when user views quote, word, proverb, or idiom.
+     */
+    fun onWisdomContentViewed() {
+        viewModelScope.launch {
+            try {
+                val result = dualStreakManager.maintainWisdomStreak()
+                // Result can be used to show feedback/celebration if needed
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error maintaining wisdom streak", e)
+            }
+        }
+    }
+
+    /**
+     * Trigger reflection streak maintenance when user writes journal or completes reflection.
+     * Call this when user saves a journal entry or completes evening reflection.
+     */
+    fun onReflectionCompleted() {
+        viewModelScope.launch {
+            try {
+                val result = dualStreakManager.maintainReflectionStreak()
+                // Result can be used to show feedback/celebration if needed
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error maintaining reflection streak", e)
+            }
+        }
+    }
+
+    // ============== SOUL LAYER INTELLIGENCE ==============
+
+    /**
+     * Load all Soul Layer content for the home screen.
+     * This includes:
+     * - Context-aware greeting
+     * - First week journey state (if applicable)
+     * - Memory to surface (if any)
+     * - Anniversary memories
+     * - User context for personalization
+     */
+    private fun loadSoulLayerContent() {
+        viewModelScope.launch {
+            try {
+                // Load user context first - it's the foundation
+                val context = soulLayerRepository.getCurrentContext()
+
+                // Update basic context info
+                _uiState.update { state ->
+                    state.copy(
+                        userArchetype = context.userArchetype,
+                        trustLevel = context.trustLevel,
+                        isUserStruggling = context.isStruggling,
+                        isUserThriving = context.isThriving,
+                        isInFirstWeek = context.isInFirstWeek
+                    )
+                }
+
+                // Load greeting (intelligent, time-of-day aware)
+                loadIntelligentGreeting()
+
+                // Load first week state if in first week
+                if (context.isInFirstWeek) {
+                    loadFirstWeekState()
+                }
+
+                // Load memory to surface (if conditions are right)
+                loadSurfacedMemory()
+
+                // Load anniversary memories
+                loadAnniversaryMemories()
+
+                // Load Premium Intelligence Insights (Opt-in)
+                loadIntelligenceInsights(context)
+
+
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error loading Soul Layer content", e)
+            }
+        }
+    }
+
+    /**
+     * Load the context-aware intelligent greeting.
+     * This considers:
+     * - Time of day
+     * - User's name
+     * - User's emotional state
+     * - Special occasions
+     * - First week stage
+     */
+    private suspend fun loadIntelligentGreeting() {
+        try {
+            val greeting = soulLayerRepository.getGreeting()
+            _uiState.update { state ->
+                state.copy(
+                    intelligentGreeting = greeting.greeting,
+                    greetingSubtext = greeting.subtitle
+                )
+            }
+        } catch (e: Exception) {
+            android.util.Log.e(TAG, "Error loading greeting", e)
+            // Fallback to generic greeting
+            _uiState.update { state ->
+                state.copy(
+                    intelligentGreeting = "Welcome back",
+                    greetingSubtext = "What's on your mind today?"
+                )
+            }
+        }
+    }
+
+    /**
+     * Load first week journey state.
+     * Shows special content for users in their first 7 days.
+     */
+    private suspend fun loadFirstWeekState() {
+        try {
+            val state = soulLayerRepository.getFirstWeekState()
+            val dayContent = soulLayerRepository.getFirstWeekDayContent()
+            val progress = soulLayerRepository.getFirstWeekProgress()
+
+            _uiState.update { uiState ->
+                uiState.copy(
+                    firstWeekDayNumber = state?.dayNumber ?: 1,
+                    firstWeekProgress = progress,
+                    firstWeekDayContent = dayContent
+                )
+            }
+        } catch (e: Exception) {
+            android.util.Log.e(TAG, "Error loading first week state", e)
+        }
+    }
+
+    /**
+     * Load a memory to surface if conditions are right.
+     * Memories create "magic moments" that delight users.
+     */
+    private suspend fun loadSurfacedMemory() {
+        try {
+            val memory = soulLayerRepository.getMemoryToSurface(MemorySurfaceContext.APP_OPEN)
+            _uiState.update { state ->
+                state.copy(
+                    surfacedMemory = memory,
+                    showMemoryCard = memory != null
+                )
+            }
+
+            if (memory != null) {
+            }
+        } catch (e: Exception) {
+            android.util.Log.e(TAG, "Error loading surfaced memory", e)
+        }
+    }
+
+    /**
+     * Load anniversary memories for today.
+     * "On this day X years ago..."
+     */
+    private suspend fun loadAnniversaryMemories() {
+        try {
+            val anniversaries = soulLayerRepository.getAnniversaryMemories()
+            _uiState.update { state ->
+                state.copy(anniversaryMemories = anniversaries)
+            }
+
+            if (anniversaries.isNotEmpty()) {
+            }
+        } catch (e: Exception) {
+            android.util.Log.e(TAG, "Error loading anniversary memories", e)
+        }
+    }
+
+    /**
+     * Load Premium Intelligence Insights if the user has opted in.
+     */
+    private suspend fun loadIntelligenceInsights(context: UserContext) {
+        try {
+            val isEnabled = preferencesManager.premiumIntelligenceEnabled.first()
+            val insights = if (isEnabled) {
+                // Fixed: analyzePatterns takes an Int lookbackDays, not UserContext
+                patternAnalysisEngine.analyzePatterns(lookbackDays = 7)?.patterns?.map {
+                    IntelligenceInsight(
+                        title = it.theme,
+                        description = it.sampleSnippet,
+                        actionable = it.suggestion
+                    )
+                } ?: emptyList()
+            } else {
+                emptyList()
+            }
+
+            _uiState.update { state ->
+                state.copy(
+                    intelligenceInsights = insights,
+                    isPremiumIntelligenceEnabled = isEnabled
+                )
+            }
+            
+            if (insights.isNotEmpty()) {
+            }
+        } catch (e: Exception) {
+            android.util.Log.e(TAG, "Error loading intelligence insights", e)
+        }
+    }
+
+    /**
+     * Called when user interacts with a surfaced memory.
+     */
+    fun onMemoryInteracted(interactionType: String) {
+        viewModelScope.launch {
+            try {
+                val memory = _uiState.value.surfacedMemory ?: return@launch
+
+                // Track the interaction in Soul Layer
+                // This helps the system learn what memories resonate
+
+                // Mark memory as interacted
+                // The repository will handle persistence
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error handling memory interaction", e)
+            }
+        }
+    }
+
+    /**
+     * Dismiss the memory card.
+     */
+    fun dismissMemoryCard() {
+        _uiState.update { it.copy(showMemoryCard = false) }
+        onMemoryInteracted("dismissed")
+    }
+
+    /**
+     * Expand the memory card for full view.
+     */
+    fun expandMemoryCard() {
+        onMemoryInteracted("expanded")
+        // Navigation handled by UI
+    }
+
+    /**
+     * Called when user completes a first week milestone.
+     */
+    fun onFirstWeekMilestoneCompleted(milestone: FirstWeekMilestone) {
+        viewModelScope.launch {
+            try {
+                // Mark milestone as completed
+                soulLayerRepository.markFirstWeekMilestone(milestone)
+
+                // Get celebration content
+                val celebration = soulLayerRepository.getCelebrationContent(milestone)
+
+                _uiState.update { state ->
+                    state.copy(
+                        showFirstWeekCelebration = true,
+                        firstWeekCelebration = celebration
+                    )
+                }
+
+                // Refresh first week state
+                loadFirstWeekState()
+
+
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error handling first week milestone", e)
+            }
+        }
+    }
+
+    /**
+     * Dismiss the first week celebration.
+     */
+    fun dismissFirstWeekCelebration() {
+        _uiState.update { it.copy(showFirstWeekCelebration = false, firstWeekCelebration = null) }
+    }
+
+    /**
+     * Refresh Soul Layer content.
+     * Called when user triggers a refresh or after significant actions.
+     */
+    fun refreshSoulLayerContent() {
+        viewModelScope.launch {
+            try {
+                // Force refresh the context
+                soulLayerRepository.refreshContext()
+
+                // Reload all Soul Layer content
+                loadSoulLayerContent()
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error refreshing Soul Layer content", e)
+            }
+        }
+    }
+
+    private fun checkOnboarding() {
+        viewModelScope.launch {
+            // Combine both onboarding checks into a single flow subscription
+            // to prevent multiple coroutine leaks on configuration changes
+            combine(
+                aiOnboardingManager.shouldShowBuddhaGuide(),
+                aiOnboardingManager.shouldShowHint(AiHintType.DAILY_WISDOM_TIP)
+            ) { shouldShowBuddhaGuide, shouldShowDailyWisdomHint ->
+                Pair(shouldShowBuddhaGuide, shouldShowDailyWisdomHint)
+            }.collect { (shouldShowBuddhaGuide, shouldShowDailyWisdomHint) ->
+                _uiState.update { state ->
+                    state.copy(
+                        showBuddhaGuide = shouldShowBuddhaGuide,
+                        buddhaGuideCards = if (shouldShowBuddhaGuide) aiOnboardingManager.getBuddhaGuideCards() else state.buddhaGuideCards,
+                        showDailyWisdomHint = shouldShowDailyWisdomHint
+                    )
+                }
+            }
+        }
+    }
+
+    fun onBuddhaGuideComplete() {
+        viewModelScope.launch {
+            aiOnboardingManager.markBuddhaGuideShown()
+            _uiState.update { it.copy(showBuddhaGuide = false) }
+        }
+    }
+
+    fun onBuddhaGuideDontShowAgain() {
+        viewModelScope.launch {
+            aiOnboardingManager.dismissBuddhaGuideForever()
+            _uiState.update { it.copy(showBuddhaGuide = false) }
+        }
+    }
+
+    fun onDailyWisdomHintDismiss() {
+        viewModelScope.launch {
+            aiOnboardingManager.markHintShown(AiHintType.DAILY_WISDOM_TIP)
+            _uiState.update { it.copy(showDailyWisdomHint = false) }
+        }
+    }
+
+    fun getDailyWisdomHint(): AiHint {
+        return aiOnboardingManager.getHintContent(AiHintType.DAILY_WISDOM_TIP)
+    }
+
+    fun markWordAsLearned() {
+        viewModelScope.launch {
+            try {
+                if (currentWordId > 0) {
+                    vocabularyDao.markAsLearned(currentWordId)
+                    userDao.incrementWordsLearned()
+                    userDao.addPoints(25) // Points for learning a word
+
+                    // Update achievement progress
+                    userDao.getUserProfileSync()?.let { profile ->
+                        userDao.updateAchievementProgress("words_10", profile.wordsLearned)
+                        userDao.updateAchievementProgress("words_50", profile.wordsLearned)
+                        userDao.updateAchievementProgress("words_100", profile.wordsLearned)
+                        userDao.updateAchievementProgress("words_500", profile.wordsLearned)
+
+                        // Check for unlocks
+                        checkAndUnlockAchievement("words_10", profile.wordsLearned, 10)
+                        checkAndUnlockAchievement("words_50", profile.wordsLearned, 50)
+                        checkAndUnlockAchievement("words_100", profile.wordsLearned, 100)
+                        checkAndUnlockAchievement("words_500", profile.wordsLearned, 500)
+                    }
+                }
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error marking word as learned", e)
+            }
+        }
+    }
+
+    private suspend fun checkAndUnlockAchievement(achievementId: String, progress: Int, requirement: Int) {
+        if (progress >= requirement) {
+            val achievement = userDao.getAchievementById(achievementId)
+            if (achievement != null && !achievement.isUnlocked) {
+                userDao.unlockAchievement(achievementId)
+                // Award points for achievement
+                val points = achievement.rewardValue.toIntOrNull() ?: 100
+                userDao.addPoints(points)
+            }
+        }
+    }
+
+    private fun getWeekStartTimestamp(): Long {
+        val calendar = Calendar.getInstance()
+        calendar.set(Calendar.DAY_OF_WEEK, calendar.firstDayOfWeek)
+        calendar.set(Calendar.HOUR_OF_DAY, 0)
+        calendar.set(Calendar.MINUTE, 0)
+        calendar.set(Calendar.SECOND, 0)
+        calendar.set(Calendar.MILLISECOND, 0)
+        return calendar.timeInMillis
+    }
+
+    private fun getTodayStartTimestamp(): Long {
+        val calendar = Calendar.getInstance()
+        calendar.set(Calendar.HOUR_OF_DAY, 0)
+        calendar.set(Calendar.MINUTE, 0)
+        calendar.set(Calendar.SECOND, 0)
+        calendar.set(Calendar.MILLISECOND, 0)
+        return calendar.timeInMillis
+    }
+
+    /**
+     * Load Buddha's daily wisdom using AI with fallback to curated content.
+     * Uses caching to avoid excessive API calls.
+     */
+    private fun loadBuddhaWisdom(forceRefresh: Boolean = false) {
+        viewModelScope.launch {
+            try {
+                _uiState.update { it.copy(isBuddhaThoughtLoading = true) }
+
+                // Check if AI is configured (API key present)
+                val isAiConfigured = buddhaAiRepository.isAiConfigured()
+
+                // Get stats before the call to determine cache status
+                val statsBefore = buddhaAiRepository.getStats()
+                val cacheHitsBefore = statsBefore.cacheHits
+
+                val result = buddhaAiRepository.getDailyWisdom(forceRefresh)
+
+                // Get stats after the call
+                val statsAfter = buddhaAiRepository.getStats()
+                val wasCacheHit = statsAfter.cacheHits > cacheHitsBefore
+
+                when (result) {
+                    is BuddhaAiResult.Success -> {
+                        _uiState.update { state ->
+                            state.copy(
+                                buddhaThought = result.data.wisdom,
+                                buddhaThoughtExplanation = result.data.explanation,
+                                isBuddhaThoughtAiGenerated = result.data.isAiGenerated,
+                                isBuddhaThoughtLoading = false,
+                                buddhaWisdomProofInfo = state.buddhaWisdomProofInfo.copy(
+                                    provider = if (result.data.isAiGenerated) statsAfter.lastProvider.ifEmpty { "Gemini" } else "Fallback",
+                                    cacheStatus = if (wasCacheHit) "HIT" else "MISS",
+                                    timestamp = statsAfter.lastCallTimestamp.takeIf { it > 0 } ?: System.currentTimeMillis(),
+                                    lastError = null,
+                                    isAiConfigured = isAiConfigured
+                                )
+                            )
+                        }
+                    }
+                    is BuddhaAiResult.Fallback -> {
+                        _uiState.update { state ->
+                            state.copy(
+                                buddhaThought = result.data.wisdom,
+                                buddhaThoughtExplanation = result.data.explanation,
+                                isBuddhaThoughtAiGenerated = false,
+                                isBuddhaThoughtLoading = false,
+                                buddhaWisdomProofInfo = state.buddhaWisdomProofInfo.copy(
+                                    provider = "Fallback",
+                                    cacheStatus = if (wasCacheHit) "HIT" else "MISS",
+                                    timestamp = System.currentTimeMillis(),
+                                    lastError = if (!isAiConfigured) "API key not configured" else statsAfter.lastError,
+                                    isAiConfigured = isAiConfigured
+                                )
+                            )
+                        }
+                    }
+                    is BuddhaAiResult.Error -> {
+                        // Fall back to local wisdom
+                        _uiState.update { state ->
+                            state.copy(
+                                buddhaThought = BuddhaWisdom.getDailyReflectionPrompt(),
+                                buddhaThoughtExplanation = "From the archives",
+                                isBuddhaThoughtAiGenerated = false,
+                                isBuddhaThoughtLoading = false,
+                                buddhaWisdomProofInfo = state.buddhaWisdomProofInfo.copy(
+                                    provider = "Error",
+                                    cacheStatus = "MISS",
+                                    timestamp = System.currentTimeMillis(),
+                                    lastError = result.message,
+                                    isAiConfigured = isAiConfigured
+                                )
+                            )
+                        }
+                        android.util.Log.e(TAG, "Buddha wisdom error: ${result.message}")
+                    }
+                }
+
+                lastBuddhaRefreshTime = System.currentTimeMillis()
+
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error loading Buddha wisdom", e)
+                _uiState.update { state ->
+                    state.copy(
+                        buddhaThought = BuddhaWisdom.getDailyReflectionPrompt(),
+                        buddhaThoughtExplanation = "From the archives",
+                        isBuddhaThoughtAiGenerated = false,
+                        isBuddhaThoughtLoading = false,
+                        buddhaWisdomProofInfo = state.buddhaWisdomProofInfo.copy(
+                            provider = "Error",
+                            cacheStatus = "MISS",
+                            timestamp = System.currentTimeMillis(),
+                            lastError = e.message,
+                            isAiConfigured = buddhaAiRepository.isAiConfigured()
+                        )
+                    )
+                }
+            }
+        }
+    }
+
+    /**
+     * Refresh Buddha's thought with a new AI-generated one.
+     * Has a cooldown to prevent spam.
+     */
+    fun refreshBuddhaThought() {
+        val timeSinceLastRefresh = System.currentTimeMillis() - lastBuddhaRefreshTime
+
+        if (timeSinceLastRefresh < REFRESH_COOLDOWN_MS) {
+            // Still in cooldown
+            _uiState.update { it.copy(canRefreshBuddhaThought = false) }
+
+            viewModelScope.launch {
+                kotlinx.coroutines.delay(REFRESH_COOLDOWN_MS - timeSinceLastRefresh)
+                _uiState.update { it.copy(canRefreshBuddhaThought = true) }
+            }
+            return
+        }
+
+        loadBuddhaWisdom(forceRefresh = true)
+    }
+
+    fun retry() {
+        _uiState.update { it.copy(isLoading = true) }
+        loadInitialData()
+        loadPersonalizedPattern()
+    }
+
+    /**
+     * Load personalized pattern from the local PatternAnalysisEngine.
+     * Only shows data when the user has opted in via Settings and has enough entries.
+     */
+    private fun loadPersonalizedPattern() {
+        viewModelScope.launch {
+            try {
+                val topPattern = patternAnalysisEngine.getTopPatternForHome()
+                if (topPattern != null) {
+                    _uiState.update {
+                        it.copy(
+                            personalizedPatternText = "You've been writing about '${topPattern.theme}' ${topPattern.occurrenceCount} times ${topPattern.timespan}",
+                            personalizedPatternSuggestion = topPattern.suggestion
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "Error loading personalized pattern", e)
+            }
+        }
+    }
+}

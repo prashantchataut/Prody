@@ -19,11 +19,11 @@ val localProperties = Properties().apply {
 }
 
 android {
-    namespace = "com.prody.prashant"
+    namespace = "com.kairos.app"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.prody.prashant"
+        applicationId = "com.kairos.app"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
@@ -64,8 +64,8 @@ android {
                 it.contains("assembleRelease", ignoreCase = true) || it.contains("bundleRelease", ignoreCase = true)
             }
 
-            val keystoreFile = file("prody-release.jks")
-            val rootKeystoreFile = file("../keystore/prody-release.jks")
+            val keystoreFile = file("Kairos-release.jks")
+            val rootKeystoreFile = file("../keystore/Kairos-release.jks")
             val resolvedStoreFile = when {
                 keystoreFile.exists() -> keystoreFile
                 rootKeystoreFile.exists() -> rootKeystoreFile
@@ -73,7 +73,7 @@ android {
             }
 
             if (isReleaseTask && resolvedStoreFile == null) {
-                throw org.gradle.api.GradleException("Release keystore file not found. Could not find 'prody-release.jks' in 'app/' or 'keystore/'. Place the keystore file in the correct location or configure the path in 'app/build.gradle.kts'.")
+                throw org.gradle.api.GradleException("Release keystore file not found. Could not find 'Kairos-release.jks' in 'app/' or 'keystore/'. Place the keystore file in the correct location or configure the path in 'app/build.gradle.kts'.")
             }
 
             storeFile = resolvedStoreFile
@@ -158,21 +158,8 @@ android {
     }
 }
 
-// Workaround for Hilt + KSP duplicate class issue:
-// KSP generates Hilt _GeneratedInjector files in both hilt_aggregated_deps/ and
-// byRounds/2/hilt_aggregated_deps/, causing "duplicate class" Java compilation errors.
-// Delete the byRounds directory before Java compilation to prevent this.
-tasks.matching { it.name.startsWith("compileDebugJavaWithJavac") || it.name.startsWith("compileReleaseJavaWithJavac") }.configureEach {
-    doFirst {
-        val byRoundsDir = file("build/generated/ksp/debug/java/byRounds")
-        if (byRoundsDir.exists()) {
-            byRoundsDir.deleteRecursively()
-        }
-        val byRoundsDirRelease = file("build/generated/ksp/release/java/byRounds")
-        if (byRoundsDirRelease.exists()) {
-            byRoundsDirRelease.deleteRecursively()
-        }
-    }
+hilt {
+    enableAggregatingTask = true
 }
 
 dependencies {
@@ -209,10 +196,6 @@ dependencies {
     implementation(libs.sqlcipher.android)
     implementation(libs.sqlite.ktx)
 
-    // Network Security
-    implementation("com.squareup.okhttp3:okhttp:4.12.0")
-    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
-
     // Hilt
     implementation(libs.hilt.android)
     ksp(libs.hilt.android.compiler)
@@ -222,6 +205,7 @@ dependencies {
 
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.kotlinx.coroutines.play.services)
 
     // Serialization
     implementation(libs.kotlinx.serialization.json)
@@ -265,6 +249,7 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.test.espresso.core)
+    androidTestImplementation(libs.androidx.test.runner)
     androidTestImplementation(libs.mockk.android)
 
     // Debug

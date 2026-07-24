@@ -1,11 +1,9 @@
-name: Android
+name: Android verification
 
 on:
-  pull_request:
-    branches: [main, develop]
   push:
-    branches: [main, develop]
-    tags: ['v*']
+    branches: [main, master]
+  pull_request:
   workflow_dispatch:
 
 permissions:
@@ -17,107 +15,49 @@ concurrency:
 
 jobs:
   verify:
-    name: Verify, test, lint, and build debug
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 45
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@v4
 
       - name: Set up JDK 17
-        uses: actions/setup-java@8df1039502a15bceb9433410b1a100fbe190c53b # v4.5.0
+        uses: actions/setup-java@v4
         with:
-          java-version: '17'
           distribution: temurin
+          java-version: "17"
 
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@cc4fc85e6b35bafd578d5ffbc76a5518407e1af0 # v4.2.1
+        uses: gradle/actions/setup-gradle@v4
 
-      - name: Grant script permissions
-        run: chmod +x gradlew scripts/verify_kairos.sh
-
-      - name: Run Kairos architecture checks
+      - name: Verify repository invariants
         shell: bash
         run: bash ./scripts/verify_kairos.sh
 
-      - name: Test, lint, and build debug APK
-        run: ./gradlew :app:testDebugUnitTest :app:lintDebug :app:assembleDebug --no-daemon --stacktrace
+      - name: Unit tests, lint, and debug build
+        shell: bash
+        run: >-
+          ./gradlew clean
+          :app:testDebugUnitTest
+          :app:lintDebug
+          :app:assembleDebug
+          --no-daemon
+          --no-configuration-cache
+          --stacktrace
+
+      - name: Upload lint report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-report
+          path: app/build/reports/lint-results-debug.html
+          if-no-files-found: ignore
 
       - name: Upload debug APK
-        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
+        if: success()
+        uses: actions/upload-artifact@v4
         with:
-          name: kairos-debug-${{ github.sha }}
+          name: kairos-debug-apk
           path: app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
-          retention-days: 10
-
-      - name: Upload test and lint reports
-        if: always()
-        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
-        with:
-          name: kairos-reports-${{ github.sha }}
-          path: |
-            app/build/reports/tests/
-            app/build/reports/lint-results-*.html
-          if-no-files-found: warn
-          retention-days: 10
-
-  release:
-    name: Build signed release
-    if: startsWith(github.ref, 'refs/tags/v')
-    needs: verify
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    environment: production
-    permissions:
-      contents: write
-
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@8df1039502a15bceb9433410b1a100fbe190c53b # v4.5.0
-        with:
-          java-version: '17'
-          distribution: temurin
-
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@cc4fc85e6b35bafd578d5ffbc76a5518407e1af0 # v4.2.1
-
-      - name: Grant wrapper permission
-        run: chmod +x gradlew
-
-      - name: Require production signing secrets
-        env:
-          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-        run: |
-          set -eu
-          for name in KEYSTORE_BASE64 KEYSTORE_PASSWORD KEY_ALIAS KEY_PASSWORD; do
-            eval "value=\${$name:-}"
-            if [ -z "$value" ]; then
-              echo "Missing required production secret: $name" >&2
-              exit 1
-            fi
-          done
-          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > app/prody-release.jks
-          chmod 600 app/prody-release.jks
-
-      - name: Build signed release APK
-        env:
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-        run: ./gradlew :app:assembleRelease --no-daemon --stacktrace
-
-      - name: Publish GitHub release
-        uses: softprops/action-gh-release@01570a1f39cb168c169c802c3bceb9e93fb10974 # v2.1.0
-        with:
-          files: app/build/outputs/apk/release/*.apk
-          fail_on_unmatched_files: true
-          generate_release_notes: true
-          name: Kairos ${{ github.ref_name }}
