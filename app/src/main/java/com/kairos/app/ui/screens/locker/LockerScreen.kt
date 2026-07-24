@@ -39,8 +39,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.PushPin
-import androidx.compose.material.icons.outlined.PushPin
+import androidx.compose.material.icons.filled.PushPin as FilledPushPin
+import androidx.compose.material.icons.outlined.PushPin as OutlinedPushPin
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -443,7 +443,7 @@ private fun EvidenceCard(
                         modifier = Modifier.size(32.dp)
                     ) {
                         Icon(
-                            imageVector = if (evidence.isPinned) Icons.Filled.PushPin else Icons.Outlined.PushPin,
+                            imageVector = if (evidence.isPinned) Icons.Filled.FilledPushPin else Icons.Outlined.OutlinedPushPin,
                             contentDescription = if (evidence.isPinned) "Unpin" else "Pin",
                             tint = if (evidence.isPinned) typeColor else Color.Gray,
                             modifier = Modifier.size(18.dp)
@@ -668,7 +668,7 @@ private fun EvidenceDetailSheet(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = if (evidence.isPinned) Icons.Filled.PushPin else Icons.Outlined.PushPin,
+                        imageVector = if (evidence.isPinned) Icons.Filled.FilledPushPin else Icons.Outlined.OutlinedPushPin,
                         contentDescription = null,
                         tint = if (evidence.isPinned) typeColor else Color.Gray,
                         modifier = Modifier.size(16.dp)
