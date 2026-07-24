@@ -1,265 +1,122 @@
-name: Android CI/CD
+name: Android
 
 on:
-  push:
-    branches: [ main, develop ]
-    tags:
-      - 'v*'
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+    tags: ['v*']
   workflow_dispatch:
 
-env:
-  # Global memory settings for all Gradle operations
-  GRADLE_OPTS: "-Xmx4g -XX:MaxMetaspaceSize=512m -XX:+HeapDumpOnOutOfMemoryError -XX:+UseParallelGC -Dfile.encoding=UTF-8"
-  JAVA_OPTS: "-Xmx4g"
+permissions:
+  contents: read
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  build:
+  verify:
+    name: Verify, test, lint, and build debug
     runs-on: ubuntu-latest
+    timeout-minutes: 35
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Check out repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-    - name: Set up JDK 17
-      uses: actions/setup-java@8df1039502a15bceb9433410b1a100fbe190c53b # v4.5.0
-      with:
-        java-version: '17'
-        distribution: 'temurin'
+      - name: Set up JDK 17
+        uses: actions/setup-java@8df1039502a15bceb9433410b1a100fbe190c53b # v4.5.0
+        with:
+          java-version: '17'
+          distribution: temurin
 
-    - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@cc4fc85e6b35bafd578d5ffbc76a5518407e1af0 # v4.2.1
-      with:
-        gradle-home-cache-cleanup: false
-        cache-read-only: false
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@cc4fc85e6b35bafd578d5ffbc76a5518407e1af0 # v4.2.1
 
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
+      - name: Grant wrapper permission
+        run: chmod +x gradlew
 
-    - name: Verify Gradle wrapper
-      run: |
-        echo "Checking gradle wrapper files..."
-        ls -la gradle/wrapper/
-        file gradle/wrapper/gradle-wrapper.jar
-        echo "Wrapper jar size: $(stat -c%s gradle/wrapper/gradle-wrapper.jar) bytes"
-        # Verify SHA256 checksum matches official Gradle 8.9 wrapper
-        EXPECTED_SHA="498495120a03b9a6ab5d155f5de3c8f0d986a449153702fb80fc80e134484f17"
-        ACTUAL_SHA=$(sha256sum gradle/wrapper/gradle-wrapper.jar | awk '{print $1}')
-        echo "Expected SHA256: $EXPECTED_SHA"
-        echo "Actual SHA256: $ACTUAL_SHA"
-        if [ "$EXPECTED_SHA" != "$ACTUAL_SHA" ]; then
-          echo "ERROR: Wrapper jar checksum mismatch! Re-downloading..."
-          curl -sL -o gradle/wrapper/gradle-wrapper.jar "https://raw.githubusercontent.com/gradle/gradle/v8.9.0/gradle/wrapper/gradle-wrapper.jar"
-        else
-          echo "Wrapper jar checksum verified successfully"
-        fi
+      - name: Run Kairos architecture checks
+        run: ./scripts/verify_kairos.sh
 
-    - name: Decode Keystore
-      env:
-        ENCODED_STRING: ${{ secrets.KEYSTORE_BASE64 }}
-        KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-        KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-        KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-      run: |
-        # Use the bundled keystore for open source builds if secrets are not set
-        if [ -z "$ENCODED_STRING" ]; then
-          echo "Using bundled open source keystore"
-          # Generate keystore for open source builds
-          keytool -genkeypair -v \
-            -keystore app/prody-release.jks \
-            -keyalg RSA \
-            -keysize 2048 \
-            -validity 10000 \
-            -alias prody \
-            -storepass prody2024 \
-            -keypass prody2024 \
-            -dname "CN=Prody App, OU=Prody, O=Prody, L=Unknown, ST=Unknown, C=IN"
-        else
-          echo "Using secret keystore"
-          echo $ENCODED_STRING | base64 -di > app/prody-release.jks
-        fi
+      - name: Test, lint, and build debug APK
+        run: ./gradlew :app:testDebugUnitTest :app:lintDebug :app:assembleDebug --no-daemon --stacktrace
 
-    - name: Clean build directory
-      run: ./gradlew clean --no-configuration-cache
+      - name: Upload debug APK
+        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
+        with:
+          name: kairos-debug-${{ github.sha }}
+          path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+          retention-days: 10
 
-    - name: Build Debug APK
-      run: ./gradlew assembleDebug --stacktrace --no-configuration-cache
-      env:
-        GRADLE_OPTS: "-Xmx4g -XX:MaxMetaspaceSize=512m -XX:+HeapDumpOnOutOfMemoryError -XX:+UseParallelGC -Dfile.encoding=UTF-8"
-        JAVA_OPTS: "-Xmx4g"
-
-    - name: Build Release APK
-      env:
-        KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-        KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-        KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-        GRADLE_OPTS: "-Xmx4g -XX:MaxMetaspaceSize=512m -XX:+HeapDumpOnOutOfMemoryError -XX:+UseParallelGC -Dfile.encoding=UTF-8"
-        JAVA_OPTS: "-Xmx4g"
-      run: |
-        # Use default values for open source builds
-        export KEYSTORE_PASSWORD="${KEYSTORE_PASSWORD:-prody2024}"
-        export KEY_ALIAS="${KEY_ALIAS:-prody}"
-        export KEY_PASSWORD="${KEY_PASSWORD:-prody2024}"
-        ./gradlew assembleRelease --stacktrace --no-configuration-cache
-
-    - name: Upload Debug APK
-      uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
-      with:
-        name: prody-debug
-        path: app/build/outputs/apk/debug/*.apk
-        retention-days: 10
-
-    - name: Upload Release APK
-      uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
-      with:
-        name: prody-release
-        path: app/build/outputs/apk/release/*.apk
-        retention-days: 10
+      - name: Upload test and lint reports
+        if: always()
+        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
+        with:
+          name: kairos-reports-${{ github.sha }}
+          path: |
+            app/build/reports/tests/
+            app/build/reports/lint-results-*.html
+          if-no-files-found: warn
+          retention-days: 10
 
   release:
-    needs: build
-    runs-on: ubuntu-latest
+    name: Build signed release
     if: startsWith(github.ref, 'refs/tags/v')
-
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-
-    - name: Download Release APK
-      uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
-      with:
-        name: prody-release
-        path: release-apk
-
-    - name: Create Release
-      uses: softprops/action-gh-release@01570a1f39cb168c169c802c3bceb9e93fb10974 # v2.1.0
-      with:
-        files: release-apk/*.apk
-        generate_release_notes: true
-        body: |
-          ## Prody Release ${{ github.ref_name }}
-
-          ### What's New
-          - Check commit history for detailed changes
-
-          ### Installation
-          1. Download the APK file below
-          2. Enable "Install from unknown sources" in your Android settings
-          3. Open the APK file to install
-
-          ### Requirements
-          - Android 8.0 (API 26) or higher
-
-          ---
-          *Built with love for personal growth seekers*
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  lint:
+    needs: verify
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: production
+    permissions:
+      contents: write
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Check out repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-    - name: Set up JDK 17
-      uses: actions/setup-java@8df1039502a15bceb9433410b1a100fbe190c53b # v4.5.0
-      with:
-        java-version: '17'
-        distribution: 'temurin'
+      - name: Set up JDK 17
+        uses: actions/setup-java@8df1039502a15bceb9433410b1a100fbe190c53b # v4.5.0
+        with:
+          java-version: '17'
+          distribution: temurin
 
-    - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@cc4fc85e6b35bafd578d5ffbc76a5518407e1af0 # v4.2.1
-      with:
-        gradle-home-cache-cleanup: false
-        cache-read-only: false
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@cc4fc85e6b35bafd578d5ffbc76a5518407e1af0 # v4.2.1
 
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
+      - name: Grant wrapper permission
+        run: chmod +x gradlew
 
-    - name: Verify Gradle wrapper
-      run: |
-        echo "Checking gradle wrapper files..."
-        ls -la gradle/wrapper/
-        file gradle/wrapper/gradle-wrapper.jar
-        echo "Wrapper jar size: $(stat -c%s gradle/wrapper/gradle-wrapper.jar) bytes"
-        # Verify SHA256 checksum matches official Gradle 8.9 wrapper
-        EXPECTED_SHA="498495120a03b9a6ab5d155f5de3c8f0d986a449153702fb80fc80e134484f17"
-        ACTUAL_SHA=$(sha256sum gradle/wrapper/gradle-wrapper.jar | awk '{print $1}')
-        echo "Expected SHA256: $EXPECTED_SHA"
-        echo "Actual SHA256: $ACTUAL_SHA"
-        if [ "$EXPECTED_SHA" != "$ACTUAL_SHA" ]; then
-          echo "ERROR: Wrapper jar checksum mismatch! Re-downloading..."
-          curl -sL -o gradle/wrapper/gradle-wrapper.jar "https://raw.githubusercontent.com/gradle/gradle/v8.9.0/gradle/wrapper/gradle-wrapper.jar"
-        else
-          echo "Wrapper jar checksum verified successfully"
-        fi
+      - name: Require production signing secrets
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          set -eu
+          for name in KEYSTORE_BASE64 KEYSTORE_PASSWORD KEY_ALIAS KEY_PASSWORD; do
+            eval "value=\${$name:-}"
+            if [ -z "$value" ]; then
+              echo "Missing required production secret: $name" >&2
+              exit 1
+            fi
+          done
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > app/prody-release.jks
+          chmod 600 app/prody-release.jks
 
-    - name: Run Lint
-      run: ./gradlew lintDebug --stacktrace --no-configuration-cache
-      env:
-        GRADLE_OPTS: "-Xmx4g -XX:MaxMetaspaceSize=512m -XX:+HeapDumpOnOutOfMemoryError -XX:+UseParallelGC -Dfile.encoding=UTF-8"
-        JAVA_OPTS: "-Xmx4g"
+      - name: Build signed release APK
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: ./gradlew :app:assembleRelease --no-daemon --stacktrace
 
-    - name: Upload Lint Report
-      uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
-      if: always()
-      with:
-        name: lint-report
-        path: app/build/reports/lint-results-*.html
-        retention-days: 10
-
-  test:
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-
-    - name: Set up JDK 17
-      uses: actions/setup-java@8df1039502a15bceb9433410b1a100fbe190c53b # v4.5.0
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-
-    - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@cc4fc85e6b35bafd578d5ffbc76a5518407e1af0 # v4.2.1
-      with:
-        gradle-home-cache-cleanup: false
-        cache-read-only: false
-
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
-
-    - name: Verify Gradle wrapper
-      run: |
-        echo "Checking gradle wrapper files..."
-        ls -la gradle/wrapper/
-        file gradle/wrapper/gradle-wrapper.jar
-        echo "Wrapper jar size: $(stat -c%s gradle/wrapper/gradle-wrapper.jar) bytes"
-        # Verify SHA256 checksum matches official Gradle 8.9 wrapper
-        EXPECTED_SHA="498495120a03b9a6ab5d155f5de3c8f0d986a449153702fb80fc80e134484f17"
-        ACTUAL_SHA=$(sha256sum gradle/wrapper/gradle-wrapper.jar | awk '{print $1}')
-        echo "Expected SHA256: $EXPECTED_SHA"
-        echo "Actual SHA256: $ACTUAL_SHA"
-        if [ "$EXPECTED_SHA" != "$ACTUAL_SHA" ]; then
-          echo "ERROR: Wrapper jar checksum mismatch! Re-downloading..."
-          curl -sL -o gradle/wrapper/gradle-wrapper.jar "https://raw.githubusercontent.com/gradle/gradle/v8.9.0/gradle/wrapper/gradle-wrapper.jar"
-        else
-          echo "Wrapper jar checksum verified successfully"
-        fi
-
-    - name: Run Unit Tests
-      run: ./gradlew testDebugUnitTest --stacktrace --no-configuration-cache
-      env:
-        GRADLE_OPTS: "-Xmx4g -XX:MaxMetaspaceSize=512m -XX:+HeapDumpOnOutOfMemoryError -XX:+UseParallelGC -Dfile.encoding=UTF-8"
-        JAVA_OPTS: "-Xmx4g"
-
-    - name: Upload Test Reports
-      uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
-      if: always()
-      with:
-        name: test-reports
-        path: app/build/reports/tests/
-        retention-days: 10
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@01570a1f39cb168c169c802c3bceb9e93fb10974 # v2.1.0
+        with:
+          files: app/build/outputs/apk/release/*.apk
+          fail_on_unmatched_files: true
+          generate_release_notes: true
+          name: Kairos ${{ github.ref_name }}

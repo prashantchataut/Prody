@@ -10,6 +10,9 @@ interface QuoteDao {
     @Query("SELECT * FROM quotes ORDER BY id ASC")
     fun getAllQuotes(): Flow<List<QuoteEntity>>
 
+    @Query("SELECT * FROM quotes ORDER BY id ASC")
+    suspend fun getAllQuotesSync(): List<QuoteEntity>
+
     @Query("SELECT * FROM quotes WHERE id = :id")
     suspend fun getQuoteById(id: Long): QuoteEntity?
 

@@ -3,12 +3,7 @@ package com.prody.prashant.ui.screens.quotes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.prody.prashant.data.ai.BuddhaAiRepository
-import com.prody.prashant.data.ai.BuddhaAiResult
 import com.prody.prashant.data.ai.QuoteExplanationResult
-import com.prody.prashant.data.local.dao.IdiomDao
-import com.prody.prashant.data.local.dao.PhraseDao
-import com.prody.prashant.data.local.dao.ProverbDao
-import com.prody.prashant.data.local.dao.QuoteDao
 import com.prody.prashant.data.local.entity.IdiomEntity
 import com.prody.prashant.data.local.entity.PhraseEntity
 import com.prody.prashant.data.local.entity.ProverbEntity
@@ -16,11 +11,14 @@ import com.prody.prashant.data.local.entity.QuoteEntity
 import com.prody.prashant.data.onboarding.AiHint
 import com.prody.prashant.data.onboarding.AiHintType
 import com.prody.prashant.data.onboarding.AiOnboardingManager
+import com.prody.prashant.domain.repository.WisdomLibraryRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -43,15 +41,13 @@ data class QuotesUiState(
 
 @HiltViewModel
 class QuotesViewModel @Inject constructor(
-    private val quoteDao: QuoteDao,
-    private val proverbDao: ProverbDao,
-    private val idiomDao: IdiomDao,
-    private val phraseDao: PhraseDao,
+    private val wisdomLibraryRepository: WisdomLibraryRepository,
     private val buddhaAiRepository: BuddhaAiRepository,
     private val aiOnboardingManager: AiOnboardingManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(QuotesUiState())
+    private var libraryJob: Job? = null
     val uiState: StateFlow<QuotesUiState> = _uiState.asStateFlow()
 
     init {
@@ -81,118 +77,58 @@ class QuotesViewModel @Inject constructor(
     }
 
     private fun loadAllContent() {
-        viewModelScope.launch {
-            // Load quotes
-            launch {
-                try {
-                    quoteDao.getAllQuotes().collect { quotes ->
-                        _uiState.update { state ->
-                            val newCount = state.loadedCount + 1
-                            state.copy(
-                                quotes = quotes,
-                                loadedCount = newCount,
-                                isLoading = newCount < 4
-                            )
-                        }
+        libraryJob?.cancel()
+        libraryJob = viewModelScope.launch {
+            wisdomLibraryRepository.observeLibrary()
+                .catch { error ->
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            error = error.message ?: "The library could not be loaded."
+                        )
                     }
-                } catch (e: Exception) {
-                    _uiState.update { it.copy(error = "Failed to load quotes") }
                 }
-            }
-
-            // Load proverbs
-            launch {
-                try {
-                    proverbDao.getAllProverbs().collect { proverbs ->
-                        _uiState.update { state ->
-                            val newCount = state.loadedCount + 1
-                            state.copy(
-                                proverbs = proverbs,
-                                loadedCount = newCount,
-                                isLoading = newCount < 4
-                            )
-                        }
+                .collect { library ->
+                    _uiState.update {
+                        it.copy(
+                            quotes = library.quotes,
+                            proverbs = library.proverbs,
+                            idioms = library.idioms,
+                            phrases = library.phrases,
+                            isLoading = false,
+                            error = null,
+                            loadedCount = 4
+                        )
                     }
-                } catch (e: Exception) {
-                    _uiState.update { it.copy(error = "Failed to load proverbs") }
                 }
-            }
-
-            // Load idioms
-            launch {
-                try {
-                    idiomDao.getAllIdioms().collect { idioms ->
-                        _uiState.update { state ->
-                            val newCount = state.loadedCount + 1
-                            state.copy(
-                                idioms = idioms,
-                                loadedCount = newCount,
-                                isLoading = newCount < 4
-                            )
-                        }
-                    }
-                } catch (e: Exception) {
-                    _uiState.update { it.copy(error = "Failed to load idioms") }
-                }
-            }
-
-            // Load phrases
-            launch {
-                try {
-                    phraseDao.getAllPhrases().collect { phrases ->
-                        _uiState.update { state ->
-                            val newCount = state.loadedCount + 1
-                            state.copy(
-                                phrases = phrases,
-                                loadedCount = newCount,
-                                isLoading = newCount < 4
-                            )
-                        }
-                    }
-                } catch (e: Exception) {
-                    _uiState.update { it.copy(error = "Failed to load phrases") }
-                }
-            }
         }
     }
 
     fun toggleQuoteFavorite(quote: QuoteEntity) {
         viewModelScope.launch {
-            try {
-                quoteDao.updateQuote(quote.copy(isFavorite = !quote.isFavorite))
-            } catch (e: Exception) {
-                _uiState.update { it.copy(error = "Failed to update quote favorite") }
-            }
+            wisdomLibraryRepository.setQuoteFavorite(quote, !quote.isFavorite)
+                .onError { error -> _uiState.update { it.copy(error = error.userMessage) } }
         }
     }
 
     fun toggleProverbFavorite(proverb: ProverbEntity) {
         viewModelScope.launch {
-            try {
-                proverbDao.updateProverb(proverb.copy(isFavorite = !proverb.isFavorite))
-            } catch (e: Exception) {
-                _uiState.update { it.copy(error = "Failed to update proverb favorite") }
-            }
+            wisdomLibraryRepository.setProverbFavorite(proverb, !proverb.isFavorite)
+                .onError { error -> _uiState.update { it.copy(error = error.userMessage) } }
         }
     }
 
     fun toggleIdiomFavorite(idiom: IdiomEntity) {
         viewModelScope.launch {
-            try {
-                idiomDao.updateIdiom(idiom.copy(isFavorite = !idiom.isFavorite))
-            } catch (e: Exception) {
-                _uiState.update { it.copy(error = "Failed to update idiom favorite") }
-            }
+            wisdomLibraryRepository.setIdiomFavorite(idiom, !idiom.isFavorite)
+                .onError { error -> _uiState.update { it.copy(error = error.userMessage) } }
         }
     }
 
     fun togglePhraseFavorite(phrase: PhraseEntity) {
         viewModelScope.launch {
-            try {
-                phraseDao.updatePhrase(phrase.copy(isFavorite = !phrase.isFavorite))
-            } catch (e: Exception) {
-                _uiState.update { it.copy(error = "Failed to update phrase favorite") }
-            }
+            wisdomLibraryRepository.setPhraseFavorite(phrase, !phrase.isFavorite)
+                .onError { error -> _uiState.update { it.copy(error = error.userMessage) } }
         }
     }
 

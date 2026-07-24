@@ -72,6 +72,11 @@ val LoraFamily: FontFamily = try {
  */
 val SerifFamily: FontFamily = LoraFamily
 
+/** Native Android sans-serif used by the focused Kairos interface.
+ * It avoids a branded-font dependency in dense product UI and respects platform rendering.
+ */
+val KairosSansFamily: FontFamily = FontFamily.SansSerif
+
 /**
  * Creates a safe Font instance with proper error handling.
  * Uses Async loading strategy to prevent crash if font resource is unavailable.
@@ -125,26 +130,26 @@ val PoppinsFamily: FontFamily = try {
  * Main Typography configuration following Material Design 3 guidelines
  * with Poppins as the exclusive font family.
  */
-val ProdyTypography = Typography(
+val KairosTypography = Typography(
     // ==========================================================================
     // DISPLAY STYLES - For large, impactful text (splash screens, hero sections)
     // ==========================================================================
     displayLarge = TextStyle(
-        fontFamily = PoppinsFamily,
+        fontFamily = KairosSansFamily,
         fontWeight = FontWeight.Bold,
         fontSize = 56.sp,
         lineHeight = 64.sp,
         letterSpacing = (-1.5).sp
     ),
     displayMedium = TextStyle(
-        fontFamily = PoppinsFamily,
+        fontFamily = KairosSansFamily,
         fontWeight = FontWeight.SemiBold,
         fontSize = 42.sp,
         lineHeight = 50.sp,
         letterSpacing = (-1.0).sp
     ),
     displaySmall = TextStyle(
-        fontFamily = PoppinsFamily,
+        fontFamily = KairosSansFamily,
         fontWeight = FontWeight.SemiBold,
         fontSize = 34.sp,
         lineHeight = 42.sp,
@@ -155,21 +160,21 @@ val ProdyTypography = Typography(
     // HEADLINE STYLES - For section headers and prominent text
     // ==========================================================================
     headlineLarge = TextStyle(
-        fontFamily = PoppinsFamily,
+        fontFamily = KairosSansFamily,
         fontWeight = FontWeight.SemiBold,
         fontSize = 30.sp,
         lineHeight = 38.sp,
         letterSpacing = 0.sp
     ),
     headlineMedium = TextStyle(
-        fontFamily = PoppinsFamily,
+        fontFamily = KairosSansFamily,
         fontWeight = FontWeight.SemiBold,
         fontSize = 26.sp,
         lineHeight = 34.sp,
         letterSpacing = 0.sp
     ),
     headlineSmall = TextStyle(
-        fontFamily = PoppinsFamily,
+        fontFamily = KairosSansFamily,
         fontWeight = FontWeight.SemiBold,
         fontSize = 22.sp,
         lineHeight = 30.sp,
@@ -180,21 +185,21 @@ val ProdyTypography = Typography(
     // TITLE STYLES - For card titles, list items, and UI element headers
     // ==========================================================================
     titleLarge = TextStyle(
-        fontFamily = PoppinsFamily,
+        fontFamily = KairosSansFamily,
         fontWeight = FontWeight.SemiBold,
         fontSize = 20.sp,
         lineHeight = 28.sp,
         letterSpacing = 0.sp
     ),
     titleMedium = TextStyle(
-        fontFamily = PoppinsFamily,
+        fontFamily = KairosSansFamily,
         fontWeight = FontWeight.Medium,
         fontSize = 16.sp,
         lineHeight = 24.sp,
         letterSpacing = 0.1.sp
     ),
     titleSmall = TextStyle(
-        fontFamily = PoppinsFamily,
+        fontFamily = KairosSansFamily,
         fontWeight = FontWeight.Medium,
         fontSize = 14.sp,
         lineHeight = 20.sp,
@@ -205,21 +210,21 @@ val ProdyTypography = Typography(
     // BODY STYLES - For main content and readable text blocks
     // ==========================================================================
     bodyLarge = TextStyle(
-        fontFamily = PoppinsFamily,
+        fontFamily = KairosSansFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
         lineHeight = 26.sp,
         letterSpacing = 0.3.sp
     ),
     bodyMedium = TextStyle(
-        fontFamily = PoppinsFamily,
+        fontFamily = KairosSansFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 14.sp,
         lineHeight = 22.sp,
         letterSpacing = 0.2.sp
     ),
     bodySmall = TextStyle(
-        fontFamily = PoppinsFamily,
+        fontFamily = KairosSansFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 12.sp,
         lineHeight = 18.sp,
@@ -230,27 +235,30 @@ val ProdyTypography = Typography(
     // LABEL STYLES - For buttons, chips, tabs, and small UI elements
     // ==========================================================================
     labelLarge = TextStyle(
-        fontFamily = PoppinsFamily,
+        fontFamily = KairosSansFamily,
         fontWeight = FontWeight.Medium,
         fontSize = 14.sp,
         lineHeight = 20.sp,
         letterSpacing = 0.1.sp
     ),
     labelMedium = TextStyle(
-        fontFamily = PoppinsFamily,
+        fontFamily = KairosSansFamily,
         fontWeight = FontWeight.Medium,
         fontSize = 12.sp,
         lineHeight = 16.sp,
         letterSpacing = 0.4.sp
     ),
     labelSmall = TextStyle(
-        fontFamily = PoppinsFamily,
+        fontFamily = KairosSansFamily,
         fontWeight = FontWeight.Medium,
-        fontSize = 10.sp,
-        lineHeight = 14.sp,
-        letterSpacing = 0.5.sp
+        fontSize = 11.sp,
+        lineHeight = 16.sp,
+        letterSpacing = 0.4.sp
     )
 )
+
+/** Compatibility alias while package and storage identifiers remain unchanged. */
+val ProdyTypography = KairosTypography
 
 // =============================================================================
 // EXTENDED TYPOGRAPHY - Custom text styles for special use cases
@@ -273,7 +281,7 @@ val QuoteTextStyle = TextStyle(
  * Number display - For stats, counters, and numerical highlights
  */
 val NumberDisplayStyle = TextStyle(
-    fontFamily = PoppinsFamily,
+    fontFamily = KairosSansFamily,
     fontWeight = FontWeight.Bold,
     fontSize = 32.sp,
     lineHeight = 40.sp,
@@ -284,7 +292,7 @@ val NumberDisplayStyle = TextStyle(
  * Caption style - For timestamps, metadata, and secondary information
  */
 val CaptionTextStyle = TextStyle(
-    fontFamily = PoppinsFamily,
+    fontFamily = KairosSansFamily,
     fontWeight = FontWeight.Normal,
     fontSize = 11.sp,
     lineHeight = 16.sp,
@@ -296,7 +304,7 @@ val CaptionTextStyle = TextStyle(
  * Note: Uses Regular weight as per design spec (not bold)
  */
 val ButtonTextStyle = TextStyle(
-    fontFamily = PoppinsFamily,
+    fontFamily = KairosSansFamily,
     fontWeight = FontWeight.Normal,  // Regular weight per design spec
     fontSize = 14.sp,
     lineHeight = 20.sp,
@@ -307,7 +315,7 @@ val ButtonTextStyle = TextStyle(
  * Overline style - For category labels and small headers
  */
 val OverlineTextStyle = TextStyle(
-    fontFamily = PoppinsFamily,
+    fontFamily = KairosSansFamily,
     fontWeight = FontWeight.SemiBold,
     fontSize = 10.sp,
     lineHeight = 14.sp,
@@ -347,7 +355,7 @@ val WisdomLargeStyle = TextStyle(
  * Medium wisdom text - For proverbs, idioms, and journal prompts
  */
 val WisdomMediumStyle = TextStyle(
-    fontFamily = PoppinsFamily,
+    fontFamily = KairosSansFamily,
     fontWeight = FontWeight.Normal,
     fontSize = 18.sp,
     lineHeight = 28.sp,
@@ -358,7 +366,7 @@ val WisdomMediumStyle = TextStyle(
  * Small wisdom text - For secondary wisdom content and attributions
  */
 val WisdomSmallStyle = TextStyle(
-    fontFamily = PoppinsFamily,
+    fontFamily = KairosSansFamily,
     fontWeight = FontWeight.Normal,
     fontSize = 16.sp,
     lineHeight = 24.sp,
@@ -369,7 +377,7 @@ val WisdomSmallStyle = TextStyle(
  * Wisdom attribution - For author names and sources
  */
 val WisdomAttributionStyle = TextStyle(
-    fontFamily = PoppinsFamily,
+    fontFamily = KairosSansFamily,
     fontWeight = FontWeight.Medium,
     fontSize = 14.sp,
     lineHeight = 20.sp,
@@ -404,7 +412,7 @@ val JournalPromptStyle = TextStyle(
  * Stoic maxim style - For concise philosophical statements
  */
 val StoicMaximStyle = TextStyle(
-    fontFamily = PoppinsFamily,
+    fontFamily = KairosSansFamily,
     fontWeight = FontWeight.Medium,
     fontSize = 16.sp,
     lineHeight = 24.sp,
@@ -419,7 +427,7 @@ val StoicMaximStyle = TextStyle(
  * Stat number style - For large stat displays (total entries, words written)
  */
 val StatNumberStyle = TextStyle(
-    fontFamily = PoppinsFamily,
+    fontFamily = KairosSansFamily,
     fontWeight = FontWeight.Bold,
     fontSize = 32.sp,
     lineHeight = 40.sp,
@@ -430,7 +438,7 @@ val StatNumberStyle = TextStyle(
  * Large stat number - For hero stats and major milestones
  */
 val StatNumberLargeStyle = TextStyle(
-    fontFamily = PoppinsFamily,
+    fontFamily = KairosSansFamily,
     fontWeight = FontWeight.Bold,
     fontSize = 48.sp,
     lineHeight = 56.sp,
@@ -441,7 +449,7 @@ val StatNumberLargeStyle = TextStyle(
  * Badge title style - For achievement and badge names
  */
 val BadgeTitleStyle = TextStyle(
-    fontFamily = PoppinsFamily,
+    fontFamily = KairosSansFamily,
     fontWeight = FontWeight.SemiBold,
     fontSize = 14.sp,
     lineHeight = 18.sp,
@@ -452,7 +460,7 @@ val BadgeTitleStyle = TextStyle(
  * Badge description style - For achievement descriptions
  */
 val BadgeDescriptionStyle = TextStyle(
-    fontFamily = PoppinsFamily,
+    fontFamily = KairosSansFamily,
     fontWeight = FontWeight.Normal,
     fontSize = 12.sp,
     lineHeight = 16.sp,
@@ -463,7 +471,7 @@ val BadgeDescriptionStyle = TextStyle(
  * Streak counter style - For displaying streak numbers prominently
  */
 val StreakCounterStyle = TextStyle(
-    fontFamily = PoppinsFamily,
+    fontFamily = KairosSansFamily,
     fontWeight = FontWeight.Bold,
     fontSize = 36.sp,
     lineHeight = 44.sp,
@@ -474,7 +482,7 @@ val StreakCounterStyle = TextStyle(
  * Streak label style - For "days" or "streak" labels
  */
 val StreakLabelStyle = TextStyle(
-    fontFamily = PoppinsFamily,
+    fontFamily = KairosSansFamily,
     fontWeight = FontWeight.Medium,
     fontSize = 12.sp,
     lineHeight = 16.sp,
@@ -485,7 +493,7 @@ val StreakLabelStyle = TextStyle(
  * XP text style - For experience points display
  */
 val XpTextStyle = TextStyle(
-    fontFamily = PoppinsFamily,
+    fontFamily = KairosSansFamily,
     fontWeight = FontWeight.SemiBold,
     fontSize = 16.sp,
     lineHeight = 20.sp,
@@ -496,7 +504,7 @@ val XpTextStyle = TextStyle(
  * Level text style - For level display
  */
 val LevelTextStyle = TextStyle(
-    fontFamily = PoppinsFamily,
+    fontFamily = KairosSansFamily,
     fontWeight = FontWeight.Bold,
     fontSize = 20.sp,
     lineHeight = 24.sp,
@@ -507,7 +515,7 @@ val LevelTextStyle = TextStyle(
  * Leaderboard rank style - For position numbers on leaderboard
  */
 val LeaderboardRankStyle = TextStyle(
-    fontFamily = PoppinsFamily,
+    fontFamily = KairosSansFamily,
     fontWeight = FontWeight.ExtraBold,
     fontSize = 24.sp,
     lineHeight = 28.sp,
@@ -518,7 +526,7 @@ val LeaderboardRankStyle = TextStyle(
  * Leaderboard name style - For user names on leaderboard
  */
 val LeaderboardNameStyle = TextStyle(
-    fontFamily = PoppinsFamily,
+    fontFamily = KairosSansFamily,
     fontWeight = FontWeight.Medium,
     fontSize = 14.sp,
     lineHeight = 20.sp,
@@ -529,7 +537,7 @@ val LeaderboardNameStyle = TextStyle(
  * Leaderboard points style - For point displays
  */
 val LeaderboardPointsStyle = TextStyle(
-    fontFamily = PoppinsFamily,
+    fontFamily = KairosSansFamily,
     fontWeight = FontWeight.SemiBold,
     fontSize = 16.sp,
     lineHeight = 20.sp,
@@ -540,7 +548,7 @@ val LeaderboardPointsStyle = TextStyle(
  * Progress percentage style - For showing progress percentages
  */
 val ProgressPercentageStyle = TextStyle(
-    fontFamily = PoppinsFamily,
+    fontFamily = KairosSansFamily,
     fontWeight = FontWeight.SemiBold,
     fontSize = 14.sp,
     lineHeight = 18.sp,
@@ -555,7 +563,7 @@ val ProgressPercentageStyle = TextStyle(
  * Notification title style - Bold and attention-grabbing
  */
 val NotificationTitleStyle = TextStyle(
-    fontFamily = PoppinsFamily,
+    fontFamily = KairosSansFamily,
     fontWeight = FontWeight.SemiBold,
     fontSize = 16.sp,
     lineHeight = 22.sp,
@@ -566,7 +574,7 @@ val NotificationTitleStyle = TextStyle(
  * Notification body style - Clear and readable
  */
 val NotificationBodyStyle = TextStyle(
-    fontFamily = PoppinsFamily,
+    fontFamily = KairosSansFamily,
     fontWeight = FontWeight.Normal,
     fontSize = 14.sp,
     lineHeight = 20.sp,
@@ -581,7 +589,7 @@ val NotificationBodyStyle = TextStyle(
  * Card title style - For card headers
  */
 val CardTitleStyle = TextStyle(
-    fontFamily = PoppinsFamily,
+    fontFamily = KairosSansFamily,
     fontWeight = FontWeight.SemiBold,
     fontSize = 18.sp,
     lineHeight = 24.sp,
@@ -592,7 +600,7 @@ val CardTitleStyle = TextStyle(
  * Card subtitle style - For card secondary headers
  */
 val CardSubtitleStyle = TextStyle(
-    fontFamily = PoppinsFamily,
+    fontFamily = KairosSansFamily,
     fontWeight = FontWeight.Medium,
     fontSize = 14.sp,
     lineHeight = 20.sp,
@@ -603,7 +611,7 @@ val CardSubtitleStyle = TextStyle(
  * Card body style - For card content
  */
 val CardBodyStyle = TextStyle(
-    fontFamily = PoppinsFamily,
+    fontFamily = KairosSansFamily,
     fontWeight = FontWeight.Normal,
     fontSize = 14.sp,
     lineHeight = 22.sp,
@@ -614,7 +622,7 @@ val CardBodyStyle = TextStyle(
  * Card caption style - For timestamps and metadata on cards
  */
 val CardCaptionStyle = TextStyle(
-    fontFamily = PoppinsFamily,
+    fontFamily = KairosSansFamily,
     fontWeight = FontWeight.Normal,
     fontSize = 11.sp,
     lineHeight = 16.sp,
@@ -629,7 +637,7 @@ val CardCaptionStyle = TextStyle(
  * Onboarding title - Large, bold, attention-grabbing
  */
 val OnboardingTitleStyle = TextStyle(
-    fontFamily = PoppinsFamily,
+    fontFamily = KairosSansFamily,
     fontWeight = FontWeight.Bold,
     fontSize = 28.sp,
     lineHeight = 36.sp,
@@ -640,7 +648,7 @@ val OnboardingTitleStyle = TextStyle(
  * Onboarding subtitle - Secondary explanation text
  */
 val OnboardingSubtitleStyle = TextStyle(
-    fontFamily = PoppinsFamily,
+    fontFamily = KairosSansFamily,
     fontWeight = FontWeight.Normal,
     fontSize = 16.sp,
     lineHeight = 24.sp,
@@ -651,7 +659,7 @@ val OnboardingSubtitleStyle = TextStyle(
  * Onboarding CTA button text
  */
 val OnboardingButtonStyle = TextStyle(
-    fontFamily = PoppinsFamily,
+    fontFamily = KairosSansFamily,
     fontWeight = FontWeight.Normal,  // Regular weight per design spec
     fontSize = 16.sp,
     lineHeight = 24.sp,
@@ -666,7 +674,7 @@ val OnboardingButtonStyle = TextStyle(
  * Time capsule section header
  */
 val TimeCapsuleSectionStyle = TextStyle(
-    fontFamily = PoppinsFamily,
+    fontFamily = KairosSansFamily,
     fontWeight = FontWeight.SemiBold,
     fontSize = 12.sp,
     lineHeight = 16.sp,
@@ -677,7 +685,7 @@ val TimeCapsuleSectionStyle = TextStyle(
  * Time capsule tag text
  */
 val TimeCapsuleTagStyle = TextStyle(
-    fontFamily = PoppinsFamily,
+    fontFamily = KairosSansFamily,
     fontWeight = FontWeight.Medium,
     fontSize = 14.sp,
     lineHeight = 20.sp,
@@ -692,7 +700,7 @@ val TimeCapsuleTagStyle = TextStyle(
  * Profile display name
  */
 val ProfileNameStyle = TextStyle(
-    fontFamily = PoppinsFamily,
+    fontFamily = KairosSansFamily,
     fontWeight = FontWeight.Bold,
     fontSize = 24.sp,
     lineHeight = 32.sp,
@@ -703,7 +711,7 @@ val ProfileNameStyle = TextStyle(
  * Profile title/badge text
  */
 val ProfileTitleStyle = TextStyle(
-    fontFamily = PoppinsFamily,
+    fontFamily = KairosSansFamily,
     fontWeight = FontWeight.Medium,
     fontSize = 14.sp,
     lineHeight = 20.sp,
@@ -718,7 +726,7 @@ val ProfileTitleStyle = TextStyle(
  * Home greeting text
  */
 val HomeGreetingStyle = TextStyle(
-    fontFamily = PoppinsFamily,
+    fontFamily = KairosSansFamily,
     fontWeight = FontWeight.SemiBold,
     fontSize = 24.sp,
     lineHeight = 32.sp,
@@ -729,7 +737,7 @@ val HomeGreetingStyle = TextStyle(
  * Quick action tile label
  */
 val QuickActionLabelStyle = TextStyle(
-    fontFamily = PoppinsFamily,
+    fontFamily = KairosSansFamily,
     fontWeight = FontWeight.Medium,
     fontSize = 12.sp,
     lineHeight = 16.sp,
@@ -744,7 +752,7 @@ val QuickActionLabelStyle = TextStyle(
  * Stats hero number (very large)
  */
 val StatsHeroNumberStyle = TextStyle(
-    fontFamily = PoppinsFamily,
+    fontFamily = KairosSansFamily,
     fontWeight = FontWeight.Bold,
     fontSize = 56.sp,
     lineHeight = 64.sp,
@@ -755,7 +763,7 @@ val StatsHeroNumberStyle = TextStyle(
  * Stats label
  */
 val StatsLabelStyle = TextStyle(
-    fontFamily = PoppinsFamily,
+    fontFamily = KairosSansFamily,
     fontWeight = FontWeight.Medium,
     fontSize = 12.sp,
     lineHeight = 16.sp,
@@ -782,7 +790,7 @@ val LetterGreetingStyle = TextStyle(
  * Letter body text - comfortable reading for letter content
  */
 val LetterBodyStyle = TextStyle(
-    fontFamily = PoppinsFamily,
+    fontFamily = KairosSansFamily,
     fontWeight = FontWeight.Normal,
     fontSize = 16.sp,
     lineHeight = 28.sp,
@@ -793,7 +801,7 @@ val LetterBodyStyle = TextStyle(
  * Letter section header - distinguishes different parts of the letter
  */
 val LetterSectionHeaderStyle = TextStyle(
-    fontFamily = PoppinsFamily,
+    fontFamily = KairosSansFamily,
     fontWeight = FontWeight.SemiBold,
     fontSize = 14.sp,
     lineHeight = 20.sp,
@@ -816,7 +824,7 @@ val LetterQuoteStyle = TextStyle(
  * Letter closing - warm, personal sign-off
  */
 val LetterClosingStyle = TextStyle(
-    fontFamily = PoppinsFamily,
+    fontFamily = KairosSansFamily,
     fontWeight = FontWeight.Normal,
     fontSize = 16.sp,
     lineHeight = 28.sp,
@@ -827,7 +835,7 @@ val LetterClosingStyle = TextStyle(
  * Letter metadata - dates, stats presented elegantly
  */
 val LetterMetadataStyle = TextStyle(
-    fontFamily = PoppinsFamily,
+    fontFamily = KairosSansFamily,
     fontWeight = FontWeight.Normal,
     fontSize = 12.sp,
     lineHeight = 18.sp,
@@ -854,7 +862,7 @@ val HavenMessageStyle = TextStyle(
  * Haven User Input Style - Clean Sans-Serif for clarity
  */
 val HavenInputStyle = TextStyle(
-    fontFamily = PoppinsFamily,    // Keep user input clean and modern
+    fontFamily = KairosSansFamily,    // Keep user input clean and modern
     fontWeight = FontWeight.Normal,
     fontSize = 16.sp,
     lineHeight = 24.sp,
@@ -865,7 +873,7 @@ val HavenInputStyle = TextStyle(
  * Letter title - month and year display
  */
 val LetterTitleStyle = TextStyle(
-    fontFamily = PoppinsFamily,
+    fontFamily = KairosSansFamily,
     fontWeight = FontWeight.SemiBold,
     fontSize = 24.sp,
     lineHeight = 32.sp,
@@ -876,7 +884,7 @@ val LetterTitleStyle = TextStyle(
  * Letter stat number - for presenting numbers in letter
  */
 val LetterStatNumberStyle = TextStyle(
-    fontFamily = PoppinsFamily,
+    fontFamily = KairosSansFamily,
     fontWeight = FontWeight.Bold,
     fontSize = 28.sp,
     lineHeight = 36.sp,
@@ -887,7 +895,7 @@ val LetterStatNumberStyle = TextStyle(
  * Letter stat label - for stat descriptions in letter
  */
 val LetterStatLabelStyle = TextStyle(
-    fontFamily = PoppinsFamily,
+    fontFamily = KairosSansFamily,
     fontWeight = FontWeight.Normal,
     fontSize = 14.sp,
     lineHeight = 20.sp,

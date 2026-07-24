@@ -333,8 +333,8 @@ object NotificationMessages {
 
     // Default fallback notification for when a category is empty
     private val DEFAULT_NOTIFICATION = Triple(
-        "Prody Notification",
-        "You have a new notification from Prody.",
+        "Kairos reminder",
+        "You have a new notification from Kairos.",
         "View"
     )
 

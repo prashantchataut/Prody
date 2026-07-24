@@ -25,14 +25,14 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * ShareManager - Utility for sharing content from Prody
- * 
+ * ShareManager - Utility for sharing content from Kairos
+ *
  * Features:
  * - Create shareable card images with message content
  * - Capture Compose views as bitmaps
  * - Launch system share sheet with images or text
  * - Support for different share card styles (future messages, quotes, achievements)
- * 
+ *
  * Usage:
  * ```
  * shareManager.shareFutureMessage(context, message)
@@ -48,13 +48,13 @@ class ShareManager @Inject constructor(
         private const val TAG = "ShareManager"
         private const val SHARE_FOLDER = "share_images"
         private const val FILE_PROVIDER_AUTHORITY = "com.prody.prashant.fileprovider"
-        
+
         // Card dimensions (optimized for social media)
         private const val CARD_WIDTH = 1080
         private const val CARD_HEIGHT = 1920
         private const val CARD_PADDING = 80
         private const val CORNER_RADIUS = 48f
-        
+
         // Brand colors
         private const val PRODY_GREEN = 0xFF36F97F.toInt()
         private const val CARD_BG_DARK = 0xFF0A1F1C.toInt()
@@ -64,11 +64,11 @@ class ShareManager @Inject constructor(
         private const val TEXT_SECONDARY_DARK = 0xFFB8C4C2.toInt()
         private const val TEXT_SECONDARY_LIGHT = 0xFF6B7280.toInt()
     }
-    
+
     /**
      * Share a future message as an image card.
      * Creates a beautiful shareable card with the message content and Prody branding.
-     * 
+     *
      * @param title The message title
      * @param content The message content
      * @param deliveryDate When the message was delivered (or will be delivered)
@@ -84,11 +84,11 @@ class ShareManager @Inject constructor(
         return try {
             val bitmap = createFutureMessageCard(title, content, deliveryDate, isDarkTheme)
             val uri = saveBitmapToCache(bitmap, "future_message_${System.currentTimeMillis()}.png")
-            
+
             if (uri != null) {
                 launchShareSheet(
                     imageUri = uri,
-                    text = "A message from my past self \n\n\"$content\"\n\nCreated with Prody - Time Capsule",
+                    text = "A message from my past self \n\n\"$content\"\n\nCreated with Kairos - Time Capsule",
                     title = "Share Time Capsule"
                 )
                 true
@@ -101,7 +101,7 @@ class ShareManager @Inject constructor(
             false
         }
     }
-    
+
     /**
      * Share a quote as an image card.
      */
@@ -113,7 +113,7 @@ class ShareManager @Inject constructor(
         return try {
             val bitmap = createQuoteCard(quote, author, isDarkTheme)
             val uri = saveBitmapToCache(bitmap, "quote_${System.currentTimeMillis()}.png")
-            
+
             if (uri != null) {
                 launchShareSheet(
                     imageUri = uri,
@@ -129,7 +129,7 @@ class ShareManager @Inject constructor(
             false
         }
     }
-    
+
     /**
      * Share a vocabulary word as an image card.
      */
@@ -142,7 +142,7 @@ class ShareManager @Inject constructor(
         return try {
             val bitmap = createVocabularyCard(word, definition, pronunciation, isDarkTheme)
             val uri = saveBitmapToCache(bitmap, "word_${System.currentTimeMillis()}.png")
-            
+
             if (uri != null) {
                 launchShareSheet(
                     imageUri = uri,
@@ -158,7 +158,7 @@ class ShareManager @Inject constructor(
             false
         }
     }
-    
+
     /**
      * Share plain text without an image.
      */
@@ -181,7 +181,7 @@ class ShareManager @Inject constructor(
             false
         }
     }
-    
+
     /**
      * Launch the system share sheet with an image and optional text.
      */
@@ -201,7 +201,7 @@ class ShareManager @Inject constructor(
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         })
     }
-    
+
     /**
      * Save a bitmap to the cache directory and return its content URI.
      */
@@ -211,22 +211,22 @@ class ShareManager @Inject constructor(
             if (!cacheDir.exists()) {
                 cacheDir.mkdirs()
             }
-            
+
             // Clean up old share files (keep last 10)
             cleanupOldFiles(cacheDir, 10)
-            
+
             val file = File(cacheDir, filename)
             FileOutputStream(file).use { out ->
                 bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
             }
-            
+
             FileProvider.getUriForFile(context, FILE_PROVIDER_AUTHORITY, file)
         } catch (e: Exception) {
             Log.e(TAG, "Failed to save bitmap to cache", e)
             null
         }
     }
-    
+
     /**
      * Clean up old share files to prevent cache bloat.
      */
@@ -238,11 +238,11 @@ class ShareManager @Inject constructor(
             Log.w(TAG, "Failed to cleanup old files", e)
         }
     }
-    
+
     // ==========================================================================
     // CARD CREATION METHODS
     // ==========================================================================
-    
+
     /**
      * Create a shareable card for a future message.
      */
@@ -254,14 +254,14 @@ class ShareManager @Inject constructor(
     ): Bitmap {
         val bitmap = Bitmap.createBitmap(CARD_WIDTH, CARD_HEIGHT, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
-        
+
         val bgColor = if (isDarkTheme) CARD_BG_DARK else CARD_BG_LIGHT
         val primaryTextColor = if (isDarkTheme) TEXT_PRIMARY_DARK else TEXT_PRIMARY_LIGHT
         val secondaryTextColor = if (isDarkTheme) TEXT_SECONDARY_DARK else TEXT_SECONDARY_LIGHT
-        
+
         // Draw background
         canvas.drawColor(bgColor)
-        
+
         // Draw decorative accent arc at top
         val accentPaint = Paint().apply {
             color = PRODY_GREEN
@@ -273,7 +273,7 @@ class ShareManager @Inject constructor(
             RectF(-200f, -400f, CARD_WIDTH + 200f, 400f),
             0f, 180f, false, accentPaint
         )
-        
+
         // Draw "TIME CAPSULE" label
         val labelPaint = Paint().apply {
             color = PRODY_GREEN
@@ -283,7 +283,7 @@ class ShareManager @Inject constructor(
             letterSpacing = 0.2f
         }
         canvas.drawText("TIME CAPSULE", CARD_PADDING.toFloat(), 200f, labelPaint)
-        
+
         // Draw date
         val dateFormat = SimpleDateFormat("MMMM d, yyyy", Locale.getDefault())
         val dateText = "Delivered ${dateFormat.format(Date(deliveryDate))}"
@@ -294,7 +294,7 @@ class ShareManager @Inject constructor(
             isAntiAlias = true
         }
         canvas.drawText(dateText, CARD_PADDING.toFloat(), 260f, datePaint)
-        
+
         // Draw title if present
         var yOffset = 400f
         if (title.isNotBlank()) {
@@ -304,11 +304,11 @@ class ShareManager @Inject constructor(
                 typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
                 isAntiAlias = true
             }
-            yOffset = drawWrappedText(canvas, title, CARD_PADDING.toFloat(), yOffset, 
+            yOffset = drawWrappedText(canvas, title, CARD_PADDING.toFloat(), yOffset,
                 CARD_WIDTH - CARD_PADDING * 2, titlePaint)
             yOffset += 40f
         }
-        
+
         // Draw content
         val contentPaint = Paint().apply {
             color = primaryTextColor
@@ -318,13 +318,13 @@ class ShareManager @Inject constructor(
         }
         drawWrappedText(canvas, "\"$content\"", CARD_PADDING.toFloat(), yOffset,
             CARD_WIDTH - CARD_PADDING * 2, contentPaint)
-        
+
         // Draw Prody branding at bottom
         drawProdyBranding(canvas, isDarkTheme)
-        
+
         return bitmap
     }
-    
+
     /**
      * Create a shareable card for a quote.
      */
@@ -335,13 +335,13 @@ class ShareManager @Inject constructor(
     ): Bitmap {
         val bitmap = Bitmap.createBitmap(CARD_WIDTH, CARD_HEIGHT, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
-        
+
         val bgColor = if (isDarkTheme) CARD_BG_DARK else CARD_BG_LIGHT
         val primaryTextColor = if (isDarkTheme) TEXT_PRIMARY_DARK else TEXT_PRIMARY_LIGHT
         val secondaryTextColor = if (isDarkTheme) TEXT_SECONDARY_DARK else TEXT_SECONDARY_LIGHT
-        
+
         canvas.drawColor(bgColor)
-        
+
         // Draw large quotation mark
         val quotePaint = Paint().apply {
             color = PRODY_GREEN
@@ -351,7 +351,7 @@ class ShareManager @Inject constructor(
             alpha = 100
         }
         canvas.drawText("\u201C", CARD_PADDING.toFloat(), 350f, quotePaint)
-        
+
         // Draw "DAILY WISDOM" label
         val labelPaint = Paint().apply {
             color = PRODY_GREEN
@@ -361,7 +361,7 @@ class ShareManager @Inject constructor(
             letterSpacing = 0.2f
         }
         canvas.drawText("DAILY WISDOM", CARD_PADDING.toFloat(), 200f, labelPaint)
-        
+
         // Draw quote content
         val contentPaint = Paint().apply {
             color = primaryTextColor
@@ -371,7 +371,7 @@ class ShareManager @Inject constructor(
         }
         val yOffset = drawWrappedText(canvas, "\"$quote\"", CARD_PADDING.toFloat(), 500f,
             CARD_WIDTH - CARD_PADDING * 2, contentPaint)
-        
+
         // Draw author
         val authorPaint = Paint().apply {
             color = secondaryTextColor
@@ -380,13 +380,13 @@ class ShareManager @Inject constructor(
             isAntiAlias = true
         }
         canvas.drawText("— $author", CARD_PADDING.toFloat(), yOffset + 80f, authorPaint)
-        
+
         // Draw Prody branding at bottom
         drawProdyBranding(canvas, isDarkTheme)
-        
+
         return bitmap
     }
-    
+
     /**
      * Create a shareable card for a vocabulary word.
      */
@@ -398,13 +398,13 @@ class ShareManager @Inject constructor(
     ): Bitmap {
         val bitmap = Bitmap.createBitmap(CARD_WIDTH, CARD_HEIGHT, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
-        
+
         val bgColor = if (isDarkTheme) CARD_BG_DARK else CARD_BG_LIGHT
         val primaryTextColor = if (isDarkTheme) TEXT_PRIMARY_DARK else TEXT_PRIMARY_LIGHT
         val secondaryTextColor = if (isDarkTheme) TEXT_SECONDARY_DARK else TEXT_SECONDARY_LIGHT
-        
+
         canvas.drawColor(bgColor)
-        
+
         // Draw "WORD OF THE DAY" label
         val labelPaint = Paint().apply {
             color = PRODY_GREEN
@@ -414,7 +414,7 @@ class ShareManager @Inject constructor(
             letterSpacing = 0.2f
         }
         canvas.drawText("WORD OF THE DAY", CARD_PADDING.toFloat(), 200f, labelPaint)
-        
+
         // Draw word
         val wordPaint = Paint().apply {
             color = primaryTextColor
@@ -423,7 +423,7 @@ class ShareManager @Inject constructor(
             isAntiAlias = true
         }
         canvas.drawText(word, CARD_PADDING.toFloat(), 350f, wordPaint)
-        
+
         // Draw pronunciation if available
         var yOffset = 420f
         if (pronunciation != null) {
@@ -436,7 +436,7 @@ class ShareManager @Inject constructor(
             canvas.drawText("/$pronunciation/", CARD_PADDING.toFloat(), yOffset, pronPaint)
             yOffset += 80f
         }
-        
+
         // Draw definition
         val defPaint = Paint().apply {
             color = primaryTextColor
@@ -446,19 +446,19 @@ class ShareManager @Inject constructor(
         }
         drawWrappedText(canvas, definition, CARD_PADDING.toFloat(), yOffset + 40f,
             CARD_WIDTH - CARD_PADDING * 2, defPaint)
-        
+
         // Draw Prody branding at bottom
         drawProdyBranding(canvas, isDarkTheme)
-        
+
         return bitmap
     }
-    
+
     /**
      * Draw Prody branding at the bottom of a card.
      */
     private fun drawProdyBranding(canvas: Canvas, isDarkTheme: Boolean) {
         val secondaryTextColor = if (isDarkTheme) TEXT_SECONDARY_DARK else TEXT_SECONDARY_LIGHT
-        
+
         // Draw horizontal line
         val linePaint = Paint().apply {
             color = PRODY_GREEN
@@ -466,13 +466,13 @@ class ShareManager @Inject constructor(
             isAntiAlias = true
         }
         canvas.drawLine(
-            CARD_PADDING.toFloat(), 
-            CARD_HEIGHT - 200f, 
-            CARD_WIDTH - CARD_PADDING.toFloat(), 
-            CARD_HEIGHT - 200f, 
+            CARD_PADDING.toFloat(),
+            CARD_HEIGHT - 200f,
+            CARD_WIDTH - CARD_PADDING.toFloat(),
+            CARD_HEIGHT - 200f,
             linePaint
         )
-        
+
         // Draw "prody" text
         val brandPaint = Paint().apply {
             color = PRODY_GREEN
@@ -482,7 +482,7 @@ class ShareManager @Inject constructor(
             letterSpacing = 0.1f
         }
         canvas.drawText("prody", CARD_PADDING.toFloat(), CARD_HEIGHT - 120f, brandPaint)
-        
+
         // Draw tagline
         val taglinePaint = Paint().apply {
             color = secondaryTextColor
@@ -492,7 +492,7 @@ class ShareManager @Inject constructor(
         }
         canvas.drawText("Your growth companion", CARD_PADDING.toFloat(), CARD_HEIGHT - 70f, taglinePaint)
     }
-    
+
     /**
      * Draw text that wraps within a specified width.
      * Returns the Y position after the last line.
@@ -509,11 +509,11 @@ class ShareManager @Inject constructor(
         var currentLine = StringBuilder()
         var yPos = startY
         val lineHeight = paint.textSize * 1.4f
-        
+
         for (word in words) {
             val testLine = if (currentLine.isEmpty()) word else "$currentLine $word"
             val testWidth = paint.measureText(testLine)
-            
+
             if (testWidth > maxWidth && currentLine.isNotEmpty()) {
                 canvas.drawText(currentLine.toString(), x, yPos, paint)
                 yPos += lineHeight
@@ -522,13 +522,13 @@ class ShareManager @Inject constructor(
                 currentLine = StringBuilder(testLine)
             }
         }
-        
+
         // Draw the last line
         if (currentLine.isNotEmpty()) {
             canvas.drawText(currentLine.toString(), x, yPos, paint)
             yPos += lineHeight
         }
-        
+
         return yPos
     }
 }

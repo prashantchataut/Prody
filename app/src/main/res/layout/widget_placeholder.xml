@@ -9,7 +9,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:text="Prody"
+        android:text="Kairos"
         android:textColor="#6C63FF"
         android:textSize="14sp"
         android:textStyle="bold" />

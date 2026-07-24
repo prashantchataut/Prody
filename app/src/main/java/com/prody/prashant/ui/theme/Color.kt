@@ -3,68 +3,85 @@ package com.prody.prashant.ui.theme
 import androidx.compose.ui.graphics.Color
 
 /**
- * Prody Design System - Color Palette (Revamp 2026)
+ * Kairos color system.
  *
- * A polished, intuitive color system for the Prody mental wellness companion.
- *
- * Design philosophy: Warm-tinted neutrals that feel like a calm evening.
- * All grays are shifted toward the brand hue (green) for cohesion.
- * No pure grays (#808080) or pure blacks/whites — everything breathes.
+ * Mineral indigo provides recognition, clay adds editorial warmth, and verdigris
+ * communicates completion. Existing Prody-named aliases remain for binary and
+ * source compatibility while screens migrate to semantic Kairos tokens.
  */
 
 // =============================================================================
 // BRAND COLORS - Core Identity
 // =============================================================================
 
-val ProdyForestGreen = Color(0xFF2E7D32)
-val ProdyWarmAmber = Color(0xFFFFA000)
+val KairosMineralIndigo = Color(0xFF495CC7)
+val KairosClay = Color(0xFFC86F4E)
+val KairosVerdigris = Color(0xFF2E7D70)
+val KairosPeriwinkle = Color(0xFFAEB8FF)
+val KairosSoftClay = Color(0xFFE39A7D)
+val KairosSeaGlass = Color(0xFF76C3B3)
+
+val KairosIndigoContainerLight = Color(0xFFE3E6FF)
+val KairosOnIndigoContainerLight = Color(0xFF17215F)
+val KairosClayContainerLight = Color(0xFFFFDBCF)
+val KairosOnClayContainerLight = Color(0xFF4A1D10)
+val KairosVerdigrisContainerLight = Color(0xFFBDEBDD)
+val KairosOnVerdigrisContainerLight = Color(0xFF08372F)
+
+val KairosIndigoContainerDark = Color(0xFF303C88)
+val KairosOnIndigoContainerDark = Color(0xFFE3E6FF)
+val KairosClayContainerDark = Color(0xFF633826)
+val KairosOnClayContainerDark = Color(0xFFFFDBCF)
+val KairosVerdigrisContainerDark = Color(0xFF174E45)
+val KairosOnVerdigrisContainerDark = Color(0xFFBDEBDD)
+
+val ProdyForestGreen = KairosMineralIndigo
+val ProdyWarmAmber = KairosClay
 
 val ProdyPrimary = ProdyForestGreen
 val ProdySecondary = ProdyWarmAmber
 
 // =============================================================================
-// LIGHT THEME COLORS — Warm-tinted neutrals
-// Pure grays replaced with green-tinted grays for cohesion
+// LIGHT THEME COLORS — Editorial warm neutrals
 // =============================================================================
 
-val ProdyBackgroundLight = Color(0xFFFAFAF5)          // Warm off-white (green tint)
-val ProdySurfaceLight = Color(0xFFFFFEFA)             // Warm white
-val ProdySurfaceVariantLight = Color(0xFFF3F3EE)      // Warm light gray
-val ProdySurfaceContainerLight = Color(0xFFEBEBE6)     // Warm container gray
+val ProdyBackgroundLight = Color(0xFFF7F6F2)          // Warm off-white (green tint)
+val ProdySurfaceLight = Color(0xFFFCFBF8)             // Warm white
+val ProdySurfaceVariantLight = Color(0xFFF0EFEA)      // Warm light gray
+val ProdySurfaceContainerLight = Color(0xFFE8E8E4)     // Warm container gray
 
-val ProdyTextPrimaryLight = Color(0xFF1C1C18)         // Warm near-black (olive undertone)
-val ProdyTextSecondaryLight = Color(0xFF6B7368)         // Warm medium gray (green-gray)
-val ProdyTextTertiaryLight = Color(0xFF9EA39A)         // Warm light gray
+val ProdyTextPrimaryLight = Color(0xFF202126)         // Warm near-black (olive undertone)
+val ProdyTextSecondaryLight = Color(0xFF666970)         // Warm medium gray (green-gray)
+val ProdyTextTertiaryLight = Color(0xFF92959D)         // Warm light gray
 val ProdyTextOnPrimaryLight = Color(0xFFFFFFFF)        // White on green
 val ProdyTextOnAccentLight = Color(0xFFFFFFFF)         // White on accent
 
-val ProdyOutlineLight = Color(0xFFDDDDE0)              // Warm outline
-val ProdyDividerLight = Color(0xFFEBEBE6)              // Warm divider
+val ProdyOutlineLight = Color(0xFFD7D8DE)              // Warm outline
+val ProdyDividerLight = Color(0xFFE7E7E3)              // Warm divider
 
 // =============================================================================
-// DARK THEME COLORS — Warm-tinted darks
-// No cold blue-blacks — warm darks that feel like a dimly lit room
+// DARK THEME COLORS — Quiet ink-toned darks
 // =============================================================================
 
-val ProdyBackgroundDark = Color(0xFF141210)             // Warm deep dark
-val ProdySurfaceDark = Color(0xFF201E1C)               // Warm dark surface
-val ProdySurfaceVariantDark = Color(0xFF2E2C2A)        // Warm dark variant
-val ProdySurfaceContainerDark = Color(0xFF353330)      // Warm container dark
+val ProdyBackgroundDark = Color(0xFF111318)             // Warm deep dark
+val ProdySurfaceDark = Color(0xFF191C22)               // Warm dark surface
+val ProdySurfaceVariantDark = Color(0xFF242831)        // Warm dark variant
+val ProdySurfaceContainerDark = Color(0xFF2B303A)      // Warm container dark
 
-val ProdyTextPrimaryDark = Color(0xFFF5F3EF)            // Warm white
-val ProdyTextSecondaryDark = Color(0xFFB3B0AC)           // Warm medium gray
-val ProdyTextTertiaryDark = Color(0xFF838078)           // Warm dark gray
-val ProdyTextOnPrimaryDark = Color(0xFFFFFFFF)
+val ProdyTextPrimaryDark = Color(0xFFF1F0EB)            // Warm white
+val ProdyTextSecondaryDark = Color(0xFFB2B4BC)           // Warm medium gray
+val ProdyTextTertiaryDark = Color(0xFF858993)           // Warm dark gray
+val ProdyTextOnPrimaryDark = Color(0xFF17215F)
 
-val ProdyOutlineDark = Color(0xFF444240)                // Warm outline dark
-val ProdyDividerDark = Color(0xFF32302E)                // Warm divider dark
+val ProdyOutlineDark = Color(0xFF3C414C)                // Warm outline dark
+val ProdyDividerDark = Color(0xFF2A2E36)                // Warm divider dark
 
 // =============================================================================
 // SEMANTIC COLORS — Warm-tinted for cohesion with brand
 // =============================================================================
 
 val ProdyError = Color(0xFFD32F2F)                    // Clear red (unchanged — needs clarity)
-val ProdySuccess = Color(0xFF2E8B3E)                  // Richer forest green (slightly warmer)
+val ProdySuccess = KairosVerdigris                  // Richer forest green (slightly warmer)
 val ProdyWarning = Color(0xFFFFA000)                  // Warm amber (unchanged)
 val ProdyInfo = Color(0xFF1565C0)                     // Deeper blue (more serious, less cold)
 
@@ -75,13 +92,13 @@ val ProdyOnInfo = Color(0xFFFFFFFF)
 
 // Containers (Light) — warm-tinted
 val ProdyErrorContainer = Color(0xFFFDECEA)              // Warm red tint
-val ProdySuccessContainer = Color(0xFFE8F5E9)            // Green tint (unchanged)
+val ProdySuccessContainer = Color(0xFFDCEFEA)            // Green tint (unchanged)
 val ProdyWarningContainer = Color(0xFFFFF8E1)            // Amber tint
 val ProdyInfoContainer = Color(0xFFE3F2FD)               // Blue tint
 
 // Containers (Dark) — warm-tinted darks
 val ProdyErrorContainerDark = Color(0xFF4A2525)
-val ProdySuccessContainerDark = Color(0xFF1B3320)
+val ProdySuccessContainerDark = Color(0xFF193630)
 val ProdyWarningContainerDark = Color(0xFF3E2723)
 val ProdyInfoContainerDark = Color(0xFF0D3B6E)
 
@@ -90,8 +107,8 @@ val ProdyInfoContainerDark = Color(0xFF0D3B6E)
 // =============================================================================
 
 val ProdyAccentGreen = ProdyForestGreen
-val ProdyAccentGreenLight = Color(0xFF60AD5E) 
-val ProdyAccentGreenDark = Color(0xFF005005)
+val ProdyAccentGreenLight = Color(0xFF7888E8)
+val ProdyAccentGreenDark = Color(0xFF33439E)
 
 val ProdyAccent = ProdyPrimary
 val ProdyGreen = ProdyPrimary
@@ -108,10 +125,10 @@ val ProdyOnTertiary = Color(0xFFFFFFFF)
 val ProdyTertiaryContainer = ProdySurfaceVariantLight
 val ProdyTextSecondary = ProdyTextSecondaryLight
 
-val ProdyPrimaryDark = ProdyForestGreen
-val ProdyOnPrimaryDark = Color(0xFFFFFFFF)
+val ProdyPrimaryDark = KairosPeriwinkle
+val ProdyOnPrimaryDark = Color(0xFF17215F)
 val ProdyPrimaryContainerDark = ProdySuccessContainerDark
-val ProdySecondaryDark = ProdyWarmAmber
+val ProdySecondaryDark = KairosSoftClay
 val ProdyOnSecondaryDark = Color(0xFF000000)
 val ProdySecondaryContainerDark = Color(0xFF3E2723)
 val ProdyTertiaryDark = ProdyTextSecondaryDark
@@ -214,7 +231,7 @@ object ProdyGradients {
     val goldBanner = goldGradient
     val silverBanner = listOf(LeaderboardSilverLight, LeaderboardSilver, LeaderboardSilverDark)
     val bronzeBanner = listOf(LeaderboardBronzeLight, LeaderboardBronze, LeaderboardBronzeDark)
-    
+
     // Gradient Aliases
     val streakGradient = streakNotificationGradient
 }

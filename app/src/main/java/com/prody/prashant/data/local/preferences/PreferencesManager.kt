@@ -1108,18 +1108,27 @@ class PreferencesManager @Inject constructor(
             preferences[PreferencesKeys.NOTIFICATIONS_SENT_TODAY] ?: 0
         }
 
-    suspend fun incrementNotificationsSentToday() {
+    val notificationResetDate: Flow<Long> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.NOTIFICATION_RESET_DATE] ?: 0L
+        }
+
+    suspend fun incrementNotificationsSentToday(now: Long = System.currentTimeMillis()) {
         dataStore.edit { preferences ->
             val current = preferences[PreferencesKeys.NOTIFICATIONS_SENT_TODAY] ?: 0
             preferences[PreferencesKeys.NOTIFICATIONS_SENT_TODAY] = current + 1
-            preferences[PreferencesKeys.LAST_NOTIFICATION_SENT_AT] = System.currentTimeMillis()
+            preferences[PreferencesKeys.LAST_NOTIFICATION_SENT_AT] = now
         }
     }
 
-    suspend fun resetNotificationsSentToday() {
+    suspend fun resetNotificationsSentToday(now: Long = System.currentTimeMillis()) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.NOTIFICATIONS_SENT_TODAY] = 0
-            preferences[PreferencesKeys.NOTIFICATION_RESET_DATE] = System.currentTimeMillis()
+            preferences[PreferencesKeys.NOTIFICATION_RESET_DATE] = now
         }
     }
 

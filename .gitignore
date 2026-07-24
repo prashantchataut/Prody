@@ -41,3 +41,6 @@ apikey.properties
 .claude/
 .aider*
 .cursor/
+
+# === Export zips ===
+*.tar.gz

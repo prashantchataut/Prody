@@ -1,282 +1,164 @@
-# Prody - Your Growth Companion
+# Kairos
 
-<p align="center">
-  <img src="app/src/main/res/mipmap-xxxhdpi/ic_launcher.webp" alt="Prody Logo" width="120"/>
-</p>
+**Learn one useful thing. Notice it in your life. Remember it when it matters.**
 
-<p align="center">
-  <strong>Transform the way you think, learn, and evolve</strong>
-</p>
+Kairos is a local-first Android learning and reflection app built with Kotlin, Jetpack Compose, Room, Hilt, and Material 3. The focused product surface is organized around four destinations: **Today**, **Learn**, **Reflect**, and **Library**.
 
-<p align="center">
-  <a href="#features">Features</a> |
-  <a href="#technology-stack">Tech Stack</a> |
-  <a href="#ai-integration">AI Setup</a> |
-  <a href="#building-the-app">Build</a> |
-  <a href="#architecture">Architecture</a>
-</p>
+> The Android package, Room database name, and several internal `Prody` identifiers are intentionally preserved so existing installations can upgrade without losing local data.
 
----
+## Product surface
 
-**Prody** is a comprehensive self-improvement Android app that transforms the way you think, learn, and evolve. Built with modern Android development practices using Kotlin, Jetpack Compose, and Material 3 Design.
+### Today
+- One stable vocabulary recommendation and one thoughtful quote per local date.
+- Explainable selection and direct feedback: too easy, too hard, more like this, and less like this.
+- A calm vertical reading flow instead of a dashboard of unrelated modules.
 
-## Features
+### Learn
+- Searchable vocabulary catalog with new, learned, and favorite states.
+- Spaced-repetition foundations and contextual word-use tracking.
+- Deterministic browse policies with unit coverage.
 
-### Journaling
-- Daily journaling with AI-powered prompts
-- Emotional insights from Buddha (AI assistant)
-- Pattern detection over time
-- Templates for different reflection types
-- Mood tracking with thoughtful reflections
+### Reflect
+- Fast journal creation and a readable chronological history.
+- Search and bookmark filters without requiring AI.
+- Encrypted local storage and useful offline behavior.
 
-### Gamification
-- XP and leveling system with 10 rank tiers
-- Achievement badges with rarity tiers (Common to Legendary)
-- Customizable profile banners
-- Competitive leaderboard
-- Streak tracking with celebration milestones
+### Library
+- Quotes, proverbs, idioms, and phrases behind one repository boundary.
+- Search and favorite controls across all content types.
+- Editorial reading surfaces designed for longer text.
 
-### Daily Wisdom
-- **Word of the Day**: Expand your vocabulary with curated words, definitions, etymology, and usage examples
-- **Quote Collection**: Inspirational quotes from great thinkers across 7 themes
-- **Proverbs & Idioms**: Cultural wisdom with meanings and origins
-- **Phrases**: Useful phrases for everyday communication
-- Personalized quotes based on your journey
-- Not preachy, just helpful
+## Experience principles
 
-### Buddha - Your Stoic AI Guide
-- Journal your thoughts and receive personalized stoic wisdom
-- Content analysis for contextual responses
-- Weekly summaries of your growth journey
-- Mood-appropriate wisdom delivery
+- **Focused over crowded:** secondary experiments do not compete in primary navigation.
+- **Trustworthy over theatrical:** no fabricated community activity or fake remote behavior.
+- **Glass as hierarchy:** translucent material is limited to navigation and compact controls; reading surfaces stay legible.
+- **Useful without AI:** the core loop works when network and generated features are unavailable.
+- **Consent at the moment of intent:** notification permission is requested only after the user enables reminders.
+- **Upgrade-safe:** persisted identifiers remain compatible until an explicit migration is released.
 
-### Future Self Messaging
-- Write letters to your future self
-- Schedule delivery from 1 week to 1 year
-- Multiple categories: Goal, Motivation, Promise, General
-- Receive motivation when you need it
-- Countdown to delivery
+## First-run experience
 
-### Profile & Stats
-- Track your progress with detailed statistics
-- Weekly and monthly summaries
-- Achievement showcase
-- Customizable profile with banners and badges
-- Visual journey timeline
+Users may continue with a persistent local profile or sign in with Google. Onboarding has three steps:
 
-### Notifications (NEW)
-- User-configurable morning notification time
-- User-configurable evening notification time
-- Separate toggles for wisdom and journal reminders
-- Schedule adjusts automatically when times change
+1. Understand the daily word-and-thought loop.
+2. Choose a vocabulary pace and idea categories that feed recommendation ranking.
+3. Review local-first storage and optional notification behavior.
 
-### AI Configuration (NEW)
-- AI configuration status indicator on home screen
-- Warning banner when API key is not configured
-- Secure API key storage infrastructure
-- Fallback to curated content when AI unavailable
+Onboarding completion is written only after the local catalog and profile transaction succeeds.
 
-## Tech Stack
+## Visual system
 
-| Component | Technology |
-|-----------|------------|
-| **Language** | Kotlin 2.0 |
-| **UI** | Jetpack Compose with Material 3 |
-| **Architecture** | MVVM + Clean Architecture |
-| **DI** | Hilt |
-| **AI** | Gemini API (Buddha) |
-| **Database** | Room with Flow |
-| **Preferences** | DataStore |
-| **Async** | Kotlin Coroutines |
-| **Navigation** | Compose Navigation with animations |
-| **Background Work** | WorkManager |
-| **Fonts** | Poppins + Playfair Display |
+- Mineral indigo, clay, verdigris, and warm editorial neutrals.
+- Restrained glass navigation and control surfaces.
+- Matte reading surfaces for definitions, quotations, and journal text.
+- Native Android sans for interface density and Lora for reflective content.
+- Edge-to-edge layout, explicit system insets, 48dp minimum controls, compact bottom navigation, and an adaptive wide-screen rail.
+- Short state transitions and pressed feedback; no decorative looping motion in the core experience.
 
-## Design System
+## Architecture
 
-Prody features a comprehensive design system:
+The focused screens use a strangler migration around the legacy application:
 
-- **Colors**: 100+ semantic colors including brand, mood, gamification, and rarity colors
-- **Typography**: Full Material 3 type scale plus custom styles for wisdom, stats, badges
-- **Shapes**: 40+ shape definitions for cards, buttons, badges, and special components
-- **Dimensions**: Complete spacing system based on 8dp grid
-- **Design Tokens**: Centralized token system for consistent theming
+```text
+Compose UI
+  -> feature ViewModel
+    -> domain repository / use case
+      <- data repository implementation
+        -> Room DAO / preferences / network client
+```
 
-## Setup
+Promoted ViewModels do not coordinate Room DAOs directly. Legacy routes remain in the source tree until their data and compatibility requirements can be retired safely.
 
-### Prerequisites
-- Android Studio Hedgehog (2023.1.1) or newer
+See [`docs/architecture`](docs/architecture) for accepted decisions and compatibility rules.
+
+## Technical stack
+
+| Area | Technology |
+|---|---|
+| Language | Kotlin 2.0 |
+| UI | Jetpack Compose + Material 3 |
+| State | ViewModel + StateFlow |
+| Dependency injection | Hilt |
+| Persistence | Room + SQLCipher, DataStore, encrypted preferences |
+| Async | Kotlin Coroutines + Flow |
+| Navigation | Navigation Compose |
+| Background work | WorkManager |
+| Build | Gradle 8.9, JDK 17, Android SDK 35 |
+
+## AI boundary
+
+The app does **not** embed provider credentials in release builds. Legacy direct-provider integrations are available only for local debug development:
+
+```properties
+# local.properties — never commit
+AI_API_KEY=your_local_development_key
+OPENROUTER_API_KEY=your_optional_local_development_key
+THERAPIST_API_KEY=your_optional_local_development_key
+TTS_API_KEY=your_optional_local_development_key
+```
+
+Production generated features require an authenticated server gateway with quotas, abuse controls, schema validation, and provider isolation. Today, Learn, Reflect, and Library do not depend on that gateway.
+
+## Build
+
+Prerequisites:
+
 - JDK 17+
 - Android SDK 35
+- Android Studio with current Compose tooling
 
-### AI Features (Optional)
-To enable Buddha AI features:
-
-1. Get a Gemini API key from [Google AI Studio](https://makersuite.google.com/app/apikey)
-2. Create/edit `local.properties` in project root:
-   ```
-   AI_API_KEY=your_api_key_here
-   OPENROUTER_API_KEY=optional_openrouter_key
-   ```
-3. Rebuild the project
-
-*Note: Without an API key, the app works with static content from the wisdom library. A warning banner will appear on the home screen indicating AI features are disabled.*
-
-### Notification Settings
-- Notifications can be configured in Settings > Notifications
-- Morning notification time (default: 9:00 AM)
-- Evening notification time (default: 8:00 PM)
-- Separate toggles for Daily Wisdom and Journal Reminders
-
-### Build Steps
-
-1. **Clone the repository:**
 ```bash
-git clone https://github.com/prashantchataut/prody.git
-cd prody
+./gradlew :app:assembleDebug
+./gradlew :app:testDebugUnitTest
+./gradlew :app:lintDebug
 ```
 
-2. Build debug APK:
+Run the repository boundary and trust checks without Gradle:
+
 ```bash
-./gradlew assembleDebug
+./scripts/verify_kairos.sh
 ```
 
-3. Build release APK:
+## CI and releases
+
+`.github/workflows/android.yml` runs architecture checks, unit tests, Android lint, and a debug build for pull requests and pushes. Tagged release builds fail closed unless all production signing secrets are configured in the protected `production` environment:
+
+- `KEYSTORE_BASE64`
+- `KEYSTORE_PASSWORD`
+- `KEY_ALIAS`
+- `KEY_PASSWORD`
+
+The workflow never generates or publishes a fallback signing key.
+
+## Compatibility invariants
+
+Do not rename these without a dedicated migration and upgrade test:
+
+- `applicationId` and namespace;
+- Room database and table names;
+- preference and encrypted-storage keys;
+- widget and pending-intent action identifiers;
+- externally consumed deep links.
+
+Visible branding and UI implementation names may migrate independently.
+
+## Current migration status
+
+The four primary destinations, local entry flow, onboarding, notification consent, recommendation feedback, release AI boundary, launcher identity, and adaptive navigation use the Kairos system. Some secondary legacy screens still use the earlier visual language and remain intentionally outside primary navigation.
+
+## Verification
+
+A complete verification run should include:
+
 ```bash
-./gradlew assembleRelease
+./scripts/verify_kairos.sh --gradle
 ```
 
-The APK will be available at `app/build/outputs/apk/`
+Then test on at least:
 
-## Project Structure
-
-```
-app/src/main/java/com/prody/prashant/
-├── data/
-│   ├── content/           # Content libraries (Wisdom, Prompts)
-│   ├── local/
-│   │   ├── dao/          # Room DAOs
-│   │   ├── database/     # Room Database
-│   │   ├── entity/       # Database entities
-│   │   └── preferences/  # DataStore preferences
-│   └── repository/       # Repository implementations
-├── di/
-│   └── AppModule.kt          # Hilt dependency injection
-├── domain/
-│   ├── identity/         # Achievements, Ranks, Banners
-│   ├── model/            # Domain models
-│   └── repository/       # Repository interfaces
-├── notification/
-│   ├── NotificationReceiver.kt
-│   ├── NotificationScheduler.kt
-│   └── BootReceiver.kt
-├── ui/
-│   ├── components/       # Reusable UI components
-│   ├── navigation/       # Navigation setup
-│   ├── screens/          # App screens
-│   └── theme/            # Design system (Colors, Typography, Shapes, Dimensions, Tokens)
-├── util/
-│   ├── BuddhaWisdom.kt   # AI wisdom generator
-│   └── NotificationMessages.kt  # 100+ notification messages
-├── MainActivity.kt
-└── ProdyApplication.kt
-```
-
-## Content Library
-
-Prody includes extensive static content:
-
-| Content Type | Count | Categories |
-|--------------|-------|------------|
-| **Wisdom Quotes** | 75+ | Growth, Resilience, Gratitude, Mindfulness, Action, Self-Compassion, Perspective |
-| **Journal Prompts** | 80+ | Morning, Evening, Gratitude, Reflection, Growth, Emotional, Quick, Creative |
-| **Notification Messages** | 100+ | Re-engagement, Celebration, Competitive, Streak, Journal, Future Message, etc. |
-| **Achievements** | 20+ | Wisdom, Reflection, Consistency, Presence, Temporal, Mastery, Social, Explorer |
-| **Ranks** | 10 | Seeker to Awakened |
-
-## Documentation
-
-- [Database Schema](docs/database_schema.md) - Complete entity definitions and relationships
-- [NEXT_STEPS.md](NEXT_STEPS.md) - Roadmap with 25+ planned features
-- [DEVELOPMENT_ROADMAP.md](DEVELOPMENT_ROADMAP.md) - Technical implementation phases
-
-## CI/CD
-
-This project includes GitHub Actions workflows for:
-- Automated builds on push/PR
-- Release APK generation
-- Lint checking
-- Unit test execution
-
-### Creating a Release
-
-1. Tag your release:
-```bash
-git tag v1.0.0
-git push origin v1.0.0
-```
-
-2. GitHub Actions will automatically build and create a release with the signed APK.
-
-## Contributing
-
-This is a personal project by Prashant Chataut. Contributions, suggestions, and feedback are welcome!
-
-## Contact
-
-- **Instagram:** [@prashantchataut_](https://www.instagram.com/prashantchataut_/)
-- **Website:** [knowprashant.vercel.app](https://knowprashant.vercel.app)
-- **GitHub:** [prashantchataut](https://github.com/prashantchataut)
-
-## License
-
-This project is open source. See the LICENSE file for details.
-
-Upcoming features:
-- Cloud sync with Firebase
-- Social sharing features
-- Widget support
-- Wear OS companion app
-- Advanced spaced repetition
-
----
-
-## Support & Contact
-
-### Bug Reports & Feature Requests
-
-Please use [GitHub Issues](https://github.com/prashantchataut/prody/issues) for:
-- Bug reports
-- Feature requests
-- Documentation improvements
-
-### Developer Contact
-
-- **Email**: [http](https://knowprashant.vercel.app/)
-- **Instagram**: [@prashantchataut_](https://www.instagram.com/prashantchataut_/))
-- **Discord**: [Prody Community](doesn't exist yet sorry :( )
-
-### FAQ
-
-**Q: Does Buddha work offline?**
-A: Yes, previously cached responses work offline. New journal entries queue for AI response when online.
-
-**Q: How secure are my journal entries?**
-A: All data is stored locally on your device. AI requests use encrypted connections. No personal data is stored on servers.
-
-**Q: Can I export my data?**
-A: Yes, Settings > Export Data creates a JSON backup of all your entries and progress.
-
----
-CODERABIT: ![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/prashantchataut/Prody?utm_source=oss&utm_medium=github&utm_campaign=prashantchataut%2FPrody&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
-
-
-## License
-
-This project is open source. See the [LICENSE](LICENSE) file for details.
-
----
-
-<p align="center">
-  <sub>Built with love for personal growth seekers</sub>
-</p>
+- one compact phone in light and dark mode;
+- one large-font configuration;
+- one tablet or foldable width;
+- Android 13+ notification permission flows;
+- an upgrade install over an existing Prody database.

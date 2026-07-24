@@ -62,22 +62,36 @@ class NotificationScheduler @Inject constructor(
 
             android.util.Log.d(TAG, "Rescheduling all notifications...")
 
-            // Schedule each notification type independently
-            // If one fails, the others should still be scheduled
-            runCatching { scheduleMorningWisdom() }
-                .onFailure { android.util.Log.e(TAG, "Failed to schedule morning wisdom", it) }
+            // Remove legacy alarms first. They remain recognized by the receiver so
+            // old installed PendingIntents fail closed instead of spamming users.
+            cancelScheduledAlarm(REQUEST_WORD, NotificationReceiver.ACTION_WORD_OF_DAY)
+            cancelScheduledAlarm(REQUEST_STREAK, NotificationReceiver.ACTION_STREAK_REMINDER)
+            cancelScheduledAlarm(REQUEST_JOURNAL, NotificationReceiver.ACTION_JOURNAL_REMINDER)
 
-            runCatching { scheduleEveningReflection() }
-                .onFailure { android.util.Log.e(TAG, "Failed to schedule evening reflection", it) }
+            if (preferencesManager.wisdomNotificationEnabled.first() &&
+                preferencesManager.morningReminderEnabled.first()
+            ) {
+                runCatching { scheduleMorningWisdom() }
+                    .onFailure { android.util.Log.e(TAG, "Failed to schedule daily moment", it) }
+            } else {
+                cancelScheduledAlarm(REQUEST_MORNING, NotificationReceiver.ACTION_MORNING_WISDOM)
+            }
 
-            runCatching { scheduleWordOfDay() }
-                .onFailure { android.util.Log.e(TAG, "Failed to schedule word of day", it) }
+            if (preferencesManager.journalReminderEnabled.first() &&
+                preferencesManager.eveningReflectionEnabled.first()
+            ) {
+                runCatching { scheduleEveningReflection() }
+                    .onFailure { android.util.Log.e(TAG, "Failed to schedule evening reflection", it) }
+            } else {
+                cancelScheduledAlarm(REQUEST_EVENING, NotificationReceiver.ACTION_EVENING_REFLECTION)
+            }
 
-            runCatching { scheduleStreakReminder() }
-                .onFailure { android.util.Log.e(TAG, "Failed to schedule streak reminder", it) }
-
-            runCatching { scheduleJournalReminder() }
-                .onFailure { android.util.Log.e(TAG, "Failed to schedule journal reminder", it) }
+            if (preferencesManager.weeklySummaryNotifications.first()) {
+                runCatching { scheduleWeeklySummaryNotification() }
+                    .onFailure { android.util.Log.e(TAG, "Failed to schedule weekly recap", it) }
+            } else {
+                cancelScheduledAlarm(REQUEST_WEEKLY_SUMMARY, NotificationReceiver.ACTION_WEEKLY_SUMMARY)
+            }
 
             runCatching { scheduleFutureMessages() }
                 .onFailure { android.util.Log.e(TAG, "Failed to schedule future messages", it) }
@@ -216,12 +230,12 @@ class NotificationScheduler @Inject constructor(
             val pendingMessages = futureMessageDao.getAllMessagesSync()
             val currentTime = System.currentTimeMillis()
 
-            pendingMessages.forEachIndexed { index, message ->
+            pendingMessages.forEach { message ->
                 try {
                     if (message.deliveryDate > currentTime) {
                         scheduleExactAlarm(
                             action = NotificationReceiver.ACTION_FUTURE_MESSAGE,
-                            requestCode = REQUEST_FUTURE_BASE + index,
+                            requestCode = futureMessageRequestCode(message.id),
                             triggerTime = message.deliveryDate,
                             extras = mapOf(
                                 NotificationReceiver.EXTRA_MESSAGE_TITLE to message.title,
@@ -243,7 +257,7 @@ class NotificationScheduler @Inject constructor(
 
         scheduleExactAlarm(
             action = NotificationReceiver.ACTION_FUTURE_MESSAGE,
-            requestCode = (REQUEST_FUTURE_BASE + messageId).toInt(),
+            requestCode = futureMessageRequestCode(messageId),
             triggerTime = deliveryDate,
             extras = mapOf(
                 NotificationReceiver.EXTRA_MESSAGE_TITLE to title,
@@ -264,7 +278,7 @@ class NotificationScheduler @Inject constructor(
             }
             val pendingIntent = PendingIntent.getBroadcast(
                 context,
-                (REQUEST_FUTURE_BASE + messageId).toInt(),
+                futureMessageRequestCode(messageId),
                 intent,
                 PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
             )
@@ -275,6 +289,11 @@ class NotificationScheduler @Inject constructor(
         } catch (e: Exception) {
             android.util.Log.e(TAG, "Failed to cancel future message notification: $messageId", e)
         }
+    }
+
+    private fun futureMessageRequestCode(messageId: Long): Int {
+        val normalized = (messageId % (Int.MAX_VALUE - REQUEST_FUTURE_BASE)).toInt()
+        return REQUEST_FUTURE_BASE + normalized.coerceAtLeast(0)
     }
 
     private fun scheduleRepeatingAlarm(
@@ -299,7 +318,7 @@ class NotificationScheduler @Inject constructor(
         )
 
         try {
-            manager.setRepeating(
+            manager.setInexactRepeating(
                 AlarmManager.RTC_WAKEUP,
                 triggerTime,
                 intervalMillis,
@@ -442,6 +461,21 @@ class NotificationScheduler @Inject constructor(
         )
     }
 
+    private fun cancelScheduledAlarm(requestCode: Int, action: String) {
+        val manager = alarmManager ?: return
+        val intent = Intent(context, NotificationReceiver::class.java).apply { this.action = action }
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            requestCode,
+            intent,
+            PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
+        )
+        pendingIntent?.let {
+            manager.cancel(it)
+            it.cancel()
+        }
+    }
+
     private fun cancelAllNotifications() {
         val manager = alarmManager ?: run {
             android.util.Log.w(TAG, "AlarmManager not available, skipping notification cancellation")
@@ -453,7 +487,8 @@ class NotificationScheduler @Inject constructor(
             REQUEST_EVENING to NotificationReceiver.ACTION_EVENING_REFLECTION,
             REQUEST_WORD to NotificationReceiver.ACTION_WORD_OF_DAY,
             REQUEST_STREAK to NotificationReceiver.ACTION_STREAK_REMINDER,
-            REQUEST_JOURNAL to NotificationReceiver.ACTION_JOURNAL_REMINDER
+            REQUEST_JOURNAL to NotificationReceiver.ACTION_JOURNAL_REMINDER,
+            REQUEST_WEEKLY_SUMMARY to NotificationReceiver.ACTION_WEEKLY_SUMMARY
         ).forEach { (requestCode, action) ->
             try {
                 val intent = Intent(context, NotificationReceiver::class.java).apply {

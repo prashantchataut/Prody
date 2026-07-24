@@ -10,12 +10,22 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 import com.prody.prashant.MainActivity
 import com.prody.prashant.R
 import com.prody.prashant.util.NotificationMessages
 import kotlin.random.Random
 
+@AndroidEntryPoint
 class NotificationReceiver : BroadcastReceiver() {
+
+    @Inject lateinit var deliveryGate: NotificationDeliveryGate
+    @Inject lateinit var contentProvider: DailyNotificationContentProvider
 
     companion object {
         private const val TAG = "NotificationReceiver"
@@ -59,48 +69,68 @@ class NotificationReceiver : BroadcastReceiver() {
     }
 
     override fun onReceive(context: Context, intent: Intent) {
-        when (intent.action) {
-            ACTION_MORNING_WISDOM -> showMorningWisdomNotification(context)
-            ACTION_EVENING_REFLECTION -> showEveningReflectionNotification(context)
-            ACTION_WORD_OF_DAY -> showWordOfDayNotification(context)
-            ACTION_FUTURE_MESSAGE -> showFutureMessageNotification(
-                context,
-                intent.getStringExtra(EXTRA_MESSAGE_TITLE) ?: "A message from past you",
-                intent.getStringExtra(EXTRA_MESSAGE_BODY) ?: "You have a message waiting"
-            )
-            ACTION_STREAK_REMINDER -> showStreakReminderNotification(context)
-            ACTION_JOURNAL_REMINDER -> showJournalReminderNotification(context)
-            ACTION_WEEKLY_SUMMARY -> showWeeklySummaryNotification(context)
+        val pendingResult = goAsync()
+        CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
+            try {
+                if (!deliveryGate.shouldDeliver(intent.action)) return@launch
+                val shown = when (intent.action) {
+                    ACTION_MORNING_WISDOM -> showMorningWisdomNotification(
+                        context, contentProvider.dailyMoment()
+                    )
+                    ACTION_EVENING_REFLECTION -> showEveningReflectionNotification(
+                        context, contentProvider.eveningReflection()
+                    )
+                    ACTION_WORD_OF_DAY -> showWordOfDayNotification(context)
+                    ACTION_FUTURE_MESSAGE -> showFutureMessageNotification(
+                        context,
+                        intent.getStringExtra(EXTRA_MESSAGE_TITLE) ?: "A message from past you",
+                        intent.getStringExtra(EXTRA_MESSAGE_BODY) ?: "You have a message waiting"
+                    )
+                    ACTION_STREAK_REMINDER -> showStreakReminderNotification(context)
+                    ACTION_JOURNAL_REMINDER -> showJournalReminderNotification(context)
+                    ACTION_WEEKLY_SUMMARY -> showWeeklySummaryNotification(context)
+                    else -> false
+                }
+                if (shown) deliveryGate.recordDelivered()
+            } catch (error: Exception) {
+                android.util.Log.e(TAG, "Notification delivery failed", error)
+            } finally {
+                pendingResult.finish()
+            }
         }
     }
 
-    private fun showMorningWisdomNotification(context: Context) {
-        val (title, body, _) = NotificationMessages.morningWisdom.randomOrNull() ?: DEFAULT_WISDOM
-        showNotification(
+    private fun showMorningWisdomNotification(
+        context: Context,
+        copy: NotificationCopy
+    ): Boolean {
+        return showNotification(
             context = context,
             channelId = CHANNEL_ID_WISDOM,
             notificationId = NOTIFICATION_ID_MORNING,
-            title = title,
-            body = body,
+            title = copy.title,
+            body = copy.body,
             smallIcon = R.drawable.ic_launcher_foreground
         )
     }
 
-    private fun showEveningReflectionNotification(context: Context) {
-        val (title, body, _) = NotificationMessages.eveningReflection.randomOrNull() ?: DEFAULT_EVENING
-        showNotification(
+    private fun showEveningReflectionNotification(
+        context: Context,
+        copy: NotificationCopy
+    ): Boolean {
+        return showNotification(
             context = context,
             channelId = CHANNEL_ID_WISDOM,
             notificationId = NOTIFICATION_ID_EVENING,
-            title = title,
-            body = body,
+            title = copy.title,
+            body = copy.body,
             smallIcon = R.drawable.ic_launcher_foreground
         )
     }
 
-    private fun showWordOfDayNotification(context: Context) {
+    private fun showWordOfDayNotification(context: Context): Boolean {
         val (title, body, _) = NotificationMessages.wordOfDay.randomOrNull() ?: DEFAULT_WORD
-        showNotification(
+        return showNotification(
             context = context,
             channelId = CHANNEL_ID_WISDOM,
             notificationId = NOTIFICATION_ID_WORD,
@@ -110,10 +140,9 @@ class NotificationReceiver : BroadcastReceiver() {
         )
     }
 
-    private fun showFutureMessageNotification(context: Context, title: String, body: String) {
-        val messageTitle = NotificationMessages.futureMessageReceived.randomOrNull()?.first
-            ?: DEFAULT_FUTURE_MESSAGE.first
-        showNotification(
+    private fun showFutureMessageNotification(context: Context, title: String, body: String): Boolean {
+        val messageTitle = title.ifBlank { DEFAULT_FUTURE_MESSAGE.first }
+        return showNotification(
             context = context,
             channelId = CHANNEL_ID_FUTURE,
             notificationId = NOTIFICATION_ID_FUTURE + Random.nextInt(1000),
@@ -124,9 +153,9 @@ class NotificationReceiver : BroadcastReceiver() {
         )
     }
 
-    private fun showStreakReminderNotification(context: Context) {
+    private fun showStreakReminderNotification(context: Context): Boolean {
         val (title, body, _) = NotificationMessages.streakReminder.randomOrNull() ?: DEFAULT_STREAK
-        showNotification(
+        return showNotification(
             context = context,
             channelId = CHANNEL_ID_REMINDER,
             notificationId = NOTIFICATION_ID_STREAK,
@@ -136,9 +165,9 @@ class NotificationReceiver : BroadcastReceiver() {
         )
     }
 
-    private fun showJournalReminderNotification(context: Context) {
+    private fun showJournalReminderNotification(context: Context): Boolean {
         val (title, body, _) = NotificationMessages.journalPrompt.randomOrNull() ?: DEFAULT_JOURNAL
-        showNotification(
+        return showNotification(
             context = context,
             channelId = CHANNEL_ID_REMINDER,
             notificationId = NOTIFICATION_ID_JOURNAL,
@@ -148,9 +177,9 @@ class NotificationReceiver : BroadcastReceiver() {
         )
     }
 
-    private fun showWeeklySummaryNotification(context: Context) {
+    private fun showWeeklySummaryNotification(context: Context): Boolean {
         val (title, body, _) = DEFAULT_WEEKLY_SUMMARY
-        showNotification(
+        return showNotification(
             context = context,
             channelId = CHANNEL_ID_REMINDER,
             notificationId = NOTIFICATION_ID_WEEKLY_SUMMARY,
@@ -168,7 +197,7 @@ class NotificationReceiver : BroadcastReceiver() {
         body: String,
         smallIcon: Int,
         priority: Int = NotificationCompat.PRIORITY_DEFAULT
-    ) {
+    ): Boolean {
         // Check permission for Android 13+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(
@@ -176,7 +205,7 @@ class NotificationReceiver : BroadcastReceiver() {
                     Manifest.permission.POST_NOTIFICATIONS
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
-                return
+                return false
             }
         }
 
@@ -201,5 +230,6 @@ class NotificationReceiver : BroadcastReceiver() {
             .build()
 
         NotificationManagerCompat.from(context).notify(notificationId, notification)
+        return true
     }
 }

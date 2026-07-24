@@ -19,6 +19,10 @@ import com.prody.prashant.data.local.dao.*
 import com.prody.prashant.data.local.database.DatabaseSeeder
 import com.prody.prashant.data.local.database.ProdyDatabase
 import com.prody.prashant.data.local.preferences.PreferencesManager
+import com.prody.prashant.data.repository.DailyPlanRepositoryImpl
+import com.prody.prashant.domain.recommendation.ExplainableRecommendationRanker
+import com.prody.prashant.domain.notification.NotificationDeliveryPolicy
+import com.prody.prashant.domain.repository.DailyPlanRepository
 import com.prody.prashant.data.backup.BackupManager
 import com.prody.prashant.data.cache.AiCacheManager
 import com.prody.prashant.data.moderation.ContentModerationManager
@@ -81,6 +85,30 @@ object AppModule {
     fun provideQuoteDao(database: ProdyDatabase): QuoteDao {
         return database.quoteDao()
     }
+
+    @Provides
+    @Singleton
+    fun provideDailyContentDao(database: ProdyDatabase): DailyContentDao {
+        return database.dailyContentDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideRecommendationRanker(): ExplainableRecommendationRanker {
+        return ExplainableRecommendationRanker()
+    }
+
+    @Provides
+    @Singleton
+    fun provideNotificationDeliveryPolicy(): NotificationDeliveryPolicy {
+        return NotificationDeliveryPolicy()
+    }
+
+    @Provides
+    @Singleton
+    fun provideDailyPlanRepository(
+        implementation: DailyPlanRepositoryImpl
+    ): DailyPlanRepository = implementation
 
     @Provides
     @Singleton

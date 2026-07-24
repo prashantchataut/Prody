@@ -2,109 +2,61 @@ package com.prody.prashant.ui.screens.onboarding
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.prody.prashant.data.InitialContentData
-import androidx.room.withTransaction
-import com.prody.prashant.data.local.dao.*
-import com.prody.prashant.data.local.database.ProdyDatabase
-import com.prody.prashant.data.local.entity.AchievementEntity
-import com.prody.prashant.data.local.entity.UserProfileEntity
-import com.prody.prashant.data.local.entity.UserStatsEntity
-import com.prody.prashant.data.local.preferences.PreferencesManager
-import com.prody.prashant.domain.gamification.Achievements
+import com.prody.prashant.domain.common.Result
+import com.prody.prashant.domain.repository.OnboardingPreferences
+import com.prody.prashant.domain.repository.OnboardingRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import java.util.UUID
 import javax.inject.Inject
+
+sealed interface OnboardingCompletionState {
+    data object Idle : OnboardingCompletionState
+    data object Saving : OnboardingCompletionState
+    data object Completed : OnboardingCompletionState
+    data class Error(val message: String) : OnboardingCompletionState
+}
 
 @HiltViewModel
 class OnboardingViewModel @Inject constructor(
-    private val preferencesManager: PreferencesManager,
-    private val vocabularyDao: VocabularyDao,
-    private val quoteDao: QuoteDao,
-    private val proverbDao: ProverbDao,
-    private val idiomDao: IdiomDao,
-    private val phraseDao: PhraseDao,
-    private val userDao: UserDao,
-    private val database: ProdyDatabase
+    private val onboardingRepository: OnboardingRepository
 ) : ViewModel() {
 
-    companion object {
-        private const val TAG = "OnboardingViewModel"
-    }
+    private val _completionState = MutableStateFlow<OnboardingCompletionState>(OnboardingCompletionState.Idle)
+    val completionState: StateFlow<OnboardingCompletionState> = _completionState.asStateFlow()
 
-    fun completeOnboarding() {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                // 1. DataStore updates - executed OUTSIDE Room transaction as per best practices.
-                // Room transactions should only contain Room operations.
-                preferencesManager.setOnboardingCompleted(true)
-                preferencesManager.setFirstLaunchTime(System.currentTimeMillis())
-                val userId = UUID.randomUUID().toString()
-                preferencesManager.setUserId(userId)
+    fun completeOnboarding(
+        vocabularyDifficulty: Int,
+        wisdomCategories: Set<String>
+    ) {
+        if (_completionState.value is OnboardingCompletionState.Saving) return
 
-                // 2. Room database operations - wrapped in a single transaction for performance.
-                // This drastically reduces disk sync overhead from multiple individual inserts.
-                database.withTransaction {
-                    // Initialize user profile
-                    val userProfile = UserProfileEntity(
-                        id = 1,
-                        displayName = "Growth Seeker",
-                        joinedAt = System.currentTimeMillis()
+        viewModelScope.launch {
+            _completionState.value = OnboardingCompletionState.Saving
+            when (
+                val result = onboardingRepository.completeSetup(
+                    OnboardingPreferences(
+                        vocabularyDifficulty = vocabularyDifficulty,
+                        wisdomCategories = wisdomCategories
                     )
-                    userDao.insertUserProfile(userProfile)
-
-                    // Initialize user stats
-                    val userStats = UserStatsEntity(
-                        id = 1,
-                        lastResetDate = System.currentTimeMillis()
-                    )
-                    userDao.insertUserStats(userStats)
-
-                    // Initialize achievements
-                    val achievements = Achievements.allAchievements.map { achievement ->
-                        AchievementEntity(
-                            id = achievement.id,
-                            name = achievement.name,
-                            description = achievement.description,
-                            iconId = achievement.id,
-                            category = achievement.category.name.lowercase(),
-                            requirement = achievement.getRequirementTarget(),
-                            currentProgress = 0,
-                            isUnlocked = false,
-                            rewardType = "points",
-                            rewardValue = achievement.xpReward.toString(),
-                            rarity = achievement.rarity.name.lowercase()
-                        )
+                )
+            ) {
+                is Result.Success -> _completionState.value = OnboardingCompletionState.Completed
+                is Result.Error -> _completionState.value = OnboardingCompletionState.Error(
+                    result.userMessage.ifBlank {
+                        "Kairos could not finish local setup. Your choices are safe; try once more."
                     }
-                    userDao.insertAchievements(achievements)
-
-                    // Populate initial content within the same transaction
-                    performInitialContentPopulation()
-                }
-            } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error during onboarding completion", e)
-                // Still mark onboarding as completed to prevent being stuck in a loop
-                try {
-                    preferencesManager.setOnboardingCompleted(true)
-                } catch (prefError: Exception) {
-                    android.util.Log.e(TAG, "Failed to set onboarding completed flag", prefError)
-                }
+                )
+                is Result.Loading -> Unit
             }
         }
     }
 
-    /**
-     * Internal helper to populate all initial content entities.
-     * Should be called within a transaction for optimal performance.
-     */
-    private suspend fun performInitialContentPopulation() {
-        // We use individual inserts/batches but no internal try-catches here
-        // to allow the parent transaction to handle atomicity and avoid disk sync overhead.
-        vocabularyDao.insertWords(InitialContentData.vocabularyWords)
-        quoteDao.insertQuotes(InitialContentData.quotes)
-        proverbDao.insertProverbs(InitialContentData.proverbs)
-        idiomDao.insertIdioms(InitialContentData.idioms)
-        phraseDao.insertPhrases(InitialContentData.phrases)
+    fun clearError() {
+        if (_completionState.value is OnboardingCompletionState.Error) {
+            _completionState.value = OnboardingCompletionState.Idle
+        }
     }
 }

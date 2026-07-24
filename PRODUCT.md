@@ -1,0 +1,56 @@
+# Kairos Product Context
+
+## Register
+product
+
+## Product purpose
+Kairos is a calm daily learning and reflection app. It helps a person discover one useful word and one worthwhile thought, apply them in a small action, and remember them at the right time.
+
+## Primary users
+People who want a two-to-five-minute daily ritual for vocabulary, reflection, and intentional growth. They are often opening the app between other tasks, in the morning or evening, and do not want a dashboard demanding attention.
+
+## Core job
+Open the app, understand what matters today, take one meaningful action, and leave feeling clearer rather than busier.
+
+## Primary loop
+1. Read today's word and thought.
+2. Practice, save, or reflect.
+3. Give lightweight feedback so tomorrow improves.
+4. Return for spaced review and a weekly recap.
+
+## Information architecture
+- Today: the daily word, thought, and next action.
+- Learn: vocabulary catalog, practice, and review.
+- Reflect: journal entries and a quick new reflection.
+- Library: saved and discoverable quotes, proverbs, idioms, and phrases.
+- Profile and Settings: secondary destinations, never primary tabs.
+
+## Strategic principles
+- One obvious action per screen.
+- Recommendations must be explainable and editable.
+- Empty states must teach the next useful action.
+- Progress is quiet evidence, not a casino mechanic.
+- Social proof must be real or absent.
+- AI is infrastructure, not the product personality.
+- Offline and local-first behavior must remain useful.
+- Preserve package, database, and storage identifiers during the brand migration.
+
+## Voice
+Clear, warm, observant, and compact. Never mystical, therapeutic, manipulative, or overfamiliar. Avoid “journey,” “unlock your potential,” “magic,” “Buddha is thinking,” and other synthetic self-help language.
+
+## Anti-references
+- Crowded habit dashboards.
+- Purple-gradient AI assistants.
+- Gamified streak casinos.
+- Nested card grids.
+- Fake social activity.
+- Frosted-glass effects on every surface.
+- Decorative motion that delays reading.
+
+## Success signals
+- Daily Moment completion.
+- Vocabulary review retention.
+- Words used in reflections.
+- Lower notification dismissal rate.
+- Repeat use without increasing UI density.
+- Users can identify the app’s purpose after one screen.

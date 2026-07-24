@@ -9,11 +9,14 @@ import com.prody.prashant.data.repository.GamificationRepositoryImpl
 import com.prody.prashant.data.repository.JournalRepositoryImpl
 import com.prody.prashant.data.repository.MicroEntryRepositoryImpl
 import com.prody.prashant.data.repository.MonthlyLetterRepositoryImpl
+import com.prody.prashant.data.repository.OnboardingRepositoryImpl
 import com.prody.prashant.data.repository.SocialRepositoryImpl
 import com.prody.prashant.data.repository.SoulLayerRepositoryImpl
+import com.prody.prashant.data.repository.TodayProgressRepositoryImpl
 import com.prody.prashant.data.repository.VocabularyRepositoryImpl
 import com.prody.prashant.data.repository.WeeklyDigestRepositoryImpl
 import com.prody.prashant.data.repository.WisdomCollectionRepositoryImpl
+import com.prody.prashant.data.repository.WisdomLibraryRepositoryImpl
 import com.prody.prashant.data.repository.YearlyWrappedRepositoryImpl
 import com.prody.prashant.domain.repository.CollaborativeMessageRepository
 import com.prody.prashant.domain.repository.DailyRitualRepository
@@ -24,11 +27,14 @@ import com.prody.prashant.domain.repository.GamificationRepository
 import com.prody.prashant.domain.repository.JournalRepository
 import com.prody.prashant.domain.repository.MicroEntryRepository
 import com.prody.prashant.domain.repository.MonthlyLetterRepository
+import com.prody.prashant.domain.repository.OnboardingRepository
 import com.prody.prashant.domain.repository.SocialRepository
 import com.prody.prashant.domain.repository.SoulLayerRepository
+import com.prody.prashant.domain.repository.TodayProgressRepository
 import com.prody.prashant.domain.repository.VocabularyRepository
 import com.prody.prashant.domain.repository.WeeklyDigestRepository
 import com.prody.prashant.domain.repository.WisdomCollectionRepository
+import com.prody.prashant.domain.repository.WisdomLibraryRepository
 import com.prody.prashant.domain.repository.YearlyWrappedRepository
 import com.prody.prashant.domain.summary.WeeklySummaryEngine
 import com.prody.prashant.domain.summary.WeeklySummaryEngineImpl
@@ -117,6 +123,24 @@ abstract class RepositoryModule {
     abstract fun bindWisdomCollectionRepository(
         impl: WisdomCollectionRepositoryImpl
     ): WisdomCollectionRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindWisdomLibraryRepository(
+        impl: WisdomLibraryRepositoryImpl
+    ): WisdomLibraryRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindTodayProgressRepository(
+        impl: TodayProgressRepositoryImpl
+    ): TodayProgressRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindOnboardingRepository(
+        impl: OnboardingRepositoryImpl
+    ): OnboardingRepository
 
     @Binds
     @Singleton

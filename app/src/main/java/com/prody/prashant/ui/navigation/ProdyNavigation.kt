@@ -20,11 +20,11 @@ import androidx.navigation.navArgument
 import com.prody.prashant.ui.screens.challenges.ChallengesScreen
 import com.prody.prashant.ui.screens.futuremessage.FutureMessageListScreen
 import com.prody.prashant.ui.screens.futuremessage.WriteMessageScreen
-import com.prody.prashant.ui.screens.home.HomeScreen
+import com.prody.prashant.ui.screens.home.FocusedTodayScreen
 import com.prody.prashant.ui.screens.idiom.IdiomDetailScreen
 import com.prody.prashant.ui.screens.journal.JournalDetailScreen
 import com.prody.prashant.ui.screens.journal.JournalHistoryScreen
-import com.prody.prashant.ui.screens.journal.JournalListScreen
+import com.prody.prashant.ui.screens.journal.FocusedReflectScreen
 import com.prody.prashant.ui.screens.journal.NewJournalEntryScreen
 import com.prody.prashant.ui.screens.meditation.MeditationTimerScreen
 import com.prody.prashant.ui.screens.onboarding.OnboardingScreen
@@ -33,11 +33,11 @@ import com.prody.prashant.ui.screens.profile.BannerSelectionScreen
 import com.prody.prashant.ui.screens.profile.EditProfileScreen
 import com.prody.prashant.ui.screens.profile.ProfileScreen
 import com.prody.prashant.ui.screens.profile.SettingsScreen
-import com.prody.prashant.ui.screens.quotes.QuotesScreen
+import com.prody.prashant.ui.screens.quotes.FocusedLibraryScreen
 import com.prody.prashant.ui.screens.quotes.WisdomTab
 import com.prody.prashant.ui.screens.stats.StatsScreen
 import com.prody.prashant.ui.screens.vocabulary.VocabularyDetailScreen
-import com.prody.prashant.ui.screens.vocabulary.VocabularyListScreen
+import com.prody.prashant.ui.screens.vocabulary.FocusedLearnScreen
 import com.prody.prashant.ui.screens.search.SearchScreen
 import com.prody.prashant.ui.screens.wisdom.WisdomCollectionScreen
 import com.prody.prashant.ui.screens.microjournal.MicroJournalScreen
@@ -292,57 +292,21 @@ fun ProdyNavHost(
         // HOME
         // =====================================================================
         composable(Screen.Home.route) {
-            HomeScreen(
+            FocusedTodayScreen(
                 onNavigateToVocabulary = {
                     navController.navigate(Screen.VocabularyList.route)
                 },
                 onNavigateToQuotes = {
                     navController.navigate(Screen.Quotes.createRoute("quotes"))
                 },
-                onNavigateToIdioms = {
-                    navController.navigate(Screen.Quotes.createRoute("idioms"))
-                },
-                onNavigateToProverbs = {
-                    navController.navigate(Screen.Quotes.createRoute("proverbs"))
-                },
                 onNavigateToJournal = {
                     navController.navigate(Screen.JournalList.route)
                 },
-                onNavigateToFutureMessage = {
-                    navController.navigate(Screen.FutureMessageList.route)
+                onNavigateToProfile = {
+                    navController.navigate(Screen.Profile.route)
                 },
-                onNavigateToHaven = {
-                    navController.navigate(Screen.HavenHome.route)
-                },
-                onNavigateToMeditation = {
-                    navController.navigate(Screen.Meditation.route)
-                },
-                onNavigateToChallenges = {
-                    navController.navigate(Screen.Challenges.route)
-                },
-                onNavigateToSearch = {
-                    navController.navigate(Screen.Search.route)
-                },
-                onNavigateToIdiomDetail = { idiomId ->
-                    navController.navigate(Screen.IdiomDetail.createRoute(idiomId))
-                },
-                onNavigateToLearning = {
-                    navController.navigate(Screen.LearningHome.route)
-                },
-                onNavigateToDeepDive = {
-                    navController.navigate(Screen.DeepDiveHome.route)
-                },
-                onNavigateToMissions = {
-                    navController.navigate(Screen.Missions.route)
-                },
-                onNavigateToMicroJournal = {
-                    navController.navigate(Screen.MicroJournal.route)
-                },
-                onNavigateToDailyRitual = {
-                    navController.navigate(Screen.DailyRitual.route)
-                },
-                onNavigateToWeeklyDigest = {
-                    navController.navigate(Screen.WeeklyDigest.route)
+                onNavigateToNotificationSettings = {
+                    navController.navigate(Screen.Settings.route)
                 }
             )
         }
@@ -351,7 +315,7 @@ fun ProdyNavHost(
         // JOURNAL
         // =====================================================================
         composable(Screen.JournalList.route) {
-            JournalListScreen(
+            FocusedReflectScreen(
                 onNavigateToNewEntry = {
                     navController.navigate(Screen.NewJournalEntry.createRoute())
                 },
@@ -522,11 +486,10 @@ fun ProdyNavHost(
         // VOCABULARY
         // =====================================================================
         composable(Screen.VocabularyList.route) {
-            VocabularyListScreen(
+            FocusedLearnScreen(
                 onNavigateToDetail = { wordId ->
                     navController.navigate(Screen.VocabularyDetail.createRoute(wordId))
-                },
-                onNavigateBack = { navController.popBackStack() }
+                }
             )
         }
 
@@ -558,8 +521,7 @@ fun ProdyNavHost(
                 "phrases" -> WisdomTab.PHRASES
                 else -> WisdomTab.QUOTES
             }
-            QuotesScreen(
-                onNavigateBack = { navController.popBackStack() },
+            FocusedLibraryScreen(
                 initialTab = initialTab
             )
         }

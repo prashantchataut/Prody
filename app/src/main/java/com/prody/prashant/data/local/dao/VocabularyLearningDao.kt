@@ -20,11 +20,18 @@ interface VocabularyLearningDao {
     @Query("SELECT * FROM vocabulary_learning ORDER BY nextReviewDate ASC")
     fun getAllLearningEntries(): Flow<List<VocabularyLearningEntity>>
 
+    /** User-scoped snapshot used by the daily recommendation engine. */
+    @Query("SELECT * FROM vocabulary_learning WHERE userId = :userId ORDER BY nextReviewDate ASC")
+    suspend fun getAllLearningEntriesForUserSync(userId: String): List<VocabularyLearningEntity>
+
     /**
      * Get learning entry for a specific word.
      */
     @Query("SELECT * FROM vocabulary_learning WHERE wordId = :wordId")
     suspend fun getLearningForWord(wordId: Long): VocabularyLearningEntity?
+
+    @Query("SELECT * FROM vocabulary_learning WHERE wordId = :wordId AND userId = :userId LIMIT 1")
+    suspend fun getLearningForWordForUser(wordId: Long, userId: String): VocabularyLearningEntity?
 
     /**
      * Observe learning entry for a specific word.
@@ -76,6 +83,12 @@ interface VocabularyLearningDao {
      */
     @Query("SELECT COUNT(*) FROM vocabulary_learning WHERE boxLevel >= 5")
     fun getMasteredCount(): Flow<Int>
+
+    @Query("""
+        SELECT COUNT(*) FROM vocabulary_learning
+        WHERE userId = :userId AND isIntroduced = 1 AND firstLearnedDate >= :startTime
+    """)
+    fun getIntroducedCountSince(userId: String, startTime: Long): Flow<Int>
 
     /**
      * Get count of words due for review.

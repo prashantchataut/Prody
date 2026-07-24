@@ -16,7 +16,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import kotlin.random.Random
 
 data class ChallengesUiState(
     val isLoading: Boolean = true,
@@ -61,8 +60,9 @@ class ChallengesViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
 
-            // Initialize default challenges if needed
+            // Initialize honest, personal challenges only.
             initializeDefaultChallenges()
+            removeLegacySimulatedCommunityData()
 
             _uiState.update { it.copy(isLoading = false) }
         }
@@ -153,93 +153,19 @@ class ChallengesViewModel @Inject constructor(
                         challengeDao.insertMilestone(milestoneEntity)
                     }
                 }
-
-                // Generate simulated community data
-                generateSimulatedCommunityData()
             }
         } catch (e: Exception) {
             android.util.Log.e("ChallengesViewModel", "Failed to initialize default challenges", e)
         }
     }
 
-    private suspend fun generateSimulatedCommunityData() {
-        try {
-            val challenges = challengeDao.getActiveChallenges().firstOrNull() ?: emptyList()
-            if (challenges.isEmpty()) return
-
-            challenges.forEach { challenge ->
-                // Simulate community progress
-                val simulatedParticipants = Random.nextInt(500, 2000)
-                val progressPercentage = Random.nextFloat() * 0.6f // 0-60% progress
-                val simulatedProgress = (challenge.communityTarget * progressPercentage).toInt()
-
-                challengeDao.updateCommunityProgress(
-                    challengeId = challenge.id,
-                    progress = simulatedProgress,
-                    participants = simulatedParticipants
-                )
-
-                // Generate simulated leaderboard
-                val leaderboardEntries = generateSimulatedLeaderboard(challenge.id, challenge.targetCount)
-                challengeDao.insertLeaderboardEntries(leaderboardEntries)
-            }
-        } catch (e: Exception) {
-            android.util.Log.e("ChallengesViewModel", "Failed to generate simulated community data", e)
-        }
-    }
-
-    private fun generateSimulatedLeaderboard(
-        challengeId: String,
-        targetCount: Int
-    ): List<ChallengeLeaderboardEntity> {
-        // Competitive community names for realistic feel
-        val communityNames = listOf(
-            "MindfulSeeker", "WisdomWanderer", "GrowthGuru", "ReflectionRider",
-            "ThoughtTracker", "WordWizard", "JourneyJournal", "PeacePursuer",
-            "ZenMaster", "StreakStar", "DailyDevoter", "InsightInquirer",
-            "CalmCollector", "VocabVictor", "MotivatedMind", "FocusFinder",
-            "SoulSearcher", "BalanceBuilder", "PathPioneer", "HarmonyHunter"
-        )
-
-        val entries = mutableListOf<ChallengeLeaderboardEntity>()
-
-        // Add Prashant (developer) as #1 with top progress
-        val prashantProgress = (targetCount * 0.95f).toInt() + Random.nextInt(0, 3)
-        entries.add(
-            ChallengeLeaderboardEntity(
-                odId = "prashant_dev",
-                challengeId = challengeId,
-                displayName = "Prashant",
-                avatarId = "avatar_dev",
-                progress = prashantProgress,
-                rank = 1,
-                isCurrentUser = false
-            )
-        )
-
-        // Generate community members with competitive but lower progress
-        communityNames.forEachIndexed { index, name ->
-            // Progress decreases gradually from ~90% down to ~20% of target
-            val progressFraction = (0.90f - index * 0.035f).coerceAtLeast(0.15f)
-            val baseProgress = (targetCount * progressFraction).toInt()
-            val variation = Random.nextInt(-3, 4).coerceAtLeast(0)
-
-            entries.add(
-                ChallengeLeaderboardEntity(
-                    odId = "user_$index",
-                    challengeId = challengeId,
-                    displayName = name,
-                    avatarId = "avatar_${index % 10}",
-                    progress = (baseProgress + variation).coerceAtMost(prashantProgress - 1),
-                    rank = index + 2,
-                    isCurrentUser = false
-                )
-            )
-        }
-
-        // Sort by progress descending and reassign ranks
-        return entries.sortedByDescending { it.progress }
-            .mapIndexed { index, entry -> entry.copy(rank = index + 1) }
+    /**
+     * Removes legacy fabricated community state. Challenges remain personal
+     * until a real multi-user backend supplies verifiable participation data.
+     */
+    private suspend fun removeLegacySimulatedCommunityData() {
+        challengeDao.clearAllLeaderboards()
+        challengeDao.clearCommunityProgress()
     }
 
     fun selectChallenge(challenge: Challenge) {
@@ -329,16 +255,9 @@ class ChallengesViewModel @Inject constructor(
                     }
                 }
 
-                // Update community progress simulation
-                val updatedCommunityProgress = challenge.communityProgress + progressAmount
-                challengeDao.updateCommunityProgress(
-                    challengeId,
-                    updatedCommunityProgress,
-                    challenge.totalParticipants
-                )
-
-                // Check milestones
-                checkMilestones(challengeId, updatedCommunityProgress, challenge.communityTarget)
+                // Until a real backend exists, milestones reflect only the
+                // current user's verifiable progress.
+                checkMilestones(challengeId, newProgress, challenge.targetCount)
             } catch (e: Exception) {
                 _uiState.update {
                     it.copy(error = "Failed to record progress. Please try again.")

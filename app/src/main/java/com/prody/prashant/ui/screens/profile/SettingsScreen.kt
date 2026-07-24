@@ -1,8 +1,13 @@
 package com.prody.prashant.ui.screens.profile
 import com.prody.prashant.ui.icons.ProdyIcons
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.EaseInOut
@@ -51,6 +56,7 @@ import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.prody.prashant.util.AccessibilityUtils
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -112,6 +118,27 @@ fun SettingsScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val screenState = rememberSettingsScreenState(uiState)
     val isDark = isDarkTheme()
+    val context = LocalContext.current
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        viewModel.setNotificationsEnabled(granted)
+    }
+
+    fun updateNotifications(enabled: Boolean) {
+        val needsPermission = enabled &&
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED
+
+        if (needsPermission) {
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        } else {
+            viewModel.setNotificationsEnabled(enabled)
+        }
+    }
 
     // Entry animations
     var isVisible by remember { mutableStateOf(false) }
@@ -230,7 +257,7 @@ fun SettingsScreen(
                         icon = ProdyIcons.Notifications,
                         title = "Push Notifications",
                         checked = uiState.notificationsEnabled,
-                        onCheckedChange = { viewModel.setNotificationsEnabled(it) },
+                        onCheckedChange = ::updateNotifications,
                         isDark = isDark
                     )
 
@@ -368,7 +395,7 @@ fun SettingsScreen(
                 }
             }
 
-            // BUDDHA AI Section
+            // EXPERIMENTAL INTELLIGENCE Section
             AnimatedVisibility(
                 visible = isVisible,
                 enter = fadeIn(tween(400, delayMillis = 350)) + slideInVertically(
@@ -377,14 +404,15 @@ fun SettingsScreen(
                 )
             ) {
                 SettingsSection(
-                    title = "BUDDHA AI",
+                    title = "KAIROS LABS",
                     isDark = isDark,
                     showLeafIcon = true
                 ) {
                     // Enable AI (Master Toggle)
                     SettingsRowWithToggle(
                         icon = ProdyIcons.Psychology,
-                        title = "Enable AI",
+                        title = "Enable experimental AI",
+                        subtitle = "Uses a configured provider; production releases require a server gateway",
                         checked = uiState.buddhaAiEnabled,
                         onCheckedChange = { viewModel.setBuddhaAiEnabled(it) },
                         isDark = isDark,
@@ -396,8 +424,8 @@ fun SettingsScreen(
                     // Daily Wisdom
                     SettingsRowWithToggle(
                         icon = ProdyIcons.WbSunny,
-                        title = "Daily Wisdom",
-                        subtitle = "AI-generated wisdom on home screen",
+                        title = "Generated context",
+                        subtitle = "Optional context for saved words and ideas",
                         checked = uiState.buddhaDailyWisdomEnabled,
                         onCheckedChange = { viewModel.setBuddhaDailyWisdomEnabled(it) },
                         enabled = uiState.buddhaAiEnabled,
@@ -424,8 +452,8 @@ fun SettingsScreen(
                     // Journal Insights
                     SettingsRowWithToggle(
                         icon = ProdyIcons.AutoAwesome,
-                        title = "Journal Insights",
-                        subtitle = "Emotion and theme analysis after journaling",
+                        title = "Journal insights",
+                        subtitle = "Optional analysis that may send selected text to the configured provider",
                         checked = uiState.buddhaJournalInsightsEnabled,
                         onCheckedChange = { viewModel.setBuddhaJournalInsightsEnabled(it) },
                         enabled = uiState.buddhaAiEnabled,
@@ -1833,19 +1861,19 @@ private fun PrivacySummaryCard() {
             // Privacy bullets
             PrivacyBullet(
                 icon = ProdyIcons.Lock,
-                text = "Journal entries encrypted on device"
+                text = "Journal entries and the local database are encrypted on device"
             )
             PrivacyBullet(
                 icon = ProdyIcons.PhoneAndroid,
-                text = "All data stored locally on your device"
+                text = "Core learning and reflection data is stored locally"
             )
             PrivacyBullet(
                 icon = ProdyIcons.VisibilityOff,
-                text = "No personal data shared with third parties"
+                text = "Selected text is shared only when you invoke a configured online feature"
             )
             PrivacyBullet(
                 icon = ProdyIcons.Cloud,
-                text = "AI features use secure API connections"
+                text = "Production AI credentials are not bundled in the app"
             )
         }
     }
@@ -1888,7 +1916,7 @@ private fun PrivacyPolicyDialog(onDismiss: () -> Unit) {
         },
         title = {
             Text(
-                text = "Prody Data Policy",
+                text = "Kairos Data Policy",
                 fontWeight = FontWeight.Bold
             )
         },
@@ -1897,30 +1925,28 @@ private fun PrivacyPolicyDialog(onDismiss: () -> Unit) {
                 modifier = Modifier.verticalScroll(rememberScrollState())
             ) {
                 PolicySection(
-                    title = "What We Collect",
+                    title = "What Kairos Stores",
                     content = """
                         • Journal entries (stored locally, encrypted)
                         • Mood selections and tags
-                        • Gamification progress (XP, badges, streaks)
+                        • Learning progress, saved items, and optional streak history
                         • App preferences and settings
-                        • Anonymous performance metrics
                     """.trimIndent()
                 )
 
                 PolicySection(
-                    title = "How We Use Your Data",
+                    title = "How Local Data Is Used",
                     content = """
-                        • To provide personalized AI insights
-                        • To track your self-improvement journey
-                        • To generate mood analytics and patterns
-                        • To improve app performance (anonymized only)
+                        • To provide the features and preferences you choose
+                        • To track local learning and reflection progress
+                        • To generate optional local summaries and patterns
                     """.trimIndent()
                 )
 
                 PolicySection(
                     title = "Data Storage",
                     content = """
-                        • All personal data is stored locally on your device
+                        • Core learning and reflection data is stored locally on your device
                         • Journal entries are encrypted using industry-standard AES-256 encryption
                         • You can export or delete all data at any time
                         • No data is uploaded to servers without your explicit consent
@@ -1931,9 +1957,9 @@ private fun PrivacyPolicyDialog(onDismiss: () -> Unit) {
                     title = "AI Features",
                     content = """
                         • Journal content may be sent to AI services for analysis when AI features are enabled
-                        • AI providers do not store your personal data
-                        • You can disable AI features at any time in Settings
-                        • Cached AI responses are stored locally to reduce data usage
+                        • Processing and retention depend on the configured provider; review its policy before enabling
+                        • You can disable generated features at any time in Settings
+                        • Generated responses may be cached locally to reduce repeated requests
                     """.trimIndent()
                 )
 
@@ -1942,13 +1968,13 @@ private fun PrivacyPolicyDialog(onDismiss: () -> Unit) {
                     content = """
                         • Export all your data at any time
                         • Delete all data permanently
-                        • Disable any data collection features
-                        • Opt out of AI processing
+                        • Disable generated features
+                        • Opt out of third-party AI processing
                     """.trimIndent()
                 )
 
                 Text(
-                    text = "Last updated: December 2024",
+                    text = "Last updated: July 2026",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 16.dp)

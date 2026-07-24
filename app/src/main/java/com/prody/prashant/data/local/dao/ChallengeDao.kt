@@ -159,6 +159,9 @@ interface ChallengeDao {
     @Query("DELETE FROM challenge_leaderboard")
     suspend fun clearAllLeaderboards()
 
+    @Query("UPDATE challenges SET communityProgress = 0, totalParticipants = 0")
+    suspend fun clearCommunityProgress()
+
     // Reset user's challenge progress (without leaving the challenge)
     @Query("UPDATE challenges SET currentUserProgress = 0, isCompleted = 0, completedAt = NULL WHERE isJoined = 1")
     suspend fun resetUserChallengeProgress()

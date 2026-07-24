@@ -41,29 +41,13 @@ android {
             arg("room.generateKotlin", "true")
         }
 
-// SECURITY: API keys in BuildConfig are extractable from APKs via decompilation.
-        // These are being migrated to SecureApiKeyManager for runtime-only storage.
-        // See: SecureApiKeyManager.kt for the secure alternative.
-        buildConfigField(
-            "String",
-            "AI_API_KEY",
-            "\"${localProperties.getProperty("AI_API_KEY", "").trim()}\""
-        )
-        buildConfigField(
-            "String",
-            "OPENROUTER_API_KEY",
-            "\"${localProperties.getProperty("OPENROUTER_API_KEY", "").trim()}\""
-        )
-        buildConfigField(
-            "String",
-            "THERAPIST_API_KEY",
-            "\"${localProperties.getProperty("THERAPIST_API_KEY", "").trim()}\""
-        )
-        buildConfigField(
-            "String",
-            "TTS_API_KEY",
-            "\"${localProperties.getProperty("TTS_API_KEY", "").trim()}\""
-        )
+        // Production builds never embed provider secrets. The current direct-provider
+        // integrations remain available for local debug builds only while a backend
+        // gateway is introduced. Empty release values make the features fail closed.
+        buildConfigField("String", "AI_API_KEY", "\"\"")
+        buildConfigField("String", "OPENROUTER_API_KEY", "\"\"")
+        buildConfigField("String", "THERAPIST_API_KEY", "\"\"")
+        buildConfigField("String", "TTS_API_KEY", "\"\"")
     }
 
     sourceSets {
@@ -113,6 +97,28 @@ android {
             isMinifyEnabled = false
             applicationIdSuffix = ".debug"
             versionNameSuffix = "-debug"
+
+            // Local-only credentials for development. Never promoted to release.
+            buildConfigField(
+                "String",
+                "AI_API_KEY",
+                "\"${localProperties.getProperty("AI_API_KEY", "").trim()}\""
+            )
+            buildConfigField(
+                "String",
+                "OPENROUTER_API_KEY",
+                "\"${localProperties.getProperty("OPENROUTER_API_KEY", "").trim()}\""
+            )
+            buildConfigField(
+                "String",
+                "THERAPIST_API_KEY",
+                "\"${localProperties.getProperty("THERAPIST_API_KEY", "").trim()}\""
+            )
+            buildConfigField(
+                "String",
+                "TTS_API_KEY",
+                "\"${localProperties.getProperty("TTS_API_KEY", "").trim()}\""
+            )
         }
     }
 
@@ -202,7 +208,7 @@ dependencies {
     implementation(libs.androidx.biometric)
     implementation(libs.sqlcipher.android)
     implementation(libs.sqlite.ktx)
-    
+
     // Network Security
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")

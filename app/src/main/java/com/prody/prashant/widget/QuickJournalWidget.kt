@@ -211,7 +211,7 @@ class QuickJournalWidget : GlanceAppWidget() {
 
                 // Prody label
                 Text(
-                    text = "Prody",
+                    text = "Kairos",
                     style = TextStyle(
                         color = ColorProvider(Color(0xFF6C63FF)),
                         fontSize = 12.sp,

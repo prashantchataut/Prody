@@ -161,7 +161,7 @@ class DailyQuoteWidget : GlanceAppWidget() {
 
                 // Prody branding
                 Text(
-                    text = "Prody",
+                    text = "Kairos",
                     style = TextStyle(
                         color = ColorProvider(Color(0xFF6C63FF)),
                         fontSize = 10.sp,

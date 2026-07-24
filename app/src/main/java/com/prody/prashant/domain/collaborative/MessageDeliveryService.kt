@@ -292,7 +292,7 @@ class MessageDeliveryService @Inject constructor(
                 userId = "local",
                 recipient = recipient,
                 title = "Test Message",
-                content = "This is a test message from Prody to verify your contact information.",
+                content = "This is a test message from Kairos to verify your contact information.",
                 deliveryDate = LocalDateTime.now(),
                 occasion = null,
                 cardDesign = CardDesign(CardTheme.DEFAULT),

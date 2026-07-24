@@ -12,39 +12,35 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 /**
- * Prody Design System - Theme Configuration (Revamp 2026)
+ * Kairos Material theme.
  *
- * Implements the "Polished, Intuitive Mental Wellness Companion" aesthetic.
- *
- * Core changes:
- * - Primary: Forest Green (#2E7D32)
- * - Backgrounds: Clean White / Soft Gray
- * - Typography: Poppins (handled in Type.kt)
- * - Shapes: Rounded (12dp/16dp) (handled in Shape.kt)
- * - Spacing/Elevation: ProdyTokens.Spacing / ProdyTokens.Elevation
+ * Dynamic color is opt-in so the editorial identity remains stable by default.
+ * Legacy theme aliases are retained while persisted identifiers and older screens
+ * migrate without breaking existing installations.
  */
 
 private val LightColorScheme = lightColorScheme(
     primary = ProdyPrimary,
     onPrimary = ProdyTextOnPrimaryLight,
-    primaryContainer = ProdyPrimaryContainer,
-    onPrimaryContainer = ProdyTextPrimaryLight,
+    primaryContainer = KairosIndigoContainerLight,
+    onPrimaryContainer = KairosOnIndigoContainerLight,
 
-    secondary = ProdySecondary,
-    onSecondary = ProdyOnSecondary,
-    secondaryContainer = ProdyWarningContainer,
-    onSecondaryContainer = ProdyOnWarning,
+    secondary = KairosClay,
+    onSecondary = Color.White,
+    secondaryContainer = KairosClayContainerLight,
+    onSecondaryContainer = KairosOnClayContainerLight,
 
-    tertiary = ProdyTextSecondaryLight,
-    onTertiary = ProdyOnSuccess,
-    tertiaryContainer = ProdySurfaceVariantLight,
-    onTertiaryContainer = ProdyTextPrimaryLight,
+    tertiary = KairosVerdigris,
+    onTertiary = Color.White,
+    tertiaryContainer = KairosVerdigrisContainerLight,
+    onTertiaryContainer = KairosOnVerdigrisContainerLight,
 
     background = ProdyBackgroundLight,
     onBackground = ProdyTextPrimaryLight,
@@ -67,18 +63,18 @@ private val LightColorScheme = lightColorScheme(
 private val DarkColorScheme = darkColorScheme(
     primary = ProdyPrimaryDark,
     onPrimary = ProdyTextOnPrimaryDark,
-    primaryContainer = ProdyPrimaryContainerDark,
-    onPrimaryContainer = ProdyTextPrimaryDark,
+    primaryContainer = KairosIndigoContainerDark,
+    onPrimaryContainer = KairosOnIndigoContainerDark,
 
-    secondary = ProdySecondaryDark,
-    onSecondary = ProdyOnSecondaryDark,
-    secondaryContainer = ProdyWarningContainerDark,
-    onSecondaryContainer = ProdyOnWarning,
+    secondary = KairosSoftClay,
+    onSecondary = Color(0xFF3C160A),
+    secondaryContainer = KairosClayContainerDark,
+    onSecondaryContainer = KairosOnClayContainerDark,
 
-    tertiary = ProdyTextSecondaryDark,
-    onTertiary = ProdyTextOnPrimaryDark,
-    tertiaryContainer = ProdySurfaceVariantDark,
-    onTertiaryContainer = ProdyTextPrimaryDark,
+    tertiary = KairosSeaGlass,
+    onTertiary = Color(0xFF072E28),
+    tertiaryContainer = KairosVerdigrisContainerDark,
+    onTertiaryContainer = KairosOnVerdigrisContainerDark,
 
     background = ProdyBackgroundDark,
     onBackground = ProdyTextPrimaryDark,
@@ -103,10 +99,10 @@ enum class ThemeMode {
 }
 
 @Composable
-fun isDarkTheme(): Boolean = isSystemInDarkTheme()
+fun isDarkTheme(): Boolean = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
 @Composable
-fun ProdyTheme(
+fun KairosTheme(
     themeMode: ThemeMode = ThemeMode.SYSTEM,
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
@@ -139,20 +135,36 @@ fun ProdyTheme(
     }
 
     val havenColors = if (darkTheme) DarkHavenColors else LightHavenColors
+    val kairosGlassColors = if (darkTheme) DarkKairosGlassColors else LightKairosGlassColors
 
     CompositionLocalProvider(
+        LocalKairosGlassColors provides kairosGlassColors,
         LocalHavenColors provides havenColors,
         LocalStreakColors provides LightStreakColors,
         LocalMoodColors provides LightMoodColors
     ) {
         MaterialTheme(
             colorScheme = colorScheme,
-            typography = ProdyTypography,
+            typography = KairosTypography,
             shapes = ProdyShapes,
             content = content
         )
     }
 }
+
+/**
+ * Compatibility wrapper retained while package and persisted identifiers migrate safely.
+ */
+@Composable
+fun ProdyTheme(
+    themeMode: ThemeMode = ThemeMode.SYSTEM,
+    dynamicColor: Boolean = false,
+    content: @Composable () -> Unit
+) = KairosTheme(
+    themeMode = themeMode,
+    dynamicColor = dynamicColor,
+    content = content
+)
 
 @Composable
 fun getTextPrimary(): Color {

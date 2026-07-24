@@ -2,120 +2,124 @@ package com.prody.prashant.ui.screens.vocabulary
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.prody.prashant.data.local.dao.VocabularyDao
 import com.prody.prashant.data.local.entity.VocabularyEntity
+import com.prody.prashant.domain.repository.VocabularyRepository
+import com.prody.prashant.ui.browse.filterVocabulary
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+enum class VocabularyFilter(val key: String, val label: String) {
+    ALL("all", "All"),
+    NEW("new", "New"),
+    LEARNED("learned", "Learned")
+}
 
 data class VocabularyListUiState(
     val words: List<VocabularyEntity> = emptyList(),
     val learnedCount: Int = 0,
     val totalCount: Int = 0,
     val showFavoritesOnly: Boolean = false,
-    val currentFilter: String = "all",
+    val currentFilter: String = VocabularyFilter.ALL.key,
+    val query: String = "",
     val isLoading: Boolean = true,
     val error: String? = null
 )
 
+private data class VocabularyBrowseCriteria(
+    val favoritesOnly: Boolean = false,
+    val filter: VocabularyFilter = VocabularyFilter.ALL,
+    val query: String = ""
+)
+
 @HiltViewModel
 class VocabularyListViewModel @Inject constructor(
-    private val vocabularyDao: VocabularyDao
+    private val vocabularyRepository: VocabularyRepository
 ) : ViewModel() {
 
-    private val _showFavoritesOnly = MutableStateFlow(false)
-    private val _currentFilter = MutableStateFlow("all")
+    private val criteria = MutableStateFlow(VocabularyBrowseCriteria())
+    private val reloadSignal = MutableStateFlow(0)
+    private val transientError = MutableStateFlow<String?>(null)
 
-    private val _uiState = MutableStateFlow(VocabularyListUiState())
-    val uiState: StateFlow<VocabularyListUiState> = _uiState.asStateFlow()
+    private val allWords = reloadSignal
+        .flatMapLatest { vocabularyRepository.getAllWords() }
 
-    companion object {
-        private const val TAG = "VocabularyListViewModel"
+    val uiState: StateFlow<VocabularyListUiState> = combine(
+        allWords,
+        criteria,
+        transientError
+    ) { words, browse, error ->
+        val filtered = filterVocabulary(
+            words = words,
+            favoritesOnly = browse.favoritesOnly,
+            filterKey = browse.filter.key,
+            query = browse.query
+        )
+
+        VocabularyListUiState(
+            words = filtered,
+            learnedCount = words.count { it.isLearned },
+            totalCount = words.size,
+            showFavoritesOnly = browse.favoritesOnly,
+            currentFilter = browse.filter.key,
+            query = browse.query,
+            isLoading = false,
+            error = error
+        )
     }
-
-    init {
-        loadVocabulary()
-        loadCounts()
-    }
-
-    private fun loadVocabulary() {
-        viewModelScope.launch {
-            try {
-                combine(
-                    vocabularyDao.getAllVocabulary(),
-                    vocabularyDao.getLearnedWords(),
-                    vocabularyDao.getFavoriteWords(),
-                    _showFavoritesOnly,
-                    _currentFilter
-                ) { all, learned, favorites, favOnly, filter ->
-                    val baseList = when {
-                        favOnly -> favorites
-                        filter == "learned" -> learned
-                        filter == "new" -> all.filter { !it.isLearned }
-                        else -> all
-                    }
-                    baseList
-                }.collect { words ->
-                    _uiState.update { it.copy(words = words, isLoading = false) }
-                }
-            } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error loading vocabulary", e)
-                _uiState.update { it.copy(isLoading = false, error = "Failed to load vocabulary. Please try again.") }
-            }
+        .catch { error ->
+            emit(
+                VocabularyListUiState(
+                    isLoading = false,
+                    error = error.message ?: "Vocabulary could not be loaded."
+                )
+            )
         }
-    }
-
-    private fun loadCounts() {
-        viewModelScope.launch {
-            try {
-                combine(
-                    vocabularyDao.getLearnedCount(),
-                    vocabularyDao.getTotalCount()
-                ) { learned, total ->
-                    Pair(learned, total)
-                }.collect { (learned, total) ->
-                    _uiState.update { it.copy(learnedCount = learned, totalCount = total) }
-                }
-            } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error loading vocabulary counts", e)
-                // Set counts to 0 on error to avoid showing stale data
-                _uiState.update { it.copy(learnedCount = 0, totalCount = 0) }
-            }
-        }
-    }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = VocabularyListUiState()
+        )
 
     fun toggleFavoritesOnly() {
-        _showFavoritesOnly.value = !_showFavoritesOnly.value
-        _uiState.update { it.copy(showFavoritesOnly = _showFavoritesOnly.value) }
+        criteria.update { it.copy(favoritesOnly = !it.favoritesOnly) }
     }
 
     fun setFilter(filter: String) {
-        _currentFilter.value = filter
-        _uiState.update { it.copy(currentFilter = filter) }
+        val selected = VocabularyFilter.entries.firstOrNull { it.key == filter } ?: VocabularyFilter.ALL
+        criteria.update { it.copy(filter = selected) }
+    }
+
+    fun setQuery(query: String) {
+        criteria.update { it.copy(query = query) }
     }
 
     fun toggleFavorite(wordId: Long) {
         viewModelScope.launch {
-            try {
-                val word = vocabularyDao.getWordById(wordId)
-                word?.let {
-                    vocabularyDao.updateFavoriteStatus(wordId, !it.isFavorite)
-                }
-            } catch (e: Exception) {
-                android.util.Log.e(TAG, "Error toggling favorite for word: $wordId", e)
-                _uiState.update { it.copy(error = "Failed to update favorite status") }
+            val word = vocabularyRepository.getWordById(wordId).getOrNull()
+            if (word == null) {
+                transientError.value = "This word is no longer available."
+                return@launch
             }
+            vocabularyRepository.updateFavoriteStatus(wordId, !word.isFavorite)
+                .onError { transientError.value = it.userMessage }
         }
     }
 
     fun clearError() {
-        _uiState.update { it.copy(error = null) }
+        transientError.value = null
     }
 
     fun retry() {
-        _uiState.update { it.copy(isLoading = true, error = null) }
-        loadVocabulary()
-        loadCounts()
+        transientError.value = null
+        reloadSignal.update { it + 1 }
     }
 }

@@ -32,6 +32,10 @@ class AuthViewModel @Inject constructor(
         }
     }
 
+    fun continueLocally() {
+        authRepository.continueLocally()
+    }
+
     fun signOut() {
         viewModelScope.launch {
             authRepository.signOut()

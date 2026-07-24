@@ -1,714 +1,687 @@
 package com.prody.prashant.ui.screens.onboarding
 
-import com.prody.prashant.ui.icons.ProdyIcons
-import androidx.compose.animation.core.*
-import androidx.compose.foundation.*
-import androidx.compose.foundation.layout.*
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.ArrowForward
+import androidx.compose.material.icons.outlined.AutoStories
+import androidx.compose.material.icons.outlined.BookmarkBorder
+import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.EditNote
+import androidx.compose.material.icons.outlined.Lightbulb
+import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.NotificationsNone
+import androidx.compose.material.icons.outlined.Refresh
+import androidx.compose.material.icons.outlined.School
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.*
-import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.prody.prashant.ui.components.*
-import com.prody.prashant.ui.theme.*
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.prody.prashant.ui.components.kairos.KairosAppBackground
+import com.prody.prashant.ui.components.kairos.KairosGlassSurface
+import com.prody.prashant.ui.components.kairos.KairosPrimaryButton
+import com.prody.prashant.ui.components.kairos.KairosReadingSurface
+import com.prody.prashant.ui.components.kairos.KairosSecondaryButton
+import com.prody.prashant.ui.components.kairos.KairosSegmentedControl
+import com.prody.prashant.ui.theme.KairosRadius
+import com.prody.prashant.ui.theme.KairosSpacing
+import com.prody.prashant.ui.theme.KairosTheme
+import com.prody.prashant.ui.theme.ThemeMode
 import kotlinx.coroutines.launch
 
-// =============================================================================
-// PRODY ONBOARDING - REVAMPED 2026
-// =============================================================================
+private const val OnboardingPageCount = 3
 
-@OptIn(ExperimentalFoundationApi::class)
+private data class WisdomCategory(
+    val key: String,
+    val label: String
+)
+
+private val wisdomCategories = listOf(
+    WisdomCategory("wisdom", "Wisdom"),
+    WisdomCategory("life", "Life"),
+    WisdomCategory("motivation", "Motivation"),
+    WisdomCategory("creativity", "Creativity"),
+    WisdomCategory("communication", "Communication"),
+    WisdomCategory("growth", "Growth")
+)
+
 @Composable
 fun OnboardingScreen(
     onComplete: () -> Unit,
     viewModel: OnboardingViewModel = hiltViewModel()
 ) {
-    val pagerState = rememberPagerState(pageCount = { 8 })
-    val coroutineScope = rememberCoroutineScope()
-    // Determine theme for background only if needed, but we mostly use specific colors
-    // We will use the ProdyTheme colors.
-    
-    // Gradient Background: White to #F5F5F5 for light mode
-    val gradientColors = if (!isSystemInDarkTheme()) {
-        listOf(Color.White, Color(0xFFF5F5F5))
-    } else {
-        listOf(ProdyBackgroundDark, ProdyBackgroundDark) // Keep dark mode simple
-    }
+    val completionState by viewModel.completionState.collectAsStateWithLifecycle()
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Brush.verticalGradient(gradientColors))
-            .systemBarsPadding()
-    ) {
-        HorizontalPager(
-            state = pagerState,
-            modifier = Modifier.fillMaxSize(),
-            userScrollEnabled = false // Force navigation via buttons
-        ) { page ->
-            when (page) {
-                0 -> WelcomeScreen(
-                    onNext = { coroutineScope.launch { pagerState.animateScrollToPage(1) } },
-                    onLogin = { coroutineScope.launch { pagerState.animateScrollToPage(7) } }
-                )
-                1 -> HavenOnboardingScreen(
-                    onNext = { coroutineScope.launch { pagerState.animateScrollToPage(2) } }
-                )
-                2 -> JournalingScreen(
-                    onNext = { coroutineScope.launch { pagerState.animateScrollToPage(3) } },
-                    onSkip = { coroutineScope.launch { pagerState.animateScrollToPage(7) } }
-                )
-                3 -> GamificationLeaderboardScreen(
-                    onNext = { coroutineScope.launch { pagerState.animateScrollToPage(4) } },
-                    onSkip = { coroutineScope.launch { pagerState.animateScrollToPage(7) } }
-                )
-                4 -> GamificationXpScreen(
-                    onNext = { coroutineScope.launch { pagerState.animateScrollToPage(5) } }
-                )
-                5 -> DailyWisdomScreen(
-                    onNext = { coroutineScope.launch { pagerState.animateScrollToPage(6) } },
-                    onSkip = { coroutineScope.launch { pagerState.animateScrollToPage(7) } }
-                )
-                6 -> InsightsScreen(
-                    onNext = { coroutineScope.launch { pagerState.animateScrollToPage(7) } },
-                    onSkip = { coroutineScope.launch { pagerState.animateScrollToPage(7) } }
-                )
-                7 -> LoginSignupScreen(
-                    onLogin = {
-                        viewModel.completeOnboarding()
-                        onComplete()
-                    },
-                    onCreateAccount = {
-                        viewModel.completeOnboarding()
-                        onComplete()
-                    },
-                    onGoogleLogin = {
-                        viewModel.completeOnboarding()
-                        onComplete()
-                    }
-                )
-            }
-        }
-    }
+    OnboardingContent(
+        completionState = completionState,
+        onComplete = onComplete,
+        onSubmit = viewModel::completeOnboarding,
+        onClearError = viewModel::clearError
+    )
 }
 
-// =============================================================================
-// SCREEN 1: WELCOME SCREEN
-// =============================================================================
-
 @Composable
-private fun WelcomeScreen(
-    onNext: () -> Unit,
-    onLogin: () -> Unit
+private fun OnboardingContent(
+    completionState: OnboardingCompletionState,
+    onComplete: () -> Unit,
+    onSubmit: (Int, Set<String>) -> Unit,
+    onClearError: () -> Unit
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        // Logo positioned at 25% from top
-        Spacer(modifier = Modifier.fillMaxHeight(0.25f))
-
-        ProdyLogo(modifier = Modifier.size(100.dp))
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        // Brand name "Prody" - Poppins SemiBold 32sp
-        Text(
-            text = "Prody",
-            style = TextStyle(
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 32.sp
-            ),
-            color = ProdyTextPrimaryLight // Always dark for contrast on light gradient
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Tagline "Your mindful companion" - Poppins Regular 16sp
-        Text(
-            text = "Your mindful companion",
-            style = TextStyle(
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.Normal,
-                fontSize = 16.sp
-            ),
-            color = ProdyTextSecondaryLight
-        )
-
-        Spacer(modifier = Modifier.weight(1f))
-
-        // Progress Indicator
-        ProdyProgressIndicator(currentPage = 0, totalPages = 8)
-
-        Spacer(modifier = Modifier.height(48.dp))
-
-        // Primary CTA Button
-        ProdyPrimaryButton(
-            text = "Get Started",
-            onClick = onNext,
-            modifier = Modifier.fillMaxWidth(),
-            size = ProdyButtonSize.LARGE
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Secondary link
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.clickable { onLogin() }
-        ) {
-            Text(
-                text = "Already have an account? ",
-                style = TextStyle(
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Normal,
-                    fontSize = 14.sp
-                ),
-                color = ProdyTextSecondaryLight
-            )
-            Text(
-                text = "Log In",
-                style = TextStyle(
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 14.sp,
-                    textDecoration = TextDecoration.Underline
-                ),
-                color = ProdyForestGreen
-            )
-        }
-
-        Spacer(modifier = Modifier.height(48.dp))
+    val pagerState = rememberPagerState(pageCount = { OnboardingPageCount })
+    val scope = rememberCoroutineScope()
+    var difficulty by rememberSaveable { mutableIntStateOf(3) }
+    var selectedCategoryKeys by rememberSaveable {
+        mutableStateOf("wisdom,life,motivation")
     }
-}
-
-// =============================================================================
-// FEATURE SCREENS
-// =============================================================================
-
-@Composable
-private fun JournalingScreen(onNext: () -> Unit, onSkip: () -> Unit) {
-    FeatureScreenLayout(
-        title = "Reflect Daily",
-        description = "Capture your thoughts and feelings in a safe, private space designed for clarity.",
-        currentPage = 2,
-        totalPages = 8,
-        onNext = onNext,
-        onSkip = onSkip
-    ) {
-        StandardFeatureCard {
-            Icon(Icons.Outlined.Book, contentDescription = null, tint = ProdyForestGreen, modifier = Modifier.size(64.dp))
-            Spacer(modifier = Modifier.height(16.dp))
-            Text("Journaling", style = TextStyle(fontFamily = PoppinsFamily, fontWeight = FontWeight.SemiBold, fontSize = 20.sp))
-            Text("Clear your mind.", style = TextStyle(fontFamily = PoppinsFamily, fontWeight = FontWeight.Normal, fontSize = 14.sp), color = ProdyTextSecondaryLight)
-        }
+    val selectedCategories = remember(selectedCategoryKeys) {
+        selectedCategoryKeys.split(',').filter(String::isNotBlank).toSet()
     }
-}
+    val isSaving = completionState is OnboardingCompletionState.Saving
 
-@Composable
-private fun GamificationLeaderboardScreen(onNext: () -> Unit, onSkip: () -> Unit) {
-    FeatureScreenLayout(
-        title = "Grow Together",
-        description = "Join a community of mindful individuals. Track your progress and celebrate milestones.",
-        currentPage = 3,
-        totalPages = 8,
-        onNext = onNext,
-        onSkip = onSkip
-    ) {
-        StandardFeatureCard {
-            Icon(Icons.Outlined.Leaderboard, contentDescription = null, tint = ProdyForestGreen, modifier = Modifier.size(64.dp))
-            Spacer(modifier = Modifier.height(16.dp))
-            Text("Community", style = TextStyle(fontFamily = PoppinsFamily, fontWeight = FontWeight.SemiBold, fontSize = 20.sp))
-            Text("Inspire and be inspired.", style = TextStyle(fontFamily = PoppinsFamily, fontWeight = FontWeight.Normal, fontSize = 14.sp), color = ProdyTextSecondaryLight)
-        }
+    LaunchedEffect(completionState) {
+        if (completionState is OnboardingCompletionState.Completed) onComplete()
     }
-}
 
-@Composable
-private fun GamificationXpScreen(onNext: () -> Unit) {
-    FeatureScreenLayout(
-        title = "Level Up",
-        description = "Earn XP for every mindful action. Visualize your personal growth journey.",
-        currentPage = 4,
-        totalPages = 8,
-        onNext = onNext,
-        onSkip = onNext // Skip acts as next here
-    ) {
-        StandardFeatureCard {
-            Icon(Icons.Outlined.Star, contentDescription = null, tint = ProdyWarmAmber, modifier = Modifier.size(64.dp))
-            Spacer(modifier = Modifier.height(16.dp))
-            Text("Achievements", style = TextStyle(fontFamily = PoppinsFamily, fontWeight = FontWeight.SemiBold, fontSize = 20.sp))
-            Text("Celebrate your wins.", style = TextStyle(fontFamily = PoppinsFamily, fontWeight = FontWeight.Normal, fontSize = 14.sp), color = ProdyTextSecondaryLight)
-        }
-    }
-}
-
-@Composable
-private fun DailyWisdomScreen(onNext: () -> Unit, onSkip: () -> Unit) {
-    FeatureScreenLayout(
-        title = "Daily Wisdom",
-        description = "Receive curated quotes, proverbs, and words to expand your perspective.",
-        currentPage = 5,
-        totalPages = 8,
-        onNext = onNext,
-        onSkip = onSkip
-    ) {
-        StandardFeatureCard {
-            Icon(Icons.Outlined.Lightbulb, contentDescription = null, tint = ProdyForestGreen, modifier = Modifier.size(64.dp))
-            Spacer(modifier = Modifier.height(16.dp))
-            Text("Insights", style = TextStyle(fontFamily = PoppinsFamily, fontWeight = FontWeight.SemiBold, fontSize = 20.sp))
-            Text("Wisdom for your day.", style = TextStyle(fontFamily = PoppinsFamily, fontWeight = FontWeight.Normal, fontSize = 14.sp), color = ProdyTextSecondaryLight)
-        }
-    }
-}
-
-@Composable
-private fun InsightsScreen(onNext: () -> Unit, onSkip: () -> Unit) {
-    FeatureScreenLayout(
-        title = "Personalized For You",
-        description = "Prody learns from your entries to provide tailored guidance and feedback.",
-        currentPage = 6,
-        totalPages = 8,
-        onNext = onNext,
-        onSkip = onSkip
-    ) {
-        StandardFeatureCard {
-            Icon(Icons.Outlined.AutoAwesome, contentDescription = null, tint = ProdyForestGreen, modifier = Modifier.size(64.dp))
-            Spacer(modifier = Modifier.height(16.dp))
-            Text("AI Companion", style = TextStyle(fontFamily = PoppinsFamily, fontWeight = FontWeight.SemiBold, fontSize = 20.sp))
-            Text("Understanding you better.", style = TextStyle(fontFamily = PoppinsFamily, fontWeight = FontWeight.Normal, fontSize = 14.sp), color = ProdyTextSecondaryLight)
-        }
-    }
-}
-
-
-@Composable
-private fun FeatureScreenLayout(
-    title: String,
-    description: String,
-    currentPage: Int,
-    totalPages: Int,
-    onNext: () -> Unit,
-    onSkip: () -> Unit,
-    content: @Composable () -> Unit
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        // Header with Skip
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp),
-            horizontalArrangement = Arrangement.End
-        ) {
-            Text(
-                text = "Skip",
-                style = TextStyle(
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 14.sp
-                ),
-                color = ProdyTextSecondaryLight,
-                modifier = Modifier.clickable { onSkip() }
-            )
-        }
-
-        Spacer(modifier = Modifier.height(40.dp))
-
-        // Main Content (Card)
-        Box(
-            modifier = Modifier.weight(1f),
-            contentAlignment = Alignment.Center
-        ) {
-            content()
-        }
-
-        Spacer(modifier = Modifier.height(40.dp))
-
-        // Text Content
-        Text(
-            text = title,
-            style = TextStyle(
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 24.sp // Header text 24-32sp
-            ),
-            color = ProdyTextPrimaryLight,
-            textAlign = TextAlign.Center
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text(
-            text = description,
-            style = TextStyle(
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.Normal,
-                fontSize = 14.sp,
-                lineHeight = 21.sp // 1.5 line height
-            ),
-            color = ProdyTextSecondaryLight,
-            textAlign = TextAlign.Center
-        )
-
-        Spacer(modifier = Modifier.height(48.dp))
-
-        // Navigation
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            ProdyProgressIndicator(currentPage = currentPage, totalPages = totalPages)
-
-            FloatingActionButton(
-                onClick = onNext,
-                containerColor = ProdyForestGreen,
-                contentColor = Color.White,
-                shape = CircleShape,
-                modifier = Modifier.size(56.dp)
-            ) {
-                Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Next")
-            }
-        }
-
-        Spacer(modifier = Modifier.height(32.dp))
-    }
-}
-
-@Composable
-private fun StandardFeatureCard(
-    content: @Composable ColumnScope.() -> Unit
-) {
-    // Card Design: Phase 2 Flat design
-    ProdyCard(
-        modifier = Modifier
-            .fillMaxWidth()
-            .aspectRatio(0.8f),
-        backgroundColor = Color.White
-    ) {
+    KairosAppBackground {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+                .statusBarsPadding()
+                .navigationBarsPadding()
         ) {
-            content()
+            OnboardingTopBar(
+                currentPage = pagerState.currentPage,
+                onBack = {
+                    onClearError()
+                    scope.launch {
+                        pagerState.animateScrollToPage((pagerState.currentPage - 1).coerceAtLeast(0))
+                    }
+                }
+            )
+
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                userScrollEnabled = !isSaving
+            ) { page ->
+                when (page) {
+                    0 -> DailyMomentPage()
+                    1 -> PersonalizationPage(
+                        difficulty = difficulty,
+                        onDifficultyChange = { difficulty = it },
+                        selectedCategories = selectedCategories,
+                        onCategoryToggle = { key ->
+                            val updated = if (key in selectedCategories) {
+                                if (selectedCategories.size > 1) selectedCategories - key else selectedCategories
+                            } else {
+                                selectedCategories + key
+                            }
+                            selectedCategoryKeys = updated.sorted().joinToString(",")
+                        }
+                    )
+                    else -> ReadyPage(
+                        completionState = completionState,
+                        onRetry = {
+                            onSubmit(difficulty, selectedCategories)
+                        }
+                    )
+                }
+            }
+
+            OnboardingActions(
+                currentPage = pagerState.currentPage,
+                isSaving = isSaving,
+                onNext = {
+                    onClearError()
+                    scope.launch {
+                        pagerState.animateScrollToPage((pagerState.currentPage + 1).coerceAtMost(OnboardingPageCount - 1))
+                    }
+                },
+                onFinish = { onSubmit(difficulty, selectedCategories) }
+            )
         }
     }
 }
 
-// =============================================================================
-// LOGIN / SIGNUP SCREEN
-// =============================================================================
+@Composable
+private fun OnboardingTopBar(
+    currentPage: Int,
+    onBack: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = KairosSpacing.screen, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(14.dp)
+    ) {
+        if (currentPage > 0) {
+            KairosGlassSurface(
+                modifier = Modifier.size(48.dp),
+                shape = CircleShape,
+                elevation = 4.dp,
+                onClick = onBack
+            ) {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                        contentDescription = "Previous step",
+                        tint = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            }
+        } else {
+            Spacer(Modifier.size(48.dp))
+        }
+
+        Row(
+            modifier = Modifier
+                .weight(1f)
+                .semantics {
+                    contentDescription = "Step ${currentPage + 1} of $OnboardingPageCount"
+                },
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            repeat(OnboardingPageCount) { index ->
+                KairosGlassSurface(
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(7.dp),
+                    shape = CircleShape,
+                    strong = index <= currentPage,
+                    elevation = 0.dp
+                ) {
+                    if (index <= currentPage) {
+                        Box(
+                            Modifier
+                                .fillMaxSize()
+                                .padding(1.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Box(
+                                Modifier
+                                    .fillMaxSize()
+                                    .padding(horizontal = 1.dp)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        Text(
+            text = "${currentPage + 1}/$OnboardingPageCount",
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(width = 48.dp, height = 24.dp),
+            textAlign = TextAlign.End
+        )
+    }
+}
 
 @Composable
-private fun LoginSignupScreen(
-    onLogin: () -> Unit,
-    onCreateAccount: () -> Unit,
-    onGoogleLogin: () -> Unit
-) {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    val scrollState = rememberScrollState()
-    val density = LocalDensity.current
-    val imeVisible = WindowInsets.ime.getBottom(density) > 0
+private fun DailyMomentPage() {
+    OnboardingPage(
+        eyebrow = "WELCOME TO KAIROS",
+        title = "One useful moment, every day.",
+        body = "Learn a word, notice an idea, and do one small thing that helps it stay with you."
+    ) {
+        KairosReadingSurface(
+            modifier = Modifier.fillMaxWidth(),
+            accent = MaterialTheme.colorScheme.primary
+        ) {
+            Column(verticalArrangement = Arrangement.spacedBy(13.dp)) {
+                Text(
+                    text = "WORD OF THE DAY",
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    text = "lucid",
+                    style = MaterialTheme.typography.displaySmall,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = "/ˈluː.sɪd/  ·  adjective",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = "Clear and easy to understand.",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = "She gave a lucid explanation of a difficult idea.",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontStyle = FontStyle.Italic,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
 
-    // Auto-scroll when keyboard appears
-    LaunchedEffect(imeVisible) {
-        if (imeVisible) {
-            scrollState.animateScrollTo(scrollState.maxValue)
+        KairosReadingSurface(
+            modifier = Modifier.fillMaxWidth(),
+            accent = MaterialTheme.colorScheme.secondary
+        ) {
+            Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                Icon(
+                    imageVector = Icons.Outlined.Lightbulb,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.secondary
+                )
+                Text(
+                    text = "“Attention is the beginning of devotion.”",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontFamily = MaterialTheme.typography.displaySmall.fontFamily,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = "— Mary Oliver",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
     }
+}
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 24.dp)
-            .imePadding() // Add IME padding to handle keyboard
-            .verticalScroll(scrollState),
-        horizontalAlignment = Alignment.CenterHorizontally
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun PersonalizationPage(
+    difficulty: Int,
+    onDifficultyChange: (Int) -> Unit,
+    selectedCategories: Set<String>,
+    onCategoryToggle: (String) -> Unit
+) {
+    val difficultyValues = listOf(2, 3, 4)
+    OnboardingPage(
+        eyebrow = "MAKE IT YOURS",
+        title = "Tune what appears.",
+        body = "These choices feed the recommendation ranking. You can change them later, and your feedback will keep refining the mix."
     ) {
-        Spacer(modifier = Modifier.height(64.dp))
-
-        ProdyLogo(modifier = Modifier.size(80.dp))
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        Text(
-            text = "Welcome Back",
-            style = TextStyle(
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 28.sp
-            ),
-            color = ProdyTextPrimaryLight
-        )
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        // Email Input
-        ProdyInputField(
-            value = email,
-            onValueChange = { email = it },
-            label = "Email Address",
-            placeholder = "Enter your email"
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Password Input
-        ProdyInputField(
-            value = password,
-            onValueChange = { password = it },
-            label = "Password",
-            placeholder = "Enter your password",
-            isPassword = true
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Forgot Password
-        Text(
-            text = "Forgot Password?",
-            style = TextStyle(
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.Medium,
-                fontSize = 12.sp
-            ),
-            color = ProdyTextSecondaryLight,
-            modifier = Modifier
-                .align(Alignment.End)
-                .clickable { }
-        )
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        // Login Button
-        ProdyPrimaryButton(
-            text = "Log In",
-            onClick = onLogin,
-            modifier = Modifier.fillMaxWidth(),
-            size = ProdyButtonSize.LARGE
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Divider
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            HorizontalDivider(modifier = Modifier.weight(1f), color = ProdyOutlineLight)
+        Column(verticalArrangement = Arrangement.spacedBy(KairosSpacing.sm)) {
             Text(
-                text = "OR",
-                style = TextStyle(
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 12.sp
-                ),
-                color = ProdyTextSecondaryLight,
-                modifier = Modifier.padding(horizontal = 16.dp)
+                text = "Vocabulary pace",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
             )
-            HorizontalDivider(modifier = Modifier.weight(1f), color = ProdyOutlineLight)
+            KairosSegmentedControl(
+                items = listOf("Gentle", "Balanced", "Stretch"),
+                selectedIndex = difficultyValues.indexOf(difficulty).coerceAtLeast(0),
+                onSelected = { index -> onDifficultyChange(difficultyValues[index]) }
+            )
+            Text(
+                text = when (difficulty) {
+                    2 -> "More familiar language with a lighter review load."
+                    4 -> "Rarer words and a little more challenge."
+                    else -> "A practical mix of familiar and stretching words."
+                },
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Social Login - Google Button
-        // White background with black text, 24dp logo, 1dp border
-        OutlinedButton(
-            onClick = onGoogleLogin,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp),
-            shape = RoundedCornerShape(8.dp),
-            border = BorderStroke(1.dp, Color(0xFFE0E0E0)),
-            colors = ButtonDefaults.outlinedButtonColors(
-                containerColor = Color.White,
-                contentColor = Color.Black
+        Column(verticalArrangement = Arrangement.spacedBy(KairosSpacing.sm)) {
+            Text(
+                text = "Ideas you want more often",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
             )
+            FlowRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                wisdomCategories.forEach { category ->
+                    val selected = category.key in selectedCategories
+                    FilterChip(
+                        selected = selected,
+                        onClick = { onCategoryToggle(category.key) },
+                        label = { Text(category.label) },
+                        leadingIcon = if (selected) {
+                            {
+                                Icon(
+                                    imageVector = Icons.Outlined.Check,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                        } else {
+                            null
+                        },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                            selectedLeadingIconColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    )
+                }
+            }
+            Text(
+                text = "Keep at least one topic selected. Kairos also limits repetition so the feed stays varied.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+
+        KairosGlassSurface(
+            modifier = Modifier.fillMaxWidth(),
+            strong = true,
+            elevation = 4.dp,
+            contentPadding = PaddingValues(KairosSpacing.lg)
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
+                horizontalArrangement = Arrangement.spacedBy(KairosSpacing.md)
             ) {
-                // Google Logo Placeholder (Colored 'G' or similar)
-                // Using a simple Canvas for G logo rep
-                Canvas(modifier = Modifier.size(24.dp)) {
-                     // Simple representation of Google colors
-                     drawCircle(Color(0xFF4285F4), radius = 10.dp.toPx(), center = center)
-                     drawCircle(Color.White, radius = 6.dp.toPx(), center = center)
-                }
-                Spacer(modifier = Modifier.width(12.dp))
+                Icon(
+                    imageVector = Icons.Outlined.Refresh,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
                 Text(
-                    text = "Continue with Google",
-                    style = TextStyle(
-                        fontFamily = PoppinsFamily,
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 16.sp
-                    )
+                    text = "Too easy, too hard, more like this, and less like this are real ranking signals—not decorative buttons.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
         }
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        // Sign Up Link
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.clickable { onCreateAccount() }
-        ) {
-            Text(
-                text = "Don't have an account? ",
-                style = TextStyle(
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.Normal,
-                    fontSize = 14.sp
-                ),
-                color = ProdyTextSecondaryLight
-            )
-            Text(
-                text = "Sign Up",
-                style = TextStyle(
-                    fontFamily = PoppinsFamily,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 14.sp
-                ),
-                color = ProdyForestGreen
-            )
-        }
-
-        Spacer(modifier = Modifier.height(32.dp))
     }
 }
 
-// =============================================================================
-// SHARED COMPONENTS
-// =============================================================================
-
 @Composable
-fun ProdyInputField(
-    value: String,
-    onValueChange: (String) -> Unit,
-    label: String,
-    placeholder: String,
-    isPassword: Boolean = false,
-    modifier: Modifier = Modifier
+private fun ReadyPage(
+    completionState: OnboardingCompletionState,
+    onRetry: () -> Unit
 ) {
-    Column(modifier = modifier) {
-        Text(
-            text = label,
-            style = TextStyle(
-                fontFamily = PoppinsFamily,
-                fontWeight = FontWeight.Medium,
-                fontSize = 14.sp
-            ),
-            color = ProdyTextPrimaryLight,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
+    OnboardingPage(
+        eyebrow = "READY WHEN YOU ARE",
+        title = "Quiet by default.",
+        body = "Kairos starts with four clear places. Your local profile works without an account, and reminders stay optional."
+    ) {
+        KairosReadingSurface(
+            modifier = Modifier.fillMaxWidth(),
+            accent = MaterialTheme.colorScheme.tertiary,
+            contentPadding = PaddingValues(KairosSpacing.lg)
+        ) {
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                DestinationRow(Icons.Outlined.Lightbulb, "Today", "One selected word, one thought, one useful action.")
+                DestinationRow(Icons.Outlined.School, "Learn", "Browse, save, and review vocabulary.")
+                DestinationRow(Icons.Outlined.EditNote, "Reflect", "Write privately and revisit your own ideas.")
+                DestinationRow(Icons.Outlined.AutoStories, "Library", "Keep quotes, proverbs, idioms, and phrases together.")
+            }
+        }
 
-        OutlinedTextField(
-            value = value,
-            onValueChange = onValueChange,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp),
-            shape = RoundedCornerShape(8.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = ProdyForestGreen,
-                unfocusedBorderColor = ProdyOutlineLight,
-                focusedContainerColor = Color.White,
-                unfocusedContainerColor = Color.White
-            ),
-            placeholder = {
-                Text(
-                    text = placeholder,
-                    style = TextStyle(
-                        fontFamily = PoppinsFamily,
-                        fontWeight = FontWeight.Normal,
-                        fontSize = 14.sp
-                    ),
-                    color = ProdyTextTertiaryLight
-                )
-            },
-            visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None,
-            keyboardOptions = KeyboardOptions(
-                keyboardType = if (isPassword) KeyboardType.Password else KeyboardType.Text,
-                imeAction = ImeAction.Next
-            ),
-            singleLine = true
-        )
+        KairosGlassSurface(
+            modifier = Modifier.fillMaxWidth(),
+            strong = true,
+            elevation = 4.dp,
+            contentPadding = PaddingValues(KairosSpacing.lg)
+        ) {
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                TrustRow(Icons.Outlined.Lock, "Local-first", "Your core learning and reflections work on this device.")
+                TrustRow(Icons.Outlined.NotificationsNone, "No surprise prompts", "Notification permission is requested only when you enable reminders.")
+                TrustRow(Icons.Outlined.BookmarkBorder, "No fake community", "Personal progress stays personal until real shared features exist.")
+            }
+        }
+
+        AnimatedVisibility(visible = completionState is OnboardingCompletionState.Error) {
+            val message = (completionState as? OnboardingCompletionState.Error)?.message.orEmpty()
+            KairosReadingSurface(
+                modifier = Modifier.fillMaxWidth(),
+                accent = MaterialTheme.colorScheme.error,
+                contentPadding = PaddingValues(KairosSpacing.lg)
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(KairosSpacing.md)) {
+                    Text(
+                        text = message,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    KairosSecondaryButton(
+                        text = "Try again",
+                        icon = Icons.Outlined.Refresh,
+                        onClick = onRetry,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
+        }
     }
 }
 
 @Composable
-fun ProdyLogo(modifier: Modifier = Modifier) {
-    val infiniteTransition = rememberInfiniteTransition(label = "ProdyLogoBreathing")
-    val scaleState = infiniteTransition.animateFloat(
-        initialValue = 0.95f,
-        targetValue = 1.05f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(3000, easing = LinearEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "LogoScale"
-    )
-
-    Box(
-        modifier = modifier
-            .graphicsLayer {
-                scaleX = scaleState.value
-                scaleY = scaleState.value
+private fun DestinationRow(
+    icon: ImageVector,
+    title: String,
+    body: String
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(KairosSpacing.md)
+    ) {
+        KairosGlassSurface(
+            modifier = Modifier.size(48.dp),
+            shape = CircleShape,
+            elevation = 2.dp
+        ) {
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
             }
-            .clip(RoundedCornerShape(24.dp))
-            .background(Color.White)
-            .border(1.dp, ProdyOutlineLight, RoundedCornerShape(24.dp)),
-        contentAlignment = Alignment.Center
+        }
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(2.dp)
+        ) {
+            Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+            Text(
+                body,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+@Composable
+private fun TrustRow(
+    icon: ImageVector,
+    title: String,
+    body: String
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.Top,
+        horizontalArrangement = Arrangement.spacedBy(KairosSpacing.md)
     ) {
         Icon(
-            imageVector = ProdyIcons.Spa, // Using Spa icon as leaf/seedling
+            imageVector = icon,
             contentDescription = null,
-            tint = ProdyForestGreen,
-            modifier = Modifier.fillMaxSize(0.6f)
+            tint = MaterialTheme.colorScheme.secondary,
+            modifier = Modifier.size(22.dp)
+        )
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(2.dp)
+        ) {
+            Text(title, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold)
+            Text(
+                body,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+@Composable
+private fun OnboardingPage(
+    eyebrow: String,
+    title: String,
+    body: String,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.TopCenter
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxHeight()
+                .widthIn(max = KairosSpacing.tabletMaxWidth)
+                .verticalScroll(rememberScrollState())
+                .padding(
+                    start = KairosSpacing.screen,
+                    end = KairosSpacing.screen,
+                    top = 20.dp,
+                    bottom = 24.dp
+                ),
+            verticalArrangement = Arrangement.spacedBy(KairosSpacing.xl)
+        ) {
+            Column(verticalArrangement = Arrangement.spacedBy(KairosSpacing.sm)) {
+                Text(
+                    text = eyebrow,
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.displaySmall,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                Text(
+                    text = body,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            content()
+            Spacer(Modifier.height(8.dp))
+        }
+    }
+}
+
+@Composable
+private fun OnboardingActions(
+    currentPage: Int,
+    isSaving: Boolean,
+    onNext: () -> Unit,
+    onFinish: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = KairosSpacing.screen, vertical = 12.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .widthIn(max = KairosSpacing.tabletMaxWidth),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(KairosSpacing.sm)
+        ) {
+            if (currentPage < OnboardingPageCount - 1) {
+                KairosPrimaryButton(
+                    text = if (currentPage == 0) "Set my preferences" else "Continue",
+                    icon = Icons.AutoMirrored.Outlined.ArrowForward,
+                    onClick = onNext,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            } else {
+                KairosPrimaryButton(
+                    text = if (isSaving) "Setting up Kairos" else "Start Kairos",
+                    onClick = onFinish,
+                    enabled = !isSaving,
+                    modifier = Modifier.weight(1f)
+                )
+                if (isSaving) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        strokeWidth = 2.dp
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Preview(showBackground = true, widthDp = 390, heightDp = 844)
+@Composable
+private fun OnboardingPreview() {
+    KairosTheme(dynamicColor = false) {
+        OnboardingContent(
+            completionState = OnboardingCompletionState.Idle,
+            onComplete = {},
+            onSubmit = { _, _ -> },
+            onClearError = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, widthDp = 800, heightDp = 900)
+@Composable
+private fun OnboardingTabletDarkPreview() {
+    KairosTheme(themeMode = ThemeMode.DARK, dynamicColor = false) {
+        OnboardingContent(
+            completionState = OnboardingCompletionState.Idle,
+            onComplete = {},
+            onSubmit = { _, _ -> },
+            onClearError = {}
         )
     }
 }

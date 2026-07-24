@@ -1,113 +1,56 @@
 package com.prody.prashant.ui.navigation
-import com.prody.prashant.ui.icons.ProdyIcons
 
 import androidx.annotation.StringRes
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.prody.prashant.R
+import com.prody.prashant.ui.icons.ProdyIcons
 
 /**
- * Bottom Navigation Items
+ * Focused top-level navigation.
  *
- * Defines the main navigation destinations accessible from the bottom navigation bar.
- * Each item includes:
- * - Route for navigation
- * - Localized label resource
- * - Selected and unselected icon states
- * - Content description for accessibility
+ * Advanced and experimental features still have routes, but they are no longer
+ * presented as equally important destinations. This keeps the primary product
+ * loop understandable: see today's moment, learn, reflect, and revisit saved content.
  */
 sealed class BottomNavItem(
     val route: String,
+    val destinationRoute: String = route,
     @StringRes val labelResId: Int,
     val selectedIcon: ImageVector,
     val unselectedIcon: ImageVector,
     @StringRes val contentDescriptionResId: Int = labelResId
 ) {
-    /**
-     * Home - Main dashboard and daily content
-     * Note: Using string literal instead of Screen.Home.route to avoid static initialization
-     * order dependency that can cause ExceptionInInitializerError on some devices.
-     */
-    data object Home : BottomNavItem(
-        route = "home",
-        labelResId = R.string.nav_home,
+    data object Today : BottomNavItem(
+        route = Screen.Home.route,
+        labelResId = R.string.nav_today,
         selectedIcon = ProdyIcons.Home,
-        unselectedIcon = ProdyIcons.Outlined.Home,
-        contentDescriptionResId = R.string.nav_home
+        unselectedIcon = ProdyIcons.Outlined.Home
     )
 
-    /**
-     * Journal - Personal journal and reflections
-     * Note: Using string literal instead of Screen.JournalList.route to avoid static initialization
-     * order dependency that can cause ExceptionInInitializerError on some devices.
-     */
-    data object Journal : BottomNavItem(
-        route = "journal",
-        labelResId = R.string.nav_journal,
+    data object Learn : BottomNavItem(
+        route = Screen.VocabularyList.route,
+        labelResId = R.string.nav_learn,
+        selectedIcon = ProdyIcons.School,
+        unselectedIcon = ProdyIcons.Outlined.School
+    )
+
+    data object Reflect : BottomNavItem(
+        route = Screen.JournalList.route,
+        labelResId = R.string.nav_reflect,
         selectedIcon = ProdyIcons.Book,
-        unselectedIcon = ProdyIcons.Outlined.Book,
-        contentDescriptionResId = R.string.nav_journal
+        unselectedIcon = ProdyIcons.Outlined.Book
     )
 
-    /**
-     * Stats - Progress and analytics
-     * Note: Using string literal instead of Screen.Stats.route to avoid static initialization
-     * order dependency that can cause ExceptionInInitializerError on some devices.
-     */
-    data object Stats : BottomNavItem(
-        route = "stats",
-        labelResId = R.string.nav_stats,
-        selectedIcon = ProdyIcons.BarChart,
-        unselectedIcon = ProdyIcons.Outlined.BarChart,
-        contentDescriptionResId = R.string.nav_stats
-    )
-
-    /**
-     * Haven - Therapeutic AI companion
-     * Note: Using string literal instead of Screen.HavenHome.route to avoid static initialization
-     * order dependency that can cause ExceptionInInitializerError on some devices.
-     */
-    data object Haven : BottomNavItem(
-        route = "haven",
-        labelResId = R.string.nav_haven,
-        selectedIcon = ProdyIcons.Psychology,
-        unselectedIcon = ProdyIcons.Outlined.Psychology,
-        contentDescriptionResId = R.string.nav_haven
-    )
-
-    /**
-     * Profile - User profile and settings
-     * Note: Using string literal instead of Screen.Profile.route to avoid static initialization
-     * order dependency that can cause ExceptionInInitializerError on some devices.
-     */
-    data object Profile : BottomNavItem(
-        route = "profile",
-        labelResId = R.string.nav_profile,
-        selectedIcon = ProdyIcons.Person,
-        unselectedIcon = ProdyIcons.Outlined.Person,
-        contentDescriptionResId = R.string.nav_profile
+    data object Library : BottomNavItem(
+        route = Screen.Quotes.createRoute("quotes"),
+        destinationRoute = Screen.Quotes.route,
+        labelResId = R.string.nav_library,
+        selectedIcon = ProdyIcons.AutoStories,
+        unselectedIcon = ProdyIcons.Outlined.AutoStories
     )
 
     companion object {
-        /**
-         * List of all bottom navigation items in display order.
-         *
-         * Note: Using lazy initialization to avoid static initialization order issues
-         * that can cause ExceptionInInitializerError/NullPointerException on some devices
-         * when data objects are accessed before they are fully initialized.
-         */
-        val items: List<BottomNavItem> by lazy {
-            listOf(Home, Journal, Haven, Stats, Profile)
-        }
-
-        /**
-         * Routes that should show the bottom navigation bar.
-         *
-         * Note: Using lazy initialization to avoid static initialization order issues.
-         */
-        val bottomBarRoutes: List<String> by lazy {
-            items.map { it.route }
-        }
+        val items: List<BottomNavItem> by lazy { listOf(Today, Learn, Reflect, Library) }
+        val bottomBarRoutes: Set<String> by lazy { items.mapTo(mutableSetOf()) { it.destinationRoute } }
     }
 }

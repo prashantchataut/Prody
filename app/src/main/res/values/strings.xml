@@ -3,14 +3,18 @@
     <!-- ==================== -->
     <!-- APP IDENTITY -->
     <!-- ==================== -->
-    <string name="app_name">Prody</string>
-    <string name="app_tagline">Your Growth Companion</string>
-    <string name="app_description">Self-improvement, one day at a time.</string>
+    <string name="app_name">Kairos</string>
+    <string name="app_tagline">Learn. Notice. Remember.</string>
+    <string name="app_description">One useful word, one thoughtful idea, and one small reflection each day.</string>
 
     <!-- ==================== -->
     <!-- NAVIGATION -->
     <!-- ==================== -->
     <string name="nav_home">Home</string>
+    <string name="nav_today">Today</string>
+    <string name="nav_learn">Learn</string>
+    <string name="nav_reflect">Reflect</string>
+    <string name="nav_library">Library</string>
     <string name="nav_journal">Journal</string>
     <string name="nav_haven">Haven</string>
     <string name="nav_future">Future</string>
@@ -53,7 +57,7 @@
     <string name="home_greeting_morning">Good morning</string>
     <string name="home_greeting_afternoon">Good afternoon</string>
     <string name="home_greeting_evening">Good evening</string>
-    <string name="home_buddha_says">Buddha Says</string>
+    <string name="home_buddha_says">A thought for today</string>
     <string name="home_personalized_for_you">Just for you</string>
     <string name="home_quick_actions">Quick Actions</string>
     <string name="home_your_stats">Your Stats</string>
@@ -363,13 +367,13 @@
     <string name="settings_delete_account">Delete Account</string>
 
     <!-- AI Settings -->
-    <string name="settings_ai_title">Buddha AI</string>
-    <string name="settings_ai_enabled">Enable AI Features</string>
+    <string name="settings_ai_title">Kairos Labs</string>
+    <string name="settings_ai_enabled">Enable experimental AI</string>
     <string name="settings_ai_wisdom">Personalized Wisdom</string>
     <string name="settings_ai_insights">Journal Insights</string>
     <string name="settings_ai_prompts">Smart Prompts</string>
     <string name="settings_ai_patterns">Pattern Detection</string>
-    <string name="settings_ai_privacy_info">Your journal entries are only used to generate insights. Nothing is stored on external servers.</string>
+    <string name="settings_ai_privacy_info">Generated features may send selected text to a configured third-party provider. Production releases do not bundle provider credentials.</string>
 
     <!-- Buddha AI Personality Modes -->
     <string name="settings_ai_personality">Buddha Personality</string>
@@ -469,7 +473,7 @@
     <!-- ==================== -->
     <!-- NOTIFICATIONS -->
     <!-- ==================== -->
-    <string name="notification_channel_name">Prody Notifications</string>
+    <string name="notification_channel_name">Kairos reminders</string>
     <string name="notification_channel_desc">Daily wisdom, reminders, and motivation</string>
     <string name="notification_reminder_title">Time to reflect</string>
     <string name="notification_reminder_body">Your journal is waiting for today\'s thoughts.</string>
@@ -507,7 +511,7 @@
     <!-- ==================== -->
 
     <!-- Screen 1: Welcome -->
-    <string name="onboarding_app_name">Prody</string>
+    <string name="onboarding_app_name">Kairos</string>
     <string name="onboarding_tagline">Your daily companion for growth, wisdom, and mindful living.</string>
     <string name="onboarding_get_started">Get Started</string>
     <string name="onboarding_already_have_account">Already have an account?</string>
@@ -521,7 +525,7 @@
     <string name="onboarding_journaling_hint">Type your thoughts...</string>
     <string name="onboarding_journaling_headline">Unlock Your Mind</string>
     <string name="onboarding_journaling_desc">Experience journaling reinvented. Let AI-powered prompts guide your thoughts and discover emotional patterns.</string>
-    <string name="onboarding_journaling_desc_alt">Prody uses on-device AI to turn your daily ramblings into actionable wisdom and future insights, instantly.</string>
+    <string name="onboarding_journaling_desc_alt">Kairos gives your notes a calm place to live and helps you revisit what matters.</string>
     <string name="onboarding_journaling_feature_reflection">Deep Reflection</string>
     <string name="onboarding_journaling_feature_growth">Growth Tracking</string>
     <string name="onboarding_journaling_analysis_complete">ANALYSIS COMPLETE</string>
@@ -551,7 +555,7 @@
     <!-- Screen 5: Daily Wisdom Features -->
     <string name="onboarding_wisdom_headline">Daily Wisdom</string>
     <string name="onboarding_wisdom_desc">Start your day with intention. Personalized insights to articulate your thoughts.</string>
-    <string name="onboarding_wisdom_desc_alt">Start your day with intention. Prody delivers personalized insights to help you articulate your thoughts.</string>
+    <string name="onboarding_wisdom_desc_alt">Start with one useful word and one thought selected for your current learning rhythm.</string>
     <string name="onboarding_wisdom_word_title">Word of the Day</string>
     <string name="onboarding_wisdom_word_desc">Expand your vocabulary daily</string>
     <string name="onboarding_wisdom_word_desc_alt">Expand your vocabulary</string>
@@ -571,7 +575,7 @@
     <string name="onboarding_insights_quote_end"> is to love what you do."</string>
     <string name="onboarding_insights_author">Steve Jobs</string>
     <string name="onboarding_insights_headline">Personalized Insights</string>
-    <string name="onboarding_insights_desc">Prody analyzes your daily entries to surface quotes, stoic principles, and mental models that match your current headspace.</string>
+    <string name="onboarding_insights_desc">Kairos connects saved words, ideas, and reflections without crowding your day.</string>
     <string name="onboarding_enable_notifications">Enable Notifications</string>
     <string name="onboarding_maybe_later_notifications">Maybe later</string>
 
@@ -580,17 +584,17 @@
     <string name="onboarding_skip">Skip</string>
 
     <!-- Legacy strings (kept for compatibility) -->
-    <string name="onboarding_welcome">Welcome to Prody</string>
-    <string name="onboarding_welcome_title">Welcome to Prody</string>
+    <string name="onboarding_welcome">Welcome to Kairos</string>
+    <string name="onboarding_welcome_title">Welcome to Kairos</string>
     <string name="onboarding_welcome_desc">Your personal growth companion that transforms the way you think, learn, and evolve. Let\'s begin your journey to becoming the best version of yourself.</string>
     <string name="onboarding_wisdom_title">Daily Wisdom</string>
     <string name="onboarding_wisdom_desc_legacy">Discover curated vocabulary, proverbs, idioms, and quotes that expand your mind and enrich your language every single day.</string>
     <string name="onboarding_journal_title">Buddha - Your Stoic Guide</string>
-    <string name="onboarding_journal_desc">Journal your thoughts and let Buddha, your AI mentor, listen, reflect, and guide you with timeless stoic wisdom. A safe space for your deepest thoughts.</string>
+    <string name="onboarding_journal_desc">Write private reflections, revisit them later, and keep the core experience local-first.</string>
     <string name="onboarding_future_title">Message Your Future Self</string>
     <string name="onboarding_future_desc">Write letters to your future self, set intentions, and reflect on how far you\'ve come. Make your future self proud of who you\'re becoming today.</string>
     <string name="onboarding_growth_title">Track Your Growth</string>
-    <string name="onboarding_growth_desc">Celebrate your progress, earn achievements, and see how you compare with fellow growth seekers. Every step forward is a victory.</string>
+    <string name="onboarding_growth_desc">Review what you learned and reflected on without comparing yourself to fabricated community activity.</string>
 
     <!-- ==================== -->
     <!-- STREAK -->
@@ -641,16 +645,16 @@
     <string name="privacy_your_data_safe">Your Data is Safe</string>
     <string name="privacy_local_first">Local-First Storage</string>
     <string name="privacy_local_first_desc">All your journals and data are stored securely on your device first.</string>
-    <string name="privacy_encryption">End-to-End Encryption</string>
-    <string name="privacy_encryption_desc">Your personal data is encrypted using industry-standard AES-256.</string>
+    <string name="privacy_encryption">On-Device Encryption</string>
+    <string name="privacy_encryption_desc">The local database and sensitive preferences use Android-backed encryption. This does not imply end-to-end cloud encryption.</string>
     <string name="privacy_ai_processing">AI Processing</string>
-    <string name="privacy_ai_processing_desc">AI insights are generated on-device when possible. No data leaves your device without consent.</string>
-    <string name="privacy_no_third_party">No Third-Party Sharing</string>
-    <string name="privacy_no_third_party_desc">We never sell or share your personal data with third parties.</string>
+    <string name="privacy_ai_processing_desc">Generated features may send selected text to a configured provider only after you enable and use them.</string>
+    <string name="privacy_no_third_party">Controlled Third-Party Processing</string>
+    <string name="privacy_no_third_party_desc">Core local data is not sold. Online features disclose when selected content may be processed by a configured provider.</string>
     <string name="privacy_data_export">Export Your Data</string>
     <string name="privacy_data_export_desc">Download all your data at any time in JSON format.</string>
     <string name="privacy_data_delete">Delete All Data</string>
-    <string name="privacy_data_delete_desc">Permanently remove all your data from our servers.</string>
+    <string name="privacy_data_delete_desc">Permanently remove local app data. Account-backed deletion applies only after a real backend is connected.</string>
     <string name="privacy_learn_more">Learn More</string>
     <string name="privacy_view_policy">View Full Privacy Policy</string>
 
@@ -668,7 +672,7 @@
     <string name="sync_last_synced">Last synced %s</string>
     <string name="sync_never">Never synced</string>
     <string name="offline_mode">Offline Mode</string>
-    <string name="offline_mode_desc">You\'re offline. Changes will sync when connected.</string>
+    <string name="offline_mode_desc">You\'re offline. Local learning and reflection remain available; online experiments are paused.</string>
     <string name="network_connected">Connected to internet</string>
     <string name="network_disconnected">No internet connection</string>
 
@@ -684,7 +688,7 @@
     <string name="report_reason_other">Other</string>
     <string name="report_additional_info">Additional information (optional)</string>
     <string name="report_submitted">Report submitted</string>
-    <string name="report_thank_you">Thank you for helping keep Prody safe.</string>
+    <string name="report_thank_you">Thank you for helping keep Kairos safe.</string>
 
     <!-- ==================== -->
     <!-- BUDDHA AI GUIDE -->
@@ -695,7 +699,7 @@
     <string name="buddha_ai_journal_hint">After you write, I\'ll share insights about your emotions and themes.</string>
     <string name="buddha_ai_quote_hint">Tap any quote to learn its deeper meaning and how to apply it today.</string>
     <string name="buddha_ai_wisdom_hint">I curate daily wisdom based on what resonates with your journey.</string>
-    <string name="buddha_ai_privacy">Your thoughts stay private. I analyze on-device first.</string>
+    <string name="buddha_ai_privacy">Generated features may send selected text to the configured provider when you invoke them.</string>
     <string name="buddha_ai_got_it">Got it!</string>
     <string name="buddha_ai_dont_show_again">Don\'t show again</string>
 

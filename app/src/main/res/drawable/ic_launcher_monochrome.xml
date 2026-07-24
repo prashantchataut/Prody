@@ -4,45 +4,14 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-
-    <!--
-    PRODY MONOCHROME LOGO: "The Ascent"
-    For Android 13+ themed icon support.
-    Single color version that adapts to system theme colors.
-
-    Abstract geometric design - NO LETTERS.
-    System applies theme tint automatically.
-    -->
-
-    <!-- Circular base -->
     <path
-        android:pathData="M54,54m-40,0a40,40 0,1 1,80 0a40,40 0,1 1,-80 0"
-        android:fillColor="#000000"/>
-
-    <!-- Upper-left cutout -->
+        android:fillColor="#000000"
+        android:fillType="evenOdd"
+        android:pathData="M54,22A32,32 0,1 0,86 54A32,32 0,0 0,54 22ZM54,34A20,20 0,1 1,34 54A20,20 0,0 1,54 34Z" />
     <path
-        android:pathData="M14,14
-                          L54,14
-                          L54,42
-                          L28,68
-                          L14,68
-                          Z"
-        android:fillColor="#FFFFFF"/>
-
-    <!-- Lower-right cutout -->
+        android:fillColor="#000000"
+        android:pathData="M69,25L91,25L91,47L80,47L80,36L69,36Z" />
     <path
-        android:pathData="M54,66
-                          L80,40
-                          L94,40
-                          L94,94
-                          L54,94
-                          Z"
-        android:fillColor="#FFFFFF"/>
-
-    <!-- Accent -->
-    <path
-        android:pathData="M78,22 L86,22 L86,30 L78,30 Z"
-        android:fillColor="#FFFFFF"
-        android:fillAlpha="0.75"/>
-
+        android:fillColor="#000000"
+        android:pathData="M80,31m-6,0a6,6 0,1 1,12 0a6,6 0,1 1,-12 0" />
 </vector>

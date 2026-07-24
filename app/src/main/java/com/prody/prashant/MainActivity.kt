@@ -7,48 +7,19 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.background
-
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
-
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.foundation.layout.weight
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -60,15 +31,16 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.prody.prashant.data.auth.AuthRepository
 import com.prody.prashant.data.auth.AuthState
+import com.prody.prashant.data.local.preferences.PreferencesManager
 import com.prody.prashant.notification.NotificationScheduler
-import com.prody.prashant.ui.components.NavigationBreathingGlow
+import com.prody.prashant.ui.components.kairos.KairosAppBackground
+import com.prody.prashant.ui.components.kairos.KairosBottomNavigation
+import com.prody.prashant.ui.components.kairos.KairosNavigationRail
 import com.prody.prashant.ui.main.MainViewModel
 import com.prody.prashant.ui.navigation.BottomNavItem
 import com.prody.prashant.ui.navigation.ProdyNavHost
-import com.prody.prashant.ui.navigation.Screen
+import com.prody.prashant.ui.theme.KairosTheme
 import com.prody.prashant.ui.screens.auth.AuthScreen
-import com.prody.prashant.ui.theme.ProdyPrimary
-import com.prody.prashant.ui.theme.ProdyTheme
 import com.prody.prashant.util.LocalHapticEnabled
 import com.prody.prashant.util.rememberProdyHaptic
 import dagger.hilt.android.AndroidEntryPoint
@@ -85,19 +57,13 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var authRepository: AuthRepository
 
+    @Inject
+    lateinit var preferencesManager: PreferencesManager
+
     private val viewModel: MainViewModel by viewModels()
 
     // Flag to track if Hilt injection is complete
     private var isInjectionComplete = false
-
-    private val requestPermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted: Boolean ->
-        if (isGranted && isInjectionComplete) {
-            // Permission granted, schedule notifications safely
-            scheduleNotificationsSafely()
-        }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // Install splash screen BEFORE calling super.onCreate()
@@ -112,12 +78,9 @@ class MainActivity : ComponentActivity() {
             viewModel.uiState.value.isLoading
         }
 
-        // Check and request notification permission for Android 13+ safely
-        try {
-            requestNotificationPermission()
-        } catch (e: Exception) {
-            android.util.Log.e("MainActivity", "Failed to request notification permission", e)
-        }
+        // Do not interrupt first launch with a system prompt. Existing permission is
+        // honored here; new users opt in from Settings where intent is explicit.
+        scheduleNotificationsIfAllowed()
 
         enableEdgeToEdge()
 
@@ -126,7 +89,7 @@ class MainActivity : ComponentActivity() {
             val authState by authRepository.authState.collectAsStateWithLifecycle()
 
             if (!uiState.isLoading) {
-                ProdyTheme(
+                KairosTheme(
                     themeMode = uiState.themeMode
                 ) {
                     CompositionLocalProvider(
@@ -157,27 +120,24 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        authRepository.removeListener()
+    override fun onResume() {
+        super.onResume()
+        if (::preferencesManager.isInitialized) {
+            lifecycleScope.launch(Dispatchers.IO) {
+                preferencesManager.setLastAppOpenAt(System.currentTimeMillis())
+            }
+        }
+        scheduleNotificationsIfAllowed()
     }
 
-    private fun requestNotificationPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            when {
-                ContextCompat.checkSelfPermission(
-                    this,
-                    Manifest.permission.POST_NOTIFICATIONS
-                ) == PackageManager.PERMISSION_GRANTED -> {
-                    // Permission already granted, schedule notifications safely
-                    scheduleNotificationsSafely()
-                }
-                else -> {
-                    requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                }
-            }
-        } else {
-            // For older versions (API < 33), schedule notifications directly
+    private fun scheduleNotificationsIfAllowed() {
+        val canPostNotifications = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+
+        if (canPostNotifications) {
             scheduleNotificationsSafely()
         }
     }
@@ -215,156 +175,67 @@ fun ProdyApp(
     val haptic = rememberProdyHaptic()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
+    val navigationItems = BottomNavItem.items
+    val currentTopLevelRoute = navigationItems.firstOrNull { item ->
+        currentDestination?.hierarchy?.any { destination ->
+            destination.route == item.destinationRoute
+        } == true
+    }?.destinationRoute
+    val showNavigation = currentTopLevelRoute != null
 
-    // Bottom navigation items
-    val bottomNavItems = listOf(
-        BottomNavItem.Home,
-        BottomNavItem.Journal,
-        BottomNavItem.Haven,
-        BottomNavItem.Stats,
-        BottomNavItem.Profile
-    )
+    fun navigateTo(item: BottomNavItem) {
+        haptic.selection()
+        navController.navigate(item.route) {
+            popUpTo(navController.graph.findStartDestination().id) {
+                saveState = true
+            }
+            launchSingleTop = true
+            restoreState = true
+        }
+    }
 
-    // Determine if bottom nav should be shown (only on main tabs)
-    val showBottomBar = currentDestination?.route in listOf(
-        Screen.Home.route,
-        Screen.JournalList.route,
-        Screen.HavenHome.route,
-        Screen.Stats.route,
-        Screen.Profile.route
-    )
-
-    Scaffold(
-        bottomBar = {
-            AnimatedVisibility(
-                visible = showBottomBar,
-                enter = slideInVertically(
-                    initialOffsetY = { it },
-                    animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioMediumBouncy,
-                        stiffness = Spring.StiffnessMedium
+    KairosAppBackground {
+        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+            val useRail = maxWidth >= 720.dp
+            if (useRail && showNavigation) {
+                Row(modifier = Modifier.fillMaxSize()) {
+                    KairosNavigationRail(
+                        items = navigationItems,
+                        selectedRoute = currentTopLevelRoute,
+                        onSelect = ::navigateTo
                     )
-                ),
-                exit = slideOutVertically(
-                    targetOffsetY = { it },
-                    animationSpec = tween(200)
-                )
-            ) {
-                NavigationBar {
-                    bottomNavItems.forEach { item ->
-                        val selected = currentDestination?.hierarchy?.any {
-                            it.route == item.route
-                        } == true
-
-                        if (item == BottomNavItem.Haven) {
-                            // Special Haven FAB Item
-                            NavigationBarItem(
-                                selected = selected,
-                                onClick = {
-                                    haptic.selection()
-                                    navController.navigate(item.route) {
-                                        popUpTo(navController.graph.findStartDestination().id) {
-                                            saveState = true
-                                        }
-                                        launchSingleTop = true
-                                        restoreState = true
-                                    }
-                                },
-                                icon = {
-                                    // Breathing Pulse Animation
-                                    val infiniteTransition = rememberInfiniteTransition(label = "HavenPulse")
-                                    val alphaState = infiniteTransition.animateFloat(
-                                        initialValue = 0.6f,
-                                        targetValue = 1f,
-                                        animationSpec = infiniteRepeatable(
-                                            animation = tween(2000, easing = LinearEasing),
-                                            repeatMode = RepeatMode.Reverse
-                                        ),
-                                        label = "HavenAlpha"
-                                    )
-                                    val scaleState = infiniteTransition.animateFloat(
-                                        initialValue = 0.95f,
-                                        targetValue = 1.05f,
-                                        animationSpec = infiniteRepeatable(
-                                            animation = tween(2000, easing = LinearEasing),
-                                            repeatMode = RepeatMode.Reverse
-                                        ),
-                                        label = "HavenScale"
-                                    )
-
-                                    Box(
-                                        modifier = Modifier
-                                            .size(56.dp) // Larger than standard icon
-                                            .graphicsLayer {
-                                                scaleX = scaleState.value
-                                                scaleY = scaleState.value
-                                                alpha = if (selected) 1f else alphaState.value
-                                            }
-                                            .clip(CircleShape)
-                                            .background(
-                                                androidx.compose.ui.graphics.Brush.verticalGradient(
-                                                    colors = listOf(
-                                                        com.prody.prashant.ui.theme.HavenBubbleLight,
-                                                        com.prody.prashant.ui.theme.HavenBubbleLight.copy(alpha = 0.8f)
-                                                    )
-                                                )
-                                            ),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Icon(
-                                            imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
-                                            contentDescription = stringResource(item.contentDescriptionResId),
-                                            tint = com.prody.prashant.ui.theme.HavenTextLight,
-                                            modifier = Modifier.size(28.dp)
-                                        )
-                                    }
-                                },
-                                label = { /* No label for FAB look */ },
-                                colors = NavigationBarItemDefaults.colors(
-                                    indicatorColor = Color.Transparent // Disable standard indicator
-                                )
-                            )
-                        } else {
-                            // Standard Navigation Item
-                            NavigationBarItem(
-                                icon = {
-                                    // Wrap icon with magical breathing glow effect
-                                    NavigationBreathingGlow(
-                                        isActive = selected,
-                                        color = ProdyPrimary
-                                    ) {
-                                        Icon(
-                                            imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
-                                            contentDescription = null
-                                        )
-                                    }
-                                },
-                                label = { Text(stringResource(item.labelResId)) },
-                                selected = selected,
-                                onClick = {
-                                    haptic.selection()
-                                    navController.navigate(item.route) {
-                                        popUpTo(navController.graph.findStartDestination().id) {
-                                            saveState = true
-                                        }
-                                        launchSingleTop = true
-                                        restoreState = true
-                                    }
-                                }
+                    ProdyNavHost(
+                        navController = navController,
+                        startDestination = startDestination,
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxSize()
+                    )
+                }
+            } else {
+                Scaffold(
+                    modifier = Modifier.fillMaxSize(),
+                    containerColor = Color.Transparent,
+                    contentWindowInsets = WindowInsets(0, 0, 0, 0),
+                    bottomBar = {
+                        if (showNavigation) {
+                            KairosBottomNavigation(
+                                items = navigationItems,
+                                selectedRoute = currentTopLevelRoute,
+                                onSelect = ::navigateTo
                             )
                         }
                     }
+                ) { innerPadding ->
+                    ProdyNavHost(
+                        navController = navController,
+                        startDestination = startDestination,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(innerPadding)
+                    )
                 }
             }
         }
-    ) { innerPadding ->
-        // Use the complete ProdyNavHost with all routes properly configured
-        ProdyNavHost(
-            navController = navController,
-            startDestination = startDestination,
-            modifier = Modifier.padding(innerPadding)
-        )
     }
 }
-
-

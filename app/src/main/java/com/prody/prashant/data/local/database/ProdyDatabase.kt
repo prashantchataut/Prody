@@ -134,6 +134,9 @@ import net.sqlcipher.database.SupportFactory
  *              Added journal_entries_fts FTS4 virtual table
  *              Enables fast, tokenized search with MATCH operator
  *              Replaces slow LIKE queries with stemming, prefix matching, and phrase queries
+ * - Version 24: Stable Daily Recommendations
+ *              Added daily_content_selections for per-user, per-date content plans
+ *              Added content_interactions for explicit and behavioral recommendation signals
  */
 @Database(
     entities = [
@@ -224,10 +227,13 @@ import net.sqlcipher.database.SupportFactory
         HavenMemoryEntity::class,
         // Mirror Evolution: Evidence Locker
         EvidenceEntity::class,
+        // Stable Daily Recommendations
+        DailyContentSelectionEntity::class,
+        ContentInteractionEntity::class,
         // FTS4 full-text search for journal entries
         JournalEntryFtsEntity::class
     ],
-    version = 23,
+    version = 24,
     exportSchema = true // Enable for migration verification
 )
 abstract class ProdyDatabase : RoomDatabase() {
@@ -289,6 +295,9 @@ abstract class ProdyDatabase : RoomDatabase() {
 
     // Evidence DAO (THE LOCKER) for Evidence Drops
     abstract fun evidenceDao(): EvidenceDao
+
+    // Stable daily recommendation decisions and feedback
+    abstract fun dailyContentDao(): DailyContentDao
 
     companion object {
         private const val TAG = "ProdyDatabase"
@@ -1783,6 +1792,54 @@ abstract class ProdyDatabase : RoomDatabase() {
                     SELECT id, COALESCE(title, ''), content, COALESCE(tags, ''), COALESCE(aiThemes, '')
                     FROM journal_entries WHERE isDeleted = 0
                 """.trimIndent())
+            }
+        }
+
+        /**
+         * Migration 23 -> 24: Stable Daily Recommendations
+         *
+         * Replaces global, exhaustible shownAsDaily selection with a per-user,
+         * per-local-date recommendation record and an append-only feedback log.
+         */
+        val MIGRATION_23_24: Migration = object : Migration(23, 24) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS daily_content_selections (
+                        userId TEXT NOT NULL,
+                        localDate TEXT NOT NULL,
+                        contentType TEXT NOT NULL,
+                        contentId INTEGER NOT NULL,
+                        category TEXT NOT NULL,
+                        sourceKey TEXT NOT NULL,
+                        algorithmVersion INTEGER NOT NULL,
+                        score REAL NOT NULL,
+                        reason TEXT NOT NULL,
+                        selectedAt INTEGER NOT NULL,
+                        impressedAt INTEGER,
+                        completedAt INTEGER,
+                        PRIMARY KEY(userId, localDate, contentType)
+                    )
+                """.trimIndent())
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_daily_content_selections_userId_selectedAt ON daily_content_selections(userId, selectedAt)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_daily_content_selections_contentType_contentId ON daily_content_selections(contentType, contentId)")
+
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS content_interactions (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        userId TEXT NOT NULL,
+                        localDate TEXT NOT NULL,
+                        contentType TEXT NOT NULL,
+                        contentId INTEGER NOT NULL,
+                        category TEXT NOT NULL,
+                        sourceKey TEXT NOT NULL,
+                        difficulty INTEGER,
+                        interactionType TEXT NOT NULL,
+                        createdAt INTEGER NOT NULL
+                    )
+                """.trimIndent())
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_content_interactions_userId_createdAt ON content_interactions(userId, createdAt)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_content_interactions_userId_contentType_contentId ON content_interactions(userId, contentType, contentId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_content_interactions_userId_category ON content_interactions(userId, category)")
             }
         }
 
