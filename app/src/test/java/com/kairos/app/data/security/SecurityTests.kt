@@ -3,15 +3,8 @@ package com.kairos.app.data.security
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import io.mockk.slot
-import io.mockk.spyk
-import io.mockk.confirmVerified
 import org.junit.Assert.*
-import org.junit.Before
 import org.junit.Test
-import java.io.IOException
-import javax.crypto.Cipher
-import javax.crypto.spec.GCMParameterSpec
 
 /**
  * Security tests for API key management and encryption.
@@ -198,17 +191,6 @@ class EncryptionManagerTest {
 }
 
 class SecureHttpClientTest {
-
-    private lateinit var secureHttpClient: SecureHttpClient
-
-    @Before
-    fun setup() {
-        val context = mockk<android.content.Context>(relaxed = true)
-        val appInfo = mockk<android.content.pm.ApplicationInfo>()
-        every { appInfo.flags } returns 0 // Non-debug build
-        every { context.applicationInfo } returns appInfo
-        secureHttpClient = SecureHttpClient(context)
-    }
 
     @Test
     fun `connect timeout is configured`() {

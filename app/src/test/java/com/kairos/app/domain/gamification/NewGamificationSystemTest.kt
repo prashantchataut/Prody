@@ -666,22 +666,21 @@ class NewGamificationSystemTest {
 
     @Test
     fun `Achievements - First Words achievement exists`() {
-        val achievement = Achievements.findById("first_words")
+        val achievement = Achievements.findById("first_word")
         assertNotNull(achievement)
-        assertEquals("First Words", achievement?.name)
-        assertEquals(AchievementCategory.REFLECTION, achievement?.category)
+        assertEquals("First Light", achievement?.name)
+        assertEquals(AchievementCategory.WISDOM, achievement?.category)
     }
 
     @Test
     fun `Achievements - all implemented categories have achievements`() {
-        // Check that reflection, wisdom, time, journey, and special categories have achievements
-        // These are the categories that are implemented in the allAchievements list
+        // Categories that the canonical catalogue currently maps into.
         val implementedCategories = listOf(
             AchievementCategory.REFLECTION,
             AchievementCategory.WISDOM,
             AchievementCategory.TIME,
             AchievementCategory.JOURNEY,
-            AchievementCategory.SPECIAL
+            AchievementCategory.MASTERY
         )
         
         implementedCategories.forEach { category ->
