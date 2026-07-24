@@ -354,7 +354,7 @@ private fun ProfileIdentityPanel(
             ) {
                 ProfileTag(state.title)
                 ProfileTag("Level ${state.level}")
-                themes.forEach(::ProfileTag)
+                themes.forEach { ProfileTag(it) }
             }
         }
     }
