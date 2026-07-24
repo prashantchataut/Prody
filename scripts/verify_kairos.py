@@ -104,7 +104,6 @@ for path in ROOT.rglob("*"):
     lowered = text.lower()
     migration_docs = {
         Path("README.md"),
-        Path("FILES_TO_DELETE.txt"),
         Path("KAIROS_STABILITY_REPORT.md"),
         Path("docs/PACKAGE_MIGRATION.md"),
     }

@@ -11,12 +11,14 @@ fail() { printf 'FAILED: %s\n' "$*" >&2; issues=$((issues + 1)); }
 [[ -f gradle/wrapper/gradle-wrapper.properties ]] || fail "Gradle wrapper properties are missing"
 
 for stale in \
+  .github/workflows/ci.yml \
   app/src/main/java/com/prody \
   app/src/debug/java/com/prody \
   app/src/release/java/com/prody \
   app/src/test/java/com/prody \
-  app/src/androidTest/java/com/prody; do
-  [[ ! -e "$stale" ]] || fail "stale source tree exists: $stale (run bash scripts/apply_kairos_cleanup.sh)"
+  app/src/androidTest/java/com/prody \
+  app/src/main/java/com/kairos/app/domain/gamification/NewGameSessionManager.kt; do
+  [[ ! -e "$stale" ]] || fail "stale path exists: $stale (run bash scripts/apply_kairos_cleanup.sh)"
 done
 
 python3 - <<'PY'
@@ -160,18 +162,6 @@ policy_ids=set(re.findall(r'"([a-z0-9_]+)"\s+to\s+\d+', policy))
 catalog_ids=set(re.findall(r'id\s*=\s*"([a-z0-9_]+)"', catalog))
 for missing in sorted(policy_ids - catalog_ids):
     issues.append(f'achievement milestone has no catalogue entry: {missing}')
-
-for required in (
-    '.github/workflows/ci.yml',
-    'app/src/main/java/com/prody/',
-    'app/src/debug/java/com/prody/',
-    'app/src/release/java/com/prody/',
-    'app/src/test/java/com/prody/',
-    'app/src/androidTest/java/com/prody/',
-    'app/src/main/java/com/kairos/app/domain/gamification/NewGameSessionManager.kt'
-):
-    if required not in (root/'FILES_TO_DELETE.txt').read_text(encoding='utf-8-sig'):
-        issues.append(f'FILES_TO_DELETE.txt is missing {required}')
 
 # Provider + @Inject constructor duplicate bindings in app modules.
 inject_types=set()
