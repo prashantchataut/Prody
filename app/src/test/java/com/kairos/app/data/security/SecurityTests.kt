@@ -386,11 +386,11 @@ class SecureHttpClientTest {
     }
 }
 
-class SecurityPreferencesTest {
+class EncryptionManagerSecurityTest {
 
     @Test
     fun `encryption uses AES-GCM with no padding`() {
-        val field = SecurityPreferences::class.java.getDeclaredField("AES_GCM_NO_PADDING")
+        val field = EncryptionManager::class.java.getDeclaredField("ALGORITHM")
         field.isAccessible = true
         val algorithm = field.get(null) as String
         assertEquals("AES/GCM/NoPadding", algorithm)
@@ -398,7 +398,7 @@ class SecurityPreferencesTest {
 
     @Test
     fun `GCM IV length is 12 bytes`() {
-        val field = SecurityPreferences::class.java.getDeclaredField("GCM_IV_LENGTH")
+        val field = EncryptionManager::class.java.getDeclaredField("IV_SIZE")
         field.isAccessible = true
         val ivLength = field.get(null) as Int
         assertEquals(12, ivLength)
@@ -406,34 +406,33 @@ class SecurityPreferencesTest {
 
     @Test
     fun `GCM tag length is 128 bits`() {
-        val field = SecurityPreferences::class.java.getDeclaredField("GCM_TAG_LENGTH")
+        val field = EncryptionManager::class.java.getDeclaredField("TAG_SIZE")
         field.isAccessible = true
         val tagLength = field.get(null) as Int
         assertEquals(128, tagLength)
     }
 
     @Test
-    fun `key alias is not generic default`() {
-        // Verify the keystore alias is app-specific, not "MasterKey" or "default"
-        val field = SecurityPreferences::class.java.getDeclaredField("KEY_ALIAS")
+    fun `secure prefs name is app-specific`() {
+        val field = EncryptionManager::class.java.getDeclaredField("PREFS_NAME")
         field.isAccessible = true
-        val alias = field.get(null) as String
+        val prefsName = field.get(null) as String
         assertTrue(
-            "Key alias should be app-specific, got: $alias",
-            alias.contains("Kairos", ignoreCase = true) || alias.contains("Encryption", ignoreCase = true)
+            "Secure prefs name should be app-specific, got: $prefsName",
+            prefsName.contains("Kairos", ignoreCase = true) || prefsName.contains("secure", ignoreCase = true)
         )
     }
 
     @Test
-    fun `encrypted key storage keys are not plaintext key names`() {
-        // The DataStore keys for encrypted values should not reveal
-        // what type of API key they store
-        val aiKeyField = SecurityPreferences::class.java.getDeclaredField("ENCRYPTED_AI_API_KEY")
-        aiKeyField.isAccessible = true
-        val aiKey = aiKeyField.get(null)
-
-        // Key should use "encrypted_" prefix to indicate storage format
-        assertNotNull(aiKey)
+    fun `journal key storage name is not a secret value`() {
+        val field = EncryptionManager::class.java.getDeclaredField("KEY_JOURNAL_KEY")
+        field.isAccessible = true
+        val keyName = field.get(null) as String
+        assertNotNull(keyName)
+        assertFalse(
+            "Storage key name should not look like raw secret material",
+            keyName.length > 40 && keyName.any { it.isDigit() } && keyName.any { it.isLetter() }
+        )
     }
 }
 
