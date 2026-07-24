@@ -152,20 +152,6 @@ fun KairosTheme(
     }
 }
 
-/**
- * Compatibility wrapper retained while package and persisted identifiers migrate safely.
- */
-@Composable
-fun KairosTheme(
-    themeMode: ThemeMode = ThemeMode.SYSTEM,
-    dynamicColor: Boolean = false,
-    content: @Composable () -> Unit
-) = KairosTheme(
-    themeMode = themeMode,
-    dynamicColor = dynamicColor,
-    content = content
-)
-
 @Composable
 fun getTextPrimary(): Color {
     return if (isDarkTheme()) KairosTextPrimaryDark else KairosTextPrimaryLight

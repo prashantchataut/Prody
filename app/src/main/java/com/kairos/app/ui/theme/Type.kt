@@ -175,9 +175,6 @@ val KairosTypography = Typography(
     )
 )
 
-/** Compatibility alias while package and storage identifiers remain unchanged. */
-val KairosTypography = KairosTypography
-
 // =============================================================================
 // EXTENDED TYPOGRAPHY - Custom text styles for special use cases
 // Serif for reflective content, native sans-serif for UI

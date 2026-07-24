@@ -8,7 +8,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.togetherWith
-import androidx.compose.animation.using
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -136,12 +135,14 @@ fun TimeCapsuleRevealScreen(
                     targetState = state.hasBeenRevealed,
                     modifier = Modifier.weight(1f),
                     transitionSpec = {
-                        if (reduceMotion) {
+                        val transform = if (reduceMotion) {
                             fadeIn(tween(KairosDurations.Micro)) togetherWith fadeOut(tween(KairosDurations.Micro))
                         } else {
                             (fadeIn(tween(KairosDurations.Page)) + scaleIn(initialScale = 0.97f, animationSpec = tween(KairosDurations.Page, easing = KairosEasing.EaseOutExpo))) togetherWith
                                 (fadeOut(tween(KairosDurations.State)) + scaleOut(targetScale = 1.03f, animationSpec = tween(KairosDurations.State)))
-                        }.using(SizeTransform(clip = false))
+                        }
+                        transform.sizeTransform = SizeTransform(clip = false)
+                        transform
                     },
                     label = "future_letter_reveal"
                 ) { revealed ->

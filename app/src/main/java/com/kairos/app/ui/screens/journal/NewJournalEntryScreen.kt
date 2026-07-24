@@ -549,6 +549,7 @@ private fun ToolButton(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun AttachmentSummary(
     photoCount: Int,
