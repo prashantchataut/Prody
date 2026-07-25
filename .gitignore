@@ -22,10 +22,14 @@ app/apikey.properties
 .env.*
 !.env.example
 
-# === Keystore (NEVER commit) ===
+# === Keystore (NEVER commit private/production keys) ===
 *.jks
 *.keystore
 keystore/
+# Public open-source test signing identity used by CI (not for Play Store).
+!keystore/
+!keystore/Kairos-release.jks
+!keystore/README.md
 
 # === Secrets (NEVER commit) ===
 # Keep specific properties that are project config

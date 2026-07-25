@@ -134,14 +134,9 @@ bash ./scripts/verify_kairos.sh
 
 ## CI and releases
 
-`.github/workflows/android.yml` runs architecture checks, unit tests, Android lint, and a debug build for pull requests and pushes. Tagged release builds fail closed unless all production signing secrets are configured in the protected `production` environment:
+`.github/workflows/android.yml` runs on every push (and manual dispatch): architecture checks, unit tests, lint, a signed release APK build, artifact upload, and a GitHub Release tagged `build-<sha>-<run>`.
 
-- `KEYSTORE_BASE64`
-- `KEYSTORE_PASSWORD`
-- `KEY_ALIAS`
-- `KEY_PASSWORD`
-
-The workflow never generates or publishes a fallback signing key.
+Release signing uses the **public test keystore** checked in at `keystore/Kairos-release.jks` (alias `kairos`, password `kairos-public-test`). This identity is for personal/open-source test builds only — not for Play Store or production distribution. CI does not generate a fallback key at runtime.
 
 ## Compatibility invariants
 

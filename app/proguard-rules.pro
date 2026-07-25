@@ -162,3 +162,11 @@
 
 -keep class androidx.glance.** { *; }
 -dontwarn androidx.glance.**
+
+# ========================================
+# SQLCipher (encrypted Room database)
+# ========================================
+
+-keep class net.sqlcipher.** { *; }
+-keep class net.sqlcipher.database.** { *; }
+-dontwarn net.sqlcipher.**

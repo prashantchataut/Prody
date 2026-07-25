@@ -20,6 +20,9 @@ object DatabaseFactory {
         databaseName: String,
         instanceProvider: () -> KairosDatabase?
     ): KairosDatabase {
+        // SQLCipher native libs must be loaded before SupportFactory opens the DB.
+        net.sqlcipher.database.SQLiteDatabase.loadLibs(context.applicationContext)
+
         val encryptedPrefs = createOrRecoverEncryptedPrefs(context)
         val secureDbManager = SecureDatabaseManager(context, encryptedPrefs)
         val supportFactory = secureDbManager.createSQLCipherSupportFactorySync()

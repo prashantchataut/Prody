@@ -13,7 +13,7 @@ import javax.inject.Singleton
 
 /**
  * Secure API Key Management using Android Keystore
- * 
+ *
  * This class provides secure storage and retrieval of API keys using:
  * - Android Keystore for key management
  * - EncryptedSharedPreferences for storage
@@ -29,22 +29,23 @@ class SecureApiKeyManager @Inject constructor(
         private const val OPENROUTER_API_KEY = "openrouter_api_key"
         private const val THERAPIST_API_KEY = "therapist_api_key"
         private const val TTS_API_KEY = "tts_api_key"
-        
     }
 
-    private val masterKey = MasterKey.Builder(context)
-        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-        .setKeyGenParameterSpec(
-            KeyGenParameterSpec.Builder(
-                MasterKey.DEFAULT_MASTER_KEY_ALIAS,
-                KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
+    private val masterKey: MasterKey by lazy {
+        MasterKey.Builder(context)
+            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+            .setKeyGenParameterSpec(
+                KeyGenParameterSpec.Builder(
+                    MasterKey.DEFAULT_MASTER_KEY_ALIAS,
+                    KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
+                )
+                    .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
+                    .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
+                    .setUserAuthenticationRequired(false)
+                    .build()
             )
-                .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
-                .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
-                .setUserAuthenticationRequired(false)
-                .build()
-        )
-        .build()
+            .build()
+    }
 
     private val securePrefs by lazy {
         EncryptedSharedPreferences.create(
@@ -113,13 +114,13 @@ class SecureApiKeyManager @Inject constructor(
         val geminiKey = securePrefs.getString(GEMINI_API_KEY, "") ?: ""
         val openrouterKey = securePrefs.getString(OPENROUTER_API_KEY, "") ?: ""
         val therapistKey = securePrefs.getString(THERAPIST_API_KEY, "") ?: ""
-        
-        geminiKey.isNotBlank() && 
-        openrouterKey.isNotBlank() && 
-        therapistKey.isNotBlank() &&
-        !geminiKey.contains("your_") &&
-        !openrouterKey.contains("your_") &&
-        !therapistKey.contains("your_")
+
+        geminiKey.isNotBlank() &&
+            openrouterKey.isNotBlank() &&
+            therapistKey.isNotBlank() &&
+            !geminiKey.contains("your_") &&
+            !openrouterKey.contains("your_") &&
+            !therapistKey.contains("your_")
     }
 
     /**

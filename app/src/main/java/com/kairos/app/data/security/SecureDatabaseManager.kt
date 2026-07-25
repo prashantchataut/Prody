@@ -102,6 +102,7 @@ class SecureDatabaseManager @Inject constructor(
      * Create a SupportFactory for SQLCipher with the secure passphrase
      */
     suspend fun createSQLCipherSupportFactory(): SupportFactory {
+        SQLiteDatabase.loadLibs(context.applicationContext)
         val passphrase = getDatabasePassphrase()
         val passphraseBytes = SQLiteDatabase.getBytes(passphrase.toCharArray())
         return SupportFactory(passphraseBytes)
@@ -111,6 +112,7 @@ class SecureDatabaseManager @Inject constructor(
      * Create a SupportFactory for SQLCipher synchronously
      */
     fun createSQLCipherSupportFactorySync(): SupportFactory {
+        SQLiteDatabase.loadLibs(context.applicationContext)
         val passphrase = getDatabasePassphraseSync()
         val passphraseBytes = SQLiteDatabase.getBytes(passphrase.toCharArray())
         return SupportFactory(passphraseBytes)
