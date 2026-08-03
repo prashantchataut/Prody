@@ -9,17 +9,17 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.tasks.await
-import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class AuthRepository @Inject constructor(
-    private val firebaseAuth: FirebaseAuth,
+    private val firebaseAuth: FirebaseAuth?,
     @ApplicationContext context: Context
 ) {
     companion object {
@@ -34,7 +34,7 @@ class AuthRepository @Inject constructor(
     private val _authState = MutableStateFlow<AuthState>(AuthState.Idle)
     val authState: StateFlow<AuthState> = _authState.asStateFlow()
 
-    val currentUser: FirebaseUser? get() = firebaseAuth.currentUser
+    val currentUser: FirebaseUser? get() = firebaseAuth?.currentUser
     val currentUserId: String? get() = currentUser?.uid
     val isSignedIn: Boolean get() = currentUser != null
 
@@ -57,23 +57,33 @@ class AuthRepository @Inject constructor(
     }
 
     init {
-        try {
-            firebaseAuth.addAuthStateListener(authStateListener)
-            isListenerAttached = true
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to attach auth state listener", e)
-            _authState.value = if (hasLocalSession()) {
-                localAuthState()
-            } else {
-                AuthState.Error(e.message ?: "Account services are unavailable")
+        val auth = firebaseAuth
+        if (auth == null) {
+            Log.w(TAG, "Firebase Auth unavailable — using local session only")
+            _authState.value = if (hasLocalSession()) localAuthState() else AuthState.Unauthenticated
+        } else {
+            try {
+                auth.addAuthStateListener(authStateListener)
+                isListenerAttached = true
+                if (auth.currentUser == null && hasLocalSession()) {
+                    _authState.value = localAuthState()
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to attach auth state listener", e)
+                _authState.value = if (hasLocalSession()) {
+                    localAuthState()
+                } else {
+                    AuthState.Unauthenticated
+                }
             }
         }
     }
 
     fun removeListener() {
+        val auth = firebaseAuth ?: return
         if (isListenerAttached) {
             try {
-                firebaseAuth.removeAuthStateListener(authStateListener)
+                auth.removeAuthStateListener(authStateListener)
                 isListenerAttached = false
             } catch (e: Exception) {
                 Log.w(TAG, "Failed to remove auth state listener", e)
@@ -91,14 +101,20 @@ class AuthRepository @Inject constructor(
     }
 
     fun getGoogleSignInIntent(context: android.content.Context): Intent? {
+        if (firebaseAuth == null) {
+            Log.w(TAG, "Google sign-in unavailable because Firebase Auth is null")
+            return null
+        }
         return getGoogleSignInClient(context).signInIntent
     }
 
     suspend fun signInWithGoogle(idToken: String): Result<String> {
+        val auth = firebaseAuth
+            ?: return Result.failure(Exception("Account services are unavailable. Continue with a local profile."))
         return try {
             _authState.value = AuthState.Loading
             val credential = GoogleAuthProvider.getCredential(idToken, null)
-            val result = firebaseAuth.signInWithCredential(credential).await()
+            val result = auth.signInWithCredential(credential).await()
             val userId = result.user?.uid
                 ?: return Result.failure(Exception("Authentication failed: no user ID"))
             sessionPreferences.edit().putBoolean(LOCAL_SESSION_KEY, false).apply()
@@ -119,7 +135,7 @@ class AuthRepository @Inject constructor(
     suspend fun signOut() {
         sessionPreferences.edit().putBoolean(LOCAL_SESSION_KEY, false).apply()
         try {
-            firebaseAuth.signOut()
+            firebaseAuth?.signOut()
             googleSignInClient?.signOut()
             _authState.value = AuthState.Unauthenticated
             Log.i(TAG, "Sign-out successful")

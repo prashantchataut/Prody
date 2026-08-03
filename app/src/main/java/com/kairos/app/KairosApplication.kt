@@ -20,21 +20,26 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import javax.inject.Provider
 
 @HiltAndroidApp
 class KairosApplication : Application(), Configuration.Provider {
 
-        @Inject
+    @Inject
     lateinit var workerFactory: HiltWorkerFactory
 
+    /**
+     * Provider keeps Room/SQLCipher and EncryptedSharedPreferences off the
+     * Application.super.onCreate() critical path. Resolve only after launch.
+     */
     @Inject
-    lateinit var gamificationService: GamificationService
+    lateinit var gamificationServiceProvider: Provider<GamificationService>
 
     @Inject
-    lateinit var witnessModeManager: WitnessModeManager
+    lateinit var witnessModeManagerProvider: Provider<WitnessModeManager>
 
     @Inject
-    lateinit var secureApiKeyManager: SecureApiKeyManager
+    lateinit var secureApiKeyManagerProvider: Provider<SecureApiKeyManager>
 
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
@@ -186,7 +191,8 @@ class KairosApplication : Application(), Configuration.Provider {
         // Initialize gamification data (user profile, achievements) asynchronously
         applicationScope.launch {
             try {
-                if (::gamificationService.isInitialized) {
+                if (::gamificationServiceProvider.isInitialized) {
+                    val gamificationService = gamificationServiceProvider.get()
                     gamificationService.initializeUserData()
                     gamificationService.checkAndResetDailyStats()
                     Log.d(TAG, "Gamification data initialized")
@@ -199,9 +205,9 @@ class KairosApplication : Application(), Configuration.Provider {
         // Migrate API keys from BuildConfig to SecureApiKeyManager (one-time migration)
         applicationScope.launch {
             try {
-                if (::secureApiKeyManager.isInitialized) {
+                if (::secureApiKeyManagerProvider.isInitialized) {
                     @Suppress("DEPRECATION")
-                    secureApiKeyManager.initializeApiKeys(
+                    secureApiKeyManagerProvider.get().initializeApiKeys(
                         geminiKey = BuildConfig.AI_API_KEY,
                         openrouterKey = BuildConfig.OPENROUTER_API_KEY,
                         therapistKey = BuildConfig.THERAPIST_API_KEY,
@@ -209,7 +215,7 @@ class KairosApplication : Application(), Configuration.Provider {
                     )
                     Log.d(TAG, "API keys migrated to secure storage")
                 } else {
-                    Log.w(TAG, "SecureApiKeyManager not initialized, skipping API key migration")
+                    Log.w(TAG, "SecureApiKeyManager provider not ready, skipping API key migration")
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to migrate API keys to secure storage", e)
@@ -219,8 +225,8 @@ class KairosApplication : Application(), Configuration.Provider {
         // Check for Haven Witness Mode follow-ups (THE VAULT callback)
         applicationScope.launch {
             try {
-                if (::witnessModeManager.isInitialized) {
-                    witnessModeManager.checkForPendingFollowUps()
+                if (::witnessModeManagerProvider.isInitialized) {
+                    witnessModeManagerProvider.get().checkForPendingFollowUps()
                     Log.d(TAG, "Witness Mode check completed")
                 }
             } catch (e: Exception) {

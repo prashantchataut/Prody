@@ -7,11 +7,11 @@ import androidx.room.Room
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import com.kairos.app.data.security.SecureDatabaseManager
-import javax.inject.Named
 
 object DatabaseFactory {
     private const val TAG = "KairosDatabase"
     private const val Kairos_ENCRYPTED_SHARED_PREFS = "Kairos_encrypted_shared_prefs"
+    private const val Kairos_ENCRYPTED_FALLBACK_PREFS = "Kairos_encrypted_shared_prefs_fallback"
 
     private val DESTRUCTIVE_MIGRATION_FLOOR_VERSIONS = intArrayOf(1, 2, 3)
 
@@ -21,7 +21,12 @@ object DatabaseFactory {
         instanceProvider: () -> KairosDatabase?
     ): KairosDatabase {
         // SQLCipher native libs must be loaded before SupportFactory opens the DB.
-        net.sqlcipher.database.SQLiteDatabase.loadLibs(context.applicationContext)
+        try {
+            net.sqlcipher.database.SQLiteDatabase.loadLibs(context.applicationContext)
+        } catch (e: UnsatisfiedLinkError) {
+            Log.e(TAG, "SQLCipher native libraries failed to load", e)
+            throw e
+        }
 
         val encryptedPrefs = createOrRecoverEncryptedPrefs(context)
         val secureDbManager = SecureDatabaseManager(context, encryptedPrefs)
@@ -45,17 +50,7 @@ object DatabaseFactory {
 
     private fun createOrRecoverEncryptedPrefs(context: Context): SharedPreferences {
         try {
-            val masterKey = MasterKey.Builder(context)
-                .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-                .build()
-
-            return EncryptedSharedPreferences.create(
-                context,
-                Kairos_ENCRYPTED_SHARED_PREFS,
-                masterKey,
-                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-            )
+            return buildEncryptedPrefs(context)
         } catch (e: Exception) {
             Log.w(TAG, "EncryptedSharedPreferences init failed, attempting recovery", e)
             return recoverEncryptedPrefs(context)
@@ -63,27 +58,42 @@ object DatabaseFactory {
     }
 
     private fun recoverEncryptedPrefs(context: Context): SharedPreferences {
+        // Old passphrase is gone; remove the encrypted DB so a new key can open a fresh file.
+        deleteDatabaseFiles(context)
         try {
             context.deleteSharedPreferences(Kairos_ENCRYPTED_SHARED_PREFS)
             Log.i(TAG, "Deleted corrupted encrypted prefs, recreating with fresh keys")
-
-            val masterKey = MasterKey.Builder(context)
-                .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-                .build()
-
-            return EncryptedSharedPreferences.create(
-                context,
-                Kairos_ENCRYPTED_SHARED_PREFS,
-                masterKey,
-                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-            )
+            return buildEncryptedPrefs(context)
         } catch (e: Exception) {
-            Log.e(TAG, "CRITICAL: EncryptedSharedPreferences recovery failed. Database encryption will use fallback.", e)
-            throw IllegalStateException(
-                "Database encryption initialization failed. " +
-                "Clear app data or reinstall. Original error: ${e.message}", e
+            Log.e(
+                TAG,
+                "EncryptedSharedPreferences recovery failed — using private fallback prefs for passphrase storage",
+                e
             )
+            return context.getSharedPreferences(Kairos_ENCRYPTED_FALLBACK_PREFS, Context.MODE_PRIVATE)
+        }
+    }
+
+    private fun buildEncryptedPrefs(context: Context): SharedPreferences {
+        val masterKey = MasterKey.Builder(context)
+            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+            .build()
+
+        return EncryptedSharedPreferences.create(
+            context,
+            Kairos_ENCRYPTED_SHARED_PREFS,
+            masterKey,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
+    }
+
+    private fun deleteDatabaseFiles(context: Context) {
+        try {
+            val deleted = context.deleteDatabase(KairosDatabase.DATABASE_NAME)
+            Log.i(TAG, "Deleted database files during encryption recovery: deleted=$deleted")
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to delete database files during encryption recovery", e)
         }
     }
 }

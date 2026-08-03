@@ -281,16 +281,29 @@ object AppModule {
     // FIREBASE AUTH PROVIDERS
     // ============================================================================
 
+    /**
+     * Returns null when Firebase is unavailable so local-first launch can continue.
+     * Callers must treat a null auth client as "signed out / local session only".
+     */
     @Provides
     @Singleton
-    fun provideFirebaseAuth(): FirebaseAuth {
+    fun provideFirebaseAuth(@ApplicationContext context: Context): FirebaseAuth? {
         return try {
+            if (com.google.firebase.FirebaseApp.getApps(context).isEmpty()) {
+                com.google.firebase.FirebaseApp.initializeApp(context)
+                    ?: run {
+                        android.util.Log.e(TAG, "FirebaseApp.initializeApp returned null")
+                        return null
+                    }
+            }
             FirebaseAuth.getInstance()
         } catch (e: Exception) {
-            android.util.Log.e("AppModule", "FirebaseAuth initialization failed", e)
-            throw IllegalStateException(
-                "Firebase Auth unavailable. Ensure google-services.json is configured. Error: ${e.message}", e
+            android.util.Log.e(
+                TAG,
+                "Firebase Auth unavailable — continuing with local-only session support",
+                e
             )
+            null
         }
     }
 }

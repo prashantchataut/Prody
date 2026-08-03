@@ -60,13 +60,9 @@ class SecureDatabaseLifecycleCallback(
     }
 
     override fun onDestructiveMigration(db: SupportSQLiteDatabase) {
+        // Keep the existing SQLCipher passphrase. Clearing encryption material here
+        // leaves an encrypted DB that cannot be opened on the next cold start.
         super.onDestructiveMigration(db)
-        scope.launch {
-            try {
-                secureDbManager.clearDatabaseEncryption()
-            } catch (e: Exception) {
-                Log.e("KairosDatabase", "Failed to clear database encryption after migration", e)
-            }
-        }
+        Log.w("KairosDatabase", "Destructive migration completed; encryption passphrase retained")
     }
 }
