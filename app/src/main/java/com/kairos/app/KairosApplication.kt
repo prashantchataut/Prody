@@ -8,6 +8,7 @@ import android.os.Build
 import android.util.Log
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
+import com.kairos.app.data.local.database.CatalogExpansionManager
 import com.kairos.app.data.security.SecureApiKeyManager
 import com.kairos.app.debug.CrashHandler
 import com.kairos.app.domain.gamification.GamificationService
@@ -40,6 +41,9 @@ class KairosApplication : Application(), Configuration.Provider {
 
     @Inject
     lateinit var secureApiKeyManagerProvider: Provider<SecureApiKeyManager>
+
+    @Inject
+    lateinit var catalogExpansionManagerProvider: Provider<CatalogExpansionManager>
 
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
@@ -199,6 +203,22 @@ class KairosApplication : Application(), Configuration.Provider {
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to initialize gamification data", e)
+            }
+        }
+
+        // Expand the local content catalog with newly curated words and quotes.
+        // Runs off the critical path and only inserts rows that are genuinely
+        // missing, so it is safe on both fresh and upgraded installs.
+        applicationScope.launch {
+            try {
+                if (::catalogExpansionManagerProvider.isInitialized) {
+                    catalogExpansionManagerProvider.get().expandIfNeeded()
+                    Log.d(TAG, "Catalog expansion completed")
+                } else {
+                    Log.w(TAG, "CatalogExpansionManager provider not ready, skipping expansion")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to expand content catalog", e)
             }
         }
 

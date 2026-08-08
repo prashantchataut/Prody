@@ -20,10 +20,11 @@ Open the app, understand what matters today, take one meaningful action, and lea
 
 ## Information architecture
 - Today: the daily word, thought, and next action.
-- Learn: vocabulary catalog, practice, and review.
+- Learn: vocabulary catalog, practice session (flashcards → quiz → spaced review), and review queue.
 - Reflect: journal entries and a quick new reflection.
 - Library: saved and discoverable quotes, proverbs, idioms, and phrases.
 - Profile and Settings: secondary destinations, never primary tabs.
+- Nothing else competes for attention: experimental routes (Haven, Missions, Challenges, Collaborative, Learning Paths, Deep Dive, Weekly Digest, Future Messages, Meditation, Micro Journal, Daily Ritual, Locker, Wrapped) are not part of the navigable product.
 
 ## Strategic principles
 - One obvious action per screen.

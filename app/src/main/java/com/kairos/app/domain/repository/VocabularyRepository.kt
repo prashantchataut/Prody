@@ -1,6 +1,7 @@
 package com.kairos.app.domain.repository
 
 import com.kairos.app.data.local.entity.VocabularyEntity
+import com.kairos.app.data.local.entity.VocabularyLearningEntity
 import com.kairos.app.domain.common.Result
 import kotlinx.coroutines.flow.Flow
 
@@ -151,4 +152,20 @@ interface VocabularyRepository {
      * Used to prevent repetition in AI-generated vocabulary.
      */
     suspend fun getRecentlyShownWords(limit: Int = 30): List<String>
+
+    /**
+     * Observe all spaced-repetition learning entries (any user scope) so the
+     * practice queue can be composed from due reviews and fresh words.
+     */
+    fun observeAllLearning(): Flow<List<VocabularyLearningEntity>>
+
+    /**
+     * Observe the number of words currently due for review.
+     */
+    fun observeDueReviewCount(): Flow<Int>
+
+    /**
+     * Sync count of words due for review right now.
+     */
+    suspend fun getDueReviewCountSync(): Int
 }

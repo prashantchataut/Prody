@@ -69,7 +69,7 @@ fun FocusedReflectScreen(
     Column(modifier = Modifier.fillMaxSize()) {
         KairosScreenHeader(
             title = "Reflect",
-            eyebrow = "JOURNAL",
+            eyebrow = "Journal",
             subtitle = journalSummary(state),
             actions = {
                 KairosIconButton(

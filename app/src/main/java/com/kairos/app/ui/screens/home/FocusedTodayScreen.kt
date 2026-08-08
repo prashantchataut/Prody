@@ -209,7 +209,7 @@ private fun WordMoment(
             verticalArrangement = Arrangement.SpaceBetween
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(18.dp)) {
-                MomentLabel(index = "01", label = "WORD")
+                MomentLabel(index = "01", label = "Word")
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Text(
                         text = state.wordOfTheDay,
@@ -319,7 +319,7 @@ private fun ThoughtMoment(
             verticalArrangement = Arrangement.SpaceBetween
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(22.dp)) {
-                MomentLabel(index = "02", label = "THOUGHT", accent = KairosClay)
+                MomentLabel(index = "02", label = "Thought", accent = KairosClay)
                 Text(
                     text = "“${state.dailyQuote}”",
                     style = MaterialTheme.typography.headlineLarge.copy(fontFamily = SerifFamily),

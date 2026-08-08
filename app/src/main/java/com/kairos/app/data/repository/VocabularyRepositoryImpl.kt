@@ -294,6 +294,18 @@ class VocabularyRepositoryImpl @Inject constructor(
         }
     }
 
+    override fun observeAllLearning(): Flow<List<VocabularyLearningEntity>> {
+        return vocabularyLearningDao.getAllLearningEntries()
+    }
+
+    override fun observeDueReviewCount(): Flow<Int> {
+        return vocabularyLearningDao.getDueReviewCount()
+    }
+
+    override suspend fun getDueReviewCountSync(): Int {
+        return vocabularyLearningDao.getDueReviewCountSync()
+    }
+
     /**
      * Parse AI-generated vocabulary JSON response into a VocabularyEntity.
      * 

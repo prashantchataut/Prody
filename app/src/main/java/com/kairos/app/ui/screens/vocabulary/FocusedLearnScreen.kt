@@ -51,9 +51,12 @@ import com.kairos.app.ui.animation.KairosEasing
 import com.kairos.app.ui.animation.KairosReveal
 import com.kairos.app.ui.animation.rememberKairosReducedMotion
 import com.kairos.app.ui.components.kairos.KairosEmptyState
+import com.kairos.app.ui.components.kairos.KairosGlassSurface
 import com.kairos.app.ui.components.kairos.KairosIconButton
+import com.kairos.app.ui.components.kairos.KairosPrimaryButton
 import com.kairos.app.ui.components.kairos.KairosReadingSurface
 import com.kairos.app.ui.components.kairos.KairosScreenHeader
+import com.kairos.app.ui.components.kairos.KairosSecondaryButton
 import com.kairos.app.ui.components.kairos.KairosSegmentedControl
 import com.kairos.app.ui.components.kairos.KairosSkeletonList
 import com.kairos.app.ui.icons.KairosIcons
@@ -66,6 +69,7 @@ import com.kairos.app.ui.theme.KairosSpacing
 @Composable
 fun FocusedLearnScreen(
     onNavigateToDetail: (Long) -> Unit,
+    onNavigateToSession: (SessionMode) -> Unit,
     viewModel: VocabularyListViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -76,7 +80,7 @@ fun FocusedLearnScreen(
     Column(modifier = Modifier.fillMaxSize()) {
         KairosScreenHeader(
             title = "Learn",
-            eyebrow = "VOCABULARY",
+            eyebrow = "Vocabulary",
             subtitle = learningSummary(state),
             actions = {
                 KairosIconButton(
@@ -105,6 +109,14 @@ fun FocusedLearnScreen(
                 .padding(horizontal = KairosSpacing.screen),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
+            if (!state.isLoading) {
+                SessionLauncher(
+                    dueReviewCount = state.dueReviewCount,
+                    totalCount = state.totalCount,
+                    onStartReview = { onNavigateToSession(SessionMode.REVIEW_DUE) },
+                    onStartNewWords = { onNavigateToSession(SessionMode.NEW_WORDS) }
+                )
+            }
             if (!state.isLoading && state.totalCount > 0) {
                 KairosReveal(visible = true) {
                     LearningOverview(state = state)
@@ -191,6 +203,75 @@ fun FocusedLearnScreen(
                         }
                     }
                 }
+            }
+        }
+    }
+}
+
+/**
+ * Liquid-glass launcher for the hybrid practice session. Shows the spaced-repetition
+ * review queue when words are due, plus a fresh-words option so the stream never runs dry.
+ */
+@Composable
+private fun SessionLauncher(
+    dueReviewCount: Int,
+    totalCount: Int,
+    onStartReview: () -> Unit,
+    onStartNewWords: () -> Unit
+) {
+    KairosGlassSurface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(28.dp),
+        contentPadding = PaddingValues(18.dp)
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text(
+                        text = "Practice session",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        text = "Recall cards, then match meanings",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Surface(
+                    shape = RoundedCornerShape(50),
+                    color = KairosSeaGlass.copy(alpha = 0.14f)
+                ) {
+                    Text(
+                        text = if (dueReviewCount > 0) "$dueReviewCount due" else "All reviewed",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = KairosSeaGlass,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                    )
+                }
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                KairosPrimaryButton(
+                    text = if (dueReviewCount > 0) "Review $dueReviewCount words" else "Review",
+                    onClick = onStartReview,
+                    modifier = Modifier.weight(1f),
+                    icon = KairosIcons.Outlined.Refresh
+                )
+                KairosSecondaryButton(
+                    text = "New words",
+                    onClick = onStartNewWords,
+                    modifier = Modifier.weight(1f),
+                    icon = if (totalCount > 0) KairosIcons.Outlined.School else null
+                )
             }
         }
     }

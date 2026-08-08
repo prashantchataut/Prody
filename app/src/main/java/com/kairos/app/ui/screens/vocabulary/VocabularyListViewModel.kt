@@ -27,6 +27,7 @@ data class VocabularyListUiState(
     val words: List<VocabularyEntity> = emptyList(),
     val learnedCount: Int = 0,
     val totalCount: Int = 0,
+    val dueReviewCount: Int = 0,
     val showFavoritesOnly: Boolean = false,
     val currentFilter: String = VocabularyFilter.ALL.key,
     val query: String = "",
@@ -52,11 +53,15 @@ class VocabularyListViewModel @Inject constructor(
     private val allWords = reloadSignal
         .flatMapLatest { vocabularyRepository.getAllWords() }
 
+    private val dueReviewCount = reloadSignal
+        .flatMapLatest { vocabularyRepository.observeDueReviewCount() }
+
     val uiState: StateFlow<VocabularyListUiState> = combine(
         allWords,
+        dueReviewCount,
         criteria,
         transientError
-    ) { words, browse, error ->
+    ) { words, dueCount, browse, error ->
         val filtered = filterVocabulary(
             words = words,
             favoritesOnly = browse.favoritesOnly,
@@ -68,6 +73,7 @@ class VocabularyListViewModel @Inject constructor(
             words = filtered,
             learnedCount = words.count { it.isLearned },
             totalCount = words.size,
+            dueReviewCount = dueCount,
             showFavoritesOnly = browse.favoritesOnly,
             currentFilter = browse.filter.key,
             query = browse.query,

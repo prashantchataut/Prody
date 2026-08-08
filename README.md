@@ -15,8 +15,11 @@ Kairos is a local-first Android learning and reflection app built with Kotlin, J
 
 ### Learn
 - Searchable vocabulary catalog with new, learned, and favorite states.
-- Spaced-repetition foundations and contextual word-use tracking.
+- Hybrid practice sessions: flashcard recall with self-grading (Again/Hard/Good/Easy), a definition-matching quiz for weak cards, and a session summary.
+- Spaced-repetition foundations (SM-2 + Leitner boxes) and contextual word-use tracking.
+- A personalized study queue: due reviews first, then fresh words matched to the user's profile, with an explainable reason on every card.
 - Deterministic browse policies with unit coverage.
+- Growing offline catalog (curated roots plus genuine derived word families) with optional AI-generated words when a development key is configured; expansion is idempotent for existing installs.
 
 ### Reflect
 - Fast journal creation and a readable chronological history.
@@ -152,7 +155,9 @@ Visible branding and UI implementation names may migrate independently.
 
 ## Current migration status
 
-The four primary destinations, local entry flow, onboarding, notification consent, recommendation feedback, release AI boundary, launcher identity, and adaptive navigation use the Kairos system. Some secondary legacy screens still use the earlier visual language and remain intentionally outside primary navigation.
+The four primary destinations, local entry flow, onboarding, notification consent, recommendation feedback, release AI boundary, launcher identity, and adaptive navigation use the Kairos system.
+
+Secondary experiment routes (Haven, Missions, Challenges, Collaborative messaging, Learning Paths, Deep Dive, Weekly Digest, Future Messages, Meditation, Micro Journal, Daily Ritual, Locker, Wrapped, and the legacy Home dashboard's Explore section) have been removed from the navigation graph so the app presents one honest product: Today, Learn, Reflect, Library, and Profile/Settings. Their source trees remain for reference until their data can be retired safely; they are unreachable from the UI.
 
 ## Verification
 

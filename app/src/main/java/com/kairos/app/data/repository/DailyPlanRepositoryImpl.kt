@@ -18,6 +18,7 @@ import com.kairos.app.domain.recommendation.CandidateHistory
 import com.kairos.app.domain.recommendation.ContentInteractionType
 import com.kairos.app.domain.recommendation.DailyContentType
 import com.kairos.app.domain.recommendation.ExplainableRecommendationRanker
+import com.kairos.app.domain.recommendation.InteractionSignal
 import com.kairos.app.domain.recommendation.RecommendationCandidate
 import com.kairos.app.domain.recommendation.RecommendationContext
 import com.kairos.app.domain.repository.DailyPlanRepository
@@ -156,6 +157,25 @@ class DailyPlanRepositoryImpl @Inject constructor(
                 timestamp = now
             )
         }
+    }
+
+    override suspend fun recentInteractionSignals(
+        userId: String,
+        sinceMillis: Long
+    ): List<InteractionSignal> {
+        return dailyContentDao.getRecentInteractions(userId, sinceMillis)
+            .mapNotNull { it.toInteractionSignalOrNull() }
+    }
+
+    private fun ContentInteractionEntity.toInteractionSignalOrNull(): InteractionSignal? {
+        val interaction = runCatching { ContentInteractionType.valueOf(interactionType) }.getOrNull() ?: return null
+        return InteractionSignal(
+            interaction = interaction,
+            category = category.takeIf { it.isNotBlank() },
+            sourceKey = sourceKey.takeIf { it.isNotBlank() },
+            difficulty = difficulty,
+            createdAt = createdAt
+        )
     }
 
     private fun rankVocabulary(
