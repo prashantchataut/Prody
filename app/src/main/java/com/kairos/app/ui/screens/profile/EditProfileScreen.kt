@@ -74,33 +74,33 @@ import kotlinx.coroutines.delay
  * - Accessibility: 48dp minimum touch targets
  */
 
-// Design System Colors for Edit Profile
+// Design System Colors for Edit Profile — Paper & Ink neutrals
 private object EditProfileColors {
-    // Dark Mode
-    val BackgroundDark = Color(0xFF0D2826)
-    val CardBackgroundDark = Color(0xFF1A3331)
-    val CardBackgroundElevatedDark = Color(0xFF223D3A)
-    val AccentGreen = Color(0xFF36F97F)
-    val TextPrimaryDark = Color(0xFFFFFFFF)
-    val TextSecondaryDark = Color(0xFFB8C5C3)
-    val TextTertiaryDark = Color(0xFF6B7F7C)
-    val BorderDark = Color(0xFF2A4744)
-    val InputBackgroundDark = Color(0xFF1A3331)
+    // Dark Mode — night paper
+    val BackgroundDark = Color(0xFF171410)
+    val CardBackgroundDark = Color(0xFF1D1913)
+    val CardBackgroundElevatedDark = Color(0xFF2E281D)
+    val AccentGreen = Color(0xFFE5855F)      // Vermilion (night)
+    val TextPrimaryDark = Color(0xFFEDE7DA)
+    val TextSecondaryDark = Color(0xFFA79E8C)
+    val TextTertiaryDark = Color(0xFF7C7465)
+    val BorderDark = Color(0xFF3A342A)
+    val InputBackgroundDark = Color(0xFF1D1913)
 
-    // Light Mode
-    val BackgroundLight = Color(0xFFF5F8F7)
-    val CardBackgroundLight = Color(0xFFFFFFFF)
-    val CardBackgroundElevatedLight = Color(0xFFF0F5F4)
-    val AccentGreenLight = Color(0xFF2ECC71)
-    val TextPrimaryLight = Color(0xFF1A2B23)
-    val TextSecondaryLight = Color(0xFF5A6B63)
-    val TextTertiaryLight = Color(0xFF8A9B93)
-    val BorderLight = Color(0xFFE0E8E4)
-    val InputBackgroundLight = Color(0xFFF5F8F7)
+    // Light Mode — paper
+    val BackgroundLight = Color(0xFFF4F0E8)
+    val CardBackgroundLight = Color(0xFFFBF8F1)
+    val CardBackgroundElevatedLight = Color(0xFFE4DECD)
+    val AccentGreenLight = Color(0xFFB3401F) // Vermilion
+    val TextPrimaryLight = Color(0xFF221E17)
+    val TextSecondaryLight = Color(0xFF6E6759)
+    val TextTertiaryLight = Color(0xFF98907F)
+    val BorderLight = Color(0xFFD8D2C4)
+    val InputBackgroundLight = Color(0xFFFBF8F1)
 
     // Locked state
     val LockedOverlay = Color(0x80000000)
-    val LockedIcon = Color(0xFF6B7F7C)
+    val LockedIcon = Color(0xFF7C7465)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -377,7 +377,7 @@ private fun AvatarSection(
 
         // Section Label
         Text(
-            text = "CHOOSE AVATAR",
+            text = "Choose avatar",
             fontFamily = PoppinsFamily,
             fontWeight = FontWeight.Medium,
             fontSize = 12.sp,
@@ -490,7 +490,7 @@ private fun DisplayNameSection(
             .padding(horizontal = 24.dp, vertical = 16.dp)
     ) {
         Text(
-            text = "DISPLAY NAME",
+            text = "Display name",
             fontFamily = PoppinsFamily,
             fontWeight = FontWeight.Medium,
             fontSize = 12.sp,
@@ -690,7 +690,7 @@ private fun TitleSection(
             .padding(vertical = 16.dp)
     ) {
         Text(
-            text = "EQUIPPED TITLE",
+            text = "Equipped title",
             fontFamily = PoppinsFamily,
             fontWeight = FontWeight.Medium,
             fontSize = 12.sp,
@@ -753,7 +753,7 @@ private fun TitleOptionChip(
 
     Row(
         modifier = Modifier
-            .clip(RoundedCornerShape(20.dp))
+            .clip(RoundedCornerShape(16.dp))
             .background(backgroundColor)
             .clickable(enabled = !title.isLocked) { onClick() }
             .padding(horizontal = 16.dp, vertical = 10.dp),
@@ -863,7 +863,7 @@ private fun SaveProfileButton(
         modifier = modifier
             .fillMaxWidth()
             .height(55.dp)
-            .clip(RoundedCornerShape(28.dp))
+            .clip(RoundedCornerShape(16.dp))
             .background(
                 if (enabled) {
                     if (isDarkMode) EditProfileColors.AccentGreen

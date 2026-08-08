@@ -52,7 +52,7 @@ private val LightColorScheme = lightColorScheme(
     error = KairosError,
     onError = KairosOnError,
     errorContainer = KairosErrorContainer,
-    onErrorContainer = KairosError,
+    onErrorContainer = Color(0xFF7A1E18),
 
     outline = KairosOutlineLight,
     outlineVariant = KairosDividerLight,
@@ -86,7 +86,7 @@ private val DarkColorScheme = darkColorScheme(
     error = KairosError,
     onError = KairosOnError,
     errorContainer = KairosErrorContainerDark,
-    onErrorContainer = KairosError,
+    onErrorContainer = Color(0xFFF4DBD5),
 
     outline = KairosOutlineDark,
     outlineVariant = KairosDividerDark,

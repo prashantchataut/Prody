@@ -9,7 +9,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 /**
- * Focused design tokens for the Kairos product surface.
+ * Focused design tokens for the Kairos product surface (Paper & Ink).
  *
  * The legacy token catalog is intentionally left intact while screens migrate.
  * New product-facing screens depend on this small semantic set instead of the
@@ -27,25 +27,29 @@ data class KairosGlassColors(
     val success: Color
 )
 
+/**
+ * Flat paper tokens. The "glass" name is kept for compatibility; the material
+ * is now a solid paper panel with a 1px hairline — no translucency, no shadow.
+ */
 internal val LightKairosGlassColors = KairosGlassColors(
-    fill = Color(0xB8FCFBF8),
-    fillStrong = Color(0xE8FCFBF8),
-    border = Color(0x8FD6D8E2),
-    highlight = Color(0xD9FFFFFF),
-    shadow = Color(0x261B1E2A),
-    coolWash = Color(0x24495CC7),
-    warmWash = Color(0x1FC86F4E),
+    fill = KairosSurfaceLight,
+    fillStrong = KairosSurfaceContainerLight,
+    border = KairosOutlineLight,
+    highlight = Color.Transparent,
+    shadow = Color.Transparent,
+    coolWash = Color.Transparent,
+    warmWash = Color.Transparent,
     success = KairosVerdigris
 )
 
 internal val DarkKairosGlassColors = KairosGlassColors(
-    fill = Color(0xB51B1E26),
-    fillStrong = Color(0xE621252E),
-    border = Color(0x734C5361),
-    highlight = Color(0x4DFFFFFF),
-    shadow = Color(0x73000000),
-    coolWash = Color(0x2EAEB8FF),
-    warmWash = Color(0x24E39A7D),
+    fill = KairosSurfaceDark,
+    fillStrong = KairosSurfaceContainerDark,
+    border = KairosOutlineDark,
+    highlight = Color.Transparent,
+    shadow = Color.Transparent,
+    coolWash = Color.Transparent,
+    warmWash = Color.Transparent,
     success = KairosSeaGlass
 )
 
@@ -66,16 +70,16 @@ object KairosSpacing {
 }
 
 object KairosRadius {
-    val control: Dp = 16.dp
-    val controlLarge: Dp = 20.dp
-    val readingSurface: Dp = 28.dp
-    val floating: Dp = 30.dp
-    val navigation: Dp = floating
+    val control: Dp = 12.dp
+    val controlLarge: Dp = 16.dp
+    val readingSurface: Dp = 16.dp
+    val floating: Dp = 16.dp
+    val navigation: Dp = 16.dp
 }
 
 object KairosElevation {
-    val glass: Dp = 14.dp
-    val floating: Dp = 22.dp
+    val glass: Dp = 0.dp
+    val floating: Dp = 0.dp
 }
 
 object KairosMotion {

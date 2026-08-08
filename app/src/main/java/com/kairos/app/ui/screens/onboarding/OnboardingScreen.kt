@@ -65,8 +65,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalView
@@ -85,7 +83,6 @@ import com.kairos.app.ui.animation.KairosDurations
 import com.kairos.app.ui.animation.KairosEasing
 import com.kairos.app.ui.animation.rememberKairosReducedMotion
 import com.kairos.app.ui.components.kairos.KairosMark
-import com.kairos.app.ui.theme.KairosClay
 import com.kairos.app.ui.theme.KairosPeriwinkle
 import com.kairos.app.ui.theme.KairosSeaGlass
 import com.kairos.app.ui.theme.KairosTheme
@@ -118,10 +115,12 @@ private val wordInterestCategories = listOf(
     WisdomCategory("academic", "Academic")
 )
 
-private val OnboardingInk = Color(0xFF111216)
-private val OnboardingPaper = Color(0xFFF6F4EF)
-private val OnboardingMuted = Color(0xFFAAAAB2)
-private val OnboardingPanel = Color(0xC923242A)
+/** Night paper tokens for onboarding, matching the Paper & Ink dark scheme. */
+private val OnboardingInk = Color(0xFF171410)
+private val OnboardingPaper = Color(0xFFEDE7DA)
+private val OnboardingMuted = Color(0xFFA79E8C)
+private val OnboardingPanel = Color(0xFF2E281D)
+private val OnboardingPanelHairline = Color(0xFF3A342A)
 
 @Composable
 fun OnboardingScreen(
@@ -169,16 +168,8 @@ private fun OnboardingContent(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                Brush.linearGradient(
-                    colors = listOf(OnboardingInk, Color(0xFF17161C), Color(0xFF101318)),
-                    start = Offset.Zero,
-                    end = Offset(1200f, 2200f)
-                )
-            )
+            .background(OnboardingInk)
     ) {
-        OnboardingAtmosphere(Modifier.fillMaxSize())
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -368,7 +359,7 @@ private fun DailyMomentPage(modifier: Modifier = Modifier) {
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("TODAY'S WORD", style = MaterialTheme.typography.labelSmall, color = KairosPeriwinkle, fontWeight = FontWeight.Bold)
+                        Text("Today's word", style = MaterialTheme.typography.labelSmall, color = KairosPeriwinkle, fontWeight = FontWeight.Bold)
                         Text("2 min", style = MaterialTheme.typography.labelSmall, color = OnboardingMuted)
                     }
                     Text("lucid", style = MaterialTheme.typography.displaySmall, color = OnboardingPaper, fontWeight = FontWeight.Medium)
@@ -477,13 +468,13 @@ private fun PersonalizationPage(
                 }
             }
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                RecommendationPreview("Review due", "35%", KairosPeriwinkle, Modifier.weight(1f))
-                RecommendationPreview("Your interests", "20%", KairosClay, Modifier.weight(1f))
-                RecommendationPreview("Freshness", "15%", KairosSeaGlass, Modifier.weight(1f))
+            OnboardingGlass(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = "Daily picks are drawn from what is due for review, the interests you choose, and words you have not seen recently.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = OnboardingMuted,
+                    modifier = Modifier.padding(14.dp)
+                )
             }
         }
     }
@@ -619,7 +610,7 @@ private fun OnboardingActions(
                 .fillMaxWidth()
                 .widthIn(max = 680.dp)
                 .height(56.dp),
-            shape = RoundedCornerShape(18.dp),
+            shape = RoundedCornerShape(16.dp),
             color = OnboardingPaper,
             contentColor = OnboardingInk
         ) {
@@ -653,29 +644,13 @@ private fun OnboardingGlass(
     strong: Boolean = false,
     content: @Composable () -> Unit
 ) {
-    val shape = RoundedCornerShape(26.dp)
+    val shape = RoundedCornerShape(16.dp)
     Box(
         modifier = modifier
             .clip(shape)
-            .background(if (strong) Color(0xD92A2A31) else OnboardingPanel)
-            .border(
-                1.dp,
-                Brush.linearGradient(
-                    listOf(Color.White.copy(alpha = 0.22f), Color.White.copy(alpha = 0.06f))
-                ),
-                shape
-            )
+            .background(if (strong) OnboardingPaper.copy(alpha = 0.10f) else OnboardingPanel)
+            .border(1.dp, OnboardingPanelHairline, shape)
     ) {
-        Box(
-            Modifier
-                .fillMaxWidth()
-                .height(80.dp)
-                .background(
-                    Brush.verticalGradient(
-                        listOf(Color.White.copy(alpha = 0.08f), Color.Transparent)
-                    )
-                )
-        )
         content()
     }
 }
@@ -684,9 +659,9 @@ private fun OnboardingGlass(
 private fun FloatingShadowCard(modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(24.dp))
-            .background(Color(0xFF2B2931))
-            .border(1.dp, Color.White.copy(alpha = 0.08f), RoundedCornerShape(24.dp))
+            .clip(RoundedCornerShape(16.dp))
+            .background(OnboardingPanel)
+            .border(1.dp, OnboardingPanelHairline, RoundedCornerShape(16.dp))
     )
 }
 
@@ -699,8 +674,9 @@ private fun DarkSegmentedControl(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(17.dp))
-            .background(Color.Black.copy(alpha = 0.22f))
+            .clip(RoundedCornerShape(16.dp))
+            .background(OnboardingPanel)
+            .border(1.dp, OnboardingPanelHairline, RoundedCornerShape(16.dp))
             .padding(4.dp),
         horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
@@ -708,7 +684,7 @@ private fun DarkSegmentedControl(
             Surface(
                 onClick = { onSelected(index) },
                 modifier = Modifier.weight(1f).height(44.dp),
-                shape = RoundedCornerShape(14.dp),
+                shape = RoundedCornerShape(12.dp),
                 color = if (index == selectedIndex) OnboardingPaper else Color.Transparent,
                 contentColor = if (index == selectedIndex) OnboardingInk else OnboardingMuted
             ) {
@@ -724,10 +700,10 @@ private fun DarkSegmentedControl(
 private fun InterestChip(text: String, selected: Boolean, onClick: () -> Unit) {
     Surface(
         onClick = onClick,
-        shape = RoundedCornerShape(50),
+        shape = RoundedCornerShape(12.dp),
         color = if (selected) KairosPeriwinkle.copy(alpha = 0.20f) else Color.White.copy(alpha = 0.06f),
-        contentColor = if (selected) Color(0xFFE8EAFF) else OnboardingMuted,
-        border = BorderStroke(1.dp, if (selected) KairosPeriwinkle.copy(alpha = 0.68f) else Color.White.copy(alpha = 0.08f))
+        contentColor = if (selected) OnboardingPaper else OnboardingMuted,
+        border = BorderStroke(1.dp, if (selected) KairosPeriwinkle.copy(alpha = 0.68f) else OnboardingPanelHairline)
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
@@ -736,24 +712,6 @@ private fun InterestChip(text: String, selected: Boolean, onClick: () -> Unit) {
         ) {
             if (selected) Icon(Icons.Outlined.Check, contentDescription = null, modifier = Modifier.size(15.dp))
             Text(text, style = MaterialTheme.typography.labelMedium)
-        }
-    }
-}
-
-@Composable
-private fun RecommendationPreview(
-    title: String,
-    value: String,
-    accent: Color,
-    modifier: Modifier = Modifier
-) {
-    OnboardingGlass(modifier = modifier.height(92.dp)) {
-        Column(
-            modifier = Modifier.padding(12.dp),
-            verticalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(value, style = MaterialTheme.typography.titleLarge, color = accent, fontWeight = FontWeight.SemiBold)
-            Text(title, style = MaterialTheme.typography.labelSmall, color = OnboardingMuted, maxLines = 2, overflow = TextOverflow.Ellipsis)
         }
     }
 }
@@ -795,32 +753,6 @@ private fun TrustRow(
             Text(title, style = MaterialTheme.typography.titleSmall, color = OnboardingPaper, fontWeight = FontWeight.SemiBold)
             Text(body, style = MaterialTheme.typography.bodySmall, color = OnboardingMuted)
         }
-    }
-}
-
-@Composable
-private fun OnboardingAtmosphere(modifier: Modifier = Modifier) {
-    Box(modifier) {
-        Box(
-            Modifier
-                .size(320.dp)
-                .align(Alignment.TopEnd)
-                .graphicsLayer { translationX = 130f; translationY = -120f }
-                .background(
-                    Brush.radialGradient(listOf(KairosPeriwinkle.copy(alpha = 0.16f), Color.Transparent)),
-                    CircleShape
-                )
-        )
-        Box(
-            Modifier
-                .size(300.dp)
-                .align(Alignment.BottomStart)
-                .graphicsLayer { translationX = -130f; translationY = 110f }
-                .background(
-                    Brush.radialGradient(listOf(KairosClay.copy(alpha = 0.12f), Color.Transparent)),
-                    CircleShape
-                )
-        )
     }
 }
 

@@ -3,6 +3,7 @@ package com.kairos.app.ui.screens.quotes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -75,7 +76,6 @@ fun FocusedLibraryScreen(
     Column(modifier = Modifier.fillMaxSize()) {
         KairosScreenHeader(
             title = "Library",
-            eyebrow = "Words & ideas",
             subtitle = librarySummary(state),
             actions = {
                 KairosIconButton(
@@ -406,10 +406,11 @@ private fun LibrarySurface(
         modifier = Modifier
             .fillMaxWidth()
             .semantics { this.contentDescription = contentDescription },
-        shape = RoundedCornerShape(26.dp),
-        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f),
+        shape = RoundedCornerShape(KairosRadius.controlLarge),
+        color = MaterialTheme.colorScheme.surface,
         tonalElevation = 0.dp,
-        shadowElevation = 0.dp
+        shadowElevation = 0.dp,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Row(
             modifier = Modifier.padding(start = 20.dp, top = 20.dp, bottom = 20.dp, end = 8.dp),
