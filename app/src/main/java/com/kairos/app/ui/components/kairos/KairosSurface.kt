@@ -38,9 +38,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -56,44 +53,29 @@ import androidx.compose.ui.unit.dp
 import com.kairos.app.ui.animation.kairosScale
 import com.kairos.app.ui.animation.rememberKairosPressScale
 import com.kairos.app.ui.theme.KairosElevation
-import com.kairos.app.ui.theme.KairosMotion
 import com.kairos.app.ui.theme.KairosRadius
 import com.kairos.app.ui.theme.KairosSpacing
-import com.kairos.app.ui.theme.KairosTheme
 
 /**
  * Edge-to-edge ambient background for the focused product surface.
- * The low-chroma washes create depth without turning the whole application into glass.
+ * Flat paper ground — no washes, no gradients.
  */
 @Composable
 fun KairosAppBackground(
     modifier: Modifier = Modifier,
     content: @Composable BoxScope.() -> Unit
 ) {
-    val scheme = MaterialTheme.colorScheme
-    val glass = KairosTheme.glass
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(
-                Brush.linearGradient(
-                    colors = listOf(
-                        scheme.background,
-                        blendColors(scheme.background, glass.coolWash, 0.55f),
-                        scheme.background,
-                        blendColors(scheme.background, glass.warmWash, 0.42f)
-                    ),
-                    start = Offset.Zero,
-                    end = Offset(1200f, 2200f)
-                )
-            ),
+            .background(MaterialTheme.colorScheme.background),
         content = content
     )
 }
 
 /**
- * A restrained glass layer for navigation, toolbars, and compact action clusters.
- * Long-form content should remain on opaque reading surfaces.
+ * A flat paper panel: solid surface fill with a 1px hairline.
+ * The name is kept for compatibility; the material is no longer glass.
  */
 @Composable
 fun KairosGlassSurface(
@@ -105,7 +87,7 @@ fun KairosGlassSurface(
     contentPadding: PaddingValues = PaddingValues(0.dp),
     content: @Composable BoxScope.() -> Unit
 ) {
-    val glass = KairosTheme.glass
+    val scheme = MaterialTheme.colorScheme
     val interactionSource = remember { MutableInteractionSource() }
     val pressScale = rememberKairosPressScale(
         interactionSource = interactionSource,
@@ -125,41 +107,16 @@ fun KairosGlassSurface(
     Box(
         modifier = modifier
             .kairosScale(pressScale)
-            .shadow(
-                elevation = elevation,
-                shape = shape,
-                ambientColor = glass.shadow,
-                spotColor = glass.shadow
-            )
             .clip(shape)
-            .background(if (strong) glass.fillStrong else glass.fill)
+            .background(if (strong) scheme.surfaceContainer else scheme.surface)
             .border(
-                BorderStroke(
-                    width = 1.dp,
-                    brush = Brush.linearGradient(
-                        colors = listOf(glass.highlight, glass.border, glass.border),
-                        start = Offset.Zero,
-                        end = Offset(760f, 760f)
-                    )
-                ),
+                BorderStroke(1.dp, scheme.outlineVariant),
                 shape = shape
             )
             .then(clickableModifier)
-            .padding(contentPadding)
-    ) {
-        Box(
-            modifier = Modifier
-                .matchParentSize()
-                .background(
-                    Brush.linearGradient(
-                        colors = listOf(glass.highlight.copy(alpha = 0.16f), Color.Transparent),
-                        start = Offset.Zero,
-                        end = Offset(420f, 520f)
-                    )
-                )
-        )
-        content()
-    }
+            .padding(contentPadding),
+        content = content
+    )
 }
 
 @Composable
@@ -173,9 +130,8 @@ fun KairosIconButton(
     val scheme = MaterialTheme.colorScheme
     KairosGlassSurface(
         modifier = modifier.size(48.dp),
-        shape = RoundedCornerShape(18.dp),
+        shape = RoundedCornerShape(KairosRadius.control),
         strong = selected,
-        elevation = 4.dp,
         onClick = onClick
     ) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -201,18 +157,8 @@ fun KairosReadingSurface(
     Box(
         modifier = modifier
             .clip(shape)
-            .background(
-                Brush.linearGradient(
-                    colors = listOf(
-                        blendColors(scheme.surface, accent.copy(alpha = 0.10f), 0.55f),
-                        scheme.surface,
-                        scheme.surfaceContainerLow
-                    ),
-                    start = Offset.Zero,
-                    end = Offset(760f, 980f)
-                )
-            )
-            .border(1.dp, scheme.outlineVariant.copy(alpha = 0.72f), shape)
+            .background(scheme.surface)
+            .border(1.dp, scheme.outlineVariant, shape)
             .padding(contentPadding),
         content = content
     )
@@ -286,11 +232,11 @@ fun KairosSegmentedControl(
     onSelected: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val scheme = MaterialTheme.colorScheme
     KairosGlassSurface(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(KairosRadius.controlLarge),
         strong = true,
-        elevation = 4.dp,
         contentPadding = PaddingValues(4.dp)
     ) {
         Row(
@@ -308,9 +254,9 @@ fun KairosSegmentedControl(
                             this.selected = selected
                             stateDescription = if (selected) "Selected" else "Not selected"
                         },
-                    shape = RoundedCornerShape(15.dp),
-                    color = if (selected) MaterialTheme.colorScheme.surface else Color.Transparent,
-                    contentColor = if (selected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
+                    shape = RoundedCornerShape(KairosRadius.control),
+                    color = if (selected) scheme.primaryContainer else Color.Transparent,
+                    contentColor = if (selected) scheme.onPrimaryContainer else scheme.onSurfaceVariant,
                     onClick = { onSelected(index) }
                 ) {
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -345,8 +291,7 @@ fun KairosEmptyState(
     ) {
         KairosGlassSurface(
             modifier = Modifier.size(72.dp),
-            shape = RoundedCornerShape(25.dp),
-            elevation = 4.dp
+            shape = RoundedCornerShape(KairosRadius.controlLarge)
         ) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Icon(icon, contentDescription = null, modifier = Modifier.size(30.dp), tint = MaterialTheme.colorScheme.primary)
@@ -425,7 +370,6 @@ fun KairosActionRow(
         modifier = modifier.fillMaxWidth(),
         strong = true,
         shape = RoundedCornerShape(KairosRadius.controlLarge),
-        elevation = 6.dp,
         contentPadding = PaddingValues(6.dp)
     ) {
         Row(
@@ -435,14 +379,4 @@ fun KairosActionRow(
             content = content
         )
     }
-}
-
-private fun blendColors(base: Color, overlay: Color, amount: Float): Color {
-    val a = amount.coerceIn(0f, 1f)
-    return Color(
-        red = base.red * (1f - a) + overlay.red * a,
-        green = base.green * (1f - a) + overlay.green * a,
-        blue = base.blue * (1f - a) + overlay.blue * a,
-        alpha = 1f
-    )
 }

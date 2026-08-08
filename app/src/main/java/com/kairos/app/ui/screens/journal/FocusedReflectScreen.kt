@@ -3,6 +3,7 @@ package com.kairos.app.ui.screens.journal
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -69,7 +70,6 @@ fun FocusedReflectScreen(
     Column(modifier = Modifier.fillMaxSize()) {
         KairosScreenHeader(
             title = "Reflect",
-            eyebrow = "Journal",
             subtitle = journalSummary(state),
             actions = {
                 KairosIconButton(
@@ -275,10 +275,11 @@ private fun ReflectionRow(
             .semantics {
                 contentDescription = "$dateLabel. $title. ${displayWordCount} words${if (entry.isBookmarked) ". Bookmarked" else ""}"
             },
-        shape = RoundedCornerShape(24.dp),
-        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.78f),
+        shape = RoundedCornerShape(KairosRadius.controlLarge),
+        color = MaterialTheme.colorScheme.surface,
         tonalElevation = 0.dp,
-        shadowElevation = 0.dp
+        shadowElevation = 0.dp,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Row(
             modifier = Modifier.padding(start = 18.dp, top = 16.dp, bottom = 16.dp, end = 8.dp),
@@ -342,7 +343,7 @@ private fun MoodMark(mood: String) {
     val initial = mood.trim().take(1).uppercase().ifBlank { "·" }
     Surface(
         modifier = Modifier.size(40.dp),
-        shape = RoundedCornerShape(14.dp),
+        shape = RoundedCornerShape(KairosRadius.control),
         color = KairosClay.copy(alpha = 0.13f)
     ) {
         Box(contentAlignment = Alignment.Center) {

@@ -200,14 +200,14 @@ private fun SelectedBannerPreview(banner: BannerOption?) {
             modifier = Modifier
                 .fillMaxWidth()
                 .height(164.dp)
-                .clip(RoundedCornerShape(30.dp))
+                .clip(RoundedCornerShape(16.dp))
         ) {
             if (canonical != null) {
                 BannerRenderer(
                     banner = canonical,
                     modifier = Modifier.fillMaxSize(),
                     showAnimation = true,
-                    cornerRadius = 30.dp
+                    cornerRadius = 16.dp
                 )
             } else {
                 Box(
@@ -398,7 +398,7 @@ private fun BannerOptionCard(
 
         if (banner.isAnimated && !banner.isLocked) {
             Text(
-                text = "MOTION",
+                text = "Motion",
                 modifier = Modifier
                     .align(Alignment.TopStart)
                     .padding(12.dp)

@@ -9,7 +9,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 /**
- * Focused design tokens for the Kairos product surface.
+ * Focused design tokens for the Kairos product surface (Paper & Ink).
  *
  * The legacy token catalog is intentionally left intact while screens migrate.
  * New product-facing screens depend on this small semantic set instead of the
@@ -27,29 +27,71 @@ data class KairosGlassColors(
     val success: Color
 )
 
+/**
+ * Flat paper tokens. The "glass" name is kept for compatibility; the material
+ * is now a solid paper panel with a 1px hairline — no translucency, no shadow.
+ */
 internal val LightKairosGlassColors = KairosGlassColors(
-    fill = Color(0xB8FCFBF8),
-    fillStrong = Color(0xE8FCFBF8),
-    border = Color(0x8FD6D8E2),
-    highlight = Color(0xD9FFFFFF),
-    shadow = Color(0x261B1E2A),
-    coolWash = Color(0x24495CC7),
-    warmWash = Color(0x1FC86F4E),
+    fill = KairosSurfaceLight,
+    fillStrong = KairosSurfaceContainerLight,
+    border = KairosOutlineLight,
+    highlight = Color.Transparent,
+    shadow = Color.Transparent,
+    coolWash = Color.Transparent,
+    warmWash = Color.Transparent,
     success = KairosVerdigris
 )
 
 internal val DarkKairosGlassColors = KairosGlassColors(
-    fill = Color(0xB51B1E26),
-    fillStrong = Color(0xE621252E),
-    border = Color(0x734C5361),
-    highlight = Color(0x4DFFFFFF),
-    shadow = Color(0x73000000),
-    coolWash = Color(0x2EAEB8FF),
-    warmWash = Color(0x24E39A7D),
+    fill = KairosSurfaceDark,
+    fillStrong = KairosSurfaceContainerDark,
+    border = KairosOutlineDark,
+    highlight = Color.Transparent,
+    shadow = Color.Transparent,
+    coolWash = Color.Transparent,
+    warmWash = Color.Transparent,
     success = KairosSeaGlass
 )
 
 internal val LocalKairosGlassColors = staticCompositionLocalOf { LightKairosGlassColors }
+
+/**
+ * Liquid glass tokens for floating navigation and elevated chrome.
+ *
+ * The material is a translucent tonal fill with a bright top edge, a hairline
+ * border, a soft tinted shadow, and a gentle top sheen. Real backdrop blur is
+ * platform-hacky on Android, so translucency carries the effect and degrades
+ * gracefully on every API level.
+ */
+@Immutable
+data class KairosLiquidGlassColors(
+    val fill: Color,
+    val fillDeep: Color,
+    val border: Color,
+    val highlight: Color,
+    val sheen: Color,
+    val shadow: Color
+)
+
+internal val LightKairosLiquidGlassColors = KairosLiquidGlassColors(
+    fill = KairosSurfaceLight.copy(alpha = 0.90f),
+    fillDeep = KairosSurfaceLight.copy(alpha = 0.72f),
+    border = KairosOutlineLight.copy(alpha = 0.90f),
+    highlight = Color(0x59FFFFFF),
+    sheen = Color(0x1FFFFFFF),
+    shadow = Color(0x4D3A2E1F)
+)
+
+internal val DarkKairosLiquidGlassColors = KairosLiquidGlassColors(
+    fill = KairosSurfaceDark.copy(alpha = 0.88f),
+    fillDeep = KairosSurfaceDark.copy(alpha = 0.72f),
+    border = KairosOutlineDark.copy(alpha = 0.55f),
+    highlight = Color(0x33FFFFFF),
+    sheen = Color(0x14FFFFFF),
+    shadow = Color(0x59000000)
+)
+
+internal val LocalKairosLiquidGlassColors = staticCompositionLocalOf { LightKairosLiquidGlassColors }
 
 object KairosSpacing {
     val xxs: Dp = 4.dp
@@ -66,16 +108,16 @@ object KairosSpacing {
 }
 
 object KairosRadius {
-    val control: Dp = 16.dp
-    val controlLarge: Dp = 20.dp
-    val readingSurface: Dp = 28.dp
-    val floating: Dp = 30.dp
-    val navigation: Dp = floating
+    val control: Dp = 12.dp
+    val controlLarge: Dp = 16.dp
+    val readingSurface: Dp = 16.dp
+    val floating: Dp = 16.dp
+    val navigation: Dp = 16.dp
 }
 
 object KairosElevation {
-    val glass: Dp = 14.dp
-    val floating: Dp = 22.dp
+    val glass: Dp = 0.dp
+    val floating: Dp = 0.dp
 }
 
 object KairosMotion {
@@ -90,4 +132,9 @@ object KairosTheme {
         @Composable
         @ReadOnlyComposable
         get() = LocalKairosGlassColors.current
+
+    val liquidGlass: KairosLiquidGlassColors
+        @Composable
+        @ReadOnlyComposable
+        get() = LocalKairosLiquidGlassColors.current
 }

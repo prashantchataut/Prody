@@ -57,7 +57,7 @@ import com.kairos.app.ui.theme.SerifFamily
  * The hybrid vocabulary learning session — the Kairos equivalent of a dedicated
  * vocabulary trainer. Users recall a word, reveal its meaning, self-grade with
  * the spaced-repetition scale (Again/Hard/Good/Easy), then re-encode weak cards
- * in a definition-matching quiz. Glass is used for the floating card and compact
+ * in a definition-matching quiz. Cards sit on flat paper reading surfaces; compact
  * controls; definitions sit on matte reading surfaces for legibility.
  */
 @Composable
@@ -70,7 +70,6 @@ fun VocabularySessionScreen(
     Column(modifier = Modifier.fillMaxSize()) {
         KairosScreenHeader(
             title = "Practice",
-            eyebrow = "Vocabulary",
             subtitle = when (state.phase) {
                 SessionPhase.FLASHCARD -> "Recall, then reveal"
                 SessionPhase.QUIZ -> "Match the meanings"
@@ -599,7 +598,7 @@ private fun QuizOptionRow(
 @Composable
 private fun PartOfSpeechChip(text: String) {
     Surface(
-        shape = RoundedCornerShape(50),
+        shape = RoundedCornerShape(KairosRadius.control),
         color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
     ) {
         Text(
@@ -619,8 +618,8 @@ private fun SummaryMetric(
 ) {
     Surface(
         modifier = modifier.height(72.dp),
-        shape = RoundedCornerShape(20.dp),
-        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.10f)
+        shape = RoundedCornerShape(KairosRadius.controlLarge),
+        color = MaterialTheme.colorScheme.primaryContainer
     ) {
         Column(
             modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),

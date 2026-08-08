@@ -6,7 +6,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -54,13 +53,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -86,7 +80,7 @@ import com.kairos.app.ui.components.kairos.KairosMark
 import com.kairos.app.ui.components.kairos.KairosReadingSurface
 import com.kairos.app.ui.theme.KairosClay
 import com.kairos.app.ui.theme.KairosPeriwinkle
-import com.kairos.app.ui.theme.KairosSeaGlass
+import com.kairos.app.ui.theme.KairosRadius
 import com.kairos.app.ui.theme.KairosSpacing
 import com.kairos.app.ui.theme.KairosTheme
 import com.kairos.app.ui.theme.ThemeMode
@@ -301,14 +295,9 @@ private fun ProfileIdentityPanel(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .shadow(28.dp, RoundedCornerShape(34.dp), ambientColor = Color.Black.copy(alpha = 0.42f))
-            .clip(RoundedCornerShape(34.dp))
-            .background(
-                Brush.verticalGradient(
-                    listOf(Color(0xC51C1D22), Color(0xEE101115))
-                )
-            )
-            .border(1.dp, Color.White.copy(alpha = 0.18f), RoundedCornerShape(34.dp))
+            .clip(RoundedCornerShape(16.dp))
+            .background(ProfilePanel)
+            .border(1.dp, ProfilePanelHairline, RoundedCornerShape(16.dp))
             .padding(horizontal = 24.dp, vertical = 26.dp)
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
@@ -427,10 +416,7 @@ private fun ProfileRhythmSection(
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(15.dp)) {
-        SectionHeading(
-            eyebrow = "YOUR RHYTHM",
-            title = "Quiet evidence of progress"
-        )
+        SectionHeading(title = "Quiet evidence of progress")
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(10.dp)
@@ -446,14 +432,14 @@ private fun ProfileRhythmSection(
                 icon = Icons.Outlined.History,
                 value = state.longestStreak.toString(),
                 label = "best rhythm",
-                accent = KairosClay,
+                accent = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.weight(1f)
             )
             RhythmTile(
                 icon = Icons.Outlined.CheckCircle,
                 value = state.daysOnKairos.toString(),
                 label = "days with Kairos",
-                accent = MaterialTheme.colorScheme.tertiary,
+                accent = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.weight(1f)
             )
         }
@@ -467,13 +453,9 @@ private fun WeeklyReflectionSection(
 ) {
     val pattern = state.weeklyPattern
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(15.dp)) {
-        SectionHeading(
-            eyebrow = "THIS WEEK",
-            title = "What your practice is showing"
-        )
+        SectionHeading(title = "What your practice is showing")
         KairosReadingSurface(
-            modifier = Modifier.fillMaxWidth(),
-            accent = KairosSeaGlass
+            modifier = Modifier.fillMaxWidth()
         ) {
             AnimatedContent(
                 targetState = pattern,
@@ -530,9 +512,10 @@ private fun AchievementEntry(
     Surface(
         onClick = onClick,
         modifier = modifier,
-        shape = RoundedCornerShape(26.dp),
-        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.78f),
-        tonalElevation = 0.dp
+        shape = RoundedCornerShape(KairosRadius.controlLarge),
+        color = MaterialTheme.colorScheme.surface,
+        tonalElevation = 0.dp,
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Row(
             modifier = Modifier.padding(18.dp),
@@ -541,9 +524,8 @@ private fun AchievementEntry(
         ) {
             KairosGlassSurface(
                 modifier = Modifier.size(52.dp),
-                shape = RoundedCornerShape(18.dp),
-                strong = true,
-                elevation = 2.dp
+                shape = RoundedCornerShape(KairosRadius.controlLarge),
+                strong = true
             ) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Icon(
@@ -658,7 +640,7 @@ private fun ProfileStat(
 @Composable
 private fun ProfileTag(label: String) {
     Surface(
-        shape = RoundedCornerShape(50),
+        shape = RoundedCornerShape(KairosRadius.control),
         color = Color.White.copy(alpha = 0.09f),
         border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(alpha = 0.10f))
     ) {
@@ -682,9 +664,9 @@ private fun RhythmTile(
 ) {
     Surface(
         modifier = modifier.heightIn(min = 144.dp),
-        shape = RoundedCornerShape(24.dp),
-        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.78f),
-        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.72f))
+        shape = RoundedCornerShape(KairosRadius.controlLarge),
+        color = MaterialTheme.colorScheme.surface,
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Column(
             modifier = Modifier.padding(15.dp),
@@ -709,78 +691,18 @@ private fun RhythmTile(
 }
 
 @Composable
-private fun SectionHeading(eyebrow: String, title: String) {
-    Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
-        Text(
-            text = eyebrow,
-            style = MaterialTheme.typography.labelSmall,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary
-        )
-        Text(
-            text = title,
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.semantics { heading() }
-        )
-    }
-}
-
-@Composable
-private fun ProfileBackdrop(modifier: Modifier = Modifier) {
-    Canvas(modifier = modifier) {
-        drawRect(
-            brush = Brush.linearGradient(
-                colors = listOf(ProfileInk, Color(0xFF1D1824), Color(0xFF0D1117)),
-                start = Offset.Zero,
-                end = Offset(size.width, size.height)
-            )
-        )
-        drawCircle(
-            brush = Brush.radialGradient(
-                colors = listOf(KairosPeriwinkle.copy(alpha = 0.27f), Color.Transparent),
-                center = Offset(size.width * 0.78f, size.height * 0.18f),
-                radius = size.minDimension * 0.68f
-            ),
-            radius = size.minDimension * 0.68f,
-            center = Offset(size.width * 0.78f, size.height * 0.18f)
-        )
-        drawCircle(
-            brush = Brush.radialGradient(
-                colors = listOf(KairosClay.copy(alpha = 0.19f), Color.Transparent),
-                center = Offset(size.width * 0.05f, size.height * 0.72f),
-                radius = size.minDimension * 0.72f
-            ),
-            radius = size.minDimension * 0.72f,
-            center = Offset(size.width * 0.05f, size.height * 0.72f)
-        )
-
-        repeat(5) { index ->
-            val y = size.height * (0.26f + index * 0.11f)
-            val path = Path().apply {
-                moveTo(-size.width * 0.10f, y)
-                cubicTo(
-                    size.width * 0.24f,
-                    y - size.height * 0.08f,
-                    size.width * 0.68f,
-                    y + size.height * 0.08f,
-                    size.width * 1.10f,
-                    y - size.height * 0.03f
-                )
-            }
-            drawPath(
-                path = path,
-                color = ProfilePaper.copy(alpha = 0.045f),
-                style = Stroke(width = 1.3.dp.toPx(), cap = StrokeCap.Round)
-            )
-        }
-    }
+private fun SectionHeading(title: String) {
+    Text(
+        text = title,
+        style = MaterialTheme.typography.headlineSmall,
+        fontWeight = FontWeight.SemiBold,
+        modifier = Modifier.semantics { heading() }
+    )
 }
 
 @Composable
 private fun ProfileLoading(onBack: () -> Unit) {
     Box(Modifier.fillMaxSize().background(ProfileInk)) {
-        ProfileBackdrop(Modifier.fillMaxSize())
         Box(
             modifier = Modifier
                 .align(Alignment.TopStart)
@@ -818,7 +740,7 @@ private fun ProfileError(
         Spacer(Modifier.height(18.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             KairosIconButton(Icons.AutoMirrored.Outlined.ArrowBack, "Back", onBack)
-            Surface(onClick = onRetry, shape = RoundedCornerShape(18.dp), color = MaterialTheme.colorScheme.primary) {
+            Surface(onClick = onRetry, shape = RoundedCornerShape(KairosRadius.control), color = MaterialTheme.colorScheme.primary) {
                 Text("Try again", modifier = Modifier.padding(horizontal = 18.dp, vertical = 14.dp), color = MaterialTheme.colorScheme.onPrimary, fontWeight = FontWeight.SemiBold)
             }
         }
@@ -841,8 +763,11 @@ private fun initialsFor(name: String): String = name
     .joinToString("") { it.first().uppercase() }
     .ifBlank { "K" }
 
-private val ProfileInk = Color(0xFF0E0F12)
-private val ProfilePaper = Color(0xFFF5F3EE)
+/** Night paper tokens for the profile hero, matching the Paper & Ink dark scheme. */
+private val ProfileInk = Color(0xFF171410)
+private val ProfilePaper = Color(0xFFEDE7DA)
+private val ProfilePanel = Color(0xFF2E281D)
+private val ProfilePanelHairline = Color(0xFF3A342A)
 
 @Preview(name = "Focused profile", showBackground = true, widthDp = 390, heightDp = 844)
 @Composable

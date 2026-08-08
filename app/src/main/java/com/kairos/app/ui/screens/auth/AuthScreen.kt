@@ -78,9 +78,8 @@ fun AuthScreen(
             ) {
                 KairosGlassSurface(
                     modifier = Modifier.size(76.dp),
-                    shape = RoundedCornerShape(26.dp),
-                    strong = true,
-                    elevation = 5.dp
+                    shape = RoundedCornerShape(KairosRadius.controlLarge),
+                    strong = true
                 ) {
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Icon(

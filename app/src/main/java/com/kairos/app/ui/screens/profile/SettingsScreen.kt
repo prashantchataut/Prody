@@ -66,7 +66,6 @@ import com.kairos.app.ui.theme.isDarkTheme
 import com.kairos.app.ui.theme.MoodCalm
 import com.kairos.app.ui.theme.MoodGrateful
 import com.kairos.app.ui.components.KairosCard
-import androidx.compose.ui.graphics.Brush
 import kotlinx.coroutines.delay
 import com.kairos.app.data.ai.AiConfigStatus
 
@@ -74,41 +73,41 @@ import com.kairos.app.data.ai.AiConfigStatus
 // COLOR DEFINITIONS - Exact colors from design specs
 // =============================================================================
 
-// Light Mode Colors
-private val LightBackground = Color(0xFFF9FAFB)
-private val LightCardBackground = Color(0xFFFFFFFF)
-private val LightSectionHeader = Color(0xFF6C757D)
-private val LightIconBackground = Color(0xFFE0E7E6)
-private val LightIconColor = Color(0xFF212529)
-private val LightPrimaryText = Color(0xFF212529)
-private val LightSecondaryText = Color(0xFFADB5BD)
-private val LightToggleActive = Color(0xFF36F97F)
-private val LightToggleInactive = Color(0xFFDEE2E6)
-private val LightDropdownBackground = Color(0xFFE0E7E6)
-private val LightOnlineGreen = Color(0xFF36F97F)
-private val LightFollowButtonBg = Color(0xFFE0E7E6)
+// Light Mode Colors — Paper & Ink neutrals
+private val LightBackground = Color(0xFFF4F0E8)          // Paper ground
+private val LightCardBackground = Color(0xFFFBF8F1)     // Paper surface
+private val LightSectionHeader = Color(0xFF6E6759)      // Soft ink
+private val LightIconBackground = Color(0xFFE4DECD)     // Paper container
+private val LightIconColor = Color(0xFF221E17)          // Ink
+private val LightPrimaryText = Color(0xFF221E17)        // Ink
+private val LightSecondaryText = Color(0xFF98907F)      // Faint ink
+private val LightToggleActive = Color(0xFFB3401F)       // Vermilion
+private val LightToggleInactive = Color(0xFFD8D2C4)     // Hairline
+private val LightDropdownBackground = Color(0xFFE4DECD) // Paper container
+private val LightOnlineGreen = Color(0xFF33543F)        // Deep forest
+private val LightFollowButtonBg = Color(0xFFE4DECD)
 private val LightFeedbackCardBg = Color(0xFFFFF8F0)
 private val LightFeedbackIconBg = Color(0xFFFFD8A3)
 private val LightFeedbackIconColor = Color(0xFFFA8800)
-private val LightKairosIdText = Color(0xFFDEE2E6)
+private val LightKairosIdText = Color(0xFFD8D2C4)
 
-// Dark Mode Colors
-private val DarkBackground = Color(0xFF0D2826)
-private val DarkCardBackground = Color(0xFF1A3331)
-private val DarkSectionHeader = Color(0xFFFFFFFF)
-private val DarkIconBackground = Color(0xFF2A4240)
-private val DarkIconColor = Color(0xFFFFFFFF)
-private val DarkPrimaryText = Color(0xFFFFFFFF)
-private val DarkSecondaryText = Color(0xFFD3D8D7)
-private val DarkToggleActive = Color(0xFF36F97F)
-private val DarkToggleInactive = Color(0xFF404B4A)
-private val DarkDropdownBackground = Color(0xFF2A4240)
-private val DarkOnlineGreen = Color(0xFF36F97F)
-private val DarkFollowButtonBg = Color(0xFF2A4240)
-private val DarkFeedbackCardBg = Color(0xFF3F2B1A)
+// Dark Mode Colors — Night paper
+private val DarkBackground = Color(0xFF171410)             // Night paper ground
+private val DarkCardBackground = Color(0xFF1D1913)        // Night paper surface
+private val DarkSectionHeader = Color(0xFFEDE7DA)         // Night ink
+private val DarkIconBackground = Color(0xFF2E281D)        // Night paper container
+private val DarkIconColor = Color(0xFFEDE7DA)
+private val DarkPrimaryText = Color(0xFFEDE7DA)
+private val DarkSecondaryText = Color(0xFFA79E8C)         // Night soft ink
+private val DarkToggleActive = Color(0xFFE5855F)          // Vermilion (night)
+private val DarkToggleInactive = Color(0xFF3A342A)        // Night hairline
+private val DarkDropdownBackground = Color(0xFF2E281D)
+private val DarkOnlineGreen = Color(0xFF8FA98F)           // Pale forest
+private val DarkFollowButtonBg = Color(0xFF2E281D)
+private val DarkFeedbackCardBg = Color(0xFF2E281D)
 private val DarkFeedbackIconBg = Color(0xFF5A3B27)
 private val DarkFeedbackIconColor = Color(0xFFFFD8A3)
-private val DarkKairosIdText = Color(0xFF404B4A)
+private val DarkKairosIdText = Color(0xFF3A342A)
 
 @Composable
 fun SettingsScreen(
@@ -192,7 +191,7 @@ fun SettingsScreen(
                 )
             ) {
                 SettingsSection(
-                    title = "APPEARANCE",
+                    title = "Appearance",
                     isDark = isDark
                 ) {
                     // Interests & setup row — tune what Kairos recommends
@@ -237,7 +236,7 @@ fun SettingsScreen(
                 )
             ) {
                 SettingsSection(
-                    title = "INTELLIGENCE",
+                    title = "Intelligence",
                     isDark = isDark
                 ) {
                     // Premium Intelligence Row
@@ -261,7 +260,7 @@ fun SettingsScreen(
                 )
             ) {
                 SettingsSection(
-                    title = "NOTIFICATIONS",
+                    title = "Notifications",
                     isDark = isDark
                 ) {
                     // Push Notifications
@@ -332,7 +331,7 @@ fun SettingsScreen(
                 )
             ) {
                 SettingsSection(
-                    title = "PREFERENCES",
+                    title = "Preferences",
                     isDark = isDark
                 ) {
                     // Haptics
@@ -1911,13 +1910,9 @@ private fun PrivacySummaryCard() {
             .padding(16.dp)
             .clip(RoundedCornerShape(12.dp))
             .background(
-                Brush.horizontalGradient(
-                    colors = listOf(
-                        MoodCalm.copy(alpha = 0.08f),
-                        MoodGrateful.copy(alpha = 0.08f)
-                    )
-                )
+                if (isDarkTheme()) Color(0xFF2E281D) else Color(0xFFFBF8F1)
             )
+            .border(1.dp, if (isDarkTheme()) Color(0xFF3A342A) else Color(0xFFD8D2C4), RoundedCornerShape(12.dp))
             .padding(16.dp)
     ) {
         Column {

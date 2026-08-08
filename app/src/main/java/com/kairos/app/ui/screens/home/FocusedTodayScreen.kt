@@ -5,6 +5,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.expandVertically
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.Arrangement
@@ -22,6 +23,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -36,7 +39,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontStyle
@@ -56,8 +58,8 @@ import com.kairos.app.ui.components.kairos.KairosScreenHeader
 import com.kairos.app.ui.components.kairos.KairosSecondaryButton
 import com.kairos.app.ui.components.kairos.KairosSkeletonList
 import com.kairos.app.ui.icons.KairosIcons
-import com.kairos.app.ui.theme.KairosClay
 import com.kairos.app.ui.theme.KairosMotion
+import com.kairos.app.ui.theme.KairosRadius
 import com.kairos.app.ui.theme.KairosSpacing
 import com.kairos.app.ui.theme.SerifFamily
 import java.time.LocalDate
@@ -201,21 +203,17 @@ private fun WordMoment(
     modifier: Modifier = Modifier
 ) {
     var tuneExpanded by rememberSaveable { mutableStateOf(false) }
-    KairosReadingSurface(
-        modifier = modifier.heightIn(min = 500.dp),
-        accent = MaterialTheme.colorScheme.primary
-    ) {
+    KairosReadingSurface(modifier = modifier.heightIn(min = 500.dp)) {
         Column(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(18.dp)) {
-                MomentLabel(index = "01", label = "Word")
+                FolioRule()
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Text(
                         text = state.wordOfTheDay,
-                        style = MaterialTheme.typography.displaySmall,
-                        fontWeight = FontWeight.SemiBold,
+                        style = MaterialTheme.typography.displayMedium.copy(fontFamily = SerifFamily),
                         color = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.semantics { heading() }
                     )
@@ -239,8 +237,9 @@ private fun WordMoment(
                 )
                 if (state.wordExampleSentence.isNotBlank()) {
                     Surface(
-                        color = MaterialTheme.colorScheme.surfaceContainerLow.copy(alpha = 0.86f),
-                        shape = MaterialTheme.shapes.large
+                        color = MaterialTheme.colorScheme.surfaceContainer,
+                        shape = RoundedCornerShape(KairosRadius.readingSurface),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
                     ) {
                         Text(
                             text = state.wordExampleSentence,
@@ -311,19 +310,13 @@ private fun ThoughtMoment(
     modifier: Modifier = Modifier
 ) {
     var tuneExpanded by rememberSaveable { mutableStateOf(false) }
-    KairosReadingSurface(
-        modifier = modifier.heightIn(min = 500.dp),
-        accent = KairosClay
-    ) {
+    KairosReadingSurface(modifier = modifier.heightIn(min = 500.dp)) {
         Column(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(22.dp)) {
-                MomentLabel(
-                    index = "02",
-                    label = "Thought",
-                    accent = KairosClay,
+                FolioRuleRow(
                     trailing = {
                         KairosIconButton(
                             icon = if (state.quoteSaved) KairosIcons.Favorite else KairosIcons.FavoriteBorder,
@@ -344,7 +337,7 @@ private fun ThoughtMoment(
                 if (state.dailyQuoteAuthor.isNotBlank()) {
                     Text(
                         text = state.dailyQuoteAuthor,
-                        style = MaterialTheme.typography.bodyLarge,
+                        style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
@@ -397,35 +390,36 @@ private fun ThoughtMoment(
     }
 }
 
+/**
+ * Hairline rule that opens each folio panel. No labels, no section numbers.
+ */
 @Composable
-private fun MomentLabel(
-    index: String,
-    label: String,
-    accent: Color = MaterialTheme.colorScheme.primary,
+private fun FolioRule() {
+    HorizontalDivider(
+        modifier = Modifier.fillMaxWidth(),
+        thickness = 1.dp,
+        color = MaterialTheme.colorScheme.outlineVariant
+    )
+}
+
+/**
+ * Folio rule carrying the save heart for the thought panel.
+ */
+@Composable
+private fun FolioRuleRow(
     trailing: @Composable (() -> Unit)? = null
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelMedium,
-                color = accent,
-                fontWeight = FontWeight.Bold
-            )
-            if (trailing != null) trailing()
-        }
-        Text(
-            text = index,
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+        HorizontalDivider(
+            modifier = Modifier.weight(1f),
+            thickness = 1.dp,
+            color = MaterialTheme.colorScheme.outlineVariant
         )
+        if (trailing != null) trailing()
     }
 }
 
