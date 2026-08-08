@@ -14,16 +14,20 @@ Open the app, understand what matters today, take one meaningful action, and lea
 
 ## Primary loop
 1. Read today's word and thought.
-2. Practice, save, or reflect.
-3. Give lightweight feedback so tomorrow improves.
+2. Practice, save/like, or reflect.
+3. Give lightweight feedback (save, more-like-this, too hard) so tomorrow improves.
 4. Return for spaced review and a weekly recap.
 
+Saving is the user's explicit taste signal: saved words and quotes train the
+recommendation engine to surface more from the same themes. Recall scheduling is
+handled separately by spaced repetition; "learned" is never claimed by a button.
+
 ## Information architecture
-- Today: the daily word, thought, and next action.
+- Today: the daily word, thought, and next action — with save hearts on both.
 - Learn: vocabulary catalog, practice session (flashcards → quiz → spaced review), and review queue.
 - Reflect: journal entries and a quick new reflection.
 - Library: saved and discoverable quotes, proverbs, idioms, and phrases.
-- Profile and Settings: secondary destinations, never primary tabs.
+- Profile and Settings: secondary destinations, never primary tabs. Settings hosts Interests & setup (word interests, quote themes, pace, session size).
 - Nothing else competes for attention: experimental routes (Haven, Missions, Challenges, Collaborative, Learning Paths, Deep Dive, Weekly Digest, Future Messages, Meditation, Micro Journal, Daily Ritual, Locker, Wrapped) are not part of the navigable product.
 
 ## Strategic principles

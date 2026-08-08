@@ -30,4 +30,10 @@ interface TodayProgressRepository {
         wordId: Long,
         completedAtMillis: Long
     ): Result<TodayWordCompletion>
+
+    /** Persist the user's explicit "I like this word" choice. */
+    suspend fun setWordSaved(userId: String, wordId: Long, saved: Boolean): Result<Unit>
+
+    /** Persist the user's explicit "I like this quote" choice. */
+    suspend fun setQuoteSaved(userId: String, quoteId: Long, saved: Boolean): Result<Unit>
 }

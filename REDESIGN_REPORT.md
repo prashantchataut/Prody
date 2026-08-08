@@ -79,7 +79,50 @@ which is a separate, riskier migration. That is tracked as next-step work.
 4. **Mastery → "learned" semantics** — decide whether a word becomes "learned" on first Good/Easy (current behavior in the session) or on SM-2 mastery; align Learn-tab filters.
 5. **Recommended daily session size** — currently fixed at 10; make it adaptive to the user's historical session length.
 
-## 7. Skills used (this task)
+## 7. Wave two — save/like model and interests setup (2026-08-08)
+
+Follow-up requested by the user: replace the "learned" mechanic with explicit
+saving/liking, recommend more of what the user likes, and give first-time users a
+proper interests setup.
+
+### Save/like is now the primary taste signal
+- **Every surface records SAVED/UNSAVED**: practice-session cards (new heart button),
+  Today's word and quote panels (save hearts, replacing "Mark learned"), the Learn
+  list rows, the word detail screen (replacing the Wisdom Quest gimmick), and the
+  Library quote hearts.
+- New `ContentInteractionType.UNSAVED` with a negative weight in the
+  personalization profile, so un-saving a word pulls recommendations away from
+  that category.
+- Grading a card only schedules the next review (SM-2); it no longer claims the
+  word is "learned". The Learn tab filters are now All / New (never studied) /
+  Saved (liked), and overview metrics count saves.
+- `TodayProgressRepository` gained `setWordSaved` / `setQuoteSaved` so Today's
+  hearts persist in the database.
+
+### Recommendations follow likes
+- The practice queue and the daily plan already score candidates with category
+  affinity; because saves now feed `PersonalizationProfile` from every surface,
+  liking a word or quote directly promotes more content from that theme.
+- The daily plan now ranks the word against **word interests** and the quote
+  against **quote interests** (separate preference sets), so a stoic-quote lover
+  isn't force-fed business words.
+
+### Interests setup
+- Onboarding step 2 now collects: vocabulary pace, cards-per-session (3/5/10),
+  **word interests** (8 categories), and **quote themes** (12 categories).
+- New `Settings → Interests & setup` screen re-opens the same choices any time
+  (`InterestsSetupScreen` + ViewModel, route `interests_setup`), so taste can
+  change — this is what makes recommendations honest over time.
+- New preferences: `preferred_word_categories` (falls back to the legacy wisdom
+  categories for existing installs) and `practice_session_size`.
+
+### Notes
+- The legacy `VocabularyListScreen` and the Wisdom Quest block on the word detail
+  screen were removed (dead UI after the purge).
+- `bash scripts/verify_kairos.sh` passes (503 Kotlin files). A real Gradle build
+  and on-device pass are still required before shipping.
+
+## 8. Skills used (this task)
 
 Installed from skills.sh / the open skills ecosystem into `.agents/skills/`:
 - **find-skills** (vercel-labs/skills) — discovery of the skills ecosystem

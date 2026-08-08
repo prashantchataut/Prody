@@ -128,7 +128,8 @@ fun VocabularySessionScreen(
                         SessionPhase.FLASHCARD -> FlashcardPhase(
                             state = state,
                             onReveal = viewModel::revealCurrent,
-                            onGrade = viewModel::gradeCurrent
+                            onGrade = viewModel::gradeCurrent,
+                            onToggleSave = viewModel::toggleSaveCurrent
                         )
                         SessionPhase.QUIZ -> QuizPhase(
                             state = state,
@@ -151,7 +152,8 @@ fun VocabularySessionScreen(
 private fun FlashcardPhase(
     state: VocabularySessionUiState,
     onReveal: () -> Unit,
-    onGrade: (SessionGrade) -> Unit
+    onGrade: (SessionGrade) -> Unit,
+    onToggleSave: () -> Unit = {}
 ) {
     val card = state.currentCard ?: return
     Column(
@@ -178,14 +180,28 @@ private fun FlashcardPhase(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Text(
-                    text = card.word.word,
-                    style = MaterialTheme.typography.headlineLarge,
-                    fontFamily = SerifFamily,
-                    fontWeight = FontWeight.SemiBold,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.semantics { heading() }
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = card.word.word,
+                        style = MaterialTheme.typography.headlineLarge,
+                        fontFamily = SerifFamily,
+                        fontWeight = FontWeight.SemiBold,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .weight(1f)
+                            .semantics { heading() }
+                    )
+                    KairosIconButton(
+                        icon = if (card.word.isFavorite) KairosIcons.Favorite else KairosIcons.FavoriteBorder,
+                        contentDescription = if (card.word.isFavorite) "Remove from saved words" else "Save this word",
+                        onClick = onToggleSave,
+                        selected = card.word.isFavorite
+                    )
+                }
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically

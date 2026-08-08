@@ -29,6 +29,7 @@ import com.kairos.app.ui.screens.profile.BannerSelectionScreen
 import com.kairos.app.ui.screens.profile.EditProfileScreen
 import com.kairos.app.ui.screens.profile.FocusedProfileScreen
 import com.kairos.app.ui.screens.profile.SettingsScreen
+import com.kairos.app.ui.screens.setup.InterestsSetupScreen
 import com.kairos.app.ui.screens.quotes.FocusedLibraryScreen
 import com.kairos.app.ui.screens.quotes.WisdomTab
 import com.kairos.app.ui.screens.vocabulary.VocabularyDetailScreen
@@ -112,6 +113,8 @@ sealed class Screen(val route: String) {
     }
 
     data object VocabularySession : Screen("vocabulary/session")
+
+    data object InterestsSetup : Screen("interests_setup")
 }
 
 // =============================================================================
@@ -354,7 +357,10 @@ fun KairosNavHost(
 
         composable(Screen.Settings.route) {
             SettingsScreen(
-                onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToInterests = {
+                    navController.navigate(Screen.InterestsSetup.route)
+                }
             )
         }
 
@@ -412,6 +418,12 @@ fun KairosNavHost(
 
         composable(Screen.VocabularySession.route) {
             VocabularySessionScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.InterestsSetup.route) {
+            InterestsSetupScreen(
                 onNavigateBack = { navController.popBackStack() }
             )
         }

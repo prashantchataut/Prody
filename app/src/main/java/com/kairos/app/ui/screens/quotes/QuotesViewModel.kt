@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kairos.app.data.ai.BuddhaAiRepository
 import com.kairos.app.data.ai.QuoteExplanationResult
+import com.kairos.app.data.auth.UserIdProvider
 import com.kairos.app.data.local.entity.IdiomEntity
 import com.kairos.app.data.local.entity.PhraseEntity
 import com.kairos.app.data.local.entity.ProverbEntity
@@ -11,6 +12,9 @@ import com.kairos.app.data.local.entity.QuoteEntity
 import com.kairos.app.data.onboarding.AiHint
 import com.kairos.app.data.onboarding.AiHintType
 import com.kairos.app.data.onboarding.AiOnboardingManager
+import com.kairos.app.domain.recommendation.ContentInteractionType
+import com.kairos.app.domain.recommendation.DailyContentType
+import com.kairos.app.domain.repository.DailyPlanRepository
 import com.kairos.app.domain.repository.WisdomLibraryRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -43,7 +47,9 @@ data class QuotesUiState(
 class QuotesViewModel @Inject constructor(
     private val wisdomLibraryRepository: WisdomLibraryRepository,
     private val buddhaAiRepository: BuddhaAiRepository,
-    private val aiOnboardingManager: AiOnboardingManager
+    private val aiOnboardingManager: AiOnboardingManager,
+    private val dailyPlanRepository: DailyPlanRepository,
+    private val userIdProvider: UserIdProvider
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(QuotesUiState())
@@ -106,8 +112,21 @@ class QuotesViewModel @Inject constructor(
 
     fun toggleQuoteFavorite(quote: QuoteEntity) {
         viewModelScope.launch {
-            wisdomLibraryRepository.setQuoteFavorite(quote, !quote.isFavorite)
+            val saving = !quote.isFavorite
+            wisdomLibraryRepository.setQuoteFavorite(quote, saving)
                 .onError { error -> _uiState.update { it.copy(error = error.userMessage) } }
+                .onSuccess {
+                    // Liking a quote is a first-class recommendation signal.
+                    dailyPlanRepository.recordInteraction(
+                        userId = userIdProvider.getUserId(),
+                        localDate = java.time.LocalDate.now(),
+                        type = DailyContentType.QUOTE,
+                        contentId = quote.id,
+                        interaction = if (saving) ContentInteractionType.SAVED else ContentInteractionType.UNSAVED,
+                        category = quote.category,
+                        sourceKey = quote.author.ifBlank { "unknown" }
+                    )
+                }
         }
     }
 

@@ -26,6 +26,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -104,6 +106,18 @@ private val wisdomCategories = listOf(
     WisdomCategory("growth", "Growth")
 )
 
+/** Word interests align with the categories used across the expanded vocabulary catalog. */
+private val wordInterestCategories = listOf(
+    WisdomCategory("self-improvement", "Self-improvement"),
+    WisdomCategory("communication", "Communication"),
+    WisdomCategory("emotion", "Emotion"),
+    WisdomCategory("mindfulness", "Mindfulness"),
+    WisdomCategory("learning", "Learning"),
+    WisdomCategory("reflection", "Reflection"),
+    WisdomCategory("business", "Business"),
+    WisdomCategory("academic", "Academic")
+)
+
 private val OnboardingInk = Color(0xFF111216)
 private val OnboardingPaper = Color(0xFFF6F4EF)
 private val OnboardingMuted = Color(0xFFAAAAB2)
@@ -127,15 +141,22 @@ fun OnboardingScreen(
 private fun OnboardingContent(
     completionState: OnboardingCompletionState,
     onComplete: () -> Unit,
-    onSubmit: (Int, Set<String>) -> Unit,
+    onSubmit: (Int, Set<String>, Set<String>, Int) -> Unit,
     onClearError: () -> Unit
 ) {
     val pagerState = rememberPagerState(pageCount = { OnboardingPageCount })
     val scope = rememberCoroutineScope()
     var difficulty by rememberSaveable { mutableIntStateOf(3) }
+    var sessionSize by rememberSaveable { mutableIntStateOf(5) }
     var selectedCategoryKeys by rememberSaveable { mutableStateOf("wisdom,life,motivation") }
+    var selectedWordCategoryKeys by rememberSaveable {
+        mutableStateOf("self-improvement,communication,mindfulness,reflection")
+    }
     val selectedCategories = remember(selectedCategoryKeys) {
         selectedCategoryKeys.split(',').filter(String::isNotBlank).toSet()
+    }
+    val selectedWordCategories = remember(selectedWordCategoryKeys) {
+        selectedWordCategoryKeys.split(',').filter(String::isNotBlank).toSet()
     }
     val saving = completionState is OnboardingCompletionState.Saving
 
@@ -167,7 +188,9 @@ private fun OnboardingContent(
             OnboardingTopBar(
                 currentPage = pagerState.currentPage,
                 enabled = !saving,
-                onSkip = { onSubmit(difficulty, selectedCategories) }
+                onSkip = {
+                    onSubmit(difficulty, selectedCategories, selectedWordCategories, sessionSize)
+                }
             )
 
             HorizontalPager(
@@ -194,6 +217,8 @@ private fun OnboardingContent(
                         modifier = pageModifier,
                         difficulty = difficulty,
                         onDifficultyChange = { difficulty = it },
+                        sessionSize = sessionSize,
+                        onSessionSizeChange = { sessionSize = it },
                         selectedCategories = selectedCategories,
                         onCategoryToggle = { key ->
                             val updated = if (key in selectedCategories) {
@@ -202,12 +227,23 @@ private fun OnboardingContent(
                                 selectedCategories + key
                             }
                             selectedCategoryKeys = updated.sorted().joinToString(",")
+                        },
+                        selectedWordCategories = selectedWordCategories,
+                        onWordCategoryToggle = { key ->
+                            val updated = if (key in selectedWordCategories) {
+                                if (selectedWordCategories.size > 1) selectedWordCategories - key else selectedWordCategories
+                            } else {
+                                selectedWordCategories + key
+                            }
+                            selectedWordCategoryKeys = updated.sorted().joinToString(",")
                         }
                     )
                     else -> ReadyPage(
                         modifier = pageModifier,
                         completionState = completionState,
-                        onRetry = { onSubmit(difficulty, selectedCategories) }
+                        onRetry = {
+                            onSubmit(difficulty, selectedCategories, selectedWordCategories, sessionSize)
+                        }
                     )
                 }
             }
@@ -224,7 +260,9 @@ private fun OnboardingContent(
                         )
                     }
                 },
-                onFinish = { onSubmit(difficulty, selectedCategories) }
+                onFinish = {
+                    onSubmit(difficulty, selectedCategories, selectedWordCategories, sessionSize)
+                }
             )
         }
     }
@@ -354,53 +392,99 @@ private fun PersonalizationPage(
     modifier: Modifier = Modifier,
     difficulty: Int,
     onDifficultyChange: (Int) -> Unit,
+    sessionSize: Int,
+    onSessionSizeChange: (Int) -> Unit,
     selectedCategories: Set<String>,
-    onCategoryToggle: (String) -> Unit
+    onCategoryToggle: (String) -> Unit,
+    selectedWordCategories: Set<String>,
+    onWordCategoryToggle: (String) -> Unit
 ) {
     OnboardingPage(
         modifier = modifier,
         title = "A feed that learns gently.",
-        body = "Choose a starting point. Clear feedback and spaced review shape future recommendations, not opaque personality scores."
+        body = "Tell Kairos what kind of words and ideas you want more of. You can change all of this later in Settings."
     ) {
-        OnboardingGlass(modifier = Modifier.fillMaxWidth(), strong = true) {
-            Column(
-                modifier = Modifier.padding(18.dp),
-                verticalArrangement = Arrangement.spacedBy(18.dp)
-            ) {
-                Column(verticalArrangement = Arrangement.spacedBy(9.dp)) {
-                    Text("Vocabulary pace", style = MaterialTheme.typography.titleMedium, color = OnboardingPaper, fontWeight = FontWeight.SemiBold)
-                    DarkSegmentedControl(
-                        labels = listOf("Gentle", "Balanced", "Stretch"),
-                        selectedIndex = when (difficulty) { 2 -> 0; 4 -> 2; else -> 1 },
-                        onSelected = { index -> onDifficultyChange(listOf(2, 3, 4)[index]) }
-                    )
-                }
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            OnboardingGlass(modifier = Modifier.fillMaxWidth(), strong = true) {
+                Column(
+                    modifier = Modifier.padding(18.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Column(verticalArrangement = Arrangement.spacedBy(9.dp)) {
+                        Text("Vocabulary pace", style = MaterialTheme.typography.titleMedium, color = OnboardingPaper, fontWeight = FontWeight.SemiBold)
+                        DarkSegmentedControl(
+                            labels = listOf("Gentle", "Balanced", "Stretch"),
+                            selectedIndex = when (difficulty) { 2 -> 0; 4 -> 2; else -> 1 },
+                            onSelected = { index -> onDifficultyChange(listOf(2, 3, 4)[index]) }
+                        )
+                    }
 
-                Column(verticalArrangement = Arrangement.spacedBy(9.dp)) {
-                    Text("Ideas you want more often", style = MaterialTheme.typography.titleMedium, color = OnboardingPaper, fontWeight = FontWeight.SemiBold)
-                    FlowRow(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        wisdomCategories.forEach { category ->
-                            InterestChip(
-                                text = category.label,
-                                selected = category.key in selectedCategories,
-                                onClick = { onCategoryToggle(category.key) }
-                            )
+                    Column(verticalArrangement = Arrangement.spacedBy(9.dp)) {
+                        Text("Cards per session", style = MaterialTheme.typography.titleMedium, color = OnboardingPaper, fontWeight = FontWeight.SemiBold)
+                        DarkSegmentedControl(
+                            labels = listOf("3", "5", "10"),
+                            selectedIndex = when (sessionSize) { 3 -> 0; 10 -> 2; else -> 1 },
+                            onSelected = { index -> onSessionSizeChange(listOf(3, 5, 10)[index]) }
+                        )
+                    }
+
+                    Column(verticalArrangement = Arrangement.spacedBy(9.dp)) {
+                        Text("Words you want to learn", style = MaterialTheme.typography.titleMedium, color = OnboardingPaper, fontWeight = FontWeight.SemiBold)
+                        Text(
+                            "Words in these areas surface first in your practice sessions.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = OnboardingPaper.copy(alpha = 0.66f)
+                        )
+                        FlowRow(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            wordInterestCategories.forEach { category ->
+                                InterestChip(
+                                    text = category.label,
+                                    selected = category.key in selectedWordCategories,
+                                    onClick = { onWordCategoryToggle(category.key) }
+                                )
+                            }
+                        }
+                    }
+
+                    Column(verticalArrangement = Arrangement.spacedBy(9.dp)) {
+                        Text("Quotes and ideas", style = MaterialTheme.typography.titleMedium, color = OnboardingPaper, fontWeight = FontWeight.SemiBold)
+                        Text(
+                            "Quotes from your chosen themes appear more often in Today.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = OnboardingPaper.copy(alpha = 0.66f)
+                        )
+                        FlowRow(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            wisdomCategories.forEach { category ->
+                                InterestChip(
+                                    text = category.label,
+                                    selected = category.key in selectedCategories,
+                                    onClick = { onCategoryToggle(category.key) }
+                                )
+                            }
                         }
                     }
                 }
             }
-        }
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            RecommendationPreview("Review due", "35%", KairosPeriwinkle, Modifier.weight(1f))
-            RecommendationPreview("Your interests", "20%", KairosClay, Modifier.weight(1f))
-            RecommendationPreview("Freshness", "15%", KairosSeaGlass, Modifier.weight(1f))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                RecommendationPreview("Review due", "35%", KairosPeriwinkle, Modifier.weight(1f))
+                RecommendationPreview("Your interests", "20%", KairosClay, Modifier.weight(1f))
+                RecommendationPreview("Freshness", "15%", KairosSeaGlass, Modifier.weight(1f))
+            }
         }
     }
 }

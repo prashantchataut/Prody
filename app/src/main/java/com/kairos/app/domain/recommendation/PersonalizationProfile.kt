@@ -43,6 +43,7 @@ data class PersonalizationProfile(
             ContentInteractionType.USED_IN_JOURNAL to 0.35,
             ContentInteractionType.OPENED to 0.08,
             ContentInteractionType.IMPRESSION to 0.02,
+            ContentInteractionType.UNSAVED to -0.35,
             ContentInteractionType.LESS_LIKE_THIS to -0.55,
             ContentInteractionType.DISMISSED to -0.25,
             ContentInteractionType.TOO_EASY to -0.10,

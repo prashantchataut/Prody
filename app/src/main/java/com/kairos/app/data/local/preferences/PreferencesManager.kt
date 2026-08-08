@@ -143,6 +143,8 @@ class PreferencesManager @Inject constructor(
         val LAST_ACTIVE_DATE = longPreferencesKey("last_active_date")
         val DAILY_WISDOM_LAST_SHOWN = longPreferencesKey("daily_wisdom_last_shown")
         val SELECTED_WISDOM_CATEGORIES = stringPreferencesKey("selected_wisdom_categories")
+        val PREFERRED_WORD_CATEGORIES = stringPreferencesKey("preferred_word_categories")
+        val PRACTICE_SESSION_SIZE = intPreferencesKey("practice_session_size")
         val VOCABULARY_DIFFICULTY_PREFERENCE = intPreferencesKey("vocabulary_difficulty")
         val AUTO_PLAY_PRONUNCIATION = booleanPreferencesKey("auto_play_pronunciation")
         val COMPACT_CARD_VIEW = booleanPreferencesKey("compact_card_view")
@@ -376,6 +378,50 @@ class PreferencesManager @Inject constructor(
     suspend fun setSelectedWisdomCategories(categories: Set<String>) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.SELECTED_WISDOM_CATEGORIES] = categories.joinToString(",")
+        }
+    }
+
+    /**
+     * Word interests chosen during setup. Kept separate from quote interests so a
+     * user can love stoic quotes without being forced to study business words.
+     * Falls back to the quote categories when never set (existing installs).
+     */
+    val preferredWordCategories: Flow<Set<String>> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.PREFERRED_WORD_CATEGORIES]
+                ?.split(",")
+                ?.filter { it.isNotBlank() }
+                ?.toSet()
+                ?: preferences[PreferencesKeys.SELECTED_WISDOM_CATEGORIES]
+                    ?.split(",")
+                    ?.filter { it.isNotBlank() }
+                    ?.toSet()
+                    ?: DEFAULT_WORD_CATEGORIES
+        }
+
+    suspend fun setPreferredWordCategories(categories: Set<String>) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.PREFERRED_WORD_CATEGORIES] = categories.joinToString(",")
+        }
+    }
+
+    /** How many cards a practice session should aim for. */
+    val practiceSessionSize: Flow<Int> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences())
+            else throw exception
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.PRACTICE_SESSION_SIZE] ?: DEFAULT_PRACTICE_SESSION_SIZE
+        }
+
+    suspend fun setPracticeSessionSize(size: Int) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.PRACTICE_SESSION_SIZE] = size.coerceIn(3, 20)
         }
     }
 
@@ -1368,5 +1414,14 @@ class PreferencesManager @Inject constructor(
             preferences[PreferencesKeys.EVENING_RITUAL_START_HOUR] = 18
             preferences[PreferencesKeys.RITUAL_REMINDER_ENABLED] = true
         }
+    }
+
+    private companion object {
+        /** Sensible word interests for users who never set them explicitly. */
+        val DEFAULT_WORD_CATEGORIES = setOf(
+            "self-improvement", "communication", "mindfulness", "reflection"
+        )
+
+        const val DEFAULT_PRACTICE_SESSION_SIZE = 5
     }
 }

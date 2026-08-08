@@ -6,6 +6,8 @@ import com.kairos.app.data.auth.UserIdProvider
 import com.kairos.app.data.local.entity.VocabularyEntity
 import com.kairos.app.data.local.entity.VocabularyLearningEntity
 import com.kairos.app.data.local.preferences.PreferencesManager
+import com.kairos.app.domain.recommendation.ContentInteractionType
+import com.kairos.app.domain.recommendation.DailyContentType
 import com.kairos.app.domain.recommendation.PersonalizationProfile
 import com.kairos.app.domain.recommendation.PersonalizedStudyQueue
 import com.kairos.app.domain.recommendation.StudyCandidate
@@ -120,8 +122,9 @@ class VocabularySessionViewModel @Inject constructor(
                 .getOrElse { emptyList() }
             catalog = words
             learning = learningEntries.associateBy { it.wordId }
+            val sessionSize = runCatching { preferencesManager.practiceSessionSize.first() }.getOrDefault(5)
 
-            val queue = buildQueue(words, learningEntries, mode, loadProfile())
+            val queue = buildQueue(words, learningEntries, mode, loadProfile(), sessionSize)
             val toppedUp = if (mode == SessionMode.NEW_WORDS && queue.size < MIN_SESSION_SIZE) {
                 queue + topUpWithGeneratedWords(MIN_SESSION_SIZE - queue.size, queue)
             } else {
@@ -149,6 +152,32 @@ class VocabularySessionViewModel @Inject constructor(
             state.copy(cards = state.cards.toMutableList().also { list ->
                 list[state.currentIndex] = card.copy(revealed = true)
             })
+        }
+    }
+
+    /** Save or un-save the current word — a first-class recommendation signal. */
+    fun toggleSaveCurrent() {
+        val state = _uiState.value
+        val card = state.currentCard ?: return
+        viewModelScope.launch {
+            val saving = !card.word.isFavorite
+            val updatedWord = card.word.copy(isFavorite = saving)
+            runCatching { vocabularyRepository.updateFavoriteStatus(card.word.id, saving) }
+            dailyPlanRepository.recordInteraction(
+                userId = userIdProvider.getUserId(),
+                localDate = java.time.LocalDate.now(),
+                type = DailyContentType.VOCABULARY,
+                contentId = card.word.id,
+                interaction = if (saving) ContentInteractionType.SAVED else ContentInteractionType.UNSAVED,
+                category = card.word.category,
+                sourceKey = card.word.partOfSpeech.ifBlank { "vocabulary" },
+                difficulty = card.word.difficulty
+            )
+            _uiState.update { current ->
+                current.copy(cards = current.cards.toMutableList().also { list ->
+                    list[current.currentIndex] = current.cards[current.currentIndex].copy(word = updatedWord)
+                })
+            }
         }
     }
 
@@ -253,7 +282,8 @@ class VocabularySessionViewModel @Inject constructor(
         words: List<VocabularyEntity>,
         learningEntries: List<VocabularyLearningEntity>,
         mode: SessionMode,
-        profile: PersonalizationProfile
+        profile: PersonalizationProfile,
+        sessionSize: Int
     ): List<SessionCard> {
         val now = System.currentTimeMillis()
         val byWordId = learningEntries.associateBy { it.wordId }
@@ -292,7 +322,7 @@ class VocabularySessionViewModel @Inject constructor(
             candidates = candidates,
             profile = profile,
             now = now,
-            maxItems = 10,
+            maxItems = sessionSize.coerceIn(3, 20),
             newWordRatio = newRatio
         )
 
@@ -369,9 +399,8 @@ class VocabularySessionViewModel @Inject constructor(
     }
 
     private suspend fun persistGrade(word: VocabularyEntity, grade: SessionGrade) {
+        // Only spaced-repetition scheduling is written here. "Learned" is not
+        // decided by a single grade — the user saves words explicitly instead.
         runCatching { vocabularyRepository.processWordReview(word.id, grade.quality) }
-        if (grade.isPassing && !word.isLearned) {
-            runCatching { vocabularyRepository.markAsLearned(word.id) }
-        }
     }
 }

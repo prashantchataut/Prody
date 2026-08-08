@@ -46,6 +46,12 @@ class OnboardingRepositoryImpl @Inject constructor(
                 .toSet()
                 .ifEmpty { DEFAULT_WISDOM_CATEGORIES }
 
+            val wordCategories = preferences.wordCategories
+                .map(String::lowercase)
+                .filter(String::isNotBlank)
+                .toSet()
+                .ifEmpty { DEFAULT_WORD_CATEGORIES }
+
             database.withTransaction {
                 userDao.insertUserProfile(
                     UserProfileEntity(
@@ -88,11 +94,16 @@ class OnboardingRepositoryImpl @Inject constructor(
             preferencesManager.setUserId(LOCAL_USER_ID)
             preferencesManager.setVocabularyDifficulty(preferences.vocabularyDifficulty.coerceIn(1, 5))
             preferencesManager.setSelectedWisdomCategories(categories)
+            preferencesManager.setPreferredWordCategories(wordCategories)
+            preferencesManager.setPracticeSessionSize(preferences.practiceSessionSize.coerceIn(3, 20))
             preferencesManager.setOnboardingCompleted(true)
         }
 
     private companion object {
         const val LOCAL_USER_ID = "local"
         val DEFAULT_WISDOM_CATEGORIES = setOf("wisdom", "life", "motivation")
+        val DEFAULT_WORD_CATEGORIES = setOf(
+            "self-improvement", "communication", "mindfulness", "reflection"
+        )
     }
 }

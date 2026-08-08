@@ -14,6 +14,7 @@ enum class ContentInteractionType {
     IMPRESSION,
     OPENED,
     SAVED,
+    UNSAVED,
     DISMISSED,
     COMPLETED,
     USED_IN_JOURNAL,

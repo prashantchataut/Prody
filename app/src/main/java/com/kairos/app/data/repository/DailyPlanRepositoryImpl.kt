@@ -64,30 +64,37 @@ class DailyPlanRepositoryImpl @Inject constructor(
             .associateBy { it.wordId }
         val recentSelections = dailyContentDao.getRecentSelections(userId, now - SELECTION_LOOKBACK_MS)
         val recentInteractions = dailyContentDao.getRecentInteractions(userId, now - INTERACTION_LOOKBACK_MS)
-        val selectedCategories = preferencesManager.selectedWisdomCategories.first()
+        // Word and quote interests are chosen separately during setup, so the
+        // daily word and the daily quote each rank against their own themes.
+        val quoteCategories = preferencesManager.selectedWisdomCategories.first()
+        val wordCategories = preferencesManager.preferredWordCategories.first()
         val targetDifficulty = preferencesManager.vocabularyDifficulty.first().coerceIn(1, 5)
         val feedback = FeedbackProfile.from(recentInteractions)
 
-        val context = RecommendationContext(
+        val quoteContext = RecommendationContext(
             userId = userId,
             epochDay = localDate.toEpochDay(),
             now = now,
             targetDifficulty = (targetDifficulty + feedback.difficultyDelta).coerceIn(1, 5),
-            preferredCategories = selectedCategories.associate { it.normalized() to 1.0 },
+            preferredCategories = quoteCategories.associate { it.normalized() to 1.0 },
             recentSelections = recentSelections.mapNotNull { it.toCandidateHistoryOrNull() },
             categoryFeedback = feedback.categoryScores,
             sourceFeedback = feedback.sourceScores,
             temporalCategories = temporalCategories(localDate.dayOfWeek)
         )
 
+        val wordContext = quoteContext.copy(
+            preferredCategories = wordCategories.associate { it.normalized() to 1.0 }
+        )
+
         val selectionsToInsert = buildList {
             if (existing.none { it.contentType == DailyContentType.VOCABULARY.name }) {
-                rankVocabulary(vocabulary, learning, context)?.let { ranked ->
+                rankVocabulary(vocabulary, learning, wordContext)?.let { ranked ->
                     add(ranked.toSelection(userId, dateKey, now))
                 }
             }
             if (existing.none { it.contentType == DailyContentType.QUOTE.name }) {
-                rankQuotes(quotes, context)?.let { ranked ->
+                rankQuotes(quotes, quoteContext)?.let { ranked ->
                     add(ranked.toSelection(userId, dateKey, now))
                 }
             }

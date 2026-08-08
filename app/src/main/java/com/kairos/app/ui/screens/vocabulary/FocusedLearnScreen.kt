@@ -279,7 +279,7 @@ private fun SessionLauncher(
 
 @Composable
 private fun LearningOverview(state: VocabularyListUiState) {
-    val targetProgress = if (state.totalCount == 0) 0f else state.learnedCount.toFloat() / state.totalCount.toFloat()
+    val targetProgress = if (state.totalCount == 0) 0f else state.savedCount.toFloat() / state.totalCount.toFloat()
     val reducedMotion = rememberKairosReducedMotion()
     val progress by animateFloatAsState(
         targetValue = targetProgress.coerceIn(0f, 1f),
@@ -344,14 +344,14 @@ private fun LearningOverview(state: VocabularyListUiState) {
                 horizontalArrangement = Arrangement.spacedBy(9.dp)
             ) {
                 LearningMetric(
-                    value = state.learnedCount.toString(),
-                    label = "Learned",
+                    value = state.savedCount.toString(),
+                    label = "Saved",
                     accent = KairosSeaGlass,
                     modifier = Modifier.weight(1f)
                 )
                 LearningMetric(
-                    value = (state.totalCount - state.learnedCount).coerceAtLeast(0).toString(),
-                    label = "Exploring",
+                    value = (state.totalCount - state.savedCount).coerceAtLeast(0).toString(),
+                    label = "Unsaved",
                     accent = KairosPeriwinkle,
                     modifier = Modifier.weight(1f)
                 )
@@ -447,7 +447,7 @@ private fun VocabularyRow(
                     append(word.word)
                     if (word.partOfSpeech.isNotBlank()) append(", ${word.partOfSpeech}")
                     append(". ${word.definition}")
-                    if (word.isLearned) append(". Learned")
+                    if (word.isFavorite) append(". Saved")
                 }
             },
         shape = RoundedCornerShape(24.dp),
@@ -460,7 +460,7 @@ private fun VocabularyRow(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            DifficultyMark(difficulty = word.difficulty, learned = word.isLearned)
+            DifficultyMark(difficulty = word.difficulty, saved = word.isFavorite)
             Column(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(3.dp)
@@ -514,12 +514,12 @@ private fun VocabularyRow(
 }
 
 @Composable
-private fun DifficultyMark(difficulty: Int, learned: Boolean) {
-    val color = if (learned) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.primary
+private fun DifficultyMark(difficulty: Int, saved: Boolean) {
+    val color = if (saved) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.primary
     Box(
         modifier = Modifier
             .size(42.dp)
-            .semantics { contentDescription = if (learned) "Learned" else "Difficulty ${difficulty.coerceIn(1, 5)} of 5" },
+            .semantics { contentDescription = if (saved) "Saved" else "Difficulty ${difficulty.coerceIn(1, 5)} of 5" },
         contentAlignment = Alignment.Center
     ) {
         Surface(
@@ -529,7 +529,7 @@ private fun DifficultyMark(difficulty: Int, learned: Boolean) {
         ) {
             Box(contentAlignment = Alignment.Center) {
                 Icon(
-                    imageVector = if (learned) KairosIcons.CheckCircle else KairosIcons.Outlined.School,
+                    imageVector = if (saved) KairosIcons.Favorite else KairosIcons.Outlined.School,
                     contentDescription = null,
                     tint = color,
                     modifier = Modifier.size(19.dp)
@@ -541,21 +541,21 @@ private fun DifficultyMark(difficulty: Int, learned: Boolean) {
 
 private fun learningSummary(state: VocabularyListUiState): String = when {
     state.totalCount == 0 -> "A focused vocabulary practice space"
-    state.learnedCount == 0 -> "${state.totalCount} words ready to learn"
-    else -> "${state.learnedCount} learned · ${state.totalCount - state.learnedCount} still in motion"
+    state.savedCount == 0 -> "${state.totalCount} words ready to explore"
+    else -> "${state.savedCount} saved · ${state.totalCount - state.savedCount} in the wild"
 }
 
 private fun emptyTitle(state: VocabularyListUiState): String = when {
     state.query.isNotBlank() -> "No matching words"
     state.showFavoritesOnly -> "No favorite words yet"
-    state.currentFilter == VocabularyFilter.LEARNED.key -> "No learned words yet"
+    state.currentFilter == VocabularyFilter.SAVED.key -> "No saved words yet"
     else -> "No words available"
 }
 
 private fun emptyBody(state: VocabularyListUiState): String = when {
     state.query.isNotBlank() -> "Try a broader spelling, meaning, or topic."
     state.showFavoritesOnly -> "Favorite useful words as you find them, then return here for a clean shortlist."
-    state.currentFilter == VocabularyFilter.LEARNED.key -> "Complete today’s word or open a word to begin learning."
+    state.currentFilter == VocabularyFilter.SAVED.key -> "Tap the heart on any word to keep it here."
     else -> "The local vocabulary catalog is empty."
 }
 

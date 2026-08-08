@@ -113,6 +113,7 @@ private val DarkKairosIdText = Color(0xFF404B4A)
 @Composable
 fun SettingsScreen(
     onNavigateBack: () -> Unit,
+    onNavigateToInterests: () -> Unit = {},
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -194,6 +195,17 @@ fun SettingsScreen(
                     title = "APPEARANCE",
                     isDark = isDark
                 ) {
+                    // Interests & setup row — tune what Kairos recommends
+                    SettingsRowWithNavigation(
+                        icon = KairosIcons.Tune,
+                        title = "Interests & setup",
+                        subtitle = "Word and quote themes, pace, session size",
+                        isDark = isDark,
+                        onClick = onNavigateToInterests
+                    )
+
+                    SettingsDivider(isDark)
+
                     // App Theme Row
                     SettingsRowWithDropdown(
                         icon = KairosIcons.DarkMode,
@@ -658,6 +670,76 @@ internal fun SettingsSection(
                 content = content
             )
         }
+    }
+}
+
+// =============================================================================
+// SETTINGS ROW WITH NAVIGATION (opens another screen)
+// =============================================================================
+
+@Composable
+internal fun SettingsRowWithNavigation(
+    icon: ImageVector,
+    title: String,
+    isDark: Boolean,
+    onClick: () -> Unit,
+    subtitle: String? = null
+) {
+    val iconBackground = if (isDark) DarkIconBackground else LightIconBackground
+    val iconColor = if (isDark) DarkIconColor else LightIconColor
+    val primaryText = if (isDark) DarkPrimaryText else LightPrimaryText
+    val secondaryText = if (isDark) DarkSecondaryText else LightSecondaryText
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onClick
+            )
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .clip(CircleShape)
+                .background(iconBackground),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = iconColor,
+                modifier = Modifier.size(20.dp)
+            )
+        }
+
+        Spacer(modifier = Modifier.width(14.dp))
+
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Medium,
+                color = primaryText
+            )
+            if (subtitle != null) {
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = secondaryText
+                )
+            }
+        }
+
+        Icon(
+            imageVector = KairosIcons.ArrowForward,
+            contentDescription = null,
+            tint = secondaryText,
+            modifier = Modifier.size(18.dp)
+        )
     }
 }
 

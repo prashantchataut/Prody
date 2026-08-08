@@ -1,6 +1,7 @@
 package com.kairos.app.data.repository
 
 import com.kairos.app.data.local.dao.JournalDao
+import com.kairos.app.data.local.dao.QuoteDao
 import com.kairos.app.data.local.dao.UserDao
 import com.kairos.app.data.local.dao.VocabularyDao
 import com.kairos.app.data.local.dao.VocabularyLearningDao
@@ -22,7 +23,8 @@ class TodayProgressRepositoryImpl @Inject constructor(
     private val userDao: UserDao,
     private val vocabularyDao: VocabularyDao,
     private val vocabularyLearningDao: VocabularyLearningDao,
-    private val journalDao: JournalDao
+    private val journalDao: JournalDao,
+    private val quoteDao: QuoteDao
 ) : TodayProgressRepository {
 
     override fun observeProgress(
@@ -66,17 +68,33 @@ class TodayProgressRepositoryImpl @Inject constructor(
         )
         vocabularyLearningDao.insertLearning(updatedLearning)
 
-        // Temporary compatibility write for older vocabulary screens. Remove once
-        // every consumer reads user-scoped VocabularyLearningEntity state.
-        val storedWord = vocabularyDao.getWordById(wordId)
-        if (storedWord?.isLearned != true) {
-            vocabularyDao.markAsLearned(wordId, completedAtMillis)
-        }
         if (!wasIntroduced) {
             userDao.incrementWordsLearned()
             userDao.addPoints(25)
         }
 
         TodayWordCompletion(newlyIntroduced = !wasIntroduced)
+    }
+
+    override suspend fun setWordSaved(
+        userId: String,
+        wordId: Long,
+        saved: Boolean
+    ): Result<Unit> = runSuspendCatching(
+        errorType = ErrorType.DATABASE,
+        errorMessage = "Could not update saved words."
+    ) {
+        vocabularyDao.updateFavoriteStatus(wordId, saved)
+    }
+
+    override suspend fun setQuoteSaved(
+        userId: String,
+        quoteId: Long,
+        saved: Boolean
+    ): Result<Unit> = runSuspendCatching(
+        errorType = ErrorType.DATABASE,
+        errorMessage = "Could not update saved quotes."
+    ) {
+        quoteDao.updateFavoriteStatus(quoteId, saved)
     }
 }
