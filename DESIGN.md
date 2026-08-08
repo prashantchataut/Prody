@@ -53,8 +53,19 @@ for errors. No purple, no indigo, no gradients, no pastels, no neon greens.
 - The `KairosGlassSurface` name is retained for compatibility; the material is paper.
 
 ## Navigation
-- Solid paper bar/rail with a hairline rule. No floating glass capsule, no pill indicator.
-- Selected destination: vermilion text and a short 2dp vermilion underline.
+- **Liquid-glass floating capsule** (bottom bar / rail): translucent warm fill with a
+  bright top edge, 1px hairline border, soft tinted shadow, and a gentle top
+  sheen. Real backdrop blur needs platform-specific hacks, so translucency
+  carries the effect and degrades gracefully on every API level.
+- Selected destination: soft accent-wash pill with the filled icon and
+  semi-bold vermilion-on-wash text.
+
+## Onboarding
+- Night-paper ground with a slow-breathing warm glow (respects reduced motion).
+- Floating glass panels: translucent tonal fill, hairline border, soft shadow.
+- Segmented progress bar that tracks the pager drag; chips animate color, scale,
+  and a check that scales in; the CTA button compresses on press.
+- Pages parallax (fade, scale, translate) while swiping.
 
 ## Layout
 - Edge-to-edge flat ground (`colorScheme.background`).

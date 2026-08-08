@@ -33,12 +33,12 @@ private val LightColorScheme = lightColorScheme(
     onPrimaryContainer = KairosOnIndigoContainerLight,
 
     secondary = KairosClay,
-    onSecondary = Color.White,
+    onSecondary = Color(0xFFFFF8F0),
     secondaryContainer = KairosClayContainerLight,
     onSecondaryContainer = KairosOnClayContainerLight,
 
     tertiary = KairosVerdigris,
-    onTertiary = Color.White,
+    onTertiary = Color(0xFFFFF8F0),
     tertiaryContainer = KairosVerdigrisContainerLight,
     onTertiaryContainer = KairosOnVerdigrisContainerLight,
 
@@ -49,6 +49,14 @@ private val LightColorScheme = lightColorScheme(
     surfaceVariant = KairosSurfaceVariantLight,
     onSurfaceVariant = KairosTextSecondaryLight,
 
+    surfaceDim = Color(0xFFE8E3D6),
+    surfaceBright = KairosSurfaceLight,
+    surfaceContainerLowest = Color(0xFFFFFFFF),
+    surfaceContainerLow = Color(0xFFF6F2E9),
+    surfaceContainer = Color(0xFFF0EBDF),
+    surfaceContainerHigh = Color(0xFFEAE4D6),
+    surfaceContainerHighest = Color(0xFFE4DECD),
+
     error = KairosError,
     onError = KairosOnError,
     errorContainer = KairosErrorContainer,
@@ -57,7 +65,12 @@ private val LightColorScheme = lightColorScheme(
     outline = KairosOutlineLight,
     outlineVariant = KairosDividerLight,
 
-    scrim = Scrim
+    inverseSurface = Color(0xFF2E281D),
+    inverseOnSurface = Color(0xFFEDE7DA),
+    inversePrimary = Color(0xFFE5855F),
+
+    scrim = Scrim,
+    surfaceTint = KairosPrimary
 )
 
 private val DarkColorScheme = darkColorScheme(
@@ -67,12 +80,12 @@ private val DarkColorScheme = darkColorScheme(
     onPrimaryContainer = KairosOnIndigoContainerDark,
 
     secondary = KairosSoftClay,
-    onSecondary = Color(0xFF3C160A),
+    onSecondary = Color(0xFF3A1606),
     secondaryContainer = KairosClayContainerDark,
     onSecondaryContainer = KairosOnClayContainerDark,
 
     tertiary = KairosSeaGlass,
-    onTertiary = Color(0xFF072E28),
+    onTertiary = Color(0xFF13291D),
     tertiaryContainer = KairosVerdigrisContainerDark,
     onTertiaryContainer = KairosOnVerdigrisContainerDark,
 
@@ -83,15 +96,28 @@ private val DarkColorScheme = darkColorScheme(
     surfaceVariant = KairosSurfaceVariantDark,
     onSurfaceVariant = KairosTextSecondaryDark,
 
-    error = KairosError,
-    onError = KairosOnError,
+    surfaceDim = Color(0xFF171410),
+    surfaceBright = Color(0xFF2A251C),
+    surfaceContainerLowest = Color(0xFF12100A),
+    surfaceContainerLow = Color(0xFF1F1B14),
+    surfaceContainer = Color(0xFF262118),
+    surfaceContainerHigh = Color(0xFF2B251C),
+    surfaceContainerHighest = Color(0xFF312B21),
+
+    error = Color(0xFFEAA39B),
+    onError = Color(0xFF5C140E),
     errorContainer = KairosErrorContainerDark,
     onErrorContainer = Color(0xFFF4DBD5),
 
     outline = KairosOutlineDark,
     outlineVariant = KairosDividerDark,
 
-    scrim = Scrim
+    inverseSurface = Color(0xFFEDE7DA),
+    inverseOnSurface = Color(0xFF221E17),
+    inversePrimary = Color(0xFFB3401F),
+
+    scrim = Scrim,
+    surfaceTint = KairosPrimaryDark
 )
 
 enum class ThemeMode {
@@ -136,9 +162,11 @@ fun KairosTheme(
 
     val havenColors = if (darkTheme) DarkHavenColors else LightHavenColors
     val kairosGlassColors = if (darkTheme) DarkKairosGlassColors else LightKairosGlassColors
+    val liquidGlassColors = if (darkTheme) DarkKairosLiquidGlassColors else LightKairosLiquidGlassColors
 
     CompositionLocalProvider(
         LocalKairosGlassColors provides kairosGlassColors,
+        LocalKairosLiquidGlassColors provides liquidGlassColors,
         LocalHavenColors provides havenColors,
         LocalStreakColors provides LightStreakColors,
         LocalMoodColors provides LightMoodColors

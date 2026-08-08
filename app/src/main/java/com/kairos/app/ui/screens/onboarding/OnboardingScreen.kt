@@ -3,18 +3,23 @@ package com.kairos.app.ui.screens.onboarding
 import android.app.Activity
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateColorAsState
 import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -64,7 +69,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalView
@@ -81,6 +90,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kairos.app.ui.animation.KairosDurations
 import com.kairos.app.ui.animation.KairosEasing
+import com.kairos.app.ui.animation.kairosScale
+import com.kairos.app.ui.animation.rememberKairosPressScale
 import com.kairos.app.ui.animation.rememberKairosReducedMotion
 import com.kairos.app.ui.components.kairos.KairosMark
 import com.kairos.app.ui.theme.KairosPeriwinkle
@@ -170,6 +181,8 @@ private fun OnboardingContent(
             .fillMaxSize()
             .background(OnboardingInk)
     ) {
+        OnboardingWarmGlow(Modifier.fillMaxSize())
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -196,10 +209,11 @@ private fun OnboardingContent(
                 val pageModifier = Modifier
                     .fillMaxSize()
                     .graphicsLayer {
-                        alpha = 1f - (offset * 0.30f)
-                        scaleX = 1f - (offset * 0.035f)
-                        scaleY = 1f - (offset * 0.035f)
-                        translationX = offset * 18.dp.toPx()
+                        alpha = 1f - (offset * 0.28f)
+                        scaleX = 1f - (offset * 0.03f)
+                        scaleY = 1f - (offset * 0.03f)
+                        translationX = offset * 16.dp.toPx()
+                        translationY = offset * 10.dp.toPx()
                     }
 
                 when (page) {
@@ -241,6 +255,7 @@ private fun OnboardingContent(
 
             OnboardingActions(
                 currentPage = pagerState.currentPage,
+                pageProgress = pagerState.currentPage + pagerState.currentPageOffsetFraction,
                 isSaving = saving,
                 onNext = {
                     onClearError()
@@ -581,6 +596,7 @@ private fun OnboardingPage(
 @Composable
 private fun OnboardingActions(
     currentPage: Int,
+    pageProgress: Float,
     isSaving: Boolean,
     onNext: () -> Unit,
     onFinish: () -> Unit
@@ -590,47 +606,76 @@ private fun OnboardingActions(
             .fillMaxWidth()
             .padding(horizontal = 24.dp, vertical = 18.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(15.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Row(horizontalArrangement = Arrangement.spacedBy(7.dp)) {
-            repeat(OnboardingPageCount) { index ->
-                Box(
-                    Modifier
-                        .size(width = if (index == currentPage) 22.dp else 6.dp, height = 6.dp)
-                        .clip(CircleShape)
-                        .background(if (index == currentPage) OnboardingPaper else OnboardingPaper.copy(alpha = 0.22f))
-                        .semantics { contentDescription = "Step ${index + 1}${if (index == currentPage) ", current" else ""}" }
-                )
-            }
-        }
-        Surface(
-            onClick = if (currentPage == OnboardingPageCount - 1) onFinish else onNext,
-            enabled = !isSaving,
+        // Segmented progress: each segment fills as its page is reached,
+        // with the in-flight segment tracking the drag.
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .widthIn(max = 680.dp)
-                .height(56.dp),
-            shape = RoundedCornerShape(16.dp),
-            color = OnboardingPaper,
-            contentColor = OnboardingInk
+                .padding(horizontal = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                AnimatedContent(
-                    targetState = isSaving,
-                    transitionSpec = { fadeIn(tween(160)) togetherWith fadeOut(tween(120)) },
-                    label = "onboarding-action"
-                ) { saving ->
-                    if (saving) {
-                        CircularProgressIndicator(modifier = Modifier.size(22.dp), strokeWidth = 2.dp, color = OnboardingInk)
-                    } else {
-                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Text(
-                                text = if (currentPage == OnboardingPageCount - 1) "Begin with Kairos" else "Continue",
-                                fontWeight = FontWeight.SemiBold,
-                                style = MaterialTheme.typography.labelLarge
-                            )
-                            Icon(Icons.AutoMirrored.Outlined.ArrowForward, contentDescription = null, modifier = Modifier.size(18.dp))
-                        }
+            repeat(OnboardingPageCount) { index ->
+                val fillFraction by animateFloatAsState(
+                    targetValue = (pageProgress - index).coerceIn(0f, 1f),
+                    animationSpec = tween(KairosDurations.State, easing = KairosEasing.EaseOutExpo),
+                    label = "onboarding-progress-segment"
+                )
+                Box(
+                    Modifier
+                        .weight(1f)
+                        .height(3.dp)
+                        .clip(RoundedCornerShape(2.dp))
+                        .background(OnboardingPaper.copy(alpha = 0.18f))
+                        .semantics { contentDescription = "Step ${index + 1} of $OnboardingPageCount" }
+                ) {
+                    Box(
+                        Modifier
+                            .fillMaxWidth(fillFraction)
+                            .fillMaxHeight()
+                            .background(OnboardingPaper)
+                    )
+                }
+            }
+        }
+
+        val ctaInteractionSource = remember { MutableInteractionSource() }
+        val ctaPressScale = rememberKairosPressScale(interactionSource = ctaInteractionSource)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .widthIn(max = 680.dp)
+                .height(56.dp)
+                .kairosScale(ctaPressScale)
+                .alpha(if (isSaving) 0.72f else 1f)
+                .clip(RoundedCornerShape(16.dp))
+                .background(OnboardingPaper)
+                .clickable(
+                    interactionSource = ctaInteractionSource,
+                    indication = androidx.compose.foundation.LocalIndication.current,
+                    enabled = !isSaving,
+                    onClick = if (currentPage == OnboardingPageCount - 1) onFinish else onNext
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            AnimatedContent(
+                targetState = isSaving,
+                transitionSpec = { fadeIn(tween(160)) togetherWith fadeOut(tween(120)) },
+                label = "onboarding-action"
+            ) { saving ->
+                if (saving) {
+                    CircularProgressIndicator(modifier = Modifier.size(22.dp), strokeWidth = 2.dp, color = OnboardingInk)
+                } else {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(
+                            text = if (currentPage == OnboardingPageCount - 1) "Begin with Kairos" else "Continue",
+                            fontWeight = FontWeight.SemiBold,
+                            style = MaterialTheme.typography.labelLarge,
+                            color = OnboardingInk
+                        )
+                        Icon(Icons.AutoMirrored.Outlined.ArrowForward, contentDescription = null, modifier = Modifier.size(18.dp), tint = OnboardingInk)
                     }
                 }
             }
@@ -644,24 +689,58 @@ private fun OnboardingGlass(
     strong: Boolean = false,
     content: @Composable () -> Unit
 ) {
-    val shape = RoundedCornerShape(16.dp)
+    val shape = RoundedCornerShape(18.dp)
     Box(
         modifier = modifier
+            .shadow(10.dp, shape, ambientColor = Color(0x40000000), spotColor = Color(0x40000000))
             .clip(shape)
-            .background(if (strong) OnboardingPaper.copy(alpha = 0.10f) else OnboardingPanel)
-            .border(1.dp, OnboardingPanelHairline, shape)
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        if (strong) Color(0xFF3B342A) else OnboardingPanel.copy(alpha = 0.94f),
+                        if (strong) Color(0xFF2A251C) else OnboardingPanel.copy(alpha = 0.78f)
+                    )
+                )
+            )
+            .border(
+                BorderStroke(
+                    1.dp,
+                    Brush.verticalGradient(
+                        colors = listOf(Color.White.copy(alpha = 0.20f), OnboardingPanelHairline)
+                    )
+                ),
+                shape
+            )
     ) {
+        Box(
+            Modifier
+                .matchParentSize()
+                .clip(shape)
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(Color.White.copy(alpha = 0.05f), Color.Transparent),
+                        startY = 0f,
+                        endY = 160f
+                    )
+                )
+        )
         content()
     }
 }
 
 @Composable
 private fun FloatingShadowCard(modifier: Modifier = Modifier) {
+    val shape = RoundedCornerShape(18.dp)
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(16.dp))
-            .background(OnboardingPanel)
-            .border(1.dp, OnboardingPanelHairline, RoundedCornerShape(16.dp))
+            .shadow(8.dp, shape, ambientColor = Color(0x40000000), spotColor = Color(0x40000000))
+            .clip(shape)
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(OnboardingPanel.copy(alpha = 0.94f), OnboardingPanel.copy(alpha = 0.78f))
+                )
+            )
+            .border(1.dp, OnboardingPanelHairline, shape)
     )
 }
 
@@ -686,7 +765,9 @@ private fun DarkSegmentedControl(
                 modifier = Modifier.weight(1f).height(44.dp),
                 shape = RoundedCornerShape(12.dp),
                 color = if (index == selectedIndex) OnboardingPaper else Color.Transparent,
-                contentColor = if (index == selectedIndex) OnboardingInk else OnboardingMuted
+                contentColor = if (index == selectedIndex) OnboardingInk else OnboardingMuted,
+                tonalElevation = 0.dp,
+                shadowElevation = 0.dp
             ) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text(label, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Medium)
@@ -698,19 +779,48 @@ private fun DarkSegmentedControl(
 
 @Composable
 private fun InterestChip(text: String, selected: Boolean, onClick: () -> Unit) {
+    val container by animateColorAsState(
+        targetValue = if (selected) KairosPeriwinkle.copy(alpha = 0.24f) else Color.White.copy(alpha = 0.06f),
+        animationSpec = tween(KairosDurations.State),
+        label = "chip-container"
+    )
+    val content by animateColorAsState(
+        targetValue = if (selected) OnboardingPaper else OnboardingMuted,
+        animationSpec = tween(KairosDurations.State),
+        label = "chip-content"
+    )
+    val borderColor by animateColorAsState(
+        targetValue = if (selected) KairosPeriwinkle.copy(alpha = 0.72f) else OnboardingPanelHairline,
+        animationSpec = tween(KairosDurations.State),
+        label = "chip-border"
+    )
+    val scale by animateFloatAsState(
+        targetValue = if (selected) 1.05f else 1f,
+        animationSpec = tween(KairosDurations.State, easing = KairosEasing.EaseOutQuart),
+        label = "chip-scale"
+    )
     Surface(
         onClick = onClick,
+        modifier = Modifier.graphicsLayer {
+            scaleX = scale
+            scaleY = scale
+        },
         shape = RoundedCornerShape(12.dp),
-        color = if (selected) KairosPeriwinkle.copy(alpha = 0.20f) else Color.White.copy(alpha = 0.06f),
-        contentColor = if (selected) OnboardingPaper else OnboardingMuted,
-        border = BorderStroke(1.dp, if (selected) KairosPeriwinkle.copy(alpha = 0.68f) else OnboardingPanelHairline)
+        color = container,
+        contentColor = content,
+        border = BorderStroke(1.dp, borderColor)
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            if (selected) Icon(Icons.Outlined.Check, contentDescription = null, modifier = Modifier.size(15.dp))
+            AnimatedVisibility(
+                visible = selected,
+                enter = scaleIn(initialScale = 0.4f) + fadeIn(tween(140))
+            ) {
+                Icon(Icons.Outlined.Check, contentDescription = null, modifier = Modifier.size(15.dp))
+            }
             Text(text, style = MaterialTheme.typography.labelMedium)
         }
     }
@@ -753,6 +863,60 @@ private fun TrustRow(
             Text(title, style = MaterialTheme.typography.titleSmall, color = OnboardingPaper, fontWeight = FontWeight.SemiBold)
             Text(body, style = MaterialTheme.typography.bodySmall, color = OnboardingMuted)
         }
+    }
+}
+
+/**
+ * A slow-breathing warm glow behind the onboarding pages — a candle on night
+ * paper. Respects reduced-motion by holding a static low alpha.
+ */
+@Composable
+private fun OnboardingWarmGlow(modifier: Modifier = Modifier) {
+    val reducedMotion = rememberKairosReducedMotion()
+    val transition = rememberInfiniteTransition(label = "onboarding-glow")
+    val pulse by transition.animateFloat(
+        initialValue = 0.06f,
+        targetValue = 0.12f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(7000, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "onboarding-glow-alpha"
+    )
+    val alpha = if (reducedMotion) 0.08f else pulse
+    Box(modifier) {
+        Box(
+            Modifier
+                .size(460.dp)
+                .align(Alignment.TopCenter)
+                .graphicsLayer { translationY = -150f }
+                .drawBehind {
+                    drawCircle(
+                        brush = Brush.radialGradient(
+                            colors = listOf(KairosPeriwinkle.copy(alpha = alpha), Color.Transparent),
+                            center = center,
+                            radius = size.minDimension * 0.5f
+                        ),
+                        radius = size.minDimension * 0.5f
+                    )
+                }
+        )
+        Box(
+            Modifier
+                .size(380.dp)
+                .align(Alignment.BottomStart)
+                .graphicsLayer { translationX = -170f; translationY = 120f }
+                .drawBehind {
+                    drawCircle(
+                        brush = Brush.radialGradient(
+                            colors = listOf(KairosSeaGlass.copy(alpha = alpha * 0.6f), Color.Transparent),
+                            center = center,
+                            radius = size.minDimension * 0.5f
+                        ),
+                        radius = size.minDimension * 0.5f
+                    )
+                }
+        )
     }
 }
 

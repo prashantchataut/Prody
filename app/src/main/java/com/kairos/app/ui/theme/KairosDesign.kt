@@ -55,6 +55,44 @@ internal val DarkKairosGlassColors = KairosGlassColors(
 
 internal val LocalKairosGlassColors = staticCompositionLocalOf { LightKairosGlassColors }
 
+/**
+ * Liquid glass tokens for floating navigation and elevated chrome.
+ *
+ * The material is a translucent tonal fill with a bright top edge, a hairline
+ * border, a soft tinted shadow, and a gentle top sheen. Real backdrop blur is
+ * platform-hacky on Android, so translucency carries the effect and degrades
+ * gracefully on every API level.
+ */
+@Immutable
+data class KairosLiquidGlassColors(
+    val fill: Color,
+    val fillDeep: Color,
+    val border: Color,
+    val highlight: Color,
+    val sheen: Color,
+    val shadow: Color
+)
+
+internal val LightKairosLiquidGlassColors = KairosLiquidGlassColors(
+    fill = KairosSurfaceLight.copy(alpha = 0.90f),
+    fillDeep = KairosSurfaceLight.copy(alpha = 0.72f),
+    border = KairosOutlineLight.copy(alpha = 0.90f),
+    highlight = Color(0x59FFFFFF),
+    sheen = Color(0x1FFFFFFF),
+    shadow = Color(0x4D3A2E1F)
+)
+
+internal val DarkKairosLiquidGlassColors = KairosLiquidGlassColors(
+    fill = KairosSurfaceDark.copy(alpha = 0.88f),
+    fillDeep = KairosSurfaceDark.copy(alpha = 0.72f),
+    border = KairosOutlineDark.copy(alpha = 0.55f),
+    highlight = Color(0x33FFFFFF),
+    sheen = Color(0x14FFFFFF),
+    shadow = Color(0x59000000)
+)
+
+internal val LocalKairosLiquidGlassColors = staticCompositionLocalOf { LightKairosLiquidGlassColors }
+
 object KairosSpacing {
     val xxs: Dp = 4.dp
     val xs: Dp = 8.dp
@@ -94,4 +132,9 @@ object KairosTheme {
         @Composable
         @ReadOnlyComposable
         get() = LocalKairosGlassColors.current
+
+    val liquidGlass: KairosLiquidGlassColors
+        @Composable
+        @ReadOnlyComposable
+        get() = LocalKairosLiquidGlassColors.current
 }
