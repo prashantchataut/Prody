@@ -66,17 +66,25 @@ class PersonalizationProfileTest {
 
     @Test
     fun `too easy and too hard shift target difficulty`() {
+        val repeated = { type: ContentInteractionType ->
+            listOf(
+                InteractionSignal(type, createdAt = now),
+                InteractionSignal(type, createdAt = now),
+                InteractionSignal(type, createdAt = now)
+            )
+        }
         val easy = PersonalizationProfile.compute(
             emptyMap(),
-            listOf(InteractionSignal(ContentInteractionType.TOO_EASY, createdAt = now)),
+            repeated(ContentInteractionType.TOO_EASY),
             now
         )
         val hard = PersonalizationProfile.compute(
             emptyMap(),
-            listOf(InteractionSignal(ContentInteractionType.TOO_HARD, createdAt = now)),
+            repeated(ContentInteractionType.TOO_HARD),
             now
         )
-        assertTrue(easy.difficultyDelta < 0)
-        assertTrue(hard.difficultyDelta > 0)
+        // Three signals move the delta by ±1.5, which rounds to a level change.
+        assertTrue("expected easy.difficultyDelta < 0, got ${easy.difficultyDelta}", easy.difficultyDelta < 0)
+        assertTrue("expected hard.difficultyDelta > 0, got ${hard.difficultyDelta}", hard.difficultyDelta > 0)
     }
 }
