@@ -67,9 +67,9 @@ which is a separate, riskier migration. That is tracked as next-step work.
 
 ## 5. Verification
 
-- `bash ./scripts/verify_kairos.sh` — **passes** (504 Kotlin files checked: package boundaries, ambiguous imports, R references, manifest components, achievement catalogue, DI duplicates).
-- Unit tests added for all new pure algorithms (`WordFamilyExpanderTest`, `PersonalizationProfileTest`, `PersonalizedStudyQueueTest`).
-- ⚠️ This sandbox has no JDK/Android SDK, so `./gradlew testDebugUnitTest` and `assembleDebug` could not be executed here. The new Kotlin was written to match existing patterns and checked by the static verifier, but a CI build is the required gate before shipping.
+- `bash ./scripts/verify_kairos.sh` — **passes** (503 Kotlin files checked: package boundaries, ambiguous imports, R references, manifest components, achievement catalogue, DI duplicates).
+- Unit tests added for all new pure algorithms (`WordFamilyExpanderTest`, `PersonalizationProfileTest`, `PersonalizedStudyQueueTest`) and browse-policy semantics updated (`BrowsePoliciesTest`).
+- **GitHub Actions CI is green** for this branch (`release` workflow: repository checks, unit tests, lint, signed APK, artifact, release). The compile errors surfaced by CI (stray parens in `DatabaseSeeder`, unqualified expander constants, shadowed `onError` lambda parameter, saved-state lookups on domain models, stale preview signatures) were all fixed and verified through subsequent CI runs.
 
 ## 6. Honest next steps (not done, deliberately)
 
