@@ -22,14 +22,27 @@ class BrowsePoliciesTest {
     }
 
     @Test
-    fun vocabulary_combinesFavoriteLearnedAndQueryFilters() {
+    fun vocabulary_combinesSavedAndQueryFilters() {
         val words = listOf(
-            VocabularyEntity(id = 1, word = "Lucid", definition = "clear", isLearned = true, isFavorite = true),
-            VocabularyEntity(id = 2, word = "Liminal", definition = "at a boundary", isLearned = false, isFavorite = true),
-            VocabularyEntity(id = 3, word = "Clear", definition = "easy to understand", isLearned = true)
+            VocabularyEntity(id = 1, word = "Lucid", definition = "clear", isFavorite = true),
+            VocabularyEntity(id = 2, word = "Liminal", definition = "at a boundary", isFavorite = true),
+            VocabularyEntity(id = 3, word = "Clear", definition = "easy to understand")
         )
 
-        val result = filterVocabulary(words, true, "learned", "clear", 0L)
+        val result = filterVocabulary(words, true, "saved", "clear", 0L)
+
+        assertEquals(listOf(1L), result.map { it.id })
+    }
+
+    @Test
+    fun vocabulary_newMeansNeverStudiedAndUnsaved() {
+        val words = listOf(
+            VocabularyEntity(id = 1, word = "Fresh", definition = "new", reviewCount = 0, masteryLevel = 0),
+            VocabularyEntity(id = 2, word = "Seen", definition = "studied once", reviewCount = 1, masteryLevel = 2),
+            VocabularyEntity(id = 3, word = "Liked", definition = "saved", isFavorite = true, reviewCount = 0, masteryLevel = 0)
+        )
+
+        val result = filterVocabulary(words, false, "new", "", 0L)
 
         assertEquals(listOf(1L), result.map { it.id })
     }

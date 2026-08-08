@@ -138,7 +138,7 @@ fun FocusedTodayScreen(
                         item(key = "daily-word") {
                             WordMoment(
                                 state = state,
-                                onLearned = viewModel::markWordAsLearned,
+                                onToggleSave = viewModel::toggleWordSaved,
                                 onPractice = {
                                     viewModel.onDailyWordFeedback(ContentInteractionType.OPENED)
                                     onNavigateToVocabulary()
@@ -164,6 +164,7 @@ fun FocusedTodayScreen(
                                     viewModel.onDailyQuoteFeedback(ContentInteractionType.OPENED)
                                     onNavigateToQuotes()
                                 },
+                                onToggleSave = viewModel::toggleQuoteSaved,
                                 onMoreLikeThis = { viewModel.onDailyQuoteFeedback(ContentInteractionType.MORE_LIKE_THIS) },
                                 onLessLikeThis = { viewModel.onDailyQuoteFeedback(ContentInteractionType.LESS_LIKE_THIS) },
                                 modifier = Modifier
@@ -193,7 +194,7 @@ fun FocusedTodayScreen(
 @Composable
 private fun WordMoment(
     state: TodayUiState,
-    onLearned: () -> Unit,
+    onToggleSave: () -> Unit,
     onPractice: () -> Unit,
     onTooEasy: () -> Unit,
     onTooHard: () -> Unit,
@@ -209,7 +210,7 @@ private fun WordMoment(
             verticalArrangement = Arrangement.SpaceBetween
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(18.dp)) {
-                MomentLabel(index = "01", label = "WORD")
+                MomentLabel(index = "01", label = "Word")
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Text(
                         text = state.wordOfTheDay,
@@ -277,10 +278,9 @@ private fun WordMoment(
                 }
                 KairosActionRow {
                     KairosPrimaryButton(
-                        text = if (state.wordCompletedToday) "Learned" else "Mark learned",
-                        onClick = onLearned,
-                        enabled = !state.wordCompletedToday,
-                        icon = if (state.wordCompletedToday) KairosIcons.CheckCircle else null,
+                        text = if (state.wordSaved) "Saved" else "Save word",
+                        onClick = onToggleSave,
+                        icon = if (state.wordSaved) KairosIcons.Favorite else KairosIcons.FavoriteBorder,
                         modifier = Modifier.weight(1f)
                     )
                     KairosSecondaryButton(
@@ -305,6 +305,7 @@ private fun ThoughtMoment(
     state: TodayUiState,
     onReflect: () -> Unit,
     onLibrary: () -> Unit,
+    onToggleSave: () -> Unit,
     onMoreLikeThis: () -> Unit,
     onLessLikeThis: () -> Unit,
     modifier: Modifier = Modifier
@@ -319,7 +320,19 @@ private fun ThoughtMoment(
             verticalArrangement = Arrangement.SpaceBetween
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(22.dp)) {
-                MomentLabel(index = "02", label = "THOUGHT", accent = KairosClay)
+                MomentLabel(
+                    index = "02",
+                    label = "Thought",
+                    accent = KairosClay,
+                    trailing = {
+                        KairosIconButton(
+                            icon = if (state.quoteSaved) KairosIcons.Favorite else KairosIcons.FavoriteBorder,
+                            contentDescription = if (state.quoteSaved) "Remove from saved quotes" else "Save this quote",
+                            onClick = onToggleSave,
+                            selected = state.quoteSaved
+                        )
+                    }
+                )
                 Text(
                     text = "“${state.dailyQuote}”",
                     style = MaterialTheme.typography.headlineLarge.copy(fontFamily = SerifFamily),
@@ -388,19 +401,26 @@ private fun ThoughtMoment(
 private fun MomentLabel(
     index: String,
     label: String,
-    accent: Color = MaterialTheme.colorScheme.primary
+    accent: Color = MaterialTheme.colorScheme.primary,
+    trailing: @Composable (() -> Unit)? = null
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelMedium,
-            color = accent,
-            fontWeight = FontWeight.Bold
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelMedium,
+                color = accent,
+                fontWeight = FontWeight.Bold
+            )
+            if (trailing != null) trailing()
+        }
         Text(
             text = index,
             style = MaterialTheme.typography.labelMedium,
@@ -499,7 +519,7 @@ private fun WordMomentPreview() {
                 wordExampleSentence = "The quiet hour before sunrise felt like a liminal space.",
                 wordRecommendationReason = "it matches your recent interest in change and is due at your current level"
             ),
-            onLearned = {},
+            onToggleSave = {},
             onPractice = {},
             onTooEasy = {},
             onTooHard = {},
@@ -526,6 +546,7 @@ private fun ThoughtMomentPreview() {
             ),
             onReflect = {},
             onLibrary = {},
+            onToggleSave = {},
             onMoreLikeThis = {},
             onLessLikeThis = {},
             modifier = Modifier.padding(16.dp)

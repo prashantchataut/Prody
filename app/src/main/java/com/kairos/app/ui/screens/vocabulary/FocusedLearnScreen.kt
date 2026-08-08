@@ -51,9 +51,12 @@ import com.kairos.app.ui.animation.KairosEasing
 import com.kairos.app.ui.animation.KairosReveal
 import com.kairos.app.ui.animation.rememberKairosReducedMotion
 import com.kairos.app.ui.components.kairos.KairosEmptyState
+import com.kairos.app.ui.components.kairos.KairosGlassSurface
 import com.kairos.app.ui.components.kairos.KairosIconButton
+import com.kairos.app.ui.components.kairos.KairosPrimaryButton
 import com.kairos.app.ui.components.kairos.KairosReadingSurface
 import com.kairos.app.ui.components.kairos.KairosScreenHeader
+import com.kairos.app.ui.components.kairos.KairosSecondaryButton
 import com.kairos.app.ui.components.kairos.KairosSegmentedControl
 import com.kairos.app.ui.components.kairos.KairosSkeletonList
 import com.kairos.app.ui.icons.KairosIcons
@@ -66,6 +69,7 @@ import com.kairos.app.ui.theme.KairosSpacing
 @Composable
 fun FocusedLearnScreen(
     onNavigateToDetail: (Long) -> Unit,
+    onNavigateToSession: (SessionMode) -> Unit,
     viewModel: VocabularyListViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -76,7 +80,7 @@ fun FocusedLearnScreen(
     Column(modifier = Modifier.fillMaxSize()) {
         KairosScreenHeader(
             title = "Learn",
-            eyebrow = "VOCABULARY",
+            eyebrow = "Vocabulary",
             subtitle = learningSummary(state),
             actions = {
                 KairosIconButton(
@@ -105,6 +109,14 @@ fun FocusedLearnScreen(
                 .padding(horizontal = KairosSpacing.screen),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
+            if (!state.isLoading) {
+                SessionLauncher(
+                    dueReviewCount = state.dueReviewCount,
+                    totalCount = state.totalCount,
+                    onStartReview = { onNavigateToSession(SessionMode.REVIEW_DUE) },
+                    onStartNewWords = { onNavigateToSession(SessionMode.NEW_WORDS) }
+                )
+            }
             if (!state.isLoading && state.totalCount > 0) {
                 KairosReveal(visible = true) {
                     LearningOverview(state = state)
@@ -196,9 +208,78 @@ fun FocusedLearnScreen(
     }
 }
 
+/**
+ * Liquid-glass launcher for the hybrid practice session. Shows the spaced-repetition
+ * review queue when words are due, plus a fresh-words option so the stream never runs dry.
+ */
+@Composable
+private fun SessionLauncher(
+    dueReviewCount: Int,
+    totalCount: Int,
+    onStartReview: () -> Unit,
+    onStartNewWords: () -> Unit
+) {
+    KairosGlassSurface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(28.dp),
+        contentPadding = PaddingValues(18.dp)
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text(
+                        text = "Practice session",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        text = "Recall cards, then match meanings",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Surface(
+                    shape = RoundedCornerShape(50),
+                    color = KairosSeaGlass.copy(alpha = 0.14f)
+                ) {
+                    Text(
+                        text = if (dueReviewCount > 0) "$dueReviewCount due" else "All reviewed",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = KairosSeaGlass,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                    )
+                }
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                KairosPrimaryButton(
+                    text = if (dueReviewCount > 0) "Review $dueReviewCount words" else "Review",
+                    onClick = onStartReview,
+                    modifier = Modifier.weight(1f),
+                    icon = KairosIcons.Outlined.Refresh
+                )
+                KairosSecondaryButton(
+                    text = "New words",
+                    onClick = onStartNewWords,
+                    modifier = Modifier.weight(1f),
+                    icon = if (totalCount > 0) KairosIcons.Outlined.School else null
+                )
+            }
+        }
+    }
+}
+
 @Composable
 private fun LearningOverview(state: VocabularyListUiState) {
-    val targetProgress = if (state.totalCount == 0) 0f else state.learnedCount.toFloat() / state.totalCount.toFloat()
+    val targetProgress = if (state.totalCount == 0) 0f else state.savedCount.toFloat() / state.totalCount.toFloat()
     val reducedMotion = rememberKairosReducedMotion()
     val progress by animateFloatAsState(
         targetValue = targetProgress.coerceIn(0f, 1f),
@@ -263,14 +344,14 @@ private fun LearningOverview(state: VocabularyListUiState) {
                 horizontalArrangement = Arrangement.spacedBy(9.dp)
             ) {
                 LearningMetric(
-                    value = state.learnedCount.toString(),
-                    label = "Learned",
+                    value = state.savedCount.toString(),
+                    label = "Saved",
                     accent = KairosSeaGlass,
                     modifier = Modifier.weight(1f)
                 )
                 LearningMetric(
-                    value = (state.totalCount - state.learnedCount).coerceAtLeast(0).toString(),
-                    label = "Exploring",
+                    value = (state.totalCount - state.savedCount).coerceAtLeast(0).toString(),
+                    label = "Unsaved",
                     accent = KairosPeriwinkle,
                     modifier = Modifier.weight(1f)
                 )
@@ -366,7 +447,7 @@ private fun VocabularyRow(
                     append(word.word)
                     if (word.partOfSpeech.isNotBlank()) append(", ${word.partOfSpeech}")
                     append(". ${word.definition}")
-                    if (word.isLearned) append(". Learned")
+                    if (word.isFavorite) append(". Saved")
                 }
             },
         shape = RoundedCornerShape(24.dp),
@@ -379,7 +460,7 @@ private fun VocabularyRow(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            DifficultyMark(difficulty = word.difficulty, learned = word.isLearned)
+            DifficultyMark(difficulty = word.difficulty, saved = word.isFavorite)
             Column(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(3.dp)
@@ -433,12 +514,12 @@ private fun VocabularyRow(
 }
 
 @Composable
-private fun DifficultyMark(difficulty: Int, learned: Boolean) {
-    val color = if (learned) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.primary
+private fun DifficultyMark(difficulty: Int, saved: Boolean) {
+    val color = if (saved) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.primary
     Box(
         modifier = Modifier
             .size(42.dp)
-            .semantics { contentDescription = if (learned) "Learned" else "Difficulty ${difficulty.coerceIn(1, 5)} of 5" },
+            .semantics { contentDescription = if (saved) "Saved" else "Difficulty ${difficulty.coerceIn(1, 5)} of 5" },
         contentAlignment = Alignment.Center
     ) {
         Surface(
@@ -448,7 +529,7 @@ private fun DifficultyMark(difficulty: Int, learned: Boolean) {
         ) {
             Box(contentAlignment = Alignment.Center) {
                 Icon(
-                    imageVector = if (learned) KairosIcons.CheckCircle else KairosIcons.Outlined.School,
+                    imageVector = if (saved) KairosIcons.Favorite else KairosIcons.Outlined.School,
                     contentDescription = null,
                     tint = color,
                     modifier = Modifier.size(19.dp)
@@ -460,21 +541,21 @@ private fun DifficultyMark(difficulty: Int, learned: Boolean) {
 
 private fun learningSummary(state: VocabularyListUiState): String = when {
     state.totalCount == 0 -> "A focused vocabulary practice space"
-    state.learnedCount == 0 -> "${state.totalCount} words ready to learn"
-    else -> "${state.learnedCount} learned · ${state.totalCount - state.learnedCount} still in motion"
+    state.savedCount == 0 -> "${state.totalCount} words ready to explore"
+    else -> "${state.savedCount} saved · ${state.totalCount - state.savedCount} in the wild"
 }
 
 private fun emptyTitle(state: VocabularyListUiState): String = when {
     state.query.isNotBlank() -> "No matching words"
     state.showFavoritesOnly -> "No favorite words yet"
-    state.currentFilter == VocabularyFilter.LEARNED.key -> "No learned words yet"
+    state.currentFilter == VocabularyFilter.SAVED.key -> "No saved words yet"
     else -> "No words available"
 }
 
 private fun emptyBody(state: VocabularyListUiState): String = when {
     state.query.isNotBlank() -> "Try a broader spelling, meaning, or topic."
     state.showFavoritesOnly -> "Favorite useful words as you find them, then return here for a clean shortlist."
-    state.currentFilter == VocabularyFilter.LEARNED.key -> "Complete today’s word or open a word to begin learning."
+    state.currentFilter == VocabularyFilter.SAVED.key -> "Tap the heart on any word to keep it here."
     else -> "The local vocabulary catalog is empty."
 }
 

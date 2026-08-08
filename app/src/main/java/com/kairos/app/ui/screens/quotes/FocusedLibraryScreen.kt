@@ -75,7 +75,7 @@ fun FocusedLibraryScreen(
     Column(modifier = Modifier.fillMaxSize()) {
         KairosScreenHeader(
             title = "Library",
-            eyebrow = "WORDS & IDEAS",
+            eyebrow = "Words & ideas",
             subtitle = librarySummary(state),
             actions = {
                 KairosIconButton(

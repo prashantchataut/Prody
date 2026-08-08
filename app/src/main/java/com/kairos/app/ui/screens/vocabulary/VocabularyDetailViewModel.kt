@@ -2,9 +2,12 @@ package com.kairos.app.ui.screens.vocabulary
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kairos.app.data.auth.UserIdProvider
 import com.kairos.app.data.local.dao.VocabularyDao
 import com.kairos.app.data.local.entity.VocabularyEntity
-import com.kairos.app.domain.gamification.WisdomQuestEngine
+import com.kairos.app.domain.recommendation.ContentInteractionType
+import com.kairos.app.domain.recommendation.DailyContentType
+import com.kairos.app.domain.repository.DailyPlanRepository
 import com.kairos.app.util.TextToSpeechManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,41 +15,22 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 import javax.inject.Inject
-
-/**
- * Wisdom Quest challenge states
- */
-sealed class WisdomQuestState {
-    /** No challenge active - shows "Start Challenge" button */
-    data object Idle : WisdomQuestState()
-    /** Challenge is being generated */
-    data object Loading : WisdomQuestState()
-    /** Active challenge awaiting user response */
-    data class Active(
-        val challenge: WisdomQuestEngine.WisdomChallenge,
-        val currentStreak: Int,
-        val dailyFocus: WisdomQuestEngine.DailyFocus?
-    ) : WisdomQuestState()
-    /** Challenge completed - showing result */
-    data class Result(val result: WisdomQuestEngine.QuestResult) : WisdomQuestState()
-    /** User needs to set daily focus first */
-    data object NeedsDailyFocus : WisdomQuestState()
-}
 
 data class VocabularyDetailUiState(
     val word: VocabularyEntity? = null,
     val isLoading: Boolean = true,
     val isSpeaking: Boolean = false,
-    val wisdomQuestState: WisdomQuestState = WisdomQuestState.Idle,
     val error: String? = null
 )
 
 @HiltViewModel
 class VocabularyDetailViewModel @Inject constructor(
     private val vocabularyDao: VocabularyDao,
-    private val ttsManager: TextToSpeechManager,
-    private val wisdomQuestEngine: WisdomQuestEngine
+    private val dailyPlanRepository: DailyPlanRepository,
+    private val userIdProvider: UserIdProvider,
+    private val ttsManager: TextToSpeechManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(VocabularyDetailUiState())
@@ -78,112 +62,27 @@ class VocabularyDetailViewModel @Inject constructor(
         loadWord(wordId)
     }
 
+    /**
+     * Save or un-save this word. Saving is the user's explicit "I like this" signal
+     * and feeds the recommendation profile, so similar words surface first.
+     */
     fun toggleFavorite() {
         viewModelScope.launch {
-            _uiState.value.word?.let { word ->
-                vocabularyDao.updateWord(
-                    word.copy(isFavorite = !word.isFavorite)
-                )
-            }
-        }
-    }
-
-    fun markAsLearned() {
-        viewModelScope.launch {
-            _uiState.value.word?.let { word ->
-                vocabularyDao.updateWord(
-                    word.copy(
-                        isLearned = true,
-                        learnedAt = System.currentTimeMillis(),
-                        masteryLevel = maxOf(word.masteryLevel, 3)
-                    )
-                )
-            }
-        }
-    }
-
-    // ==========================================================================
-    // WISDOM QUEST - Active Recall Challenge System
-    // ==========================================================================
-
-    /**
-     * Starts a new Wisdom Quest challenge for the current word.
-     * Replaces the boring "Mark as Learned" with an engaging micro-challenge.
-     */
-    fun startWisdomQuest() {
-        viewModelScope.launch {
             val word = _uiState.value.word ?: return@launch
-
-            // Check if daily focus is set
-            if (wisdomQuestEngine.needsDailyFocus()) {
-                _uiState.update { it.copy(wisdomQuestState = WisdomQuestState.NeedsDailyFocus) }
-                return@launch
+            val saving = !word.isFavorite
+            vocabularyDao.updateWord(word.copy(isFavorite = saving))
+            runCatching {
+                dailyPlanRepository.recordInteraction(
+                    userId = userIdProvider.getUserId(),
+                    localDate = LocalDate.now(),
+                    type = DailyContentType.VOCABULARY,
+                    contentId = word.id,
+                    interaction = if (saving) ContentInteractionType.SAVED else ContentInteractionType.UNSAVED,
+                    category = word.category,
+                    sourceKey = word.partOfSpeech.ifBlank { "vocabulary" },
+                    difficulty = word.difficulty
+                )
             }
-
-            _uiState.update { it.copy(wisdomQuestState = WisdomQuestState.Loading) }
-
-            try {
-                val challenge = wisdomQuestEngine.generateChallenge(word)
-                val currentStreak = wisdomQuestEngine.getCurrentStreak()
-                val dailyFocus = wisdomQuestEngine.getCurrentDailyFocus()
-
-                _uiState.update {
-                    it.copy(
-                        wisdomQuestState = WisdomQuestState.Active(
-                            challenge = challenge,
-                            currentStreak = currentStreak,
-                            dailyFocus = dailyFocus
-                        )
-                    )
-                }
-            } catch (e: Exception) {
-                // Fallback to idle state on error
-                _uiState.update { it.copy(wisdomQuestState = WisdomQuestState.Idle) }
-            }
-        }
-    }
-
-    /**
-     * Submits the user's answer to the current challenge.
-     */
-    fun submitWisdomQuestAnswer(answer: String) {
-        viewModelScope.launch {
-            val currentState = _uiState.value.wisdomQuestState
-            if (currentState !is WisdomQuestState.Active) return@launch
-
-            val result = wisdomQuestEngine.validateAnswer(
-                challenge = currentState.challenge,
-                userAnswer = answer
-            )
-
-            _uiState.update {
-                it.copy(wisdomQuestState = WisdomQuestState.Result(result))
-            }
-        }
-    }
-
-    /**
-     * Skips the current challenge (no XP awarded, streak reset).
-     */
-    fun skipWisdomQuest() {
-        _uiState.update { it.copy(wisdomQuestState = WisdomQuestState.Idle) }
-    }
-
-    /**
-     * Continues after seeing the result (return to idle or start new challenge).
-     */
-    fun continueAfterResult() {
-        _uiState.update { it.copy(wisdomQuestState = WisdomQuestState.Idle) }
-    }
-
-    /**
-     * Sets the daily focus category for 2x XP bonus.
-     */
-    fun setDailyFocus(focus: WisdomQuestEngine.DailyFocus) {
-        viewModelScope.launch {
-            wisdomQuestEngine.setDailyFocus(focus)
-            // After setting focus, start the challenge
-            startWisdomQuest()
         }
     }
 

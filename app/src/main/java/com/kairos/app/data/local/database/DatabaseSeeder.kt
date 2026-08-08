@@ -2,6 +2,8 @@ package com.kairos.app.data.local.database
 
 import android.content.Context
 import android.util.Log
+import com.kairos.app.data.content.ExpandedQuoteContent
+import com.kairos.app.data.content.ExpandedVocabularyContent
 import com.kairos.app.data.local.entity.AchievementEntity
 import com.kairos.app.data.local.entity.IdiomEntity
 
@@ -501,7 +503,8 @@ object DatabaseSeeder {
             tags = "persistence,progress,patience",
             reflectionPrompt = "What progress have you made recently, no matter how small?"
         )
-    )
+    ) + ExpandedQuoteContent.quotes
+        .distinctBy { it.content.trim().lowercase() }
 
     // =========================================================================
     // PROVERBS - Wisdom from cultures around the world
@@ -1653,7 +1656,8 @@ object DatabaseSeeder {
             difficulty = 3,
             category = "personal_growth"
         )
-    )
+    ) + ExpandedVocabularyContent.allWords
+        .distinctBy { it.word.trim().lowercase() }
 
     
 

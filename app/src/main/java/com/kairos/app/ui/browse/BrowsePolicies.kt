@@ -3,7 +3,12 @@ package com.kairos.app.ui.browse
 import com.kairos.app.data.local.entity.JournalEntryEntity
 import com.kairos.app.data.local.entity.VocabularyEntity
 
-/** Pure browse policies kept outside ViewModels for deterministic tests and reuse. */
+/**
+ * Pure browse policies kept outside ViewModels for deterministic tests and reuse.
+ *
+ * The primary vocabulary signals are *saved* (favorited) and *studied* (reviewed
+ * at least once). "New" means never studied; "Saved" means the user liked the word.
+ */
 fun filterVocabulary(
     words: List<VocabularyEntity>,
     favoritesOnly: Boolean,
@@ -16,8 +21,8 @@ fun filterVocabulary(
         .filter { !favoritesOnly || it.isFavorite }
         .filter {
             when (filterKey) {
-                "new" -> !it.isLearned
-                "learned" -> it.isLearned
+                "new" -> !it.isFavorite && it.reviewCount == 0 && it.masteryLevel == 0
+                "saved" -> it.isFavorite
                 else -> true
             }
         }

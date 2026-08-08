@@ -1,11 +1,8 @@
 package com.kairos.app.ui.screens.vocabulary
 import com.kairos.app.ui.icons.KairosIcons
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -26,10 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kairos.app.R
-import com.kairos.app.ui.components.DailyFocusSelector
 import com.kairos.app.ui.components.KairosCard
-import com.kairos.app.ui.components.WisdomQuestChallenge
-import com.kairos.app.ui.components.WisdomQuestResult
 import com.kairos.app.ui.theme.*
 
 @Composable
@@ -337,122 +331,52 @@ fun VocabularyDetailScreen(
                     )
                 }
 
-                // Wisdom Quest section - replaces boring "Mark as Learned" button
-                if (!word.isLearned) {
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    // Wisdom Quest animated content
-                    AnimatedContent(
-                        targetState = uiState.wisdomQuestState,
-                        transitionSpec = {
-                            (fadeIn() + scaleIn(initialScale = 0.95f)) togetherWith
-                                (fadeOut() + scaleOut(targetScale = 0.95f))
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
-                        label = "wisdom_quest_transition"
-                    ) { questState ->
-                        when (questState) {
-                            is WisdomQuestState.Idle -> {
-                                // Start Challenge button
-                                Button(
-                                    onClick = { viewModel.startWisdomQuest() },
-                                    modifier = Modifier.fillMaxWidth(),
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = KairosAccentGreen,
-                                        contentColor = androidx.compose.ui.graphics.Color.Black
-                                    )
-                                ) {
-                                    Icon(
-                                        imageVector = KairosIcons.Psychology,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text(
-                                        text = "Start Wisdom Quest",
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
-                            }
-
-                            is WisdomQuestState.Loading -> {
-                                // Loading state
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(100.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    CircularProgressIndicator(
-                                        color = KairosAccentGreen
-                                    )
-                                }
-                            }
-
-                            is WisdomQuestState.NeedsDailyFocus -> {
-                                // Daily Focus selector
-                                DailyFocusSelector(
-                                    onFocusSelected = { focus ->
-                                        viewModel.setDailyFocus(focus)
-                                    }
-                                )
-                            }
-
-                            is WisdomQuestState.Active -> {
-                                // Active challenge UI
-                                WisdomQuestChallenge(
-                                    challenge = questState.challenge,
-                                    currentStreak = questState.currentStreak,
-                                    dailyFocus = questState.dailyFocus,
-                                    onAnswerSubmit = { answer ->
-                                        viewModel.submitWisdomQuestAnswer(answer)
-                                    },
-                                    onSkip = { viewModel.skipWisdomQuest() }
-                                )
-                            }
-
-                            is WisdomQuestState.Result -> {
-                                // Result display
-                                WisdomQuestResult(
-                                    result = questState.result,
-                                    onContinue = { viewModel.continueAfterResult() }
-                                )
-                            }
-                        }
-                    }
-                } else {
-                    // Word already learned - show completion badge
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Surface(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
-                        shape = ChipShape,
-                        color = AchievementUnlocked.copy(alpha = 0.15f)
+                // Save / like this word — the primary signal for future recommendations.
+                Spacer(modifier = Modifier.height(24.dp))
+                Surface(
+                    onClick = { viewModel.toggleFavorite() },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    shape = ChipShape,
+                    color = if (word.isFavorite) {
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.16f)
+                    } else {
+                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                    },
+                    border = androidx.compose.foundation.BorderStroke(
+                        1.dp,
+                        MaterialTheme.colorScheme.primary.copy(alpha = if (word.isFavorite) 0.6f else 0.25f)
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
                     ) {
-                        Row(
-                            modifier = Modifier.padding(16.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Icon(
-                                imageVector = KairosIcons.CheckCircle,
-                                contentDescription = null,
-                                tint = AchievementUnlocked,
-                                modifier = Modifier.size(24.dp)
-                            )
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Text(
-                                text = "Wisdom Acquired",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.SemiBold,
-                                color = AchievementUnlocked
-                            )
-                        }
+                        Icon(
+                            imageVector = if (word.isFavorite) KairosIcons.Favorite else KairosIcons.FavoriteBorder,
+                            contentDescription = null,
+                            tint = if (word.isFavorite) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(22.dp)
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            text = if (word.isFavorite) "Saved — similar words surface first" else "Save this word",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = if (word.isFavorite) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.onSurface
+                        )
                     }
                 }
+                Text(
+                    text = "Saved words teach Kairos what to recommend. Your recall is tracked separately, in practice.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
+                )
 
                 Spacer(modifier = Modifier.height(100.dp))
             }

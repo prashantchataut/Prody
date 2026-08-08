@@ -29,7 +29,9 @@ class OnboardingViewModel @Inject constructor(
 
     fun completeOnboarding(
         vocabularyDifficulty: Int,
-        wisdomCategories: Set<String>
+        wisdomCategories: Set<String>,
+        wordCategories: Set<String>,
+        practiceSessionSize: Int = 5
     ) {
         if (_completionState.value is OnboardingCompletionState.Saving) return
 
@@ -39,7 +41,9 @@ class OnboardingViewModel @Inject constructor(
                 val result = onboardingRepository.completeSetup(
                     OnboardingPreferences(
                         vocabularyDifficulty = vocabularyDifficulty,
-                        wisdomCategories = wisdomCategories
+                        wisdomCategories = wisdomCategories,
+                        wordCategories = wordCategories,
+                        practiceSessionSize = practiceSessionSize
                     )
                 )
             ) {

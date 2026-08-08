@@ -2,7 +2,11 @@ package com.kairos.app.ui.screens.vocabulary
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kairos.app.data.auth.UserIdProvider
 import com.kairos.app.data.local.entity.VocabularyEntity
+import com.kairos.app.domain.recommendation.ContentInteractionType
+import com.kairos.app.domain.recommendation.DailyContentType
+import com.kairos.app.domain.repository.DailyPlanRepository
 import com.kairos.app.domain.repository.VocabularyRepository
 import com.kairos.app.ui.browse.filterVocabulary
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -20,13 +24,15 @@ import javax.inject.Inject
 enum class VocabularyFilter(val key: String, val label: String) {
     ALL("all", "All"),
     NEW("new", "New"),
-    LEARNED("learned", "Learned")
+    SAVED("saved", "Saved")
 }
 
 data class VocabularyListUiState(
     val words: List<VocabularyEntity> = emptyList(),
     val learnedCount: Int = 0,
+    val savedCount: Int = 0,
     val totalCount: Int = 0,
+    val dueReviewCount: Int = 0,
     val showFavoritesOnly: Boolean = false,
     val currentFilter: String = VocabularyFilter.ALL.key,
     val query: String = "",
@@ -42,7 +48,9 @@ private data class VocabularyBrowseCriteria(
 
 @HiltViewModel
 class VocabularyListViewModel @Inject constructor(
-    private val vocabularyRepository: VocabularyRepository
+    private val vocabularyRepository: VocabularyRepository,
+    private val dailyPlanRepository: DailyPlanRepository,
+    private val userIdProvider: UserIdProvider
 ) : ViewModel() {
 
     private val criteria = MutableStateFlow(VocabularyBrowseCriteria())
@@ -52,11 +60,15 @@ class VocabularyListViewModel @Inject constructor(
     private val allWords = reloadSignal
         .flatMapLatest { vocabularyRepository.getAllWords() }
 
+    private val dueReviewCount = reloadSignal
+        .flatMapLatest { vocabularyRepository.observeDueReviewCount() }
+
     val uiState: StateFlow<VocabularyListUiState> = combine(
         allWords,
+        dueReviewCount,
         criteria,
         transientError
-    ) { words, browse, error ->
+    ) { words, dueCount, browse, error ->
         val filtered = filterVocabulary(
             words = words,
             favoritesOnly = browse.favoritesOnly,
@@ -67,7 +79,9 @@ class VocabularyListViewModel @Inject constructor(
         VocabularyListUiState(
             words = filtered,
             learnedCount = words.count { it.isLearned },
+            savedCount = words.count { it.isFavorite },
             totalCount = words.size,
+            dueReviewCount = dueCount,
             showFavoritesOnly = browse.favoritesOnly,
             currentFilter = browse.filter.key,
             query = browse.query,
@@ -109,8 +123,22 @@ class VocabularyListViewModel @Inject constructor(
                 transientError.value = "This word is no longer available."
                 return@launch
             }
-            vocabularyRepository.updateFavoriteStatus(wordId, !word.isFavorite)
+            val saving = !word.isFavorite
+            vocabularyRepository.updateFavoriteStatus(wordId, saving)
                 .onError { transientError.value = it.userMessage }
+                .onSuccess {
+                    // Liking a word is a first-class recommendation signal.
+                    dailyPlanRepository.recordInteraction(
+                        userId = userIdProvider.getUserId(),
+                        localDate = java.time.LocalDate.now(),
+                        type = DailyContentType.VOCABULARY,
+                        contentId = wordId,
+                        interaction = if (saving) ContentInteractionType.SAVED else ContentInteractionType.UNSAVED,
+                        category = word.category,
+                        sourceKey = word.partOfSpeech.ifBlank { "vocabulary" },
+                        difficulty = word.difficulty
+                    )
+                }
         }
     }
 

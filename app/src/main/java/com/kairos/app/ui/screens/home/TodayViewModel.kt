@@ -40,7 +40,9 @@ data class TodayUiState(
     val wordsLearnedThisWeek: Int = 0,
     val isLoading: Boolean = true,
     val error: String? = null,
-    val wordCompletedToday: Boolean = false
+    val wordCompletedToday: Boolean = false,
+    val wordSaved: Boolean = false,
+    val quoteSaved: Boolean = false
 )
 
 /**
@@ -79,31 +81,71 @@ class TodayViewModel @Inject constructor(
 
     fun retry() = load()
 
-    fun markWordAsLearned() {
-        if (currentWordId <= 0 || _uiState.value.wordCompletedToday) return
+    /**
+     * Save (or un-save) today's word. Saving is the explicit "I like this" signal
+     * and also completes the daily moment, so the loop stays honest: engage with
+     * the word, and the recommendation engine learns from it.
+     */
+    fun toggleWordSaved() {
+        if (currentWordId <= 0) return
         viewModelScope.launch {
-            when (val result = todayProgressRepository.completeWord(
+            val saving = !_uiState.value.wordSaved
+            todayProgressRepository.setWordSaved(currentUserId, currentWordId, saving)
+                .onError { _uiState.update { state -> state.copy(error = it.userMessage) } }
+            dailyPlanRepository.recordInteraction(
                 userId = currentUserId,
-                wordId = currentWordId,
-                completedAtMillis = System.currentTimeMillis()
-            )) {
-                is Result.Success -> {
-                    dailyPlanRepository.recordInteraction(
-                        userId = currentUserId,
-                        localDate = currentDate,
-                        type = DailyContentType.VOCABULARY,
-                        contentId = currentWordId,
-                        interaction = ContentInteractionType.COMPLETED,
-                        category = currentWordCategory,
-                        difficulty = currentWordDifficulty
-                    )
-                    _uiState.update { it.copy(wordCompletedToday = true) }
+                localDate = currentDate,
+                type = DailyContentType.VOCABULARY,
+                contentId = currentWordId,
+                interaction = if (saving) ContentInteractionType.SAVED else ContentInteractionType.UNSAVED,
+                category = currentWordCategory,
+                difficulty = currentWordDifficulty
+            )
+            _uiState.update { it.copy(wordSaved = saving) }
+            if (saving) {
+                when (val result = todayProgressRepository.completeWord(
+                    userId = currentUserId,
+                    wordId = currentWordId,
+                    completedAtMillis = System.currentTimeMillis()
+                )) {
+                    is Result.Success -> {
+                        dailyPlanRepository.recordInteraction(
+                            userId = currentUserId,
+                            localDate = currentDate,
+                            type = DailyContentType.VOCABULARY,
+                            contentId = currentWordId,
+                            interaction = ContentInteractionType.COMPLETED,
+                            category = currentWordCategory,
+                            difficulty = currentWordDifficulty
+                        )
+                        _uiState.update { it.copy(wordCompletedToday = true) }
+                    }
+                    is Result.Error -> {
+                        _uiState.update { it.copy(error = result.userMessage) }
+                    }
+                    Result.Loading -> Unit
                 }
-                is Result.Error -> {
-                    _uiState.update { it.copy(error = result.userMessage) }
-                }
-                Result.Loading -> Unit
             }
+        }
+    }
+
+    /** Save or un-save today's quote — the same like-signal for thoughts. */
+    fun toggleQuoteSaved() {
+        if (currentQuoteId <= 0) return
+        viewModelScope.launch {
+            val saving = !_uiState.value.quoteSaved
+            todayProgressRepository.setQuoteSaved(currentUserId, currentQuoteId, saving)
+                .onError { error -> _uiState.update { it.copy(error = error.userMessage) } }
+            dailyPlanRepository.recordInteraction(
+                userId = currentUserId,
+                localDate = currentDate,
+                type = DailyContentType.QUOTE,
+                contentId = currentQuoteId,
+                interaction = if (saving) ContentInteractionType.SAVED else ContentInteractionType.UNSAVED,
+                category = currentQuoteCategory,
+                sourceKey = currentQuoteSource
+            )
+            _uiState.update { it.copy(quoteSaved = saving) }
         }
     }
 
@@ -187,6 +229,15 @@ class TodayViewModel @Inject constructor(
                 currentQuoteCategory = recommendation.item.category
                 currentQuoteSource = recommendation.item.author
             }
+            // Seed saved flags from the local catalog; toggles keep them
+            // authoritative afterwards. The daily plan carries domain models,
+            // so the favorite state is read from the repository instead.
+            _uiState.update {
+                it.copy(
+                    wordSaved = todayProgressRepository.isWordSaved(currentWordId),
+                    quoteSaved = todayProgressRepository.isQuoteSaved(currentQuoteId)
+                )
+            }
 
             val weekStart = getWeekStartTimestamp()
             todayProgressRepository.observeProgress(
@@ -229,7 +280,9 @@ class TodayViewModel @Inject constructor(
             wordsLearnedThisWeek = progress.wordsLearnedThisWeek,
             isLoading = false,
             error = null,
-            wordCompletedToday = plan.word?.completedAt != null || _uiState.value.wordCompletedToday
+            wordCompletedToday = plan.word?.completedAt != null || _uiState.value.wordCompletedToday,
+            wordSaved = _uiState.value.wordSaved,
+            quoteSaved = _uiState.value.quoteSaved
         )
     }
 

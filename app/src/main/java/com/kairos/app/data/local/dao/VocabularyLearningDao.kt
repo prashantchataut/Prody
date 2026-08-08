@@ -96,6 +96,10 @@ interface VocabularyLearningDao {
     @Query("SELECT COUNT(*) FROM vocabulary_learning WHERE nextReviewDate <= :currentTime")
     fun getDueReviewCount(currentTime: Long = System.currentTimeMillis()): Flow<Int>
 
+    /** Sync count of due reviews used to prepare a practice session. */
+    @Query("SELECT COUNT(*) FROM vocabulary_learning WHERE nextReviewDate <= :currentTime")
+    suspend fun getDueReviewCountSync(currentTime: Long = System.currentTimeMillis()): Int
+
     /**
      * Get words that need practice (low accuracy or struggling words).
      */
