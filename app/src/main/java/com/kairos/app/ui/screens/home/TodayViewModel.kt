@@ -135,7 +135,7 @@ class TodayViewModel @Inject constructor(
         viewModelScope.launch {
             val saving = !_uiState.value.quoteSaved
             todayProgressRepository.setQuoteSaved(currentUserId, currentQuoteId, saving)
-                .onError { _uiState.update { it.copy(error = it.userMessage) } }
+                .onError { error -> _uiState.update { it.copy(error = error.userMessage) } }
             dailyPlanRepository.recordInteraction(
                 userId = currentUserId,
                 localDate = currentDate,
@@ -229,11 +229,13 @@ class TodayViewModel @Inject constructor(
                 currentQuoteCategory = recommendation.item.category
                 currentQuoteSource = recommendation.item.author
             }
-            // Seed saved flags from the plan; toggles keep them authoritative afterwards.
+            // Seed saved flags from the local catalog; toggles keep them
+            // authoritative afterwards. The daily plan carries domain models,
+            // so the favorite state is read from the repository instead.
             _uiState.update {
                 it.copy(
-                    wordSaved = plan.word?.item?.isFavorite == true,
-                    quoteSaved = plan.quote?.item?.isFavorite == true
+                    wordSaved = todayProgressRepository.isWordSaved(currentWordId),
+                    quoteSaved = todayProgressRepository.isQuoteSaved(currentQuoteId)
                 )
             }
 

@@ -55,7 +55,7 @@ data class WordFamilySpec(
         synonyms = synonyms,
         antonyms = antonyms,
         origin = origin,
-        difficulty = difficulty.coerceIn(MIN_DIFFICULTY, MAX_DIFFICULTY),
+        difficulty = difficulty.coerceIn(WordFamilyExpander.MIN_DIFFICULTY, WordFamilyExpander.MAX_DIFFICULTY),
         category = category
     )
 
@@ -76,7 +76,7 @@ data class WordFamilySpec(
                         synonyms = member.synonyms,
                         antonyms = member.antonyms,
                         origin = "kairos:family:$word",
-                        difficulty = (difficulty + member.difficultyOffset).coerceIn(MIN_DIFFICULTY, MAX_DIFFICULTY),
+                        difficulty = (difficulty + member.difficultyOffset).coerceIn(WordFamilyExpander.MIN_DIFFICULTY, WordFamilyExpander.MAX_DIFFICULTY),
                         category = category
                     )
                 )

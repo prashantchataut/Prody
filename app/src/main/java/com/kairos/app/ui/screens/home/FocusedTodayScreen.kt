@@ -519,7 +519,7 @@ private fun WordMomentPreview() {
                 wordExampleSentence = "The quiet hour before sunrise felt like a liminal space.",
                 wordRecommendationReason = "it matches your recent interest in change and is due at your current level"
             ),
-            onLearned = {},
+            onToggleSave = {},
             onPractice = {},
             onTooEasy = {},
             onTooHard = {},
@@ -546,6 +546,7 @@ private fun ThoughtMomentPreview() {
             ),
             onReflect = {},
             onLibrary = {},
+            onToggleSave = {},
             onMoreLikeThis = {},
             onLessLikeThis = {},
             modifier = Modifier.padding(16.dp)

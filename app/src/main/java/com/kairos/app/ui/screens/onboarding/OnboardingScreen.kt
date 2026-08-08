@@ -849,7 +849,7 @@ private fun OnboardingPreview() {
         OnboardingContent(
             completionState = OnboardingCompletionState.Idle,
             onComplete = {},
-            onSubmit = { _, _ -> },
+            onSubmit = { _, _, _, _ -> },
             onClearError = {}
         )
     }

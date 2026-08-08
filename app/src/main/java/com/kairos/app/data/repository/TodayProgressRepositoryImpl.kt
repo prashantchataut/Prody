@@ -97,4 +97,12 @@ class TodayProgressRepositoryImpl @Inject constructor(
     ) {
         quoteDao.updateFavoriteStatus(quoteId, saved)
     }
+
+    override suspend fun isWordSaved(wordId: Long): Boolean {
+        return vocabularyDao.getWordById(wordId)?.isFavorite == true
+    }
+
+    override suspend fun isQuoteSaved(quoteId: Long): Boolean {
+        return quoteDao.getQuoteById(quoteId)?.isFavorite == true
+    }
 }
