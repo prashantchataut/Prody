@@ -504,7 +504,7 @@ object DatabaseSeeder {
             reflectionPrompt = "What progress have you made recently, no matter how small?"
         )
     ) + ExpandedQuoteContent.quotes
-    ).distinctBy { it.content.trim().lowercase() }
+        .distinctBy { it.content.trim().lowercase() }
 
     // =========================================================================
     // PROVERBS - Wisdom from cultures around the world
@@ -1657,7 +1657,7 @@ object DatabaseSeeder {
             category = "personal_growth"
         )
     ) + ExpandedVocabularyContent.allWords
-    ).distinctBy { it.word.trim().lowercase() }
+        .distinctBy { it.word.trim().lowercase() }
 
     
 
